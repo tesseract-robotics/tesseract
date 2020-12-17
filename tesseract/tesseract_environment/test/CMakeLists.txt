@@ -1,6 +1,5 @@
 find_package(GTest REQUIRED)
 find_package(tesseract_support REQUIRED)
-find_package(tesseract_urdf REQUIRED)
 
 if(NOT TARGET GTest::GTest)
   add_library(GTest::GTest INTERFACE IMPORTED)

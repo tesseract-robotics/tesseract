@@ -92,22 +92,19 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
   }
 
   // Get state solver
-  tesseract_environment::StateSolver::Ptr state_solver = input.tesseract->getEnvironment()->getStateSolver();
-  tesseract_collision::ContinuousContactManager::Ptr manager =
-      input.tesseract->getEnvironment()->getContinuousContactManager();
+  tesseract_environment::StateSolver::Ptr state_solver = input.env->getStateSolver();
+  tesseract_collision::ContinuousContactManager::Ptr manager = input.env->getContinuousContactManager();
   manager->setCollisionMarginData(config.collision_margin_data);
 
   // Set the active links based on the manipulator
   std::vector<std::string> active_links_manip;
   {
     tesseract_environment::AdjacencyMap::Ptr adjacency_map_manip =
-        std::make_shared<tesseract_environment::AdjacencyMap>(
-            input.tesseract->getEnvironment()->getSceneGraph(),
-            input.tesseract->getEnvironment()
-                ->getManipulatorManager()
-                ->getFwdKinematicSolver(input.manip_info.manipulator)
-                ->getActiveLinkNames(),
-            input.tesseract->getEnvironment()->getCurrentState()->link_transforms);
+        std::make_shared<tesseract_environment::AdjacencyMap>(input.env->getSceneGraph(),
+                                                              input.env->getManipulatorManager()
+                                                                  ->getFwdKinematicSolver(input.manip_info.manipulator)
+                                                                  ->getActiveLinkNames(),
+                                                              input.env->getCurrentState()->link_transforms);
     active_links_manip = adjacency_map_manip->getActiveLinkNames();
   }
   manager->setActiveCollisionObjects(active_links_manip);

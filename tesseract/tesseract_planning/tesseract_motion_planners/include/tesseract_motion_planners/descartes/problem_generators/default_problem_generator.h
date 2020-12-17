@@ -52,13 +52,11 @@ DefaultDescartesProblemGenerator(const std::string& name,
   const ManipulatorInfo& composite_mi = request.instructions.getManipulatorInfo();
 
   // Get Manipulator Information
-  prob->manip_fwd_kin =
-      request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
+  prob->manip_fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
   if (composite_mi.manipulator_ik_solver.empty())
-    prob->manip_inv_kin =
-        request.tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(composite_mi.manipulator);
+    prob->manip_inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(composite_mi.manipulator);
   else
-    prob->manip_inv_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(
+    prob->manip_inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(
         composite_mi.manipulator, composite_mi.manipulator_ik_solver);
 
   if (!prob->manip_fwd_kin)
@@ -72,7 +70,7 @@ DefaultDescartesProblemGenerator(const std::string& name,
     return prob;
   }
   prob->env_state = request.env_state;
-  prob->tesseract = request.tesseract;
+  prob->env = request.env;
 
   // Process instructions
   if (!tesseract_kinematics::checkKinematics(prob->manip_fwd_kin, prob->manip_inv_kin))
@@ -81,7 +79,7 @@ DefaultDescartesProblemGenerator(const std::string& name,
 
   std::vector<std::string> active_link_names = prob->manip_inv_kin->getActiveLinkNames();
   auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      request.tesseract->getEnvironment()->getSceneGraph(), active_link_names, request.env_state->link_transforms);
+      request.env->getSceneGraph(), active_link_names, request.env_state->link_transforms);
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();
 
   // Flatten the input for planning
@@ -157,7 +155,7 @@ DefaultDescartesProblemGenerator(const std::string& name,
 
       // If plan instruction has manipulator information then use it over the one provided by the composite.
       ManipulatorInfo mi = composite_mi.getCombined(plan_instruction->getManipulatorInfo());
-      Eigen::Isometry3d tcp = request.tesseract->findTCP(mi);
+      Eigen::Isometry3d tcp = request.env->findTCP(mi);
 
       // The seed should always have a start instruction
       assert(request.seed.hasStartInstruction());

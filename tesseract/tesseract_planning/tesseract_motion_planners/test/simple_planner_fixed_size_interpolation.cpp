@@ -29,11 +29,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/filesystem.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/step_generators/fixed_size_interpolation.h>
 
-using namespace tesseract;
+using namespace tesseract_environment;
 using namespace tesseract_planning;
 
 bool DEBUG = false;
@@ -68,7 +69,7 @@ std::string locateResource(const std::string& url)
 class TesseractPlanningSimplePlannerFixedSizeInterpolationUnit : public ::testing::Test
 {
 protected:
-  Tesseract::Ptr tesseract_ptr_;
+  Environment::Ptr env_;
   ManipulatorInfo manip_info_;
   std::vector<std::string> joint_names_;
 
@@ -76,25 +77,22 @@ protected:
   {
     tesseract_scene_graph::ResourceLocator::Ptr locator =
         std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-    Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+    Environment::Ptr env = std::make_shared<Environment>();
     boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
     boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
-    EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
-    tesseract_ptr_ = tesseract;
+    EXPECT_TRUE(env->init<OFKTStateSolver>(urdf_path, srdf_path, locator));
+    env_ = env;
 
     manip_info_.manipulator = "manipulator";
-    joint_names_ = tesseract_ptr_->getEnvironment()
-                       ->getManipulatorManager()
-                       ->getFwdKinematicSolver("manipulator")
-                       ->getJointNames();
+    joint_names_ = env_->getManipulatorManager()->getFwdKinematicSolver("manipulator")->getJointNames();
   }
 };
 
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_JointInterpolation)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -114,8 +112,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_Join
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_JointInterpolation)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -130,8 +128,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_Joint
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
-  auto fwd_kin =
-      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
   Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
   fwd_kin->calcFwdKin(final_pose, last_position);
   EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
@@ -140,8 +137,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_Joint
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_JointInterpolation)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -161,8 +158,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_Joint
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartCart_JointInterpolation)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -177,8 +174,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartCart_JointI
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
-  auto fwd_kin =
-      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
   Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
   fwd_kin->calcFwdKin(final_pose, last_position);
   EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
@@ -187,8 +183,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartCart_JointI
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_CartesianInterpolation)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -200,8 +196,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_Cart
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_CartesianInterpolation)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -213,8 +209,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_Carte
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_CartesianInterpolation)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -226,8 +222,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_Carte
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartCart_CartesianInterpolation)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);

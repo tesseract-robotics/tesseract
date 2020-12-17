@@ -1,5 +1,7 @@
+find_package(tesseract_environment REQUIRED)
+
 add_executable(${PROJECT_NAME}_freespace_manager_example freespace_manager_example.cpp)
-target_link_libraries(${PROJECT_NAME}_freespace_manager_example console_bridge::console_bridge ${PROJECT_NAME} tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_support ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME}_freespace_manager_example console_bridge::console_bridge ${PROJECT_NAME} tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_command_language tesseract::tesseract_support ${CMAKE_THREAD_LIBS_INIT})
 target_compile_options(${PROJECT_NAME}_freespace_manager_example PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_freespace_manager_example PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_freespace_manager_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -10,7 +12,7 @@ target_include_directories(${PROJECT_NAME}_freespace_manager_example SYSTEM PRIV
     ${EIGEN3_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_raster_manager_example raster_manager_example.cpp)
-target_link_libraries(${PROJECT_NAME}_raster_manager_example console_bridge::console_bridge ${PROJECT_NAME} tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_support  ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME}_raster_manager_example console_bridge::console_bridge ${PROJECT_NAME} tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_command_language tesseract::tesseract_support  ${CMAKE_THREAD_LIBS_INIT})
 target_compile_options(${PROJECT_NAME}_raster_manager_example PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_raster_manager_example PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_raster_manager_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})

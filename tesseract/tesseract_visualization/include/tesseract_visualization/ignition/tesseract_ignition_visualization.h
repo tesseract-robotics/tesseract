@@ -48,7 +48,7 @@ public:
 
   TesseractIgnitionVisualization();
 
-  bool init(tesseract::Tesseract::ConstPtr thor) override;
+  bool init(tesseract_environment::Environment::ConstPtr env) override;
 
   void plotEnvironment(tesseract_environment::Environment::ConstPtr env = nullptr) override;
 
@@ -83,7 +83,6 @@ public:
   void waitForInput() override;
 
 private:
-  tesseract::Tesseract::ConstPtr thor_;               /**< Tesseract object */
   tesseract_environment::Environment::ConstPtr env_;  /**< Tesseract Environment Object */
   ignition::transport::Node node_;                    /**< Ignition communication node. */
   ignition::transport::Node::Publisher scene_pub_;    /**< Scene publisher */

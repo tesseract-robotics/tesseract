@@ -41,7 +41,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
                                const TrajOptCompositeProfileMap& composite_profiles,
                                const TrajOptSolverProfileMap& solver_profiles)
 {
-  auto pci = std::make_shared<trajopt::ProblemConstructionInfo>(request.tesseract);
+  auto pci = std::make_shared<trajopt::ProblemConstructionInfo>(request.env);
 
   // Store fixed steps
   std::vector<int> fixed_steps;
@@ -76,7 +76,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
   auto seed_flat = flattenProgramToPattern(request.seed, request.instructions);
 
   // Get kinematics information
-  tesseract_environment::Environment::ConstPtr env = request.tesseract->getEnvironment();
+  tesseract_environment::Environment::ConstPtr env = request.env;
   tesseract_environment::AdjacencyMap map(
       env->getSceneGraph(), pci->kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
   const std::vector<std::string>& active_links = map.getActiveLinkNames();
@@ -163,7 +163,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
 
       // If plan instruction has manipulator information then use it over the one provided by the composite.
       ManipulatorInfo manip_info = composite_mi.getCombined(plan_instruction->getManipulatorInfo());
-      Eigen::Isometry3d tcp = request.tesseract->findTCP(manip_info);
+      Eigen::Isometry3d tcp = request.env->findTCP(manip_info);
 
       assert(isCompositeInstruction(seed_flat[i].get()));
       const auto* seed_composite = seed_flat[i].get().cast_const<tesseract_planning::CompositeInstruction>();

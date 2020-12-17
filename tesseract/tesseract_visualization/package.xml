@@ -10,7 +10,6 @@
   <depend>tesseract_collision</depend>
   <depend>tesseract_common</depend>
   <depend>tesseract_command_language</depend>
-  <depend>tesseract</depend>
   <depend>tesseract_environment</depend>
   <depend>tesseract_scene_graph</depend>
   <depend>class_loader</depend>

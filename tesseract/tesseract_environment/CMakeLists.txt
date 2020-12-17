@@ -12,6 +12,7 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_kinematics REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
+find_package(tesseract_urdf REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
 
@@ -38,7 +39,9 @@ add_library(${PROJECT_NAME}_core src/core/environment.cpp src/core/manipulator_m
 target_link_libraries(${PROJECT_NAME}_core PUBLIC
   tesseract::tesseract_common
   tesseract::tesseract_collision_core
+  tesseract::tesseract_collision_bullet
   tesseract::tesseract_scene_graph
+  tesseract::tesseract_urdf
   tesseract::tesseract_kinematics_kdl
   tesseract::tesseract_kinematics_opw)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
@@ -95,4 +98,8 @@ if (TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
+endif()
+
+if (TESSERACT_ENABLE_BENCHMARKING)
+  add_subdirectory(test/benchmarks)
 endif()

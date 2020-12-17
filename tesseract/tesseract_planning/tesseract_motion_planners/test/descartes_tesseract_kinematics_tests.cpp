@@ -29,11 +29,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-#include <tesseract/tesseract.h>
 
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_motion_planners/descartes/impl/descartes_tesseract_kinematics.hpp>
 
-using namespace tesseract;
+using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 
 std::string locateResource(const std::string& url)
@@ -107,7 +108,7 @@ public:
 class DescartesTesseractKinematicsUnit : public ::testing::Test
 {
 protected:
-  Tesseract::Ptr tesseract_ptr_;
+  Environment::Ptr env_;
   tesseract_planning::DescartesTesseractKinematics<double>::Ptr descartes_tesseract_kinematics_d_;
   tesseract_planning::DescartesTesseractKinematics<float>::Ptr descartes_tesseract_kinematics_f_;
 
@@ -119,15 +120,15 @@ protected:
     // Set up the Tesseract
     tesseract_scene_graph::ResourceLocator::Ptr locator =
         std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-    Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+    Environment::Ptr env = std::make_shared<Environment>();
     boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
     boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
-    ASSERT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
-    tesseract_ptr_ = tesseract;
+    ASSERT_TRUE(env->init<OFKTStateSolver>(urdf_path, srdf_path, locator));
+    env_ = env;
 
     // Set up the kinematics objects
-    kdl_fk_ = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver("manipulator");
-    kdl_ik_ = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver("manipulator");
+    kdl_fk_ = env_->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+    kdl_ik_ = env_->getManipulatorManager()->getInvKinematicSolver("manipulator");
 
     descartes_tesseract_kinematics_d_ =
         std::make_shared<tesseract_planning::DescartesTesseractKinematics<double>>(kdl_fk_, kdl_ik_);

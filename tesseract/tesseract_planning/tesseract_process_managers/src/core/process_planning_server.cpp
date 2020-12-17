@@ -50,7 +50,9 @@ ProcessPlanningServer::ProcessPlanningServer(EnvironmentCache::Ptr cache, size_t
   executor_->make_observer<DebugObserver>("ProcessPlanningObserver");
 }
 
-ProcessPlanningServer::ProcessPlanningServer(tesseract::Tesseract::ConstPtr environment, int cache_size, size_t n)
+ProcessPlanningServer::ProcessPlanningServer(tesseract_environment::Environment::ConstPtr environment,
+                                             int cache_size,
+                                             size_t n)
   : cache_(std::make_shared<ProcessEnvironmentCache>(environment, cache_size))
   , executor_(std::make_shared<tf::Executor>(n))
 {
@@ -135,13 +137,13 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
     return response;
   }
 
-  tesseract::Tesseract::Ptr tc = cache_->getCachedEnvironment();
+  tesseract_environment::Environment::Ptr tc = cache_->getCachedEnvironment();
 
   // Set the env state if provided
   if (request.env_state != nullptr)
-    tc->getEnvironment()->setState(request.env_state->joints);
+    tc->setState(request.env_state->joints);
 
-  if (!request.commands.empty() && !tc->getEnvironment()->applyCommands(request.commands))
+  if (!request.commands.empty() && !tc->applyCommands(request.commands))
   {
     CONSOLE_BRIDGE_logInform("Tesseract Planning Server Finished Request!");
     return response;

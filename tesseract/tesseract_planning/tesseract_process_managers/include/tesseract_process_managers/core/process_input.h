@@ -40,9 +40,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/types.h>
 
 #include <tesseract_command_language/core/instruction.h>
-#include <tesseract_command_language/manipulator_info.h>
+#include <tesseract_command_language/types.h>
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 
 namespace tesseract_planning
 {
@@ -57,14 +57,14 @@ struct ProcessInput
   using Ptr = std::shared_ptr<ProcessInput>;
   using ConstPtr = std::shared_ptr<const ProcessInput>;
 
-  ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+  ProcessInput(tesseract_environment::Environment::ConstPtr env,
                const Instruction* instruction,
                const ManipulatorInfo& manip_info,
                Instruction* seed,
                bool has_seed,
                ProfileDictionary::ConstPtr profiles);
 
-  ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+  ProcessInput(tesseract_environment::Environment::ConstPtr env,
                const Instruction* instruction,
                const ManipulatorInfo& manip_info,
                const PlannerProfileRemapping& plan_profile_remapping,
@@ -73,7 +73,7 @@ struct ProcessInput
                bool has_seed,
                ProfileDictionary::ConstPtr profiles);
 
-  ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+  ProcessInput(tesseract_environment::Environment::ConstPtr env,
                const Instruction* instruction,
                const PlannerProfileRemapping& plan_profile_remapping,
                const PlannerProfileRemapping& composite_profile_remapping,
@@ -81,14 +81,14 @@ struct ProcessInput
                bool has_seed,
                ProfileDictionary::ConstPtr profiles);
 
-  ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+  ProcessInput(tesseract_environment::Environment::ConstPtr env,
                const Instruction* instruction,
                Instruction* seed,
                bool has_seed,
                ProfileDictionary::ConstPtr profiles);
 
   /** @brief Tesseract associated with current state of the system */
-  const tesseract::Tesseract::ConstPtr tesseract;
+  const tesseract_environment::Environment::ConstPtr env;
 
   /** @brief Global Manipulator Information */
   const ManipulatorInfo& manip_info;

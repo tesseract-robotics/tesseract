@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_command_language/constants.h>
 #include <tesseract_command_language/instruction_type.h>
-#include <tesseract_command_language/manipulator_info.h>
+#include <tesseract_command_language/types.h>
 
 namespace tesseract_planning
 {

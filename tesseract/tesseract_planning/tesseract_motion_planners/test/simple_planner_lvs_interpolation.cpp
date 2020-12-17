@@ -29,11 +29,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/filesystem.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/step_generators/lvs_interpolation.h>
 
-using namespace tesseract;
+using namespace tesseract_environment;
 using namespace tesseract_planning;
 
 bool DEBUG = false;
@@ -68,7 +69,7 @@ std::string locateResource(const std::string& url)
 class TesseractPlanningSimplePlannerLVSInterpolationUnit : public ::testing::Test
 {
 protected:
-  Tesseract::Ptr tesseract_ptr_;
+  Environment::Ptr env_;
   ManipulatorInfo manip_info_;
   std::vector<std::string> joint_names_;
 
@@ -76,25 +77,22 @@ protected:
   {
     tesseract_scene_graph::ResourceLocator::Ptr locator =
         std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-    Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+    Environment::Ptr env = std::make_shared<Environment>();
     boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
     boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
-    EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
-    tesseract_ptr_ = tesseract;
+    EXPECT_TRUE(env->init<OFKTStateSolver>(urdf_path, srdf_path, locator));
+    env_ = env;
 
     manip_info_.manipulator = "manipulator";
-    joint_names_ = tesseract_ptr_->getEnvironment()
-                       ->getManipulatorManager()
-                       ->getFwdKinematicSolver("manipulator")
-                       ->getJointNames();
+    joint_names_ = env_->getManipulatorManager()->getFwdKinematicSolver("manipulator")->getJointNames();
   }
 };
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_JointJoint_Freespace)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
@@ -129,10 +127,9 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_JointJoint_Linear)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  auto fwd_kin =
-      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
@@ -179,10 +176,9 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_JointCart_Freespace)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  auto fwd_kin =
-      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2;
@@ -218,10 +214,9 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_JointCart_Linear)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  auto fwd_kin =
-      request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2;
@@ -272,11 +267,10 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartJoint_Freespace)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
-  auto fwd_kin =
-      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   CartesianWaypoint wp1;
   fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
@@ -309,11 +303,10 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartJoint_Linear)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
-  auto fwd_kin =
-      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   CartesianWaypoint wp1;
   fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
@@ -360,11 +353,10 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartCart_Freespace)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
-  auto fwd_kin =
-      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   CartesianWaypoint wp1;
   fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
@@ -401,11 +393,10 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartCart_Linear)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
-  auto fwd_kin =
-      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   CartesianWaypoint wp1;
   fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
@@ -454,8 +445,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_JointJoint_Freespace)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -467,8 +458,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_JointJoint_Linear)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
@@ -480,8 +471,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_JointCart_Freespace)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -493,8 +484,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_JointCart_Linear)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
@@ -506,8 +497,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_CartJoint_Freespace)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -519,8 +510,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_CartJoint_Linear)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
@@ -532,8 +523,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_CartCart_Freespace)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -545,8 +536,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_CartCart_Linear)  // NOLINT
 {
   PlannerRequest request;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
