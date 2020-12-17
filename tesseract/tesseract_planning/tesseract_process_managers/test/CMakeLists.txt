@@ -33,7 +33,7 @@ endif()
 include(GoogleTest)
 
 add_executable(${PROJECT_NAME}_unit tesseract_process_managers_unit.cpp)
-target_link_libraries(${PROJECT_NAME}_unit PRIVATE GTest::GTest GTest::Main tesseract::tesseract_support tesseract::tesseract_kinematics_opw ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_unit PRIVATE GTest::GTest GTest::Main tesseract::tesseract_support tesseract::tesseract_environment_ofkt tesseract::tesseract_kinematics_opw ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME}_unit PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/examples>")
 target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -45,7 +45,7 @@ add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_unit)
 
 add_executable(${PROJECT_NAME}_fix_state_collision_process_generator_unit fix_state_collision_process_generator_unit.cpp)
-target_link_libraries(${PROJECT_NAME}_fix_state_collision_process_generator_unit PRIVATE GTest::GTest GTest::Main tesseract::tesseract_support ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_fix_state_collision_process_generator_unit PRIVATE GTest::GTest GTest::Main tesseract::tesseract_support tesseract::tesseract_environment_ofkt ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME}_fix_state_collision_process_generator_unit PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/examples>")
 target_compile_options(${PROJECT_NAME}_fix_state_collision_process_generator_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS})

@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <shared_mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 
 namespace tesseract_planning
 {
@@ -67,10 +67,10 @@ public:
   virtual void refreshCache() = 0;
 
   /**
-   * @brief This will pop a Tesseract object from the queue
+   * @brief This will pop an Environment object from the queue
    * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
    */
-  virtual tesseract::Tesseract::Ptr getCachedEnvironment() = 0;
+  virtual tesseract_environment::Environment::Ptr getCachedEnvironment() = 0;
 };
 
 class ProcessEnvironmentCache : public EnvironmentCache
@@ -79,7 +79,7 @@ public:
   using Ptr = std::shared_ptr<ProcessEnvironmentCache>;
   using ConstPtr = std::shared_ptr<const ProcessEnvironmentCache>;
 
-  ProcessEnvironmentCache(tesseract::Tesseract::ConstPtr env, std::size_t cache_size = 5);
+  ProcessEnvironmentCache(tesseract_environment::Environment::ConstPtr env, std::size_t cache_size = 5);
 
   /**
    * @brief Set the cache size used to hold tesseract objects for motion planning
@@ -97,14 +97,14 @@ public:
   void refreshCache() override;
 
   /**
-   * @brief This will pop a Tesseract object from the queue
+   * @brief This will pop an Environment object from the queue
    * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
    */
-  tesseract::Tesseract::Ptr getCachedEnvironment() override;
+  tesseract_environment::Environment::Ptr getCachedEnvironment() override;
 
 protected:
   /** @brief The tesseract_object used to create the cache */
-  tesseract::Tesseract::ConstPtr tesseract_;
+  tesseract_environment::Environment::ConstPtr env_;
 
   /** @brief The environment revision number at the time the cache was populated */
   int cache_env_revision_{ 0 };
@@ -113,7 +113,7 @@ protected:
   std::size_t cache_size_{ 5 };
 
   /** @brief A vector of cached Tesseact objects */
-  std::deque<tesseract::Tesseract::Ptr> cache_;
+  std::deque<tesseract_environment::Environment::Ptr> cache_;
 
   /** @brief The mutex used when reading and writing to cache_ */
   mutable std::shared_mutex cache_mutex_;

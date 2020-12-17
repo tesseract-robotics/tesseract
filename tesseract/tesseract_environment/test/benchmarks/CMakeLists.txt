@@ -1,6 +1,5 @@
 find_package(benchmark REQUIRED)
 find_package(tesseract_support REQUIRED)
-find_package(tesseract_urdf REQUIRED)
 
 macro(add_benchmark benchmark_name benchmark_file)
   add_executable(${benchmark_name} ${benchmark_file})
@@ -11,7 +10,8 @@ macro(add_benchmark benchmark_name benchmark_file)
   target_cxx_version(${benchmark_name} PRIVATE VERSION ${TESSERACT_CXX_VERSION})
   target_link_libraries(${benchmark_name}
       benchmark::benchmark
-      ${PROJECT_NAME}
+      ${PROJECT_NAME}_core
+      ${PROJECT_NAME}_ofkt
       tesseract::tesseract_urdf
       tesseract::tesseract_support
       console_bridge
@@ -22,4 +22,4 @@ macro(add_benchmark benchmark_name benchmark_file)
   add_run_benchmark_target(${benchmark_name})
 endmacro()
 
-add_benchmark(${PROJECT_NAME}_clone_benchmark tesseract_clone_benchmarks.cpp)
+add_benchmark(${PROJECT_NAME}_clone_benchmark environment_clone_benchmarks.cpp)

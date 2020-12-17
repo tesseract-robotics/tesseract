@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMAND_LANGUAGE_MANIPULATOR_INFO_H
-#define TESSERACT_COMMAND_LANGUAGE_MANIPULATOR_INFO_H
+#ifndef TESSERACT_COMMON_MANIPULATOR_INFO_H
+#define TESSERACT_COMMON_MANIPULATOR_INFO_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -33,11 +33,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_command_language/core/waypoint.h>
-#include <tesseract_command_language/instruction_type.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_planning
+namespace tesseract_common
 {
 /** @brief Manipulator Info Tool Center Point Definition */
 class ToolCenterPoint
@@ -173,6 +171,6 @@ struct ManipulatorInfo
     return ret_val;
   }
 };
-}  // namespace tesseract_planning
+}  // namespace tesseract_common
 
-#endif  // TESSERACT_COMMAND_LANGUAGE_PLAN_INSTRUCTION_H
+#endif  // TESSERACT_COMMON_MANIPULATOR_INFO_H

@@ -156,8 +156,8 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input, std::s
   // --------------------
   PlannerRequest request;
   request.seed = *input_results->cast<CompositeInstruction>();
-  request.env_state = input.tesseract->getEnvironment()->getCurrentState();
-  request.tesseract = input.tesseract;
+  request.env_state = input.env->getCurrentState();
+  request.env = input.env;
   request.instructions = instructions;
   request.plan_profile_remapping = input.plan_profile_remapping;
   request.composite_profile_remapping = input.composite_profile_remapping;

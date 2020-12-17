@@ -66,7 +66,7 @@ public:
    * multiple requests
    * @param n The number of threads used by the planning server
    */
-  ProcessPlanningServer(tesseract::Tesseract::ConstPtr environment,
+  ProcessPlanningServer(tesseract_environment::Environment::ConstPtr environment,
                         int cache_size = 1,
                         size_t n = std::thread::hardware_concurrency());
 

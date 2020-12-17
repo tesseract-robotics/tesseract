@@ -10,22 +10,24 @@
 
   <author >Levi Armstrong</author>
 
+
+  <build_depend>cmake_common_scripts</build_depend>
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
+
+  <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_collision</depend>
   <depend>tesseract_geometry</depend>
   <depend>tesseract_kinematics</depend>
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_common</depend>
-  <build_depend>cmake_common_scripts</build_depend>
+  <depend>tesseract_urdf</depend>
 
-  <build_depend>eigen</build_depend>
-  <build_export_depend>eigen</build_export_depend>
-  <depend>libconsole-bridge-dev</depend>
   <depend condition="$ROS_DISTRO != noetic">orocos_kdl</depend>
   <depend condition="$ROS_DISTRO == noetic">liborocos-kdl-dev</depend>
 
   <test_depend>gtest</test_depend>
   <test_depend>tesseract_support</test_depend>
-  <test_depend>tesseract_urdf</test_depend>
 
   <export>
     <build_type>cmake</build_type>

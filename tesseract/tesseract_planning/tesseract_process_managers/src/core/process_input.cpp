@@ -40,13 +40,13 @@ namespace tesseract_planning
 static const ManipulatorInfo EMPTY_MANIPULATOR_INFO;
 static const PlannerProfileRemapping EMPTY_PROFILE_MAPPING;
 
-ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
                            const Instruction* instruction,
                            const ManipulatorInfo& manip_info,
                            Instruction* seed,
                            bool has_seed,
                            ProfileDictionary::ConstPtr profiles)
-  : tesseract(std::move(tesseract))
+  : env(std::move(env))
   , manip_info(manip_info)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
@@ -57,7 +57,7 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
 {
 }
 
-ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
                            const Instruction* instruction,
                            const ManipulatorInfo& manip_info,
                            const PlannerProfileRemapping& plan_profile_remapping,
@@ -65,7 +65,7 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            Instruction* seed,
                            bool has_seed,
                            ProfileDictionary::ConstPtr profiles)
-  : tesseract(std::move(tesseract))
+  : env(std::move(env))
   , manip_info(manip_info)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
@@ -76,14 +76,14 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
 {
 }
 
-ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
                            const Instruction* instruction,
                            const PlannerProfileRemapping& plan_profile_remapping,
                            const PlannerProfileRemapping& composite_profile_remapping,
                            Instruction* seed,
                            bool has_seed,
                            ProfileDictionary::ConstPtr profiles)
-  : tesseract(std::move(tesseract))
+  : env(std::move(env))
   , manip_info(EMPTY_MANIPULATOR_INFO)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
@@ -94,12 +94,12 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
 {
 }
 
-ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
                            const Instruction* instruction,
                            Instruction* seed,
                            bool has_seed,
                            ProfileDictionary::ConstPtr profiles)
-  : tesseract(std::move(tesseract))
+  : env(std::move(env))
   , manip_info(EMPTY_MANIPULATOR_INFO)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)

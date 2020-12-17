@@ -178,9 +178,9 @@ bool RasterTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& i
   // -------------
   // Check Input
   // -------------
-  if (!input.tesseract)
+  if (!input.env)
   {
-    CONSOLE_BRIDGE_logError("ProcessInput tesseract is a nullptr");
+    CONSOLE_BRIDGE_logError("ProcessInput env is a nullptr");
     return false;
   }
 
