@@ -106,7 +106,7 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
 
 EnvState::Ptr KDLStateSolver::getState(const std::unordered_map<std::string, double>& joints) const
 {
-  EnvState::Ptr state(new EnvState(*current_state_));
+  EnvState::Ptr state{ std::make_shared<EnvState>(*current_state_) };
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
   for (auto& joint : joints)
@@ -125,7 +125,7 @@ EnvState::Ptr KDLStateSolver::getState(const std::unordered_map<std::string, dou
 EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_names,
                                        const std::vector<double>& joint_values) const
 {
-  EnvState::Ptr state(new EnvState(*current_state_));
+  EnvState::Ptr state{ std::make_shared<EnvState>(*current_state_) };
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
   for (auto i = 0u; i < joint_names.size(); ++i)
@@ -144,7 +144,7 @@ EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_nam
 EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_names,
                                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
 {
-  EnvState::Ptr state(new EnvState(*current_state_));
+  EnvState::Ptr state{ std::make_shared<EnvState>(*current_state_) };
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
   for (auto i = 0u; i < joint_names.size(); ++i)
