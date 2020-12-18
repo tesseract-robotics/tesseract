@@ -20,8 +20,8 @@ jobs:
       ROS_DISTRO: melodic
       ROS_REPO: main
       UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#feature/CommandLanguage github:Jmeyer1292/opw_kinematics#master github:ethz-adrl/ifopt#master github:ros-industrial/cmake_common_scripts#master'
-      TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage github:mpowelson/cpp-taskflow#catkinized'
-      ROSDEP_SKIP_KEYS: "bullet3 cmake_common_scripts iwyu fcl"
+      TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage'
+      ROSDEP_SKIP_KEYS: "bullet3 cmake_common_scripts iwyu fcl taskflow"
       DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
       CCACHE_DIR: "/home/runner/work/tesseract/tesseract/CodeCov/.ccache"
       UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
