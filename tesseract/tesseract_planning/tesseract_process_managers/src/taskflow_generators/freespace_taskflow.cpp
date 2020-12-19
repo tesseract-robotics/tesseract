@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_process_managers/core/utils.h>
 #include <tesseract_process_managers/taskflow_generators/freespace_taskflow.h>
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/process_generators/continuous_contact_check_process_generator.h>
@@ -53,8 +54,8 @@ FreespaceTaskflow::FreespaceTaskflow(FreespaceTaskflowParams params, std::string
 const std::string& FreespaceTaskflow::getName() const { return name_; }
 
 TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
-                                                      std::function<void()> done_cb,
-                                                      std::function<void()> error_cb)
+                                                      TaskflowVoidFn done_cb,
+                                                      TaskflowVoidFn error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
   if (!checkProcessInput(input))

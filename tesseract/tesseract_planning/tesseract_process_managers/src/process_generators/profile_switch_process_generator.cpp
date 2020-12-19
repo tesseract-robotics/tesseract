@@ -44,12 +44,12 @@ ProfileSwitchProcessGenerator::ProfileSwitchProcessGenerator(std::string name) :
 
 const std::string& ProfileSwitchProcessGenerator::getName() const { return name_; }
 
-std::function<void()> ProfileSwitchProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
+TaskflowVoidFn ProfileSwitchProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> ProfileSwitchProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
+TaskflowIntFn ProfileSwitchProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { return conditionalProcess(input, unique_id); };
 }

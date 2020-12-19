@@ -26,85 +26,13 @@
 #ifndef TESSERACT_PROCESS_MANAGERS_TASKFLOW_GENERATOR_H
 #define TESSERACT_PROCESS_MANAGERS_TASKFLOW_GENERATOR_H
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <functional>
-#include <vector>
-#include <taskflow/taskflow.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
+#include <tesseract_process_managers/core/types.h>
 #include <tesseract_process_managers/core/process_input.h>
 #include <tesseract_process_managers/core/process_generator.h>
-
-// Forward Declare
-namespace tf
-{
-class Taskflow;
-}
+#include <tesseract_process_managers/core/taskflow_container.h>
 
 namespace tesseract_planning
 {
-/**
- * @brief Taskflow Container
- *
- * @details Taskflow composition does not allow connecting to tasks within another taskflow.
- * This is to support similar functionality where all tasks are added to the highest level taskflow
- * and stores all tasks from a generator and the identified input and output tasks for composition
- *
- *  - Input Task: input
- *  - Output Tasks:
- *    - On Error: outputs[0]
- *    - On Success: outputs[1]
- */
-struct TaskflowContainer
-{
-  /**
-   * @brief If not a nullptr this should be added using taskflow composition.
-   * @details If a nullptr then input and outputs may be used.
-   */
-  std::unique_ptr<tf::Taskflow> taskflow;
-
-  /**
-   * @brief The input task associated with a taskflow
-   * @warning If taskflow is not a nullptr, then input is associated with the above taskflow and connections cannot span
-   * multiple taskflows
-   */
-  tf::Task input;
-
-  /**
-   * @brief The output task associated with a taskflow
-   * @warning If taskflow is not a nullptr, then input is associated with the above taskflow and connections cannot span
-   * multiple taskflows
-   */
-  std::vector<tf::Task> outputs;
-
-  /**
-   * @brief TaskflowContainer's associated with the taskflow
-   * @details This must stay around during execution of taskflow
-   */
-  std::vector<TaskflowContainer> containers;
-
-  /**
-   * @brief ProcessGenerator's associated with the taskflow
-   * @details This must stay around during execution of taskflow
-   */
-  std::vector<ProcessGenerator::UPtr> generators;
-
-  /** @brief Clear the Taskflow Container */
-  void clear()
-  {
-    taskflow->clear();
-    taskflow = nullptr;
-    outputs.clear();
-
-    for (auto& c : containers)
-      c.clear();
-
-    containers.clear();
-    generators.clear();
-  }
-};
-
 /** @brief Base class for generating a taskflow */
 class TaskflowGenerator
 {
@@ -132,8 +60,8 @@ public:
    * @return A taskflow container which must stay around during execution of taskflow
    */
   virtual TaskflowContainer generateTaskflow(ProcessInput instruction,
-                                             std::function<void()> done_cb,
-                                             std::function<void()> error_cb) = 0;
+                                             TaskflowVoidFn done_cb,
+                                             TaskflowVoidFn error_cb) = 0;
 
   //  /**
   //   * @brief Generate a series of task assigned to the provided taskflow but not connected
@@ -147,93 +75,9 @@ public:
   //   */
   //  virtual TaskflowContainer generateTaskflow(tf::Taskflow& taskflow,
   //                                             ProcessInput instruction,
-  //                                             std::function<void()> done_cb,
-  //                                             std::function<void()> error_cb) = 0;
+  //                                             TaskflowVoidFn done_cb,
+  //                                             TaskflowVoidFn error_cb) = 0;
 };
-
-/**
- * @brief The default success task to be used
- * @param name The name
- * @param message A detailed message
- * @param user_callback A user callback function
- */
-inline void successTask(const ProcessInput& /*instruction*/,
-                        const std::string& name,
-                        const std::string& message,
-                        const std::function<void()>& user_callback = nullptr)
-{
-  CONSOLE_BRIDGE_logInform("%s Successful: %s", name.c_str(), message.c_str());
-  if (user_callback)
-    user_callback();
-}
-
-/**
- * @brief The default failure task to be used
- * @details This will call the abort function of the ProcessInput provided
- * @param name The name
- * @param message A detailed message
- * @param user_callback A user callback function
- */
-inline void failureTask(ProcessInput instruction,
-                        const std::string& name,
-                        const std::string& message,
-                        const std::function<void()>& user_callback = nullptr)
-{
-  // Call abort on the process input
-  instruction.abort();
-
-  // Print an error if this is the first failure
-  CONSOLE_BRIDGE_logError("%s Failure: %s", name.c_str(), message.c_str());
-  if (user_callback)
-    user_callback();
-}
-
-/**
- * @brief Check if composite is empty along with children composites
- * @param composite The composite to check
- * @return True if empty otherwise false
- */
-inline bool isCompositeEmpty(const CompositeInstruction& composite)
-{
-  if (composite.empty())
-    return true;
-
-  for (const auto& i : composite)
-  {
-    if (isCompositeInstruction(i))
-    {
-      const auto* sub_composite = i.cast_const<CompositeInstruction>();
-      if (isCompositeEmpty(*sub_composite))
-        return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * @brief Check if the input has a seed
- * @details It checks if a any composite instruction is empty in the results data structure
- * @param input The process input
- * @return One if seed exists, otherwise zero
- */
-inline int hasSeedTask(ProcessInput input)
-{
-  if (input.has_seed)
-    return 1;
-
-  assert(isCompositeInstruction(*(input.getResults())));
-  if (isCompositeInstruction(*(input.getResults())))
-  {
-    const auto* composite = input.getResults()->cast_const<CompositeInstruction>();
-    if (isCompositeEmpty(*composite))
-    {
-      CONSOLE_BRIDGE_logDebug("Seed is empty!");
-      return 0;
-    }
-  }
-  return 1;
-}
 
 }  // namespace tesseract_planning
 

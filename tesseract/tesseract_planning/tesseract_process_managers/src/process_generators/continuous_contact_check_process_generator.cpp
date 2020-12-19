@@ -60,13 +60,12 @@ ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(d
 
 const std::string& ContinuousContactCheckProcessGenerator::getName() const { return name_; }
 
-std::function<void()> ContinuousContactCheckProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
+TaskflowVoidFn ContinuousContactCheckProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> ContinuousContactCheckProcessGenerator::generateConditionalTask(ProcessInput input,
-                                                                                     std::size_t unique_id)
+TaskflowIntFn ContinuousContactCheckProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { return conditionalProcess(input, unique_id); };
 }

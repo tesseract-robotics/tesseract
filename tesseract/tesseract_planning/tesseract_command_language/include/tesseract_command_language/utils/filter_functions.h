@@ -26,8 +26,6 @@
 #ifndef TESSERACT_COMMAND_LANGUAGE_UTILS_FILTER_FUNCTIONS_H
 #define TESSERACT_COMMAND_LANGUAGE_UTILS_FILTER_FUNCTIONS_H
 
-#include <tesseract_command_language/plan_instruction.h>
-#include <tesseract_command_language/move_instruction.h>
 #include <tesseract_command_language/composite_instruction.h>
 
 namespace tesseract_planning
@@ -45,29 +43,9 @@ using flattenFilterFn =
 using locateFilterFn =
     std::function<bool(const Instruction&, const CompositeInstruction&, bool parent_is_first_composite)>;
 
-static locateFilterFn moveFilter =
-    [](const Instruction& i, const CompositeInstruction& /*composite*/, bool parent_is_first_composite) {
-      if (isMoveInstruction(i))
-      {
-        if (i.cast_const<MoveInstruction>()->isStart())
-          return (parent_is_first_composite);
+bool moveFilter(const Instruction& instruction, const CompositeInstruction& composite, bool parent_is_first_composite);
 
-        return true;
-      }
-      return false;
-    };
-
-static locateFilterFn planFilter =
-    [](const Instruction& i, const CompositeInstruction& /*composite*/, bool parent_is_first_composite) {
-      if (isPlanInstruction(i))
-      {
-        if (i.cast_const<PlanInstruction>()->isStart())
-          return (parent_is_first_composite);
-
-        return true;
-      }
-      return false;
-    };
+bool planFilter(const Instruction& instruction, const CompositeInstruction& composite, bool parent_is_first_composite);
 
 }  // namespace tesseract_planning
 
