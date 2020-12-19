@@ -43,12 +43,12 @@ MotionPlannerProcessGenerator::MotionPlannerProcessGenerator(std::shared_ptr<Mot
 
 const std::string& MotionPlannerProcessGenerator::getName() const { return name_; }
 
-std::function<void()> MotionPlannerProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
+TaskflowVoidFn MotionPlannerProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> MotionPlannerProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
+TaskflowIntFn MotionPlannerProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { return conditionalProcess(input, unique_id); };
 }

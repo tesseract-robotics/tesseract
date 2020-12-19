@@ -40,6 +40,7 @@ add_library(${PROJECT_NAME}
   src/null_waypoint.cpp
   src/state_waypoint.cpp
   src/utils/flatten_utils.cpp
+  src/utils/filter_functions.cpp
   src/utils/get_instruction_utils.cpp
   src/utils/utils.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC console_bridge::console_bridge tesseract::tesseract_common ${Boost_LIBRARIES})

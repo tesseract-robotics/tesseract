@@ -91,9 +91,7 @@ public:
 
   const std::string& getName() const override;
 
-  TaskflowContainer generateTaskflow(ProcessInput input,
-                                     std::function<void()> done_cb,
-                                     std::function<void()> error_cb) override;
+  TaskflowContainer generateTaskflow(ProcessInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb) override;
 
 private:
   TaskflowGenerator::UPtr freespace_taskflow_generator_;

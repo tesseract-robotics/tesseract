@@ -38,9 +38,7 @@ GraphTaskflow::GraphTaskflow(std::string name) : name_(std::move(name)) {}
 
 const std::string& GraphTaskflow::getName() const { return name_; }
 
-TaskflowContainer GraphTaskflow::generateTaskflow(ProcessInput input,
-                                                  std::function<void()> done_cb,
-                                                  std::function<void()> error_cb)
+TaskflowContainer GraphTaskflow::generateTaskflow(ProcessInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb)
 {
   // Create Taskflow and Container
   TaskflowContainer container;
