@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_process_managers/core/types.h>
 #include <tesseract_process_managers/core/process_input.h>
 
 namespace tesseract_planning
@@ -65,14 +66,14 @@ public:
    * @param input The process input
    * @return Task
    */
-  virtual std::function<void()> generateTask(ProcessInput input, std::size_t unique_id) = 0;
+  virtual TaskflowVoidFn generateTask(ProcessInput input, std::size_t unique_id) = 0;
 
   /**
    * @brief Generate Conditional Task
    * @param input The process input
    * @return Conditional Task
    */
-  virtual std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) = 0;
+  virtual TaskflowIntFn generateConditionalTask(ProcessInput input, std::size_t unique_id) = 0;
 };
 
 }  // namespace tesseract_planning

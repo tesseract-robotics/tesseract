@@ -75,45 +75,28 @@ struct ProcessPlanningFuture
   TaskflowContainer taskflow_container;
 
   /** @brief Clear all content */
-  void clear()
-  {
-    interface = nullptr;
-    input = nullptr;
-    results = nullptr;
-    global_manip_info = nullptr;
-    plan_profile_remapping = nullptr;
-    composite_profile_remapping = nullptr;
-    taskflow_container.clear();
-  }
+  void clear();
 
   /**
    * @brief This checks if the process has finished
    * @return True if the process finished, otherwise false
    */
-  bool ready() const { return (process_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready); }
+  bool ready() const;
 
   /** @brief Wait until the process has finished */
-  void wait() const { process_future.wait(); }
+  void wait() const;
 
   /**
    * @brief Check if a process has finished for a given duration
    * @return The future status
    */
-  template <typename R, typename P>
-  std::future_status waitFor(const std::chrono::duration<R, P>& duration) const
-  {
-    return process_future.wait_for(duration);
-  }
+  std::future_status waitFor(const std::chrono::duration<double>& duration) const;
 
   /**
    * @brief Check if a process has finished up to a given time point
    * @return The future status
    */
-  template <typename C, typename D>
-  std::future_status waitUntil(const std::chrono::time_point<C, D>& abs) const
-  {
-    return process_future.wait_until(abs);
-  }
+  std::future_status waitUntil(const std::chrono::time_point<std::chrono::high_resolution_clock>& abs) const;
 };
 }  // namespace tesseract_planning
 

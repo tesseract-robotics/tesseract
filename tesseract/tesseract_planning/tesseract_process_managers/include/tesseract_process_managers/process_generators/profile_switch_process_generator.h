@@ -58,9 +58,9 @@ public:
 
   const std::string& getName() const override;
 
-  std::function<void()> generateTask(ProcessInput input, std::size_t unique_id) override;
+  TaskflowVoidFn generateTask(ProcessInput input, std::size_t unique_id) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
+  TaskflowIntFn generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
 
   ProfileSwitchProfileMap composite_profiles;
 

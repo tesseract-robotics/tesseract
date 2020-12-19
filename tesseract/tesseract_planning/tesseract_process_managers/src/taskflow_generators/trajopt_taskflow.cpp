@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_process_managers/core/utils.h>
 #include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
 
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
@@ -49,9 +50,7 @@ TrajOptTaskflow::TrajOptTaskflow(TrajOptTaskflowParams params, std::string name)
 
 const std::string& TrajOptTaskflow::getName() const { return name_; }
 
-TaskflowContainer TrajOptTaskflow::generateTaskflow(ProcessInput input,
-                                                    std::function<void()> done_cb,
-                                                    std::function<void()> error_cb)
+TaskflowContainer TrajOptTaskflow::generateTaskflow(ProcessInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
   if (!checkProcessInput(input))

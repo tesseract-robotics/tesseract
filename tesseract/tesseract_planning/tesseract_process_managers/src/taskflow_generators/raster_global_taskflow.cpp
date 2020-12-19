@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_process_managers/core/utils.h>
 #include <tesseract_process_managers/taskflow_generators/raster_global_taskflow.h>
 
 #include <tesseract_command_language/instruction_type.h>
@@ -56,8 +57,8 @@ RasterGlobalTaskflow::RasterGlobalTaskflow(TaskflowGenerator::UPtr global_taskfl
 const std::string& RasterGlobalTaskflow::getName() const { return name_; }
 
 TaskflowContainer RasterGlobalTaskflow::generateTaskflow(ProcessInput input,
-                                                         std::function<void()> done_cb,
-                                                         std::function<void()> error_cb)
+                                                         TaskflowVoidFn done_cb,
+                                                         TaskflowVoidFn error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
   if (!checkProcessInput(input))
@@ -166,6 +167,9 @@ TaskflowContainer RasterGlobalTaskflow::generateTaskflow(ProcessInput input,
 
 void RasterGlobalTaskflow::globalPostProcess(ProcessInput input)
 {
+  if (input.isAborted())
+    return;
+
   CompositeInstruction* results = input.getResults()->cast<CompositeInstruction>();
   CompositeInstruction* composite = results->at(0).cast<CompositeInstruction>();
   composite->setStartInstruction(results->getStartInstruction());
