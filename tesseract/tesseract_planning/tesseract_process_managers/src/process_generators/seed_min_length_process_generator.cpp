@@ -50,12 +50,12 @@ SeedMinLengthProcessGenerator::SeedMinLengthProcessGenerator(long min_length, st
 
 const std::string& SeedMinLengthProcessGenerator::getName() const { return name_; }
 
-std::function<void()> SeedMinLengthProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
+TaskflowVoidFn SeedMinLengthProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> SeedMinLengthProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
+TaskflowIntFn SeedMinLengthProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { return conditionalProcess(input, unique_id); };
 }

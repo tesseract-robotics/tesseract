@@ -56,14 +56,13 @@ IterativeSplineParameterizationProcessGenerator::IterativeSplineParameterization
 
 const std::string& IterativeSplineParameterizationProcessGenerator::getName() const { return name_; }
 
-std::function<void()> IterativeSplineParameterizationProcessGenerator::generateTask(ProcessInput input,
-                                                                                    std::size_t unique_id)
+TaskflowVoidFn IterativeSplineParameterizationProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> IterativeSplineParameterizationProcessGenerator::generateConditionalTask(ProcessInput input,
-                                                                                              std::size_t unique_id)
+TaskflowIntFn IterativeSplineParameterizationProcessGenerator::generateConditionalTask(ProcessInput input,
+                                                                                       std::size_t unique_id)
 {
   return [=]() { return conditionalProcess(input, unique_id); };
 }

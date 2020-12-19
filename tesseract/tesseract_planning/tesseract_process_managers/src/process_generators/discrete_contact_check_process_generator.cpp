@@ -59,13 +59,12 @@ DiscreteContactCheckProcessGenerator::DiscreteContactCheckProcessGenerator(doubl
 
 const std::string& DiscreteContactCheckProcessGenerator::getName() const { return name_; }
 
-std::function<void()> DiscreteContactCheckProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
+TaskflowVoidFn DiscreteContactCheckProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> DiscreteContactCheckProcessGenerator::generateConditionalTask(ProcessInput input,
-                                                                                   std::size_t unique_id)
+TaskflowIntFn DiscreteContactCheckProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { return conditionalProcess(input, unique_id); };
 }

@@ -39,11 +39,14 @@ include(GenerateExportHeader)
 add_library(${PROJECT_NAME}
     src/core/process_input.cpp
     src/core/debug_observer.cpp
+    src/core/process_planning_future.cpp
     src/core/process_planning_server.cpp
     src/core/process_environment_cache.cpp
     src/core/process_interface.cpp
     src/core/process_info.cpp
     src/core/default_process_planners.cpp
+    src/core/taskflow_container.cpp
+    src/core/utils.cpp
     src/process_generators/continuous_contact_check_process_generator.cpp
     src/process_generators/discrete_contact_check_process_generator.cpp
     src/process_generators/fix_state_bounds_process_generator.cpp

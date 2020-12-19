@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generators/fix_state_collision_process_generator.h>
 #include <tesseract_command_language/utils/utils.h>
+#include <tesseract_command_language/utils/filter_functions.h>
 
 namespace tesseract_planning
 {
@@ -276,13 +277,12 @@ FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string
 
 const std::string& FixStateCollisionProcessGenerator::getName() const { return name_; }
 
-std::function<void()> FixStateCollisionProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
+TaskflowVoidFn FixStateCollisionProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> FixStateCollisionProcessGenerator::generateConditionalTask(ProcessInput input,
-                                                                                std::size_t unique_id)
+TaskflowIntFn FixStateCollisionProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
   return [=]() { return conditionalProcess(input, unique_id); };
 }

@@ -59,9 +59,10 @@ add_library(${PROJECT_NAME}_descartes
   src/descartes/descartes_collision_edge_evaluator.cpp
   src/descartes/descartes_robot_sampler.cpp
   src/descartes/descartes_motion_planner_status_category.cpp
-  src/descartes/profile/descartes_default_plan_profile.cpp
   src/descartes/serialize.cpp
-  src/descartes/deserialize.cpp)
+  src/descartes/deserialize.cpp
+  src/descartes/descartes_utils.cpp
+  src/descartes/profile/descartes_default_plan_profile.cpp)
 target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_descartes PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_descartes PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})

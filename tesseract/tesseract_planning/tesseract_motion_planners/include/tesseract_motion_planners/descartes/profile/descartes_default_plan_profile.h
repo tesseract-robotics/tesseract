@@ -53,9 +53,8 @@ public:
   DescartesDefaultPlanProfile& operator=(DescartesDefaultPlanProfile&&) noexcept = default;
   DescartesDefaultPlanProfile(const tinyxml2::XMLElement& xml_element);
 
-  PoseSamplerFn target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) {
-    return tesseract_common::VectorIsometry3d({ tool_pose });
-  };
+  PoseSamplerFn target_pose_sampler = sampleFixed;
+
   DescartesEdgeEvaluatorAllocatorFn<FloatType> edge_evaluator{ nullptr };
 
   // If not provided it adds a joint limit is valid function
