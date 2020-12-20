@@ -37,20 +37,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 MotionPlannerProcessGenerator::MotionPlannerProcessGenerator(std::shared_ptr<MotionPlanner> planner)
-  : planner_(planner), name_(planner->getName())
+  : ProcessGenerator(planner->getName()), planner_(planner)
 {
-}
-
-const std::string& MotionPlannerProcessGenerator::getName() const { return name_; }
-
-TaskflowVoidFn MotionPlannerProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { process(input, unique_id); };
-}
-
-TaskflowIntFn MotionPlannerProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
 int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const

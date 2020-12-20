@@ -90,9 +90,8 @@ TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input, TaskflowVoi
     if (input.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
       interpolator->composite_profiles = input.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
   }
-  ProcessGenerator::UPtr interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
-  interpolator_task.work(interpolator_generator->generateConditionalTask(input, interpolator_task.hash_value()));
-  interpolator_task.name(interpolator_generator->getName());
+  auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
+  interpolator_generator->assignConditionalTask(input, interpolator_task);
   container.generators.push_back(std::move(interpolator_generator));
 
   // Setup TrajOpt
@@ -103,9 +102,8 @@ TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input, TaskflowVoi
     if (input.profiles->hasProfileEntry<OMPLPlanProfile>())
       ompl_planner->plan_profiles = input.profiles->getProfileEntry<OMPLPlanProfile>();
   }
-  ProcessGenerator::UPtr ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
-  ompl_task.work(ompl_generator->generateConditionalTask(input, ompl_task.hash_value()));
-  ompl_task.name(ompl_generator->getName());
+  auto ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
+  ompl_generator->assignConditionalTask(input, ompl_task);
   container.generators.push_back(std::move(ompl_generator));
 
   ProcessGenerator::UPtr contact_check_generator;
@@ -126,14 +124,12 @@ TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input, TaskflowVoi
   if (has_contact_check && params_.enable_time_parameterization)
   {
     tf::Task contact_task = container.taskflow->placeholder();
-    contact_task.work(contact_check_generator->generateConditionalTask(input, contact_task.hash_value()));
-    contact_task.name(contact_check_generator->getName());
+    contact_check_generator->assignConditionalTask(input, contact_task);
     ompl_task.precede(error_task, contact_task);
     container.generators.push_back(std::move(contact_check_generator));
 
     tf::Task time_task = container.taskflow->placeholder();
-    time_task.work(time_parameterization_generator->generateConditionalTask(input, time_task.hash_value()));
-    time_task.name(time_parameterization_generator->getName());
+    time_parameterization_generator->assignConditionalTask(input, time_task);
     container.generators.push_back(std::move(time_parameterization_generator));
     contact_task.precede(error_task, time_task);
     time_task.precede(error_task, done_task);
@@ -142,8 +138,7 @@ TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input, TaskflowVoi
   else if (has_contact_check && !params_.enable_time_parameterization)
   {
     tf::Task contact_task = container.taskflow->placeholder();
-    contact_task.work(contact_check_generator->generateConditionalTask(input, contact_task.hash_value()));
-    contact_task.name(contact_check_generator->getName());
+    contact_check_generator->assignConditionalTask(input, contact_task);
     ompl_task.precede(error_task, contact_task);
     contact_task.precede(error_task, done_task);
     container.generators.push_back(std::move(contact_check_generator));
@@ -151,8 +146,7 @@ TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input, TaskflowVoi
   else if (!has_contact_check && params_.enable_time_parameterization)
   {
     tf::Task time_task = container.taskflow->placeholder();
-    time_task.work(time_parameterization_generator->generateConditionalTask(input, time_task.hash_value()));
-    time_task.name(time_parameterization_generator->getName());
+    time_parameterization_generator->assignConditionalTask(input, time_task);
     container.generators.push_back(std::move(time_parameterization_generator));
     ompl_task.precede(error_task, time_task);
     time_task.precede(error_task, done_task);

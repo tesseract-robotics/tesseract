@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(std::string name)
-  : name_(std::move(name))
+  : ProcessGenerator(std::move(name))
 {
   config.type = tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS;
   config.longest_valid_segment_length = 0.05;
@@ -46,7 +46,7 @@ ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(s
 ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(double longest_valid_segment_length,
                                                                                double contact_distance,
                                                                                std::string name)
-  : name_(std::move(name))
+  : ProcessGenerator(std::move(name))
 {
   config.longest_valid_segment_length = longest_valid_segment_length;
   config.type = tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS;
@@ -56,18 +56,6 @@ ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(d
     CONSOLE_BRIDGE_logWarn("ContinuousContactCheckProcessGenerator: Invalid longest valid segment. Defaulting to 0.05");
     config.longest_valid_segment_length = 0.05;
   }
-}
-
-const std::string& ContinuousContactCheckProcessGenerator::getName() const { return name_; }
-
-TaskflowVoidFn ContinuousContactCheckProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { process(input, unique_id); };
-}
-
-TaskflowIntFn ContinuousContactCheckProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
 int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
