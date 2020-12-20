@@ -48,23 +48,10 @@ IterativeSplineParameterizationProfile::IterativeSplineParameterizationProfile(d
 
 IterativeSplineParameterizationProcessGenerator::IterativeSplineParameterizationProcessGenerator(bool add_points,
                                                                                                  std::string name)
-  : name_(std::move(name)), solver_(add_points)
+  : ProcessGenerator(std::move(name)), solver_(add_points)
 {
   // Register default profile
   composite_profiles["DEFAULT"] = std::make_shared<IterativeSplineParameterizationProfile>();
-}
-
-const std::string& IterativeSplineParameterizationProcessGenerator::getName() const { return name_; }
-
-TaskflowVoidFn IterativeSplineParameterizationProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { process(input, unique_id); };
-}
-
-TaskflowIntFn IterativeSplineParameterizationProcessGenerator::generateConditionalTask(ProcessInput input,
-                                                                                       std::size_t unique_id)
-{
-  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
 int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const

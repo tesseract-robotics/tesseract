@@ -52,20 +52,11 @@ public:
   DiscreteContactCheckProcessGenerator(DiscreteContactCheckProcessGenerator&&) = delete;
   DiscreteContactCheckProcessGenerator& operator=(DiscreteContactCheckProcessGenerator&&) = delete;
 
-  const std::string& getName() const override;
-
-  TaskflowVoidFn generateTask(ProcessInput input, std::size_t unique_id) override;
-
-  TaskflowIntFn generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
-
   tesseract_collision::CollisionCheckConfig config;
 
-private:
-  std::string name_;
+  int conditionalProcess(ProcessInput input, std::size_t unique_id) const override;
 
-  int conditionalProcess(ProcessInput input, std::size_t unique_id) const;
-
-  void process(ProcessInput input, std::size_t unique_id) const;
+  void process(ProcessInput input, std::size_t unique_id) const override;
 };
 
 class DiscreteContactCheckProcessInfo : public ProcessInfo

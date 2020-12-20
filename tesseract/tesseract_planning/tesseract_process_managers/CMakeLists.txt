@@ -39,6 +39,7 @@ include(GenerateExportHeader)
 add_library(${PROJECT_NAME}
     src/core/process_input.cpp
     src/core/debug_observer.cpp
+    src/core/process_generator.cpp
     src/core/process_planning_future.cpp
     src/core/process_planning_server.cpp
     src/core/process_environment_cache.cpp

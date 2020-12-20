@@ -45,20 +45,12 @@ public:
   MotionPlannerProcessGenerator(MotionPlannerProcessGenerator&&) = delete;
   MotionPlannerProcessGenerator& operator=(MotionPlannerProcessGenerator&&) = delete;
 
-  const std::string& getName() const override;
+  int conditionalProcess(ProcessInput input, std::size_t unique_id) const override;
 
-  TaskflowVoidFn generateTask(ProcessInput input, std::size_t unique_id) override;
-
-  TaskflowIntFn generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
+  void process(ProcessInput input, std::size_t unique_id) const override;
 
 private:
   std::shared_ptr<MotionPlanner> planner_{ nullptr };
-
-  std::string name_;
-
-  int conditionalProcess(ProcessInput input, std::size_t unique_id) const;
-
-  void process(ProcessInput input, std::size_t unique_id) const;
 };
 
 class MotionPlannerProcessInfo : public ProcessInfo

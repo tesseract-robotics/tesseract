@@ -30,25 +30,26 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 #include <memory>
+#include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/core/types.h>
 #include <tesseract_process_managers/core/process_input.h>
 
 namespace tesseract_planning
 {
 /**
  * @brief This is a base class for generating instances of processes as tasks such that they may be executed in
- * parallel. A typical workflow would be taskflow.emplace(process_generator.generateTask(input) override)
+ * parallel. A typical workflow would be task t = process_generator.generateTask(input, taskflow)
  *
- * Only unique pointers should be used because of the ability to abort the process.
+ * Only unique pointers should be used because of the ability to abort the process. With recent changes this may no
+ * longer be valid but need to investigate.
  */
 class ProcessGenerator
 {
 public:
   using UPtr = std::unique_ptr<ProcessGenerator>;
 
-  ProcessGenerator() = default;
+  ProcessGenerator(std::string name = "");
   virtual ~ProcessGenerator() = default;
   ProcessGenerator(const ProcessGenerator&) = delete;
   ProcessGenerator& operator=(const ProcessGenerator&) = delete;
@@ -59,21 +60,55 @@ public:
    * @brief Get the task name
    * @return The name
    */
-  virtual const std::string& getName() const = 0;
+  virtual const std::string& getName() const;
+
+  /**
+   * @brief Generated a Task
+   * @param input The process input
+   * @param taskflow The taskflow to associate the task with
+   * @return Task
+   */
+  virtual tf::Task generateTask(ProcessInput input, tf::Taskflow& taskflow);
+
+  /**
+   * @brief Assign work to the provided task
+   * @param input The process input
+   * @param task The task to assign the work to
+   */
+  virtual void assignTask(ProcessInput input, tf::Task& task);
+
+  /**
+   * @brief Generated a Task
+   * @param input The process input
+   * @param taskflow The taskflow to associate the task with
+   * @return Conditional Task
+   */
+  virtual tf::Task generateConditionalTask(ProcessInput input, tf::Taskflow& taskflow);
+
+  /**
+   * @brief Assign work to the provided task
+   * @param input The process input
+   * @param task The task to assign the work to
+   */
+  virtual void assignConditionalTask(ProcessInput input, tf::Task& task);
+
+protected:
+  /** @brief The name of the process */
+  std::string name_;
 
   /**
    * @brief Generated a Task
    * @param input The process input
    * @return Task
    */
-  virtual TaskflowVoidFn generateTask(ProcessInput input, std::size_t unique_id) = 0;
+  virtual void process(ProcessInput input, std::size_t unique_id) const = 0;
 
   /**
    * @brief Generate Conditional Task
    * @param input The process input
    * @return Conditional Task
    */
-  virtual TaskflowIntFn generateConditionalTask(ProcessInput input, std::size_t unique_id) = 0;
+  virtual int conditionalProcess(ProcessInput input, std::size_t unique_id) const = 0;
 };
 
 }  // namespace tesseract_planning
