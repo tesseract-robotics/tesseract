@@ -51,20 +51,12 @@ public:
   SeedMinLengthProcessGenerator(SeedMinLengthProcessGenerator&&) = delete;
   SeedMinLengthProcessGenerator& operator=(SeedMinLengthProcessGenerator&&) = delete;
 
-  const std::string& getName() const override;
+  int conditionalProcess(ProcessInput input, std::size_t unique_id) const override;
 
-  TaskflowVoidFn generateTask(ProcessInput input, std::size_t unique_id) override;
-
-  TaskflowIntFn generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
+  void process(ProcessInput input, std::size_t unique_id) const override;
 
 private:
-  std::string name_;
-
   long min_length_{ 10 };
-
-  int conditionalProcess(ProcessInput input, std::size_t unique_id) const;
-
-  void process(ProcessInput input, std::size_t unique_id) const;
 
   void subdivide(CompositeInstruction& composite,
                  const CompositeInstruction& current_composite,

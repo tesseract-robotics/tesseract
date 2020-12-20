@@ -67,18 +67,12 @@ TaskflowContainer GraphTaskflow::generateTaskflow(ProcessInput input, TaskflowVo
     {
       case NodeType::TASK:
       {
-        tf::Task task = container.taskflow->placeholder();
-        task.work(node.process->generateTask(input, task.hash_value()));
-        task.name(node.process->getName());
-        tasks.push_back(task);
+        tasks.push_back(node.process->generateTask(input, *(container.taskflow)));
         break;
       }
       case NodeType::CONDITIONAL:
       {
-        tf::Task task = container.taskflow->placeholder();
-        task.work(node.process->generateConditionalTask(input, task.hash_value()));
-        task.name(node.process->getName());
-        tasks.push_back(task);
+        tasks.push_back(node.process->generateConditionalTask(input, *(container.taskflow)));
         break;
       }
     }

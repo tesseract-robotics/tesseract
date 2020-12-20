@@ -56,20 +56,11 @@ public:
   ProfileSwitchProcessGenerator(ProfileSwitchProcessGenerator&&) = delete;
   ProfileSwitchProcessGenerator& operator=(ProfileSwitchProcessGenerator&&) = delete;
 
-  const std::string& getName() const override;
-
-  TaskflowVoidFn generateTask(ProcessInput input, std::size_t unique_id) override;
-
-  TaskflowIntFn generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
-
   ProfileSwitchProfileMap composite_profiles;
 
-private:
-  std::string name_;
+  int conditionalProcess(ProcessInput input, std::size_t unique_id) const override;
 
-  int conditionalProcess(ProcessInput input, std::size_t unique_id) const;
-
-  void process(ProcessInput input, std::size_t unique_id) const;
+  void process(ProcessInput input, std::size_t unique_id) const override;
 };
 
 class ProfileSwitchProcessInfo : public ProcessInfo

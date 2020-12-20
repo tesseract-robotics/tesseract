@@ -266,25 +266,14 @@ bool ApplyCorrectionWorkflow(Waypoint& waypoint,
   return false;
 }
 
-FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string name) : name_(std::move(name))
+FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string name)
+  : ProcessGenerator(std::move(name))
 {
   // Register default profile
   auto default_profile = std::make_shared<FixStateCollisionProfile>();
   default_profile->collision_check_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
   default_profile->collision_check_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
   composite_profiles["DEFAULT"] = default_profile;
-}
-
-const std::string& FixStateCollisionProcessGenerator::getName() const { return name_; }
-
-TaskflowVoidFn FixStateCollisionProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { process(input, unique_id); };
-}
-
-TaskflowIntFn FixStateCollisionProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
 int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const

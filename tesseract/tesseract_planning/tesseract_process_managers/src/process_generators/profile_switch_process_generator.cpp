@@ -36,22 +36,10 @@ namespace tesseract_planning
 {
 ProfileSwitchProfile::ProfileSwitchProfile(const int& return_value) : return_value(return_value) {}
 
-ProfileSwitchProcessGenerator::ProfileSwitchProcessGenerator(std::string name) : name_(std::move(name))
+ProfileSwitchProcessGenerator::ProfileSwitchProcessGenerator(std::string name) : ProcessGenerator(std::move(name))
 {
   // Register default profile
   composite_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<ProfileSwitchProfile>();
-}
-
-const std::string& ProfileSwitchProcessGenerator::getName() const { return name_; }
-
-TaskflowVoidFn ProfileSwitchProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { process(input, unique_id); };
-}
-
-TaskflowIntFn ProfileSwitchProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
 int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
