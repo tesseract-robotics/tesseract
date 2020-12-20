@@ -104,14 +104,12 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
     if (input.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
       interpolator->composite_profiles = input.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
   }
-  ProcessGenerator::UPtr interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
-  interpolator_task.work(interpolator_generator->generateConditionalTask(input, interpolator_task.hash_value()));
-  interpolator_task.name(interpolator_generator->getName());
+  auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
+  interpolator_generator->assignConditionalTask(input, interpolator_task);
   container.generators.push_back(std::move(interpolator_generator));
 
-  ProcessGenerator::UPtr seed_min_length_generator = std::make_unique<SeedMinLengthProcessGenerator>();
-  seed_min_length_task.work(seed_min_length_generator->generateTask(input, seed_min_length_task.hash_value()));
-  seed_min_length_task.name(seed_min_length_generator->getName());
+  auto seed_min_length_generator = std::make_unique<SeedMinLengthProcessGenerator>();
+  seed_min_length_generator->assignTask(input, seed_min_length_task);
   container.generators.push_back(std::move(seed_min_length_generator));
 
   auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
@@ -121,9 +119,8 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
     if (input.profiles->hasProfileEntry<OMPLPlanProfile>())
       ompl_planner->plan_profiles = input.profiles->getProfileEntry<OMPLPlanProfile>();
   }
-  ProcessGenerator::UPtr ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
-  ompl_task.work(ompl_generator->generateTask(input, ompl_task.hash_value()));
-  ompl_task.name(ompl_generator->getName());
+  auto ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
+  ompl_generator->assignTask(input, ompl_task);
   container.generators.push_back(std::move(ompl_generator));
 
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
@@ -139,9 +136,8 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
     if (input.profiles->hasProfileEntry<TrajOptSolverProfile>())
       trajopt_planner->solver_profiles = input.profiles->getProfileEntry<TrajOptSolverProfile>();
   }
-  ProcessGenerator::UPtr trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
-  trajopt_task.work(trajopt_generator->generateConditionalTask(input, trajopt_task.hash_value()));
-  trajopt_task.name(trajopt_generator->getName());
+  auto trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
+  trajopt_generator->assignConditionalTask(input, trajopt_task);
   container.generators.push_back(std::move(trajopt_generator));
 
   ProcessGenerator::UPtr contact_check_generator;
@@ -179,8 +175,7 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
         trajopt_planner2->solver_profiles = input.profiles->getProfileEntry<TrajOptSolverProfile>();
     }
     ProcessGenerator::UPtr trajopt_generator2 = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner2);
-    trajopt_second_task.work(trajopt_generator2->generateConditionalTask(input, trajopt_second_task.hash_value()));
-    trajopt_second_task.name(trajopt_generator2->getName());
+    trajopt_generator2->assignConditionalTask(input, trajopt_second_task);
     container.generators.push_back(std::move(trajopt_generator2));
 
     ompl_task.precede(trajopt_second_task);
@@ -189,15 +184,13 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
     if (has_contact_check && params_.enable_time_parameterization)
     {
       tf::Task contact_task = container.taskflow->placeholder();
-      contact_task.work(contact_check_generator->generateConditionalTask(input, contact_task.hash_value()));
-      contact_task.name(contact_check_generator->getName());
+      contact_check_generator->assignConditionalTask(input, contact_task);
       trajopt_task.precede(ompl_task, contact_task);
       trajopt_second_task.precede(error_task, contact_task);
       container.generators.push_back(std::move(contact_check_generator));
 
       tf::Task time_task = container.taskflow->placeholder();
-      time_task.work(time_parameterization_generator->generateConditionalTask(input, time_task.hash_value()));
-      time_task.name(time_parameterization_generator->getName());
+      time_parameterization_generator->assignConditionalTask(input, time_task);
       container.generators.push_back(std::move(time_parameterization_generator));
       contact_task.precede(error_task, time_task);
       time_task.precede(error_task, done_task);
@@ -206,8 +199,7 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
     else if (has_contact_check && !params_.enable_time_parameterization)
     {
       tf::Task contact_task = container.taskflow->placeholder();
-      contact_task.work(contact_check_generator->generateConditionalTask(input, contact_task.hash_value()));
-      contact_task.name(contact_check_generator->getName());
+      contact_check_generator->assignConditionalTask(input, contact_task);
       trajopt_task.precede(ompl_task, contact_task);
       trajopt_second_task.precede(error_task, contact_task);
       contact_task.precede(error_task, done_task);
@@ -216,8 +208,7 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
     else if (!has_contact_check && params_.enable_time_parameterization)
     {
       tf::Task time_task = container.taskflow->placeholder();
-      time_task.work(time_parameterization_generator->generateConditionalTask(input, time_task.hash_value()));
-      time_task.name(time_parameterization_generator->getName());
+      time_parameterization_generator->assignConditionalTask(input, time_task);
       container.generators.push_back(std::move(time_parameterization_generator));
       trajopt_task.precede(error_task, time_task);
       trajopt_second_task.precede(error_task, time_task);
@@ -239,14 +230,12 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
     if (has_contact_check && params_.enable_time_parameterization)
     {
       tf::Task contact_task = container.taskflow->placeholder();
-      contact_task.work(contact_check_generator->generateConditionalTask(input, contact_task.hash_value()));
-      contact_task.name(contact_check_generator->getName());
+      contact_check_generator->assignConditionalTask(input, contact_task);
       trajopt_task.precede(error_task, contact_task);
       container.generators.push_back(std::move(contact_check_generator));
 
       tf::Task time_task = container.taskflow->placeholder();
-      time_task.work(time_parameterization_generator->generateConditionalTask(input, time_task.hash_value()));
-      time_task.name(time_parameterization_generator->getName());
+      time_parameterization_generator->assignConditionalTask(input, time_task);
       container.generators.push_back(std::move(time_parameterization_generator));
       contact_task.precede(error_task, time_task);
       time_task.precede(error_task, done_task);
@@ -255,8 +244,7 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
     else if (has_contact_check && !params_.enable_time_parameterization)
     {
       tf::Task contact_task = container.taskflow->placeholder();
-      contact_task.work(contact_check_generator->generateConditionalTask(input, contact_task.hash_value()));
-      contact_task.name(contact_check_generator->getName());
+      contact_check_generator->assignConditionalTask(input, contact_task);
       trajopt_task.precede(ompl_task, contact_task);
       contact_task.precede(error_task, done_task);
       container.generators.push_back(std::move(contact_check_generator));
@@ -264,8 +252,7 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
     else if (!has_contact_check && params_.enable_time_parameterization)
     {
       tf::Task time_task = container.taskflow->placeholder();
-      time_task.work(time_parameterization_generator->generateConditionalTask(input, time_task.hash_value()));
-      time_task.name(time_parameterization_generator->getName());
+      time_parameterization_generator->assignConditionalTask(input, time_task);
       container.generators.push_back(std::move(time_parameterization_generator));
       trajopt_task.precede(error_task, time_task);
       time_task.precede(error_task, done_task);

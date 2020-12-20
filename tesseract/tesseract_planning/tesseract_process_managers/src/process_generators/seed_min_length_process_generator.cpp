@@ -36,28 +36,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-SeedMinLengthProcessGenerator::SeedMinLengthProcessGenerator(std::string name) : name_(std::move(name)) {}
+SeedMinLengthProcessGenerator::SeedMinLengthProcessGenerator(std::string name) : ProcessGenerator(std::move(name)) {}
 
 SeedMinLengthProcessGenerator::SeedMinLengthProcessGenerator(long min_length, std::string name)
-  : name_(std::move(name)), min_length_(min_length)
+  : ProcessGenerator(std::move(name)), min_length_(min_length)
 {
   if (min_length_ <= 1)
   {
     CONSOLE_BRIDGE_logWarn("SeedMinLengthProcessGenerator: The min length must be greater than 1, setting to default.");
     min_length_ = 10;
   }
-}
-
-const std::string& SeedMinLengthProcessGenerator::getName() const { return name_; }
-
-TaskflowVoidFn SeedMinLengthProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { process(input, unique_id); };
-}
-
-TaskflowIntFn SeedMinLengthProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
 int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const

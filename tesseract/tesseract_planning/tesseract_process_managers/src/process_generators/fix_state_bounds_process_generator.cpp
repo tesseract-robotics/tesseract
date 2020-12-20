@@ -35,22 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-FixStateBoundsProcessGenerator::FixStateBoundsProcessGenerator(std::string name) : name_(std::move(name))
+FixStateBoundsProcessGenerator::FixStateBoundsProcessGenerator(std::string name) : ProcessGenerator(std::move(name))
 {
   // Register default profile
   composite_profiles["DEFAULT"] = std::make_shared<FixStateBoundsProfile>();
-}
-
-const std::string& FixStateBoundsProcessGenerator::getName() const { return name_; }
-
-TaskflowVoidFn FixStateBoundsProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { process(input, unique_id); };
-}
-
-TaskflowIntFn FixStateBoundsProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
-{
-  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
 int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
