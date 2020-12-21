@@ -35,6 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/joint.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::CalibrationStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class CalibrationStatusCategory : public tesseract_common::StatusCategory

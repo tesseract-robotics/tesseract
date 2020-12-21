@@ -34,6 +34,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#ifdef SWIG
+
+%shared_ptr(tesseract_common::StatusCategory)
+%shared_ptr(tesseract_common::GeneralStatusCategory)
+%shared_ptr(tesseract_common::StatusCode)
+
+#endif  // SWIG
+
 namespace tesseract_common
 {
 class StatusCategory

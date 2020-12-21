@@ -112,6 +112,8 @@ bool clampToJointLimits(Waypoint& wp,
  */
 CompositeInstruction generateSkeletonSeed(const CompositeInstruction& composite_instructions);
 
+// TODO: implement validateSeedStructure
+#ifndef SWIG
 /**
  * @brief This loops over the instructions validates the structure
  *
@@ -123,6 +125,8 @@ CompositeInstruction generateSkeletonSeed(const CompositeInstruction& composite_
  */
 bool validateSeedStructure(const CompositeInstruction& composite_instructions,
                            const CompositeInstruction& composite_seed);
+
+#endif  // SWIG
 
 }  // namespace tesseract_planning
 

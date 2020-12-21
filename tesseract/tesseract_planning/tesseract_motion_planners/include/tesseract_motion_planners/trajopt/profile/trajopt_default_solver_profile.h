@@ -29,6 +29,10 @@
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 #include <trajopt_sco/solver_interface.hpp>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::TrajOptDefaultSolverProfile)
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 /** @brief The contains the default solver parameters available for setting up TrajOpt */

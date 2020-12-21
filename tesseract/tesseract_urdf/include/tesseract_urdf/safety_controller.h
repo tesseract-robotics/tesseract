@@ -33,6 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::SafetyStatusCategory)
+#endif  // SWIG
+
 #include <tesseract_scene_graph/joint.h>
 
 namespace tesseract_urdf

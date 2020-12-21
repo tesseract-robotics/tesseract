@@ -41,6 +41,7 @@
   * updated to use the new numpy API for full python3 support
 John Wason:
   * Add typecheck for Eigen::Ref types
+  * Rework argout typemap
  */
  
  //Source: https://raw.githubusercontent.com/rdeits/swig-eigen-numpy/master/swigmake/swig/python/eigen.i
@@ -237,8 +238,17 @@ John Wason:
 %typemap(argout, fragment="Eigen_Fragments") CLASS &
 {
   // Argout: &
-  if (!CopyFromEigenToNumPyMatrix<CLASS >($input, $1))
+  PyObject* ret1 = $result;
+  PyObject* ret2;
+  if (!ConvertFromEigenToNumPyMatrix<CLASS >(&ret2, $1))
     SWIG_fail;
+  $result = PyTuple_Pack(2, ret1, ret2);
+  Py_DECREF(ret1);
+  Py_DECREF(ret2);
+}
+
+%typemap(in, numinputs=0) CLASS & (CLASS temp) {
+  $1 = &temp;
 }
 
 // In: (nothing: no constness)
@@ -264,15 +274,16 @@ John Wason:
     SWIG_fail;
   $1 = &temp;
 }
-// In: & (not yet implemented)
-%typemap(in, fragment="Eigen_Fragments") CLASS & (CLASS temp)
+// DISABLED FOR argout In: & (not yet implemented) 
+/*%typemap(in, fragment="Eigen_Fragments") CLASS & (CLASS temp)
 {
   // In: non-const&
   if (!ConvertFromNumpyToEigenMatrix<CLASS >(&temp, $input))
     SWIG_fail;
 
   $1 = &temp;
-}
+}*/
+
 // In: const* (not yet implemented)
 %typemap(in, fragment="Eigen_Fragments") CLASS const*
 {
@@ -395,6 +406,23 @@ John Wason:
 %typemap(freearg) const Eigen::Ref<const CLASS >&
 {
   if($1) delete $1;
+}
+
+// Argout: & (for returning values to in-out arguments)
+%typemap(argout, fragment="Eigen_Fragments") Eigen::Ref<CLASS >
+{
+  // Argout: Ref
+  PyObject* ret1 = $result;
+  PyObject* ret2;
+  if (!ConvertFromEigenToNumPyMatrix<CLASS >(&ret2, &temp$argnum))
+    SWIG_fail;
+  $result = PyTuple_Pack(2, ret1, ret2);
+  Py_DECREF(ret1);
+  Py_DECREF(ret2);
+}
+
+%typemap(in, numinputs=0) Eigen::Ref<CLASS > (CLASS temp) {
+  $1 = temp;
 }
 
 %enddef

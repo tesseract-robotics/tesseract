@@ -35,6 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/cylinder.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::CylinderStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class CylinderStatusCategory : public tesseract_common::StatusCategory

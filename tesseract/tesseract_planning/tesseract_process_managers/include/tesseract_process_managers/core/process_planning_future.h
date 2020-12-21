@@ -41,6 +41,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/core/instruction.h>
 #include <tesseract_command_language/types.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::ProcessPlanningFuture)
+#endif  // SWIG
 namespace tesseract_planning
 {
 /**
@@ -50,12 +53,16 @@ namespace tesseract_planning
  */
 struct ProcessPlanningFuture
 {
+#ifdef SWIG
+  %ignore process_future;
+#endif  // SWIG
   /** @brief This is the future return from taskflow executor.run, used to check if process has finished */
   std::future<void> process_future;
 
   /** @brief This is used to abort the associated process and check if the process was successful */
   ProcessInterface::Ptr interface;
 
+#ifndef SWIG
   /** @brief The stored input to the process */
   std::unique_ptr<Instruction> input;
 
@@ -70,7 +77,21 @@ struct ProcessPlanningFuture
 
   /** @brief The stored composite profile remapping */
   std::unique_ptr<const PlannerProfileRemapping> composite_profile_remapping;
+#else
+  // clang-format off
+  %extend {
+  Instruction& getInput() { return *$self->input; }
+  Instruction& getResults() { return *$self->results; }
+  ManipulatorInfo getGlobalManipInfo() { return *$self->global_manip_info; }
+  PlannerProfileRemapping getPlanProfileRemapping() { return *$self->plan_profile_remapping; }
+  PlannerProfileRemapping getCompositeProfileRemapping() { return *$self->composite_profile_remapping; }  
+  }
+  // clang-format on
+#endif
 
+#ifdef SWIG
+  %ignore taskflow_container;
+#endif  // SWIG
   /** @brief The taskflow container returned from the TaskflowGenerator that must remain during taskflow execution */
   TaskflowContainer taskflow_container;
 
@@ -91,6 +112,18 @@ struct ProcessPlanningFuture
    * @return The future status
    */
   std::future_status waitFor(const std::chrono::duration<double>& duration) const;
+
+#ifdef SWIG
+  // clang-format off
+  %extend {
+    bool waitFor(double seconds)
+    {
+      auto res = $self->waitFor(std::chrono::duration<double>(seconds));
+      return res == std::future_status::ready;
+    }
+  }
+  // clang-format on
+#endif  // SWIG
 
   /**
    * @brief Check if a process has finished up to a given time point

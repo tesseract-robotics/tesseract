@@ -36,6 +36,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::RobotWithExternalPositionerInvKin)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 /**

@@ -36,8 +36,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/geometry.h>
 #include <tesseract_common/types.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_geometry::Mesh)
+%template(MeshVector) std::vector<std::shared_ptr<tesseract_geometry::Mesh> >;
+#endif  // SWIG
+
 namespace tesseract_geometry
 {
+#ifdef SWIG
+%nodefaultctor Mesh;
+#endif  // SWIG
+
 class Mesh : public Geometry
 {
 public:
@@ -45,6 +54,8 @@ public:
 
   using Ptr = std::shared_ptr<Mesh>;
   using ConstPtr = std::shared_ptr<const Mesh>;
+
+#ifndef SWIG
 
   /**
    * @brief Mesh geometry
@@ -105,11 +116,30 @@ public:
     assert((triangle_count_ * 4) == triangles_->size());
   }
 
+#endif  // SWIG
+
+#ifdef SWIG
+  %extend
+  {
+    Mesh(const tesseract_common::VectorVector3d& vertices,
+       const Eigen::VectorXi& triangles,
+       tesseract_common::Resource::Ptr resource = nullptr,
+       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
+    {
+      return new tesseract_geometry::Mesh(std::make_shared<tesseract_common::VectorVector3d>(vertices),
+        std::make_shared<Eigen::VectorXi>(triangles),
+        resource, scale);
+    }
+  }
+#endif  // SWIG
+
   ~Mesh() override = default;
   Mesh(const Mesh&) = delete;
   Mesh& operator=(const Mesh&) = delete;
   Mesh(Mesh&&) = delete;
   Mesh& operator=(Mesh&&) = delete;
+
+#ifndef SWIG
 
   /**
    * @brief Get mesh vertices
@@ -122,6 +152,17 @@ public:
    * @return A vector of triangle indices
    */
   const std::shared_ptr<const Eigen::VectorXi>& getTriangles() const { return triangles_; }
+
+#else   // SWIG
+  // clang-format off
+  %extend
+  {
+    tesseract_common::VectorVector3d getVertices() { return *$self->getVertices(); }
+
+    Eigen::VectorXi getTriangles() { return *$self->getTriangles(); }
+  }
+  // clang-format on
+#endif  // SWIG
 
   /**
    * @brief Get vertice count

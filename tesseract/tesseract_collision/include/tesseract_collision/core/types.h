@@ -41,6 +41,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#ifdef SWIG
+%tesseract_aligned_vector(ContactResultVector, tesseract_collision::ContactResult);
+%tesseract_aligned_map_of_aligned_vector(ContactResultMap, %arg(std::pair<std::string,std::string>), tesseract_collision::ContactResult);
+#endif  // SWIG
+
 namespace tesseract_collision
 {
 using CollisionShapesConst = std::vector<tesseract_geometry::Geometry::ConstPtr>;
@@ -84,19 +89,19 @@ struct ContactResult
   /** @brief The distance between two links */
   double distance;
   /** @brief A user defined type id that is added to the contact shapes */
-  int type_id[2];
+  std::array<int, 2> type_id;
   /** @brief The two links that are in contact */
-  std::string link_names[2];
+  std::array<std::string, 2> link_names;
   /** @brief The two shapes that are in contact. Each link can be made up of multiple shapes */
-  int shape_id[2];
+  std::array<int, 2> shape_id;
   /** @brief Some shapes like octomap and mesh have subshape (boxes and triangles) */
-  int subshape_id[2];
+  std::array<int, 2> subshape_id;
   /** @brief The nearest point on both links in world coordinates */
-  Eigen::Vector3d nearest_points[2];
+  std::array<Eigen::Vector3d, 2> nearest_points;
   /** @brief The nearest point on both links in local(link) coordinates */
-  Eigen::Vector3d nearest_points_local[2];
+  std::array<Eigen::Vector3d, 2> nearest_points_local;
   /** @brief The transform of link in world coordinates */
-  Eigen::Isometry3d transform[2];
+  std::array<Eigen::Isometry3d, 2> transform;
   /**
    * @brief The normal vector to move the two objects out of contact in world coordinates
    *
@@ -105,7 +110,7 @@ struct ContactResult
    */
   Eigen::Vector3d normal;
   /** @brief This is between 0 and 1 indicating the point of contact */
-  double cc_time[2];
+  std::array<double, 2> cc_time;
   /** @brief The type of continuous contact */
   std::array<ContinuousCollisionType, 2> cc_type;
   /** @brief The transform of link in world coordinates at its desired final location.
@@ -113,12 +118,12 @@ struct ContactResult
    *       continuous collision checking. If you desire the location of contact use cc_time and interpolate between
    *       transform and cc_transform;
    */
-  Eigen::Isometry3d cc_transform[2];
+  std::array<Eigen::Isometry3d, 2> cc_transform;
 
   /** @brief Some collision checkers only provide a single contact point for a given pair. This is used to indicate
    * if only one contact point is provided which means nearest_points[0] must equal nearest_points[1].
    */
-  bool single_contact_point{ false };
+  bool single_contact_point = false;
 
   ContactResult() { clear(); }
 
@@ -151,9 +156,15 @@ struct ContactResult
   }
 };
 
+#ifndef SWIG
 using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
 using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std::string>, ContactResultVector>;
-
+#else
+// clang-format off
+%tesseract_aligned_vector_using(ContactResultVector, tesseract_collision::ContactResult);
+%tesseract_aligned_map_of_aligned_vector_using(ContactResultMap, %arg(std::pair<std::string,std::string>), tesseract_collision::ContactResult);
+// clang-format on
+#endif
 /**
  * @brief Should return true if contact results are valid, otherwise false.
  *
@@ -165,20 +176,20 @@ using IsContactResultValidFn = std::function<bool(const ContactResult&)>;
 struct ContactRequest
 {
   /** @brief This controls the exit condition for the contact test type */
-  ContactTestType type{ ContactTestType::ALL };
+  ContactTestType type = ContactTestType::ALL;
 
   /** @brief This enables the calculation of penetration contact data if two objects are in collision */
-  bool calculate_penetration{ true };
+  bool calculate_penetration = true;
 
   /** @brief This enables the calculation of distance data if two objects are within the contact threshold */
-  bool calculate_distance{ true };
+  bool calculate_distance = true;
 
   /** @brief This is used if the ContactTestType is set to LIMITED, where the test will exit when number of contacts
    * reach this limit */
-  long contact_limit{ 0 };
+  long contact_limit = 0;
 
   /** @brief This provides a user defined function approve/reject contact results */
-  IsContactResultValidFn is_valid{ nullptr };
+  IsContactResultValidFn is_valid = nullptr;
 
   ContactRequest(ContactTestType type = ContactTestType::ALL) : type(type) {}
 };
@@ -320,6 +331,7 @@ private:
   std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> lookup_table_;
 };
 
+#ifndef SWIG
 /**
  * @brief This data is intended only to be used internal to the collision checkers as a container and should not
  *        be externally used by other libraries or packages.
@@ -343,23 +355,24 @@ struct ContactTestData
   }
 
   /** @brief A vector of active links */
-  const std::vector<std::string>* active{ nullptr };
+  const std::vector<std::string>* active = nullptr;
 
   /** @brief The current contact_distance threshold */
   CollisionMarginData collision_margin_data{ 0 };
 
   /** @brief The allowed collision function used to check if two links should be excluded from collision checking */
-  IsContactAllowedFn fn{ nullptr };
+  IsContactAllowedFn fn = nullptr;
 
   /** @brief The type of contact request data */
   ContactRequest req;
 
   /** @brief Destance query results information */
-  ContactResultMap* res{ nullptr };
+  ContactResultMap* res = nullptr;
 
   /** @brief Indicate if search is finished */
-  bool done{ false };
+  bool done = false;
 };
+#endif  // SWIG
 
 /**
  * @brief High level descriptor used in planners and utilities to specify what kind of collision check is desired.
@@ -404,4 +417,5 @@ struct CollisionCheckConfig
   double longest_valid_segment_length{ 0.005 };
 };
 }  // namespace tesseract_collision
+
 #endif  // TESSERACT_COLLISION_TYPES_H

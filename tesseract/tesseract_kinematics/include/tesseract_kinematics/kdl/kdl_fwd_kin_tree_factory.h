@@ -29,6 +29,10 @@
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::KDLFwdKinTreeFactory)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 class KDLFwdKinTreeFactory : public ForwardKinematicsFactory

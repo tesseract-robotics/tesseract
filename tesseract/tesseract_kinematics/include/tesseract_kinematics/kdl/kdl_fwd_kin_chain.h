@@ -41,6 +41,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::KDLFwdKinChain)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 /**

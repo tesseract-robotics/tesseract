@@ -150,23 +150,23 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
 
   EXPECT_TRUE(!result_vector.empty() && !cloned_result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, cloned_result_vector[0].distance, dist_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0],
-              cloned_result_vector[0].nearest_points[cloned_idx[0]][0],
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0],
+              cloned_result_vector[0].nearest_points[static_cast<size_t>(cloned_idx[0])][0],
               nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1],
-              cloned_result_vector[0].nearest_points[cloned_idx[0]][1],
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][1],
+              cloned_result_vector[0].nearest_points[static_cast<size_t>(cloned_idx[0])][1],
               nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2],
-              cloned_result_vector[0].nearest_points[cloned_idx[0]][2],
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][2],
+              cloned_result_vector[0].nearest_points[static_cast<size_t>(cloned_idx[0])][2],
               nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0],
-              cloned_result_vector[0].nearest_points[cloned_idx[1]][0],
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][0],
+              cloned_result_vector[0].nearest_points[static_cast<size_t>(cloned_idx[1])][0],
               nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1],
-              cloned_result_vector[0].nearest_points[cloned_idx[1]][1],
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][1],
+              cloned_result_vector[0].nearest_points[static_cast<size_t>(cloned_idx[1])][1],
               nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2],
-              cloned_result_vector[0].nearest_points[cloned_idx[1]][2],
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][2],
+              cloned_result_vector[0].nearest_points[static_cast<size_t>(cloned_idx[1])][2],
               nearest_tol);
   EXPECT_NEAR(result_vector[0].normal[0] * idx[2], cloned_result_vector[0].normal[0] * cloned_idx[2], normal_tol);
   EXPECT_NEAR(result_vector[0].normal[1] * idx[2], cloned_result_vector[0].normal[1] * cloned_idx[2], normal_tol);

@@ -44,6 +44,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/kinematics_information.h>
 #include <tesseract_scene_graph/allowed_collision_matrix.h>
 
+#ifdef SWIG
+
+%shared_ptr(tesseract_scene_graph::SRDFModel)
+
+#endif  // SWIG
+
 /// Main namespace
 namespace tesseract_scene_graph
 {

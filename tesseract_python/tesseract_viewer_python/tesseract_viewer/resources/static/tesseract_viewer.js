@@ -316,7 +316,7 @@ class JointTrajectoryAnimation {
         }
         this._t0 = new Date().getTime() / 1000;
         var _this = this;
-        this._timerid = setInterval(() => _this.intervalCallback(), 50);
+        this._timerid = setInterval(() => _this.intervalCallback(), 100);
     }
     stop() {
         if (this._timerid == 0) {

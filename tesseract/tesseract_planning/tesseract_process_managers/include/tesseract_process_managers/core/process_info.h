@@ -33,6 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::ProcessInfo)
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 class ProcessInfo
@@ -56,7 +60,14 @@ public:
 
   std::string message;
 };
+}  // namespace tesseract_planning
 
+#ifdef SWIG
+%template(ProcessInfoMap) std::map<std::size_t, std::shared_ptr<const tesseract_planning::ProcessInfo>>;
+#endif
+
+namespace tesseract_planning
+{
 /** @brief A threadsafe container for ProcessInfos */
 struct ProcessInfoContainer
 {

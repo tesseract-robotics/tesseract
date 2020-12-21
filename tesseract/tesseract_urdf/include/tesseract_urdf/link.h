@@ -40,6 +40,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/visual.h>
 #include <tesseract_urdf/collision.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::LinkStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class LinkStatusCategory : public tesseract_common::StatusCategory

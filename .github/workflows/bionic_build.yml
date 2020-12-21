@@ -24,6 +24,7 @@ jobs:
       ROSDEP_SKIP_KEYS: "bullet3 cmake_common_scripts iwyu fcl taskflow"
       DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
       CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Bionic-Build/.ccache"
+      PARALLEL_BUILDS: false
       PARALLEL_TESTS: false
       UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
       TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"

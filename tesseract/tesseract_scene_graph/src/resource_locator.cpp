@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocator::ResourceLocatorFn locator_function)
+SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocatorFn locator_function)
   : ResourceLocator(), locator_function_(std::move(locator_function))
 {
   assert(locator_function_);

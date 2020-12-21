@@ -33,6 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/status_code.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::DescartesMotionPlannerStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 /**

@@ -124,6 +124,8 @@ public:
     return xml_waypoint;
   }
 
+#ifndef SWIG
+
   /////////////////////
   // Eigen Container //
   /////////////////////
@@ -266,9 +268,22 @@ public:
   // Cartesian Waypoint Container //
   //////////////////////////////////
 
+#endif  // SWIG
+
   Eigen::VectorXd waypoint;
   std::vector<std::string> joint_names;
 };
 }  // namespace tesseract_planning
+
+#ifdef SWIG
+%extend tesseract_planning::JointWaypoint {
+  JointWaypoint(std::vector<std::string> joint_names, const Eigen::VectorXd& other)
+  {
+    return new tesseract_planning::JointWaypoint(joint_names, other);
+  }
+}
+
+%tesseract_command_language_add_waypoint_type(JointWaypoint)
+#endif  // SWIG
 
 #endif  // TESSERACT_COMMAND_LANGUAGE_JOINT_WAYPOINT_H

@@ -49,6 +49,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_geometry/geometry.h>
 
+#ifdef SWIG
+
+%shared_ptr(tesseract_scene_graph::Material)
+%shared_ptr(tesseract_scene_graph::Inertial)
+%shared_ptr(tesseract_scene_graph::Visual)
+%shared_ptr(tesseract_scene_graph::Collision)
+%shared_ptr(tesseract_scene_graph::Link)
+
+%template(tesseract_scene_graph_VisualVector) std::vector<std::shared_ptr<tesseract_scene_graph::Visual> >;
+%template(tesseract_scene_graph_CollisionVector) std::vector<std::shared_ptr<tesseract_scene_graph::Collision> >;
+
+#endif  // SWIG
+
 namespace tesseract_scene_graph
 {
 class Material
@@ -76,7 +89,9 @@ private:
   std::string name_;
 };
 
+#ifndef SWIG
 static auto DEFAULT_TESSERACT_MATERIAL = std::make_shared<Material>("default_tesseract_material");
+#endif  // SWIG
 
 class Inertial
 {
@@ -179,6 +194,7 @@ public:
     this->visual.clear();
   }
 
+#ifndef SWIG
   /**
    * @brief Clone the link keeping the name.
    * @return Cloned link
@@ -203,11 +219,27 @@ public:
     }
     return ret;
   }
+#endif  // SWIG
 
 private:
   std::string name_;
 };
 
 }  // namespace tesseract_scene_graph
+
+#ifdef SWIG
+%extend tesseract_scene_graph::Link
+{
+  tesseract_scene_graph::Link::Ptr clone() const
+  {
+    return std::make_shared<tesseract_scene_graph::Link>(std::move($self->clone()));
+  }
+
+  tesseract_scene_graph::Link::Ptr clone(const std::string& name) const
+  {
+    return std::make_shared<tesseract_scene_graph::Link>(std::move($self->clone(name)));
+  }
+}
+#endif
 
 #endif  // TESSERACT_SCENE_GRAPH_LINK_H
