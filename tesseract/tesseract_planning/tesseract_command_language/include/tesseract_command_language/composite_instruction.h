@@ -51,9 +51,6 @@ enum class CompositeInstructionOrder
 class CompositeInstruction
 {
 public:
-  using Ptr = std::shared_ptr<CompositeInstruction>;
-  using ConstPtr = std::shared_ptr<const CompositeInstruction>;
-
   CompositeInstruction(std::string profile = DEFAULT_PROFILE_KEY,
                        CompositeInstructionOrder order = CompositeInstructionOrder::ORDERED,
                        ManipulatorInfo manipulator_info = ManipulatorInfo());
@@ -73,6 +70,7 @@ public:
   ManipulatorInfo& getManipulatorInfo();
 
   void setStartInstruction(Instruction instruction);
+
   void resetStartInstruction();
   const Instruction& getStartInstruction() const;
   Instruction& getStartInstruction();
@@ -98,6 +96,7 @@ public:
   using size_type = typename std::vector<value_type>::size_type;
   /** difference_type */
   using difference_type = typename std::vector<value_type>::difference_type;
+#ifndef SWIG
   /** iterator */
   using iterator = typename std::vector<value_type>::iterator;
   /** const_iterator */
@@ -106,7 +105,18 @@ public:
   using reverse_iterator = typename std::vector<value_type>::reverse_iterator;
   /** const_reverse_iterator */
   using const_reverse_iterator = typename std::vector<value_type>::const_reverse_iterator;
+#endif
 
+#ifndef SWIG
+
+  template <class InputIt>
+  CompositeInstruction(InputIt first, InputIt last) : container_(first, last)
+  {
+  }
+
+#endif  // SWIG
+
+#ifndef SWIG
   ///////////////
   // Iterators //
   ///////////////
@@ -186,6 +196,11 @@ public:
   iterator insert(const_iterator p, const value_type& x);
   iterator insert(const_iterator p, value_type&& x);
   iterator insert(const_iterator p, std::initializer_list<value_type> l);
+  template <class InputIt>
+  void insert(const_iterator pos, InputIt first, InputIt last)
+  {
+    container_.insert(pos, first, last);
+  }
 
   /** @brief constructs element in-place */
   template <class... Args>
@@ -210,6 +225,22 @@ public:
   void pop_back();
   /** @brief swaps the contents  */
   void swap(std::vector<value_type>& other);
+
+#endif  // SWIG
+
+#ifdef SWIG
+  %ignore get_allocator;
+  %ignore resize;
+  %ignore assign;
+  %ignore swap;
+  %ignore insert;
+  %ignore CompositeInstruction();
+  %ignore CompositeInstruction(const CompositeInstruction&);
+  %ignore CompositeInstruction(size_type);
+  %ignore CompositeInstruction(size_type, value_type const &); 
+  %swig_vector_methods(tesseract_planning::CompositeInstruction)
+  %std_vector_methods(CompositeInstruction)
+#endif  // SWIG
 
 private:
   std::vector<value_type> container_;
@@ -239,8 +270,19 @@ private:
    * If not provided, the planner should use the current state of the robot is used and defined as fixed.
    */
   value_type start_instruction_{ NullInstruction() };
+
+public:
+  std::vector<tesseract_planning::Instruction>& getInstructions() { return container_; }
+
+  const std::vector<tesseract_planning::Instruction>& getInstructions() const { return container_; }
+
+  void setInstructions(std::vector<tesseract_planning::Instruction> instructions) { container_.swap(instructions); }
 };
 
 }  // namespace tesseract_planning
+
+#ifdef SWIG
+%tesseract_command_language_add_instruction_type(CompositeInstruction)
+#endif  // SWIG
 
 #endif  // TESSERACT_COMMAND_LANGUAGE_COMPOSITE_INSTRUCTION_H

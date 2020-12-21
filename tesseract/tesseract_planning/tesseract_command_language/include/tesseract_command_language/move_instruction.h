@@ -50,9 +50,6 @@ enum class MoveInstructionType : int
 class MoveInstruction
 {
 public:
-  using Ptr = std::shared_ptr<MoveInstruction>;
-  using ConstPtr = std::shared_ptr<const MoveInstruction>;
-
   MoveInstruction(Waypoint waypoint,
                   MoveInstructionType type,
                   const std::string& profile = DEFAULT_PROFILE_KEY,
@@ -108,5 +105,9 @@ private:
 };
 
 }  // namespace tesseract_planning
+
+#ifdef SWIG
+%tesseract_command_language_add_instruction_type(MoveInstruction)
+#endif  // SWIG
 
 #endif  // TESSERACT_COMMAND_LANGUAGE_MOVE_INSTRUCTION_H

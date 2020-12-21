@@ -36,6 +36,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_urdf/origin.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::InertialStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class InertialStatusCategory : public tesseract_common::StatusCategory

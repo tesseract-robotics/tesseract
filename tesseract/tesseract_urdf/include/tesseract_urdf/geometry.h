@@ -47,6 +47,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/sdf_mesh.h>
 #include <tesseract_urdf/octomap.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::GeometryStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class GeometryStatusCategory : public tesseract_common::StatusCategory

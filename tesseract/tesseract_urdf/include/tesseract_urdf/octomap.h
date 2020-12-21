@@ -42,6 +42,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/point_cloud.h>
 #endif
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::OctomapStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class OctomapStatusCategory : public tesseract_common::StatusCategory

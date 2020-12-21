@@ -36,6 +36,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/descartes_utils.h>
 #include <tesseract_motion_planners/descartes/types.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::DescartesDefaultPlanProfile<double>)
+%ignore tesseract_planning::DescartesDefaultPlanProfile::edge_evaluator;
+%ignore tesseract_planning::DescartesDefaultPlanProfile::is_valid;
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 template <typename FloatType>
@@ -55,10 +61,13 @@ public:
 
   PoseSamplerFn target_pose_sampler = sampleFixed;
 
+#ifndef SWIG
   DescartesEdgeEvaluatorAllocatorFn<FloatType> edge_evaluator{ nullptr };
 
   // If not provided it adds a joint limit is valid function
   DescartesVertexEvaluatorAllocatorFn<FloatType> vertex_evaluator{ nullptr };
+#endif
+
   double timing_constraint = std::numeric_limits<FloatType>::max();
 
   // Applied to sampled states
@@ -92,5 +101,9 @@ public:
 using DescartesDefaultPlanProfileF = DescartesDefaultPlanProfile<float>;
 using DescartesDefaultPlanProfileD = DescartesDefaultPlanProfile<double>;
 }  // namespace tesseract_planning
+
+#ifdef SWIG
+%template(DescartesDefaultPlanProfileD) tesseract_planning::DescartesDefaultPlanProfile<double>;
+#endif  // SWIG
 
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_DESCARTES_DEFAULT_PLAN_PROFILE_H

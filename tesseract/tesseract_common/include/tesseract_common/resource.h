@@ -34,6 +34,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#ifdef SWIG
+
+%shared_ptr(tesseract_common::Resource)
+%template(vector_uint8) std::vector<uint8_t>;
+%pybuffer_binary(const uint8_t* bytes, size_t bytes_len);
+%shared_ptr(tesseract_common::BytesResource)
+
+#endif  // SWIG
+
 namespace tesseract_common
 {
 /**

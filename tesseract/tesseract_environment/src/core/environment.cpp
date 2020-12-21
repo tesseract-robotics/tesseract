@@ -457,6 +457,13 @@ void Environment::addFindTCPCallback(FindTCPCallbackFn fn) { find_tcp_cb_.push_b
 
 std::vector<FindTCPCallbackFn> Environment::getFindTCPCallbacks() const { return find_tcp_cb_; }
 
+void Environment::setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator)
+{
+  resource_locator_ = locator;
+}
+
+tesseract_scene_graph::ResourceLocator::Ptr Environment::getResourceLocator() const { return resource_locator_; }
+
 void Environment::setName(const std::string& name) { scene_graph_->setName(name); }
 
 const std::string& Environment::getName() const { return scene_graph_->getName(); }
@@ -1040,7 +1047,7 @@ Environment::getContinuousContactManager(const std::string& name) const
 
 bool Environment::registerDiscreteContactManager(
     const std::string& name,
-    tesseract_collision::DiscreteContactManagerFactory::CreateMethod create_function)
+    tesseract_collision::DiscreteContactManagerFactoryCreateMethod create_function)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   return discrete_factory_.registar(name, std::move(create_function));
@@ -1048,7 +1055,7 @@ bool Environment::registerDiscreteContactManager(
 
 bool Environment::registerContinuousContactManager(
     const std::string& name,
-    tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function)
+    tesseract_collision::ContinuousContactManagerFactoryCreateMethod create_function)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   return continuous_factory_.registar(name, std::move(create_function));

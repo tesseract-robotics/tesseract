@@ -35,6 +35,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_motion_planners/core/types.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::SimplePlannerPlanProfile)
+%shared_ptr(tesseract_planning::SimplePlannerPlanCompositeProfile)
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 using JointJointStepGenerator = std::function<CompositeInstruction(const JointWaypoint&,
@@ -91,5 +96,10 @@ public:
 using SimplePlannerPlanProfileMap = std::unordered_map<std::string, SimplePlannerPlanProfile::ConstPtr>;
 using SimplePlannerCompositeProfileMap = std::unordered_map<std::string, SimplePlannerCompositeProfile::ConstPtr>;
 }  // namespace tesseract_planning
+
+#ifdef SWIG
+%template(SimplePlannerPlanProfileMap) std::unordered_map<std::string, tesseract_planning::SimplePlannerPlanProfile::ConstPtr>;
+%template(SimplePlannerCompositeProfileMap) std::unordered_map<std::string, tesseract_planning::SimplePlannerCompositeProfile::ConstPtr>;
+#endif  // SWIG
 
 #endif  // TESSERACT_MOTION_PLANNERS_SIMPLE_PROFILE_H

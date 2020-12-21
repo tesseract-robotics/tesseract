@@ -1,4 +1,5 @@
-import tesseract
+from tesseract.tesseract_environment import Environment
+from tesseract.tesseract_scene_graph import SimpleResourceLocator, SimpleResourceLocatorFn
 import os
 import re
 import traceback
@@ -72,29 +73,23 @@ shapes_urdf="""
 
 TESSERACT_SUPPORT_DIR = os.environ["TESSERACT_SUPPORT_DIR"]
 
-class TesseractSupportResourceLocator(tesseract.ResourceLocator):
-    def __init__(self):
-        super(TesseractSupportResourceLocator,self).__init__()
-
-    def locateResource(self, url):
-        
+def _locate_resource(url):
+    try:
         url_match = re.match(r"^package:\/\/tesseract_support\/(.*)$",url)
         if (url_match is None):
-            return None
-        
-        fname = os.path.join(TESSERACT_SUPPORT_DIR, os.path.normpath(url_match.group(1)))
-        with open(fname,'rb') as f:
-            resource_bytes = f.read()
+            return ""    
+        if not "TESSERACT_SUPPORT_DIR" in os.environ:
+            return ""
+        tesseract_support = os.environ["TESSERACT_SUPPORT_DIR"]
+        return os.path.join(tesseract_support, os.path.normpath(url_match.group(1)))
+    except:
+        traceback.print_exc()
 
-        resource = tesseract.BytesResource(url, resource_bytes)
+t_env = Environment()
 
-        return resource
-
-t = tesseract.Tesseract()
-
-t.init(shapes_urdf, TesseractSupportResourceLocator())
-
-t_env = t.getEnvironment()
+# locator_fn must be kept alive by maintaining a reference
+locator_fn = SimpleResourceLocatorFn(_locate_resource)
+t_env.init(shapes_urdf, SimpleResourceLocator(locator_fn))
 
 viewer = TesseractViewer()
 

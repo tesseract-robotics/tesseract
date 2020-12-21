@@ -37,6 +37,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/box.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::BoxStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class BoxStatusCategory : public tesseract_common::StatusCategory

@@ -8,13 +8,18 @@
   <author >John Wason</author>
   
   <depend>trajopt</depend>
-  <depend>tesseract_collision</depend>
   <depend>tesseract_motion_planners</depend>
-  <depend>tesseract_kinematics</depend>
-  <depend>tesseract_environment</depend>
-  <depend>tesseract_scene_graph</depend>
   <depend>tesseract_common</depend>
+  <depend>tesseract_geometry</depend>
   <depend>tesseract_visualization</depend>
+  <depend>tesseract_collision</depend>
+  <depend>tesseract_urdf</depend>
+  <depend>tesseract_kinematics</depend>
+  <depend>tesseract_scene_graph</depend>
+  <depend>tesseract_environment</depend>
+  <depend>tesseract_command_language</depend>
+  <depend>tesseract_time_parameterization</depend>
+  <depend>tesseract_process_managers</depend>
 
   <depend condition="$ROS_PYTHON_VERSION == 2">python</depend>
   <depend condition="$ROS_PYTHON_VERSION == 2">python-numpy</depend>

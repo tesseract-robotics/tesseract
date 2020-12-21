@@ -33,6 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_geometry::Cone)
+#endif  // SWIG
+
 namespace tesseract_geometry
 {
 class Cone : public Geometry

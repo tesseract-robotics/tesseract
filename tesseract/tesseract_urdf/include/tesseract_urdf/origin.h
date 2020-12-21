@@ -36,6 +36,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::OriginStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class OriginStatusCategory : public tesseract_common::StatusCategory

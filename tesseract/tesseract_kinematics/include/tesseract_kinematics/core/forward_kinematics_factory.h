@@ -29,6 +29,10 @@
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_scene_graph/graph.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::ForwardKinematicsFactory)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 enum class ForwardKinematicsFactoryType

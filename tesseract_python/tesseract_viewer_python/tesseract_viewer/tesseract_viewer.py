@@ -26,10 +26,11 @@ import traceback
 import os
 import numpy as np
 import json
-import tesseract
+from tesseract import tesseract_environment
 import hashlib
 import base64
 import sys
+from tesseract.tesseract_command_language import isStateWaypoint, isMoveInstruction
 
 if sys.version_info[0] < 3:
     from BaseHTTPServer import BaseHTTPRequestHandler
@@ -122,7 +123,7 @@ class TesseractViewer():
 
     def update_environment(self, tesseract_env, origin_offset = [0,0,0]):
 
-        assert isinstance(tesseract_env, tesseract.Environment)
+        assert isinstance(tesseract_env, tesseract_environment.Environment)
         with self._lock:
             self.scene_json = tesseract_env_to_babylon_json(tesseract_env, origin_offset)
 
@@ -143,18 +144,27 @@ class TesseractViewer():
 
         self.trajectory_json=json.dumps(trajectory_json)
 
-    def update_trajectory(self, tesseract_trajectory, use_time = False, loop_time = 5):
-        # Create "infinite" animation with constant joint angles
+    def update_trajectory(self, tesseract_trajectory):
+        
+        start_instruction_o = tesseract_trajectory[0]
+        assert isMoveInstruction(start_instruction_o)
+        start_waypoint_o = start_instruction_o.cast_MoveInstruction().getWaypoint()
+        assert isStateWaypoint(start_waypoint_o)
+        start_waypoint = start_waypoint_o.cast_StateWaypoint()
 
         trajectory_json = dict()
-        trajectory_json["use_time"] = use_time
-        trajectory_json["loop_time"] = loop_time
-        trajectory_json["joint_names"] = list(tesseract_trajectory.joint_names)
+        trajectory_json["use_time"] = True
+        trajectory_json["loop_time"] = 20
+        trajectory_json["joint_names"] = list(start_waypoint.joint_names)
         
         trajectory2 = []
-        trajectory = tesseract_trajectory.trajectory
-        for i in range(trajectory.shape[0]):
-            trajectory2.append(list(trajectory[i,:].flatten()))
+        for i in range(len(tesseract_trajectory)):
+            instr = tesseract_trajectory[i]
+            assert isMoveInstruction(instr)
+            wp = instr.cast_MoveInstruction().getWaypoint()
+            assert isStateWaypoint(wp)
+            state_wp = wp.cast_StateWaypoint()
+            trajectory2.append(state_wp.position.flatten().tolist() + [state_wp.time])
         trajectory_json["trajectory"] = trajectory2
         self.trajectory_json=json.dumps(trajectory_json)
         

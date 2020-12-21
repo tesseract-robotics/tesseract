@@ -29,6 +29,10 @@
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_scene_graph/graph.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::InverseKinematicsFactory)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 enum class InverseKinematicsFactoryType
