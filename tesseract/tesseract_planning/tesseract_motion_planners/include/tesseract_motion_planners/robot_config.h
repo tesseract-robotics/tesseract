@@ -128,11 +128,12 @@ inline RobotConfig getRobotConfig(const tesseract_kinematics::ForwardKinematics:
 
   return RobotConfig::NDB;
 }
-template <typename FloatType>
-inline Eigen::Vector3i getRobotRedundancy(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& joint_values,
-                                     const Eigen::Ref<const Eigen::Vector2i>& sign_correction = Eigen::Vector2i::Ones())
-{
 
+template <typename FloatType>
+inline Eigen::Vector3i
+getRobotRedundancy(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& joint_values,
+                   const Eigen::Ref<const Eigen::Vector2i>& sign_correction = Eigen::Vector2i::Ones())
+{
   Eigen::Vector3i redundancy;
 
   int red_j_4 = int(joint_values(3) / M_PI);
