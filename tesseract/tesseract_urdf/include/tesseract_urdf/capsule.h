@@ -34,6 +34,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/capsule.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::CapsuleStatusCategory)
+#endif  // SWIG
 namespace tesseract_urdf
 {
 class CapsuleStatusCategory : public tesseract_common::StatusCategory

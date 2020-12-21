@@ -356,6 +356,8 @@ AllowedCollisionMatrix& SRDFModel::getAllowedCollisionMatrix() { return acm_; };
 const KinematicsInformation& SRDFModel::getKinematicsInformation() const { return kinematics_information_; };
 KinematicsInformation& SRDFModel::getKinematicsInformation() { return kinematics_information_; };
 
+const std::array<int, 3>& SRDFModel::getVersion() const { return version_; }
+
 void SRDFModel::clear()
 {
   name_ = "";

@@ -33,13 +33,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_default_lvs_plan_profile.h>
 
 namespace tesseract_planning
 {
 /** @brief Provided for backwards compatibility */
-inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
+static CompositeInstruction generateSeed(const CompositeInstruction& instructions,
                                          const tesseract_environment::EnvState::ConstPtr& current_state,
                                          const tesseract_environment::Environment::ConstPtr& env,
                                          double state_longest_valid_segment_length = 5 * M_PI / 180,

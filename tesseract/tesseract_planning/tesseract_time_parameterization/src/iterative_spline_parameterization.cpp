@@ -177,7 +177,7 @@ bool IterativeSplineParameterization::compute(
       trajectory, max_velocity, max_acceleration, max_velocity_scaling_factor, max_acceleration_scaling_factor);
 }
 
-bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+bool IterativeSplineParameterization::compute(std::vector<std::reference_wrapper<Instruction>>& trajectory,
                                               const double& max_velocity,
                                               const double& max_acceleration,
                                               double max_velocity_scaling_factor,
@@ -198,7 +198,7 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
                  max_acceleration_scaling_factor);
 }
 
-bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+bool IterativeSplineParameterization::compute(std::vector<std::reference_wrapper<Instruction>>& trajectory,
                                               const std::vector<double>& max_velocity,
                                               const std::vector<double>& max_acceleration,
                                               double max_velocity_scaling_factor,
@@ -211,7 +211,7 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
                  max_acceleration_scaling_factor);
 }
 
-bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+bool IterativeSplineParameterization::compute(std::vector<std::reference_wrapper<Instruction>>& trajectory,
                                               const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
                                               const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
                                               double max_velocity_scaling_factor,
@@ -226,7 +226,7 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
 }
 
 bool IterativeSplineParameterization::compute(
-    const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+    std::vector<std::reference_wrapper<Instruction>>& trajectory,
     const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
     const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
     const Eigen::Ref<const Eigen::VectorXd>& max_velocity_scaling_factors,

@@ -39,6 +39,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::OMPLPlannerConfigurator)
+%shared_ptr(tesseract_planning::SBLConfigurator)
+%shared_ptr(tesseract_planning::ESTConfigurator)
+%shared_ptr(tesseract_planning::LBKPIECE1Configurator)
+%shared_ptr(tesseract_planning::BKPIECE1Configurator)
+%shared_ptr(tesseract_planning::KPIECE1Configurator)
+%shared_ptr(tesseract_planning::BiTRRTConfigurator)
+%shared_ptr(tesseract_planning::RRTConfigurator)
+%shared_ptr(tesseract_planning::RRTConnectConfigurator)
+%shared_ptr(tesseract_planning::RRTstarConfigurator)
+%shared_ptr(tesseract_planning::TRRTConfigurator)
+%shared_ptr(tesseract_planning::PRMConfigurator)
+%shared_ptr(tesseract_planning::PRMstarConfigurator)
+%shared_ptr(tesseract_planning::LazyPRMstarConfigurator)
+%shared_ptr(tesseract_planning::SPARSConfigurator)
+
+%ignore create(ompl::base::SpaceInformationPtr si) const;
+
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 enum class OMPLPlannerType
@@ -77,7 +98,14 @@ struct OMPLPlannerConfigurator
 
   virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
+}  // namespace tesseract_planning
 
+#ifdef SWIG
+%template(OMPLPlanners) std::vector<tesseract_planning::OMPLPlannerConfigurator::ConstPtr>;
+#endif  // SWIG
+
+namespace tesseract_planning
+{
 struct SBLConfigurator : public OMPLPlannerConfigurator
 {
   SBLConfigurator() = default;
@@ -460,5 +488,25 @@ struct SPARSConfigurator : public OMPLPlannerConfigurator
 };
 
 }  // namespace tesseract_planning
+
+#ifdef SWIG
+%shared_factory(
+  tesseract_planning::OMPLPlannerConfigurator,
+  tesseract_planning::SBLConfigurator,
+  tesseract_planning::ESTConfigurator,
+  tesseract_planning::LBKPIECE1Configurator,
+  tesseract_planning::BKPIECE1Configurator,
+  tesseract_planning::KPIECE1Configurator,
+  tesseract_planning::BiTRRTConfigurator,
+  tesseract_planning::RRTConfigurator,
+  tesseract_planning::RRTConnectConfigurator,
+  tesseract_planning::RRTstarConfigurator,
+  tesseract_planning::TRRTConfigurator,
+  tesseract_planning::PRMConfigurator,
+  tesseract_planning::PRMstarConfigurator,
+  tesseract_planning::LazyPRMstarConfigurator,
+  tesseract_planning::SPARSConfigurator
+)
+#endif  // SWIG
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_PLANNER_CONFIGURATOR_H

@@ -130,4 +130,8 @@ inline RobotConfig getRobotConfig(const tesseract_kinematics::ForwardKinematics:
 }
 }  // namespace tesseract_planning
 
+#ifdef SWIG
+%template(getRobotConfig) tesseract_planning::getRobotConfig<double>;
+#endif  // SWIG
+
 #endif  // TESSERACT_COMMAND_LANGUAGE_ROBOT_CONFIG_H

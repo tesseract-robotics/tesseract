@@ -37,6 +37,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/types.h>
 #include <tesseract_motion_planners/descartes/descartes_problem.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::DescartesPlanProfile<double>)
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 template <typename FloatType>
@@ -73,7 +77,19 @@ public:
 template <typename FloatType>
 using DescartesPlanProfileMap = std::unordered_map<std::string, typename DescartesPlanProfile<FloatType>::ConstPtr>;
 
+#ifndef SWIG
+using DescartesPlanProfileMapD = DescartesPlanProfileMap<double>;
+using DescartesPlanProfileMapF = DescartesPlanProfileMap<float>;
+#else
+using DescartesPlanProfileMapD = std::unordered_map<std::string, std::shared_ptr<const DescartesPlanProfile<double>>>;
+#endif  // SWIG
+
 /** @todo Currently descartes does not have support of composite profile everything is handled by the plan profile */
 }  // namespace tesseract_planning
+
+#ifdef SWIG
+%template(DescartesPlanProfileD) std::shared_ptr<tesseract_planning::DescartesPlanProfile<double> >;
+%template(DescartesPlanProfileMapD) std::unordered_map<std::string, std::shared_ptr<const tesseract_planning::DescartesPlanProfile<double>>>;
+#endif  // SWIG
 
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_DESCARTES_PROFILE_H

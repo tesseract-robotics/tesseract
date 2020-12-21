@@ -18,7 +18,8 @@
 import json
 import numpy as np
 import math
-import tesseract
+from tesseract import tesseract_geometry
+from tesseract.tesseract_common import Quaterniond
 import pkgutil
 
 def tesseract_env_to_babylon_json(t_env, origin_offset=[0,0,0]):
@@ -54,11 +55,11 @@ def tesseract_env_to_babylon_json_dict(t_env, origin_offset=[0,0,0]):
 def _find_child_joints(joint_map, parent_link_name):
     return [j for j in joint_map.values() if j.parent_link_name == parent_link_name]
 
-def _np_transform_to_babylon(np_tf):
-    p = np_tf[0:3,3]
-    q0 = _R2q(np_tf[0:3,0:3])
-    q = np.array([q0[1], q0[2], q0[3], q0[0]])
-    return list(p),list(q)
+def _np_transform_to_babylon(eigen_tf):
+    p = eigen_tf.translation().tolist()
+    q0 = Quaterniond(eigen_tf.rotation())
+    q = [q0.x(), q0.y(), q0.z(), q0.w()]
+    return p,q
 
 def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
     transform_nodes = []
@@ -84,20 +85,24 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
         tf_visual["billboardMode"] = 0
 
         visual_geom = visual.geometry
-        if (isinstance(visual_geom,tesseract.Mesh)):
+        if (isinstance(visual_geom,tesseract_geometry.Mesh)):
         
             mesh=visual_geom
-            positions = list(np.concatenate(list(mesh.getVertices())).flatten())
+            vertices = mesh.getVertices()
+            positions = np.zeros((len(vertices)*3,),dtype=np.float64)
+            for i in range(len(vertices)):
+                positions[i*3:(i*3+3)] = vertices[i].flatten()
+            
             triangles = mesh.getTriangles().flatten()
             triangle_count = int(len(triangles)/4)
             indices = [0]*(triangle_count*3)
             for i in range(triangle_count):
-                assert(triangles[i*4]==3, "Only triangle meshes supported")
+                assert triangles[i*4]==3, "Only triangle meshes supported"
                 indices[i*3] = int(triangles[i*4+3])
                 indices[i*3+1] = int(triangles[i*4+2])
                 indices[i*3+2] = int(triangles[i*4+1])
 
-            tf_visual["positions"] = positions
+            tf_visual["positions"] = positions.tolist()
             tf_visual["indices"] = indices
             
             tf_visual["scaling"] = list(mesh.getScale().flatten())
@@ -112,7 +117,7 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
             tf_visual["subMeshes"] = [submesh]
             
             
-        elif (isinstance(visual_geom,tesseract.Box)):
+        elif (isinstance(visual_geom,tesseract_geometry.Box)):
             box=visual_geom
             tf_visual["geometryId"] = "cube_geometry"
             tf_visual["scaling"] = [0.5*box.getX(), 0.5*box.getY(), 0.5*box.getZ()]
@@ -124,7 +129,7 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
             submesh["indexCount"] = 36
             tf_visual["subMeshes"] = [submesh]
 
-        elif (isinstance(visual_geom,tesseract.Sphere)):
+        elif (isinstance(visual_geom,tesseract_geometry.Sphere)):
             sphere=visual_geom
             tf_visual["geometryId"] = "sphere_geometry"
             tf_visual["scaling"] = [sphere.getRadius(), sphere.getRadius(), sphere.getRadius()]
@@ -136,7 +141,7 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
             submesh["indexCount"] = 2880
             tf_visual["subMeshes"] = [submesh]
 
-        elif (isinstance(visual_geom,tesseract.Cylinder)):
+        elif (isinstance(visual_geom,tesseract_geometry.Cylinder)):
             cylinder=visual_geom
             tf_visual["geometryId"] = "cylinder_geometry"
             tf_visual["scaling"] = [cylinder.getRadius(), cylinder.getRadius(), 0.5*cylinder.getLength()]
@@ -192,43 +197,3 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
         
     return transform_nodes, meshes, materials
 
-
-def _R2q(R):
-    """
-    Converts a 3 x 3 rotation matrix into a quaternion.  Quaternion is
-    returned in the form q = [q0;qv].
-    
-    :type    R: numpy.array
-    :param   R: 3 x 3 rotation matrix
-    :rtype:  numpy.array
-    :return: the quaternion as a 4 x 1 vector q = [q0;qv] 
-      
-    """
-    
-    tr = np.trace(R)
-    if tr > 0:
-        S = 2*math.sqrt(tr + 1)
-        q = np.array([(0.25*S), \
-                      ((R[2,1] - R[1,2]) / S), \
-                      ((R[0,2] - R[2,0]) / S), \
-                      ((R[1,0] - R[0,1]) / S)])
-                      
-    elif (R[0,0] > R[1,1] and R[0,0] > R[2,2]):
-        S = 2*math.sqrt(1 + R[0,0] - R[1,1] - R[2,2])
-        q = np.array([((R[2,1] - R[1,2]) / S), \
-                      (0.25*S), \
-                      ((R[0,1] + R[1,0]) / S), \
-                      ((R[0,2] + R[2,0]) / S)])
-    elif (R[1,1] > R[2,2]):
-        S = 2*math.sqrt(1 - R[0,0] + R[1,1] - R[2,2])
-        q = np.array([((R[0,2] - R[2,0]) / S), \
-                      ((R[0,1] + R[1,0]) / S), \
-                      (0.25*S), \
-                      ((R[1,2] + R[2,1]) / S)])
-    else:
-        S = 2*math.sqrt(1 - R[0,0] - R[1,1] + R[2,2])
-        q = np.array([((R[1,0] - R[0,1]) / S), \
-                      ((R[0,2] + R[2,0]) / S), \
-                      ((R[1,2] + R[2,1]) / S), \
-                      (0.25*S)])
-    return q

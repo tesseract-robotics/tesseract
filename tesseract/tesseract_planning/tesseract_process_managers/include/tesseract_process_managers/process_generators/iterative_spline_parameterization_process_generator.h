@@ -29,6 +29,12 @@
 #include <tesseract_process_managers/core/process_generator.h>
 #include <tesseract_time_parameterization/iterative_spline_parameterization.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::IterativeSplineParameterizationProfile)
+%ignore IterativeSplineParameterizationProcessGenerator;
+%ignore IterativeSplineParameterizationProcessInfo;
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 struct IterativeSplineParameterizationProfile

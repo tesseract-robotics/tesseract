@@ -38,6 +38,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/ompl_planner_configurator.h>
 #include <tesseract_environment/core/environment.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::OMPLProblem)
+%ignore tesseract_planning::OMPLProblem::extractor;
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 struct OMPLProblem;
@@ -142,5 +147,9 @@ struct OMPLProblem
 };
 
 }  // namespace tesseract_planning
+
+#ifdef SWIG
+%template(OMPLProblems) std::vector<std::shared_ptr<tesseract_planning::OMPLProblem>>;
+#endif
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_PROBLEM_H

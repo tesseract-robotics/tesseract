@@ -28,6 +28,10 @@
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::IKFastInvKin)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 /**

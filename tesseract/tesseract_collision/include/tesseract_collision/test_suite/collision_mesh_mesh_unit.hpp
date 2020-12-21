@@ -176,8 +176,8 @@ inline void runTest(DiscreteContactManager& checker)
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.23776, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.76224, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0], 0.23776, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][0], 0.76224, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
   EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
@@ -206,8 +206,8 @@ inline void runTest(DiscreteContactManager& checker)
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.25, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.75, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][1], 0.25, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][1], 0.75, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
   EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0, 1, 0)), 0.0);

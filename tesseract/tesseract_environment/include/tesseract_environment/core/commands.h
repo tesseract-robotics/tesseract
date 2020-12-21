@@ -40,6 +40,57 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/kinematics_information.h>
 #include <tesseract_collision/core/types.h>
 
+#ifdef SWIG
+
+%shared_ptr(tesseract_environment::Command)
+%shared_ptr(tesseract_environment::AddCommand)
+%shared_ptr(tesseract_environment::MoveLinkCommand)
+%shared_ptr(tesseract_environment::MoveJointCommand)
+%shared_ptr(tesseract_environment::RemoveLinkCommand)
+%shared_ptr(tesseract_environment::RemoveJointCommand)
+%shared_ptr(tesseract_environment::ChangeLinkOriginCommand)
+%shared_ptr(tesseract_environment::ChangeJointOriginCommand)
+%shared_ptr(tesseract_environment::ChangeLinkCollisionEnabledCommand)
+%shared_ptr(tesseract_environment::ChangeLinkVisibilityCommand)
+%shared_ptr(tesseract_environment::AddAllowedCollisionCommand)
+%shared_ptr(tesseract_environment::RemoveAllowedCollisionCommand)
+%shared_ptr(tesseract_environment::RemoveAllowedCollisionLinkCommand)
+%shared_ptr(tesseract_environment::AddSceneGraphCommand)
+%shared_ptr(tesseract_environment::AddSceneGraphCommand)
+%shared_ptr(tesseract_environment::AddKinematicsInformationCommand)
+%shared_ptr(tesseract_environment::ChangeJointPositionLimitsCommand)
+%shared_ptr(tesseract_environment::ChangeJointVelocityLimitsCommand)
+%shared_ptr(tesseract_environment::ChangeJointAccelerationLimitsCommand)
+%shared_ptr(tesseract_environment::ChangeDefaultContactMarginCommand)
+%shared_ptr(tesseract_environment::ChangePairContactMarginCommand)
+
+%shared_factory(
+  tesseract_environment::Command,
+  tesseract_environment::AddCommand,
+	tesseract_environment::MoveLinkCommand,
+	tesseract_environment::MoveJointCommand,
+	tesseract_environment::RemoveLinkCommand,
+	tesseract_environment::RemoveJointCommand,
+	tesseract_environment::ChangeLinkOriginCommand,
+	tesseract_environment::ChangeJointOriginCommand,
+	tesseract_environment::ChangeLinkCollisionEnabledCommand,
+	tesseract_environment::ChangeLinkVisibilityCommand,
+	tesseract_environment::AddAllowedCollisionCommand,
+  tesseract_environment::RemoveAllowedCollisionCommand,
+  tesseract_environment::RemoveAllowedCollisionLinkCommand,
+  tesseract_environment::AddSceneGraphCommand,
+  tesseract_environment::AddKinematicsInformationCommand,
+  tesseract_environment::ChangeJointPositionLimitsCommand,
+  tesseract_environment::ChangeJointVelocityLimitsCommand,
+  tesseract_environment::ChangeJointAccelerationLimitsCommand,
+  tesseract_environment::ChangeDefaultContactMarginCommand,
+  tesseract_environment::ChangePairContactMarginCommand
+)
+
+%template(Commands) std::vector<tesseract_environment::Command::ConstPtr>;
+
+#endif  // SWIG
+
 namespace tesseract_environment
 {
 enum class CommandType

@@ -29,6 +29,10 @@
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::KDLInvKinChainLMAFactory)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 class KDLInvKinChainLMAFactory : public InverseKinematicsFactory

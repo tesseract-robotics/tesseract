@@ -41,6 +41,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/convex_mesh.h>
 #include <tesseract_collision/core/common.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::ConvexMeshStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class ConvexMeshStatusCategory : public tesseract_common::StatusCategory

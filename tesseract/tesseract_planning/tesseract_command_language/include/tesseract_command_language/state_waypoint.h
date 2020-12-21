@@ -79,4 +79,8 @@ public:
 };
 }  // namespace tesseract_planning
 
+#ifdef SWIG
+%tesseract_command_language_add_waypoint_type(StateWaypoint)
+#endif  // SWIG
+
 #endif  // TESSERACT_COMMAND_LANGUAGE_JOINT_WAYPOINT_H

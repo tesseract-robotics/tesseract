@@ -41,9 +41,9 @@ namespace tesseract_scene_graph
 /** @brief A structure to hold opw kinematics data */
 struct OPWKinematicParameters
 {
-  double a1{ 0 }, a2{ 0 }, b{ 0 }, c1{ 0 }, c2{ 0 }, c3{ 0 }, c4{ 0 };
-  double offsets[6]{ 0, 0, 0, 0, 0, 0 };
-  signed char sign_corrections[6]{ 1, 1, 1, 1, 1, 1 };
+  double a1 = 0, a2 = 0, b = 0, c1 = 0, c2 = 0, c3 = 0, c4 = 0;
+  double offsets[6] = { 0, 0, 0, 0, 0, 0 };
+  signed char sign_corrections[6] = { 1, 1, 1, 1, 1, 1 };
 };
 
 struct ROPKinematicParameters
@@ -66,6 +66,16 @@ struct REPKinematicParameters
   std::unordered_map<std::string, double> positioner_sample_resolution;
 };
 
+}  // namespace tesseract_scene_graph
+
+#ifdef SWIG
+%template(GroupOPWKinematics) std::unordered_map<std::string, tesseract_scene_graph::OPWKinematicParameters>;
+%template(GroupROPKinematics) std::unordered_map<std::string, tesseract_scene_graph::ROPKinematicParameters>;
+%template(GroupREPKinematics) std::unordered_map<std::string, tesseract_scene_graph::REPKinematicParameters>;
+#endif  // SWIG
+
+namespace tesseract_scene_graph
+{
 using GroupsJointState = std::unordered_map<std::string, double>;
 using GroupsJointStates = std::unordered_map<std::string, GroupsJointState>;
 using GroupJointStates = std::unordered_map<std::string, GroupsJointStates>;
@@ -121,7 +131,7 @@ struct KinematicsInformation
   /** @brief A map of group default forward kinematics solvers */
   GroupDefaultKinematicsSolver group_default_fwd_kin;
 
-  /**< @brief A map of group default forward kinematics solvers */
+  /** @brief A map of group default forward kinematics solvers */
   GroupDefaultKinematicsSolver group_default_inv_kin;
 
   /** @brief Clear the kinematics information */

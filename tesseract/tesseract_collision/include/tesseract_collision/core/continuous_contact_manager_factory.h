@@ -29,15 +29,19 @@
 
 #include <tesseract_collision/core/continuous_contact_manager.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_collision::ContinuousContactManagerFactory)
+#endif  // SWIG
+
 namespace tesseract_collision
 {
+using ContinuousContactManagerFactoryCreateMethod = std::function<ContinuousContactManager::Ptr()>;
 class ContinuousContactManagerFactory
 {
 public:
-  using CreateMethod = std::function<ContinuousContactManager::Ptr()>;
   ContinuousContactManagerFactory() = default;
 
-  bool registar(const std::string& name, CreateMethod create_function)
+  bool registar(const std::string& name, ContinuousContactManagerFactoryCreateMethod create_function)
   {
     auto it = continuous_types.find(name);
     if (it == continuous_types.end())
@@ -61,7 +65,7 @@ public:
   const std::vector<std::string>& getAvailableManagers() const { return keys_; }
 
 private:
-  std::unordered_map<std::string, CreateMethod> continuous_types;
+  std::unordered_map<std::string, ContinuousContactManagerFactoryCreateMethod> continuous_types;
   std::vector<std::string> keys_;
 };
 }  // namespace tesseract_collision

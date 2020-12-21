@@ -23,7 +23,8 @@ FILE (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/package.xml" tesseract_viewer_python_
 IF ("${tesseract_viewer_python_version1}" STREQUAL "" )
 MESSAGE(FATAL_ERROR "Could not read tesseract_viewer_python version.")
 ENDIF()
-STRING (REGEX REPLACE "<version>([0-9]+\\.[0-9]+\\.[0-9]+)</version>" "\\1" tesseract_viewer_python_version ${tesseract_viewer_python_version1})
+STRING (REGEX REPLACE "<version>([0-9]+\\.[0-9]+\\.[0-9]+)</version>" "\\1" tesseract_viewer_python_version2 ${tesseract_viewer_python_version1})
+STRING (STRIP ${tesseract_viewer_python_version2} tesseract_viewer_python_version)
 MESSAGE(STATUS "tesseract_viewer_python version: ${tesseract_viewer_python_version}")
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.py.in" "${CMAKE_CURRENT_BINARY_DIR}/python/setup.py" @ONLY)

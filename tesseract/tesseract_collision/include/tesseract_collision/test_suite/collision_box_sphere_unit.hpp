@@ -164,12 +164,12 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   }
   else
   {
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], 0.0, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.05, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.0, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0], 0.5, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][2], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][0], -0.05, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][2], 0.0, 0.001);
   }
 
   EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
@@ -220,12 +220,12 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   }
   else
   {
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], 0.0, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.75, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.0, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0], 0.5, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][2], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][0], 0.75, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][2], 0.0, 0.001);
   }
 
   EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
@@ -273,8 +273,8 @@ inline void runTestConvex(DiscreteContactManager& checker)
   }
   else
   {
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.03776, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0], 0.5, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][0], -0.03776, 0.001);
   }
 
   EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
@@ -323,8 +323,8 @@ inline void runTestConvex(DiscreteContactManager& checker)
   }
   else
   {
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.76224, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0], 0.5, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][0], 0.76224, 0.001);
   }
 
   EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
