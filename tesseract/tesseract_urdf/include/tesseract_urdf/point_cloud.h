@@ -39,6 +39,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::PointCloudStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class PointCloudStatusCategory : public tesseract_common::StatusCategory

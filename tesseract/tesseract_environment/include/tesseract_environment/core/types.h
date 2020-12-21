@@ -40,6 +40,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#ifdef SWIG
+
+%shared_ptr(tesseract_environment::EnvState)
+%shared_ptr(tesseract_environment::AdjacencyMapPair)
+%shared_ptr(tesseract_environment::AdjacencyMap)
+
+#endif  // SWIG
+
 namespace tesseract_environment
 {
 /**

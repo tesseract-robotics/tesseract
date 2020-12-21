@@ -45,6 +45,10 @@
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_collision/bullet/tesseract_collision_configuration.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_collision::tesseract_collision_bullet::BulletCastBVHManager)
+#endif  // SWIG
+
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
@@ -129,11 +133,13 @@ public:
 
   void contactTest(ContactResultMap& collisions, const ContactRequest& request) override;
 
+#ifndef SWIG
   /**
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
   void addCollisionObject(COW::Ptr cow);
+#endif  // SWIG
 
 private:
   std::vector<std::string> active_;            /**< @brief A list of the active collision objects */

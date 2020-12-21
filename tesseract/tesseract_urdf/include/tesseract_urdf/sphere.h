@@ -35,6 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/sphere.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::SphereStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class SphereStatusCategory : public tesseract_common::StatusCategory

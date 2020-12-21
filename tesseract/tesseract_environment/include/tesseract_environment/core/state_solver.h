@@ -40,6 +40,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/types.h>
 #include <tesseract_environment/core/commands.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_environment::StateSolver)
+#endif  // SWIG
+
 namespace tesseract_environment
 {
 class StateSolver

@@ -307,5 +307,44 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
   return createMeshFromAsset<T>(scene, scale, resource);
 }
 
+/**
+ * @brief Create a mesh from byte array
+ * @param url The URL of source resource
+ * @param bytes Byte array
+ * @param bytes_len The length of bytes
+ * @param scale Perform an axis scaling
+ * @param trianglulate If true the mesh will be trianglulated. This should be done for visual meshes.
+ *        In the case of collision meshes do not triangulate convex hull meshes.
+ * @param flatten If true all meshes will be condensed into a single mesh. This should only be used for visual meshes,
+ * do not flatten collision meshes.
+ * @return
+ */
+template <typename T>
+static std::vector<std::shared_ptr<T>> createMeshFromBytes(const std::string& url,
+                                                           const uint8_t* bytes,
+                                                           size_t bytes_len,
+                                                           Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+                                                           bool triangulate = false,
+                                                           bool flatten = false)
+{
+  std::shared_ptr<tesseract_common::Resource> resource =
+      std::make_shared<tesseract_common::BytesResource>(url, bytes, bytes_len);
+  return tesseract_geometry::createMeshFromResource<T>(resource, scale, triangulate, flatten);
+}
+
 }  // namespace tesseract_geometry
+
+#ifdef SWIG
+%pybuffer_binary(const uint8_t* bytes, size_t bytes_len);
+%template(createMeshFromResource) tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>;
+%template(createSDFMeshFromResource) tesseract_geometry::createMeshFromResource<tesseract_geometry::SDFMesh>;
+%template(createConvexMeshFromResource) tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>;
+%template(createMeshFromPath) tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>;
+%template(createSDFMeshFromPath) tesseract_geometry::createMeshFromPath<tesseract_geometry::SDFMesh>;
+%template(createConvexMeshFromPath) tesseract_geometry::createMeshFromPath<tesseract_geometry::ConvexMesh>;
+%template(createMeshFromBytes) tesseract_geometry::createMeshFromBytes<tesseract_geometry::Mesh>;
+%template(createSDFMeshFromBytes) tesseract_geometry::createMeshFromBytes<tesseract_geometry::SDFMesh>;
+%template(createConvexMeshFromBytes) tesseract_geometry::createMeshFromBytes<tesseract_geometry::ConvexMesh>;
+#endif
+
 #endif

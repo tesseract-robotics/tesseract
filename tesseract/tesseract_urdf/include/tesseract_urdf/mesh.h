@@ -41,6 +41,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_geometry/mesh_parser.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_urdf::MeshStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_urdf
 {
 class MeshStatusCategory : public tesseract_common::StatusCategory

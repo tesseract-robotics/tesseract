@@ -28,15 +28,19 @@
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_collision::DiscreteContactManagerFactory)
+#endif  // SWIG
+
 namespace tesseract_collision
 {
+using DiscreteContactManagerFactoryCreateMethod = std::function<DiscreteContactManager::Ptr()>;
 class DiscreteContactManagerFactory
 {
 public:
-  using CreateMethod = std::function<DiscreteContactManager::Ptr()>;
   DiscreteContactManagerFactory() = default;
 
-  bool registar(const std::string& name, CreateMethod create_function)
+  bool registar(const std::string& name, DiscreteContactManagerFactoryCreateMethod create_function)
   {
     auto it = discrete_types.find(name);
     if (it == discrete_types.end())
@@ -60,7 +64,7 @@ public:
   const std::vector<std::string>& getAvailableManagers() const { return keys_; }
 
 private:
-  std::unordered_map<std::string, CreateMethod> discrete_types;
+  std::unordered_map<std::string, DiscreteContactManagerFactoryCreateMethod> discrete_types;
   std::vector<std::string> keys_;
 };
 }  // namespace tesseract_collision

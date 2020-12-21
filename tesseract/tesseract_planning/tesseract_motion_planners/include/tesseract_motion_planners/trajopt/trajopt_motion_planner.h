@@ -34,6 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/planner.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::TrajOptMotionPlanner)
+%shared_ptr(tesseract_planning::TrajOptMotionPlannerStatusCategory)
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 class TrajOptMotionPlannerStatusCategory;
@@ -106,8 +111,10 @@ public:
   MotionPlanner::Ptr clone() const override;
 
 protected:
+#ifndef SWIG
   std::string name_{ "TRAJOPT" };
   std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The planners status codes */
+#endif
 };
 
 class TrajOptMotionPlannerStatusCategory : public tesseract_common::StatusCategory

@@ -35,8 +35,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_common/sfinae_utils.h>
 
+#ifdef SWIG
+%ignore std::vector<tesseract_planning::Instruction>::vector(size_type);
+%ignore std::vector<tesseract_planning::Instruction>::resize(size_type);
+%pythondynamic tesseract_planning::Instruction;
+%template(Instructions) std::vector<tesseract_planning::Instruction>;
+#endif  // SWIG
+
 namespace tesseract_planning
 {
+#ifndef SWIG
 namespace detail_instruction
 {
 CREATE_MEMBER_CHECK(getType);
@@ -155,10 +163,12 @@ struct InstructionInner final : InstructionInnerBase
 
 }  // namespace detail_instruction
 
+#endif  // SWIG
+
 class Instruction
 {
   template <typename T>
-  using uncvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+  using uncvref_t = std::remove_cv_t<typename std::remove_reference<T>::type>;
 
   // Enable the generic ctor only if ``T`` is not a ForwardKinematics (after removing const/reference qualifiers)
   // If ``T`` is of type ForwardKinematics we disable so it will use the copy or move constructors of this class.
@@ -166,9 +176,6 @@ class Instruction
   using generic_ctor_enabler = std::enable_if_t<!std::is_same<Instruction, uncvref_t<T>>::value, int>;
 
 public:
-  using Ptr = std::shared_ptr<Instruction>;
-  using ConstPtr = std::shared_ptr<const Instruction>;
-
   template <typename T, generic_ctor_enabler<T> = 0>
   Instruction(T&& instruction)  // NOLINT
     : instruction_(std::make_unique<detail_instruction::InstructionInner<uncvref_t<T>>>(instruction))

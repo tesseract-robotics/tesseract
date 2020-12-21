@@ -39,6 +39,5 @@ std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const DescartesPlanProfile<
 bool toXMLFile(const DescartesPlanProfile<double>& plan_profile, const std::string& file_path);
 
 std::string toXMLString(const DescartesPlanProfile<double>& plan_profile);
-
 }  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_SERIALIZE_H

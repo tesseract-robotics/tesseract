@@ -40,6 +40,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/core/process_planning_request.h>
 #include <tesseract_process_managers/core/process_planning_future.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::ProcessPlanningServer)
+%nodefaultctor tesseract_planning::ProcessPlanningServer;
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 /**
@@ -52,12 +57,14 @@ public:
   using Ptr = std::shared_ptr<ProcessPlanningServer>;
   using ConstPtr = std::shared_ptr<const ProcessPlanningServer>;
 
+#ifndef SWIG
   /**
    * @brief Constructor
    * @param cache The cache to use for getting Environment objects
    * @param n The number of threads used by the planning server
    */
   ProcessPlanningServer(EnvironmentCache::Ptr cache, size_t n = std::thread::hardware_concurrency());
+#endif  // SWIG
 
   /**
    * @brief Constructor
@@ -71,17 +78,21 @@ public:
                         size_t n = std::thread::hardware_concurrency());
 
   virtual ~ProcessPlanningServer() = default;
+#ifndef SWIG
   ProcessPlanningServer(const ProcessPlanningServer&) = default;
   ProcessPlanningServer& operator=(const ProcessPlanningServer&) = default;
   ProcessPlanningServer(ProcessPlanningServer&&) = default;
   ProcessPlanningServer& operator=(ProcessPlanningServer&&) = default;
+#endif  // SWIG
 
+#ifndef SWIG
   /**
    * @brief Register a process planner with the planning server
    * @param name The name used to locate the process planner through requests
    * @param generator The Taskflow Generator associated with the name
    */
   void registerProcessPlanner(const std::string& name, TaskflowGenerator::UPtr generator);
+#endif  // SWIG
 
   /**
    * @brief Load default process planners
@@ -102,6 +113,7 @@ public:
    */
   std::vector<std::string> getAvailableProcessPlanners() const;
 
+#ifndef SWIG
   /**
    * @brief Execute a process planning request.
    * @details This does not block to allow for multiple requests, use future to wait if needed.
@@ -116,6 +128,17 @@ public:
    * @return A future to monitor progress
    */
   std::future<void> run(tf::Taskflow& taskflow);
+#endif  // SWIG
+
+#ifdef SWIG
+  %extend
+  {
+    std::shared_ptr<tesseract_planning::ProcessPlanningFuture> run(const ProcessPlanningRequest& request)
+    {
+      return std::make_shared<tesseract_planning::ProcessPlanningFuture>(std::move($self->run(request)));
+    }
+  }
+#endif  // SWIG
 
   /** @brief Wait for all process currently being executed to finish before returning */
   void waitForAll();

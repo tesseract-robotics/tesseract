@@ -35,6 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_collision::ContinuousContactManager)
+#endif  // SWIG
+
 namespace tesseract_collision
 {
 class ContinuousContactManager

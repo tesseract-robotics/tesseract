@@ -26,6 +26,12 @@
 
 #include <tesseract_process_managers/core/process_generator.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::ProfileSwitchProfile)
+%ignore ProfileSwitchProcessGenerator;
+%ignore ProfileSwitchProcessInfo;
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 struct ProfileSwitchProfile

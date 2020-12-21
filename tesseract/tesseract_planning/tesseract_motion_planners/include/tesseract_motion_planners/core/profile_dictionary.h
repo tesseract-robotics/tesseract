@@ -36,6 +36,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <shared_mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#ifdef SWIG
+%shared_ptr(tesseract_planning::ProfileDictionary)
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 /**
@@ -174,4 +178,16 @@ protected:
   mutable std::shared_mutex mutex_;
 };
 }  // namespace tesseract_planning
+
+#ifdef SWIG
+%tesseract_process_managers_add_profile_type(SimplePlannerPlanProfile);
+%tesseract_process_managers_add_profile_type(TrajOptSolverProfile);
+%tesseract_process_managers_add_profile_type(TrajOptPlanProfile);
+%tesseract_process_managers_add_profile_type(TrajOptCompositeProfile);
+%tesseract_process_managers_add_profile_type2(DescartesPlanProfileD,DescartesPlanProfile<double>);
+%tesseract_process_managers_add_profile_type(OMPLPlanProfile);
+%tesseract_process_managers_add_profile_type(IterativeSplineParameterizationProfile);
+%tesseract_process_managers_add_profile_type(ProfileSwitchProfile);
+#endif  // SWIG
+
 #endif  // TESSERACT_MOTION_PLANNERS_PROFILE_DICTIONARY_H

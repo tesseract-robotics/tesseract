@@ -37,6 +37,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_environment/core/environment.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_visualization::Visualization)
+#endif  // SWIG
+
 namespace tesseract_planning
 {
 class Instruction;
