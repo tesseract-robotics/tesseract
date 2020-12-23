@@ -45,14 +45,17 @@ tesseract_common::Resource::Ptr SimpleResourceLocator::locateResource(const std:
   std::string filename = locator_function_(url);
   if (filename.empty())
     return nullptr;
-  return std::make_shared<SimpleLocatedResource>(url, filename);
+  return std::make_shared<SimpleLocatedResource>(url, filename, shared_from_this());
 }
 
-SimpleLocatedResource::SimpleLocatedResource(const std::string& url, const std::string& filename)
+SimpleLocatedResource::SimpleLocatedResource(const std::string& url,
+                                             const std::string& filename,
+                                             const SimpleResourceLocator::Ptr& parent)
   : tesseract_common::Resource()
 {
   url_ = url;
   filename_ = filename;
+  parent_ = parent;
 }
 
 bool SimpleLocatedResource::isFile() { return true; }
@@ -86,4 +89,23 @@ std::shared_ptr<std::istream> SimpleLocatedResource::getResourceContentStream()
   std::shared_ptr<std::ifstream> f = std::make_shared<std::ifstream>(filename_, std::ios::binary);
   return f;
 }
+
+tesseract_common::Resource::Ptr SimpleLocatedResource::locateSubResource(const std::string& relative_path)
+{
+  auto parent = parent_.lock();
+  if (!parent)
+  {
+    return nullptr;
+  }
+  auto last_slash = url_.find_last_of('/');
+  if (last_slash == url_.npos)
+  {
+    return nullptr;
+  }
+
+  std::string url_base_path = url_.substr(0, last_slash);
+  std::string new_url = url_base_path + "/" + relative_path;
+  return parent->locateResource(new_url);
+}
+
 }  // namespace tesseract_scene_graph

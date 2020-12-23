@@ -87,6 +87,7 @@
 
 %tesseract_aligned_vector(VectorIsometry3d, Eigen::Isometry3d);
 %template(VectorVector3d) std::vector<Eigen::Vector3d>;
+%template(VectorVector2d) std::vector<Eigen::Vector2d>;
 %tesseract_aligned_vector(VectorVector4d, Eigen::Vector4d);
 %tesseract_aligned_map(TransformMap, std::string, Eigen::Isometry3d);
 
