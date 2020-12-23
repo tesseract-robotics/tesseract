@@ -42,16 +42,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 %template(SDFMeshVector) std::vector<std::shared_ptr<tesseract_geometry::SDFMesh> >;
 #endif  // SWIG
 
-#ifdef SWIG
-%shared_ptr(tesseract_geometry::SDFMesh)
-%template(SDFMeshVector) std::vector<std::shared_ptr<tesseract_geometry::SDFMesh> >;
-#endif  // SWIG
-
 namespace tesseract_geometry
 {
-#ifdef SWIG
-%nodefaultctor SDFMesh;
-#endif  // SWIG
 
 class SDFMesh : public Geometry
 {
@@ -61,7 +53,6 @@ public:
   using Ptr = std::shared_ptr<SDFMesh>;
   using ConstPtr = std::shared_ptr<const SDFMesh>;
 
-#ifndef SWIG
   /**
    * @brief SDF Mesh geometry
    * @param vertices A vector of vertices associated with the mesh
@@ -144,22 +135,6 @@ public:
     vertice_count_ = static_cast<int>(vertices_->size());
     assert((triangle_count_ * 4) == triangles_->size());
   }
-#endif
-
-#ifdef SWIG
-  %extend
-  {
-    SDFMesh(const tesseract_common::VectorVector3d& vertices,
-       const Eigen::VectorXi& triangles,
-       tesseract_common::Resource::Ptr resource = nullptr,
-       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
-    {
-      return new tesseract_geometry::SDFMesh(std::make_shared<tesseract_common::VectorVector3d>(vertices),
-        std::make_shared<Eigen::VectorXi>(triangles),
-        resource, scale);
-    }
-  }
-#endif  // SWIG
 
   ~SDFMesh() override = default;
   SDFMesh(const SDFMesh&) = delete;
@@ -167,7 +142,6 @@ public:
   SDFMesh(SDFMesh&&) = delete;
   SDFMesh& operator=(SDFMesh&&) = delete;
 
-#ifndef SWIG
   /**
    * @brief Get SDF mesh vertices
    * @return A vector of vertices
@@ -179,16 +153,6 @@ public:
    * @return A vector of triangle indices
    */
   const std::shared_ptr<const Eigen::VectorXi>& getTriangles() const { return triangles_; }
-#else   // SWIG
-  // clang-format off
-  %extend
-  {
-    tesseract_common::VectorVector3d getVertices() { return *$self->getVertices(); }
-
-    Eigen::VectorXi getTriangles() { return *$self->getTriangles(); }
-  }
-  // clang-format on
-#endif  // SWIG
 
   /**
    * @brief Get vertice count
