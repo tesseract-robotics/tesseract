@@ -2,12 +2,15 @@
 
 [![codecov](https://codecov.io/gh/ros-industrial-consortium/tesseract/branch/master/graph/badge.svg)](https://codecov.io/gh/ros-industrial-consortium/tesseract)
 
+[![Python](https://img.shields.io/badge/python-2.7+|3.6+-blue.svg)](https://github.com/ros-industrial-consortium/tesseract/tree/master/tesseract_python)
+
 Platform             | CI Status
 ---------------------|:---------
 Linux (Focal)        | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Focal-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Linux (Bionic)       | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Bionic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Windows              | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Windows-Noetic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Lint  (Clang-Format) | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Clang-Format/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+Lint  (Clang-Tidy)   | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Clang-Tidy/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Lint  (CodeCov)      | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/CodeCov/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 
 [![Github Issues](https://img.shields.io/github/issues/ros-industrial-consortium/tesseract.svg)](http://github.com/ros-industrial-consortium/tesseract/issues)
