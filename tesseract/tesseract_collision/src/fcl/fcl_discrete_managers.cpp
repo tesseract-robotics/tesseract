@@ -63,7 +63,7 @@ DiscreteContactManager::Ptr FCLDiscreteBVHManager::clone() const
     manager->addCollisionObject(cow.second->clone());
 
   manager->setActiveCollisionObjects(active_);
-  manager->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin());
+  manager->setCollisionMarginData(collision_margin_data_);
   manager->setIsContactAllowedFn(fn_);
 
   return manager;
@@ -283,15 +283,6 @@ void FCLDiscreteBVHManager::setPairCollisionMarginData(const std::string& name1,
   onCollisionMarginDataChanged();
 }
 
-void FCLDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
-{
-  setDefaultCollisionMarginData(contact_distance);
-}
-
-double FCLDiscreteBVHManager::getContactDistanceThreshold() const
-{
-  return collision_margin_data_.getMaxCollisionMargin();
-}
 const CollisionMarginData& FCLDiscreteBVHManager::getCollisionMarginData() const { return collision_margin_data_; }
 void FCLDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
 IsContactAllowedFn FCLDiscreteBVHManager::getIsContactAllowedFn() const { return fn_; }
