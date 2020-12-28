@@ -111,6 +111,7 @@ Tesseract currently leverages Compiler Warnigs, Clang Tidy and Code Coverage. Al
   - Wconversion
   - Wsign-conversion
   - Wno-sign-compare
+  - Wnon-virtual-dtor
 - Clang Tidy
   - clang-analyzer-*
   - bugprone-*
