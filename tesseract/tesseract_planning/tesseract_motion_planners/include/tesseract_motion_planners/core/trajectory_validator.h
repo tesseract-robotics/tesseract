@@ -75,6 +75,8 @@ public:
   {
   }
 
+  virtual ~TrajectoryValidator() = default;
+
   /**
    * @brief Performs checks on a planned trajectory to determine its validity
    * @param trajectory The planned trajectory
