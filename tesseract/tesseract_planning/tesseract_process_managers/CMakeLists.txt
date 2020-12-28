@@ -56,7 +56,6 @@ add_library(${PROJECT_NAME}
     src/process_generators/motion_planner_process_generator.cpp
     src/process_generators/profile_switch_process_generator.cpp
     src/process_generators/seed_min_length_process_generator.cpp
-    src/process_managers/simple_process_manager.cpp
     src/taskflow_generators/graph_taskflow.cpp
     src/taskflow_generators/raster_taskflow.cpp
     src/taskflow_generators/raster_global_taskflow.cpp
