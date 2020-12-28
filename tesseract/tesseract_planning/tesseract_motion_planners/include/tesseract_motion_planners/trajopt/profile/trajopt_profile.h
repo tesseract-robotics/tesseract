@@ -50,6 +50,8 @@ public:
   using Ptr = std::shared_ptr<TrajOptPlanProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptPlanProfile>;
 
+  virtual ~TrajOptPlanProfile() = default;
+
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      const Eigen::Isometry3d& cartesian_waypoint,
                      const Instruction& parent_instruction,
@@ -73,6 +75,8 @@ public:
   using Ptr = std::shared_ptr<TrajOptCompositeProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptCompositeProfile>;
 
+  virtual ~TrajOptCompositeProfile() = default;
+
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      int start_index,
                      int end_index,
@@ -88,6 +92,8 @@ class TrajOptSolverProfile
 public:
   using Ptr = std::shared_ptr<TrajOptSolverProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptSolverProfile>;
+
+  virtual ~TrajOptSolverProfile() = default;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci) const = 0;
 
