@@ -39,8 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/state_waypoint.h>
 #include <tesseract_motion_planners/planner_utils.h>
 
-using namespace trajopt;
-
 namespace tesseract_planning
 {
 SimpleMotionPlannerStatusCategory::SimpleMotionPlannerStatusCategory(std::string name) : name_(std::move(name)) {}

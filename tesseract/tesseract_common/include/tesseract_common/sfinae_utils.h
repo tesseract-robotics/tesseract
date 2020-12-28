@@ -1,7 +1,11 @@
 #ifndef TESSEACT_COMMON_SFINAE_UTILS_H
 #define TESSEACT_COMMON_SFINAE_UTILS_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <type_traits>
+#include <array>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 /*
  *  https://stackoverflow.com/questions/257288/templated-check-for-the-existence-of-a-class-member-function
@@ -40,9 +44,9 @@ template <typename Alias, typename AmbiguitySeed>
 struct has_member
 {
   template <typename C>
-  static char (&f(decltype(&C::value)))[1];
+  static std::array<char, 1>& f(decltype(&C::value));
   template <typename C>
-  static char (&f(...))[2];
+  static std::array<char, 2>& f(...);
 
   // Make sure the member name is consistently spelled the same.
   static_assert((sizeof(f<AmbiguitySeed>(nullptr)) == 1),

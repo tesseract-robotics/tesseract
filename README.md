@@ -122,8 +122,8 @@ Tesseract currently leverages Compiler Warnigs, Clang Tidy and Code Coverage. Al
   - cppcoreguidelines-no-malloc
   - cppcoreguidelines-slicing
   - cppcoreguidelines-special-member-functions
-  - misc-*
-  - modernize-*
+  - misc-*,-misc-non-private-member-variables-in-classes
+  - modernize-*,-modernize-use-trailing-return-type,-modernize-use-nodiscard
   - performance-*
   - readability-avoid-const-params-in-decls
   - readability-container-size-empty
