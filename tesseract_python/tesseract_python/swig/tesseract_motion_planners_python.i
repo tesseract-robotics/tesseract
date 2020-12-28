@@ -53,7 +53,6 @@
 // tesseract_motion_planners
 #define TESSERACT_MOTION_PLANNERS_CORE_PUBLIC
 %include "tesseract_motion_planners/core/types.h"
-%include "tesseract_motion_planners/core/trajectory_validator.h"
 %include "tesseract_motion_planners/core/planner.h"
 %include "tesseract_motion_planners/robot_config.h"
 %include "tesseract_motion_planners/interface_utils.h"

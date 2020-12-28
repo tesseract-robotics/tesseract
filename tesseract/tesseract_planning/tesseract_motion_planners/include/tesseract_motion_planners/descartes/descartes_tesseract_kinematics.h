@@ -53,16 +53,19 @@ public:
    * @param tesseract_fk Forward kinematics object
    * @param tesseract_ik Inverse kinematics object
    */
-  DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
-                               const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik)
-    : DescartesTesseractKinematics(tesseract_fk,
-                                   tesseract_ik,
-                                   std::bind(&descartes_light::isWithinLimits<FloatType>,
-                                             std::placeholders::_1,
-                                             tesseract_fk->getLimits().joint_limits.cast<FloatType>()),
-                                   std::bind(&descartes_light::getRedundantSolutions<FloatType>,
-                                             std::placeholders::_1,
-                                             tesseract_fk->getLimits().joint_limits.cast<FloatType>()))
+  DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr& tesseract_fk,
+                               const tesseract_kinematics::InverseKinematics::ConstPtr& tesseract_ik)
+    : DescartesTesseractKinematics(
+          tesseract_fk,
+          tesseract_ik,
+          [=](const FloatType* vertex) {
+            return descartes_light::isWithinLimits<FloatType>(vertex,
+                                                              tesseract_fk->getLimits().joint_limits.cast<FloatType>());
+          },
+          [=](const FloatType* vertex) {
+            return descartes_light::getRedundantSolutions<FloatType>(
+                vertex, tesseract_fk->getLimits().joint_limits.cast<FloatType>());
+          })
   {
     ik_seed_ = Eigen::VectorXd::Zero(dof());
   }

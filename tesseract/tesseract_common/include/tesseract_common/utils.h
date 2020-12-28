@@ -127,13 +127,13 @@ inline bool toNumeric(const std::string& s, FloatType& value)
  * @param limits The limits to generated numbers based on.
  * @return A vector of random numbers between the provided limits.
  */
-inline Eigen::VectorXd generateRandomNumber(Eigen::MatrixX2d limits)
+inline Eigen::VectorXd generateRandomNumber(const Eigen::Ref<const Eigen::MatrixX2d>& limits)
 {
   Eigen::VectorXd joint_values;
   joint_values.resize(limits.rows());
   for (long i = 0; i < limits.rows(); ++i)
   {
-    std::uniform_real_distribution<double> sample{ limits(i, 0), limits(i, 1) };
+    std::uniform_real_distribution<double> sample(limits(i, 0), limits(i, 1));
     joint_values(i) = sample(mersenne);
   }
   return joint_values;
