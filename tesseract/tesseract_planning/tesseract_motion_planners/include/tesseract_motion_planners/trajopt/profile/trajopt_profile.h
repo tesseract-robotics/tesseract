@@ -50,7 +50,12 @@ public:
   using Ptr = std::shared_ptr<TrajOptPlanProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptPlanProfile>;
 
+  TrajOptPlanProfile() = default;
   virtual ~TrajOptPlanProfile() = default;
+  TrajOptPlanProfile(const TrajOptPlanProfile&) = default;
+  TrajOptPlanProfile& operator=(const TrajOptPlanProfile&) = default;
+  TrajOptPlanProfile(TrajOptPlanProfile&&) = default;
+  TrajOptPlanProfile& operator=(TrajOptPlanProfile&&) = default;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      const Eigen::Isometry3d& cartesian_waypoint,
@@ -75,7 +80,12 @@ public:
   using Ptr = std::shared_ptr<TrajOptCompositeProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptCompositeProfile>;
 
+  TrajOptCompositeProfile() = default;
   virtual ~TrajOptCompositeProfile() = default;
+  TrajOptCompositeProfile(const TrajOptCompositeProfile&) = default;
+  TrajOptCompositeProfile& operator=(const TrajOptCompositeProfile&) = default;
+  TrajOptCompositeProfile(TrajOptCompositeProfile&&) = default;
+  TrajOptCompositeProfile& operator=(TrajOptCompositeProfile&&) = default;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      int start_index,
@@ -93,7 +103,12 @@ public:
   using Ptr = std::shared_ptr<TrajOptSolverProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptSolverProfile>;
 
+  TrajOptSolverProfile() = default;
   virtual ~TrajOptSolverProfile() = default;
+  TrajOptSolverProfile(const TrajOptSolverProfile&) = default;
+  TrajOptSolverProfile& operator=(const TrajOptSolverProfile&) = default;
+  TrajOptSolverProfile(TrajOptSolverProfile&&) = default;
+  TrajOptSolverProfile& operator=(TrajOptSolverProfile&&) = default;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci) const = 0;
 

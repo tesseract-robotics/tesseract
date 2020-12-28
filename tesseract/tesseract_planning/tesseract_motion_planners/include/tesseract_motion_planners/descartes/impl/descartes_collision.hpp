@@ -54,10 +54,7 @@ DescartesCollision<FloatType>::DescartesCollision(const tesseract_environment::E
   contact_manager_->setActiveCollisionObjects(active_link_names_);
   contact_manager_->setCollisionMarginData(collision_check_config_.collision_margin_data);
   contact_manager_->setIsContactAllowedFn(
-      std::bind(&tesseract_planning::DescartesCollision<FloatType>::isContactAllowed,
-                this,
-                std::placeholders::_1,
-                std::placeholders::_2));
+      [this](const std::string& a, const std::string& b) { return isContactAllowed(a, b); });
 }
 
 template <typename FloatType>
@@ -73,10 +70,7 @@ DescartesCollision<FloatType>::DescartesCollision(const DescartesCollision& coll
   contact_manager_->setActiveCollisionObjects(active_link_names_);
   contact_manager_->setCollisionMarginData(collision_check_config_.collision_margin_data);
   contact_manager_->setIsContactAllowedFn(
-      std::bind(&tesseract_planning::DescartesCollision<FloatType>::isContactAllowed,
-                this,
-                std::placeholders::_1,
-                std::placeholders::_2));
+      [this](const std::string& a, const std::string& b) { return isContactAllowed(a, b); });
 }
 
 template <typename FloatType>

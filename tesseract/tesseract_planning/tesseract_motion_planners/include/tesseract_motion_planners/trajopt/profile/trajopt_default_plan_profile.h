@@ -48,7 +48,12 @@ public:
   using ConstPtr = std::shared_ptr<const TrajOptDefaultPlanProfile>;
 
   TrajOptDefaultPlanProfile() = default;
+  ~TrajOptDefaultPlanProfile() override = default;
   TrajOptDefaultPlanProfile(const tinyxml2::XMLElement& xml_element);
+  TrajOptDefaultPlanProfile(const TrajOptDefaultPlanProfile&) = default;
+  TrajOptDefaultPlanProfile& operator=(const TrajOptDefaultPlanProfile&) = default;
+  TrajOptDefaultPlanProfile(TrajOptDefaultPlanProfile&&) = default;
+  TrajOptDefaultPlanProfile& operator=(TrajOptDefaultPlanProfile&&) = default;
 
   Eigen::VectorXd cartesian_coeff{ Eigen::VectorXd::Constant(1, 1, 5) };
   Eigen::VectorXd joint_coeff{ Eigen::VectorXd::Constant(1, 1, 5) };

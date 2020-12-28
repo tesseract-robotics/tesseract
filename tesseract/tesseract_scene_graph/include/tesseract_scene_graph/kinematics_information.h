@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <array>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -42,8 +43,8 @@ namespace tesseract_scene_graph
 struct OPWKinematicParameters
 {
   double a1 = 0, a2 = 0, b = 0, c1 = 0, c2 = 0, c3 = 0, c4 = 0;
-  double offsets[6] = { 0, 0, 0, 0, 0, 0 };
-  signed char sign_corrections[6] = { 1, 1, 1, 1, 1, 1 };
+  std::array<double, 6> offsets = { 0, 0, 0, 0, 0, 0 };
+  std::array<signed char, 6> sign_corrections = { 1, 1, 1, 1, 1, 1 };
 };
 
 struct ROPKinematicParameters

@@ -46,8 +46,16 @@ namespace tesseract_planning
 class TrajOptDefaultCompositeProfile : public TrajOptCompositeProfile
 {
 public:
+  using Ptr = std::shared_ptr<TrajOptDefaultCompositeProfile>;
+  using ConstPtr = std::shared_ptr<const TrajOptDefaultCompositeProfile>;
+
   TrajOptDefaultCompositeProfile() = default;
+  ~TrajOptDefaultCompositeProfile() override = default;
   TrajOptDefaultCompositeProfile(const tinyxml2::XMLElement& xml_element);
+  TrajOptDefaultCompositeProfile(const TrajOptDefaultCompositeProfile&) = default;
+  TrajOptDefaultCompositeProfile& operator=(const TrajOptDefaultCompositeProfile&) = default;
+  TrajOptDefaultCompositeProfile(TrajOptDefaultCompositeProfile&&) = default;
+  TrajOptDefaultCompositeProfile& operator=(TrajOptDefaultCompositeProfile&&) = default;
 
   /** @brief The type of contact test to perform: FIRST, CLOSEST, ALL */
   tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL;
