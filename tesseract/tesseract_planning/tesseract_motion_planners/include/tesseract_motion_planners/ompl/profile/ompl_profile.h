@@ -54,6 +54,7 @@ public:
   OMPLPlanProfile& operator=(const OMPLPlanProfile&) = default;
   OMPLPlanProfile(OMPLPlanProfile&&) noexcept = default;
   OMPLPlanProfile& operator=(OMPLPlanProfile&&) noexcept = default;
+
   OMPLPlanProfile(const tinyxml2::XMLElement& xml_element);
 
   virtual void setup(OMPLProblem& prob) const = 0;

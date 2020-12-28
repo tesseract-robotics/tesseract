@@ -58,7 +58,7 @@ class DescartesJointLimitsVertexEvaluator : public DescartesVertexEvaluator<Floa
 {
 public:
   using Ptr = typename std::shared_ptr<DescartesJointLimitsVertexEvaluator<FloatType>>;
-  DescartesJointLimitsVertexEvaluator(Eigen::MatrixX2d limits) : limits_(std::move(limits)) {}
+  DescartesJointLimitsVertexEvaluator(const Eigen::Ref<const Eigen::MatrixX2d>& limits) : limits_(limits) {}
 
   bool operator()(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& vertex) const override
   {
