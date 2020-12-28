@@ -473,58 +473,6 @@ bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& con
   return found;
 }
 
-bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                         tesseract_collision::ContinuousContactManager& manager,
-                         const tesseract_environment::StateSolver& state_solver,
-                         const CompositeInstruction& program,
-                         const tesseract_collision::ContactRequest& request)
-{
-  tesseract_collision::CollisionCheckConfig config;
-  config.contact_request = request;
-  config.type = tesseract_collision::CollisionEvaluatorType::CONTINUOUS;
-  return contactCheckProgram(contacts, manager, state_solver, program, config);
-}
-
-bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                         tesseract_collision::ContinuousContactManager& manager,
-                         const tesseract_environment::StateSolver& state_solver,
-                         const CompositeInstruction& program,
-                         double longest_valid_segment_length,
-                         const tesseract_collision::ContactRequest& request)
-{
-  tesseract_collision::CollisionCheckConfig config;
-  config.contact_request = request;
-  config.type = tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS;
-  config.longest_valid_segment_length = longest_valid_segment_length;
-  return contactCheckProgram(contacts, manager, state_solver, program, config);
-}
-
-bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                         tesseract_collision::DiscreteContactManager& manager,
-                         const tesseract_environment::StateSolver& state_solver,
-                         const CompositeInstruction& program,
-                         const tesseract_collision::ContactRequest& request)
-{
-  tesseract_collision::CollisionCheckConfig config;
-  config.contact_request = request;
-  config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
-  return contactCheckProgram(contacts, manager, state_solver, program, config);
-}
-
-bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                         tesseract_collision::DiscreteContactManager& manager,
-                         const tesseract_environment::StateSolver& state_solver,
-                         const CompositeInstruction& program,
-                         double longest_valid_segment_length,
-                         const tesseract_collision::ContactRequest& request)
-{
-  tesseract_collision::CollisionCheckConfig config;
-  config.contact_request = request;
-  config.type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
-  config.longest_valid_segment_length = longest_valid_segment_length;
-  return contactCheckProgram(contacts, manager, state_solver, program, config);
-}
-
 void generateNaiveSeedHelper(CompositeInstruction& composite_instructions,
                              const tesseract_environment::Environment& env,
                              const tesseract_environment::EnvState& env_state,

@@ -159,12 +159,6 @@ public:
   virtual const std::vector<std::string>& getActiveCollisionObjects() const = 0;
 
   /**
-   * @brief Set the contact distance threshold for which collision should be considered.
-   * @param contact_distance The contact distance
-   */
-  virtual void DEPRECATED("Please use setCollisionMarginData") setContactDistanceThreshold(double contact_distance) = 0;
-
-  /**
    * @brief Set the contact distance thresholds for which collision should be considered on a per pair basis
    * @param collision_margin_data Contains the data that will replace the current settings
    */
@@ -189,12 +183,6 @@ public:
   virtual void setPairCollisionMarginData(const std::string& name1,
                                           const std::string& name2,
                                           double collision_margin) = 0;
-
-  /**
-   * @brief Get the contact distance threshold
-   * @return The contact distance
-   */
-  virtual double DEPRECATED("Please use getCollisionMarginData") getContactDistanceThreshold() const = 0;
 
   /**
    * @brief Get the contact distance threshold
