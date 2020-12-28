@@ -172,45 +172,6 @@ bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& con
                          const CompositeInstruction& program,
                          const tesseract_collision::CollisionCheckConfig& config);
 
-#ifndef SWIG
-
-/// Deprecated overloads
-bool DEPRECATED("Please use overload with CollisionCheckConfig")
-    contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                        tesseract_collision::ContinuousContactManager& manager,
-                        const tesseract_environment::StateSolver& state_solver,
-                        const CompositeInstruction& program,
-                        const tesseract_collision::ContactRequest& request =
-                            tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST));
-
-bool DEPRECATED("Please use overload with CollisionCheckConfig")
-    contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                        tesseract_collision::ContinuousContactManager& manager,
-                        const tesseract_environment::StateSolver& state_solver,
-                        const CompositeInstruction& program,
-                        double longest_valid_segment_length,
-                        const tesseract_collision::ContactRequest& request =
-                            tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST));
-
-bool DEPRECATED("Please use overload with CollisionCheckConfig")
-    contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                        tesseract_collision::DiscreteContactManager& manager,
-                        const tesseract_environment::StateSolver& state_solver,
-                        const CompositeInstruction& program,
-                        const tesseract_collision::ContactRequest& request =
-                            tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST));
-
-bool DEPRECATED("Please use overload with CollisionCheckConfig")
-    contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                        tesseract_collision::DiscreteContactManager& manager,
-                        const tesseract_environment::StateSolver& state_solver,
-                        const CompositeInstruction& program,
-                        double longest_valid_segment_length,
-                        const tesseract_collision::ContactRequest& request =
-                            tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST));
-
-#endif  // SWIG
-
 /**
  * @brief This generates a naive seed for the provided program
  * @details This will generate a seed where each plan instruction has a single move instruction associated to it using
