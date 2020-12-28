@@ -231,16 +231,6 @@ void BulletDiscreteSimpleManager::setPairCollisionMarginData(const std::string& 
   onCollisionMarginDataChanged();
 }
 
-void BulletDiscreteSimpleManager::setContactDistanceThreshold(double contact_distance)
-{
-  setDefaultCollisionMarginData(contact_distance);
-}
-
-double BulletDiscreteSimpleManager::getContactDistanceThreshold() const
-{
-  return contact_test_data_.collision_margin_data.getMaxCollisionMargin();
-}
-
 const CollisionMarginData& BulletDiscreteSimpleManager::getCollisionMarginData() const
 {
   return contact_test_data_.collision_margin_data;

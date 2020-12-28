@@ -119,7 +119,7 @@ int main(int /*argc*/, char** /*argv*/)
   result_vector.clear();
 
   // Set higher contact distance threshold
-  checker.setContactDistanceThreshold(0.25);
+  checker.setDefaultCollisionMarginData(0.25);
 
   // Check for contact with new threshold
   checker.contactTest(result, request);

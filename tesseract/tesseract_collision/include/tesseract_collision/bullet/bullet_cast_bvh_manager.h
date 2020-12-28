@@ -115,15 +115,11 @@ public:
 
   const std::vector<std::string>& getActiveCollisionObjects() const override;
 
-  void setContactDistanceThreshold(double contact_distance) override;
-
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override;
 
   void setDefaultCollisionMarginData(double default_collision_margin) override;
 
   void setPairCollisionMarginData(const std::string& name1, const std::string& name2, double collision_margin) override;
-
-  double getContactDistanceThreshold() const override;
 
   const CollisionMarginData& getCollisionMarginData() const override;
 
