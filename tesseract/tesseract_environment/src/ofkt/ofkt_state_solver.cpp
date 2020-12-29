@@ -463,12 +463,9 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
     l.velocity_limits.resize(s);
     l.acceleration_limits.resize(s);
 
-    for (long i = 0; i < limits_.joint_limits.size(); ++i)
-    {
-      limits_.joint_limits.row(i) = limits_.joint_limits.row(i);
-      limits_.velocity_limits(i) = limits_.velocity_limits(i);
-      limits_.acceleration_limits(i) = limits_.acceleration_limits(i);
-    }
+    limits_.joint_limits.block(0, 0, limits_.joint_limits.rows(), 2) = limits_.joint_limits;
+    limits_.velocity_limits.head(limits_.joint_limits.rows()) = limits_.velocity_limits;
+    limits_.acceleration_limits.head(limits_.joint_limits.rows()) = limits_.acceleration_limits;
 
     long cnt = limits_.joint_limits.size();
     for (std::size_t i = 0; i < new_kinematic_joints.size(); ++i)

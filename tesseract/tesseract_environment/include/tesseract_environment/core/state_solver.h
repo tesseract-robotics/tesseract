@@ -102,7 +102,7 @@ public:
 
   /**
    * @brief Getter for kinematic limits
-   * @return Then kinematic limits
+   * @return The kinematic limits
    */
   virtual const tesseract_common::KinematicLimits& getLimits() const = 0;
 
