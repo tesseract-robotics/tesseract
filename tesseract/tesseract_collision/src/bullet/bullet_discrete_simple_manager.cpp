@@ -67,6 +67,8 @@ DiscreteContactManager::Ptr BulletDiscreteSimpleManager::clone() const
 {
   auto manager = std::make_shared<BulletDiscreteSimpleManager>();
 
+  btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+
   for (const auto& cow : link2cow_)
   {
     COW::Ptr new_cow = cow.second->clone();
@@ -75,9 +77,8 @@ DiscreteContactManager::Ptr BulletDiscreteSimpleManager::clone() const
     assert(new_cow->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
+    new_cow->setContactProcessingThreshold(margin);
 
-    new_cow->setContactProcessingThreshold(
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
     manager->addCollisionObject(new_cow);
   }
 
@@ -100,6 +101,8 @@ bool BulletDiscreteSimpleManager::addCollisionObject(const std::string& name,
   COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
+    btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+    new_cow->setContactProcessingThreshold(margin);
     addCollisionObject(new_cow);
     return true;
   }
