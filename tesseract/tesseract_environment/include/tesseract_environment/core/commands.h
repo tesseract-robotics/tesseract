@@ -368,7 +368,7 @@ class ChangeJointPositionLimitsCommand : public Command
 public:
   ChangeJointPositionLimitsCommand(std::string joint_name, double lower, double upper)
     : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS)
-    , limits_({ std::make_pair(joint_name, std::make_pair(lower, upper)) })
+    , limits_({ std::make_pair(std::move(joint_name), std::make_pair(lower, upper)) })
   {
     assert(upper > lower);
   }
@@ -389,7 +389,7 @@ class ChangeJointVelocityLimitsCommand : public Command
 {
 public:
   ChangeJointVelocityLimitsCommand(std::string joint_name, double limit)
-    : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_({ std::make_pair(joint_name, limit) })
+    : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_({ std::make_pair(std::move(joint_name), limit) })
   {
     assert(limit > 0);
   }
@@ -410,7 +410,7 @@ class ChangeJointAccelerationLimitsCommand : public Command
 {
 public:
   ChangeJointAccelerationLimitsCommand(std::string joint_name, double limit)
-    : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_({ std::make_pair(joint_name, limit) })
+    : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_({ std::make_pair(std::move(joint_name), limit) })
   {
     assert(limit > 0);
   }

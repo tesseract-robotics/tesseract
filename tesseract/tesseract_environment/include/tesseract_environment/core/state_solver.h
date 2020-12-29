@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_environment/core/types.h>
 #include <tesseract_environment/core/commands.h>
+#include <tesseract_common/types.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_environment::StateSolver)
@@ -100,10 +101,10 @@ public:
   virtual EnvState::Ptr getRandomState() const = 0;
 
   /**
-   * @brief Getter for joint_limits_
-   * @return Matrix of joint limits
+   * @brief Getter for kinematic limits
+   * @return The kinematic limits
    */
-  virtual const Eigen::MatrixX2d& getLimits() const = 0;
+  virtual const tesseract_common::KinematicLimits& getLimits() const = 0;
 
   /**
    * @brief This should clone the object so it may be used in a multi threaded application where each thread would
