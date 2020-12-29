@@ -56,7 +56,7 @@ bool KDLStateSolver::init(const KDLStateSolver& solver)
   kdl_tree_ = solver.kdl_tree_;
   joint_to_qnr_ = solver.joint_to_qnr_;
   kdl_jnt_array_ = solver.kdl_jnt_array_;
-  joint_limits_ = solver.joint_limits_;
+  limits_ = solver.limits_;
   joint_names_ = solver.joint_names_;
 
   return true;
@@ -164,10 +164,10 @@ EnvState::ConstPtr KDLStateSolver::getCurrentState() const { return current_stat
 
 EnvState::Ptr KDLStateSolver::getRandomState() const
 {
-  return getState(joint_names_, tesseract_common::generateRandomNumber(joint_limits_));
+  return getState(joint_names_, tesseract_common::generateRandomNumber(limits_.joint_limits));
 }
 
-const Eigen::MatrixX2d& KDLStateSolver::getLimits() const { return joint_limits_; }
+const tesseract_common::KinematicLimits& KDLStateSolver::getLimits() const { return limits_; }
 
 bool KDLStateSolver::createKDETree()
 {
@@ -180,7 +180,9 @@ bool KDLStateSolver::createKDETree()
 
   current_state_ = std::make_shared<EnvState>();
   kdl_jnt_array_.resize(kdl_tree_.getNrOfJoints());
-  joint_limits_.resize(kdl_tree_.getNrOfJoints(), 2);
+  limits_.joint_limits.resize(static_cast<long int>(kdl_tree_.getNrOfJoints()), 2);
+  limits_.velocity_limits.resize(static_cast<long int>(kdl_tree_.getNrOfJoints()));
+  limits_.acceleration_limits.resize(static_cast<long int>(kdl_tree_.getNrOfJoints()));
   joint_names_.resize(kdl_tree_.getNrOfJoints());
   size_t j = 0;
   for (const auto& seg : kdl_tree_.getSegments())
@@ -197,8 +199,10 @@ bool KDLStateSolver::createKDETree()
 
     // Store joint limits.
     const auto& sj = scene_graph_->getJoint(jnt.getName());
-    joint_limits_(static_cast<long>(j), 0) = sj->limits->lower;
-    joint_limits_(static_cast<long>(j), 0) = sj->limits->upper;
+    limits_.joint_limits(static_cast<long>(j), 0) = sj->limits->lower;
+    limits_.joint_limits(static_cast<long>(j), 1) = sj->limits->upper;
+    limits_.velocity_limits(static_cast<long>(j)) = sj->limits->velocity;
+    limits_.acceleration_limits(static_cast<long>(j)) = sj->limits->acceleration;
 
     j++;
   }
