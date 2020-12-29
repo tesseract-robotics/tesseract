@@ -149,7 +149,9 @@ public:
     clone_cow->collision_objects_raw_.reserve(collision_objects_.size());
     for (const auto& co : collision_objects_)
     {
-      auto collObj = std::make_shared<FCLCollisionObjectWrapper>(*co);
+      assert(std::dynamic_pointer_cast<FCLCollisionObjectWrapper>(co) != nullptr);
+      auto collObj =
+          std::make_shared<FCLCollisionObjectWrapper>(*std::static_pointer_cast<FCLCollisionObjectWrapper>(co));
       collObj->setUserData(clone_cow.get());
       collObj->setTransform(co->getTransform());
       collObj->updateAABB();

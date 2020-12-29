@@ -820,11 +820,10 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
       }
     }
 
-    m_simplexSolver->reset();
-    if (status == 0 && !m_cdata->req.calculate_distance)
+    if (status == 0 && !m_cdata->req.calculate_penetration)
     {
       // The shapes intersect but penetration was not request so return empty contact
-      output.addContactPoint(normalInB, pointOnB + positionOffset, distance);
+      output.addContactPoint(normalInB, pointOnB + positionOffset, -std::numeric_limits<btScalar>::min());
       return;
     }
 
@@ -834,6 +833,7 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
       return;
     }
 
+    m_simplexSolver->reset();
     // printf("dir=%f,%f,%f\n",dir[0],dir[1],dir[2]);
     if (1)
     {
