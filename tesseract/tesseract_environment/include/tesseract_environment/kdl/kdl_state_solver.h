@@ -58,7 +58,7 @@ public:
 
   EnvState::Ptr getRandomState() const override;
 
-  const Eigen::MatrixX2d& getLimits() const override;
+  const tesseract_common::KinematicLimits& getLimits() const override;
 
 private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
@@ -66,7 +66,7 @@ private:
   KDL::Tree kdl_tree_;                                         /**< KDL tree object */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
   KDL::JntArray kdl_jnt_array_;                                /**< The kdl joint array */
-  Eigen::MatrixX2d joint_limits_;                              /**< The joint limits */
+  tesseract_common::KinematicLimits limits_;                   /**< The kinematic limits */
   std::vector<std::string> joint_names_;                       /**< The active joint names */
 
   /**

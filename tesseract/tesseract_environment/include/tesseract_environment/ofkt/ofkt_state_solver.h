@@ -99,14 +99,14 @@ public:
 
   EnvState::Ptr getRandomState() const override;
 
-  const Eigen::MatrixX2d& getLimits() const override;
+  const tesseract_common::KinematicLimits& getLimits() const override;
 
 private:
   EnvState::Ptr current_state_{ std::make_shared<EnvState>() }; /**< Current state of the environment */
   std::vector<std::string> joint_names_;                        /**< The active joint names */
   std::unordered_map<std::string, OFKTNode::UPtr> nodes_;       /**< The joint name map to node */
   std::unordered_map<std::string, OFKTNode*> link_map_;         /**< The link name map to node */
-  Eigen::MatrixX2d limits_;                                     /**< The joint limits corresponding to joint_names_ */
+  tesseract_common::KinematicLimits limits_;                    /**< The kinematic limits */
   OFKTNode::UPtr root_;                                         /**< The root node of the tree */
   int revision_{ 0 };                                           /**< The environment revision number */
 
@@ -144,13 +144,13 @@ private:
    * @param joint_name The joints name
    * @param parent_link_name The joints parent link name
    * @param child_link_name The joints child link name
-   * @param limits The limits container for new joints.
+   * @param kinematic_joints The vector to store new kinematic joints added to the solver
    */
   void addNode(const tesseract_scene_graph::Joint::ConstPtr& joint,
                const std::string& joint_name,
                const std::string& parent_link_name,
                const std::string& child_link_name,
-               std::vector<std::pair<std::string, std::array<double, 2>>>& limits);
+               std::vector<tesseract_scene_graph::Joint::ConstPtr>& kinematic_joints);
 
   /**
    * @brief Remove a node and all of its children
