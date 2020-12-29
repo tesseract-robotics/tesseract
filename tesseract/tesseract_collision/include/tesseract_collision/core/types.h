@@ -322,10 +322,10 @@ struct CollisionMarginData
 
 private:
   /// Stores the collision margin used if no pair-specific one is set
-  double default_collision_margin_;
+  double default_collision_margin_{ 0 };
 
   /// Stores the largest collision margin
-  double max_collision_margin_;
+  double max_collision_margin_{ 0 };
 
   /// A map of link pair names to contact distance
   std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> lookup_table_;
