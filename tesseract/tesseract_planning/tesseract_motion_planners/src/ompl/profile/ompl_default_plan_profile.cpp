@@ -57,7 +57,8 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
   const tinyxml2::XMLElement* planners_element = xml_element.FirstChildElement("Planners");
   const tinyxml2::XMLElement* collision_check_element = xml_element.FirstChildElement("CollisionCheck");
   const tinyxml2::XMLElement* collision_continuous_element = xml_element.FirstChildElement("CollisionContinuous");
-  const tinyxml2::XMLElement* collision_safety_margin_element = xml_element.FirstChildElement("CollisionSafetyMargin");
+  //  const tinyxml2::XMLElement* collision_safety_margin_element =
+  //  xml_element.FirstChildElement("CollisionSafetyMargin");
   const tinyxml2::XMLElement* longest_valid_segment_fraction_element = xml_element.FirstChildElement("LongestValidSegme"
                                                                                                      "ntFraction");
   const tinyxml2::XMLElement* longest_valid_segment_length_element = xml_element.FirstChildElement("LongestValidSegment"
@@ -234,18 +235,19 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
       throw std::runtime_error("OMPLPlanProfile: Error parsing CollisionContinuous string");
   }
 
-  if (collision_safety_margin_element)
-  {
-    std::string collision_safety_margin_string;
-    status = tesseract_common::QueryStringText(collision_safety_margin_element, collision_safety_margin_string);
-    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-      throw std::runtime_error("OMPLPlanProfile: Error parsing CollisionSafetyMargin string");
+  /// @todo Update XML
+  //  if (collision_safety_margin_element)
+  //  {
+  //    std::string collision_safety_margin_string;
+  //    status = tesseract_common::QueryStringText(collision_safety_margin_element, collision_safety_margin_string);
+  //    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+  //      throw std::runtime_error("OMPLPlanProfile: Error parsing CollisionSafetyMargin string");
 
-    if (!tesseract_common::isNumeric(collision_safety_margin_string))
-      throw std::runtime_error("OMPLPlanProfile: CollisionSafetyMargin is not a numeric values.");
+  //    if (!tesseract_common::isNumeric(collision_safety_margin_string))
+  //      throw std::runtime_error("OMPLPlanProfile: CollisionSafetyMargin is not a numeric values.");
 
-    tesseract_common::toNumeric<double>(collision_safety_margin_string, collision_safety_margin);
-  }
+  //    tesseract_common::toNumeric<double>(collision_safety_margin_string, collision_safety_margin);
+  //  }
 
   if (longest_valid_segment_fraction_element)
   {
@@ -283,7 +285,7 @@ void OMPLDefaultPlanProfile::setup(OMPLProblem& prob) const
   prob.max_solutions = max_solutions;
   prob.simplify = simplify;
   prob.optimize = optimize;
-  prob.contact_checker->setDefaultCollisionMarginData(collision_safety_margin);
+  prob.contact_checker->setCollisionMarginData(collision_margin_data);
 
   const std::vector<std::string>& joint_names = prob.manip_fwd_kin->getJointNames();
   const auto dof = prob.manip_fwd_kin->numJoints();
@@ -580,9 +582,10 @@ tinyxml2::XMLElement* OMPLDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) 
   xml_collision_continuous->SetText(collision_continuous);
   xml_ompl->InsertEndChild(xml_collision_continuous);
 
-  tinyxml2::XMLElement* xml_collision_safety_margin = doc.NewElement("CollisionSafetyMargin");
-  xml_collision_safety_margin->SetText(collision_safety_margin);
-  xml_ompl->InsertEndChild(xml_collision_safety_margin);
+  /// @todo Update XML
+  //  tinyxml2::XMLElement* xml_collision_safety_margin = doc.NewElement("CollisionSafetyMargin");
+  //  xml_collision_safety_margin->SetText(collision_safety_margin);
+  //  xml_ompl->InsertEndChild(xml_collision_safety_margin);
 
   tinyxml2::XMLElement* xml_long_valid_seg_frac = doc.NewElement("LongestValidSegmentFraction");
   xml_long_valid_seg_frac->SetText(longest_valid_segment_fraction);
@@ -616,7 +619,7 @@ OMPLDefaultPlanProfile::processStateValidator(OMPLProblem& prob,
   if (collision_check && !collision_continuous)
   {
     auto svc = std::make_shared<StateCollisionValidator>(
-        prob.simple_setup->getSpaceInformation(), env, kin, collision_safety_margin, prob.extractor);
+        prob.simple_setup->getSpaceInformation(), env, kin, collision_margin_data, prob.extractor);
     csvc->addStateValidator(svc);
   }
   prob.simple_setup->setStateValidityChecker(csvc);
@@ -645,7 +648,7 @@ void OMPLDefaultPlanProfile::processMotionValidator(ompl::base::StateValidityChe
                                                          svc_without_collision,
                                                          env,
                                                          kin,
-                                                         collision_safety_margin,
+                                                         collision_margin_data,
                                                          prob.extractor);
       }
       else

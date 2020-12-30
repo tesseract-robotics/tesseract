@@ -46,7 +46,7 @@ public:
    * @param collision_env The collision Environment
    * @param active_links The list of active links
    * @param joint_names The list of joint names in the order that the data will be provided to the validate function.
-   * @param collision_safety_margin The minimum distance allowed from a collision object
+   * @param edge_collision_check_config Config used to set up collision checking
    * @param longest_valid_segment_length Used to check collisions between two state if norm(state0-state1) >
    * longest_valid_segment_length.
    * @param debug If true, this print debug information to the terminal
@@ -54,7 +54,8 @@ public:
   DescartesCollision(const tesseract_environment::Environment::ConstPtr& collision_env,
                      std::vector<std::string> active_links,
                      std::vector<std::string> joint_names,
-                     double collision_safety_margin = 0.025,
+                     tesseract_collision::CollisionCheckConfig collision_check_config =
+                         tesseract_collision::CollisionCheckConfig{ 0.025 },
                      bool debug = false);
   ~DescartesCollision() override = default;
 
