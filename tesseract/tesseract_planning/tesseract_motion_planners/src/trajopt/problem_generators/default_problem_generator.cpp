@@ -178,7 +178,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
       std::string profile = getProfileString(plan_instruction->getProfile(), name, request.plan_profile_remapping);
       TrajOptPlanProfile::ConstPtr cur_plan_profile =
           getProfile<TrajOptPlanProfile>(profile, plan_profiles, std::make_shared<TrajOptDefaultPlanProfile>());
-      if (!start_plan_profile)
+      if (!cur_plan_profile)
         throw std::runtime_error("TrajOptPlannerUniversalConfig: Invalid profile");
 
       if (plan_instruction->isLinear())

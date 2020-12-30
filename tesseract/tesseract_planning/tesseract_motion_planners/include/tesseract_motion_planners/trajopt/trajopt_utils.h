@@ -66,10 +66,9 @@ trajopt::TermInfo::Ptr createJointWaypointTermInfo(const Eigen::VectorXd& j_wp,
 trajopt::TermInfo::Ptr createTolerancedJointWaypointTermInfo(const Eigen::VectorXd& j_wp,
                                                              const Eigen::VectorXd& lower_tol,
                                                              const Eigen::VectorXd& upper_tol,
-                                                   int index,
-                                                   const Eigen::VectorXd& coeffs,
-                                                   trajopt::TermType type);
-
+                                                             int index,
+                                                             const Eigen::VectorXd& coeffs,
+                                                             trajopt::TermType type);
 
 trajopt::TermInfo::Ptr createCollisionTermInfo(
     int start_index,

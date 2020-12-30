@@ -286,10 +286,7 @@ public:
     // Check if they are close to 0
     Eigen::VectorXd range = upper_tolerance - lower_tolerance;
     double sum = range.sum();
-    if (sum < 1e-5)
-      return false;
-
-    return true;
+    return (sum < 1e-5);
   }
 };
 }  // namespace tesseract_planning
