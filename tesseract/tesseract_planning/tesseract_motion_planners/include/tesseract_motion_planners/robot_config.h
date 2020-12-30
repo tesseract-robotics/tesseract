@@ -142,7 +142,7 @@ getRobotRedundancy(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynami
 {
   Eigen::Vector3i redundancy;
 
-  //The joints on a 6 dof robot with redundancy capability are axis 1, 5, and 6.
+  // The joints on a 6 dof robot with redundancy capability are axis 1, 5, and 6.
   int red_1 = int(joint_values(0) / M_PI);
   int red_2 = int(sign_correction[1] * joint_values(4) / M_PI);
   int red_3 = int(joint_values(5) / M_PI);
