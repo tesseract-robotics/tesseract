@@ -129,6 +129,12 @@ inline RobotConfig getRobotConfig(const tesseract_kinematics::ForwardKinematics:
   return RobotConfig::NDB;
 }
 
+/**
+ * @brief Finds redundancy of joints that allow rotation beyond +- 180 degrees
+ * @param joint values The joint values of the robot.
+ * @param sign_correction Correct the sign for Joint 3 and Joint 5 based on the robot manufacturer.
+ * @return Redundant rotations (as intergers), in a vector
+ */
 template <typename FloatType>
 inline Eigen::Vector3i
 getRobotRedundancy(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& joint_values,
@@ -136,11 +142,12 @@ getRobotRedundancy(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynami
 {
   Eigen::Vector3i redundancy;
 
-  int red_j_4 = int(joint_values(3) / M_PI);
-  int red_j_5 = int(sign_correction[1] * joint_values(4) / M_PI);
-  int red_j_6 = int(joint_values(5) / M_PI);
+  //The joints on a 6 dof robot with redundancy capability are axis 1, 5, and 6.
+  int red_1 = int(joint_values(0) / M_PI);
+  int red_2 = int(sign_correction[1] * joint_values(4) / M_PI);
+  int red_3 = int(joint_values(5) / M_PI);
 
-  redundancy << red_j_4, red_j_5, red_j_6;
+  redundancy << red_1, red_2, red_3;
   return redundancy;
 }
 
