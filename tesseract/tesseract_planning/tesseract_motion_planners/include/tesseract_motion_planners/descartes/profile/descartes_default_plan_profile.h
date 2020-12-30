@@ -72,11 +72,11 @@ public:
 
   // Applied to sampled states
   bool enable_collision{ true };
-  double collision_safety_margin{ 0 };
+  tesseract_collision::CollisionCheckConfig vertex_collision_check_config{ 0 };
 
   // Applied during edge evaluation
   bool enable_edge_collision{ false };
-  tesseract_collision::CollisionCheckConfig edge_collision_check_config;
+  tesseract_collision::CollisionCheckConfig edge_collision_check_config{ 0 };
   int num_threads{ 1 };
   bool allow_collision{ false };
   bool debug{ false };
