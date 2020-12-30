@@ -41,11 +41,8 @@ void TrajectoryPlayer::setProgram(tesseract_planning::CompositeInstruction progr
   // Get the duration
   trajectory_duration_ = trajectory_->getMoveInstructionDuration(trajectory_->getMoveInstructionCount() - 1);
 
-  // Reset state associated with trajectory playback
-  current_duration_ = 0.0;
-
-  // Get the chrono time
-  start_time_ = std::chrono::high_resolution_clock::now();
+  // Reset state
+  reset();
 }
 
 void TrajectoryPlayer::setScale(double scale) { scale_ = scale; }
@@ -147,8 +144,13 @@ bool TrajectoryPlayer::isLoopEnabled() const { return loop_; }
 
 void TrajectoryPlayer::reset()
 {
-  current_duration_ = 0;
+  // Reset state associated with trajectory playback
+  current_duration_ = 0.0;
+
+  // Get the chrono time
   start_time_ = std::chrono::high_resolution_clock::now();
+
+  // Reset finished
   finished_ = false;
 }
 
