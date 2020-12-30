@@ -418,7 +418,7 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
     tesseract_collision::ContactResultMap contact_map;
     if (checkStateInCollision(prob, joint_waypoint, contact_map))
     {
-      CONSOLE_BRIDGE_logError("In OMPLPlannerFreespaceConfig: Start state is in collision");
+      CONSOLE_BRIDGE_logError("In OMPLPlannerFreespaceConfig: Goal state is in collision");
       for (const auto& contact_vec : contact_map)
         for (const auto& contact : contact_vec.second)
           CONSOLE_BRIDGE_logError(("Links: " + contact.link_names[0] + ", " + contact.link_names[1] +
