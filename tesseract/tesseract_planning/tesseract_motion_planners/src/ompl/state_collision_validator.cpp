@@ -37,7 +37,7 @@ namespace tesseract_planning
 StateCollisionValidator::StateCollisionValidator(const ompl::base::SpaceInformationPtr& space_info,
                                                  tesseract_environment::Environment::ConstPtr env,
                                                  tesseract_kinematics::ForwardKinematics::ConstPtr kin,
-                                                 double collision_safety_margin,
+                                                 const tesseract_collision::CollisionMarginData& collision_margin_data,
                                                  OMPLStateExtractor extractor)
   : StateValidityChecker(space_info)
   , env_(std::move(env))
@@ -55,7 +55,7 @@ StateCollisionValidator::StateCollisionValidator(const ompl::base::SpaceInformat
   links_ = adj_map.getActiveLinkNames();
 
   contact_manager_->setActiveCollisionObjects(links_);
-  contact_manager_->setDefaultCollisionMarginData(collision_safety_margin);
+  contact_manager_->setCollisionMarginData(collision_margin_data);
 }
 
 bool StateCollisionValidator::isValid(const ompl::base::State* state) const
