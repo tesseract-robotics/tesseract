@@ -21,6 +21,17 @@ TEST(TesseractURDFUnit, parse_capsule)  // NOLINT
     EXPECT_NEAR(geom->getLength(), 2, 1e-8);
   }
 
+  {  // https://github.com/ros-industrial-consortium/tesseract_ros/issues/67
+    std::string str = R"(<capsule radius="0.25" length="0.5" extra="0 0 0"/>)";
+    tesseract_geometry::Capsule::Ptr geom;
+    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule", 2);
+    EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "CapsuleStatusCategory");
+    EXPECT_FALSE(status->message().empty());
+    EXPECT_NEAR(geom->getRadius(), 0.25, 1e-8);
+    EXPECT_NEAR(geom->getLength(), 0.5, 1e-8);
+  }
+
   {
     std::string str = R"(<capsule radius="-1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Capsule::Ptr geom;
