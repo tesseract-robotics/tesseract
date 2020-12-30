@@ -57,8 +57,9 @@ DescartesDefaultPlanProfile<FloatType>::DescartesDefaultPlanProfile(const tinyxm
   if (vertex_collisions_element)
   {
     const tinyxml2::XMLElement* enabled_element = vertex_collisions_element->FirstChildElement("Enabled");
-    const tinyxml2::XMLElement* coll_safety_margin_element = vertex_collisions_element->FirstChildElement("CollisionSaf"
-                                                                                                          "etyMargin");
+    //    const tinyxml2::XMLElement* coll_safety_margin_element =
+    //    vertex_collisions_element->FirstChildElement("CollisionSaf"
+    //                                                                                                          "etyMargin");
 
     if (enabled_element)
     {
@@ -67,19 +68,22 @@ DescartesDefaultPlanProfile<FloatType>::DescartesDefaultPlanProfile(const tinyxm
         throw std::runtime_error("DescartesPlanProfile: VertexCollisions: Error parsing Enabled string");
     }
 
-    if (coll_safety_margin_element)
-    {
-      std::string coll_safety_margin_string;
-      status = tesseract_common::QueryStringText(coll_safety_margin_element, coll_safety_margin_string);
-      if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-        throw std::runtime_error("DescartesPlanProfile: VertexCollisions:: Error parsing CollisionSafetyMargin string");
+    /** @todo Update XML */
+    //    if (coll_safety_margin_element)
+    //    {
+    //      std::string coll_safety_margin_string;
+    //      status = tesseract_common::QueryStringText(coll_safety_margin_element, coll_safety_margin_string);
+    //      if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+    //        throw std::runtime_error("DescartesPlanProfile: VertexCollisions:: Error parsing CollisionSafetyMargin
+    //        string");
 
-      if (!tesseract_common::isNumeric(coll_safety_margin_string))
-        throw std::runtime_error("DescartesPlanProfile: VertexCollisions:: CollisionSafetyMargin is not a numeric "
-                                 "values.");
+    //      if (!tesseract_common::isNumeric(coll_safety_margin_string))
+    //        throw std::runtime_error("DescartesPlanProfile: VertexCollisions:: CollisionSafetyMargin is not a numeric
+    //        "
+    //                                 "values.");
 
-      tesseract_common::toNumeric<double>(coll_safety_margin_string, collision_safety_margin);
-    }
+    //      tesseract_common::toNumeric<double>(coll_safety_margin_string, collision_safety_margin);
+    //    }
   }
 
   if (edge_collisions_element)
@@ -181,7 +185,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
   if (enable_collision)
     ci = std::make_shared<DescartesCollision<FloatType>>(
-        prob.env, active_links, prob.manip_inv_kin->getJointNames(), collision_safety_margin, debug);
+        prob.env, active_links, prob.manip_inv_kin->getJointNames(), vertex_collision_check_config, debug);
 
   Eigen::Isometry3d manip_baselink_to_waypoint = Eigen::Isometry3d::Identity();
   if (it == active_links.end())
@@ -314,9 +318,9 @@ tinyxml2::XMLElement* DescartesDefaultPlanProfile<FloatType>::toXML(tinyxml2::XM
   vertex_collisions_enabled->SetText(enable_collision);
   vertex_collisions->InsertEndChild(vertex_collisions_enabled);
 
-  tinyxml2::XMLElement* vertex_collisions_safety_margin = doc.NewElement("CollisionSafetyMargin");
-  vertex_collisions_safety_margin->SetText(collision_safety_margin);
-  vertex_collisions->InsertEndChild(vertex_collisions_safety_margin);
+  //  tinyxml2::XMLElement* vertex_collisions_safety_margin = doc.NewElement("CollisionSafetyMargin");
+  //  vertex_collisions_safety_margin->SetText(collision_safety_margin);
+  //  vertex_collisions->InsertEndChild(vertex_collisions_safety_margin);
 
   xml_descartes->InsertEndChild(vertex_collisions);
 

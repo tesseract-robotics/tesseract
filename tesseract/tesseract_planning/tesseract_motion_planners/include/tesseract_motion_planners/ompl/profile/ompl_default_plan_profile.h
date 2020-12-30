@@ -105,11 +105,10 @@ public:
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check = true;
 
+  tesseract_collision::CollisionMarginData collision_margin_data;
+
   /** @brief If true, use continuous collision checking */
   bool collision_continuous = false;
-
-  /** @brief Max distance over which collisions are checked */
-  double collision_safety_margin = 0.00;
 
   /** @brief Set the resolution at which state validity needs to be verified in order for a motion between two states
    * to be considered valid in post checking of trajectory returned by trajopt.
