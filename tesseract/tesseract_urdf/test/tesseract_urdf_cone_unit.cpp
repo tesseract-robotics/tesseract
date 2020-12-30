@@ -21,6 +21,17 @@ TEST(TesseractURDFUnit, parse_cone)  // NOLINT
     EXPECT_NEAR(geom->getLength(), 2, 1e-8);
   }
 
+  {  // https://github.com/ros-industrial-consortium/tesseract_ros/issues/67
+    std::string str = R"(<cone radius="0.25" length="0.5" extra="0 0 0"/>)";
+    tesseract_geometry::Cone::Ptr geom;
+    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
+    EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "ConeStatusCategory");
+    EXPECT_FALSE(status->message().empty());
+    EXPECT_NEAR(geom->getRadius(), 0.25, 1e-8);
+    EXPECT_NEAR(geom->getLength(), 0.5, 1e-8);
+  }
+
   {
     std::string str = R"(<cone radius="-1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Cone::Ptr geom;
