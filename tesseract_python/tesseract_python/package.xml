@@ -6,7 +6,8 @@
   <maintainer email="wason@wasontech.com">John Wason</maintainer>
   <license>Apache 2.0</license>
   <author >John Wason</author>
-  
+
+  <build_depend>cmake_common_scripts</build_depend>
   <depend>trajopt</depend>
   <depend>tesseract_motion_planners</depend>
   <depend>tesseract_common</depend>
