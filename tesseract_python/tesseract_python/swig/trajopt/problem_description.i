@@ -179,7 +179,7 @@ struct BasicInfo
   int n_steps;
   std::string manip;
   std::string robot;
-  IntVec dofs_fixed;
+  IntVec fixed_timesteps;
   sco::ModelType convex_solver;
   bool use_time;
   double dt_upper_lim;
