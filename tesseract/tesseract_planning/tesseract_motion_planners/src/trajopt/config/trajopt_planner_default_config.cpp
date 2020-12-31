@@ -64,6 +64,20 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
   std::vector<int> fixed_steps;
   addWaypoints(pci, fixed_steps);
 
+  // Add the fixed timesteps. TrajOpt will constrain the optimization such that any costs applied at these timesteps
+  // will be ignored. Costs applied to variables at fixed timesteps generally causes solver failures
+  for (auto idx : fixed_steps)
+  {
+    if (idx == 0)
+    {
+      pci.basic_info.start_fixed = true;
+    }
+    else
+    {
+      pci.basic_info.fixed_timesteps.push_back(idx);
+    }
+  }
+
   if (collision_constraint_config.enabled)
     addCollisionConstraint(pci, fixed_steps);
 
