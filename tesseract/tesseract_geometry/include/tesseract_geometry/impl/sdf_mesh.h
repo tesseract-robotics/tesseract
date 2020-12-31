@@ -44,7 +44,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-
 class SDFMesh : public Geometry
 {
 public:
@@ -72,9 +71,9 @@ public:
           tesseract_common::Resource::Ptr resource = nullptr,
           Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
           std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
-       std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
-       MeshMaterial::Ptr mesh_material = nullptr,
-       std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
+          std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+          MeshMaterial::Ptr mesh_material = nullptr,
+          std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
     : Geometry(GeometryType::SDF_MESH)
     , vertices_(std::move(vertices))
     , triangles_(std::move(triangles))
@@ -118,9 +117,9 @@ public:
           tesseract_common::Resource::Ptr resource = nullptr,
           Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
           std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
-       std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
-       MeshMaterial::Ptr mesh_material = nullptr,
-       std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
+          std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+          MeshMaterial::Ptr mesh_material = nullptr,
+          std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
     : Geometry(GeometryType::SDF_MESH)
     , vertices_(std::move(vertices))
     , triangles_(std::move(triangles))

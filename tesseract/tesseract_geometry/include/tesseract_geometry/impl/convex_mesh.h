@@ -44,7 +44,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-
 class ConvexMesh : public Geometry
 {
 public:
@@ -139,7 +138,6 @@ public:
   ConvexMesh& operator=(const ConvexMesh&) = delete;
   ConvexMesh(ConvexMesh&&) = delete;
   ConvexMesh& operator=(ConvexMesh&&) = delete;
-
 
   /**
    * @brief Get convex mesh vertices
