@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_common VERSION 0.1.0 LANGUAGES CXX)
+
+# Extract package name and version
+find_package(cmake_common_scripts REQUIRED)
+extract_package_metadata(pkg)
+project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
 if(WIN32)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -11,7 +15,6 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 find_package(Boost REQUIRED COMPONENTS system filesystem program_options)
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
-find_package(cmake_common_scripts REQUIRED)
 
 find_package(console_bridge REQUIRED)
 if(NOT TARGET console_bridge::console_bridge)

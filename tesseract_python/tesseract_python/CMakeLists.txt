@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_python)
+
+# Extract package name and version
+find_package(cmake_common_scripts REQUIRED)
+extract_package_metadata(pkg)
+project(${pkg_extracted_name} VERSION ${pkg_extracted_version})
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
@@ -19,7 +23,6 @@ else()
   add_compile_options(/bigobj)
 endif()
 
-find_package(cmake_common_scripts REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_geometry REQUIRED)

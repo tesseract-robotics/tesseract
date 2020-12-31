@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_command_language VERSION 0.1.0 LANGUAGES CXX)
+
+# Extract package name and version
+find_package(cmake_common_scripts REQUIRED)
+extract_package_metadata(pkg)
+project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
 if(WIN32)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -8,7 +12,6 @@ endif()
 find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(cmake_common_scripts REQUIRED)
 find_package(Boost REQUIRED)
 
 if(NOT TARGET console_bridge::console_bridge)
