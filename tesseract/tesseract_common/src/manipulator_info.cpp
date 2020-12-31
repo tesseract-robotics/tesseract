@@ -38,8 +38,8 @@ namespace tesseract_common
 {
 ToolCenterPoint::ToolCenterPoint(const std::string& name, bool external) : type_(1), name_(name), external_(external) {}
 
-ToolCenterPoint::ToolCenterPoint(const Eigen::Isometry3d& transform, bool external)
-  : type_(2), transform_(transform), external_(external)
+ToolCenterPoint::ToolCenterPoint(const Eigen::Isometry3d& transform, bool external, std::string external_frame)
+  : type_(2), transform_(transform), external_(external), external_frame_(std::move(external_frame))
 {
 }
 
@@ -47,7 +47,13 @@ bool ToolCenterPoint::empty() const { return (type_ == 0); }
 bool ToolCenterPoint::isString() const { return (type_ == 1); }
 bool ToolCenterPoint::isTransform() const { return (type_ == 2); }
 bool ToolCenterPoint::isExternal() const { return external_; }
-void ToolCenterPoint::setExternal(bool value) { external_ = value; }
+
+const std::string& ToolCenterPoint::getExternalFrame() const { return external_frame_; }
+void ToolCenterPoint::setExternal(bool value, std::string external_frame)
+{
+  external_ = value;
+  external_frame_ = std::move(external_frame);
+}
 
 const std::string& ToolCenterPoint::getString() const
 {
@@ -193,7 +199,15 @@ ManipulatorInfo::ManipulatorInfo(const tinyxml2::XMLElement& xml_element)
       if (status != tinyxml2::XML_SUCCESS)
         throw std::runtime_error("ManipulatorInfo: Error parsing TCP attribute external.");
 
-      tcp.setExternal(external);
+      std::string external_frame;
+      if (tcp_element->Attribute("external_frame") != nullptr)
+      {
+        tinyxml2::XMLError status = QueryStringAttribute(tcp_element, "external_frame", external_frame);
+        if (status != tinyxml2::XML_SUCCESS)
+          throw std::runtime_error("ManipulatorInfo: Error parsing TCP attribute external_frame.");
+      }
+
+      tcp.setExternal(external, external_frame);
     }
   }
 }
@@ -272,6 +286,9 @@ tinyxml2::XMLElement* ManipulatorInfo::toXML(tinyxml2::XMLDocument& doc) const
 
     xml_tcp->SetAttribute("wxyz", wxyz_string.str().c_str());
     xml_tcp->SetAttribute("external", tcp.isExternal());
+    if (tcp.isExternal() && !tcp.getExternalFrame().empty())
+      xml_tcp->SetAttribute("external_frame", tcp.getExternalFrame().c_str());
+
     xml_manip_info->InsertEndChild(xml_tcp);
   }
 
