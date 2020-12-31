@@ -119,14 +119,37 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
   auto it = std::find(active_links.begin(), active_links.end(), mi.working_frame);
   if (it != active_links.end())
   {
-    if (mi.tcp.isExternal())
+    if (mi.tcp.isExternal() && mi.tcp.isString())
+    {
+      // If external, the part is attached to the robot so working frame is passed as link instead of target frame
+      // Since it is a link name then it has the possibility to also be dynamic so need to check
+      auto tcp_it = std::find(active_links.begin(), active_links.end(), mi.tcp.getString());
+      if (tcp_it != active_links.end())
+      {
+        // target_tcp, index, target, tcp relative to robot tip link, coeffs, robot tip link, term_type
+        ti = createDynamicCartesianWaypointTermInfo(Eigen::Isometry3d::Identity(),
+                                                    index,
+                                                    mi.tcp.getString(),
+                                                    cartesian_waypoint,
+                                                    cartesian_coeff,
+                                                    mi.working_frame,
+                                                    term_type);
+      }
+      else
+      {
+        ti = createCartesianWaypointTermInfo(
+            tcp, index, "", cartesian_waypoint, cartesian_coeff, mi.working_frame, term_type);
+      }
+    }
+    else if (mi.tcp.isExternal())
     {
       // If external, the part is attached to the robot so working frame is passed as link instead of target frame
       ti = createCartesianWaypointTermInfo(
-          tcp, index, "", cartesian_waypoint, cartesian_coeff, mi.working_frame, term_type);
+          tcp, index, mi.tcp.getExternalFrame(), cartesian_waypoint, cartesian_coeff, mi.working_frame, term_type);
     }
     else
     {
+      // target_tcp, index, target, tcp relative to robot tip link, coeffs, robot tip link, term_type
       ti = createDynamicCartesianWaypointTermInfo(
           cartesian_waypoint, index, mi.working_frame, tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
     }
