@@ -183,6 +183,14 @@ bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& con
 CompositeInstruction generateNaiveSeed(const CompositeInstruction& composite_instructions,
                                        const tesseract_environment::Environment& env);
 
+/**
+ * @brief This formats the joint and state waypoints to align with the kinematics object
+ * @param composite_instructions The input program to format
+ * @param env The environment information
+ * @return True if the program required formating.
+ */
+bool formatProgram(CompositeInstruction& composite_instructions, const tesseract_environment::Environment& env);
+
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_PLANNING_UTILS_H

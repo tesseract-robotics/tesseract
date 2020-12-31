@@ -508,6 +508,7 @@ void generateNaiveSeedHelper(CompositeInstruction& composite_instructions,
 
       if (isStateWaypoint(base_instruction->getWaypoint()))
       {
+        assert(checkJointPositionFormat(fwd_kin->getJointNames(), base_instruction->getWaypoint()));
         MoveInstruction move_instruction(base_instruction->getWaypoint(), move_type);
         move_instruction.setManipulatorInfo(base_instruction->getManipulatorInfo());
         move_instruction.setDescription(base_instruction->getDescription());
@@ -516,6 +517,7 @@ void generateNaiveSeedHelper(CompositeInstruction& composite_instructions,
       }
       else if (isJointWaypoint(base_instruction->getWaypoint()))
       {
+        assert(checkJointPositionFormat(fwd_kin->getJointNames(), base_instruction->getWaypoint()));
         const auto* jwp = base_instruction->getWaypoint().cast<JointWaypoint>();
         MoveInstruction move_instruction(StateWaypoint(jwp->joint_names, jwp->waypoint), move_type);
         move_instruction.setManipulatorInfo(base_instruction->getManipulatorInfo());
@@ -553,7 +555,7 @@ CompositeInstruction generateNaiveSeed(const CompositeInstruction& composite_ins
   std::string profile;
   if (isPlanInstruction(seed.getStartInstruction()))
   {
-    const auto* pi = seed.getStartInstruction().cast<PlanInstruction>();
+    const auto* pi = seed.getStartInstruction().cast_const<PlanInstruction>();
     wp = pi->getWaypoint();
     base_mi = pi->getManipulatorInfo();
     description = pi->getDescription();
@@ -561,7 +563,7 @@ CompositeInstruction generateNaiveSeed(const CompositeInstruction& composite_ins
   }
   else if (isMoveInstruction(seed.getStartInstruction()))
   {
-    const auto* pi = seed.getStartInstruction().cast<MoveInstruction>();
+    const auto* pi = seed.getStartInstruction().cast_const<MoveInstruction>();
     wp = pi->getWaypoint();
     base_mi = pi->getManipulatorInfo();
     description = pi->getDescription();
@@ -576,6 +578,7 @@ CompositeInstruction generateNaiveSeed(const CompositeInstruction& composite_ins
 
   if (isStateWaypoint(wp))
   {
+    assert(checkJointPositionFormat(fwd_kin->getJointNames(), wp));
     MoveInstruction move_instruction(wp, MoveInstructionType::START);
     move_instruction.setManipulatorInfo(base_mi);
     move_instruction.setDescription(description);
@@ -584,6 +587,7 @@ CompositeInstruction generateNaiveSeed(const CompositeInstruction& composite_ins
   }
   else if (isJointWaypoint(wp))
   {
+    assert(checkJointPositionFormat(fwd_kin->getJointNames(), wp));
     const auto* jwp = wp.cast<JointWaypoint>();
     MoveInstruction move_instruction(StateWaypoint(jwp->joint_names, jwp->waypoint), MoveInstructionType::START);
     move_instruction.setManipulatorInfo(base_mi);
@@ -602,5 +606,92 @@ CompositeInstruction generateNaiveSeed(const CompositeInstruction& composite_ins
 
   generateNaiveSeedHelper(seed, env, *env_state, mi);
   return seed;
+}
+
+bool formatProgramHelper(CompositeInstruction& composite_instructions,
+                         const tesseract_environment::Environment& env,
+                         const ManipulatorInfo& manip_info)
+{
+  bool format_required = false;
+  for (auto& i : composite_instructions)
+  {
+    if (isCompositeInstruction(i))
+    {
+      if (formatProgramHelper(*(i.cast<CompositeInstruction>()), env, manip_info))
+        format_required = true;
+    }
+    else if (isPlanInstruction(i))
+    {
+      PlanInstruction* base_instruction = i.cast<PlanInstruction>();
+      ManipulatorInfo mi = manip_info.getCombined(base_instruction->getManipulatorInfo());
+
+      ManipulatorInfo combined_mi = mi.getCombined(base_instruction->getManipulatorInfo());
+      auto fwd_kin = env.getManipulatorManager()->getFwdKinematicSolver(combined_mi.manipulator);
+
+      if (isStateWaypoint(base_instruction->getWaypoint()) || isJointWaypoint(base_instruction->getWaypoint()))
+      {
+        if (formatJointPosition(fwd_kin->getJointNames(), base_instruction->getWaypoint()))
+          format_required = true;
+      }
+    }
+    else if (isMoveInstruction(i))
+    {
+      MoveInstruction* base_instruction = i.cast<MoveInstruction>();
+      ManipulatorInfo mi = manip_info.getCombined(base_instruction->getManipulatorInfo());
+
+      ManipulatorInfo combined_mi = mi.getCombined(base_instruction->getManipulatorInfo());
+      auto fwd_kin = env.getManipulatorManager()->getFwdKinematicSolver(combined_mi.manipulator);
+
+      if (isStateWaypoint(base_instruction->getWaypoint()) || isJointWaypoint(base_instruction->getWaypoint()))
+      {
+        if (formatJointPosition(fwd_kin->getJointNames(), base_instruction->getWaypoint()))
+          format_required = true;
+      }
+    }
+  }
+  return format_required;
+}
+
+bool formatProgram(CompositeInstruction& composite_instructions, const tesseract_environment::Environment& env)
+{
+  if (!composite_instructions.hasStartInstruction())
+    throw std::runtime_error("Top most composite instruction is missing start instruction!");
+
+  bool format_required = false;
+  ManipulatorInfo mi = composite_instructions.getManipulatorInfo();
+
+  if (isPlanInstruction(composite_instructions.getStartInstruction()))
+  {
+    auto* pi = composite_instructions.getStartInstruction().cast<PlanInstruction>();
+
+    ManipulatorInfo start_mi = mi.getCombined(pi->getManipulatorInfo());
+    auto fwd_kin = env.getManipulatorManager()->getFwdKinematicSolver(start_mi.manipulator);
+
+    if (isStateWaypoint(pi->getWaypoint()) || isJointWaypoint(pi->getWaypoint()))
+    {
+      if (formatJointPosition(fwd_kin->getJointNames(), pi->getWaypoint()))
+        format_required = true;
+    }
+  }
+  else if (isMoveInstruction(composite_instructions.getStartInstruction()))
+  {
+    auto* pi = composite_instructions.getStartInstruction().cast<MoveInstruction>();
+
+    ManipulatorInfo start_mi = mi.getCombined(pi->getManipulatorInfo());
+    auto fwd_kin = env.getManipulatorManager()->getFwdKinematicSolver(start_mi.manipulator);
+
+    if (isStateWaypoint(pi->getWaypoint()) || isJointWaypoint(pi->getWaypoint()))
+    {
+      if (formatJointPosition(fwd_kin->getJointNames(), pi->getWaypoint()))
+        format_required = true;
+    }
+  }
+  else
+    throw std::runtime_error("Top most composite instruction start instruction has invalid waypoint type!");
+
+  if (formatProgramHelper(composite_instructions, env, mi))
+    format_required = true;
+
+  return format_required;
 }
 };  // namespace tesseract_planning
