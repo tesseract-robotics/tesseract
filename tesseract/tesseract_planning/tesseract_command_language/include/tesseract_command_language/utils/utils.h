@@ -68,6 +68,34 @@ const std::vector<std::string>& getJointNames(const Waypoint& waypoint);
 Eigen::VectorXd getJointPosition(const std::vector<std::string>& joint_names, const Waypoint& waypoint);
 
 /**
+ * @brief Format the waypoints joint ordered by the provided joint names
+ *
+ * Throws if waypoint does not directly contain that information
+ *
+ * Also this is an expensive call so the motion planners do not leverage this and they expect the order through out
+ * the program all match.
+ *
+ * @param joint_names The joint names defining the order desired
+ * @param waypoint The waypoint to format
+ * @return True if formating was required, otherwise false.
+ */
+bool formatJointPosition(const std::vector<std::string>& joint_names, Waypoint& waypoint);
+
+/**
+ * @brief Check the waypoints joint order against the provided joint names
+ *
+ * Throws if waypoint does not directly contain that information
+ *
+ * Also this is an expensive call so the motion planners do not leverage this and they expect the order through out
+ * the program all match.
+ *
+ * @param joint_names The joint names defining the order desired
+ * @param waypoint The waypoint to check format
+ * @return True if waypoint format is correct, otherwise false.
+ */
+bool checkJointPositionFormat(const std::vector<std::string>& joint_names, const Waypoint& waypoint);
+
+/**
  * @brief Set the joint position for waypoints that contain that information
  * @param waypoint Waypoint to set
  * @param position Joint position

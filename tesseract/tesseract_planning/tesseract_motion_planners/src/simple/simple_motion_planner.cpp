@@ -161,6 +161,7 @@ SimpleMotionPlanner::getStartInstruction(const PlannerRequest& request,
 
     if (isJointWaypoint(start_waypoint))
     {
+      assert(checkJointPositionFormat(fwd_kin->getJointNames(), start_waypoint));
       const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
       start_instruction_seed.setWaypoint(StateWaypoint(jwp->joint_names, *jwp));
     }
@@ -173,6 +174,7 @@ SimpleMotionPlanner::getStartInstruction(const PlannerRequest& request,
     }
     else if (isStateWaypoint(start_waypoint))
     {
+      assert(checkJointPositionFormat(fwd_kin->getJointNames(), start_waypoint));
       start_instruction_seed.setWaypoint(start_waypoint);
     }
     else

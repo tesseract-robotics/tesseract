@@ -64,11 +64,13 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
 
   // Calculate FK for start and end
   Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), start));
   if (!fwd_kin->calcFwdKin(p1, start))
     throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find forward kinematics solution!");
   p1 = world_to_base * p1 * tcp;
 
   Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), end));
   if (!fwd_kin->calcFwdKin(p2, end))
     throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find forward kinematics solution!");
   p2 = world_to_base * p2 * tcp;
@@ -101,7 +103,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
   {
-    MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), move_type);
+    MoveInstruction move_instruction(StateWaypoint(fwd_kin->getJointNames(), states.col(i)), move_type);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     move_instruction.setProfile(base_instruction.getProfile());
@@ -130,9 +132,13 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
   // Initialize
   auto inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
   auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  if (inv_kin->getJointNames() != fwd_kin->getJointNames())
+    throw std::runtime_error("Forward and Inverse Kinematic objects joints are not ordered the same!");
+
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), start));
   Eigen::VectorXd j1 = start;
 
   // Calculate p2 in kinematics base frame without tcp for accurate comparison with p1
@@ -141,7 +147,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
 
   // Calculate FK for start
   Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
-  if (!fwd_kin->calcFwdKin(p1, start))
+  if (!fwd_kin->calcFwdKin(p1, j1))
     throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find forward kinematics solution!");
 
   // Calculate steps based on cartesian information
@@ -199,7 +205,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
     // Convert to MoveInstructions
     for (long i = 1; i < states.cols(); ++i)
     {
-      MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), move_type);
+      MoveInstruction move_instruction(StateWaypoint(fwd_kin->getJointNames(), states.col(i)), move_type);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
       move_instruction.setProfile(base_instruction.getProfile());
@@ -209,7 +215,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
   else
   {
     // Convert to MoveInstructions
-    StateWaypoint swp(start.joint_names, j1);
+    StateWaypoint swp(fwd_kin->getJointNames(), j1);
     for (long i = 1; i < steps; ++i)
     {
       MoveInstruction move_instruction(swp, move_type);
@@ -242,6 +248,9 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
   // Initialize
   auto inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
   auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  if (inv_kin->getJointNames() != fwd_kin->getJointNames())
+    throw std::runtime_error("Forward and Inverse Kinematic objects joints are not ordered the same!");
+
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
@@ -251,7 +260,9 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
 
   // Calculate FK for end state
   Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
-  if (!fwd_kin->calcFwdKin(p2, end))
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), end));
+  Eigen::VectorXd j2 = end;
+  if (!fwd_kin->calcFwdKin(p2, j2))
     throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find forward kinematics solution!");
 
   double trans_dist = (p2.translation() - p1.translation()).norm();
@@ -261,7 +272,6 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
   int steps = std::max(trans_steps, rot_steps);
 
   Eigen::VectorXd j1, j1_final;
-  Eigen::VectorXd j2 = end;
   CompositeInstruction composite;
 
   bool j1_found = inv_kin->calcInvKin(j1, p1, j2);
@@ -309,7 +319,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
     // Convert to MoveInstructions
     for (long i = 1; i < states.cols(); ++i)
     {
-      MoveInstruction move_instruction(StateWaypoint(end.joint_names, states.col(i)), move_type);
+      MoveInstruction move_instruction(StateWaypoint(fwd_kin->getJointNames(), states.col(i)), move_type);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
       move_instruction.setProfile(base_instruction.getProfile());
@@ -319,7 +329,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
   else
   {
     // Convert to MoveInstructions
-    StateWaypoint swp(end.joint_names, j2);
+    StateWaypoint swp(fwd_kin->getJointNames(), j2);
     for (long i = 1; i < steps; ++i)
     {
       MoveInstruction move_instruction(swp, move_type);
@@ -347,6 +357,10 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
   ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   auto inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  if (inv_kin->getJointNames() != fwd_kin->getJointNames())
+    throw std::runtime_error("Forward and Inverse Kinematic objects joints are not ordered the same!");
+
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
@@ -532,11 +546,13 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
 
   // Calculate FK for start and end
   Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), start));
   if (!fwd_kin->calcFwdKin(p1, start))
     throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
   p1 = world_to_base * p1 * tcp;
 
   Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), end));
   if (!fwd_kin->calcFwdKin(p2, end))
     throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
   p2 = world_to_base * p2 * tcp;
@@ -589,6 +605,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
 
   // Calculate FK for start and end
   Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), start));
   if (!fwd_kin->calcFwdKin(p1, start))
     throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
   p1 = world_to_base * p1 * tcp;
@@ -645,6 +662,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& st
   Eigen::Isometry3d p1 = start;
 
   Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), end));
   if (!fwd_kin->calcFwdKin(p2, end))
     throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
   p2 = world_to_base * p2 * tcp;

@@ -134,6 +134,7 @@ DefaultDescartesProblemGenerator(const std::string& name,
   }
   else if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
   {
+    assert(checkJointPositionFormat(prob->manip_fwd_kin->getJointNames(), start_waypoint));
     const Eigen::VectorXd& position = getJointPosition(start_waypoint);
     cur_plan_profile->apply(*prob, position, *start_instruction, composite_mi, active_links, index);
   }
@@ -187,6 +188,7 @@ DefaultDescartesProblemGenerator(const std::string& name,
           }
           else if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
           {
+            assert(checkJointPositionFormat(prob->manip_fwd_kin->getJointNames(), start_waypoint));
             const Eigen::VectorXd& position = getJointPosition(start_waypoint);
             if (!prob->manip_fwd_kin->calcFwdKin(prev_pose, position))
               throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
@@ -214,6 +216,7 @@ DefaultDescartesProblemGenerator(const std::string& name,
         }
         else if (isJointWaypoint(plan_instruction->getWaypoint()) || isStateWaypoint(plan_instruction->getWaypoint()))
         {
+          assert(checkJointPositionFormat(prob->manip_fwd_kin->getJointNames(), plan_instruction->getWaypoint()));
           const Eigen::VectorXd& cur_position = getJointPosition(plan_instruction->getWaypoint());
           Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
           if (!prob->manip_fwd_kin->calcFwdKin(cur_pose, cur_position))
@@ -228,6 +231,7 @@ DefaultDescartesProblemGenerator(const std::string& name,
           }
           else if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
           {
+            assert(checkJointPositionFormat(prob->manip_fwd_kin->getJointNames(), start_waypoint));
             const Eigen::VectorXd& position = getJointPosition(start_waypoint);
             if (!prob->manip_fwd_kin->calcFwdKin(prev_pose, position))
               throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
@@ -262,6 +266,7 @@ DefaultDescartesProblemGenerator(const std::string& name,
       {
         if (isJointWaypoint(plan_instruction->getWaypoint()) || isStateWaypoint(plan_instruction->getWaypoint()))
         {
+          assert(checkJointPositionFormat(prob->manip_fwd_kin->getJointNames(), plan_instruction->getWaypoint()));
           const Eigen::VectorXd& cur_position = getJointPosition(plan_instruction->getWaypoint());
 
           // Descartes does not support freespace so it will only include the plan instruction state, then in
