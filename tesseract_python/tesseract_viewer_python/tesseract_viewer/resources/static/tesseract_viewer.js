@@ -45,6 +45,7 @@ class TesseractViewer {
             this._camera.setPosition(new BABYLON.Vector3(2.5, 1.5, -1));
             // Add lights to the scene
             this._light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, -1, 0), this._scene);
+            this._light.intensity = 0.5
             this._root = new BABYLON.TransformNode("root0");
             this._root.rotation.x = -1.5707963267948966;
             yield this.updateScene();
