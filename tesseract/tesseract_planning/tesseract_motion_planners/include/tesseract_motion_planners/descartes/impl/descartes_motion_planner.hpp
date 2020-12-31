@@ -139,6 +139,10 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
   auto results_flattened = flattenProgramToPattern(response.results, request.instructions);
   auto instructions_flattened = flattenProgram(request.instructions);
 
+  // Check inverse and forward kinematic objects
+  if (problem->manip_fwd_kin->getJointNames() != problem->manip_inv_kin->getJointNames())
+    throw std::runtime_error("Forward and Inverse Kinematic objects joints are not ordered the same!");
+
   // Loop over the flattened results and add them to response if the input was a plan instruction
   Eigen::Index dof = problem->manip_fwd_kin->numJoints();
   Eigen::Index result_index = 0;
@@ -157,7 +161,9 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
         auto* move_instruction = results_flattened[idx].get().cast<MoveInstruction>();
 
         Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> temp(solution.data() + dof * result_index++, dof);
-        move_instruction->getWaypoint().cast<StateWaypoint>()->position = temp.template cast<double>();
+        auto* swp = move_instruction->getWaypoint().cast<StateWaypoint>();
+        swp->position = temp.template cast<double>();
+        assert(swp->joint_names == problem->manip_fwd_kin->getJointNames());
       }
       else if (plan_instruction->isLinear())
       {
@@ -168,8 +174,9 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
         {
           Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> temp(solution.data() + dof * result_index++,
                                                                              dof);
-          instruction.cast<MoveInstruction>()->getWaypoint().cast<StateWaypoint>()->position =
-              temp.template cast<double>();
+          auto* swp = instruction.cast<MoveInstruction>()->getWaypoint().cast<StateWaypoint>();
+          swp->position = temp.template cast<double>();
+          assert(swp->joint_names == problem->manip_fwd_kin->getJointNames());
         }
       }
       else if (plan_instruction->isFreespace())
@@ -190,8 +197,11 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
 
         assert(temp.cols() == static_cast<long>(move_instructions->size()) + 1);
         for (std::size_t i = 0; i < move_instructions->size(); ++i)
-          (*move_instructions)[i].cast<MoveInstruction>()->getWaypoint().cast<StateWaypoint>()->position =
-              temp.col(static_cast<long>(i) + 1);
+        {
+          auto* swp = (*move_instructions)[i].cast<MoveInstruction>()->getWaypoint().cast<StateWaypoint>();
+          swp->position = temp.col(static_cast<long>(i) + 1);
+          assert(swp->joint_names == problem->manip_fwd_kin->getJointNames());
+        }
       }
       else
       {

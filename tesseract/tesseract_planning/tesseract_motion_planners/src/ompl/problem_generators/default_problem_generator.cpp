@@ -181,6 +181,7 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& nam
       {
         if (isJointWaypoint(plan_instruction->getWaypoint()) || isStateWaypoint(plan_instruction->getWaypoint()))
         {
+          assert(checkJointPositionFormat(manip_fwd_kin_->getJointNames(), plan_instruction->getWaypoint()));
           const Eigen::VectorXd& cur_position = getJointPosition(plan_instruction->getWaypoint());
           cur_plan_profile->applyGoalStates(
               *sub_prob, cur_position, *plan_instruction, composite_mi, active_link_names_, index);
@@ -190,6 +191,7 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& nam
             ompl::base::ScopedState<> start_state(sub_prob->simple_setup->getStateSpace());
             if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
             {
+              assert(checkJointPositionFormat(manip_fwd_kin_->getJointNames(), start_waypoint));
               const Eigen::VectorXd& prev_position = getJointPosition(start_waypoint);
               cur_plan_profile->applyStartStates(
                   *sub_prob, prev_position, *start_instruction, composite_mi, active_link_names_, index);
@@ -225,6 +227,7 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& nam
             ompl::base::ScopedState<> start_state(sub_prob->simple_setup->getStateSpace());
             if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
             {
+              assert(checkJointPositionFormat(manip_fwd_kin_->getJointNames(), start_waypoint));
               const Eigen::VectorXd& prev_position = getJointPosition(start_waypoint);
               cur_plan_profile->applyStartStates(
                   *sub_prob, prev_position, *start_instruction, composite_mi, active_link_names_, index);

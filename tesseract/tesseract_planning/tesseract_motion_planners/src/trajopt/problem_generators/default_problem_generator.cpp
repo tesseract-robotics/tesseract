@@ -128,6 +128,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
   assert(request.seed.hasStartInstruction());
   assert(isMoveInstruction(request.seed.getStartInstruction()));
   const auto* seed_instruction = request.seed.getStartInstruction().cast_const<MoveInstruction>();
+  assert(checkJointPositionFormat(pci->kin->getJointNames(), seed_instruction->getWaypoint()));
   seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
   // Add start waypoint
@@ -138,6 +139,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
   }
   else if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
   {
+    assert(checkJointPositionFormat(pci->kin->getJointNames(), start_waypoint));
     const Eigen::VectorXd& position = getJointPosition(start_waypoint);
     start_plan_profile->apply(*pci, position, *start_instruction, composite_mi, active_links, index);
 
@@ -191,6 +193,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
           }
           else if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
           {
+            assert(checkJointPositionFormat(pci->kin->getJointNames(), start_waypoint));
             const Eigen::VectorXd& position = getJointPosition(start_waypoint);
             if (!pci->kin->calcFwdKin(prev_pose, position))
               throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
@@ -211,6 +214,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
             // Add seed state
             assert(isMoveInstruction(seed_composite->at(p)));
             const auto* seed_instruction = seed_composite->at(p).cast_const<MoveInstruction>();
+            assert(checkJointPositionFormat(pci->kin->getJointNames(), seed_instruction->getWaypoint()));
             seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
             ++index;
@@ -222,12 +226,14 @@ DefaultTrajoptProblemGenerator(const std::string& name,
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
+          assert(checkJointPositionFormat(pci->kin->getJointNames(), seed_instruction->getWaypoint()));
           seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
           ++index;
         }
         else if (isJointWaypoint(plan_instruction->getWaypoint()) || isStateWaypoint(plan_instruction->getWaypoint()))
         {
+          assert(checkJointPositionFormat(pci->kin->getJointNames(), plan_instruction->getWaypoint()));
           const Eigen::VectorXd& cur_position = getJointPosition(plan_instruction->getWaypoint());
           Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
           if (!pci->kin->calcFwdKin(cur_pose, cur_position))
@@ -242,6 +248,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
           }
           else if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
           {
+            assert(checkJointPositionFormat(pci->kin->getJointNames(), start_waypoint));
             const Eigen::VectorXd& position = getJointPosition(start_waypoint);
             if (!pci->kin->calcFwdKin(prev_pose, position))
               throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
@@ -262,6 +269,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
             // Add seed state
             assert(isMoveInstruction(seed_composite->at(p)));
             const auto* seed_instruction = seed_composite->at(p).cast_const<MoveInstruction>();
+            assert(checkJointPositionFormat(pci->kin->getJointNames(), seed_instruction->getWaypoint()));
             seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
             ++index;
@@ -276,6 +284,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<MoveInstruction>();
+          assert(checkJointPositionFormat(pci->kin->getJointNames(), seed_instruction->getWaypoint()));
           seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
           ++index;
@@ -289,6 +298,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
       {
         if (isJointWaypoint(plan_instruction->getWaypoint()) || isStateWaypoint(plan_instruction->getWaypoint()))
         {
+          assert(checkJointPositionFormat(pci->kin->getJointNames(), plan_instruction->getWaypoint()));
           const Eigen::VectorXd& cur_position = getJointPosition(plan_instruction->getWaypoint());
 
           // Add intermediate points with path costs and constraints
@@ -297,6 +307,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
             // Add seed state
             assert(isMoveInstruction(seed_composite->at(s)));
             const auto* seed_instruction = seed_composite->at(s).cast_const<MoveInstruction>();
+            assert(checkJointPositionFormat(pci->kin->getJointNames(), seed_instruction->getWaypoint()));
             seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
             ++index;
@@ -312,6 +323,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<MoveInstruction>();
+          assert(checkJointPositionFormat(pci->kin->getJointNames(), seed_instruction->getWaypoint()));
           seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
         }
         else if (isCartesianWaypoint(plan_instruction->getWaypoint()))
@@ -324,6 +336,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
             // Add seed state
             assert(isMoveInstruction(seed_composite->at(s)));
             const auto* seed_instruction = seed_composite->at(s).cast_const<MoveInstruction>();
+            assert(checkJointPositionFormat(pci->kin->getJointNames(), seed_instruction->getWaypoint()));
             seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
             ++index;
@@ -336,6 +349,7 @@ DefaultTrajoptProblemGenerator(const std::string& name,
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<MoveInstruction>();
+          assert(checkJointPositionFormat(pci->kin->getJointNames(), seed_instruction->getWaypoint()));
           seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
         }
         else
