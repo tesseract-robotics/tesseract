@@ -80,9 +80,7 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
 
     for visual in link.visual:
         visual_i += 1
-        visual_u_name = visual.name
-        if visual_u_name is None or len(visual_u_name) == 0:
-            visual_u_name = str(visual_i)
+        visual_u_name = visual.name + str(visual_i)
         visual_name = "link_" + link_name + "_visual_" + visual_u_name
         np_tf_visual = visual.origin
         visual_p, visual_q = _np_transform_to_babylon(np_tf_visual)
