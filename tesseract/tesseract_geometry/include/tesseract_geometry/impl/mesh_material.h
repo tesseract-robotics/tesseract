@@ -154,7 +154,7 @@ public:
    */
   MeshTexture(tesseract_common::Resource::Ptr texture_image,
               std::shared_ptr<const tesseract_common::VectorVector2d> uvs)
-    : uvs_(uvs), texture_image_(texture_image)
+    : uvs_(std::move(uvs)), texture_image_(std::move(texture_image))
   {
   }
 
