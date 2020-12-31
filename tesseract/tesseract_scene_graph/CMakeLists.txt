@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_scene_graph VERSION 0.1.0 LANGUAGES CXX)
+
+# Extract package name and version
+find_package(cmake_common_scripts REQUIRED)
+extract_package_metadata(pkg)
+project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
 if(WIN32)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -11,7 +15,6 @@ find_package(console_bridge REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
-find_package(cmake_common_scripts REQUIRED)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)

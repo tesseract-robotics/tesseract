@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_visualization VERSION 0.1.0 LANGUAGES CXX)
+
+# Extract package name and version
+find_package(cmake_common_scripts REQUIRED)
+extract_package_metadata(pkg)
+project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
 if(WIN32)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -13,7 +17,6 @@ find_package(tesseract_environment REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(class_loader REQUIRED)
-find_package(cmake_common_scripts REQUIRED)
 
 # Optional to build ignition visualization
 find_package(ignition-common3 COMPONENTS profiler events av QUIET)

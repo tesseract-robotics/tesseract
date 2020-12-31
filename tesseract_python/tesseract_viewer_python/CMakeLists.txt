@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_python_viewer)
+
+# Extract package name and version
+find_package(cmake_common_scripts REQUIRED)
+extract_package_metadata(pkg)
+project(${pkg_extracted_name} VERSION ${pkg_extracted_version})
 
 if(NOT PYTHON_VERSION)
   set(PYTHON_VERSION  $ENV{ROS_PYTHON_VERSION})
