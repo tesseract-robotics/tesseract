@@ -176,11 +176,10 @@ struct TrajOptResult
 
 struct BasicInfo
 {  
-  bool start_fixed;
   int n_steps;
   std::string manip;
-  std::string robot;
   IntVec fixed_timesteps;
+  IntVec fixed_dofs;
   sco::ModelType convex_solver;
   bool use_time;
   double dt_upper_lim;

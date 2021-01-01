@@ -140,6 +140,9 @@ DefaultTrajoptProblemGenerator(const std::string& name,
   {
     const Eigen::VectorXd& position = getJointPosition(start_waypoint);
     start_plan_profile->apply(*pci, position, *start_instruction, composite_mi, active_links, index);
+
+    // Add to fixed indices
+    fixed_steps.push_back(index);
   }
   else
   {
@@ -267,6 +270,9 @@ DefaultTrajoptProblemGenerator(const std::string& name,
           // Add final point with waypoint
           cur_plan_profile->apply(*pci, cur_position, *plan_instruction, composite_mi, active_links, index);
 
+          // Add to fixed indices
+          fixed_steps.push_back(index);
+
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<MoveInstruction>();
@@ -327,9 +333,6 @@ DefaultTrajoptProblemGenerator(const std::string& name,
           /** @todo Should check that the joint names match the order of the manipulator */
           cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, composite_mi, active_links, index);
 
-          // Add to fixed indices
-          fixed_steps.push_back(index);
-
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<MoveInstruction>();
@@ -358,8 +361,11 @@ DefaultTrajoptProblemGenerator(const std::string& name,
   // Setup Basic Info
   pci->basic_info.n_steps = index;
   pci->basic_info.manip = composite_mi.manipulator;
-  pci->basic_info.start_fixed = false;
   pci->basic_info.use_time = false;
+
+  // Add the fixed timesteps. TrajOpt will constrain the optimization such that any costs applied at these timesteps
+  // will be ignored. Costs applied to variables at fixed timesteps generally causes solver failures
+  pci->basic_info.fixed_timesteps = fixed_steps;
 
   // Set trajopt seed
   assert(static_cast<long>(seed_states.size()) == pci->basic_info.n_steps);
