@@ -125,7 +125,6 @@ bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
   ProblemConstructionInfo pci(input.env);
   pci.basic_info.n_steps = 1;
   pci.basic_info.manip = input.manip_info.manipulator;
-  pci.basic_info.start_fixed = false;
   pci.basic_info.use_time = false;
 
   // Create Kinematic Object
