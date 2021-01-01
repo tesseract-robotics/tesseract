@@ -86,7 +86,7 @@ Tesseract packages use ctest because it is ROS agnostic, so to run the test call
 
 ### Building Tesseract Code Coverage
 
-Must pass the -DTESSERACT_CODE_COVERAGE=ON to cmake when wanting to build code coverage. The code coverage report is located in each individuals build directory inside a ccov/all-merged folder. Open the index.html file to see the packages code coverage report.
+Must pass the -DTESSERACT_ENABLE_CODE_COVERAGE=ON to cmake when wanting to build code coverage. The code coverage report is located in each individuals build directory inside a ccov/all-merged folder. Open the index.html file to see the packages code coverage report.
 
 NOTE: Must be a clean build when generating a code coverage report. Also must build in debug.
 
