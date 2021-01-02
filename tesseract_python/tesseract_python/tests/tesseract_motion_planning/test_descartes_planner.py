@@ -27,27 +27,27 @@ def _locate_resource(url):
     except:
         traceback.print_exc()
 
-def get_tesseract():
+def get_environment():
     locate_resource_fn = SimpleResourceLocatorFn(_locate_resource)
     locator = SimpleResourceLocator(locate_resource_fn)
-    tesseract = Environment()
+    env = Environment()
     tesseract_support = os.environ["TESSERACT_SUPPORT_DIR"]
     urdf_path = FilesystemPath(os.path.join(tesseract_support, "urdf/lbr_iiwa_14_r820.urdf"))
     srdf_path = FilesystemPath(os.path.join(tesseract_support, "urdf/lbr_iiwa_14_r820.srdf"))
-    assert tesseract.init(urdf_path, srdf_path, locator)
+    assert env.init(urdf_path, srdf_path, locator)
     manip_info = ManipulatorInfo()
     manip_info.manipulator = "manipulator"
     
-    return tesseract, manip_info
+    return env, manip_info
 
 def test_ompl_freespace_joint_cart():
 
-    tesseract, manip = get_tesseract()
+    env, manip = get_environment()
 
-    fwd_kin = tesseract.getManipulatorManager().getFwdKinematicSolver(manip.manipulator)
-    inv_kin = tesseract.getManipulatorManager().getInvKinematicSolver(manip.manipulator)
+    fwd_kin = env.getManipulatorManager().getFwdKinematicSolver(manip.manipulator)
+    inv_kin = env.getManipulatorManager().getInvKinematicSolver(manip.manipulator)
     joint_names = fwd_kin.getJointNames()
-    cur_state = tesseract.getCurrentState()
+    cur_state = env.getCurrentState()
 
     wp1 = JointWaypoint(joint_names, np.array([0,0,0,-1.57,0,0,0],dtype=np.float64))
     wp2 = CartesianWaypoint(Isometry3d.Identity() * Translation3d(-.2,.4,0.2) * Quaterniond(0,0,1.0,0))
@@ -60,7 +60,7 @@ def test_ompl_freespace_joint_cart():
     program.setManipulatorInfo(manip)
     program.append(Instruction(plan_f1))
 
-    seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10)
+    seed = generateSeed(program, cur_state, env, 3.14, 1.0, 3.14, 10)
 
     plan_profile = DescartesDefaultPlanProfileD()
     
@@ -72,8 +72,8 @@ def test_ompl_freespace_joint_cart():
     request = PlannerRequest()
     request.seed = seed
     request.instructions = program
-    request.env = tesseract
-    request.env_state = tesseract.getCurrentState()
+    request.env = env
+    request.env_state = env.getCurrentState()
     
     response = PlannerResponse()
 
