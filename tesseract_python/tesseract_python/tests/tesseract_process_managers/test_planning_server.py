@@ -26,22 +26,22 @@ def _locate_resource(url):
     except:
         traceback.print_exc()
 
-def get_tesseract():
+def get_environment():
     locate_resource_fn = SimpleResourceLocatorFn(_locate_resource)
     locator = SimpleResourceLocator(locate_resource_fn)
-    tesseract = Environment()
+    env = Environment()
     tesseract_support = os.environ["TESSERACT_SUPPORT_DIR"]
     urdf_path = FilesystemPath(os.path.join(tesseract_support, "urdf/lbr_iiwa_14_r820.urdf"))
     srdf_path = FilesystemPath(os.path.join(tesseract_support, "urdf/lbr_iiwa_14_r820.srdf"))
-    assert tesseract.init(urdf_path, srdf_path, locator)
+    assert env.init(urdf_path, srdf_path, locator)
     manip_info = ManipulatorInfo()
     manip_info.manipulator = "manipulator"
     
-    return tesseract, manip_info
+    return env, manip_info
 
 def test_planning_server_freespace():
 
-    tesseract, manip = get_tesseract()
+    env, manip = get_environment()
 
     joint_names = ["joint_a1", "joint_a2", "joint_a3", "joint_a4", "joint_a5", "joint_a6", "joint_a7"]
 
@@ -56,7 +56,7 @@ def test_planning_server_freespace():
     program.setManipulatorInfo(manip)
     program.append(Instruction(plan_f1))
 
-    planning_server = ProcessPlanningServer(tesseract, 1)
+    planning_server = ProcessPlanningServer(env, 1)
     planning_server.loadDefaultProcessPlanners()
     request = ProcessPlanningRequest()
     request.name = FREESPACE_PLANNER_NAME
