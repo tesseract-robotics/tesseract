@@ -274,52 +274,52 @@ TEST(TesseractSceneGraphUnit, LoadSRDFUnit)  // NOLINT
   g.addLink(std::move(link_7));
   g.addLink(std::move(tool0));
 
-  Joint base_joint("base_joint");
-  base_joint.parent_link_name = "base_link";
-  base_joint.child_link_name = "link_1";
-  base_joint.type = JointType::FIXED;
-  g.addJoint(std::move(base_joint));
-
-  Joint joint_1("joint_1");
-  joint_1.parent_link_name = "link_1";
-  joint_1.child_link_name = "link_2";
-  joint_1.type = JointType::REVOLUTE;
+  Joint joint_1("joint_a1");
+  joint_1.parent_link_name = "base_link";
+  joint_1.child_link_name = "link_1";
+  joint_1.type = JointType::FIXED;
   g.addJoint(std::move(joint_1));
 
-  Joint joint_2("joint_2");
-  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = "link_2";
-  joint_2.child_link_name = "link_3";
+  Joint joint_2("joint_a2");
+  joint_2.parent_link_name = "link_1";
+  joint_2.child_link_name = "link_2";
   joint_2.type = JointType::REVOLUTE;
   g.addJoint(std::move(joint_2));
 
-  Joint joint_3("joint_3");
+  Joint joint_3("joint_a3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3.parent_link_name = "link_3";
-  joint_3.child_link_name = "link_4";
+  joint_3.parent_link_name = "link_2";
+  joint_3.child_link_name = "link_3";
   joint_3.type = JointType::REVOLUTE;
   g.addJoint(std::move(joint_3));
 
-  Joint joint_4("joint_4");
-  joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_4.parent_link_name = "link_4";
-  joint_4.child_link_name = "link_5";
+  Joint joint_4("joint_a4");
+  joint_4.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_4.parent_link_name = "link_3";
+  joint_4.child_link_name = "link_4";
   joint_4.type = JointType::REVOLUTE;
   g.addJoint(std::move(joint_4));
 
-  Joint joint_5("joint_5");
+  Joint joint_5("joint_a5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_5.parent_link_name = "link_5";
-  joint_5.child_link_name = "link_6";
+  joint_5.parent_link_name = "link_4";
+  joint_5.child_link_name = "link_5";
   joint_5.type = JointType::REVOLUTE;
   g.addJoint(std::move(joint_5));
 
-  Joint joint_6("joint_6");
+  Joint joint_6("joint_a6");
   joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_6.parent_link_name = "link_6";
-  joint_6.child_link_name = "link_7";
+  joint_6.parent_link_name = "link_5";
+  joint_6.child_link_name = "link_6";
   joint_6.type = JointType::REVOLUTE;
   g.addJoint(std::move(joint_6));
+
+  Joint joint_7("joint_a7");
+  joint_7.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_7.parent_link_name = "link_6";
+  joint_7.child_link_name = "link_7";
+  joint_7.type = JointType::REVOLUTE;
+  g.addJoint(std::move(joint_7));
 
   Joint joint_tool0("joint_tool0");
   joint_tool0.parent_link_name = "link_7";
