@@ -254,7 +254,7 @@ TEST(TesseractGeometryUnit, LoadMeshUnit)  // NOLINT
   std::vector<Mesh::Ptr> meshes = createMeshFromPath<Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 240);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply";
   meshes = createMeshFromPath<Mesh>(mesh_file);
@@ -266,15 +266,15 @@ TEST(TesseractGeometryUnit, LoadMeshUnit)  // NOLINT
   meshes = createMeshFromPath<Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 2);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 240);
   EXPECT_TRUE(meshes[1]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[1]->getVerticeCount() == 42);
+  EXPECT_TRUE(meshes[1]->getVerticeCount() == 240);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
   meshes = createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, true);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 2 * 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 2 * 42);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 2 * 240);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
   meshes = createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true);
