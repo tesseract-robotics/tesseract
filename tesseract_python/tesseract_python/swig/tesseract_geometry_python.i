@@ -77,7 +77,7 @@
 }
 %enddef
 
-%tesseract_vector_eigen_shared_ptr_adaptor(std::vector< Eigen::Vector2d >)
+%tesseract_vector_eigen_shared_ptr_adaptor(%arg(std::vector< Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> >))
 %tesseract_vector_eigen_shared_ptr_adaptor(std::vector< Eigen::Vector3d >)
 %tesseract_vector_eigen_shared_ptr_adaptor(%arg(std::vector< Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> >))
 %tesseract_vector_eigen_shared_ptr_adaptor(std::vector< std::shared_ptr<tesseract_geometry::MeshTexture> >)
