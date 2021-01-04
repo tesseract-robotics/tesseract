@@ -330,7 +330,7 @@ std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
   // John Wason Dec 2020 - Load more information
   importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
                               aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_BONEWEIGHTS | aiComponent_ANIMATIONS |
-                                  aiComponent_LIGHTS | aiComponent_CAMERAS /*| aiComponent_NORMALS*/ );
+                                  aiComponent_LIGHTS | aiComponent_CAMERAS /*| aiComponent_NORMALS*/);
 
   // And have it read the given file with some post-processing
   const aiScene* scene = nullptr;
@@ -420,7 +420,7 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
   // John Wason Dec 2020 - Load more information
   importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
                               aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_BONEWEIGHTS | aiComponent_ANIMATIONS |
-                                  aiComponent_LIGHTS | aiComponent_CAMERAS /*| aiComponent_NORMALS*/ );
+                                  aiComponent_LIGHTS | aiComponent_CAMERAS /*| aiComponent_NORMALS*/);
 
   // And have it read the given file with some post-processing
   const aiScene* scene = nullptr;
