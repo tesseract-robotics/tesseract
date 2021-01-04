@@ -39,8 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/state_waypoint.h>
 #include <tesseract_motion_planners/planner_utils.h>
 
-using namespace trajopt;
-
 namespace tesseract_planning
 {
 SimpleMotionPlannerStatusCategory::SimpleMotionPlannerStatusCategory(std::string name) : name_(std::move(name)) {}
@@ -163,6 +161,7 @@ SimpleMotionPlanner::getStartInstruction(const PlannerRequest& request,
 
     if (isJointWaypoint(start_waypoint))
     {
+      assert(checkJointPositionFormat(fwd_kin->getJointNames(), start_waypoint));
       const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
       start_instruction_seed.setWaypoint(StateWaypoint(jwp->joint_names, *jwp));
     }
@@ -175,6 +174,7 @@ SimpleMotionPlanner::getStartInstruction(const PlannerRequest& request,
     }
     else if (isStateWaypoint(start_waypoint))
     {
+      assert(checkJointPositionFormat(fwd_kin->getJointNames(), start_waypoint));
       start_instruction_seed.setWaypoint(start_waypoint);
     }
     else

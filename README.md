@@ -2,12 +2,15 @@
 
 [![codecov](https://codecov.io/gh/ros-industrial-consortium/tesseract/branch/master/graph/badge.svg)](https://codecov.io/gh/ros-industrial-consortium/tesseract)
 
+[![Python](https://img.shields.io/badge/python-2.7+|3.6+-blue.svg)](https://github.com/ros-industrial-consortium/tesseract/tree/master/tesseract_python)
+
 Platform             | CI Status
 ---------------------|:---------
 Linux (Focal)        | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Focal-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Linux (Bionic)       | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Bionic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Windows              | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Windows-Noetic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Lint  (Clang-Format) | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Clang-Format/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+Lint  (Clang-Tidy)   | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Clang-Tidy/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Lint  (CodeCov)      | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/CodeCov/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 
 [![Github Issues](https://img.shields.io/github/issues/ros-industrial-consortium/tesseract.svg)](http://github.com/ros-industrial-consortium/tesseract/issues)
@@ -83,7 +86,7 @@ Tesseract packages use ctest because it is ROS agnostic, so to run the test call
 
 ### Building Tesseract Code Coverage
 
-Must pass the -DTESSERACT_CODE_COVERAGE=ON to cmake when wanting to build code coverage. The code coverage report is located in each individuals build directory inside a ccov/all-merged folder. Open the index.html file to see the packages code coverage report.
+Must pass the -DTESSERACT_ENABLE_CODE_COVERAGE=ON to cmake when wanting to build code coverage. The code coverage report is located in each individuals build directory inside a ccov/all-merged folder. Open the index.html file to see the packages code coverage report.
 
 NOTE: Must be a clean build when generating a code coverage report. Also must build in debug.
 
@@ -108,6 +111,7 @@ Tesseract currently leverages Compiler Warnigs, Clang Tidy and Code Coverage. Al
   - Wconversion
   - Wsign-conversion
   - Wno-sign-compare
+  - Wnon-virtual-dtor
 - Clang Tidy
   - clang-analyzer-*
   - bugprone-*
@@ -118,8 +122,8 @@ Tesseract currently leverages Compiler Warnigs, Clang Tidy and Code Coverage. Al
   - cppcoreguidelines-no-malloc
   - cppcoreguidelines-slicing
   - cppcoreguidelines-special-member-functions
-  - misc-*
-  - modernize-*
+  - misc-*,-misc-non-private-member-variables-in-classes
+  - modernize-*,-modernize-use-trailing-return-type,-modernize-use-nodiscard
   - performance-*
   - readability-avoid-const-params-in-decls
   - readability-container-size-empty

@@ -158,52 +158,52 @@ def test_load_srdf_unit():
     g.addLink(sg.Link("link_7"))
     g.addLink(sg.Link("tool0"))
     
-    base_joint = sg.Joint("base_joint")
-    base_joint.parent_link_name = "base_link"
-    base_joint.child_link_name = "link_1"
-    base_joint.type = sg.JointType_FIXED
-    g.addJoint(base_joint)
-
-    joint_1 = sg.Joint("joint_1")
-    joint_1.parent_link_name = "link_1"
-    joint_1.child_link_name = "link_2"
-    joint_1.type = sg.JointType_REVOLUTE
+    joint_1 = sg.Joint("joint_a1")
+    joint_1.parent_link_name = "base_link"
+    joint_1.child_link_name = "link_1"
+    joint_1.type = sg.JointType_FIXED
     g.addJoint(joint_1)
 
-    joint_2 = sg.Joint("joint_2")
-    joint_2.parent_to_joint_origin_transform = _translation([1.25,0,0])
-    joint_2.parent_link_name = "link_2"
-    joint_2.child_link_name = "link_3"
+    joint_2 = sg.Joint("joint_a2")
+    joint_2.parent_link_name = "link_1"
+    joint_2.child_link_name = "link_2"
     joint_2.type = sg.JointType_REVOLUTE
     g.addJoint(joint_2)
 
-    joint_3 = sg.Joint("joint_3")
+    joint_3 = sg.Joint("joint_a3")
     joint_3.parent_to_joint_origin_transform = _translation([1.25,0,0])
-    joint_3.parent_link_name = "link_3"
-    joint_3.child_link_name = "link_4"
+    joint_3.parent_link_name = "link_2"
+    joint_3.child_link_name = "link_3"
     joint_3.type = sg.JointType_REVOLUTE
     g.addJoint(joint_3)
 
-    joint_4 = sg.Joint("joint_4")
-    joint_4.parent_to_joint_origin_transform = _translation([0,1.25,0])
-    joint_4.parent_link_name = "link_4"
-    joint_4.child_link_name = "link_5"
+    joint_4 = sg.Joint("joint_a4")
+    joint_4.parent_to_joint_origin_transform = _translation([1.25,0,0])
+    joint_4.parent_link_name = "link_3"
+    joint_4.child_link_name = "link_4"
     joint_4.type = sg.JointType_REVOLUTE
     g.addJoint(joint_4)
 
-    joint_5 = sg.Joint("joint_5")
+    joint_5 = sg.Joint("joint_a5")
     joint_5.parent_to_joint_origin_transform = _translation([0,1.25,0])
-    joint_5.parent_link_name = "link_5"
-    joint_5.child_link_name = "link_6"
+    joint_5.parent_link_name = "link_4"
+    joint_5.child_link_name = "link_5"
     joint_5.type = sg.JointType_REVOLUTE
     g.addJoint(joint_5)
 
-    joint_6 = sg.Joint("joint_6")
+    joint_6 = sg.Joint("joint_a6")
     joint_6.parent_to_joint_origin_transform = _translation([0,1.25,0])
-    joint_6.parent_link_name = "link_6"
-    joint_6.child_link_name = "link_7"
+    joint_6.parent_link_name = "link_5"
+    joint_6.child_link_name = "link_6"
     joint_6.type = sg.JointType_REVOLUTE
     g.addJoint(joint_6)
+
+    joint_7 = sg.Joint("joint_a7")
+    joint_7.parent_to_joint_origin_transform = _translation([0,1.25,0])
+    joint_7.parent_link_name = "link_6"
+    joint_7.child_link_name = "link_7"
+    joint_7.type = sg.JointType_REVOLUTE
+    g.addJoint(joint_7)
 
     joint_tool0 = sg.Joint("base_joint")
     joint_tool0.parent_link_name = "link_7"
@@ -227,8 +227,3 @@ def test_load_srdf_unit():
 
     g.clearAllowedCollisions()
     assert len(acm.getAllAllowedCollisions()) == 0
-
-
-
-
-    

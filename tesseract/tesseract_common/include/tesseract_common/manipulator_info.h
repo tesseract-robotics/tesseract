@@ -48,16 +48,23 @@ public:
   /**
    * @brief Tool Center Point Defined by name
    * @param name The tool center point name
-   * @param external The external TCP is used when the robot is holding the part verus the tool.
+   * @param external The external TCP is used when the robot is holding the part versus the tool.
+   * @note External should also be set to true when your kinematic object includes a robot and
+   * positioner, where the positioner has the tool and the robot is holding the part. Basically
+   * anytime the tool is not attached to the tip link of the kinematic chain.
    */
   ToolCenterPoint(const std::string& name, bool external = false);
 
   /**
    * @brief Tool Center Point Defined by transform
    * @param transform The tool center point transform
-   * @param external The external TCP is used when the robot is holding the part verus the tool.
+   * @param external The external TCP is used when the robot is holding the part versus the tool.
+   * @param external_frame If empty assumed relative to world, otherwise the provided tcp is relative to this link.
+   * @note External should also be set to true when your kinematic object includes a robot and
+   * positioner, where the positioner has the tool and the robot is holding the part. Basically
+   * anytime the tool is not attached to the tip link of the kinematic chain.
    */
-  ToolCenterPoint(const Eigen::Isometry3d& transform, bool external = false);
+  ToolCenterPoint(const Eigen::Isometry3d& transform, bool external = false, std::string external_frame = "");
 
   /**
    * @brief The Tool Center Point is empty
@@ -79,7 +86,10 @@ public:
 
   /**
    * @brief Check if tool center point is and external tcp which mean it is not defined
-   * @details The external TCP is used when the robot is holding the part verus the tool.
+   * @details The external TCP is used when the robot is holding the part versus the tool.
+   * External should also be set to true when your kinematic object includes a robot and
+   * positioner, where the positioner has the tool and the robot is holding the part. Basically
+   * anytime the tool is not attached to the tip link of the kinematic chain.
    * @return True if and external TCP, otherwise the false
    */
   bool isExternal() const;
@@ -87,8 +97,16 @@ public:
   /**
    * @brief Set the external property
    * @param value True if external tool center point, otherwise false
+   * @param external_frame If an external tcp was defined as an Isometry then an external can be provided. If empty
+   * assumed relative to world.
    */
-  void setExternal(bool value);
+  void setExternal(bool value, std::string external_frame);
+
+  /**
+   * @brief If an external tcp was defined as an Isometry then an external frame can be provided.
+   * If empty assumed relative to world.
+   */
+  const std::string& getExternalFrame() const;
 
   /**
    * @brief Get the tool center point name
@@ -109,6 +127,7 @@ public:
     ret_val &= (name_ == other.name_);
     ret_val &= (transform_.isApprox(transform_, 1e-5));
     ret_val &= (external_ == other.external_);
+    ret_val &= (external_frame_ == other.external_frame_);
     return ret_val;
   }
 
@@ -117,8 +136,19 @@ protected:
   std::string name_;
   Eigen::Isometry3d transform_;
 
-  /** @brief The external TCP is used when the robot is holding the part verus the tool. */
+  /**
+   * @brief The external TCP is used when the robot is holding the part versus the tool.
+   * @details External should also be set to true when your kinematic object includes a robot and
+   * positioner, where the positioner has the tool and the robot is holding the part. Basically
+   * anytime the tool is not attached to the tip link of the kinematic chain.
+   */
   bool external_{ false };
+
+  /**
+   * @brief If an external tcp was defined as an Isometry then an external can be provided. If empty assumed relative to
+   * world.
+   */
+  std::string external_frame_;
 };
 
 /**

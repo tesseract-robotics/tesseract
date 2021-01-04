@@ -59,18 +59,12 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
   discrete_contact_manager_->setActiveCollisionObjects(active_link_names_);
   discrete_contact_manager_->setCollisionMarginData(collision_check_config_.collision_margin_data);
   discrete_contact_manager_->setIsContactAllowedFn(
-      std::bind(&tesseract_planning::DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed,
-                this,
-                std::placeholders::_1,
-                std::placeholders::_2));
+      [this](const std::string& a, const std::string& b) { return isContactAllowed(a, b); });
 
   continuous_contact_manager_->setActiveCollisionObjects(active_link_names_);
   continuous_contact_manager_->setCollisionMarginData(collision_check_config_.collision_margin_data);
   continuous_contact_manager_->setIsContactAllowedFn(
-      std::bind(&tesseract_planning::DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed,
-                this,
-                std::placeholders::_1,
-                std::placeholders::_2));
+      [this](const std::string& a, const std::string& b) { return isContactAllowed(a, b); });
 }
 
 template <typename FloatType>

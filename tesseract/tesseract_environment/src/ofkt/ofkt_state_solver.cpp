@@ -38,9 +38,9 @@ namespace tesseract_environment
 struct ofkt_builder : public boost::dfs_visitor<>
 {
   ofkt_builder(OFKTStateSolver& tree,
-               std::vector<std::pair<std::string, std::array<double, 2>>>& limits,
+               std::vector<tesseract_scene_graph::Joint::ConstPtr>& kinematic_joints,
                std::string prefix = "")
-    : tree_(tree), limits_(limits), prefix_(prefix)
+    : tree_(tree), kinematic_joints_(kinematic_joints), prefix_(prefix)
   {
   }
 
@@ -60,12 +60,12 @@ struct ofkt_builder : public boost::dfs_visitor<>
     std::string parent_link_name = prefix_ + joint->parent_link_name;
     std::string child_link_name = prefix_ + joint->child_link_name;
 
-    tree_.addNode(joint, joint_name, parent_link_name, child_link_name, limits_);
+    tree_.addNode(joint, joint_name, parent_link_name, child_link_name, kinematic_joints_);
   }
 
 protected:
   OFKTStateSolver& tree_;
-  std::vector<std::pair<std::string, std::array<double, 2>>>& limits_;
+  std::vector<tesseract_scene_graph::Joint::ConstPtr>& kinematic_joints_;
   std::string prefix_;
 };
 
@@ -156,9 +156,9 @@ bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_gra
   link_map_[root_name] = root_.get();
   current_state_->link_transforms[root_name] = root_->getWorldTransformation();
 
-  std::vector<std::pair<std::string, std::array<double, 2>>> limits;
-  limits.reserve(scene_graph->getJoints().size());
-  ofkt_builder builder(*this, limits);
+  std::vector<tesseract_scene_graph::Joint::ConstPtr> kinematic_joints;
+  kinematic_joints.reserve(scene_graph->getJoints().size());
+  ofkt_builder builder(*this, kinematic_joints);
 
   std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t> index_map;
   boost::associative_property_map<std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t>> prop_index_map(
@@ -174,11 +174,15 @@ bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_gra
       boost::visitor(builder).root_vertex(scene_graph->getVertex(root_name)).vertex_index_map(prop_index_map));
 
   // Populate Joint Limits
-  limits_.resize(static_cast<long>(limits.size()), 2);
-  for (std::size_t i = 0; i < limits.size(); ++i)
+  limits_.joint_limits.resize(static_cast<long int>(kinematic_joints.size()), 2);
+  limits_.velocity_limits.resize(static_cast<long int>(kinematic_joints.size()));
+  limits_.acceleration_limits.resize(static_cast<long int>(kinematic_joints.size()));
+  for (std::size_t i = 0; i < kinematic_joints.size(); ++i)
   {
-    limits_(static_cast<long>(i), 0) = limits[i].second[0];
-    limits_(static_cast<long>(i), 1) = limits[i].second[1];
+    limits_.joint_limits(static_cast<long>(i), 0) = kinematic_joints[i]->limits->lower;
+    limits_.joint_limits(static_cast<long>(i), 1) = kinematic_joints[i]->limits->upper;
+    limits_.velocity_limits(static_cast<long>(i)) = kinematic_joints[i]->limits->velocity;
+    limits_.acceleration_limits(static_cast<long>(i)) = kinematic_joints[i]->limits->acceleration;
   }
 
   revision_ = 1;
@@ -263,15 +267,15 @@ EnvState::ConstPtr OFKTStateSolver::getCurrentState() const { return current_sta
 
 EnvState::Ptr OFKTStateSolver::getRandomState() const
 {
-  return getState(joint_names_, tesseract_common::generateRandomNumber(limits_));
+  return getState(joint_names_, tesseract_common::generateRandomNumber(limits_.joint_limits));
 }
 
-const Eigen::MatrixX2d& OFKTStateSolver::getLimits() const { return limits_; }
+const tesseract_common::KinematicLimits& OFKTStateSolver::getLimits() const { return limits_; }
 
 void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
 {
-  std::vector<std::pair<std::string, std::array<double, 2>>> new_limits;
-  new_limits.reserve(commands.size());
+  std::vector<tesseract_scene_graph::Joint::ConstPtr> new_kinematic_joints;
+  new_kinematic_joints.reserve(commands.size());
 
   std::vector<std::string> removed_joints;
   removed_joints.reserve(commands.size());
@@ -292,7 +296,7 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
         const auto& cmd = static_cast<const tesseract_environment::AddCommand&>(*command);
         const tesseract_scene_graph::Joint::ConstPtr& joint = cmd.getJoint();
 
-        addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_limits);
+        addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_kinematic_joints);
         break;
       }
       case tesseract_environment::CommandType::MOVE_LINK:
@@ -317,7 +321,7 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
 
         nodes_.erase(old_joint_name);
 
-        addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_limits);
+        addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_kinematic_joints);
         break;
       }
       case tesseract_environment::CommandType::MOVE_JOINT:
@@ -369,9 +373,9 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
         const auto& cmd = static_cast<const tesseract_environment::AddSceneGraphCommand&>(*command);
         const tesseract_scene_graph::Joint::ConstPtr& joint = cmd.getJoint();
 
-        addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_limits);
+        addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_kinematic_joints);
 
-        ofkt_builder builder(*this, new_limits, cmd.getPrefix());
+        ofkt_builder builder(*this, new_kinematic_joints, cmd.getPrefix());
 
         std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t> index_map;
         boost::associative_property_map<std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t>> prop_index_map(
@@ -400,8 +404,8 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
           // Assign the lower/upper. Velocity, acceleration, and effort are ignored
           if (it != limits.end())
           {
-            limits_(static_cast<Eigen::Index>(i), 0) = it->second.first;
-            limits_(static_cast<Eigen::Index>(i), 1) = it->second.second;
+            limits_.joint_limits(static_cast<Eigen::Index>(i), 0) = it->second.first;
+            limits_.joint_limits(static_cast<Eigen::Index>(i), 1) = it->second.second;
           }
         }
 
@@ -429,26 +433,49 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
         std::remove_if(joint_names_.begin(), joint_names_.end(), [removed_joints](const std::string& joint_name) {
           return (std::find(removed_joints.begin(), removed_joints.end(), joint_name) != removed_joints.end());
         }));
-    Eigen::MatrixX2d l1(limits_.rows() - static_cast<long>(removed_joints.size()), 2);
+
+    tesseract_common::KinematicLimits l1;
+    l1.joint_limits.resize(static_cast<long int>(joint_names_.size()), 2);
+    l1.velocity_limits.resize(static_cast<long int>(joint_names_.size()));
+    l1.acceleration_limits.resize(static_cast<long int>(joint_names_.size()));
+
     long cnt = 0;
-    for (long i = 0; i < limits_.rows(); ++i)
+    for (long i = 0; i < limits_.joint_limits.rows(); ++i)
+    {
       if (std::find(removed_joints_indices.begin(), removed_joints_indices.end(), i) == removed_joints_indices.end())
-        l1.row(cnt++) = limits_.row(i);
+      {
+        l1.joint_limits.row(cnt) = limits_.joint_limits.row(i);
+        l1.velocity_limits(cnt) = limits_.velocity_limits(i);
+        l1.acceleration_limits(cnt) = limits_.acceleration_limits(i);
+        ++cnt;
+      }
+    }
 
     limits_ = l1;
   }
 
   // Populate Joint Limits
-  if (new_limits.empty() == false)
+  if (new_kinematic_joints.empty() == false)
   {
-    Eigen::MatrixX2d l(limits_.rows() + static_cast<long>(new_limits.size()), 2);
-    Eigen::MatrixX2d l2(static_cast<long>(new_limits.size()), 2);
-    for (std::size_t i = 0; i < new_limits.size(); ++i)
+    tesseract_common::KinematicLimits l;
+    long s = limits_.joint_limits.rows() + static_cast<long>(new_kinematic_joints.size());
+    l.joint_limits.resize(s, 2);
+    l.velocity_limits.resize(s);
+    l.acceleration_limits.resize(s);
+
+    limits_.joint_limits.block(0, 0, limits_.joint_limits.rows(), 2) = limits_.joint_limits;
+    limits_.velocity_limits.head(limits_.joint_limits.rows()) = limits_.velocity_limits;
+    limits_.acceleration_limits.head(limits_.joint_limits.rows()) = limits_.acceleration_limits;
+
+    long cnt = limits_.joint_limits.size();
+    for (std::size_t i = 0; i < new_kinematic_joints.size(); ++i)
     {
-      l2(static_cast<long>(i), 0) = new_limits[i].second[0];
-      l2(static_cast<long>(i), 1) = new_limits[i].second[1];
+      limits_.joint_limits(cnt, 0) = new_kinematic_joints[i]->limits->lower;
+      limits_.joint_limits(cnt, 1) = new_kinematic_joints[i]->limits->upper;
+      limits_.velocity_limits(cnt) = new_kinematic_joints[i]->limits->velocity;
+      limits_.acceleration_limits(cnt) = new_kinematic_joints[i]->limits->acceleration;
+      ++cnt;
     }
-    l << limits_, l2;
     limits_ = l;
   }
 
@@ -514,7 +541,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint::ConstPtr& join
                               const std::string& joint_name,
                               const std::string& parent_link_name,
                               const std::string& child_link_name,
-                              std::vector<std::pair<std::string, std::array<double, 2>>>& limits)
+                              std::vector<tesseract_scene_graph::Joint::ConstPtr>& kinematic_joints)
 {
   OFKTNode::UPtr n;
   switch (joint->type)
@@ -544,8 +571,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint::ConstPtr& join
       current_state_->joint_transforms[n->getJointName()] = n->getWorldTransformation();
       nodes_[joint_name] = std::move(n);
       joint_names_.push_back(joint_name);
-      limits.push_back(
-          std::make_pair(joint_name, std::array<double, 2>({ joint->limits->lower, joint->limits->upper })));
+      kinematic_joints.push_back(joint);
       break;
     }
     case tesseract_scene_graph::JointType::CONTINUOUS:
@@ -560,8 +586,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint::ConstPtr& join
       current_state_->joint_transforms[n->getJointName()] = n->getWorldTransformation();
       nodes_[joint_name] = std::move(n);
       joint_names_.push_back(joint_name);
-      limits.push_back(
-          std::make_pair(joint_name, std::array<double, 2>({ joint->limits->lower, joint->limits->upper })));
+      kinematic_joints.push_back(joint);
       break;
     }
     case tesseract_scene_graph::JointType::PRISMATIC:
@@ -576,8 +601,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint::ConstPtr& join
       current_state_->joint_transforms[n->getJointName()] = n->getWorldTransformation();
       nodes_[joint_name] = std::move(n);
       joint_names_.push_back(joint_name);
-      limits.push_back(
-          std::make_pair(joint_name, std::array<double, 2>({ joint->limits->lower, joint->limits->upper })));
+      kinematic_joints.push_back(joint);
       break;
     }
     default:

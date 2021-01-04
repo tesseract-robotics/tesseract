@@ -119,7 +119,8 @@ inline ContactResult* processResult(ContactTestData& cdata,
   if (cdata.req.is_valid && !cdata.req.is_valid(contact))
     return nullptr;
 
-  if (!(contact.distance < cdata.collision_margin_data.getPairCollisionMarginData(key.first, key.second)))
+  if ((cdata.req.calculate_distance || cdata.req.calculate_penetration) &&
+      !(contact.distance < cdata.collision_margin_data.getPairCollisionMarginData(key.first, key.second)))
     return nullptr;
 
   if (!found)

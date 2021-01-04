@@ -42,7 +42,7 @@ namespace tesseract_planning
 DescartesDefaultPlanProfile<double> descartesPlanParser(const tinyxml2::XMLElement& xml_element)
 {
   const tinyxml2::XMLElement* descartes_plan_element = xml_element.FirstChildElement("DescartesPlanProfile");
-  return DescartesDefaultPlanProfileD(*descartes_plan_element);
+  return DescartesDefaultPlanProfile<double>(*descartes_plan_element);
 }
 
 DescartesDefaultPlanProfile<double> descartesPlanFromXMLElement(const tinyxml2::XMLElement* profile_xml)

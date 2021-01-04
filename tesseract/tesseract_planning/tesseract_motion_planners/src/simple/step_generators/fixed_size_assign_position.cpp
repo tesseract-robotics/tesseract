@@ -83,6 +83,14 @@ CompositeInstruction fixedSizeAssignStateWaypoint(const JointWaypoint& start,
   // Joint waypoints should have joint names
   assert(static_cast<long>(start.joint_names.size()) == start.size());
 
+  assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
+
+  assert([=]() {
+    ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
+    auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+    return checkJointPositionFormat(fwd_kin->getJointNames(), start);
+  }());
+
   return fixedSizeAssignStateWaypoint(start, base_instruction, request, manip_info, steps);
 }
 
@@ -95,6 +103,14 @@ CompositeInstruction fixedSizeAssignStateWaypoint(const CartesianWaypoint& /*sta
 {
   // Joint waypoints should have joint names
   assert(static_cast<long>(end.joint_names.size()) == end.size());
+
+  assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
+
+  assert([=]() {
+    ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
+    auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+    return checkJointPositionFormat(fwd_kin->getJointNames(), end);
+  }());
 
   return fixedSizeAssignStateWaypoint(end, base_instruction, request, manip_info, steps);
 }

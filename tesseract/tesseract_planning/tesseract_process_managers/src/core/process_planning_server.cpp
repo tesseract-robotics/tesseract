@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
+#include <tesseract_motion_planners/core/utils.h>
 
 #include <tesseract_command_language/utils/utils.h>
 
@@ -115,7 +116,7 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
       std::make_unique<const PlannerProfileRemapping>(request.composite_profile_remapping);
 
   response.input = std::make_unique<Instruction>(request.instructions);
-  const auto* composite_program = response.input->cast_const<CompositeInstruction>();
+  auto* composite_program = response.input->cast<CompositeInstruction>();
   ManipulatorInfo mi = composite_program->getManipulatorInfo();
   response.global_manip_info = std::make_unique<const ManipulatorInfo>(mi);
 
@@ -142,6 +143,12 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
   // Set the env state if provided
   if (request.env_state != nullptr)
     tc->setState(request.env_state->joints);
+
+  // This makes sure the Joint and State Waypoints match the same order as the kinematics
+  if (formatProgram(*composite_program, *tc))
+  {
+    CONSOLE_BRIDGE_logInform("Tesseract Planning Server: Input program required formating!");
+  }
 
   if (!request.commands.empty() && !tc->applyCommands(request.commands))
   {

@@ -40,8 +40,8 @@ namespace tesseract_planning
 CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& start,
                                                        const JointWaypoint& end,
                                                        const PlanInstruction& base_instruction,
-                                                       const PlannerRequest& /*request*/,
-                                                       const ManipulatorInfo& /*manip_info*/,
+                                                       const PlannerRequest& request,
+                                                       const ManipulatorInfo& manip_info,
                                                        int steps)
 {
   CompositeInstruction composite;
@@ -50,13 +50,22 @@ CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& star
   assert(static_cast<long>(start.joint_names.size()) == start.size());
   assert(static_cast<long>(end.joint_names.size()) == end.size());
 
+  assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
+
+  // Initialize
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), start));
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), end));
+
   // Linearly interpolate in joint space
   Eigen::MatrixXd states = interpolate(start, end, steps);
 
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
   {
-    MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), MoveInstructionType::FREESPACE);
+    MoveInstruction move_instruction(StateWaypoint(fwd_kin->getJointNames(), states.col(i)),
+                                     MoveInstructionType::FREESPACE);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     move_instruction.setProfile(base_instruction.getProfile());
@@ -80,6 +89,10 @@ CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& star
 
   // Initialize
   auto inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  if (inv_kin->getJointNames() != fwd_kin->getJointNames())
+    throw std::runtime_error("Forward and Inverse Kinematic objects joints are not ordered the same!");
+
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   Eigen::Isometry3d tcp = request.env->findTCP(mi);
   assert(start.joint_names.size() == inv_kin->getJointNames().size());
@@ -87,6 +100,7 @@ CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& star
   CompositeInstruction composite;
 
   // Calculate IK for start and end
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), start));
   Eigen::VectorXd j1 = start;
 
   Eigen::Isometry3d p2 = end * tcp.inverse();
@@ -119,7 +133,8 @@ CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& star
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
   {
-    MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), MoveInstructionType::FREESPACE);
+    MoveInstruction move_instruction(StateWaypoint(fwd_kin->getJointNames(), states.col(i)),
+                                     MoveInstructionType::FREESPACE);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     move_instruction.setProfile(base_instruction.getProfile());
@@ -143,6 +158,10 @@ CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& 
 
   // Initialize
   auto inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  if (inv_kin->getJointNames() != fwd_kin->getJointNames())
+    throw std::runtime_error("Forward and Inverse Kinematic objects joints are not ordered the same!");
+
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   Eigen::Isometry3d tcp = request.env->findTCP(mi);
   assert(end.joint_names.size() == inv_kin->getJointNames().size());
@@ -156,6 +175,7 @@ CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& 
   if (!inv_kin->calcInvKin(j1, p1, end))
     throw std::runtime_error("fixedSizeInterpolateStateWaypoint: failed to find inverse kinematics solution!");
 
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), end));
   Eigen::VectorXd j2 = end;
 
   // Find closest solution to the end state
@@ -182,7 +202,8 @@ CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& 
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
   {
-    MoveInstruction move_instruction(StateWaypoint(end.joint_names, states.col(i)), MoveInstructionType::FREESPACE);
+    MoveInstruction move_instruction(StateWaypoint(fwd_kin->getJointNames(), states.col(i)),
+                                     MoveInstructionType::FREESPACE);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     move_instruction.setProfile(base_instruction.getProfile());
@@ -204,6 +225,10 @@ CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& 
 
   // Initialize
   auto inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  if (inv_kin->getJointNames() != fwd_kin->getJointNames())
+    throw std::runtime_error("Forward and Inverse Kinematic objects joints are not ordered the same!");
+
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   Eigen::Isometry3d tcp = request.env->findTCP(mi);
 
@@ -289,11 +314,13 @@ CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& 
 
   // Calculate FK for start and end
   Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), start));
   if (!fwd_kin->calcFwdKin(p1, start))
     throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
   p1 = world_to_base * p1 * tcp;
 
   Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), end));
   if (!fwd_kin->calcFwdKin(p2, end))
     throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
   p2 = world_to_base * p2 * tcp;
@@ -336,6 +363,7 @@ CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& 
 
   // Calculate FK for start and end
   Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), start));
   if (!fwd_kin->calcFwdKin(p1, start))
     throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
   p1 = world_to_base * p1 * tcp;
@@ -382,6 +410,7 @@ CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const CartesianWaypoi
   Eigen::Isometry3d p1 = start;
 
   Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+  assert(checkJointPositionFormat(fwd_kin->getJointNames(), end));
   if (!fwd_kin->calcFwdKin(p2, end))
     throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
   p2 = world_to_base * p2 * tcp;

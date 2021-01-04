@@ -23,6 +23,18 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
     EXPECT_NEAR(geom->getZ(), 3, 1e-8);
   }
 
+  {  // https://github.com/ros-industrial-consortium/tesseract_ros/issues/67
+    std::string str = R"(<box size="0.5 0.25 0.75" extra="0 0 0"/>)";
+    tesseract_geometry::Box::Ptr geom;
+    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
+    EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "BoxStatusCategory");
+    EXPECT_FALSE(status->message().empty());
+    EXPECT_NEAR(geom->getX(), 0.5, 1e-8);
+    EXPECT_NEAR(geom->getY(), 0.25, 1e-8);
+    EXPECT_NEAR(geom->getZ(), 0.75, 1e-8);
+  }
+
   {
     std::string str = R"(<box size="-1 2.0 3" extra="0 0 0"/>)";
     tesseract_geometry::Box::Ptr geom;

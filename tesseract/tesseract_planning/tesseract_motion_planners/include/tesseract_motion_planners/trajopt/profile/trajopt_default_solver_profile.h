@@ -42,6 +42,13 @@ public:
   using Ptr = std::shared_ptr<TrajOptDefaultSolverProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptDefaultSolverProfile>;
 
+  TrajOptDefaultSolverProfile() = default;
+  ~TrajOptDefaultSolverProfile() override = default;
+  TrajOptDefaultSolverProfile(const TrajOptDefaultSolverProfile&) = default;
+  TrajOptDefaultSolverProfile& operator=(const TrajOptDefaultSolverProfile&) = default;
+  TrajOptDefaultSolverProfile(TrajOptDefaultSolverProfile&&) = default;
+  TrajOptDefaultSolverProfile& operator=(TrajOptDefaultSolverProfile&&) = default;
+
   /** @brief The Convex solver to use */
   sco::ModelType convex_solver{ sco::ModelType::OSQP };
 
