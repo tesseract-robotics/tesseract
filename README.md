@@ -79,7 +79,7 @@ NOTE: If you are building using catkin tools, use `catkin build --force-cmake -D
 
 #### Running Tesseract Tests
 
-Tesseract packages use ctest because it is ROS agnostic, so to run the test call `catkin test --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf`
+Tesseract packages use ctest because it is ROS agnostic, so to run the test call `catkin test --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_managers tesseract_scene_graph tesseract_urdf tesseract_python`
 
 ### Building Tesseract Code Coverage
 
