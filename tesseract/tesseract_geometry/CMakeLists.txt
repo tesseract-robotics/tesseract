@@ -38,6 +38,14 @@ if(NOT TARGET octomath)
   set_target_properties(octomath PROPERTIES INTERFACE_LINK_LIBRARIES "${OCTOMAP_LIBRARIES}")
 endif()
 
+find_file(ASSIMP_PBR_MATERIAL_FOUND assimp/pbrmaterial.h HINTS ${assimp_INCLUDE_DIRS})
+
+if(ASSIMP_PBR_MATERIAL_FOUND)
+set(TESSERACT_ASSIMP_USE_PBRMATERIAL TESSERACT_ASSIMP_USE_PBRMATERIAL=1)
+else()
+set(TESSERACT_ASSIMP_USE_PBRMATERIAL)
+endif()
+
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
@@ -48,7 +56,7 @@ tesseract_variables()
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_common console_bridge::console_bridge octomap octomath ${assimp_LIBRARIES})
 target_compile_options(${PROJECT_NAME} INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME} INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(${PROJECT_NAME} INTERFACE ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_ASSIMP_USE_PBRMATERIAL})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} INTERFACE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(${PROJECT_NAME} INTERFACE ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})

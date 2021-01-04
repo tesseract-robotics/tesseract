@@ -47,7 +47,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+
+#ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
 #include <assimp/pbrmaterial.h>
+#endif
 
 #include <console_bridge/console.h>
 
@@ -151,16 +154,17 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
       Eigen::Vector4d emissive;
 
       aiColor4D pbr_base_color;
+#ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
       if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, pbr_base_color) == AI_SUCCESS)
       {
         // Use PBR Metallic material properties if available
         base_color = Eigen::Vector4d(pbr_base_color.r, pbr_base_color.g, pbr_base_color.b, pbr_base_color.a);
-        double metallicFactor;
+        float metallicFactor;
         if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, metallicFactor) == AI_SUCCESS)
         {
           metallic = metallicFactor;
         }
-        double roughnessFactor;
+        float roughnessFactor;
         if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, roughnessFactor) == AI_SUCCESS)
         {
           roughness = roughnessFactor;
@@ -173,6 +177,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
         }
       }
       else
+#endif
       {
         // Use old style material. Ambient and specular not supported
         aiColor4D diffuse_color;
@@ -202,8 +207,13 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
             tesseract_common::Resource::Ptr texture_image;
             tesseract_common::VectorVector2d uvs;
             // https://stackoverflow.com/questions/56820244/assimp-doenst-return-texture-data
-            if (auto texture_data = scene->GetEmbeddedTexture(texName.C_Str()))
+            const char* texNamec = texName.C_Str();
+            if ('*' == *texNamec)
             {
+              int tex_index = std::atoi(texNamec + 1);
+              if (0 > tex_index || scene->mNumTextures <= static_cast<unsigned>(tex_index))
+                continue;
+              auto texture_data = scene->mTextures[tex_index];
               // returned pointer is not null, read texture from memory
               std::string file_type = texture_data->achFormatHint;
               if (file_type == "jpg" || file_type == "png")
@@ -231,10 +241,10 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
               }
               texture_image = tex_resource;
             }
-            aiVector3D* tex_coords = a->mTextureCoords[uvIndex];
-            for (unsigned int i = 0; i < a->mNumVertices; ++i)
+            aiVector3D* tex_coords = a->mTextureCoords[i];
+            for (unsigned int j = 0; j < a->mNumVertices; ++j)
             {
-              aiVector3D v = tex_coords[i];
+              aiVector3D v = tex_coords[j];
               uvs.push_back(Eigen::Vector2d(static_cast<double>(v.x), static_cast<double>(v.y)));
             }
             auto tex = std::make_shared<MeshTexture>(
