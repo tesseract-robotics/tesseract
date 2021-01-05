@@ -21,6 +21,8 @@ import math
 from tesseract import tesseract_geometry
 from tesseract.tesseract_common import Quaterniond
 import pkgutil
+import re
+import base64
 
 def tesseract_env_to_babylon_json(t_env, origin_offset=[0,0,0]):
     return json.dumps(tesseract_env_to_babylon_json_dict(t_env,origin_offset))
@@ -74,8 +76,12 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
         tf_link["parentId"] = "root"
     transform_nodes.append(tf_link)
     
+    visual_i = 0
+
     for visual in link.visual:
-        visual_name = "link_" + link_name + "_visual_" + visual.name
+        visual_i += 1
+        visual_u_name = visual.name + str(visual_i)
+        visual_name = "link_" + link_name + "_visual_" + visual_u_name
         np_tf_visual = visual.origin
         visual_p, visual_q = _np_transform_to_babylon(np_tf_visual)
         tf_visual = {"name": visual_name, "isVisible": "true", "isEnabled": "true", 
@@ -83,6 +89,8 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
         tf_visual["position"] = visual_p
         tf_visual["rotationQuaternion"] = visual_q
         tf_visual["billboardMode"] = 0
+
+        tf_material = None
 
         visual_geom = visual.geometry
         if (isinstance(visual_geom,tesseract_geometry.Mesh)):
@@ -115,6 +123,57 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
             submesh["indexStart"] = 0
             submesh["indexCount"] = len(indices)
             tf_visual["subMeshes"] = [submesh]
+
+            if not mesh.getResource().getUrl().lower().endswith('.stl'):
+                mesh_material = mesh.getMaterial()
+                if mesh_material is not None:
+                
+                    tf_material = {"name": "material_" + visual_name}
+                
+                    color = mesh_material.getBaseColorFactor().flatten()
+                    tf_color = [color[0], color[1], color[2]]
+                    tf_color2 = [color[0]*0.5, color[1]*0.5, color[2]*0.5]
+
+                    """tf_material["ambient"] = tf_color
+                    tf_material["diffuse"] = tf_color
+                    tf_material["specular"] = tf_color2
+                    tf_material["alpha"] = 1
+                    tf_material["backFaceCulling"] = True"""
+                    
+                    tf_material["customType"] = "BABYLON.PBRMaterial"
+                    tf_material["albedo"] = tf_color
+                    tf_material["alpha"] = color[3]
+                    tf_material["alphaCutOff"] = 0.4
+                    tf_material["backFaceCulling"] = True
+                    tf_material["roughness"] = mesh_material.getRoughnessFactor()
+                    tf_material["metallic"] = mesh_material.getMetallicFactor()
+                    tf_material["maxSimultaneousLights"] = 4
+                    tf_material["environmentIntensity"]  = 0.1
+
+                    mesh_textures = mesh.getTextures()
+                    if mesh_textures is not None and len(mesh_textures) > 0:
+                        mesh_tex = mesh_textures[0]
+                        mesh_tex_image = mesh_tex.getTextureImage()
+                        tex_name = mesh_tex_image.getUrl()
+                        tex_mimetype = "image/jpg"
+                        if tex_name.endswith('png'):
+                            tex_mimetype = "image/png"
+                        tex_data = base64.b64encode(bytearray(mesh_tex_image.getResourceContents())).decode('ascii')
+                        tex_data_url = "data:" + tex_mimetype + ";base64," + tex_data
+                        
+                        tf_texture = {"name": "material_texture_" + visual_name, "url":  "material_texture_" + visual_name, "level": 1,"hasAlpha": True,"coordinatesMode":0,"uOffset":0,"vOffset":0,"uScale":1,\
+                            "vScale":1,"uAng":0,"vAng":0,"wAng":0,"wrapU":0,"wrapV":0,"coordinatesIndex":0, "isRenderTarget":False, \
+                            "base64String": tex_data_url}
+
+                        #tf_material["useAlphaFromAlbedoTexture"] = True
+                        tf_material["albedoTexture"] = tf_texture
+                        mesh_uvs = mesh_tex.getUVs()
+                        tf_uvs = [0]*(len(mesh_uvs)*2)
+                        for i in range(len(mesh_uvs)):
+                            mesh_uv = mesh_uvs[i].flatten()
+                            tf_uvs[i*2] = mesh_uv[0]
+                            tf_uvs[i*2+1] = mesh_uv[1]
+                        tf_visual["uvs"] = tf_uvs
             
             
         elif (isinstance(visual_geom,tesseract_geometry.Box)):
@@ -160,21 +219,22 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
 
         meshes.append(tf_visual)
 
-        tf_material = {"name": "material_" + visual_name}
+        if tf_material is None:
+            tf_material = {"name": "material_" + visual_name}
 
-        material = visual.material
+            material = visual.material
 
-        if material is None:
-            tf_color = [0.5,0.5,0.5]
-        else:
-            color = material.color.flatten()
-            tf_color = [color[0], color[1], color[2]]
+            if material is None:
+                tf_color = [0.5,0.5,0.5]
+            else:
+                color = material.color.flatten()
+                tf_color = [color[0], color[1], color[2]]
 
-        tf_material["ambient"] = tf_color
-        tf_material["diffuse"] = tf_color
-        tf_material["specular"] = tf_color
-        tf_material["alpha"] = 1
-        tf_material["backFaceCulling"] = True
+            tf_material["ambient"] = tf_color
+            tf_material["diffuse"] = tf_color
+            tf_material["specular"] = tf_color
+            tf_material["alpha"] = 1
+            tf_material["backFaceCulling"] = True
 
         materials.append(tf_material)
 

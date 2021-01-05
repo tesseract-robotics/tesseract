@@ -114,7 +114,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::M
 
   if (visual)
     meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
-        locator->locateResource(filename), scale, true, true);
+        locator->locateResource(filename), scale, true, true, true, true, true);
   else
     meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
         locator->locateResource(filename), scale, true, false);

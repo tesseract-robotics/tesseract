@@ -96,6 +96,21 @@ public:
    * @return A std::istream shared pointer for the resource data
    */
   virtual std::shared_ptr<std::istream> getResourceContentStream() = 0;
+
+  /**
+   * @brief Retrive a sub-resource relative to the current resource
+   *
+   * Retrive a sub-resource related to the current resource. For instance, retrieve
+   * an image resource for a mesh. The relative_path should be relative to the
+   * parent directory containing the current resource.
+   *
+   * This function is optional, and will only be available on resource locators
+   * that support retrieving relative resources.
+   *
+   * @param relative_path Path relative to the parent directory of the current resource
+   * @return Resource::Ptr The located resource, or nullptr if not found
+   */
+  virtual Resource::Ptr locateSubResource(const std::string& relative_path) { return nullptr; }
 };
 
 class BytesResource : public tesseract_common::Resource

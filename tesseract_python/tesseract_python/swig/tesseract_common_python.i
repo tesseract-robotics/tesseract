@@ -87,6 +87,7 @@
 
 %tesseract_aligned_vector(VectorIsometry3d, Eigen::Isometry3d);
 %template(VectorVector3d) std::vector<Eigen::Vector3d>;
+%tesseract_aligned_vector(VectorVector2d, Eigen::Vector2d);
 %tesseract_aligned_vector(VectorVector4d, Eigen::Vector4d);
 %tesseract_aligned_map(TransformMap, std::string, Eigen::Isometry3d);
 
@@ -106,6 +107,7 @@ using name = std::map<Key, Value, std::less<Key>, Eigen::aligned_allocator<std::
 namespace tesseract_common
 {
 %tesseract_aligned_vector_using(VectorIsometry3d, Eigen::Isometry3d);
+%tesseract_aligned_vector_using(VectorVector2d, Eigen::Vector2d);
 %tesseract_aligned_vector_using(VectorVector4d, Eigen::Vector4d);
 %tesseract_aligned_map_using(TransformMap, std::string, Eigen::Isometry3d);
 }

@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 #include <tesseract_common/types.h>
+#include <tesseract_geometry/impl/mesh_material.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_geometry::Mesh)
@@ -43,10 +44,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-#ifdef SWIG
-%nodefaultctor Mesh;
-#endif  // SWIG
-
 class Mesh : public Geometry
 {
 public:
@@ -54,8 +51,6 @@ public:
 
   using Ptr = std::shared_ptr<Mesh>;
   using ConstPtr = std::shared_ptr<const Mesh>;
-
-#ifndef SWIG
 
   /**
    * @brief Mesh geometry
@@ -66,16 +61,28 @@ public:
    *                  three vertices that define this face followed by three indices.
    * @param resource A resource locator for locating resource
    * @param scale Scale the mesh
+   * @param normals A vector of normals for the vertices (optional)
+   * @param vertex_colors A vector of colors (RGBA) for the vertices (optional)
+   * @param mesh_material A MeshMaterial describing the color and material properties of the mesh (optional)
+   * @param mesh_textures A vector of MeshTexture to apply to the mesh (optional)
    */
   Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
        std::shared_ptr<const Eigen::VectorXi> triangles,
        tesseract_common::Resource::Ptr resource = nullptr,
-       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
+       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+       std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
+       std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+       MeshMaterial::Ptr mesh_material = nullptr,
+       std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
     : Geometry(GeometryType::MESH)
     , vertices_(std::move(vertices))
     , triangles_(std::move(triangles))
     , resource_(std::move(resource))
     , scale_(std::move(scale))
+    , normals_(std::move(normals))
+    , vertex_colors_(std::move(vertex_colors))
+    , mesh_material_(std::move(mesh_material))
+    , mesh_textures_(std::move(mesh_textures))
   {
     vertice_count_ = static_cast<int>(vertices_->size());
 
@@ -99,47 +106,40 @@ public:
    * @param triangle_count Provide the number of faces. This is faster because it does not need to loop over triangles.
    * @param resource A resource locator for locating resource
    * @param scale Scale the mesh
+   * @param normals A vector of normals for the vertices (optional)
+   * @param vertex_colors A vector of colors (RGBA) for the vertices (optional)
+   * @param mesh_material A MeshMaterial describing the color and material properties of the mesh (optional)
+   * @param mesh_textures A vector of MeshTexture to apply to the mesh (optional)
    */
   Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
        std::shared_ptr<const Eigen::VectorXi> triangles,
        int triangle_count,
        tesseract_common::Resource::Ptr resource = nullptr,
-       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
+       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+       std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
+       std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+       MeshMaterial::Ptr mesh_material = nullptr,
+       std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
     : Geometry(GeometryType::MESH)
     , vertices_(std::move(vertices))
     , triangles_(std::move(triangles))
     , triangle_count_(triangle_count)
     , resource_(std::move(resource))
     , scale_(std::move(scale))
+    , normals_(std::move(normals))
+    , vertex_colors_(std::move(vertex_colors))
+    , mesh_material_(std::move(mesh_material))
+    , mesh_textures_(std::move(mesh_textures))
   {
     vertice_count_ = static_cast<int>(vertices_->size());
     assert((triangle_count_ * 4) == triangles_->size());
   }
-
-#endif  // SWIG
-
-#ifdef SWIG
-  %extend
-  {
-    Mesh(const tesseract_common::VectorVector3d& vertices,
-       const Eigen::VectorXi& triangles,
-       tesseract_common::Resource::Ptr resource = nullptr,
-       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
-    {
-      return new tesseract_geometry::Mesh(std::make_shared<tesseract_common::VectorVector3d>(vertices),
-        std::make_shared<Eigen::VectorXi>(triangles),
-        resource, scale);
-    }
-  }
-#endif  // SWIG
 
   ~Mesh() override = default;
   Mesh(const Mesh&) = delete;
   Mesh& operator=(const Mesh&) = delete;
   Mesh(Mesh&&) = delete;
   Mesh& operator=(Mesh&&) = delete;
-
-#ifndef SWIG
 
   /**
    * @brief Get mesh vertices
@@ -152,17 +152,6 @@ public:
    * @return A vector of triangle indices
    */
   const std::shared_ptr<const Eigen::VectorXi>& getTriangles() const { return triangles_; }
-
-#else   // SWIG
-  // clang-format off
-  %extend
-  {
-    tesseract_common::VectorVector3d getVertices() { return *$self->getVertices(); }
-
-    Eigen::VectorXi getTriangles() { return *$self->getTriangles(); }
-  }
-  // clang-format on
-#endif  // SWIG
 
   /**
    * @brief Get vertice count
@@ -191,9 +180,57 @@ public:
    */
   const Eigen::Vector3d& getScale() const { return scale_; }
 
+  /**
+   * @brief Get the vertice normal vectors
+   *
+   * Optional, may be nullptr
+   *
+   * @return The vertice normal vector
+   */
+  const std::shared_ptr<const tesseract_common::VectorVector3d>& getNormals() const { return normals_; }
+
+  /**
+   * @brief Get the vertex colors
+   *
+   * Optional, may be nullptr
+   *
+   * @return Vertex colors
+   */
+  const std::shared_ptr<const tesseract_common::VectorVector4d>& getVertexColors() const { return vertex_colors_; }
+
+  /**
+   * @brief Get material data extracted from the mesh file
+   *
+   * Mesh files contain material information. The mesh parser will
+   * extract the material information and store it in a MeshMaterial structure.
+   *
+   * @return The MeshMaterial data extracted from mesh file
+   */
+  MeshMaterial::ConstPtr getMaterial() const { return mesh_material_; }
+
+  /**
+   * @brief Get textures extracted from the mesh file
+   *
+   * Mesh files contain (or reference) image files that form textures on the surface
+   * of the mesh. UV coordinates specify how the image is applied to the mesh. The
+   * MeshTexture structure contains a resource to the image, and the UV coordinates.
+   * Currently only jpg and png image formats are supported.
+   *
+   * @return Vector of mesh textures
+   */
+  const std::shared_ptr<const std::vector<MeshTexture::Ptr>>& getTextures() const { return mesh_textures_; }
+
   Geometry::Ptr clone() const override
   {
-    return std::make_shared<Mesh>(vertices_, triangles_, triangle_count_, resource_, scale_);
+    return std::make_shared<Mesh>(vertices_,
+                                  triangles_,
+                                  triangle_count_,
+                                  resource_,
+                                  scale_,
+                                  normals_,
+                                  vertex_colors_,
+                                  mesh_material_,
+                                  mesh_textures_);
   }
 
 private:
@@ -203,6 +240,10 @@ private:
   int triangle_count_;
   tesseract_common::Resource::Ptr resource_;
   Eigen::Vector3d scale_;
+  std::shared_ptr<const tesseract_common::VectorVector3d> normals_;
+  std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors_;
+  MeshMaterial::Ptr mesh_material_;
+  std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures_;
 };
 }  // namespace tesseract_geometry
 #endif
