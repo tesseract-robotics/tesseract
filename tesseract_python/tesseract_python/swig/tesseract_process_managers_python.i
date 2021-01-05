@@ -96,7 +96,6 @@
 #include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
 
 #include <tesseract_common/status_code.h>
-#include <tesseract_geometry/geometries.h>
 #include <tesseract_common/resource.h>
 
 #include "tesseract_command_language_python_std_functions.h"

@@ -35,7 +35,7 @@
 %{
 
 #include <tesseract_common/status_code.h>
-#include <tesseract_geometry/geometries.h>
+#include <tesseract_common/resource.h>
 
 // tesseract_time_parameterization
 #include <tesseract_time_parameterization/iterative_spline_parameterization.h>
