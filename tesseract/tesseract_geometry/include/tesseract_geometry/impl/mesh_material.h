@@ -81,10 +81,10 @@ public:
                double metallicFactor,
                double roughnessFactor,
                Eigen::Vector4d emissiveFactor)
-    : baseColorFactor_(std::move(baseColorFactor))
-    , metallicFactor_(metallicFactor)
-    , roughnessFactor_(roughnessFactor)
-    , emissiveFactor_(std::move(emissiveFactor))
+    : base_color_factor_(std::move(baseColorFactor))
+    , metallic_factor_(metallicFactor)
+    , roughness_factor_(roughnessFactor)
+    , emissive_factor_(std::move(emissiveFactor))
   {
   }
 
@@ -93,21 +93,21 @@ public:
    *
    * @return The base color in RGBA
    */
-  Eigen::Vector4d getBaseColorFactor() const { return baseColorFactor_; }
+  Eigen::Vector4d getBaseColorFactor() const { return base_color_factor_; }
 
   /**
    * @brief Get the Metallic Factor of the mesh (PBR parameter)
    *
    * @return The metallic factor, between 0 and 1
    */
-  double getMetallicFactor() const { return metallicFactor_; }
+  double getMetallicFactor() const { return metallic_factor_; }
 
   /**
    * @brief Get the Roughness Factor of the mesh (PBR parameter)
    *
    * @return The roughness factor, between 0 and 1
    */
-  double getRoughnessFactor() const { return roughnessFactor_; }
+  double getRoughnessFactor() const { return roughness_factor_; }
 
   /**
    * @brief Get the emissive factor of the mesh
@@ -117,14 +117,14 @@ public:
    *
    * @return The emissive factor in RGBA
    */
-  Eigen::Vector4d getEmissiveFactor() const { return emissiveFactor_; }
+  Eigen::Vector4d getEmissiveFactor() const { return emissive_factor_; }
 
 private:
   // Mesh material based on simplified glTF 2.0 pbrMetallicRoughness parameters
-  Eigen::Vector4d baseColorFactor_;
-  double metallicFactor_ = 0;
-  double roughnessFactor_ = 0.5;
-  Eigen::Vector4d emissiveFactor_;
+  Eigen::Vector4d base_color_factor_;
+  double metallic_factor_ = 0;
+  double roughness_factor_ = 0.5;
+  Eigen::Vector4d emissive_factor_;
 };
 
 /**
