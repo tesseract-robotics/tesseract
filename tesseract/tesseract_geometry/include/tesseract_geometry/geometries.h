@@ -59,6 +59,7 @@
 %include <tesseract_geometry/impl/capsule.h>
 %include <tesseract_geometry/impl/cone.h>
 %include <tesseract_geometry/impl/plane.h>
+%include <tesseract_geometry/impl/mesh_material.h>
 %include <tesseract_geometry/impl/mesh.h>
 %include <tesseract_geometry/impl/convex_mesh.h>
 %include <tesseract_geometry/impl/octree.h>

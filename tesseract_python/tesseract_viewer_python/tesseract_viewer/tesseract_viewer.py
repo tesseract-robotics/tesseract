@@ -131,7 +131,7 @@ class TesseractViewer():
         # Create "infinite" animation with constant joint angles
 
         trajectory_json = dict()
-        trajectory_json["use_time"] = False
+        trajectory_json["use_time"] = True
         trajectory_json["loop_time"] = 10000
 
         assert joint_names and all(isinstance(s,str) for s in joint_names), "Joint names must all be strings"
