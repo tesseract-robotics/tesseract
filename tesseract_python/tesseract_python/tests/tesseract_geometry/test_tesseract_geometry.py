@@ -89,7 +89,7 @@ def test_geometry_load_mesh():
     meshes = tesseract_geometry.createMeshFromPath(mesh_file)
     assert(len(meshes)==1)
     assert(meshes[0].getTriangleCount() == 80)
-    assert(meshes[0].getVerticeCount() == 240)
+    assert(meshes[0].getVerticeCount() == 42)
 
     mesh_file = os.path.join(TESSERACT_SUPPORT_DIR, "meshes/sphere_p25m.ply")
     meshes = tesseract_geometry.createMeshFromPath(mesh_file)
@@ -101,15 +101,15 @@ def test_geometry_load_mesh():
     meshes = tesseract_geometry.createMeshFromPath(mesh_file)
     assert(len(meshes)==2)
     assert(meshes[0].getTriangleCount() == 80)
-    assert(meshes[0].getVerticeCount() == 240)
+    assert(meshes[0].getVerticeCount() == 42)
     assert(meshes[1].getTriangleCount() == 80)
-    assert(meshes[1].getVerticeCount() == 240)
+    assert(meshes[1].getVerticeCount() == 42)
 
     mesh_file = os.path.join(TESSERACT_SUPPORT_DIR, "meshes/sphere_p25m.dae")
     meshes = tesseract_geometry.createMeshFromPath(mesh_file, np.array((1,1,1),dtype=np.float64), False, True)
     assert(len(meshes)==1)
     assert(meshes[0].getTriangleCount() == 2*80)
-    assert(meshes[0].getVerticeCount() == 2*240)
+    assert(meshes[0].getVerticeCount() == 2*42)
 
     mesh_file = os.path.join(TESSERACT_SUPPORT_DIR, "meshes/box_2m.ply")
     meshes = tesseract_geometry.createMeshFromPath(mesh_file, np.array((1,1,1),dtype=np.float64), True, True)

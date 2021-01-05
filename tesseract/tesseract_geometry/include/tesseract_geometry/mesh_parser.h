@@ -77,7 +77,10 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                                                 const aiNode* node,
                                                 const aiMatrix4x4& parent_transform,
                                                 const Eigen::Vector3d& scale,
-                                                tesseract_common::Resource::Ptr resource)
+                                                tesseract_common::Resource::Ptr resource,
+                                                bool normals,
+                                                bool vertex_colors,
+                                                bool material_and_texture)
 {
   std::vector<std::shared_ptr<T>> meshes;
 
@@ -123,7 +126,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     for (long i = 0; i < triangles->size(); ++i)
       (*triangles)[i] = local_triangles[static_cast<size_t>(i)];
 
-    if (a->HasNormals())
+    if (normals && a->HasNormals())
     {
       normals = std::make_shared<tesseract_common::VectorVector3d>();
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
@@ -135,7 +138,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
       }
     }
 
-    if (a->HasVertexColors(0))
+    if (vertex_colors && a->HasVertexColors(0))
     {
       vertex_colors = std::make_shared<tesseract_common::VectorVector4d>();
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
@@ -146,6 +149,8 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
       }
     }
 
+    if (material_and_texture)
+    {
     aiMaterial* mat = scene->mMaterials[a->mMaterialIndex];
     {
       Eigen::Vector4d base_color;
@@ -258,6 +263,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
         }
       }
     }
+    }
 
     meshes.push_back(std::make_shared<T>(vertices,
                                          triangles,
@@ -273,7 +279,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
   for (unsigned int n = 0; n < node->mNumChildren; ++n)
   {
     std::vector<std::shared_ptr<T>> child_meshes =
-        extractMeshData<T>(scene, node->mChildren[n], transform, scale, resource);
+        extractMeshData<T>(scene, node->mChildren[n], transform, scale, resource, normals, vertex_colors, material_and_texture);
     meshes.insert(meshes.end(), child_meshes.begin(), child_meshes.end());
   }
   return meshes;
@@ -284,19 +290,25 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
  * @param scene The assimp scene
  * @param scale Perform an axis scaling
  * @param resource The mesh resource that generated the scene
+ * @param normals If true, loads mesh normals
+ * @param vertex_colors If true, loads mesh vertex colors
+ * @param material_and_texture If true, loads mesh materials and textures
  * @return A list of tesseract meshes
  */
 template <class T>
 std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
                                                     const Eigen::Vector3d& scale,
-                                                    tesseract_common::Resource::Ptr resource)
+                                                    tesseract_common::Resource::Ptr resource,
+                                                    bool normals,
+                                                    bool vertex_colors,
+                                                    bool material_and_texture)
 {
   if (!scene->HasMeshes())
   {
     CONSOLE_BRIDGE_logWarn("Assimp reports scene in %s has no meshes", resource->getUrl().c_str());
     return std::vector<std::shared_ptr<T>>();
   }
-  std::vector<std::shared_ptr<T>> meshes = extractMeshData<T>(scene, scene->mRootNode, aiMatrix4x4(), scale, resource);
+  std::vector<std::shared_ptr<T>> meshes = extractMeshData<T>(scene, scene->mRootNode, aiMatrix4x4(), scale, resource, normals, vertex_colors, material_and_texture);
   if (meshes.empty())
   {
     CONSOLE_BRIDGE_logWarn("There are no meshes in the scene %s", resource->getUrl().c_str());
@@ -314,23 +326,41 @@ std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
  *        In the case of collision meshes do not triangulate convex hull meshes.
  * @param flatten If true all meshes will be condensed into a single mesh. This should only be used for visual meshes,
  * do not flatten collision meshes.
+ * @param normals If true, loads mesh normals
+ * @param vertex_colors If true, loads mesh vertex colors
+ * @param material_and_texture If true, loads mesh materials and textures
  * @return
  */
 template <class T>
 std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
                                                    Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
                                                    bool triangulate = false,
-                                                   bool flatten = false)
+                                                   bool flatten = false,
+                                                   bool normals = false,
+                                                   bool vertex_colors = false,
+                                                   bool material_and_texture = false)
 {
   // Create an instance of the Importer class
   Assimp::Importer importer;
 
   // Issue #38 fix: as part of the post-processing, we remove all other components in file but
   // the meshes, as anyway the resulting shapes:Mesh object just receives vertices and triangles.
-  // John Wason Dec 2020 - Load more information
-  importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
-                              aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_BONEWEIGHTS | aiComponent_ANIMATIONS |
-                                  aiComponent_LIGHTS | aiComponent_CAMERAS /*| aiComponent_NORMALS*/);
+  // John Wason Jan 2021 - Adjust flags based on normals, vertex_colors, and material_and_texture parameters
+  unsigned int ai_config_pp_rcv_flags = aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_BONEWEIGHTS | aiComponent_ANIMATIONS |
+                                  aiComponent_LIGHTS | aiComponent_CAMERAS;
+  if (!normals)
+  {
+    ai_config_pp_rcv_flags |= aiComponent_NORMALS;
+  }
+  if (!vertex_colors)
+  {
+    ai_config_pp_rcv_flags |= aiComponent_COLORS;
+  }
+  if (!material_and_texture)
+  {
+    ai_config_pp_rcv_flags |= aiComponent_TEXCOORDS | aiComponent_TEXTURES | aiComponent_MATERIALS;
+  }
+  importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, (int)ai_config_pp_rcv_flags);
 
   // And have it read the given file with some post-processing
   const aiScene* scene = nullptr;
@@ -366,7 +396,7 @@ std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
     importer.ApplyPostProcessing(aiProcess_OptimizeGraph);
   }
 
-  return createMeshFromAsset<T>(scene, scale, nullptr);
+  return createMeshFromAsset<T>(scene, scale, nullptr, normals, vertex_colors, material_and_texture);
 }
 
 /**
@@ -377,13 +407,19 @@ std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
  *        In the case of collision meshes do not triangulate convex hull meshes.
  * @param flatten If true all meshes will be condensed into a single mesh. This should only be used for visual meshes,
  * do not flatten collision meshes.
+ * @param normals If true, loads mesh normals
+ * @param vertex_colors If true, loads mesh vertex colors
+ * @param material_and_texture If true, loads mesh materials and textures
  * @return
  */
 template <class T>
 std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resource::Ptr resource,
                                                        Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
                                                        bool triangulate = false,
-                                                       bool flatten = false)
+                                                       bool flatten = false,
+                                                       bool normals = false,
+                                                       bool vertex_colors = false,
+                                                       bool material_and_texture = false)
 {
   if (!resource)
     return std::vector<std::shared_ptr<T>>();
@@ -407,7 +443,7 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
   if (data.empty())
   {
     if (resource->isFile())
-      return createMeshFromPath<T>(resource->getFilePath(), scale, triangulate, flatten);
+      return createMeshFromPath<T>(resource->getFilePath(), scale, triangulate, flatten, normals, vertex_colors, material_and_texture);
 
     return std::vector<std::shared_ptr<T>>();
   }
@@ -417,10 +453,22 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
 
   // Issue #38 fix: as part of the post-processing, we remove all other components in file but
   // the meshes, as anyway the resulting shapes:Mesh object just receives vertices and triangles.
-  // John Wason Dec 2020 - Load more information
-  importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
-                              aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_BONEWEIGHTS | aiComponent_ANIMATIONS |
-                                  aiComponent_LIGHTS | aiComponent_CAMERAS /*| aiComponent_NORMALS*/);
+  // John Wason Jan 2021 - Adjust flags based on normals, vertex_colors, and material_and_texture parameters
+  unsigned int ai_config_pp_rcv_flags = aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_BONEWEIGHTS | aiComponent_ANIMATIONS |
+                                  aiComponent_LIGHTS | aiComponent_CAMERAS;
+  if (!normals)
+  {
+    ai_config_pp_rcv_flags |= aiComponent_NORMALS;
+  }
+  if (!vertex_colors)
+  {
+    ai_config_pp_rcv_flags |= aiComponent_COLORS;
+  }
+  if (!material_and_texture)
+  {
+    ai_config_pp_rcv_flags |= aiComponent_TEXCOORDS | aiComponent_TEXTURES | aiComponent_MATERIALS;
+  }
+  importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, (int)ai_config_pp_rcv_flags);
 
   // And have it read the given file with some post-processing
   const aiScene* scene = nullptr;
@@ -462,7 +510,7 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
     importer.ApplyPostProcessing(aiProcess_OptimizeGraph);
   }
 
-  return createMeshFromAsset<T>(scene, scale, resource);
+  return createMeshFromAsset<T>(scene, scale, resource, normals, vertex_colors, material_and_texture);
 }
 
 /**
@@ -475,6 +523,9 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
  *        In the case of collision meshes do not triangulate convex hull meshes.
  * @param flatten If true all meshes will be condensed into a single mesh. This should only be used for visual meshes,
  * do not flatten collision meshes.
+ * @param normals If true, loads mesh normals
+ * @param vertex_colors If true, loads mesh vertex colors
+ * @param material_and_texture If true, loads mesh materials and textures
  * @return
  */
 template <typename T>
@@ -483,11 +534,14 @@ static std::vector<std::shared_ptr<T>> createMeshFromBytes(const std::string& ur
                                                            size_t bytes_len,
                                                            Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
                                                            bool triangulate = false,
-                                                           bool flatten = false)
+                                                           bool flatten = false,
+                                                           bool normals = false,
+                                                           bool vertex_colors = false,
+                                                           bool material_and_texture = false)
 {
   std::shared_ptr<tesseract_common::Resource> resource =
       std::make_shared<tesseract_common::BytesResource>(url, bytes, bytes_len);
-  return tesseract_geometry::createMeshFromResource<T>(resource, scale, triangulate, flatten);
+  return tesseract_geometry::createMeshFromResource<T>(resource, scale, triangulate, flatten, normals, vertex_colors, material_and_texture);
 }
 
 }  // namespace tesseract_geometry
