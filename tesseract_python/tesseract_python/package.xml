@@ -21,6 +21,7 @@
   <depend>tesseract_command_language</depend>
   <depend>tesseract_time_parameterization</depend>
   <depend>tesseract_process_managers</depend>
+  <depend>libjsoncpp-dev</depend>
 
   <depend condition="$ROS_PYTHON_VERSION == 2">python</depend>
   <depend condition="$ROS_PYTHON_VERSION == 2">python-numpy</depend>
