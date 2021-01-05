@@ -33,12 +33,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-ContinuousMotionValidator::ContinuousMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
-                                                     ompl::base::StateValidityCheckerPtr state_validator,
-                                                     const tesseract_environment::Environment::ConstPtr& env,
-                                                     tesseract_kinematics::ForwardKinematics::ConstPtr kin,
-                                                     double collision_safety_margin,
-                                                     OMPLStateExtractor extractor)
+ContinuousMotionValidator::ContinuousMotionValidator(
+    const ompl::base::SpaceInformationPtr& space_info,
+    ompl::base::StateValidityCheckerPtr state_validator,
+    const tesseract_environment::Environment::ConstPtr& env,
+    tesseract_kinematics::ForwardKinematics::ConstPtr kin,
+    const tesseract_collision::CollisionMarginData& collision_margin_data,
+    OMPLStateExtractor extractor)
   : MotionValidator(space_info)
   , state_validator_(std::move(state_validator))
   , state_solver_(env->getStateSolver())
@@ -55,7 +56,7 @@ ContinuousMotionValidator::ContinuousMotionValidator(const ompl::base::SpaceInfo
   links_ = adj_map.getActiveLinkNames();
 
   continuous_contact_manager_->setActiveCollisionObjects(links_);
-  continuous_contact_manager_->setDefaultCollisionMarginData(collision_safety_margin);
+  continuous_contact_manager_->setCollisionMarginData(collision_margin_data);
 }
 
 bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const
