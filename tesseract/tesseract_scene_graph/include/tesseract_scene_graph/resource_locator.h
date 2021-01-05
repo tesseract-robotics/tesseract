@@ -69,7 +69,7 @@ public:
 using SimpleResourceLocatorFn = std::function<std::string(const std::string&)>;
 
 /** @brief Resource locator implementation using a provided function to locate file resources */
-class SimpleResourceLocator : public ResourceLocator
+class SimpleResourceLocator : public ResourceLocator, public std::enable_shared_from_this<SimpleResourceLocator>
 {
 public:
   using Ptr = std::shared_ptr<SimpleResourceLocator>;
@@ -100,7 +100,9 @@ public:
   using Ptr = std::shared_ptr<SimpleLocatedResource>;
   using ConstPtr = std::shared_ptr<const SimpleLocatedResource>;
 
-  SimpleLocatedResource(const std::string& url, const std::string& filename);
+  SimpleLocatedResource(const std::string& url,
+                        const std::string& filename,
+                        const SimpleResourceLocator::Ptr& parent = nullptr);
   ~SimpleLocatedResource() override = default;
   SimpleLocatedResource(const SimpleLocatedResource&) = delete;
   SimpleLocatedResource& operator=(const SimpleLocatedResource&) = delete;
@@ -117,9 +119,12 @@ public:
 
   std::shared_ptr<std::istream> getResourceContentStream() override;
 
+  tesseract_common::Resource::Ptr locateSubResource(const std::string& relative_path) override;
+
 protected:
   std::string url_;
   std::string filename_;
+  std::weak_ptr<SimpleResourceLocator> parent_;
 };
 
 }  // namespace tesseract_scene_graph

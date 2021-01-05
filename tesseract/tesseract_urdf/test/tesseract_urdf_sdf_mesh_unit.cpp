@@ -23,7 +23,7 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
     EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getTriangleCount() == 80);
-    EXPECT_TRUE(geom[0]->getVerticeCount() == 42);
+    EXPECT_TRUE(geom[0]->getVerticeCount() == 240);
     EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[1], 2, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);
@@ -38,7 +38,7 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
     EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getTriangleCount() == 80);
-    EXPECT_TRUE(geom[0]->getVerticeCount() == 42);
+    EXPECT_TRUE(geom[0]->getVerticeCount() == 240);
     EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[1], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);

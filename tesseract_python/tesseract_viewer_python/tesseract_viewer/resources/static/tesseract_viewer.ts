@@ -57,6 +57,7 @@ class TesseractViewer {
 
         // Add lights to the scene
         this._light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, -1, 0), this._scene);
+        this._light.intensity = 0.5
                     
         this._root = new BABYLON.TransformNode("root0");
         
