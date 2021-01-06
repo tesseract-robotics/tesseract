@@ -27,8 +27,8 @@
 #define TESSERACT_PROCESS_MANAGERS_TASKFLOW_GENERATOR_H
 
 #include <tesseract_process_managers/core/types.h>
-#include <tesseract_process_managers/core/process_input.h>
-#include <tesseract_process_managers/core/process_generator.h>
+#include <tesseract_process_managers/core/task_input.h>
+#include <tesseract_process_managers/core/task_generator.h>
 #include <tesseract_process_managers/core/taskflow_container.h>
 
 namespace tesseract_planning
@@ -59,7 +59,7 @@ public:
    * @param error_cb A user defined callback
    * @return A taskflow container which must stay around during execution of taskflow
    */
-  virtual TaskflowContainer generateTaskflow(ProcessInput instruction,
+  virtual TaskflowContainer generateTaskflow(TaskInput instruction,
                                              TaskflowVoidFn done_cb,
                                              TaskflowVoidFn error_cb) = 0;
 
@@ -74,7 +74,7 @@ public:
   //   * @return A taskflow container which must stay around during execution of taskflow
   //   */
   //  virtual TaskflowContainer generateTaskflow(tf::Taskflow& taskflow,
-  //                                             ProcessInput instruction,
+  //                                             TaskInput instruction,
   //                                             TaskflowVoidFn done_cb,
   //                                             TaskflowVoidFn error_cb) = 0;
 };

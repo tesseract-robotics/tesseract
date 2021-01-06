@@ -5,7 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/ofkt/ofkt_state_solver.h>
-#include <tesseract_process_managers/process_generators/fix_state_collision_process_generator.h>
+#include <tesseract_process_managers/task_generators/fix_state_collision_task_generator.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_command_language/joint_waypoint.h>
 #include <tesseract_command_language/cartesian_waypoint.h>
@@ -45,7 +45,7 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-class FixStateCollisionProcessGeneratorUnit : public ::testing::Test
+class FixStateCollisionTaskGeneratorUnit : public ::testing::Test
 {
 protected:
   Environment::Ptr env_;
@@ -66,12 +66,12 @@ protected:
   }
 };
 
-TEST_F(FixStateCollisionProcessGeneratorUnit, StateInCollisionTest)
+TEST_F(FixStateCollisionTaskGeneratorUnit, StateInCollisionTest)
 {
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
+  TaskInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
 
   FixStateCollisionProfile profile;
 
@@ -105,12 +105,12 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, StateInCollisionTest)
   EXPECT_TRUE(contacts.empty());
 }
 
-TEST_F(FixStateCollisionProcessGeneratorUnit, WaypointInCollisionTest)
+TEST_F(FixStateCollisionTaskGeneratorUnit, WaypointInCollisionTest)
 {
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
+  TaskInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
 
   FixStateCollisionProfile profile;
 
@@ -152,12 +152,12 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, WaypointInCollisionTest)
   EXPECT_TRUE(contacts.empty());
 }
 
-TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionRandomSamplerTest)
+TEST_F(FixStateCollisionTaskGeneratorUnit, MoveWaypointFromCollisionRandomSamplerTest)
 {
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
+  TaskInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
 
   FixStateCollisionProfile profile;
 
@@ -184,12 +184,12 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionRandomSam
   EXPECT_FALSE(WaypointInCollision(wp, input, profile, contacts));
 }
 
-TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionTrajoptTest)
+TEST_F(FixStateCollisionTaskGeneratorUnit, MoveWaypointFromCollisionTrajoptTest)
 {
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
+  TaskInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
 
   FixStateCollisionProfile profile;
 

@@ -1,9 +1,9 @@
 /**
- * @file process_info.h
- * @brief Process Info
+ * @file taskflow_interface.h
+ * @brief Process Inteface
  *
- * @author Matthew Powelson
- * @date July 15. 2020
+ * @author Levi Armstrong
+ * @date December 8. 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -24,28 +24,29 @@
  * limitations under the License.
  */
 
-#include <tesseract_process_managers/core/process_info.h>
+#include <tesseract_process_managers/core/task_info.h>
+#include <tesseract_process_managers/core/taskflow_interface.h>
 
 namespace tesseract_planning
 {
-ProcessInfo::ProcessInfo(std::size_t unique_id, std::string name) : unique_id(unique_id), message(std::move(name)) {}
+bool TaskflowInterface::isAborted() const { return abort_; }
 
-void ProcessInfoContainer::addProcessInfo(ProcessInfo::ConstPtr process_info)
+bool TaskflowInterface::isSuccessful() const { return !abort_; }
+
+void TaskflowInterface::abort() { abort_ = true; }
+
+TaskInfo::ConstPtr TaskflowInterface::getTaskInfo(const std::size_t& index) const
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  process_info_map_[process_info->unique_id] = std::move(process_info);
+  if (task_infos_)
+    return (*task_infos_)[index];
+  return nullptr;
 }
 
-ProcessInfo::ConstPtr ProcessInfoContainer::operator[](std::size_t index) const
+std::map<std::size_t, TaskInfo::ConstPtr> TaskflowInterface::getTaskInfoMap() const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return process_info_map_.at(index);
+  return task_infos_->getTaskInfoMap();
 }
 
-std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInfoContainer::getProcessInfoMap() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return process_info_map_;
-}
+TaskInfoContainer::Ptr TaskflowInterface::getTaskInfoContainer() const { return task_infos_; }
 
 }  // namespace tesseract_planning

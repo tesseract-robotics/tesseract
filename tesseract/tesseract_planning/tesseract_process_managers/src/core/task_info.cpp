@@ -1,9 +1,9 @@
 /**
- * @file process_interface.h
- * @brief Process Inteface
+ * @file task_info.h
+ * @brief Process Info
  *
- * @author Levi Armstrong
- * @date December 8. 2020
+ * @author Matthew Powelson
+ * @date July 15. 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -24,29 +24,28 @@
  * limitations under the License.
  */
 
-#include <tesseract_process_managers/core/process_info.h>
-#include <tesseract_process_managers/core/process_interface.h>
+#include <tesseract_process_managers/core/task_info.h>
 
 namespace tesseract_planning
 {
-bool ProcessInterface::isAborted() const { return abort_; }
+TaskInfo::TaskInfo(std::size_t unique_id, std::string name) : unique_id(unique_id), message(std::move(name)) {}
 
-bool ProcessInterface::isSuccessful() const { return !abort_; }
-
-void ProcessInterface::abort() { abort_ = true; }
-
-ProcessInfo::ConstPtr ProcessInterface::getProcessInfo(const std::size_t& index) const
+void TaskInfoContainer::addTaskInfo(TaskInfo::ConstPtr task_info)
 {
-  if (process_infos_)
-    return (*process_infos_)[index];
-  return nullptr;
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  task_info_map_[task_info->unique_id] = std::move(task_info);
 }
 
-std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInterface::getProcessInfoMap() const
+TaskInfo::ConstPtr TaskInfoContainer::operator[](std::size_t index) const
 {
-  return process_infos_->getProcessInfoMap();
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return task_info_map_.at(index);
 }
 
-ProcessInfoContainer::Ptr ProcessInterface::getProcessInfoContainer() const { return process_infos_; }
+std::map<std::size_t, TaskInfo::ConstPtr> TaskInfoContainer::getTaskInfoMap() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return task_info_map_;
+}
 
 }  // namespace tesseract_planning

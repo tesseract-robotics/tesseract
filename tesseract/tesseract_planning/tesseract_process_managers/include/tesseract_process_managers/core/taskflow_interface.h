@@ -1,5 +1,5 @@
 /**
- * @file process_interface.h
+ * @file taskflow_interface.h
  * @brief Process Inteface
  *
  * @author Levi Armstrong
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_PROCESS_INTERFACE_H
-#define TESSERACT_PROCESS_MANAGERS_PROCESS_INTERFACE_H
+#ifndef TESSERACT_PROCESS_MANAGERS_taskflow_interface_H
+#define TESSERACT_PROCESS_MANAGERS_taskflow_interface_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -33,10 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/core/process_info.h>
+#include <tesseract_process_managers/core/task_info.h>
 
 #ifdef SWIG
-%shared_ptr(tesseract_planning::ProcessInterface)
+%shared_ptr(tesseract_planning::TaskInterface)
 #endif  // SWIG
 
 namespace tesseract_planning
@@ -45,10 +45,10 @@ namespace tesseract_planning
  * @brief This is a thread safe class used for aborting a process along with checking if a process was succesful
  * @details If a process failed then the process has been abort by some child process
  */
-class ProcessInterface
+class TaskflowInterface
 {
 public:
-  using Ptr = std::shared_ptr<ProcessInterface>;
+  using Ptr = std::shared_ptr<TaskflowInterface>;
 
   /**
    * @brief Check if the process was aborted
@@ -70,27 +70,27 @@ public:
    * @param index Unique ID assigned the task from taskflow
    * @return The TaskInfo associated with this task
    */
-  ProcessInfo::ConstPtr getProcessInfo(const std::size_t& index) const;
+  TaskInfo::ConstPtr getTaskInfo(const std::size_t& index) const;
 
   /**
    * @brief Get the entire stored map of TaskInfos
    * @return The map of TaskInfos stored by unique ID
    */
-  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap() const;
+  std::map<std::size_t, TaskInfo::ConstPtr> getTaskInfoMap() const;
 
   /**
    * @brief Not meant to be used by users. Exposes TaskInfoContainer so that the
    * @return Threadsafe TaskInfo container
    */
-  ProcessInfoContainer::Ptr getProcessInfoContainer() const;
+  TaskInfoContainer::Ptr getTaskInfoContainer() const;
 
 protected:
   std::atomic<bool> abort_{ false };
 
   /** @brief Threadsafe container for TaskInfos */
-  std::shared_ptr<ProcessInfoContainer> process_infos_{ std::make_shared<ProcessInfoContainer>() };
+  std::shared_ptr<TaskInfoContainer> task_infos_{ std::make_shared<TaskInfoContainer>() };
 };
 
 }  // namespace tesseract_planning
 
-#endif  // TESSERACT_PROCESS_MANAGERS_PROCESS_INTERFACE_H
+#endif  // TESSERACT_PROCESS_MANAGERS_taskflow_interface_H

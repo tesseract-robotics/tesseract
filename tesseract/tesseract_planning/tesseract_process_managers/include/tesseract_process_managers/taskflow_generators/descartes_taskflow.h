@@ -60,18 +60,18 @@ public:
 
   const std::string& getName() const override;
 
-  TaskflowContainer generateTaskflow(ProcessInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb) override;
+  TaskflowContainer generateTaskflow(TaskInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb) override;
 
 private:
   std::string name_;
   DescartesTaskflowParams params_;
 
   /**
-   * @brief Checks that the ProcessInput is in the correct format.
-   * @param input ProcessInput to be checked
+   * @brief Checks that the TaskInput is in the correct format.
+   * @param input TaskInput to be checked
    * @return True if in the correct format
    */
-  bool checkProcessInput(const ProcessInput& input) const;
+  bool checkTaskInput(const TaskInput& input) const;
 };
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_DESCARTES_TASKFLOW_H

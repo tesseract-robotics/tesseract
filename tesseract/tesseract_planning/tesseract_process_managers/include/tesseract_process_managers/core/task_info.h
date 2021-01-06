@@ -1,5 +1,5 @@
 /**
- * @file process_info.h
+ * @file task_info.h
  * @brief Process Info
  *
  * @author Matthew Powelson
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_PROCESS_INFO_H
-#define TESSERACT_PROCESS_MANAGERS_PROCESS_INFO_H
+#ifndef TESSERACT_PROCESS_MANAGERS_task_info_H
+#define TESSERACT_PROCESS_MANAGERS_task_info_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -34,24 +34,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
-%shared_ptr(tesseract_planning::ProcessInfo)
+%shared_ptr(tesseract_planning::TaskInfo)
 #endif  // SWIG
 
 namespace tesseract_planning
 {
 /** Stores information about a Task */
-class ProcessInfo
+class TaskInfo
 {
 public:
-  using Ptr = std::shared_ptr<ProcessInfo>;
-  using ConstPtr = std::shared_ptr<const ProcessInfo>;
+  using Ptr = std::shared_ptr<TaskInfo>;
+  using ConstPtr = std::shared_ptr<const TaskInfo>;
 
-  ProcessInfo(std::size_t unique_id, std::string name = "");
-  virtual ~ProcessInfo() = default;
-  ProcessInfo(const ProcessInfo&) = default;
-  ProcessInfo& operator=(const ProcessInfo&) = default;
-  ProcessInfo(ProcessInfo&&) = default;
-  ProcessInfo& operator=(ProcessInfo&&) = default;
+  TaskInfo(std::size_t unique_id, std::string name = "");
+  virtual ~TaskInfo() = default;
+  TaskInfo(const TaskInfo&) = default;
+  TaskInfo& operator=(const TaskInfo&) = default;
+  TaskInfo(TaskInfo&&) = default;
+  TaskInfo& operator=(TaskInfo&&) = default;
 
   /** @brief Value returned from the Task on completion */
   int return_value;
@@ -59,35 +59,35 @@ public:
   /** @brief Unique ID generated for the Task by Taskflow */
   std::size_t unique_id;
 
-  std::string process_name;
+  std::string task_name;
 
   std::string message;
 };
 }  // namespace tesseract_planning
 
 #ifdef SWIG
-%template(ProcessInfoMap) std::map<std::size_t, std::shared_ptr<const tesseract_planning::ProcessInfo>>;
+%template(TaskInfoMap) std::map<std::size_t, std::shared_ptr<const tesseract_planning::TaskInfo>>;
 #endif
 
 namespace tesseract_planning
 {
-/** @brief A threadsafe container for ProcessInfos */
-struct ProcessInfoContainer
+/** @brief A threadsafe container for TaskInfos */
+struct TaskInfoContainer
 {
-  using Ptr = std::shared_ptr<ProcessInfoContainer>;
-  using ConstPtr = std::shared_ptr<const ProcessInfoContainer>;
+  using Ptr = std::shared_ptr<TaskInfoContainer>;
+  using ConstPtr = std::shared_ptr<const TaskInfoContainer>;
 
-  void addProcessInfo(ProcessInfo::ConstPtr process_info);
+  void addTaskInfo(TaskInfo::ConstPtr task_info);
 
-  ProcessInfo::ConstPtr operator[](std::size_t index) const;
+  TaskInfo::ConstPtr operator[](std::size_t index) const;
 
-  /** @brief Get a copy of the process_info_vec in case it gets resized*/
-  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap() const;
+  /** @brief Get a copy of the task_info_map_ in case it gets resized*/
+  std::map<std::size_t, TaskInfo::ConstPtr> getTaskInfoMap() const;
 
 private:
   mutable std::shared_mutex mutex_;
-  std::map<std::size_t, ProcessInfo::ConstPtr> process_info_map_;
+  std::map<std::size_t, TaskInfo::ConstPtr> task_info_map_;
 };
 }  // namespace tesseract_planning
 
-#endif  // TESSERACT_PROCESS_MANAGERS_PROCESS_INFO_H
+#endif  // TESSERACT_PROCESS_MANAGERS_task_info_H
