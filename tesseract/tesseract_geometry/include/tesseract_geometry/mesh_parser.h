@@ -384,6 +384,7 @@ std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
   // where the Z axis is pointing up.
   // Hopefully this doesn't undo legit use of the root node transformation...
   // Note that this is also what RViz does internally.
+  // @todo See this issue for possible fix parsing scene metadata https://github.com/assimp/assimp/issues/849
   scene->mRootNode->mTransformation = aiMatrix4x4();
 
   if (flatten)

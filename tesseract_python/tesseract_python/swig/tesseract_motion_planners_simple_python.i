@@ -45,9 +45,7 @@
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 
 #include <tesseract_common/status_code.h>
-#include <tesseract_geometry/geometries.h>
-
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_common/resource.h>
 
 #include "tesseract_environment_python_std_functions.h"
 #include <tesseract_kinematics/core/rep_inverse_kinematics.h>

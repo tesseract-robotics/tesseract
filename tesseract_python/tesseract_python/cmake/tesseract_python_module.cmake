@@ -17,8 +17,7 @@ function(tesseract_python_module PY_MOD_NAME )
   set(SWIG_OUTFILE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
   swig_add_module(${PY_MOD_NAME} python ${PY_MOD_SWIG_SRCS})
-  swig_link_libraries(${PY_MOD_NAME} ${PY_MOD_LIBS} jsoncpp_lib
-    yaml-cpp ${TinyXML2_LIBRARIES} ${EIGEN3_LIBRARIES} ${PYTHON_LIBRARIES})
+  swig_link_libraries(${PY_MOD_NAME} ${PY_MOD_LIBS} jsoncpp_lib ${TinyXML2_LIBRARIES} ${EIGEN3_LIBRARIES} ${PYTHON_LIBRARIES})
 
   set(PY_MOD_REAL_NAME1 SWIG_MODULE_${PY_MOD_NAME}_REAL_NAME)
   set(PY_MOD_REAL_NAME ${${PY_MOD_REAL_NAME1}})

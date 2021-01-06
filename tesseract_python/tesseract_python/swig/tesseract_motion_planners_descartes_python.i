@@ -45,7 +45,6 @@
 #include <tesseract_motion_planners/descartes/deserialize.h>
 
 #include <tesseract_common/status_code.h>
-#include <tesseract_geometry/geometries.h>
 #include <tesseract_common/resource.h>
 
 #include "tesseract_command_language_python_std_functions.h"
