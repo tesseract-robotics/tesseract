@@ -90,7 +90,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
   {
     auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
     auto triangles = std::make_shared<Eigen::VectorXi>();
-    std::shared_ptr<tesseract_common::VectorVector3d> normals = nullptr;
+    std::shared_ptr<tesseract_common::VectorVector3d> vertex_normals = nullptr;
     std::shared_ptr<tesseract_common::VectorVector4d> vertex_colors = nullptr;
     MeshMaterial::Ptr material = nullptr;
     std::shared_ptr<std::vector<MeshTexture::Ptr>> textures = nullptr;
@@ -128,13 +128,13 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
 
     if (normals && a->HasNormals())
     {
-      normals = std::make_shared<tesseract_common::VectorVector3d>();
+      vertex_normals = std::make_shared<tesseract_common::VectorVector3d>();
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
       {
         aiVector3D v = transform * a->mNormals[i];
-        normals->push_back(Eigen::Vector3d(static_cast<double>(v.x) * scale(0),
-                                           static_cast<double>(v.y) * scale(1),
-                                           static_cast<double>(v.z) * scale(2)));
+        vertex_normals->push_back(Eigen::Vector3d(static_cast<double>(v.x) * scale(0),
+                                            static_cast<double>(v.y) * scale(1),
+                                            static_cast<double>(v.z) * scale(2)));
       }
     }
 
@@ -270,7 +270,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                                          static_cast<int>(triangle_count),
                                          resource,
                                          scale,
-                                         normals,
+                                         vertex_normals,
                                          vertex_colors,
                                          material,
                                          textures));

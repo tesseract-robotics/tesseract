@@ -49,6 +49,7 @@ add_executable(${PROJECT_NAME}_unit
   tesseract_urdf_link_unit.cpp
   tesseract_urdf_material_unit.cpp
   tesseract_urdf_mesh_unit.cpp
+  tesseract_urdf_mesh_material_unit.cpp
   tesseract_urdf_mimic_unit.cpp
   tesseract_urdf_octree_unit.cpp
   tesseract_urdf_origin_unit.cpp
