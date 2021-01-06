@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+/** Stores information about a Task */
 class ProcessInfo
 {
 public:
@@ -52,8 +53,10 @@ public:
   ProcessInfo(ProcessInfo&&) = default;
   ProcessInfo& operator=(ProcessInfo&&) = default;
 
+  /** @brief Value returned from the Task on completion */
   int return_value;
 
+  /** @brief Unique ID generated for the Task by Taskflow */
   std::size_t unique_id;
 
   std::string process_name;
@@ -71,6 +74,9 @@ namespace tesseract_planning
 /** @brief A threadsafe container for ProcessInfos */
 struct ProcessInfoContainer
 {
+  using Ptr = std::shared_ptr<ProcessInfoContainer>;
+  using ConstPtr = std::shared_ptr<const ProcessInfoContainer>;
+
   void addProcessInfo(ProcessInfo::ConstPtr process_info);
 
   ProcessInfo::ConstPtr operator[](std::size_t index) const;

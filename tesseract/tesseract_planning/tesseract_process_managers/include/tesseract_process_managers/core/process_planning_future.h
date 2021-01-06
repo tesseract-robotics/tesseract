@@ -77,6 +77,7 @@ struct ProcessPlanningFuture
 
   /** @brief The stored composite profile remapping */
   std::unique_ptr<const PlannerProfileRemapping> composite_profile_remapping;
+
 #else
   // clang-format off
   %extend {

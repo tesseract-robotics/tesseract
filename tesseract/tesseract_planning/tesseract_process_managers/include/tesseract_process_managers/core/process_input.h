@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file process_input.h
  * @brief Process input
  *
@@ -190,8 +190,6 @@ protected:
 
   /** @brief Indices to the end instruction in the results data struction */
   std::vector<std::size_t> end_instruction_indice_;
-
-  std::shared_ptr<ProcessInfoContainer> process_infos_{ std::make_shared<ProcessInfoContainer>() };
 
   /** @brief Used to store if process input is aborted which is thread safe */
   ProcessInterface::Ptr interface_{ std::make_shared<ProcessInterface>() };

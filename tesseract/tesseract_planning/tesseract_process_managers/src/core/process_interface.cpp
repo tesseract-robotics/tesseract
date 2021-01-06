@@ -24,6 +24,7 @@
  * limitations under the License.
  */
 
+#include <tesseract_process_managers/core/process_info.h>
 #include <tesseract_process_managers/core/process_interface.h>
 
 namespace tesseract_planning
@@ -33,4 +34,19 @@ bool ProcessInterface::isAborted() const { return abort_; }
 bool ProcessInterface::isSuccessful() const { return !abort_; }
 
 void ProcessInterface::abort() { abort_ = true; }
+
+ProcessInfo::ConstPtr ProcessInterface::getProcessInfo(const std::size_t& index) const
+{
+  if (process_infos_)
+    return (*process_infos_)[index];
+  return nullptr;
+}
+
+std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInterface::getProcessInfoMap() const
+{
+  return process_infos_->getProcessInfoMap();
+}
+
+ProcessInfoContainer::Ptr ProcessInterface::getProcessInfoContainer() const { return process_infos_; }
+
 }  // namespace tesseract_planning

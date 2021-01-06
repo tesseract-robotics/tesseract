@@ -28,9 +28,12 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <memory>
 #include <atomic>
+#include <map>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_process_managers/core/process_info.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_planning::ProcessInterface)
@@ -62,8 +65,30 @@ public:
   /** @brief Abort the process associated with this interface */
   void abort();
 
+  /**
+   * @brief Get TaskInfo for a specific task by unique ID
+   * @param index Unique ID assigned the task from taskflow
+   * @return The TaskInfo associated with this task
+   */
+  ProcessInfo::ConstPtr getProcessInfo(const std::size_t& index) const;
+
+  /**
+   * @brief Get the entire stored map of TaskInfos
+   * @return The map of TaskInfos stored by unique ID
+   */
+  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap() const;
+
+  /**
+   * @brief Not meant to be used by users. Exposes TaskInfoContainer so that the
+   * @return Threadsafe TaskInfo container
+   */
+  ProcessInfoContainer::Ptr getProcessInfoContainer() const;
+
 protected:
   std::atomic<bool> abort_{ false };
+
+  /** @brief Threadsafe container for TaskInfos */
+  std::shared_ptr<ProcessInfoContainer> process_infos_{ std::make_shared<ProcessInfoContainer>() };
 };
 
 }  // namespace tesseract_planning

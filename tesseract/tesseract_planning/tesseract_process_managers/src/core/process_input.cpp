@@ -270,13 +270,16 @@ Instruction ProcessInput::getEndInstruction() const
 
 void ProcessInput::addProcessInfo(const ProcessInfo::ConstPtr& process_info)
 {
-  process_infos_->addProcessInfo(process_info);
+  interface_->getProcessInfoContainer()->addProcessInfo(process_info);
 }
 
-ProcessInfo::ConstPtr ProcessInput::getProcessInfo(const std::size_t& index) const { return (*process_infos_)[index]; }
+ProcessInfo::ConstPtr ProcessInput::getProcessInfo(const std::size_t& index) const
+{
+  return (*interface_->getProcessInfoContainer())[index];
+}
 
 std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInput::getProcessInfoMap() const
 {
-  return process_infos_->getProcessInfoMap();
+  return interface_->getProcessInfoContainer()->getProcessInfoMap();
 }
 }  // namespace tesseract_planning

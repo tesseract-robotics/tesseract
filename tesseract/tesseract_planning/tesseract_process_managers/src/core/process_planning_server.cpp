@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_process_managers/core/process_info.h>
 #include <tesseract_process_managers/core/process_planning_server.h>
 #include <tesseract_process_managers/core/debug_observer.h>
 #include <tesseract_process_managers/core/default_process_planners.h>
@@ -147,7 +148,7 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
   // This makes sure the Joint and State Waypoints match the same order as the kinematics
   if (formatProgram(*composite_program, *tc))
   {
-    CONSOLE_BRIDGE_logInform("Tesseract Planning Server: Input program required formating!");
+    CONSOLE_BRIDGE_logInform("Tesseract Planning Server: Input program required formatting!");
   }
 
   if (!request.commands.empty() && !tc->applyCommands(request.commands))
