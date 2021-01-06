@@ -303,7 +303,8 @@ TEST(TesseractGeometryUnit, LoadMeshWithMaterialGltf2Unit)  // NOLINT
   using namespace tesseract_geometry;
 
   std::string mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/tesseract_material_mesh.glb";
-  std::vector<Mesh::Ptr> meshes = createMeshFromPath<Mesh>(mesh_file,Eigen::Vector3d(1,1,1),true,true,true,true,true);
+  std::vector<Mesh::Ptr> meshes =
+      createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true, true, true, true);
   ASSERT_TRUE(meshes.size() == 4);
 
   auto& mesh0 = meshes[0];
@@ -334,28 +335,28 @@ TEST(TesseractGeometryUnit, LoadMeshWithMaterialGltf2Unit)  // NOLINT
   EXPECT_EQ(mesh3_normals->size(), 4);
 
   auto mesh0_material = mesh0->getMaterial();
-  EXPECT_TRUE(mesh0_material->getBaseColorFactor().isApprox(Eigen::Vector4d(0.7,0.7,0.7,1),0.01));
+  EXPECT_TRUE(mesh0_material->getBaseColorFactor().isApprox(Eigen::Vector4d(0.7, 0.7, 0.7, 1), 0.01));
   EXPECT_NEAR(mesh0_material->getMetallicFactor(), 0.0, 0.01);
   EXPECT_NEAR(mesh0_material->getRoughnessFactor(), 0.5, 0.01);
-  EXPECT_TRUE(mesh0_material->getEmissiveFactor().isApprox(Eigen::Vector4d(0,0,0,1),0.01));
+  EXPECT_TRUE(mesh0_material->getEmissiveFactor().isApprox(Eigen::Vector4d(0, 0, 0, 1), 0.01));
 
   auto mesh1_material = mesh1->getMaterial();
-  EXPECT_TRUE(mesh1_material->getBaseColorFactor().isApprox(Eigen::Vector4d(0.8,0,0,1),0.01));
+  EXPECT_TRUE(mesh1_material->getBaseColorFactor().isApprox(Eigen::Vector4d(0.8, 0, 0, 1), 0.01));
   EXPECT_NEAR(mesh1_material->getMetallicFactor(), 0.8, 0.01);
   EXPECT_NEAR(mesh1_material->getRoughnessFactor(), 0.1, 0.01);
-  EXPECT_TRUE(mesh1_material->getEmissiveFactor().isApprox(Eigen::Vector4d(0,0,0,1),0.01));
+  EXPECT_TRUE(mesh1_material->getEmissiveFactor().isApprox(Eigen::Vector4d(0, 0, 0, 1), 0.01));
 
   auto mesh2_material = mesh2->getMaterial();
-  EXPECT_TRUE(mesh2_material->getBaseColorFactor().isApprox(Eigen::Vector4d(0.05,0.8,0.05,1),0.01));
+  EXPECT_TRUE(mesh2_material->getBaseColorFactor().isApprox(Eigen::Vector4d(0.05, 0.8, 0.05, 1), 0.01));
   EXPECT_NEAR(mesh2_material->getMetallicFactor(), 0.9, 0.01);
   EXPECT_NEAR(mesh2_material->getRoughnessFactor(), 0.7, 0.01);
-  EXPECT_TRUE(mesh2_material->getEmissiveFactor().isApprox(Eigen::Vector4d(0.1,0.1,0.5,1),0.01));
+  EXPECT_TRUE(mesh2_material->getEmissiveFactor().isApprox(Eigen::Vector4d(0.1, 0.1, 0.5, 1), 0.01));
 
   auto mesh3_material = mesh3->getMaterial();
-  EXPECT_TRUE(mesh3_material->getBaseColorFactor().isApprox(Eigen::Vector4d(1,1,1,1),0.01));
+  EXPECT_TRUE(mesh3_material->getBaseColorFactor().isApprox(Eigen::Vector4d(1, 1, 1, 1), 0.01));
   EXPECT_NEAR(mesh3_material->getMetallicFactor(), 0, 0.01);
   EXPECT_NEAR(mesh3_material->getRoughnessFactor(), 0.5, 0.01);
-  EXPECT_TRUE(mesh3_material->getEmissiveFactor().isApprox(Eigen::Vector4d(0,0,0,1),0.01));
+  EXPECT_TRUE(mesh3_material->getEmissiveFactor().isApprox(Eigen::Vector4d(0, 0, 0, 1), 0.01));
 
   EXPECT_TRUE(mesh0->getTextures() == nullptr);
   EXPECT_TRUE(mesh1->getTextures() == nullptr);
@@ -365,9 +366,8 @@ TEST(TesseractGeometryUnit, LoadMeshWithMaterialGltf2Unit)  // NOLINT
   ASSERT_EQ(mesh3->getTextures()->size(), 1);
 
   auto texture = mesh3->getTextures()->at(0);
-  EXPECT_EQ(texture->getTextureImage()->getResourceContents().size(),38212);
+  EXPECT_EQ(texture->getTextureImage()->getResourceContents().size(), 38212);
   EXPECT_EQ(texture->getUVs()->size(), 4);
-
 }
 #endif
 

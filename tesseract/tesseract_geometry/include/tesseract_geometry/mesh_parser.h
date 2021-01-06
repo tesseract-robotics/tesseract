@@ -133,8 +133,8 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
       {
         aiVector3D v = transform * a->mNormals[i];
         normals_->push_back(Eigen::Vector3d(static_cast<double>(v.x) * scale(0),
-                                           static_cast<double>(v.y) * scale(1),
-                                           static_cast<double>(v.z) * scale(2)));
+                                            static_cast<double>(v.y) * scale(1),
+                                            static_cast<double>(v.z) * scale(2)));
       }
     }
 
