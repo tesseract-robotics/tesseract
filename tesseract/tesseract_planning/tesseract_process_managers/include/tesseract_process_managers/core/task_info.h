@@ -35,6 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
 %shared_ptr(tesseract_planning::TaskInfo)
+%template(TaskInfoMap) std::map<std::size_t, std::shared_ptr<const tesseract_planning::TaskInfo>>;
+%shared_ptr(tesseract_planning::TaskInfoContainer)
 #endif  // SWIG
 
 namespace tesseract_planning
@@ -63,14 +65,7 @@ public:
 
   std::string message;
 };
-}  // namespace tesseract_planning
 
-#ifdef SWIG
-%template(TaskInfoMap) std::map<std::size_t, std::shared_ptr<const tesseract_planning::TaskInfo>>;
-#endif
-
-namespace tesseract_planning
-{
 /** @brief A threadsafe container for TaskInfos */
 struct TaskInfoContainer
 {

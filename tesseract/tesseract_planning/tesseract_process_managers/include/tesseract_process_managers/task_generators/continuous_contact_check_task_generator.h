@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_CONTINUOUS_CONTACT_CHECK_task_generator_H
-#define TESSERACT_PROCESS_MANAGERS_CONTINUOUS_CONTACT_CHECK_task_generator_H
+#ifndef TESSERACT_PROCESS_MANAGERS_CONTINUOUS_CONTACT_CHECK_TASK_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_CONTINUOUS_CONTACT_CHECK_TASK_GENERATOR_H
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
@@ -66,4 +66,4 @@ public:
   std::vector<tesseract_collision::ContactResultMap> contact_results;
 };
 }  // namespace tesseract_planning
-#endif  // TESSERACT_PROCESS_MANAGERS_CONTINUOUS_CONTACT_CHECK_task_generator_H
+#endif  // TESSERACT_PROCESS_MANAGERS_CONTINUOUS_CONTACT_CHECK_TASK_GENERATOR_H

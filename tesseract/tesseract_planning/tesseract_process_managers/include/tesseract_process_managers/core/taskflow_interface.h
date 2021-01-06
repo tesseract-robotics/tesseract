@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/core/task_info.h>
 
 #ifdef SWIG
-%shared_ptr(tesseract_planning::TaskInterface)
+%shared_ptr(tesseract_planning::TaskflowInterface)
 #endif  // SWIG
 
 namespace tesseract_planning
@@ -88,7 +88,7 @@ protected:
   std::atomic<bool> abort_{ false };
 
   /** @brief Threadsafe container for TaskInfos */
-  std::shared_ptr<TaskInfoContainer> task_infos_{ std::make_shared<TaskInfoContainer>() };
+  TaskInfoContainer::Ptr task_infos_{ std::make_shared<TaskInfoContainer>() };
 };
 
 }  // namespace tesseract_planning

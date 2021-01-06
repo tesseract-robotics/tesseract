@@ -86,14 +86,14 @@
 
 // tesseract_process_managers
 
-#include <tesseract_process_managers/core/process_interface.h>
-#include <tesseract_process_managers/core/process_info.h>
+#include <tesseract_process_managers/core/task_info.h>
+#include <tesseract_process_managers/core/taskflow_interface.h>
 #include <tesseract_process_managers/core/process_planning_request.h>
 #include <tesseract_process_managers/core/process_planning_future.h>
 #include <tesseract_process_managers/core/process_planning_server.h>
 
-#include <tesseract_process_managers/process_generators/profile_switch_process_generator.h>
-#include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
+#include <tesseract_process_managers/task_generators/profile_switch_task_generator.h>
+#include <tesseract_process_managers/task_generators/iterative_spline_parameterization_task_generator.h>
 
 #include <tesseract_common/status_code.h>
 #include <tesseract_common/resource.h>
@@ -131,13 +131,13 @@
 
 %include "tesseract_motion_planners/core/profile_dictionary.h"
 
-%include "tesseract_process_managers/core/process_interface.h"
-%include "tesseract_process_managers/core/process_info.h"
+%include "tesseract_process_managers/core/task_info.h"
+%include "tesseract_process_managers/core/taskflow_interface.h"
 %include "tesseract_process_managers/core/process_planning_request.h"
 %include "tesseract_process_managers/core/process_planning_future.h"
 %include "tesseract_process_managers/core/process_planning_server.h"
 
-//%include "tesseract_process_managers/process_generators/profile_switch_process_generator.h"
-//%include "tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h"
+//%include "tesseract_process_managers/task_generators/profile_switch_task_generator.h"
+//%include "tesseract_process_managers/task_generators/iterative_spline_parameterization_task_generator.h"
 
 

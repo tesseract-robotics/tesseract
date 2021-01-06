@@ -21,8 +21,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_task_generator_H
-#define TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_task_generator_H
+#ifndef TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_TASK_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_TASK_GENERATOR_H
 
 #include <tesseract_process_managers/core/task_generator.h>
 
@@ -75,4 +75,4 @@ public:
   ProfileSwitchTaskInfo(std::size_t unique_id, std::string name = "Profile Switch");
 };
 }  // namespace tesseract_planning
-#endif  // TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_task_generator_H
+#endif  // TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_TASK_GENERATOR_H

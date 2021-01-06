@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_task_generator_H
-#define TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_task_generator_H
+#ifndef TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_TASK_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_TASK_GENERATOR_H
 
 #include <tesseract_process_managers/core/task_generator.h>
 
@@ -151,4 +151,4 @@ bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
 
 bool ApplyCorrectionWorkflow(Waypoint& waypoint, const TaskInput& input, const FixStateCollisionProfile& profile);
 }  // namespace tesseract_planning
-#endif  // TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_task_generator_H
+#endif  // TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_TASK_GENERATOR_H
