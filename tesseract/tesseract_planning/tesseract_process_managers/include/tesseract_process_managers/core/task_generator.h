@@ -1,5 +1,5 @@
 ﻿/**
- * @file process_generator.h
+ * @file task_generator.h
  * @brief Process generator
  *
  * @author Matthew Powelson
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_PROCESS_GENERATOR_H
-#define TESSERACT_PROCESS_MANAGERS_PROCESS_GENERATOR_H
+#ifndef TESSERACT_PROCESS_MANAGERS_TASK_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_TASK_GENERATOR_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -33,28 +33,28 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/core/task_input.h>
 
 namespace tesseract_planning
 {
 /**
  * @brief This is a base class for generating instances of processes as tasks such that they may be executed in
- * parallel. A typical workflow would be task t = process_generator.generateTask(input, taskflow)
+ * parallel. A typical workflow would be task t = task_generator.generateTask(input, taskflow)
  *
  * Only unique pointers should be used because of the ability to abort the process. With recent changes this may no
  * longer be valid but need to investigate.
  */
-class ProcessGenerator
+class TaskGenerator
 {
 public:
-  using UPtr = std::unique_ptr<ProcessGenerator>;
+  using UPtr = std::unique_ptr<TaskGenerator>;
 
-  ProcessGenerator(std::string name = "");
-  virtual ~ProcessGenerator() = default;
-  ProcessGenerator(const ProcessGenerator&) = delete;
-  ProcessGenerator& operator=(const ProcessGenerator&) = delete;
-  ProcessGenerator(ProcessGenerator&&) = delete;
-  ProcessGenerator& operator=(ProcessGenerator&&) = delete;
+  TaskGenerator(std::string name = "");
+  virtual ~TaskGenerator() = default;
+  TaskGenerator(const TaskGenerator&) = delete;
+  TaskGenerator& operator=(const TaskGenerator&) = delete;
+  TaskGenerator(TaskGenerator&&) = delete;
+  TaskGenerator& operator=(TaskGenerator&&) = delete;
 
   /**
    * @brief Get the task name
@@ -68,14 +68,14 @@ public:
    * @param taskflow The taskflow to associate the task with
    * @return Task
    */
-  virtual tf::Task generateTask(ProcessInput input, tf::Taskflow& taskflow);
+  virtual tf::Task generateTask(TaskInput input, tf::Taskflow& taskflow);
 
   /**
    * @brief Assign work to the provided task
    * @param input The process input
    * @param task The task to assign the work to
    */
-  virtual void assignTask(ProcessInput input, tf::Task& task);
+  virtual void assignTask(TaskInput input, tf::Task& task);
 
   /**
    * @brief Generated a Task
@@ -83,14 +83,14 @@ public:
    * @param taskflow The taskflow to associate the task with
    * @return Conditional Task
    */
-  virtual tf::Task generateConditionalTask(ProcessInput input, tf::Taskflow& taskflow);
+  virtual tf::Task generateConditionalTask(TaskInput input, tf::Taskflow& taskflow);
 
   /**
    * @brief Assign work to the provided task
    * @param input The process input
    * @param task The task to assign the work to
    */
-  virtual void assignConditionalTask(ProcessInput input, tf::Task& task);
+  virtual void assignConditionalTask(TaskInput input, tf::Task& task);
 
 protected:
   /** @brief The name of the process */
@@ -101,14 +101,14 @@ protected:
    * @param input The process input
    * @return Task
    */
-  virtual void process(ProcessInput input, std::size_t unique_id) const = 0;
+  virtual void process(TaskInput input, std::size_t unique_id) const = 0;
 
   /**
    * @brief Generate Conditional Task
    * @param input The process input
    * @return Conditional Task
    */
-  virtual int conditionalProcess(ProcessInput input, std::size_t unique_id) const = 0;
+  virtual int conditionalProcess(TaskInput input, std::size_t unique_id) const = 0;
 };
 
 }  // namespace tesseract_planning

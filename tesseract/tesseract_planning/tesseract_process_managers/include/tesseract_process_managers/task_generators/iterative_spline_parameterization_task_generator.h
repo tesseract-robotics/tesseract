@@ -1,5 +1,5 @@
 /**
- * @file iterative_spline_parameterization_process_generator.h
+ * @file iterative_spline_parameterization_task_generator.h
  * @brief Perform iterative spline time parameterization
  *
  * @author Levi Armstrong
@@ -23,16 +23,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_ITERATIVE_SPLINE_PARAMETERIZATION_PROCESS_GENERATOR_H
-#define TESSERACT_PROCESS_MANAGERS_ITERATIVE_SPLINE_PARAMETERIZATION_PROCESS_GENERATOR_H
+#ifndef TESSERACT_PROCESS_MANAGERS_ITERATIVE_SPLINE_PARAMETERIZATION_TASK_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_ITERATIVE_SPLINE_PARAMETERIZATION_TASK_GENERATOR_H
 
-#include <tesseract_process_managers/core/process_generator.h>
+#include <tesseract_process_managers/core/task_generator.h>
 #include <tesseract_time_parameterization/iterative_spline_parameterization.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_planning::IterativeSplineParameterizationProfile)
-%ignore IterativeSplineParameterizationProcessGenerator;
-%ignore IterativeSplineParameterizationProcessInfo;
+%ignore IterativeSplineParameterizationTaskGenerator;
+%ignore IterativeSplineParameterizationTaskInfo;
 #endif  // SWIG
 
 namespace tesseract_planning
@@ -54,38 +54,36 @@ struct IterativeSplineParameterizationProfile
 using IterativeSplineParameterizationProfileMap =
     std::unordered_map<std::string, IterativeSplineParameterizationProfile::ConstPtr>;
 
-class IterativeSplineParameterizationProcessGenerator : public ProcessGenerator
+class IterativeSplineParameterizationTaskGenerator : public TaskGenerator
 {
 public:
-  using UPtr = std::unique_ptr<IterativeSplineParameterizationProcessGenerator>;
+  using UPtr = std::unique_ptr<IterativeSplineParameterizationTaskGenerator>;
 
-  IterativeSplineParameterizationProcessGenerator(bool add_points = true,
-                                                  std::string name = "Iterative Spline Parameterization");
+  IterativeSplineParameterizationTaskGenerator(bool add_points = true,
+                                               std::string name = "Iterative Spline Parameterization");
 
-  ~IterativeSplineParameterizationProcessGenerator() override = default;
-  IterativeSplineParameterizationProcessGenerator(const IterativeSplineParameterizationProcessGenerator&) = delete;
-  IterativeSplineParameterizationProcessGenerator&
-  operator=(const IterativeSplineParameterizationProcessGenerator&) = delete;
-  IterativeSplineParameterizationProcessGenerator(IterativeSplineParameterizationProcessGenerator&&) = delete;
-  IterativeSplineParameterizationProcessGenerator&
-  operator=(IterativeSplineParameterizationProcessGenerator&&) = delete;
+  ~IterativeSplineParameterizationTaskGenerator() override = default;
+  IterativeSplineParameterizationTaskGenerator(const IterativeSplineParameterizationTaskGenerator&) = delete;
+  IterativeSplineParameterizationTaskGenerator& operator=(const IterativeSplineParameterizationTaskGenerator&) = delete;
+  IterativeSplineParameterizationTaskGenerator(IterativeSplineParameterizationTaskGenerator&&) = delete;
+  IterativeSplineParameterizationTaskGenerator& operator=(IterativeSplineParameterizationTaskGenerator&&) = delete;
 
   IterativeSplineParameterizationProfileMap composite_profiles;
   IterativeSplineParameterizationProfileMap move_profiles;
 
-  int conditionalProcess(ProcessInput input, std::size_t unique_id) const override;
+  int conditionalProcess(TaskInput input, std::size_t unique_id) const override;
 
-  void process(ProcessInput input, std::size_t unique_id) const override;
+  void process(TaskInput input, std::size_t unique_id) const override;
 
 private:
   IterativeSplineParameterization solver_;
 };
 
-class IterativeSplineParameterizationProcessInfo : public ProcessInfo
+class IterativeSplineParameterizationTaskInfo : public TaskInfo
 {
 public:
-  IterativeSplineParameterizationProcessInfo(std::size_t unique_id,
-                                             std::string name = "Iterative Spline Parameterization");
+  IterativeSplineParameterizationTaskInfo(std::size_t unique_id,
+                                          std::string name = "Iterative Spline Parameterization");
 };
 }  // namespace tesseract_planning
-#endif  // TESSERACT_PROCESS_MANAGERS_ITERATIVE_SPLINE_PARAMETERIZATION_PROCESS_GENERATOR_H
+#endif  // TESSERACT_PROCESS_MANAGERS_ITERATIVE_SPLINE_PARAMETERIZATION_TASK_GENERATOR_H

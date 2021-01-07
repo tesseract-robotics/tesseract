@@ -52,12 +52,10 @@ RasterOnlyTaskflow::RasterOnlyTaskflow(TaskflowGenerator::UPtr transition_taskfl
 
 const std::string& RasterOnlyTaskflow::getName() const { return name_; }
 
-TaskflowContainer RasterOnlyTaskflow::generateTaskflow(ProcessInput input,
-                                                       TaskflowVoidFn done_cb,
-                                                       TaskflowVoidFn error_cb)
+TaskflowContainer RasterOnlyTaskflow::generateTaskflow(TaskInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
-  if (!checkProcessInput(input))
+  if (!checkTaskInput(input))
   {
     CONSOLE_BRIDGE_logError("Invalid Process Input");
     throw std::runtime_error("Invalid Process Input");
@@ -82,7 +80,7 @@ TaskflowContainer RasterOnlyTaskflow::generateTaskflow(ProcessInput input,
     }
     else
     {
-      ProcessInput pre_input = input[idx - 1];
+      TaskInput pre_input = input[idx - 1];
       const Instruction* pre_input_instruction = pre_input.getInstruction();
       assert(isCompositeInstruction(*pre_input_instruction));
       const auto* tci = pre_input_instruction->cast_const<CompositeInstruction>();
@@ -92,7 +90,7 @@ TaskflowContainer RasterOnlyTaskflow::generateTaskflow(ProcessInput input,
     }
 
     start_instruction.cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
-    ProcessInput raster_input = input[idx];
+    TaskInput raster_input = input[idx];
     raster_input.setStartInstruction(start_instruction);
     TaskflowContainer sub_container = raster_taskflow_generator_->generateTaskflow(
         raster_input,
@@ -117,7 +115,7 @@ TaskflowContainer RasterOnlyTaskflow::generateTaskflow(ProcessInput input,
     // composite and let the generateTaskflow extract the start and end waypoint from the composite. This is also more
     // robust because planners could modify composite size, which is rare but does happen when using OMPL where it is
     // not possible to simplify the trajectory to the desired number of states.
-    ProcessInput transition_input = input[input_idx];
+    TaskInput transition_input = input[input_idx];
     transition_input.setStartInstruction(std::vector<std::size_t>({ input_idx - 1 }));
     transition_input.setEndInstruction(std::vector<std::size_t>({ input_idx + 1 }));
     TaskflowContainer sub_container = transition_taskflow_generator_->generateTaskflow(
@@ -140,14 +138,14 @@ TaskflowContainer RasterOnlyTaskflow::generateTaskflow(ProcessInput input,
   return container;
 }
 
-bool RasterOnlyTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& input) const
+bool RasterOnlyTaskflow::checkTaskInput(const tesseract_planning::TaskInput& input) const
 {
   // -------------
   // Check Input
   // -------------
   if (!input.env)
   {
-    CONSOLE_BRIDGE_logError("ProcessInput env is a nullptr");
+    CONSOLE_BRIDGE_logError("TaskInput env is a nullptr");
     return false;
   }
 
@@ -155,7 +153,7 @@ bool RasterOnlyTaskflow::checkProcessInput(const tesseract_planning::ProcessInpu
   const Instruction* input_instruction = input.getInstruction();
   if (!isCompositeInstruction(*input_instruction))
   {
-    CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
+    CONSOLE_BRIDGE_logError("TaskInput Invalid: input.instructions should be a composite");
     return false;
   }
   const auto* composite = input_instruction->cast_const<CompositeInstruction>();
@@ -163,7 +161,7 @@ bool RasterOnlyTaskflow::checkProcessInput(const tesseract_planning::ProcessInpu
   // Check that it has a start instruction
   if (!composite->hasStartInstruction() && isNullInstruction(input.getStartInstruction()))
   {
-    CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should have a start instruction");
+    CONSOLE_BRIDGE_logError("TaskInput Invalid: input.instructions should have a start instruction");
     return false;
   }
 
@@ -173,7 +171,7 @@ bool RasterOnlyTaskflow::checkProcessInput(const tesseract_planning::ProcessInpu
     // Both rasters and transitions should be a composite
     if (!isCompositeInstruction(composite->at(index)))
     {
-      CONSOLE_BRIDGE_logError("ProcessInput Invalid: Both rasters and transitions should be a composite");
+      CONSOLE_BRIDGE_logError("TaskInput Invalid: Both rasters and transitions should be a composite");
       return false;
     }
   }

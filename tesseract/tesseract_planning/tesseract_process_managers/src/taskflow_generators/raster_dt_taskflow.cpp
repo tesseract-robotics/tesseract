@@ -54,12 +54,10 @@ RasterDTTaskflow::RasterDTTaskflow(TaskflowGenerator::UPtr freespace_taskflow_ge
 
 const std::string& RasterDTTaskflow::getName() const { return name_; }
 
-TaskflowContainer RasterDTTaskflow::generateTaskflow(ProcessInput input,
-                                                     TaskflowVoidFn done_cb,
-                                                     TaskflowVoidFn error_cb)
+TaskflowContainer RasterDTTaskflow::generateTaskflow(TaskInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
-  if (!checkProcessInput(input))
+  if (!checkTaskInput(input))
   {
     CONSOLE_BRIDGE_logError("Invalid Process Input");
     throw std::runtime_error("Invalid Process Input");
@@ -96,7 +94,7 @@ TaskflowContainer RasterDTTaskflow::generateTaskflow(ProcessInput input,
     }
 
     start_instruction.cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
-    ProcessInput raster_input = input[idx];
+    TaskInput raster_input = input[idx];
     raster_input.setStartInstruction(start_instruction);
     TaskflowContainer sub_container = raster_taskflow_generator_->generateTaskflow(
         raster_input,
@@ -120,7 +118,7 @@ TaskflowContainer RasterDTTaskflow::generateTaskflow(ProcessInput input,
     // composite and let the generateTaskflow extract the start and end waypoint from the composite. This is also more
     // robust because planners could modify composite size, which is rare but does happen when using OMPL where it is
     // not possible to simplify the trajectory to the desired number of states.
-    ProcessInput transition_from_end_input = input[input_idx][0];
+    TaskInput transition_from_end_input = input[input_idx][0];
     transition_from_end_input.setStartInstruction(std::vector<std::size_t>({ input_idx - 1 }));
     transition_from_end_input.setEndInstruction(std::vector<std::size_t>({ input_idx + 1 }));
     TaskflowContainer sub_container1 = transition_taskflow_generator_->generateTaskflow(
@@ -136,7 +134,7 @@ TaskflowContainer RasterDTTaskflow::generateTaskflow(ProcessInput input,
     transition_from_end_step.succeed(tasks[transition_idx]);
     transition_from_end_step.succeed(tasks[transition_idx + 1]);
 
-    ProcessInput transition_to_start_input = input[input_idx][1];
+    TaskInput transition_to_start_input = input[input_idx][1];
     transition_to_start_input.setStartInstruction(std::vector<std::size_t>({ input_idx + 1 }));
     transition_to_start_input.setEndInstruction(std::vector<std::size_t>({ input_idx - 1 }));
     TaskflowContainer sub_container2 = transition_taskflow_generator_->generateTaskflow(
@@ -156,7 +154,7 @@ TaskflowContainer RasterDTTaskflow::generateTaskflow(ProcessInput input,
   }
 
   // Plan from_start - preceded by the first raster
-  ProcessInput from_start_input = input[0];
+  TaskInput from_start_input = input[0];
   from_start_input.setStartInstruction(
       input.getInstruction()->cast_const<CompositeInstruction>()->getStartInstruction());
   from_start_input.setEndInstruction(std::vector<std::size_t>({ 1 }));
@@ -170,7 +168,7 @@ TaskflowContainer RasterDTTaskflow::generateTaskflow(ProcessInput input,
   tasks[0].precede(from_start);
 
   // Plan to_end - preceded by the last raster
-  ProcessInput to_end_input = input[input.size() - 1];
+  TaskInput to_end_input = input[input.size() - 1];
   to_end_input.setStartInstruction(std::vector<std::size_t>({ input.size() - 2 }));
   TaskflowContainer sub_container2 = freespace_taskflow_generator_->generateTaskflow(
       to_end_input,
@@ -184,14 +182,14 @@ TaskflowContainer RasterDTTaskflow::generateTaskflow(ProcessInput input,
   return container;
 }
 
-bool RasterDTTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& input) const
+bool RasterDTTaskflow::checkTaskInput(const tesseract_planning::TaskInput& input) const
 {
   // -------------
   // Check Input
   // -------------
   if (!input.env)
   {
-    CONSOLE_BRIDGE_logError("ProcessInput env is a nullptr");
+    CONSOLE_BRIDGE_logError("TaskInput env is a nullptr");
     return false;
   }
 
@@ -199,7 +197,7 @@ bool RasterDTTaskflow::checkProcessInput(const tesseract_planning::ProcessInput&
   const Instruction* input_instruction = input.getInstruction();
   if (!isCompositeInstruction(*input_instruction))
   {
-    CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
+    CONSOLE_BRIDGE_logError("TaskInput Invalid: input.instructions should be a composite");
     return false;
   }
   const auto* composite = input_instruction->cast_const<CompositeInstruction>();
@@ -207,14 +205,14 @@ bool RasterDTTaskflow::checkProcessInput(const tesseract_planning::ProcessInput&
   // Check that it has a start instruction
   if (!composite->hasStartInstruction() && isNullInstruction(input.getStartInstruction()))
   {
-    CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should have a start instruction");
+    CONSOLE_BRIDGE_logError("TaskInput Invalid: input.instructions should have a start instruction");
     return false;
   }
 
   // Check from_start
   if (!isCompositeInstruction(composite->at(0)))
   {
-    CONSOLE_BRIDGE_logError("ProcessInput Invalid: from_start should be a composite");
+    CONSOLE_BRIDGE_logError("TaskInput Invalid: from_start should be a composite");
     return false;
   }
 
@@ -224,7 +222,7 @@ bool RasterDTTaskflow::checkProcessInput(const tesseract_planning::ProcessInput&
     // Both rasters and transitions should be a composite
     if (!isCompositeInstruction(composite->at(index)))
     {
-      CONSOLE_BRIDGE_logError("ProcessInput Invalid: Both rasters and transitions should be a composite");
+      CONSOLE_BRIDGE_logError("TaskInput Invalid: Both rasters and transitions should be a composite");
       return false;
     }
 
@@ -249,19 +247,19 @@ bool RasterDTTaskflow::checkProcessInput(const tesseract_planning::ProcessInput&
 
         if (!isCompositeInstruction(step->at(0)))
         {
-          CONSOLE_BRIDGE_logError("ProcessInput Invalid: transition from end should be a composite");
+          CONSOLE_BRIDGE_logError("TaskInput Invalid: transition from end should be a composite");
           return false;
         }
 
         if (!isCompositeInstruction(step->at(1)))
         {
-          CONSOLE_BRIDGE_logError("ProcessInput Invalid: transition to start should be a composite");
+          CONSOLE_BRIDGE_logError("TaskInput Invalid: transition to start should be a composite");
           return false;
         }
       }
       else
       {
-        CONSOLE_BRIDGE_logError("ProcessInput Invalid: transition should be a composite of size 2");
+        CONSOLE_BRIDGE_logError("TaskInput Invalid: transition should be a composite of size 2");
         return false;
       }
     }
@@ -269,7 +267,7 @@ bool RasterDTTaskflow::checkProcessInput(const tesseract_planning::ProcessInput&
   // Check to_end
   if (!isCompositeInstruction(composite->back()))
   {
-    CONSOLE_BRIDGE_logError("ProcessInput Invalid: to_end should be a composite");
+    CONSOLE_BRIDGE_logError("TaskInput Invalid: to_end should be a composite");
     return false;
   };
 

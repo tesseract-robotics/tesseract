@@ -41,25 +41,25 @@ include(GenerateExportHeader)
 
 # Create interface
 add_library(${PROJECT_NAME}
-    src/core/process_input.cpp
+    src/core/task_input.cpp
     src/core/debug_observer.cpp
-    src/core/process_generator.cpp
+    src/core/task_generator.cpp
     src/core/process_planning_future.cpp
     src/core/process_planning_server.cpp
     src/core/process_environment_cache.cpp
-    src/core/process_interface.cpp
-    src/core/process_info.cpp
+    src/core/taskflow_interface.cpp
+    src/core/task_info.cpp
     src/core/default_process_planners.cpp
     src/core/taskflow_container.cpp
     src/core/utils.cpp
-    src/process_generators/continuous_contact_check_process_generator.cpp
-    src/process_generators/discrete_contact_check_process_generator.cpp
-    src/process_generators/fix_state_bounds_process_generator.cpp
-    src/process_generators/fix_state_collision_process_generator.cpp
-    src/process_generators/iterative_spline_parameterization_process_generator.cpp
-    src/process_generators/motion_planner_process_generator.cpp
-    src/process_generators/profile_switch_process_generator.cpp
-    src/process_generators/seed_min_length_process_generator.cpp
+    src/task_generators/continuous_contact_check_task_generator.cpp
+    src/task_generators/discrete_contact_check_task_generator.cpp
+    src/task_generators/fix_state_bounds_task_generator.cpp
+    src/task_generators/fix_state_collision_task_generator.cpp
+    src/task_generators/iterative_spline_parameterization_task_generator.cpp
+    src/task_generators/motion_planner_task_generator.cpp
+    src/task_generators/profile_switch_task_generator.cpp
+    src/task_generators/seed_min_length_task_generator.cpp
     src/taskflow_generators/graph_taskflow.cpp
     src/taskflow_generators/raster_taskflow.cpp
     src/taskflow_generators/raster_global_taskflow.cpp

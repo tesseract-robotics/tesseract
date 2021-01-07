@@ -1,5 +1,5 @@
 /**
- * @file fix_state_collision_process_generator.h
+ * @file fix_state_collision_task_generator.h
  * @brief Process generator for process that pushes plan instructions to be out of collision
  *
  * @author Matthew Powelson
@@ -23,10 +23,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_PROCESS_GENERATOR_H
-#define TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_PROCESS_GENERATOR_H
+#ifndef TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_TASK_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_TASK_GENERATOR_H
 
-#include <tesseract_process_managers/core/process_generator.h>
+#include <tesseract_process_managers/core/task_generator.h>
 
 namespace tesseract_planning
 {
@@ -77,30 +77,30 @@ using FixStateCollisionProfileMap = std::unordered_map<std::string, FixStateColl
  *
  * First it uses TrajOpt to correct the waypoint. If that fails, it reverts to random sampling
  */
-class FixStateCollisionProcessGenerator : public ProcessGenerator
+class FixStateCollisionTaskGenerator : public TaskGenerator
 {
 public:
-  using UPtr = std::unique_ptr<FixStateCollisionProcessGenerator>;
+  using UPtr = std::unique_ptr<FixStateCollisionTaskGenerator>;
 
-  FixStateCollisionProcessGenerator(std::string name = "Fix State Collision");
+  FixStateCollisionTaskGenerator(std::string name = "Fix State Collision");
 
-  ~FixStateCollisionProcessGenerator() override = default;
-  FixStateCollisionProcessGenerator(const FixStateCollisionProcessGenerator&) = delete;
-  FixStateCollisionProcessGenerator& operator=(const FixStateCollisionProcessGenerator&) = delete;
-  FixStateCollisionProcessGenerator(FixStateCollisionProcessGenerator&&) = delete;
-  FixStateCollisionProcessGenerator& operator=(FixStateCollisionProcessGenerator&&) = delete;
+  ~FixStateCollisionTaskGenerator() override = default;
+  FixStateCollisionTaskGenerator(const FixStateCollisionTaskGenerator&) = delete;
+  FixStateCollisionTaskGenerator& operator=(const FixStateCollisionTaskGenerator&) = delete;
+  FixStateCollisionTaskGenerator(FixStateCollisionTaskGenerator&&) = delete;
+  FixStateCollisionTaskGenerator& operator=(FixStateCollisionTaskGenerator&&) = delete;
 
   FixStateCollisionProfileMap composite_profiles;
 
-  int conditionalProcess(ProcessInput input, std::size_t unique_id) const override;
+  int conditionalProcess(TaskInput input, std::size_t unique_id) const override;
 
-  void process(ProcessInput input, std::size_t unique_id) const override;
+  void process(TaskInput input, std::size_t unique_id) const override;
 };
 
-class FixStateCollisionProcessInfo : public ProcessInfo
+class FixStateCollisionTaskInfo : public TaskInfo
 {
 public:
-  FixStateCollisionProcessInfo(std::size_t unique_id, std::string name = "Fix State Collision");
+  FixStateCollisionTaskInfo(std::size_t unique_id, std::string name = "Fix State Collision");
 
   std::vector<tesseract_collision::ContactResultMap> contact_results;
 };
@@ -112,7 +112,7 @@ public:
  * @return True if in collision
  */
 bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
-                      const ProcessInput& input,
+                      const TaskInput& input,
                       const FixStateCollisionProfile& profile,
                       tesseract_collision::ContactResultMap& contacts);
 
@@ -123,7 +123,7 @@ bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
  * @return True if in collision
  */
 bool WaypointInCollision(const Waypoint& waypoint,
-                         const ProcessInput& input,
+                         const TaskInput& input,
                          const FixStateCollisionProfile& profile,
                          tesseract_collision::ContactResultMap& contacts);
 
@@ -135,7 +135,7 @@ bool WaypointInCollision(const Waypoint& waypoint,
  * @return True if successful
  */
 bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
-                                      const ProcessInput& input,
+                                      const TaskInput& input,
                                       const FixStateCollisionProfile& profile);
 
 /**
@@ -146,9 +146,9 @@ bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
  * @return True if successful
  */
 bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
-                                            const ProcessInput& input,
+                                            const TaskInput& input,
                                             const FixStateCollisionProfile& profile);
 
-bool ApplyCorrectionWorkflow(Waypoint& waypoint, const ProcessInput& input, const FixStateCollisionProfile& profile);
+bool ApplyCorrectionWorkflow(Waypoint& waypoint, const TaskInput& input, const FixStateCollisionProfile& profile);
 }  // namespace tesseract_planning
-#endif  // TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_PROCESS_GENERATOR_H
+#endif  // TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_TASK_GENERATOR_H

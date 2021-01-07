@@ -1,5 +1,5 @@
 /**
- * @file seed_length_process_generator.h
+ * @file seed_length_task_generator.h
  * @brief Process generator for processing the seed so it meets a minimum length. Planners like trajopt need
  * at least 10 states in the trajectory to perform velocity, accelleration and jerk smoothing.
  *
@@ -24,36 +24,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_SEED_MIN_LENGTH_PROCESS_GENERATOR_H
-#define TESSERACT_PROCESS_MANAGERS_SEED_MIN_LENGTH_PROCESS_GENERATOR_H
+#ifndef TESSERACT_PROCESS_MANAGERS_SEED_MIN_LENGTH_TASK_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_SEED_MIN_LENGTH_TASK_GENERATOR_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/core/process_generator.h>
+#include <tesseract_process_managers/core/task_generator.h>
 
 namespace tesseract_planning
 {
-class SeedMinLengthProcessGenerator : public ProcessGenerator
+class SeedMinLengthTaskGenerator : public TaskGenerator
 {
 public:
-  using UPtr = std::unique_ptr<SeedMinLengthProcessGenerator>;
+  using UPtr = std::unique_ptr<SeedMinLengthTaskGenerator>;
 
-  SeedMinLengthProcessGenerator(std::string name = "Seed Min Length");
+  SeedMinLengthTaskGenerator(std::string name = "Seed Min Length");
 
-  SeedMinLengthProcessGenerator(long min_length, std::string name = "Seed Min Length");
+  SeedMinLengthTaskGenerator(long min_length, std::string name = "Seed Min Length");
 
-  ~SeedMinLengthProcessGenerator() override = default;
-  SeedMinLengthProcessGenerator(const SeedMinLengthProcessGenerator&) = delete;
-  SeedMinLengthProcessGenerator& operator=(const SeedMinLengthProcessGenerator&) = delete;
-  SeedMinLengthProcessGenerator(SeedMinLengthProcessGenerator&&) = delete;
-  SeedMinLengthProcessGenerator& operator=(SeedMinLengthProcessGenerator&&) = delete;
+  ~SeedMinLengthTaskGenerator() override = default;
+  SeedMinLengthTaskGenerator(const SeedMinLengthTaskGenerator&) = delete;
+  SeedMinLengthTaskGenerator& operator=(const SeedMinLengthTaskGenerator&) = delete;
+  SeedMinLengthTaskGenerator(SeedMinLengthTaskGenerator&&) = delete;
+  SeedMinLengthTaskGenerator& operator=(SeedMinLengthTaskGenerator&&) = delete;
 
-  int conditionalProcess(ProcessInput input, std::size_t unique_id) const override;
+  int conditionalProcess(TaskInput input, std::size_t unique_id) const override;
 
-  void process(ProcessInput input, std::size_t unique_id) const override;
+  void process(TaskInput input, std::size_t unique_id) const override;
 
 private:
   long min_length_{ 10 };
@@ -64,11 +64,11 @@ private:
                  int subdivisions) const;
 };
 
-class SeedMinLengthProcessInfo : public ProcessInfo
+class SeedMinLengthTaskInfo : public TaskInfo
 {
 public:
-  SeedMinLengthProcessInfo(std::size_t unique_id, std::string name = "Seed Min Length");
+  SeedMinLengthTaskInfo(std::size_t unique_id, std::string name = "Seed Min Length");
 };
 }  // namespace tesseract_planning
 
-#endif  // TESSERACT_PROCESS_MANAGERS_SEED_MIN_LENGTH_PROCESS_GENERATOR_H
+#endif  // TESSERACT_PROCESS_MANAGERS_SEED_MIN_LENGTH_TASK_GENERATOR_H

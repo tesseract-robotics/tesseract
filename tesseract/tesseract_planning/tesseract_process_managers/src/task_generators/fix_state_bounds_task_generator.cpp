@@ -1,5 +1,5 @@
 /**
- * @file fix_state_bounds_process_generator.cpp
+ * @file fix_state_bounds_task_generator.cpp
  * @brief Process generator that changes the plan instructions to make push them back within joint limits
  *
  * @author Matthew Powelson
@@ -29,26 +29,26 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_generators/fix_state_bounds_process_generator.h>
+#include <tesseract_process_managers/task_generators/fix_state_bounds_task_generator.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_command_language/utils/filter_functions.h>
 
 namespace tesseract_planning
 {
-FixStateBoundsProcessGenerator::FixStateBoundsProcessGenerator(std::string name) : ProcessGenerator(std::move(name))
+FixStateBoundsTaskGenerator::FixStateBoundsTaskGenerator(std::string name) : TaskGenerator(std::move(name))
 {
   // Register default profile
   composite_profiles["DEFAULT"] = std::make_shared<FixStateBoundsProfile>();
 }
 
-int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
+int FixStateBoundsTaskGenerator::conditionalProcess(TaskInput input, std::size_t unique_id) const
 {
   if (input.isAborted())
     return 0;
 
-  auto info = std::make_shared<FixStateBoundsProcessInfo>(unique_id, name_);
+  auto info = std::make_shared<FixStateBoundsTaskInfo>(unique_id, name_);
   info->return_value = 0;
-  input.addProcessInfo(info);
+  input.addTaskInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -106,7 +106,7 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::
         PlanInstruction* mutable_instruction = const_cast<PlanInstruction*>(instr_const_ptr);
         if (!isWithinJointLimits(mutable_instruction->getWaypoint(), limits))
         {
-          CONSOLE_BRIDGE_logInform("FixStateBoundsProcessGenerator is modifying the const input instructions");
+          CONSOLE_BRIDGE_logInform("FixStateBoundsTaskGenerator is modifying the const input instructions");
           if (!clampToJointLimits(
                   mutable_instruction->getWaypoint(), limits, cur_composite_profile->max_deviation_global))
             return 0;
@@ -122,7 +122,7 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::
         PlanInstruction* mutable_instruction = const_cast<PlanInstruction*>(instr_const_ptr);
         if (!isWithinJointLimits(mutable_instruction->getWaypoint(), limits))
         {
-          CONSOLE_BRIDGE_logInform("FixStateBoundsProcessGenerator is modifying the const input instructions");
+          CONSOLE_BRIDGE_logInform("FixStateBoundsTaskGenerator is modifying the const input instructions");
           if (!clampToJointLimits(
                   mutable_instruction->getWaypoint(), limits, cur_composite_profile->max_deviation_global))
             return 0;
@@ -135,7 +135,7 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::
       auto flattened = flatten(*ci, planFilter);
       if (flattened.empty())
       {
-        CONSOLE_BRIDGE_logWarn("FixStateBoundsProcessGenerator found no PlanInstructions to process");
+        CONSOLE_BRIDGE_logWarn("FixStateBoundsTaskGenerator found no PlanInstructions to process");
         info->return_value = 1;
         return 1;
       }
@@ -148,7 +148,7 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::
       if (!outside_limits)
         break;
 
-      CONSOLE_BRIDGE_logInform("FixStateBoundsProcessGenerator is modifying the const input instructions");
+      CONSOLE_BRIDGE_logInform("FixStateBoundsTaskGenerator is modifying the const input instructions");
       for (const auto& instruction : flattened)
       {
         const Instruction* instr_const_ptr = &instruction.get();
@@ -164,18 +164,18 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::
       return 1;
   }
 
-  CONSOLE_BRIDGE_logDebug("FixStateBoundsProcessGenerator succeeded");
+  CONSOLE_BRIDGE_logDebug("FixStateBoundsTaskGenerator succeeded");
   info->return_value = 1;
   return 1;
 }
 
-void FixStateBoundsProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+void FixStateBoundsTaskGenerator::process(TaskInput input, std::size_t unique_id) const
 {
   conditionalProcess(input, unique_id);
 }
 
-FixStateBoundsProcessInfo::FixStateBoundsProcessInfo(std::size_t unique_id, std::string name)
-  : ProcessInfo(unique_id, std::move(name))
+FixStateBoundsTaskInfo::FixStateBoundsTaskInfo(std::size_t unique_id, std::string name)
+  : TaskInfo(unique_id, std::move(name))
 {
 }
 }  // namespace tesseract_planning

@@ -1,5 +1,5 @@
 /**
- * @file process_generator.cpp
+ * @file task_generator.cpp
  * @brief Process generator
  *
  * @author Matthew Powelson
@@ -24,15 +24,15 @@
  * limitations under the License.
  */
 
-#include <tesseract_process_managers/core/process_generator.h>
+#include <tesseract_process_managers/core/task_generator.h>
 
 namespace tesseract_planning
 {
-ProcessGenerator::ProcessGenerator(std::string name) : name_(std::move(name)) {}
+TaskGenerator::TaskGenerator(std::string name) : name_(std::move(name)) {}
 
-const std::string& ProcessGenerator::getName() const { return name_; }
+const std::string& TaskGenerator::getName() const { return name_; }
 
-tf::Task ProcessGenerator::generateTask(ProcessInput input, tf::Taskflow& taskflow)
+tf::Task TaskGenerator::generateTask(TaskInput input, tf::Taskflow& taskflow)
 {
   tf::Task task = taskflow.placeholder();
   std::size_t unique_id = task.hash_value();
@@ -41,14 +41,14 @@ tf::Task ProcessGenerator::generateTask(ProcessInput input, tf::Taskflow& taskfl
   return task;
 }
 
-void ProcessGenerator::assignTask(ProcessInput input, tf::Task& task)
+void TaskGenerator::assignTask(TaskInput input, tf::Task& task)
 {
   std::size_t unique_id = task.hash_value();
   task.work([=]() { process(input, unique_id); });
   task.name(getName());
 }
 
-tf::Task ProcessGenerator::generateConditionalTask(ProcessInput input, tf::Taskflow& taskflow)
+tf::Task TaskGenerator::generateConditionalTask(TaskInput input, tf::Taskflow& taskflow)
 {
   tf::Task task = taskflow.placeholder();
   std::size_t unique_id = task.hash_value();
@@ -57,7 +57,7 @@ tf::Task ProcessGenerator::generateConditionalTask(ProcessInput input, tf::Taskf
   return task;
 }
 
-void ProcessGenerator::assignConditionalTask(ProcessInput input, tf::Task& task)
+void TaskGenerator::assignConditionalTask(TaskInput input, tf::Task& task)
 {
   std::size_t unique_id = task.hash_value();
   task.work([=]() { return conditionalProcess(input, unique_id); });

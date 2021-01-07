@@ -1,5 +1,5 @@
 /**
- * @file profile_switch_process_generator.h
+ * @file profile_switch_task_generator.h
  * @brief Process generator that returns a value based on the profile
  *
  * @author Matthew Powelson
@@ -21,15 +21,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_PROCESS_GENERATOR_H
-#define TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_PROCESS_GENERATOR_H
+#ifndef TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_TASK_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_TASK_GENERATOR_H
 
-#include <tesseract_process_managers/core/process_generator.h>
+#include <tesseract_process_managers/core/task_generator.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_planning::ProfileSwitchProfile)
-%ignore ProfileSwitchProcessGenerator;
-%ignore ProfileSwitchProcessInfo;
+%ignore ProfileSwitchTaskGenerator;
+%ignore ProfileSwitchTaskInfo;
 #endif  // SWIG
 
 namespace tesseract_planning
@@ -49,30 +49,30 @@ using ProfileSwitchProfileMap = std::unordered_map<std::string, ProfileSwitchPro
  * @brief This generator simply returns a value specified in the composite profile. This can be used to switch execution
  * based on the profile
  */
-class ProfileSwitchProcessGenerator : public ProcessGenerator
+class ProfileSwitchTaskGenerator : public TaskGenerator
 {
 public:
-  using UPtr = std::unique_ptr<ProfileSwitchProcessGenerator>;
+  using UPtr = std::unique_ptr<ProfileSwitchTaskGenerator>;
 
-  ProfileSwitchProcessGenerator(std::string name = "Profile Switch");
+  ProfileSwitchTaskGenerator(std::string name = "Profile Switch");
 
-  ~ProfileSwitchProcessGenerator() override = default;
-  ProfileSwitchProcessGenerator(const ProfileSwitchProcessGenerator&) = delete;
-  ProfileSwitchProcessGenerator& operator=(const ProfileSwitchProcessGenerator&) = delete;
-  ProfileSwitchProcessGenerator(ProfileSwitchProcessGenerator&&) = delete;
-  ProfileSwitchProcessGenerator& operator=(ProfileSwitchProcessGenerator&&) = delete;
+  ~ProfileSwitchTaskGenerator() override = default;
+  ProfileSwitchTaskGenerator(const ProfileSwitchTaskGenerator&) = delete;
+  ProfileSwitchTaskGenerator& operator=(const ProfileSwitchTaskGenerator&) = delete;
+  ProfileSwitchTaskGenerator(ProfileSwitchTaskGenerator&&) = delete;
+  ProfileSwitchTaskGenerator& operator=(ProfileSwitchTaskGenerator&&) = delete;
 
   ProfileSwitchProfileMap composite_profiles;
 
-  int conditionalProcess(ProcessInput input, std::size_t unique_id) const override;
+  int conditionalProcess(TaskInput input, std::size_t unique_id) const override;
 
-  void process(ProcessInput input, std::size_t unique_id) const override;
+  void process(TaskInput input, std::size_t unique_id) const override;
 };
 
-class ProfileSwitchProcessInfo : public ProcessInfo
+class ProfileSwitchTaskInfo : public TaskInfo
 {
 public:
-  ProfileSwitchProcessInfo(std::size_t unique_id, std::string name = "Profile Switch");
+  ProfileSwitchTaskInfo(std::size_t unique_id, std::string name = "Profile Switch");
 };
 }  // namespace tesseract_planning
-#endif  // TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_PROCESS_GENERATOR_H
+#endif  // TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_TASK_GENERATOR_H
