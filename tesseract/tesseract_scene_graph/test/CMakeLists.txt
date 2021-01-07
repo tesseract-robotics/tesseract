@@ -42,3 +42,13 @@ target_code_coverage(${PROJECT_NAME}_unit ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE
 add_gtest_discover_tests(${PROJECT_NAME}_unit)
 add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_unit)
+
+add_executable(${PROJECT_NAME}_utils_unit utils_unit.cpp)
+target_link_libraries(${PROJECT_NAME}_utils_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME} tesseract::tesseract_support tesseract::tesseract_geometry)
+tesseract_target_compile_options(${PROJECT_NAME}_utils_unit PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_utils_unit)
+tesseract_code_coverage(${PROJECT_NAME}_utils_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_include_directories(${PROJECT_NAME}_utils_unit PRIVATE ${orocos_kdl_INCLUDE_DIRS})
+tesseract_gtest_discover_tests(${PROJECT_NAME}_utils_unit)
+add_dependencies(${PROJECT_NAME}_utils_unit ${PROJECT_NAME})
+add_dependencies(run_tests ${PROJECT_NAME}_utils_unit)
