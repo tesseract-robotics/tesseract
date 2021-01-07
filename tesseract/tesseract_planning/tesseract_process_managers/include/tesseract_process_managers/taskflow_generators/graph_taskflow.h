@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/core/taskflow_generator.h>
-#include <tesseract_process_managers/core/process_generator.h>
+#include <tesseract_process_managers/core/task_generator.h>
 
 namespace tesseract_planning
 {
@@ -77,7 +77,7 @@ public:
 
   struct Node
   {
-    ProcessGenerator::UPtr process;
+    TaskGenerator::UPtr process;
     NodeType process_type;
     std::vector<Edge> edges;
   };
@@ -91,7 +91,7 @@ public:
 
   const std::string& getName() const override;
 
-  TaskflowContainer generateTaskflow(ProcessInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb) override;
+  TaskflowContainer generateTaskflow(TaskInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb) override;
 
   /**
    * @brief Add a node to the taskflow graph along with setting the process type.
@@ -99,7 +99,7 @@ public:
    * @param process_type The process type assigned to the node
    * @return The node ID which should be used with adding edges
    */
-  int addNode(ProcessGenerator::UPtr process, NodeType process_type);
+  int addNode(TaskGenerator::UPtr process, NodeType process_type);
 
   /**
    * @brief Add an edge to the taskflow graph

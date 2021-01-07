@@ -1,5 +1,5 @@
 /**
- * @file fix_state_collisions_process_generator.cpp
+ * @file fix_state_collisions_task_generator.cpp
  * @brief Process generator for process that pushes plan instructions to be out of collision
  *
  * @author Matthew Powelson
@@ -32,14 +32,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <trajopt/problem_description.hpp>
 #include <tesseract_environment/core/utils.h>
 
-#include <tesseract_process_managers/process_generators/fix_state_collision_process_generator.h>
+#include <tesseract_process_managers/task_generators/fix_state_collision_task_generator.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_command_language/utils/filter_functions.h>
 
 namespace tesseract_planning
 {
 bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
-                      const ProcessInput& input,
+                      const TaskInput& input,
                       const FixStateCollisionProfile& profile,
                       tesseract_collision::ContactResultMap& contacts)
 {
@@ -84,7 +84,7 @@ bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
 }
 
 bool WaypointInCollision(const Waypoint& waypoint,
-                         const ProcessInput& input,
+                         const TaskInput& input,
                          const FixStateCollisionProfile& profile,
                          tesseract_collision::ContactResultMap& contacts)
 {
@@ -103,7 +103,7 @@ bool WaypointInCollision(const Waypoint& waypoint,
 }
 
 bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
-                                      const ProcessInput& input,
+                                      const TaskInput& input,
                                       const FixStateCollisionProfile& profile)
 {
   using namespace trajopt;
@@ -197,7 +197,7 @@ bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
 }
 
 bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
-                                            const ProcessInput& input,
+                                            const TaskInput& input,
                                             const FixStateCollisionProfile& profile)
 {
   // Get position associated with waypoint
@@ -240,7 +240,7 @@ bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
 }
 
 bool ApplyCorrectionWorkflow(Waypoint& waypoint,
-                             const ProcessInput& input,
+                             const TaskInput& input,
                              const FixStateCollisionProfile& profile,
                              tesseract_collision::ContactResultMap& contacts)
 {
@@ -265,8 +265,7 @@ bool ApplyCorrectionWorkflow(Waypoint& waypoint,
   return false;
 }
 
-FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string name)
-  : ProcessGenerator(std::move(name))
+FixStateCollisionTaskGenerator::FixStateCollisionTaskGenerator(std::string name) : TaskGenerator(std::move(name))
 {
   // Register default profile
   auto default_profile = std::make_shared<FixStateCollisionProfile>();
@@ -275,14 +274,14 @@ FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string
   composite_profiles["DEFAULT"] = default_profile;
 }
 
-int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
+int FixStateCollisionTaskGenerator::conditionalProcess(TaskInput input, std::size_t unique_id) const
 {
   if (input.isAborted())
     return 0;
 
-  auto info = std::make_shared<FixStateCollisionProcessInfo>(unique_id, name_);
+  auto info = std::make_shared<FixStateCollisionTaskInfo>(unique_id, name_);
   info->return_value = 0;
-  input.addProcessInfo(info);
+  input.addTaskInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -335,7 +334,7 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
         if (WaypointInCollision(
                 mutable_instruction->getWaypoint(), input, *cur_composite_profile, info->contact_results[0]))
         {
-          CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
+          CONSOLE_BRIDGE_logInform("FixStateCollisionTaskGenerator is modifying the const input instructions");
           if (!ApplyCorrectionWorkflow(
                   mutable_instruction->getWaypoint(), input, *cur_composite_profile, info->contact_results[0]))
             return 0;
@@ -353,7 +352,7 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
         if (WaypointInCollision(
                 mutable_instruction->getWaypoint(), input, *cur_composite_profile, info->contact_results[0]))
         {
-          CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
+          CONSOLE_BRIDGE_logInform("FixStateCollisionTaskGenerator is modifying the const input instructions");
           if (!ApplyCorrectionWorkflow(
                   mutable_instruction->getWaypoint(), input, *cur_composite_profile, info->contact_results[0]))
             return 0;
@@ -367,7 +366,7 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
       info->contact_results.resize(flattened.size());
       if (flattened.empty())
       {
-        CONSOLE_BRIDGE_logWarn("FixStateCollisionProcessGenerator found no PlanInstructions to process");
+        CONSOLE_BRIDGE_logWarn("FixStateCollisionTaskGenerator found no PlanInstructions to process");
         info->return_value = 1;
         return 1;
       }
@@ -383,7 +382,7 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
       if (!in_collision)
         break;
 
-      CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
+      CONSOLE_BRIDGE_logInform("FixStateCollisionTaskGenerator is modifying the const input instructions");
       for (std::size_t i = 0; i < flattened.size(); i++)
       {
         const Instruction* instr_const_ptr = &flattened[i].get();
@@ -400,18 +399,18 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
       return 1;
   }
 
-  CONSOLE_BRIDGE_logDebug("FixStateCollisionProcessGenerator succeeded");
+  CONSOLE_BRIDGE_logDebug("FixStateCollisionTaskGenerator succeeded");
   info->return_value = 1;
   return 1;
 }
 
-void FixStateCollisionProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+void FixStateCollisionTaskGenerator::process(TaskInput input, std::size_t unique_id) const
 {
   conditionalProcess(input, unique_id);
 }
 
-FixStateCollisionProcessInfo::FixStateCollisionProcessInfo(std::size_t unique_id, std::string name)
-  : ProcessInfo(unique_id, std::move(name))
+FixStateCollisionTaskInfo::FixStateCollisionTaskInfo(std::size_t unique_id, std::string name)
+  : TaskInfo(unique_id, std::move(name))
 {
 }
 

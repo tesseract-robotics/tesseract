@@ -1,5 +1,5 @@
 ﻿/**
- * @file process_input.cpp
+ * @file task_input.cpp
  * @brief Process input
  *
  * @author Matthew Powelson
@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/core/task_input.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/instruction_type.h>
 #include <tesseract_command_language/utils/utils.h>
@@ -40,12 +40,12 @@ namespace tesseract_planning
 static const ManipulatorInfo EMPTY_MANIPULATOR_INFO;
 static const PlannerProfileRemapping EMPTY_PROFILE_MAPPING;
 
-ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
-                           const Instruction* instruction,
-                           const ManipulatorInfo& manip_info,
-                           Instruction* seed,
-                           bool has_seed,
-                           ProfileDictionary::ConstPtr profiles)
+TaskInput::TaskInput(tesseract_environment::Environment::ConstPtr env,
+                     const Instruction* instruction,
+                     const ManipulatorInfo& manip_info,
+                     Instruction* seed,
+                     bool has_seed,
+                     ProfileDictionary::ConstPtr profiles)
   : env(std::move(env))
   , manip_info(manip_info)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
@@ -57,14 +57,14 @@ ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
 {
 }
 
-ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
-                           const Instruction* instruction,
-                           const ManipulatorInfo& manip_info,
-                           const PlannerProfileRemapping& plan_profile_remapping,
-                           const PlannerProfileRemapping& composite_profile_remapping,
-                           Instruction* seed,
-                           bool has_seed,
-                           ProfileDictionary::ConstPtr profiles)
+TaskInput::TaskInput(tesseract_environment::Environment::ConstPtr env,
+                     const Instruction* instruction,
+                     const ManipulatorInfo& manip_info,
+                     const PlannerProfileRemapping& plan_profile_remapping,
+                     const PlannerProfileRemapping& composite_profile_remapping,
+                     Instruction* seed,
+                     bool has_seed,
+                     ProfileDictionary::ConstPtr profiles)
   : env(std::move(env))
   , manip_info(manip_info)
   , plan_profile_remapping(plan_profile_remapping)
@@ -76,13 +76,13 @@ ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
 {
 }
 
-ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
-                           const Instruction* instruction,
-                           const PlannerProfileRemapping& plan_profile_remapping,
-                           const PlannerProfileRemapping& composite_profile_remapping,
-                           Instruction* seed,
-                           bool has_seed,
-                           ProfileDictionary::ConstPtr profiles)
+TaskInput::TaskInput(tesseract_environment::Environment::ConstPtr env,
+                     const Instruction* instruction,
+                     const PlannerProfileRemapping& plan_profile_remapping,
+                     const PlannerProfileRemapping& composite_profile_remapping,
+                     Instruction* seed,
+                     bool has_seed,
+                     ProfileDictionary::ConstPtr profiles)
   : env(std::move(env))
   , manip_info(EMPTY_MANIPULATOR_INFO)
   , plan_profile_remapping(plan_profile_remapping)
@@ -94,11 +94,11 @@ ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
 {
 }
 
-ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
-                           const Instruction* instruction,
-                           Instruction* seed,
-                           bool has_seed,
-                           ProfileDictionary::ConstPtr profiles)
+TaskInput::TaskInput(tesseract_environment::Environment::ConstPtr env,
+                     const Instruction* instruction,
+                     Instruction* seed,
+                     bool has_seed,
+                     ProfileDictionary::ConstPtr profiles)
   : env(std::move(env))
   , manip_info(EMPTY_MANIPULATOR_INFO)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
@@ -110,15 +110,15 @@ ProcessInput::ProcessInput(tesseract_environment::Environment::ConstPtr env,
 {
 }
 
-ProcessInput ProcessInput::operator[](std::size_t index)
+TaskInput TaskInput::operator[](std::size_t index)
 {
-  ProcessInput pi(*this);
+  TaskInput pi(*this);
   pi.instruction_indice_.push_back(index);
 
   return pi;
 }
 
-std::size_t ProcessInput::size()
+std::size_t TaskInput::size()
 {
   const Instruction* ci = instruction_;
   for (const auto& i : instruction_indice_)
@@ -143,7 +143,7 @@ std::size_t ProcessInput::size()
   return 0;
 }
 
-const Instruction* ProcessInput::getInstruction() const
+const Instruction* TaskInput::getInstruction() const
 {
   const Instruction* ci = instruction_;
   for (const auto& i : instruction_indice_)
@@ -161,7 +161,7 @@ const Instruction* ProcessInput::getInstruction() const
   return ci;
 }
 
-Instruction* ProcessInput::getResults()
+Instruction* TaskInput::getResults()
 {
   Instruction* ci = results_;
   for (const auto& i : instruction_indice_)
@@ -179,25 +179,25 @@ Instruction* ProcessInput::getResults()
   return ci;
 }
 
-ProcessInterface::Ptr ProcessInput::getProcessInterface() { return interface_; }
+TaskflowInterface::Ptr TaskInput::getTaskInterface() { return interface_; }
 
-bool ProcessInput::isAborted() const { return interface_->isAborted(); }
+bool TaskInput::isAborted() const { return interface_->isAborted(); }
 
-void ProcessInput::abort() { interface_->abort(); }
+void TaskInput::abort() { interface_->abort(); }
 
-void ProcessInput::setStartInstruction(Instruction start)
+void TaskInput::setStartInstruction(Instruction start)
 {
   start_instruction_ = start;
   start_instruction_indice_.clear();
 }
 
-void ProcessInput::setStartInstruction(std::vector<std::size_t> start)
+void TaskInput::setStartInstruction(std::vector<std::size_t> start)
 {
   start_instruction_indice_ = start;
   start_instruction_ = NullInstruction();
 }
 
-Instruction ProcessInput::getStartInstruction() const
+Instruction TaskInput::getStartInstruction() const
 {
   if (!isNullInstruction(start_instruction_))
     return start_instruction_;
@@ -225,19 +225,19 @@ Instruction ProcessInput::getStartInstruction() const
   return *ci;
 }
 
-void ProcessInput::setEndInstruction(Instruction end)
+void TaskInput::setEndInstruction(Instruction end)
 {
   end_instruction_ = end;
   end_instruction_indice_.clear();
 }
 
-void ProcessInput::setEndInstruction(std::vector<std::size_t> end)
+void TaskInput::setEndInstruction(std::vector<std::size_t> end)
 {
   end_instruction_indice_ = end;
   end_instruction_ = NullInstruction();
 }
 
-Instruction ProcessInput::getEndInstruction() const
+Instruction TaskInput::getEndInstruction() const
 {
   if (!isNullInstruction(end_instruction_))
     return end_instruction_;
@@ -268,15 +268,18 @@ Instruction ProcessInput::getEndInstruction() const
   return *ci;
 }
 
-void ProcessInput::addProcessInfo(const ProcessInfo::ConstPtr& process_info)
+void TaskInput::addTaskInfo(const TaskInfo::ConstPtr& task_info)
 {
-  process_infos_->addProcessInfo(process_info);
+  interface_->getTaskInfoContainer()->addTaskInfo(task_info);
 }
 
-ProcessInfo::ConstPtr ProcessInput::getProcessInfo(const std::size_t& index) const { return (*process_infos_)[index]; }
-
-std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInput::getProcessInfoMap() const
+TaskInfo::ConstPtr TaskInput::getTaskInfo(const std::size_t& index) const
 {
-  return process_infos_->getProcessInfoMap();
+  return (*interface_->getTaskInfoContainer())[index];
+}
+
+std::map<std::size_t, TaskInfo::ConstPtr> TaskInput::getTaskInfoMap() const
+{
+  return interface_->getTaskInfoContainer()->getTaskInfoMap();
 }
 }  // namespace tesseract_planning

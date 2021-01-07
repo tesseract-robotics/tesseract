@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/core/process_interface.h>
+#include <tesseract_process_managers/core/taskflow_interface.h>
 #include <tesseract_process_managers/core/taskflow_generator.h>
 
 #include <tesseract_motion_planners/core/types.h>
@@ -60,7 +60,7 @@ struct ProcessPlanningFuture
   std::future<void> process_future;
 
   /** @brief This is used to abort the associated process and check if the process was successful */
-  ProcessInterface::Ptr interface;
+  TaskflowInterface::Ptr interface;
 
 #ifndef SWIG
   /** @brief The stored input to the process */
@@ -77,6 +77,7 @@ struct ProcessPlanningFuture
 
   /** @brief The stored composite profile remapping */
   std::unique_ptr<const PlannerProfileRemapping> composite_profile_remapping;
+
 #else
   // clang-format off
   %extend {

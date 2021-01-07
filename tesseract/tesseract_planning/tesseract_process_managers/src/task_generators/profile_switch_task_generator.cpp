@@ -1,5 +1,5 @@
 /**
- * @file profile_switch_process_generator.h
+ * @file profile_switch_task_generator.h
  * @brief Process generator that returns a value based on the profile
  *
  * @author Matthew Powelson
@@ -27,7 +27,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_generators/profile_switch_process_generator.h>
+#include <tesseract_process_managers/task_generators/profile_switch_task_generator.h>
 #include <tesseract_command_language/constants.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_motion_planners/planner_utils.h>
@@ -36,20 +36,20 @@ namespace tesseract_planning
 {
 ProfileSwitchProfile::ProfileSwitchProfile(const int& return_value) : return_value(return_value) {}
 
-ProfileSwitchProcessGenerator::ProfileSwitchProcessGenerator(std::string name) : ProcessGenerator(std::move(name))
+ProfileSwitchTaskGenerator::ProfileSwitchTaskGenerator(std::string name) : TaskGenerator(std::move(name))
 {
   // Register default profile
   composite_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<ProfileSwitchProfile>();
 }
 
-int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
+int ProfileSwitchTaskGenerator::conditionalProcess(TaskInput input, std::size_t unique_id) const
 {
   if (input.isAborted())
     return 0;
 
-  auto info = std::make_shared<ProfileSwitchProcessInfo>(unique_id, name_);
+  auto info = std::make_shared<ProfileSwitchTaskInfo>(unique_id, name_);
   info->return_value = 0;
-  input.addProcessInfo(info);
+  input.addTaskInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -79,13 +79,13 @@ int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input, std::s
   return cur_composite_profile->return_value;
 }
 
-void ProfileSwitchProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+void ProfileSwitchTaskGenerator::process(TaskInput input, std::size_t unique_id) const
 {
   conditionalProcess(input, unique_id);
 }
 
-ProfileSwitchProcessInfo::ProfileSwitchProcessInfo(std::size_t unique_id, std::string name)
-  : ProcessInfo(unique_id, std::move(name))
+ProfileSwitchTaskInfo::ProfileSwitchTaskInfo(std::size_t unique_id, std::string name)
+  : TaskInfo(unique_id, std::move(name))
 {
 }
 }  // namespace tesseract_planning

@@ -12,7 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/interface_utils.h>
 
-#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/core/task_input.h>
 #include <tesseract_process_managers/core/process_planning_server.h>
 #include <tesseract_process_managers/taskflow_generators/raster_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/raster_global_taskflow.h>
@@ -25,7 +25,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/taskflow_generators/freespace_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/descartes_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
-#include <tesseract_process_managers/process_generators/seed_min_length_process_generator.h>
+#include <tesseract_process_managers/task_generators/seed_min_length_task_generator.h>
 
 #include "raster_example_program.h"
 #include "raster_dt_example_program.h"
@@ -87,7 +87,7 @@ protected:
   }
 };
 
-TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
+TEST_F(TesseractProcessManagerUnit, SeedMinLengthTaskGeneratorTest)
 {
   tesseract_planning::CompositeInstruction program = freespaceExampleProgramABB();
   EXPECT_FALSE(program.getManipulatorInfo().empty());
@@ -104,22 +104,22 @@ TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
   Instruction seed_instruction = seed;
 
   long current_length = getMoveInstructionCount(seed);
-  ProcessInput input(env_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
+  TaskInput input(env_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
 
-  SeedMinLengthProcessGenerator smlpg(current_length);
+  SeedMinLengthTaskGenerator smlpg(current_length);
   EXPECT_TRUE(smlpg.conditionalProcess(input, 1) == 1);
   long final_length = getMoveInstructionCount(*(input.getResults()->cast_const<CompositeInstruction>()));
   EXPECT_TRUE(final_length == current_length);
 
-  SeedMinLengthProcessGenerator smlpg2(2 * current_length);
+  SeedMinLengthTaskGenerator smlpg2(2 * current_length);
   EXPECT_TRUE(smlpg2.conditionalProcess(input, 2) == 1);
   long final_length2 = getMoveInstructionCount(*(input.getResults()->cast_const<CompositeInstruction>()));
   EXPECT_TRUE(final_length2 >= (2 * current_length));
 
   seed_instruction = seed;
-  ProcessInput input2(env_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
+  TaskInput input2(env_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
 
-  SeedMinLengthProcessGenerator smlpg3(3 * current_length);
+  SeedMinLengthTaskGenerator smlpg3(3 * current_length);
   EXPECT_TRUE(smlpg3.conditionalProcess(input, 3) == 1);
   long final_length3 = getMoveInstructionCount(*(input2.getResults()->cast_const<CompositeInstruction>()));
   EXPECT_TRUE(final_length3 >= (3 * current_length));
