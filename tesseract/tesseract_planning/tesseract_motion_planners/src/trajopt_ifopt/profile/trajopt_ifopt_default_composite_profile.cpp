@@ -66,4 +66,9 @@ void TrajOptIfoptDefaultCompositeProfile::apply(TrajOptIfoptProblem& problem,
     CONSOLE_BRIDGE_logWarn("Jerk smoothing not yet supported by trajopt_ifopt. PRs welcome");
 }
 
+tinyxml2::XMLElement* TrajOptIfoptDefaultCompositeProfile::toXML(tinyxml2::XMLDocument& doc) const
+{
+  throw std::runtime_error("TrajOptIfoptDefaultCompositeProfile::toXML is not implemented!");
+}
+
 }  // namespace tesseract_planning

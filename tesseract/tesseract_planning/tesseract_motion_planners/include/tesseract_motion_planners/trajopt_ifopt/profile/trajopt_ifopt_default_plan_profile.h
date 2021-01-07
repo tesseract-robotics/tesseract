@@ -66,12 +66,6 @@ public:
              int index) const override;
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
-
-  // protected:
-  //  void addConstraintErrorFunctions(TrajOptIfopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps)
-  //  const;
-
-  //  void addAvoidSingularity(TrajOptIfopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;s
 };
 }  // namespace tesseract_planning
 
