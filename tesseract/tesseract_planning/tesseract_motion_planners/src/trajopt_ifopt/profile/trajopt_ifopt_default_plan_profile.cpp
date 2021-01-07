@@ -99,7 +99,7 @@ void TrajOptIfoptDefaultPlanProfile::apply(TrajOptIfoptProblem& problem,
   }
 }
 
-tinyxml2::XMLElement* TrajOptIfoptDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) const
+tinyxml2::XMLElement* TrajOptIfoptDefaultPlanProfile::toXML(tinyxml2::XMLDocument& /*doc*/) const
 {
   throw std::runtime_error("TrajOptIfoptDefaultPlanProfile::toXML is not implemented!");
 }
