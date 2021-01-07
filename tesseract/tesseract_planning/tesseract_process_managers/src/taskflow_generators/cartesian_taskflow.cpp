@@ -31,11 +31,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/core/utils.h>
 #include <tesseract_process_managers/taskflow_generators/cartesian_taskflow.h>
 
-#include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
-#include <tesseract_process_managers/process_generators/continuous_contact_check_process_generator.h>
-#include <tesseract_process_managers/process_generators/discrete_contact_check_process_generator.h>
-#include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
-#include <tesseract_process_managers/process_generators/seed_min_length_process_generator.h>
+#include <tesseract_process_managers/task_generators/motion_planner_task_generator.h>
+#include <tesseract_process_managers/task_generators/continuous_contact_check_task_generator.h>
+#include <tesseract_process_managers/task_generators/discrete_contact_check_task_generator.h>
+#include <tesseract_process_managers/task_generators/iterative_spline_parameterization_task_generator.h>
+#include <tesseract_process_managers/task_generators/seed_min_length_task_generator.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
@@ -54,12 +54,10 @@ CartesianTaskflow::CartesianTaskflow(CartesianTaskflowParams params, std::string
 
 const std::string& CartesianTaskflow::getName() const { return name_; }
 
-TaskflowContainer CartesianTaskflow::generateTaskflow(ProcessInput input,
-                                                      TaskflowVoidFn done_cb,
-                                                      TaskflowVoidFn error_cb)
+TaskflowContainer CartesianTaskflow::generateTaskflow(TaskInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
-  if (!checkProcessInput(input))
+  if (!checkTaskInput(input))
   {
     CONSOLE_BRIDGE_logError("Invalid Process Input");
     throw std::runtime_error("Invalid Process Input");
@@ -101,14 +99,14 @@ TaskflowContainer CartesianTaskflow::generateTaskflow(ProcessInput input,
     if (input.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
       interpolator->composite_profiles = input.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
   }
-  ProcessGenerator::UPtr interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
+  TaskGenerator::UPtr interpolator_generator = std::make_unique<MotionPlannerTaskGenerator>(interpolator);
   interpolator_generator->assignConditionalTask(input, interpolator_task);
   container.generators.push_back(std::move(interpolator_generator));
 
   // Setup Seed Min Length Process Generator
   // This is required because trajopt requires a minimum length trajectory. This is used to correct the seed if it is
   // to short.
-  ProcessGenerator::UPtr seed_min_length_generator = std::make_unique<SeedMinLengthProcessGenerator>();
+  TaskGenerator::UPtr seed_min_length_generator = std::make_unique<SeedMinLengthTaskGenerator>();
   seed_min_length_generator->assignTask(input, seed_min_length_task);
   container.generators.push_back(std::move(seed_min_length_generator));
 
@@ -120,7 +118,7 @@ TaskflowContainer CartesianTaskflow::generateTaskflow(ProcessInput input,
     if (input.profiles->hasProfileEntry<DescartesPlanProfile<double>>())
       descartes_planner->plan_profiles = input.profiles->getProfileEntry<DescartesPlanProfile<double>>();
   }
-  auto descartes_generator = std::make_unique<MotionPlannerProcessGenerator>(descartes_planner);
+  auto descartes_generator = std::make_unique<MotionPlannerTaskGenerator>(descartes_planner);
   descartes_generator->assignConditionalTask(input, descartes_task);
   container.generators.push_back(std::move(descartes_generator));
 
@@ -138,23 +136,23 @@ TaskflowContainer CartesianTaskflow::generateTaskflow(ProcessInput input,
     if (input.profiles->hasProfileEntry<TrajOptSolverProfile>())
       trajopt_planner->solver_profiles = input.profiles->getProfileEntry<TrajOptSolverProfile>();
   }
-  ProcessGenerator::UPtr trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
+  TaskGenerator::UPtr trajopt_generator = std::make_unique<MotionPlannerTaskGenerator>(trajopt_planner);
   trajopt_generator->assignConditionalTask(input, trajopt_task);
   container.generators.push_back(std::move(trajopt_generator));
 
-  ProcessGenerator::UPtr contact_check_generator;
+  TaskGenerator::UPtr contact_check_generator;
   bool has_contact_check = (params_.enable_post_contact_continuous_check || params_.enable_post_contact_discrete_check);
   if (has_contact_check)
   {
     if (params_.enable_post_contact_continuous_check)
-      contact_check_generator = std::make_unique<ContinuousContactCheckProcessGenerator>();
+      contact_check_generator = std::make_unique<ContinuousContactCheckTaskGenerator>();
     else if (params_.enable_post_contact_discrete_check)
-      contact_check_generator = std::make_unique<DiscreteContactCheckProcessGenerator>();
+      contact_check_generator = std::make_unique<DiscreteContactCheckTaskGenerator>();
   }
 
-  ProcessGenerator::UPtr time_parameterization_generator;
+  TaskGenerator::UPtr time_parameterization_generator;
   if (params_.enable_time_parameterization)
-    time_parameterization_generator = std::make_unique<IterativeSplineParameterizationProcessGenerator>();
+    time_parameterization_generator = std::make_unique<IterativeSplineParameterizationTaskGenerator>();
 
   // Add Final Continuous Contact Check of trajectory and Time parameterization trajectory
   if (has_contact_check && params_.enable_time_parameterization)
@@ -196,12 +194,12 @@ TaskflowContainer CartesianTaskflow::generateTaskflow(ProcessInput input,
   return container;
 }
 
-bool CartesianTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& input) const
+bool CartesianTaskflow::checkTaskInput(const tesseract_planning::TaskInput& input) const
 {
   // Check Input
   if (!input.env)
   {
-    CONSOLE_BRIDGE_logError("ProcessInput env is a nullptr");
+    CONSOLE_BRIDGE_logError("TaskInput env is a nullptr");
     return false;
   }
 
@@ -209,7 +207,7 @@ bool CartesianTaskflow::checkProcessInput(const tesseract_planning::ProcessInput
   const Instruction* input_instruction = input.getInstruction();
   if (!isCompositeInstruction(*input_instruction))
   {
-    CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
+    CONSOLE_BRIDGE_logError("TaskInput Invalid: input.instructions should be a composite");
     return false;
   }
 

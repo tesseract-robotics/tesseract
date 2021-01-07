@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/core/process_generator.h>
+#include <tesseract_process_managers/core/task_generator.h>
 
 namespace tesseract_planning
 {
@@ -78,10 +78,10 @@ struct TaskflowContainer
   std::vector<TaskflowContainer> containers;
 
   /**
-   * @brief ProcessGenerator's associated with the taskflow
+   * @brief TaskGenerator's associated with the taskflow
    * @details This must stay around during execution of taskflow
    */
-  std::vector<ProcessGenerator::UPtr> generators;
+  std::vector<TaskGenerator::UPtr> generators;
 
   /** @brief Clear the Taskflow Container */
   void clear();

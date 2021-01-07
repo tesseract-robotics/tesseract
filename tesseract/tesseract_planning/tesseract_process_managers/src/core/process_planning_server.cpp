@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_process_managers/core/task_info.h>
 #include <tesseract_process_managers/core/process_planning_server.h>
 #include <tesseract_process_managers/core/debug_observer.h>
 #include <tesseract_process_managers/core/default_process_planners.h>
@@ -147,7 +148,7 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
   // This makes sure the Joint and State Waypoints match the same order as the kinematics
   if (formatProgram(*composite_program, *tc))
   {
-    CONSOLE_BRIDGE_logInform("Tesseract Planning Server: Input program required formating!");
+    CONSOLE_BRIDGE_logInform("Tesseract Planning Server: Input program required formatting!");
   }
 
   if (!request.commands.empty() && !tc->applyCommands(request.commands))
@@ -156,16 +157,16 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
     return response;
   }
 
-  ProcessInput process_input(tc,
-                             response.input.get(),
-                             *(response.global_manip_info),
-                             *(response.plan_profile_remapping),
-                             *(response.composite_profile_remapping),
-                             response.results.get(),
-                             has_seed,
-                             profiles_);
-  response.interface = process_input.getProcessInterface();
-  response.taskflow_container = it->second->generateTaskflow(process_input, nullptr, nullptr);
+  TaskInput task_input(tc,
+                       response.input.get(),
+                       *(response.global_manip_info),
+                       *(response.plan_profile_remapping),
+                       *(response.composite_profile_remapping),
+                       response.results.get(),
+                       has_seed,
+                       profiles_);
+  response.interface = task_input.getTaskInterface();
+  response.taskflow_container = it->second->generateTaskflow(task_input, nullptr, nullptr);
 
   // Dump taskflow graph before running
   if (console_bridge::getLogLevel() >= console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)

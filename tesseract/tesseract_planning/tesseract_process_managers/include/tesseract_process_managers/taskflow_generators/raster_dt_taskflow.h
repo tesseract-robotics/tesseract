@@ -41,7 +41,7 @@ namespace tesseract_planning
 /**
  * @brief This class provides a taskflow generator for a raster process.
  *
- * Given a ProcessInput in the correct format, it handles the creation of the process dependencies and uses Taskflow to
+ * Given a TaskInput in the correct format, it handles the creation of the process dependencies and uses Taskflow to
  * execute them efficiently in a parallel based on those dependencies.
  *
  * The required format is below. Note that a transition is planned from both the start and end of each raster to allow
@@ -83,7 +83,7 @@ public:
 
   const std::string& getName() const override;
 
-  TaskflowContainer generateTaskflow(ProcessInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb) override;
+  TaskflowContainer generateTaskflow(TaskInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb) override;
 
 private:
   TaskflowGenerator::UPtr freespace_taskflow_generator_;
@@ -92,11 +92,11 @@ private:
   std::string name_;
 
   /**
-   * @brief Checks that the ProcessInput is in the correct format.
-   * @param input ProcessInput to be checked
+   * @brief Checks that the TaskInput is in the correct format.
+   * @param input TaskInput to be checked
    * @return True if in the correct format
    */
-  bool checkProcessInput(const ProcessInput& input) const;
+  bool checkTaskInput(const TaskInput& input) const;
 };
 
 }  // namespace tesseract_planning

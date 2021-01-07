@@ -1,5 +1,5 @@
 /**
- * @file seed_length_process_generator.cpp
+ * @file seed_length_task_generator.cpp
  * @brief Process generator for processing the seed so it meets a minimum length. Planners like trajopt need
  * at least 10 states in the trajectory to perform velocity, accelleration and jerk smoothing.
  *
@@ -30,38 +30,38 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_generators/seed_min_length_process_generator.h>
+#include <tesseract_process_managers/task_generators/seed_min_length_task_generator.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_command_language/utils/get_instruction_utils.h>
 
 namespace tesseract_planning
 {
-SeedMinLengthProcessGenerator::SeedMinLengthProcessGenerator(std::string name) : ProcessGenerator(std::move(name)) {}
+SeedMinLengthTaskGenerator::SeedMinLengthTaskGenerator(std::string name) : TaskGenerator(std::move(name)) {}
 
-SeedMinLengthProcessGenerator::SeedMinLengthProcessGenerator(long min_length, std::string name)
-  : ProcessGenerator(std::move(name)), min_length_(min_length)
+SeedMinLengthTaskGenerator::SeedMinLengthTaskGenerator(long min_length, std::string name)
+  : TaskGenerator(std::move(name)), min_length_(min_length)
 {
   if (min_length_ <= 1)
   {
-    CONSOLE_BRIDGE_logWarn("SeedMinLengthProcessGenerator: The min length must be greater than 1, setting to default.");
+    CONSOLE_BRIDGE_logWarn("SeedMinLengthTaskGenerator: The min length must be greater than 1, setting to default.");
     min_length_ = 10;
   }
 }
 
-int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
+int SeedMinLengthTaskGenerator::conditionalProcess(TaskInput input, std::size_t unique_id) const
 {
   if (input.isAborted())
     return 0;
 
-  auto info = std::make_shared<SeedMinLengthProcessInfo>(unique_id, name_);
+  auto info = std::make_shared<SeedMinLengthTaskInfo>(unique_id, name_);
   info->return_value = 0;
-  input.addProcessInfo(info);
+  input.addTaskInfo(info);
 
   // Check that inputs are valid
   Instruction* input_results = input.getResults();
   if (!isCompositeInstruction(*input_results))
   {
-    CONSOLE_BRIDGE_logError("Input seed to SeedMinLengthProcessGenerator must be a composite instruction");
+    CONSOLE_BRIDGE_logError("Input seed to SeedMinLengthTaskGenerator must be a composite instruction");
     return 0;
   }
 
@@ -88,15 +88,15 @@ int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input, std::s
   return 1;
 }
 
-void SeedMinLengthProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+void SeedMinLengthTaskGenerator::process(TaskInput input, std::size_t unique_id) const
 {
   conditionalProcess(input, unique_id);
 }
 
-void SeedMinLengthProcessGenerator::subdivide(CompositeInstruction& composite,
-                                              const CompositeInstruction& current_composite,
-                                              Instruction& start_instruction,
-                                              int subdivisions) const
+void SeedMinLengthTaskGenerator::subdivide(CompositeInstruction& composite,
+                                           const CompositeInstruction& current_composite,
+                                           Instruction& start_instruction,
+                                           int subdivisions) const
 {
   for (const Instruction& i : current_composite)
   {
@@ -144,8 +144,8 @@ void SeedMinLengthProcessGenerator::subdivide(CompositeInstruction& composite,
     }
   }
 }
-SeedMinLengthProcessInfo::SeedMinLengthProcessInfo(std::size_t unique_id, std::string name)
-  : ProcessInfo(unique_id, std::move(name))
+SeedMinLengthTaskInfo::SeedMinLengthTaskInfo(std::size_t unique_id, std::string name)
+  : TaskInfo(unique_id, std::move(name))
 {
 }
 }  // namespace tesseract_planning

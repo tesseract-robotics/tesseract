@@ -1,5 +1,5 @@
-﻿/**
- * @file process_input.h
+/**
+ * @file task_input.h
  * @brief Process input
  *
  * @author Matthew Powelson
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_PROCESS_INPUT_H
-#define TESSERACT_PROCESS_MANAGERS_PROCESS_INPUT_H
+#ifndef TESSERACT_PROCESS_MANAGERS_task_input_H
+#define TESSERACT_PROCESS_MANAGERS_task_input_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -33,8 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/core/process_interface.h>
-#include <tesseract_process_managers/core/process_info.h>
+#include <tesseract_process_managers/core/taskflow_interface.h>
+#include <tesseract_process_managers/core/task_info.h>
 
 #include <tesseract_motion_planners/core/profile_dictionary.h>
 #include <tesseract_motion_planners/core/types.h>
@@ -49,43 +49,43 @@ namespace tesseract_planning
 /**
  * @brief This struct is passed as an input to each process in the decision tree
  *
- * Note that it does not have ownership of any of its members (except the pointer). This means that if a ProcessInput
+ * Note that it does not have ownership of any of its members (except the pointer). This means that if a TaskInput
  * spawns a child that is a subset, it does not have to remain in scope as the references will still be valid
  */
-struct ProcessInput
+struct TaskInput
 {
-  using Ptr = std::shared_ptr<ProcessInput>;
-  using ConstPtr = std::shared_ptr<const ProcessInput>;
+  using Ptr = std::shared_ptr<TaskInput>;
+  using ConstPtr = std::shared_ptr<const TaskInput>;
 
-  ProcessInput(tesseract_environment::Environment::ConstPtr env,
-               const Instruction* instruction,
-               const ManipulatorInfo& manip_info,
-               Instruction* seed,
-               bool has_seed,
-               ProfileDictionary::ConstPtr profiles);
+  TaskInput(tesseract_environment::Environment::ConstPtr env,
+            const Instruction* instruction,
+            const ManipulatorInfo& manip_info,
+            Instruction* seed,
+            bool has_seed,
+            ProfileDictionary::ConstPtr profiles);
 
-  ProcessInput(tesseract_environment::Environment::ConstPtr env,
-               const Instruction* instruction,
-               const ManipulatorInfo& manip_info,
-               const PlannerProfileRemapping& plan_profile_remapping,
-               const PlannerProfileRemapping& composite_profile_remapping,
-               Instruction* seed,
-               bool has_seed,
-               ProfileDictionary::ConstPtr profiles);
+  TaskInput(tesseract_environment::Environment::ConstPtr env,
+            const Instruction* instruction,
+            const ManipulatorInfo& manip_info,
+            const PlannerProfileRemapping& plan_profile_remapping,
+            const PlannerProfileRemapping& composite_profile_remapping,
+            Instruction* seed,
+            bool has_seed,
+            ProfileDictionary::ConstPtr profiles);
 
-  ProcessInput(tesseract_environment::Environment::ConstPtr env,
-               const Instruction* instruction,
-               const PlannerProfileRemapping& plan_profile_remapping,
-               const PlannerProfileRemapping& composite_profile_remapping,
-               Instruction* seed,
-               bool has_seed,
-               ProfileDictionary::ConstPtr profiles);
+  TaskInput(tesseract_environment::Environment::ConstPtr env,
+            const Instruction* instruction,
+            const PlannerProfileRemapping& plan_profile_remapping,
+            const PlannerProfileRemapping& composite_profile_remapping,
+            Instruction* seed,
+            bool has_seed,
+            ProfileDictionary::ConstPtr profiles);
 
-  ProcessInput(tesseract_environment::Environment::ConstPtr env,
-               const Instruction* instruction,
-               Instruction* seed,
-               bool has_seed,
-               ProfileDictionary::ConstPtr profiles);
+  TaskInput(tesseract_environment::Environment::ConstPtr env,
+            const Instruction* instruction,
+            Instruction* seed,
+            bool has_seed,
+            ProfileDictionary::ConstPtr profiles);
 
   /** @brief Tesseract associated with current state of the system */
   const tesseract_environment::Environment::ConstPtr env;
@@ -116,14 +116,14 @@ struct ProcessInput
   const bool has_seed{ false };
 
   /**
-   * @brief Creates a sub-ProcessInput from instruction[index] and seed[index]
-   * @param index sub-Instruction used to create the ProcessInput
-   * @return A ProcessInput containing a subset of the original's instructions
+   * @brief Creates a sub-TaskInput from instruction[index] and seed[index]
+   * @param index sub-Instruction used to create the TaskInput
+   * @return A TaskInput containing a subset of the original's instructions
    */
-  ProcessInput operator[](std::size_t index);
+  TaskInput operator[](std::size_t index);
 
   /**
-   * @brief Gets the number of instructions contained in the ProcessInput
+   * @brief Gets the number of instructions contained in the TaskInput
    * @return 1 instruction if not a composite, otherwise size of the composite @todo Should this be -1, becuase
    * composite size could be 1, 0, or other?
    */
@@ -141,8 +141,11 @@ struct ProcessInput
    */
   Instruction* getResults();
 
-  /** @brief The process interface for checking success and aborting active process */
-  ProcessInterface::Ptr getProcessInterface();
+  /**
+   * @brief Gets the task interface for checking success and aborting active process
+   * @return The task interface for checking success and aborting active process
+   */
+  TaskflowInterface::Ptr getTaskInterface();
 
   /**
    * @brief Check if process has been aborted
@@ -165,9 +168,9 @@ struct ProcessInput
   void setEndInstruction(std::vector<std::size_t> end);
   Instruction getEndInstruction() const;
 
-  void addProcessInfo(const ProcessInfo::ConstPtr& process_info);
-  ProcessInfo::ConstPtr getProcessInfo(const std::size_t& index) const;
-  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap() const;
+  void addTaskInfo(const TaskInfo::ConstPtr& task_info);
+  TaskInfo::ConstPtr getTaskInfo(const std::size_t& index) const;
+  std::map<std::size_t, TaskInfo::ConstPtr> getTaskInfoMap() const;
 
 protected:
   /** @brief Instructions to be carried out by process */
@@ -191,10 +194,8 @@ protected:
   /** @brief Indices to the end instruction in the results data struction */
   std::vector<std::size_t> end_instruction_indice_;
 
-  std::shared_ptr<ProcessInfoContainer> process_infos_{ std::make_shared<ProcessInfoContainer>() };
-
   /** @brief Used to store if process input is aborted which is thread safe */
-  ProcessInterface::Ptr interface_{ std::make_shared<ProcessInterface>() };
+  TaskflowInterface::Ptr interface_{ std::make_shared<TaskflowInterface>() };
 };
 
 }  // namespace tesseract_planning

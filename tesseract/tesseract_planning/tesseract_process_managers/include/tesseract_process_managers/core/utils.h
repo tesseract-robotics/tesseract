@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/core/types.h>
 #include <tesseract_command_language/composite_instruction.h>
-#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/core/task_input.h>
 
 namespace tesseract_planning
 {
@@ -45,19 +45,19 @@ namespace tesseract_planning
  * @param message A detailed message
  * @param user_callback A user callback function
  */
-void successTask(const ProcessInput& /*instruction*/,
+void successTask(const TaskInput& /*instruction*/,
                  const std::string& name,
                  const std::string& message,
                  const TaskflowVoidFn& user_callback = nullptr);
 
 /**
  * @brief The default failure task to be used
- * @details This will call the abort function of the ProcessInput provided
+ * @details This will call the abort function of the TaskInput provided
  * @param name The name
  * @param message A detailed message
  * @param user_callback A user callback function
  */
-void failureTask(ProcessInput instruction,
+void failureTask(TaskInput instruction,
                  const std::string& name,
                  const std::string& message,
                  const TaskflowVoidFn& user_callback = nullptr);
@@ -75,7 +75,7 @@ bool isCompositeEmpty(const CompositeInstruction& composite);
  * @param input The process input
  * @return One if seed exists, otherwise zero
  */
-int hasSeedTask(ProcessInput input);
+int hasSeedTask(TaskInput input);
 
 }  // namespace tesseract_planning
 

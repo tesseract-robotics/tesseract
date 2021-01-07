@@ -29,7 +29,7 @@
 
 namespace tesseract_planning
 {
-void successTask(const ProcessInput& /*instruction*/,
+void successTask(const TaskInput& /*instruction*/,
                  const std::string& name,
                  const std::string& message,
                  const TaskflowVoidFn& user_callback)
@@ -39,7 +39,7 @@ void successTask(const ProcessInput& /*instruction*/,
     user_callback();
 }
 
-void failureTask(ProcessInput instruction,
+void failureTask(TaskInput instruction,
                  const std::string& name,
                  const std::string& message,
                  const TaskflowVoidFn& user_callback)
@@ -71,7 +71,7 @@ bool isCompositeEmpty(const CompositeInstruction& composite)
   return false;
 }
 
-int hasSeedTask(ProcessInput input)
+int hasSeedTask(TaskInput input)
 {
   if (input.has_seed)
     return 1;

@@ -31,10 +31,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/core/utils.h>
 #include <tesseract_process_managers/taskflow_generators/ompl_taskflow.h>
 
-#include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
-#include <tesseract_process_managers/process_generators/continuous_contact_check_process_generator.h>
-#include <tesseract_process_managers/process_generators/discrete_contact_check_process_generator.h>
-#include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
+#include <tesseract_process_managers/task_generators/motion_planner_task_generator.h>
+#include <tesseract_process_managers/task_generators/continuous_contact_check_task_generator.h>
+#include <tesseract_process_managers/task_generators/discrete_contact_check_task_generator.h>
+#include <tesseract_process_managers/task_generators/iterative_spline_parameterization_task_generator.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
@@ -49,10 +49,10 @@ OMPLTaskflow::OMPLTaskflow(OMPLTaskflowParams params, std::string name) : name_(
 
 const std::string& OMPLTaskflow::getName() const { return name_; }
 
-TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb)
+TaskflowContainer OMPLTaskflow::generateTaskflow(TaskInput input, TaskflowVoidFn done_cb, TaskflowVoidFn error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
-  if (!checkProcessInput(input))
+  if (!checkTaskInput(input))
   {
     CONSOLE_BRIDGE_logError("Invalid Process Input");
     throw std::runtime_error("Invalid Process Input");
@@ -90,7 +90,7 @@ TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input, TaskflowVoi
     if (input.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
       interpolator->composite_profiles = input.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
   }
-  auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
+  auto interpolator_generator = std::make_unique<MotionPlannerTaskGenerator>(interpolator);
   interpolator_generator->assignConditionalTask(input, interpolator_task);
   container.generators.push_back(std::move(interpolator_generator));
 
@@ -102,23 +102,23 @@ TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input, TaskflowVoi
     if (input.profiles->hasProfileEntry<OMPLPlanProfile>())
       ompl_planner->plan_profiles = input.profiles->getProfileEntry<OMPLPlanProfile>();
   }
-  auto ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
+  auto ompl_generator = std::make_unique<MotionPlannerTaskGenerator>(ompl_planner);
   ompl_generator->assignConditionalTask(input, ompl_task);
   container.generators.push_back(std::move(ompl_generator));
 
-  ProcessGenerator::UPtr contact_check_generator;
+  TaskGenerator::UPtr contact_check_generator;
   bool has_contact_check = (params_.enable_post_contact_continuous_check || params_.enable_post_contact_discrete_check);
   if (has_contact_check)
   {
     if (params_.enable_post_contact_continuous_check)
-      contact_check_generator = std::make_unique<ContinuousContactCheckProcessGenerator>();
+      contact_check_generator = std::make_unique<ContinuousContactCheckTaskGenerator>();
     else if (params_.enable_post_contact_discrete_check)
-      contact_check_generator = std::make_unique<DiscreteContactCheckProcessGenerator>();
+      contact_check_generator = std::make_unique<DiscreteContactCheckTaskGenerator>();
   }
 
-  ProcessGenerator::UPtr time_parameterization_generator;
+  TaskGenerator::UPtr time_parameterization_generator;
   if (params_.enable_time_parameterization)
-    time_parameterization_generator = std::make_unique<IterativeSplineParameterizationProcessGenerator>();
+    time_parameterization_generator = std::make_unique<IterativeSplineParameterizationTaskGenerator>();
 
   // Add Final Continuous Contact Check of trajectory and Time parameterization trajectory
   if (has_contact_check && params_.enable_time_parameterization)
@@ -160,12 +160,12 @@ TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input, TaskflowVoi
   return container;
 }
 
-bool OMPLTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& input) const
+bool OMPLTaskflow::checkTaskInput(const tesseract_planning::TaskInput& input) const
 {
   // Check Input
   if (!input.env)
   {
-    CONSOLE_BRIDGE_logError("ProcessInput env is a nullptr");
+    CONSOLE_BRIDGE_logError("TaskInput env is a nullptr");
     return false;
   }
 
@@ -173,7 +173,7 @@ bool OMPLTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& inp
   const Instruction* input_instruction = input.getInstruction();
   if (!isCompositeInstruction(*input_instruction))
   {
-    CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
+    CONSOLE_BRIDGE_logError("TaskInput Invalid: input.instructions should be a composite");
     return false;
   }
 

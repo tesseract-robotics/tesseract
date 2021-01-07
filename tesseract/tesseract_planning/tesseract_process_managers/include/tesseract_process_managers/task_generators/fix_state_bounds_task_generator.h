@@ -1,5 +1,5 @@
 /**
- * @file fix_state_bounds_process_generator.h
+ * @file fix_state_bounds_task_generator.h
  * @brief Process generator for process that pushes plan instructions back within joint limits
  *
  * @author Matthew Powelson
@@ -23,10 +23,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_PROCESS_GENERATOR_H
-#define TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_PROCESS_GENERATOR_H
+#ifndef TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_TASK_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_TASK_GENERATOR_H
 
-#include <tesseract_process_managers/core/process_generator.h>
+#include <tesseract_process_managers/core/task_generator.h>
 #include <tesseract_time_parameterization/iterative_spline_parameterization.h>
 
 namespace tesseract_planning
@@ -58,32 +58,32 @@ using FixStateBoundsProfileMap = std::unordered_map<std::string, FixStateBoundsP
  * @brief This generator modifies the const input instructions in order to push waypoints that are outside of their
  * limits back within them.
  */
-class FixStateBoundsProcessGenerator : public ProcessGenerator
+class FixStateBoundsTaskGenerator : public TaskGenerator
 {
 public:
-  using UPtr = std::unique_ptr<FixStateBoundsProcessGenerator>;
+  using UPtr = std::unique_ptr<FixStateBoundsTaskGenerator>;
 
-  FixStateBoundsProcessGenerator(std::string name = "Fix State Bounds");
+  FixStateBoundsTaskGenerator(std::string name = "Fix State Bounds");
 
-  ~FixStateBoundsProcessGenerator() override = default;
-  FixStateBoundsProcessGenerator(const FixStateBoundsProcessGenerator&) = delete;
-  FixStateBoundsProcessGenerator& operator=(const FixStateBoundsProcessGenerator&) = delete;
-  FixStateBoundsProcessGenerator(FixStateBoundsProcessGenerator&&) = delete;
-  FixStateBoundsProcessGenerator& operator=(FixStateBoundsProcessGenerator&&) = delete;
+  ~FixStateBoundsTaskGenerator() override = default;
+  FixStateBoundsTaskGenerator(const FixStateBoundsTaskGenerator&) = delete;
+  FixStateBoundsTaskGenerator& operator=(const FixStateBoundsTaskGenerator&) = delete;
+  FixStateBoundsTaskGenerator(FixStateBoundsTaskGenerator&&) = delete;
+  FixStateBoundsTaskGenerator& operator=(FixStateBoundsTaskGenerator&&) = delete;
 
   FixStateBoundsProfileMap composite_profiles;
 
-  int conditionalProcess(ProcessInput input, std::size_t unique_id) const override;
+  int conditionalProcess(TaskInput input, std::size_t unique_id) const override;
 
-  void process(ProcessInput input, std::size_t unique_id) const override;
+  void process(TaskInput input, std::size_t unique_id) const override;
 };
 
-class FixStateBoundsProcessInfo : public ProcessInfo
+class FixStateBoundsTaskInfo : public TaskInfo
 {
 public:
-  FixStateBoundsProcessInfo(std::size_t unique_id, std::string name = "Fix State Bounds");
+  FixStateBoundsTaskInfo(std::size_t unique_id, std::string name = "Fix State Bounds");
 
   std::vector<tesseract_collision::ContactResultMap> contact_results;
 };
 }  // namespace tesseract_planning
-#endif  // TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_PROCESS_GENERATOR_H
+#endif  // TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_TASK_GENERATOR_H

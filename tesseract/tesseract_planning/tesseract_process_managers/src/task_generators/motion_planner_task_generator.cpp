@@ -1,5 +1,5 @@
 /**
- * @file motion_planner_process_generator.cpp
+ * @file motion_planner_task_generator.cpp
  * @brief Perform motion planning
  *
  * @author Levi Armstrong
@@ -29,26 +29,26 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
+#include <tesseract_process_managers/task_generators/motion_planner_task_generator.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/utils/get_instruction_utils.h>
 #include <tesseract_motion_planners/core/planner.h>
 
 namespace tesseract_planning
 {
-MotionPlannerProcessGenerator::MotionPlannerProcessGenerator(std::shared_ptr<MotionPlanner> planner)
-  : ProcessGenerator(planner->getName()), planner_(planner)
+MotionPlannerTaskGenerator::MotionPlannerTaskGenerator(std::shared_ptr<MotionPlanner> planner)
+  : TaskGenerator(planner->getName()), planner_(planner)
 {
 }
 
-int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
+int MotionPlannerTaskGenerator::conditionalProcess(TaskInput input, std::size_t unique_id) const
 {
   if (input.isAborted())
     return 0;
 
-  auto info = std::make_shared<MotionPlannerProcessInfo>(unique_id, name_);
+  auto info = std::make_shared<MotionPlannerTaskInfo>(unique_id, name_);
   info->return_value = 0;
-  input.addProcessInfo(info);
+  input.addTaskInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -56,8 +56,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input, std::s
   const Instruction* input_instruction = input.getInstruction();
   if (!isCompositeInstruction(*input_instruction))
   {
-    info->message =
-        "Input instructions to MotionPlannerProcessGenerator: " + name_ + " must be a composite instruction";
+    info->message = "Input instructions to MotionPlannerTaskGenerator: " + name_ + " must be a composite instruction";
     CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
@@ -65,7 +64,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input, std::s
   Instruction* input_results = input.getResults();
   if (!isCompositeInstruction(*input_results))
   {
-    info->message = "Input seed to MotionPlannerProcessGenerator: " + name_ + " must be a composite instruction";
+    info->message = "Input seed to MotionPlannerTaskGenerator: " + name_ + " must be a composite instruction";
     CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
@@ -179,13 +178,13 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input, std::s
   return 0;
 }
 
-void MotionPlannerProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+void MotionPlannerTaskGenerator::process(TaskInput input, std::size_t unique_id) const
 {
   conditionalProcess(input, unique_id);
 }
 
-MotionPlannerProcessInfo::MotionPlannerProcessInfo(std::size_t unique_id, std::string name)
-  : ProcessInfo(unique_id, std::move(name))
+MotionPlannerTaskInfo::MotionPlannerTaskInfo(std::size_t unique_id, std::string name)
+  : TaskInfo(unique_id, std::move(name))
 {
 }
 }  // namespace tesseract_planning

@@ -1,7 +1,7 @@
 #include <taskflow/taskflow.hpp>
 #include <tesseract_common/utils.h>
 
-struct ProcessInput
+struct TaskInput
 {
   int* cnt;
 };
@@ -18,7 +18,7 @@ int main(int /*argc*/, char** /*argv*/)
   tf::Taskflow taskflow;
 
   int num_subtaskflows = 1;
-  ProcessInput input;
+  TaskInput input;
   input.cnt = &num_subtaskflows;
 
   tf::Task t = taskflow.placeholder();

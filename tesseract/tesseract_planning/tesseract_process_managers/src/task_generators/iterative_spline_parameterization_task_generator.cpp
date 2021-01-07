@@ -1,5 +1,5 @@
 /**
- * @file iterative_spline_parameterization_process_generator.cpp
+ * @file iterative_spline_parameterization_task_generator.cpp
  * @brief Perform iterative spline time parameterization
  *
  * @author Levi Armstrong
@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/planner_utils.h>
-#include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
+#include <tesseract_process_managers/task_generators/iterative_spline_parameterization_task_generator.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/move_instruction.h>
 #include <tesseract_command_language/utils/filter_functions.h>
@@ -46,22 +46,22 @@ IterativeSplineParameterizationProfile::IterativeSplineParameterizationProfile(d
 {
 }
 
-IterativeSplineParameterizationProcessGenerator::IterativeSplineParameterizationProcessGenerator(bool add_points,
-                                                                                                 std::string name)
-  : ProcessGenerator(std::move(name)), solver_(add_points)
+IterativeSplineParameterizationTaskGenerator::IterativeSplineParameterizationTaskGenerator(bool add_points,
+                                                                                           std::string name)
+  : TaskGenerator(std::move(name)), solver_(add_points)
 {
   // Register default profile
   composite_profiles["DEFAULT"] = std::make_shared<IterativeSplineParameterizationProfile>();
 }
 
-int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
+int IterativeSplineParameterizationTaskGenerator::conditionalProcess(TaskInput input, std::size_t unique_id) const
 {
   if (input.isAborted())
     return 0;
 
-  auto info = std::make_shared<IterativeSplineParameterizationProcessInfo>(unique_id, name_);
+  auto info = std::make_shared<IterativeSplineParameterizationTaskInfo>(unique_id, name_);
   info->return_value = 0;
-  input.addProcessInfo(info);
+  input.addTaskInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -135,14 +135,14 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   return 1;
 }
 
-void IterativeSplineParameterizationProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+void IterativeSplineParameterizationTaskGenerator::process(TaskInput input, std::size_t unique_id) const
 {
   conditionalProcess(input, unique_id);
 }
 
-IterativeSplineParameterizationProcessInfo::IterativeSplineParameterizationProcessInfo(std::size_t unique_id,
-                                                                                       std::string name)
-  : ProcessInfo(unique_id, std::move(name))
+IterativeSplineParameterizationTaskInfo::IterativeSplineParameterizationTaskInfo(std::size_t unique_id,
+                                                                                 std::string name)
+  : TaskInfo(unique_id, std::move(name))
 {
 }
 }  // namespace tesseract_planning

@@ -1,5 +1,5 @@
 /**
- * @file discrete_contact_check_process_generator.cpp
+ * @file discrete_contact_check_task_generator.cpp
  * @brief Discrete collision check trajectory
  *
  * @author Levi Armstrong
@@ -29,43 +29,42 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_generators/discrete_contact_check_process_generator.h>
+#include <tesseract_process_managers/task_generators/discrete_contact_check_task_generator.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_motion_planners/core/utils.h>
 
 namespace tesseract_planning
 {
-DiscreteContactCheckProcessGenerator::DiscreteContactCheckProcessGenerator(std::string name)
-  : ProcessGenerator(std::move(name))
+DiscreteContactCheckTaskGenerator::DiscreteContactCheckTaskGenerator(std::string name) : TaskGenerator(std::move(name))
 {
   config.type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
   config.longest_valid_segment_length = 0.05;
   config.collision_margin_data = tesseract_collision::CollisionMarginData(0);
 }
 
-DiscreteContactCheckProcessGenerator::DiscreteContactCheckProcessGenerator(double longest_valid_segment_length,
-                                                                           double contact_distance,
-                                                                           std::string name)
-  : ProcessGenerator(std::move(name))
+DiscreteContactCheckTaskGenerator::DiscreteContactCheckTaskGenerator(double longest_valid_segment_length,
+                                                                     double contact_distance,
+                                                                     std::string name)
+  : TaskGenerator(std::move(name))
 {
   config.longest_valid_segment_length = longest_valid_segment_length;
   config.type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
   config.collision_margin_data = tesseract_collision::CollisionMarginData(contact_distance);
   if (config.longest_valid_segment_length <= 0)
   {
-    CONSOLE_BRIDGE_logWarn("DiscreteContactCheckProcessGenerator: Invalid longest valid segment. Defaulting to 0.05");
+    CONSOLE_BRIDGE_logWarn("DiscreteContactCheckTaskGenerator: Invalid longest valid segment. Defaulting to 0.05");
     config.longest_valid_segment_length = 0.05;
   }
 }
 
-int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
+int DiscreteContactCheckTaskGenerator::conditionalProcess(TaskInput input, std::size_t unique_id) const
 {
   if (input.isAborted())
     return 0;
 
-  auto info = std::make_shared<DiscreteContactCheckProcessInfo>(unique_id, name_);
+  auto info = std::make_shared<DiscreteContactCheckTaskInfo>(unique_id, name_);
   info->return_value = 0;
-  input.addProcessInfo(info);
+  input.addTaskInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -73,7 +72,7 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input,
   Instruction* input_result = input.getResults();
   if (!isCompositeInstruction(*input_result))
   {
-    info->message = "Input seed to DiscreteContactCheckProcessGenerator must be a composite instruction";
+    info->message = "Input seed to DiscreteContactCheckTaskGenerator must be a composite instruction";
     CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
@@ -117,13 +116,13 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input,
   return 1;
 }
 
-void DiscreteContactCheckProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+void DiscreteContactCheckTaskGenerator::process(TaskInput input, std::size_t unique_id) const
 {
   conditionalProcess(input, unique_id);
 }
 
-DiscreteContactCheckProcessInfo::DiscreteContactCheckProcessInfo(std::size_t unique_id, std::string name)
-  : ProcessInfo(unique_id, std::move(name))
+DiscreteContactCheckTaskInfo::DiscreteContactCheckTaskInfo(std::size_t unique_id, std::string name)
+  : TaskInfo(unique_id, std::move(name))
 {
 }
 }  // namespace tesseract_planning
