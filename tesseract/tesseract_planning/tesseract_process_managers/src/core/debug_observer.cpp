@@ -26,6 +26,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <console_bridge/console.h>
 #include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -37,20 +38,16 @@ DebugObserver::DebugObserver(const std::string& name) { std::cout << "Constructi
 
 void DebugObserver::set_up(size_t num_workers)
 {
-  std::cout << "Setting up observer with " << num_workers << " workers\n";
+  CONSOLE_BRIDGE_logDebug("Setting up observer with %i workers", num_workers);
 }
 
 void DebugObserver::on_entry(size_t w, tf::TaskView tv)
 {
-  std::ostringstream oss;
-  oss << "worker " << w << " ready to run " << tv.name() << '\n';
-  std::cout << oss.str();
+  CONSOLE_BRIDGE_logDebug("worker %i ready to run %s", w, tv.name().c_str());
 }
 
 void DebugObserver::on_exit(size_t w, tf::TaskView tv)
 {
-  std::ostringstream oss;
-  oss << "worker " << w << " finished running " << tv.name() << '\n';
-  std::cout << oss.str();
+  CONSOLE_BRIDGE_logDebug("worker %i finished running %s", w, tv.name().c_str());
 }
 }  // namespace tesseract_planning
