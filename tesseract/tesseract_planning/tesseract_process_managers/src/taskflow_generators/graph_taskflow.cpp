@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_process_managers/core/utils.h>
 #include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
 
 namespace tesseract_planning
@@ -45,18 +46,14 @@ TaskflowContainer GraphTaskflow::generateTaskflow(TaskInput input, TaskflowVoidF
   container.taskflow = std::make_unique<tf::Taskflow>(name_);
 
   // Add "Error" task
-  if (error_cb)
-    container.outputs.push_back(container.taskflow->emplace(error_cb).name("Error Callback"));
-  else
-    container.outputs.push_back(
-        container.taskflow->emplace([&]() { std::cout << "Error GraphTaskflow\n"; }).name("Error Callback"));
+  auto error_fn = [=]() { failureTask(input, name_, "", error_cb); };
+  tf::Task error_task = container.taskflow->emplace(error_fn).name("Error Callback");
+  container.outputs.push_back(error_task);
 
   // Add "Done" task
-  if (done_cb)
-    container.outputs.push_back(container.taskflow->emplace(done_cb).name("Done Callback"));
-  else
-    container.outputs.push_back(
-        container.taskflow->emplace([&]() { std::cout << "Done GraphTaskflow\n"; }).name("Done Callback"));
+  auto done_fn = [=]() { successTask(input, name_, "", done_cb); };
+  tf::Task done_task = container.taskflow->emplace(done_fn).name("Done Callback");
+  container.outputs.push_back(done_task);
 
   // Generate process tasks for each node using its process generator
   std::vector<tf::Task> tasks;
@@ -169,7 +166,7 @@ TaskflowContainer GraphTaskflow::generateTaskflow(TaskInput input, TaskflowVoidF
       }
       else
       {
-        throw std::runtime_error("Invalide Edges for process index: " + std::to_string(src_idx));
+        throw std::runtime_error("Invalid Edges for process index: " + std::to_string(src_idx));
       }
     }
     ++src_idx;
