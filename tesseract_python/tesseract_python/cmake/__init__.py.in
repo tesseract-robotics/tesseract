@@ -1,3 +1,0 @@
-from __future__ import absolute_import
-
-from .@PY_MOD_NAME@ import *

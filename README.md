@@ -2,7 +2,7 @@
 
 [![codecov](https://codecov.io/gh/ros-industrial-consortium/tesseract/branch/master/graph/badge.svg)](https://codecov.io/gh/ros-industrial-consortium/tesseract)
 
-[![Python](https://img.shields.io/badge/python-2.7+|3.6+-blue.svg)](https://github.com/ros-industrial-consortium/tesseract/tree/master/tesseract_python)
+[![Python](https://img.shields.io/badge/python-2.7+|3.6+-blue.svg)](https://github.com/ros-industrial-consortium/tesseract_python)
 
 Platform             | CI Status
 ---------------------|:---------

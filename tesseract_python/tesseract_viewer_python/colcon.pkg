@@ -1,3 +1,0 @@
-{
-    "hooks": ["share/tesseract_viewer_python/hook/ament_prefix_path.dsv",  "share/tesseract_python/hook/python_path.dsv"]
-}
