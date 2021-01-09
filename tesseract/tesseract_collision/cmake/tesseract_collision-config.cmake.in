@@ -17,8 +17,11 @@ find_dependency(tesseract_common)
 find_dependency(tesseract_geometry)
 find_dependency(tesseract_support)
 find_dependency(fcl)
-find_dependency(ccd)
-find_package(Bullet REQUIRED NAMES bullet Bullet)
+
+find_package(Bullet REQUIRED CONFIGS BulletConfig-float64.cmake BulletConfig.cmake)
+IF(NOT ${BULLET_DEFINITIONS} MATCHES ".*-DBT_USE_DOUBLE_PRECISION.*")
+  message(WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
+endif()
 
 # This was required for windows to find things in tesseract_ext before the system
 include_directories(BEFORE ${FCL_INCLUDE_DIRS})

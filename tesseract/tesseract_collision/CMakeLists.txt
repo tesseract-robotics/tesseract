@@ -17,7 +17,11 @@ find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_support REQUIRED)
 find_package(fcl 0.6 REQUIRED)
-find_package(Bullet REQUIRED NAMES bullet Bullet)
+
+find_package(Bullet REQUIRED CONFIGS BulletConfig-float64.cmake BulletConfig.cmake)
+IF(NOT ${BULLET_DEFINITIONS} MATCHES ".*-DBT_USE_DOUBLE_PRECISION.*")
+  message(WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
+endif()
 
 include_directories(BEFORE ${FCL_INCLUDE_DIRS})
 link_directories(BEFORE ${FCL_LIBRARY_DIRS})
