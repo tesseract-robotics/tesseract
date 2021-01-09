@@ -8,6 +8,10 @@
   <license>Apache 2.0</license>
   <author >Levi Armstrong</author>
 
+  <!-- Following recommendations of REP 136 -->
+  <exec_depend>catkin</exec_depend>
+  <buildtool_depend>cmake</buildtool_depend>
+
   <build_depend>cmake_common_scripts</build_depend>
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>

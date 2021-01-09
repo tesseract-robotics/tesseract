@@ -7,6 +7,10 @@
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
   <license>BSD</license>
 
+  <!-- Following recommendations of REP 136 -->
+  <exec_depend>catkin</exec_depend>
+  <buildtool_depend>cmake</buildtool_depend>
+
   <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_common</depend>
   <depend>tesseract_command_language</depend>
