@@ -22,7 +22,7 @@ TEST(TesseractSceneGraphUnit, TestGetAllowedCollisions)  // NOLINT
 
   // Removing duplicates: Expect link1, link2, link3, link4, cause_duplicate
   {
-    auto results = getAllowedCollisions(link_names, acm.getAllAllowedCollisions());
+    auto results = tesseract_scene_graph::getAllowedCollisions(link_names, acm.getAllAllowedCollisions());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link1") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link2") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link3") != results.end());
@@ -35,7 +35,7 @@ TEST(TesseractSceneGraphUnit, TestGetAllowedCollisions)  // NOLINT
   }
   // Not removing duplicates: Expect link1, link2, link3, link4, cause_duplicate, link1
   {
-    auto results = getAllowedCollisions(link_names, acm.getAllAllowedCollisions(), false);
+    auto results = tesseract_scene_graph::getAllowedCollisions(link_names, acm.getAllAllowedCollisions(), false);
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link1") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link2") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link3") != results.end());
