@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 static btScalar gGjkEpaPenetrationTolerance = 1.0e-12;
 #else
 #define REL_ERROR2 btScalar(1.0e-6)
-static btScalar gGjkEpaPenetrationTolerance = 0.001;
+static btScalar gGjkEpaPenetrationTolerance = 0.001f;
 #endif
 
 namespace tesseract_collision
@@ -356,14 +356,14 @@ btVec3PointTriDist2(const btVector3* P, const btVector3* x0, const btVector3* B,
   s = (q * r - w * p) / (w * v - r * r);
   t = (-s * r - q) / w;
 
-  if ((btFuzzyZero(s) || s > btScalar(0)) && (ccdEq(s, btScalar(1)) || s < btScalar(1)) &&
-      (btFuzzyZero(t) || t > btScalar(0)) && (ccdEq(t, btScalar(1)) || t < btScalar(1)) &&
-      (ccdEq(t + s, btScalar(1)) || t + s < btScalar(1)))
+  if ((btFuzzyZero(static_cast<btScalar>(s)) || s > 0) && (ccdEq(static_cast<btScalar>(s), 1) || s < 1) &&
+      (btFuzzyZero(static_cast<btScalar>(t)) || t > 0) && (ccdEq(static_cast<btScalar>(t), 1) || t < 1) &&
+      (ccdEq(static_cast<btScalar>(t + s), 1) || static_cast<btScalar>(t + s) < 1))
   {
     if (witness)
     {
-      btVec3Scale(&d1, s);
-      btVec3Scale(&d2, t);
+      btVec3Scale(&d1, static_cast<btScalar>(s));
+      btVec3Scale(&d2, static_cast<btScalar>(t));
       btVec3Copy(witness, x0);
       ccdVec3Add(witness, &d1);
       ccdVec3Add(witness, &d2);
@@ -401,7 +401,7 @@ btVec3PointTriDist2(const btVector3* P, const btVector3* x0, const btVector3* B,
     }
   }
 
-  return dist;
+  return static_cast<btScalar>(dist);
 }
 
 static int btDoSimplex2(btSimplex* simplex, btVector3* dir)
