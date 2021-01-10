@@ -20,7 +20,7 @@ jobs:
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROS_REPO: main,
-             UPSTREAM_WORKSPACE: UPSTREAM_WORKSPACE: 'dependencies.rosinstall',
+             UPSTREAM_WORKSPACE: 'dependencies_wit_ext.rosinstall',
              DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_planning#master github:ros-industrial-consortium/trajopt_ros#master github:ros-industrial-consortium/tesseract_ros#master',
              ROSDEP_SKIP_KEYS: "bullet cmake_common_scripts fcl iwyu",
              DOCKER_IMAGE: "rosindustrial/tesseract:melodic",
