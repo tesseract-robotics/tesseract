@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - feature/CommandLanguage
   pull_request:
   schedule:
     - cron: '0 5 * * *'
@@ -19,7 +18,7 @@ jobs:
       OS_CODE_NAME: bionic
       ROS_DISTRO: melodic
       ROS_REPO: main
-      ROSDEP_SKIP_KEYS: "bullet3 fcl"
+      ROSDEP_SKIP_KEYS: "bullet fcl"
       CLANG_FORMAT_CHECK: file
       CLANG_FORMAT_VERSION: 8
       DOCKER_IMAGE: "rosindustrial/tesseract:melodic"

@@ -1,3 +1,0 @@
-{
-    "hooks": ["share/tesseract_time_parameterization/hook/ament_prefix_path.dsv", "share/tesseract_time_parameterization/hook/ros_package_path.dsv"]
-}

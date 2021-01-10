@@ -29,15 +29,21 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 ## Tesseract Core Packages
 
 * **tesseract** – This is the main class that manages the major component Environment, Forward Kinematics, Inverse Kinematics and loading from various data.
+* **tesseract_command_language** – This package contains a generic command language to support motion and process planning similar to industrial teach pendants
 * **tesseract_collision** – This package contains a common interface for collision checking prividing several implementation of a Bullet collision library and FCL collision library. It includes both continuous and discrete collision checking for convex-convex, convex-concave and concave-concave shapes.
 * **tesseract_common** – This package contains common functionality needed by the majority of the packages.
 * **tesseract_environment** – This package contains the Tesseract Environment which provides functionality to add,remove,move and modify links and joint. It also manages adding object to the contact managers and provides the ability.
 * **tesseract_geometry** – This package contains geometry types used by Tesseract including primitive shapes, mesh, convex hull mesh, octomap and signed distance field.
 * **tesseract_kinematics** –  This package contains a common interface for Forward and Inverse kinematics for Chains, Trees and Graphs including implementation using KDL and OPW Kinematics.
-* **tesseract_motion_planners** – This package contains a common interface for Motion Planners and includes implementation for OMPL, TrajOpt and Descartes.
 * **tesseract_scene_graph** – This package contains the scene graph which is the data structure used to manage the connectivity of objects in the environment. It inherits from boost graph and provides addition functionality for adding,removing and modifying Links and Joints along with search implementation.
 * **tesseract_support** – This package contains support data used for unit tests and examples throughout Tesseract.
 * **tesseract_visualization** – This package contains visualization utilities and libraries.
+
+## Related Repositories
+
+* [Tesseract Planning](https://github.com/ros-industrial-consortium/tesseract_planning)
+* [Tesseract Python](https://github.com/ros-industrial-consortium/tesseract_python)
+* [Tesseract ROS](https://github.com/ros-industrial-consortium/tesseract_ros)
 
 ## Documentation
 
@@ -82,7 +88,7 @@ NOTE: If you are building using catkin tools, use `catkin build --force-cmake -D
 
 #### Running Tesseract Tests
 
-Tesseract packages use ctest because it is ROS agnostic, so to run the test call `catkin test --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_managers tesseract_scene_graph tesseract_urdf tesseract_python`
+Tesseract packages use ctest because it is ROS agnostic, so to run the test call `catkin test --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_urdf tesseract_command_language`
 
 ### Building Tesseract Code Coverage
 
