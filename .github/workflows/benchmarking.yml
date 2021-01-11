@@ -13,8 +13,8 @@ jobs:
         env:
           - {CI_NAME: Focal-Benchmark,
              OS_NAME: ubuntu,
-             OS_CODE_NAME: bionic,
-             ROS_DISTRO: melodic,
+             OS_CODE_NAME: focal,
+             ROS_DISTRO: noetic,
              ROS_REPO: main,
              UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
              ROSDEP_SKIP_KEYS: "bullet cmake_common_scripts fcl iwyu",
