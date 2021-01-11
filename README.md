@@ -72,6 +72,8 @@ See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66
 2) Clone the repositories in the dependencies.rosinstall file using wstool or some other method (e.g. manually git cloning them)
 3) Build the workspace using catkin tools, colcon, or a similar tool
 
+NOTE: For noetic tesseract_ext is not required. Install the following dependencies: libbullet-dev, libbullet-extras-dev and ros-noetic-fcl. Taskflow can be install using the PPA below.
+
 NOTE: To speed up clean build you may want to add tesseract_ext to an extended workspace.
 
 NOTE: Install TaskFlow from [ROS-Industrial PPA](https://launchpad.net/~ros-industrial/+archive/ubuntu/ppa).
