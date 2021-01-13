@@ -277,6 +277,10 @@ public:
   /** @brief Joint distance above waypoint that is allowed. Each element should be >= 0 */
   Eigen::VectorXd upper_tolerance;
 
+  /**
+   * @brief Returns true if waypoint is toleranced
+   * @return True if waypoint is toleranced
+   */
   bool isToleranced() const
   {
     // Check if they are empty
@@ -286,7 +290,7 @@ public:
     // Check if they are close to 0
     Eigen::VectorXd range = upper_tolerance - lower_tolerance;
     double sum = range.sum();
-    return (sum < 1e-5);
+    return (sum > 1e-5);
   }
 };
 }  // namespace tesseract_planning
