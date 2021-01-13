@@ -260,6 +260,32 @@ bool clampToJointLimits(Waypoint& wp,
   return true;
 }
 
+bool toCSVFile(const CompositeInstruction& composite_instructions, const std::string& file_path, char separator)
+{
+  static const Eigen::IOFormat eigen_format(
+      Eigen::StreamPrecision, Eigen::DontAlignCols, " ", std::string(&separator, 1));
+  std::ofstream myfile;
+  myfile.open(file_path);
+
+  std::vector<std::reference_wrapper<const Instruction>> mi = flatten(composite_instructions, &moveFilter);
+
+  // Write Joint names as header
+  std::vector<std::string> joint_names = getJointNames(mi.front().get().cast_const<MoveInstruction>()->getWaypoint());
+  std::copy(joint_names.begin(), joint_names.end(), std::ostream_iterator<std::string>(myfile, &separator));
+  myfile << "\n";
+
+  // Write Positions
+  for (const auto& i : mi)
+  {
+    Eigen::VectorXd p = getJointPosition(i.get().cast_const<MoveInstruction>()->getWaypoint());
+    std::stringstream xyz_string;
+    myfile << p.format(eigen_format) << "\n";
+  }
+
+  myfile.close();
+  return true;
+}
+
 void generateSkeletonSeedHelper(CompositeInstruction& composite_instructions)
 {
   for (auto& i : composite_instructions)

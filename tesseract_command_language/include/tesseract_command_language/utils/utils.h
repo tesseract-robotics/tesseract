@@ -140,6 +140,15 @@ bool clampToJointLimits(Waypoint& wp,
  */
 CompositeInstruction generateSkeletonSeed(const CompositeInstruction& composite_instructions);
 
+/**
+ * @brief Convert a CompositeInstruction to csv formate file by extracting all MoveInstructions
+ * @param composite_instructions The CompositeInstruction to extract data from
+ * @param file_path The location to save the file
+ * @param separator The separator to use
+ * @return true if successful
+ */
+bool toCSVFile(const CompositeInstruction& composite_instructions, const std::string& file_path, char separator = ',');
+
 // TODO: implement validateSeedStructure
 #ifndef SWIG
 /**
