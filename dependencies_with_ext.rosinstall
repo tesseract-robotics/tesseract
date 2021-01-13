@@ -1,7 +1,7 @@
 - git:
     local-name: cmake_common_scripts
     uri: https://github.com/ros-industrial/cmake_common_scripts.git
-    version: master
+    version: 0.2.5
 - git:
     local-name: tesseract_ext
     uri: https://github.com/ros-industrial-consortium/tesseract_ext.git
@@ -9,4 +9,4 @@
 - git:
     local-name: opw_kinematics
     uri: https://github.com/Jmeyer1292/opw_kinematics.git
-    version: master
+    version: 0.3.1
