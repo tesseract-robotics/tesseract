@@ -271,6 +271,10 @@ public:
    * elements are angle axis error allowed (Eigen::AngleAxisd.axis() * Eigen::AngleAxisd.angle())*/
   Eigen::VectorXd upper_tolerance;
 
+  /**
+   * @brief Returns true if waypoint is toleranced
+   * @return True if waypoint is toleranced
+   */
   bool isToleranced() const
   {
     // Check if they are empty
@@ -280,7 +284,7 @@ public:
     // Check if they are close to 0
     Eigen::VectorXd range = upper_tolerance - lower_tolerance;
     double sum = range.sum();
-    return (sum < 1e-5);
+    return (sum > 1e-5);
   }
 };
 
