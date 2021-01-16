@@ -62,6 +62,7 @@ install(DIRECTORY include/${PROJECT_NAME}
 install(FILES
   "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"
   "${CMAKE_CURRENT_LIST_DIR}/cmake/FindTinyXML2.cmake"
+  "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc.cmake"
   DESTINATION lib/cmake/${PROJECT_NAME})
 
 if (TESSERACT_ENABLE_TESTING)
