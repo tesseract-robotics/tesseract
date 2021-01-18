@@ -37,6 +37,50 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+static tesseract_planning::locateFilterFn toJointTrajectoryMoveFilter =
+    [](const tesseract_planning::Instruction& i,
+       const tesseract_planning::CompositeInstruction& /*composite*/,
+       bool parent_is_first_composite) {
+      if (tesseract_planning::isMoveInstruction(i))
+      {
+        if (i.cast_const<tesseract_planning::MoveInstruction>()->isStart())
+          return (parent_is_first_composite);
+
+        return true;
+      }
+      return false;
+    };
+
+tesseract_common::JointTrajectory toJointTrajectory(const CompositeInstruction& composite_instructions)
+{
+  tesseract_common::JointTrajectory trajectory;
+  std::vector<std::reference_wrapper<const tesseract_planning::Instruction>> flattened_program =
+      tesseract_planning::flatten(composite_instructions, toJointTrajectoryMoveFilter);
+  trajectory.reserve(flattened_program.size());
+
+  double last_time = 0;
+  double current_time = 0;
+  double total_time = 0;
+  for (auto& i : flattened_program)
+  {
+    const auto* mi = i.get().cast_const<tesseract_planning::MoveInstruction>();
+    const auto* swp = mi->getWaypoint().cast_const<tesseract_planning::StateWaypoint>();
+    tesseract_common::JointState joint_state(*swp);
+    current_time = joint_state.time;
+
+    // It is possible for sub composites to start back from zero, this accounts for it
+    if (current_time < last_time)
+      last_time = 0;
+
+    double dt = current_time - last_time;
+    total_time += dt;
+    joint_state.time = total_time;
+    last_time = current_time;
+    trajectory.push_back(joint_state);
+  }
+  return trajectory;
+}
+
 const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint)
 {
   if (isJointWaypoint(waypoint))

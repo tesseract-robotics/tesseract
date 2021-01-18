@@ -32,8 +32,17 @@
 #include <tesseract_command_language/utils/flatten_utils.h>
 #include <tesseract_command_language/utils/get_instruction_utils.h>
 
+#include <tesseract_common/types.h>
+
 namespace tesseract_planning
 {
+/**
+ * @brief Convert composite intruction to a joint trajectory
+ * @param composite_instructions The composite instruction to convert
+ * @return A joint trajectory
+ */
+tesseract_common::JointTrajectory toJointTrajectory(const CompositeInstruction& composite_instructions);
+
 /**
  * @brief Gets joint position from waypoints that contain that information.
  *

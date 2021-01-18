@@ -56,6 +56,7 @@ using VectorVector4d = AlignedVector<Eigen::Vector4d>;
 using VectorVector3d = std::vector<Eigen::Vector3d>;
 using VectorVector2d = AlignedVector<Eigen::Vector2d>;
 using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
+using Toolpath = AlignedVector<VectorIsometry3d>;
 
 using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
@@ -80,14 +81,35 @@ static inline LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, c
   return std::make_pair(link_name2, link_name1);
 }
 
-/** @brief Represents a joint trajectory */
-struct JointTrajectory
+struct JointState
 {
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  JointState() = default;
+  JointState(std::vector<std::string> joint_names, Eigen::VectorXd position)
+    : joint_names(std::move(joint_names)), position(std::move(position))
+  {
+  }
 
-  std::vector<std::string> joint_names;   /**< @brief The joint names */
-  tesseract_common::TrajArray trajectory; /**< @brief The generated trajectory */
+  /** @brief The joint corresponding to the position vector. */
+  std::vector<std::string> joint_names;
+
+  /** @brief The joint position at the waypoint */
+  Eigen::VectorXd position;
+
+  /** @brief The velocity at the waypoint (optional) */
+  Eigen::VectorXd velocity;
+
+  /** @brief The Acceleration at the waypoint (optional) */
+  Eigen::VectorXd acceleration;
+
+  /** @brief The Effort at the waypoint (optional) */
+  Eigen::VectorXd effort;
+
+  /** @brief The Time from start at the waypoint (optional) */
+  double time{ 0 };
 };
+
+/** @brief Represents a joint trajectory */
+using JointTrajectory = std::vector<JointState>;
 
 /** @brief Store kinematic limits */
 struct KinematicLimits

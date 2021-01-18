@@ -48,42 +48,27 @@ public:
 
   TesseractIgnitionVisualization();
 
-  bool init(tesseract_environment::Environment::ConstPtr env) override;
-
-  void plotEnvironment(tesseract_environment::Environment::ConstPtr env = nullptr) override;
-
-  void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state = nullptr) override;
-
   bool isConnected() const override;
 
   void waitForConnection(long seconds = 0) const override;
 
-  void plotTrajectory(const std::vector<std::string>& joint_names,
-                      const Eigen::Ref<const tesseract_common::TrajArray>& traj) override;
+  void plotEnvironment(tesseract_environment::Environment::ConstPtr env, std::string ns = "") override;
 
-  void plotTrajectory(const tesseract_common::JointTrajectory& traj) override;
+  void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state, std::string ns = "") override;
 
-  void plotTrajectory(const tesseract_planning::Instruction& instruction) override;
+  void plotTrajectory(const tesseract_common::JointTrajectory& traj,
+                      tesseract_environment::StateSolver::Ptr state_solver,
+                      std::string ns = "") override;
 
-  void plotToolPath(const tesseract_planning::Instruction& instruction) override;
+  void plotMarker(const Marker& marker, std::string ns = "") override;
 
-  void plotContactResults(const std::vector<std::string>& link_names,
-                          const tesseract_collision::ContactResultVector& dist_results,
-                          const Eigen::Ref<const Eigen::VectorXd>& safety_distances) override;
+  void plotMarkers(const std::vector<Marker::Ptr>& markers, std::string ns = "") override;
 
-  void plotArrow(const Eigen::Ref<const Eigen::Vector3d>& pt1,
-                 const Eigen::Ref<const Eigen::Vector3d>& pt2,
-                 const Eigen::Ref<const Eigen::Vector4d>& rgba,
-                 double scale) override;
+  void clear(std::string ns = "") override;
 
-  void plotAxis(const Eigen::Isometry3d& axis, double scale) override;
-
-  void clear() override;
-
-  void waitForInput() override;
+  void waitForInput(std::string message = "Hit enter key to continue!") override;
 
 private:
-  tesseract_environment::Environment::ConstPtr env_;  /**< Tesseract Environment Object */
   ignition::transport::Node node_;                    /**< Ignition communication node. */
   ignition::transport::Node::Publisher scene_pub_;    /**< Scene publisher */
   ignition::transport::Node::Publisher pose_pub_;     /**< Pose publisher */

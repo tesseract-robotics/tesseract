@@ -15,7 +15,6 @@ find_package(tesseract_collision REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
-find_package(tesseract_command_language REQUIRED)
 find_package(class_loader REQUIRED)
 
 # Optional to build ignition visualization
@@ -59,8 +58,9 @@ endif()
 add_library(${PROJECT_NAME}
     src/visualization_loader.cpp
     src/trajectory_interpolator.cpp
-    src/trajectory_player.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_environment_core tesseract::tesseract_scene_graph tesseract::tesseract_command_language tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge::console_bridge ${class_loader_LIBRARIES})
+    src/trajectory_player.cpp
+    src/markers/marker.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_environment_core tesseract::tesseract_scene_graph tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge::console_bridge ${class_loader_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -113,7 +113,6 @@ if (IGNITION_FOUND)
     ${PROJECT_NAME}_ignition
     tesseract::tesseract_scene_graph
     tesseract::tesseract_common
-    tesseract::tesseract_command_language
     ${IGNITION-COMMON_LIBRARIES}
     ${IGNITION-TRANSPORT_LIBRARIES}
     ${IGNITION-MSGS_LIBRARIES}

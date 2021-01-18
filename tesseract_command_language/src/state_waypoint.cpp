@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 StateWaypoint::StateWaypoint(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
-  : joint_names(std::move(joint_names)), position(position)
+  : tesseract_common::JointState(std::move(joint_names), position)
 {
   if (static_cast<Eigen::Index>(this->joint_names.size()) != this->position.size())
     throw std::runtime_error("StateWaypoint: joint_names is not the same size as position!");

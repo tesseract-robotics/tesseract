@@ -37,10 +37,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/waypoint_type.h>
 #include <tesseract_common/utils.h>
+#include <tesseract_common/types.h>
 
 namespace tesseract_planning
 {
-class StateWaypoint
+class StateWaypoint : public tesseract_common::JointState
 {
 public:
   StateWaypoint() = default;
@@ -52,30 +53,6 @@ public:
   void print(const std::string& prefix = "") const;
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
-
-  /** @brief The joint corresponding to the position vector. */
-  std::vector<std::string> joint_names;
-
-  /**
-   * @brief The joint position at the waypoint
-   *
-   * This is different from waypoint because it can be cartesian or joint and this stores the joint position solved
-   * for the planned waypoint. This also can be used for determining the robot configuration if provided a cartesian
-   * waypoint for generating a native robot program.
-   */
-  Eigen::VectorXd position;
-
-  /** @brief The velocity at the waypoint */
-  Eigen::VectorXd velocity;
-
-  /** @brief The Acceleration at the waypoint */
-  Eigen::VectorXd acceleration;
-
-  /** @brief The Effort at the waypoint */
-  Eigen::VectorXd effort;
-
-  /** @brief The Time from start at the waypoint */
-  double time{ 0 };
 };
 }  // namespace tesseract_planning
 

@@ -35,126 +35,102 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TEST(TesseracTrajectoryPlayerUnit, TrajectoryTest)  // NOLINT
 {
   using namespace tesseract_visualization;
-  using namespace tesseract_planning;
+  using namespace tesseract_common;
 
   std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
-  CompositeInstruction program;
+  JointTrajectory trajectory;
 
-  // Define start instruction
-  StateWaypoint wp0(joint_names, Eigen::VectorXd::Zero(6));
-  MoveInstruction start_instruction(wp0, MoveInstructionType::START);
-  program.setStartInstruction(start_instruction);
-
-  // Define move instructions
-  for (long i = 1; i < 10; ++i)
+  // Define trajectory
+  for (long i = 0; i < 10; ++i)
   {
     Eigen::VectorXd p = Eigen::VectorXd::Zero(6);
     p(0) = static_cast<double>(i);
-    StateWaypoint swp(joint_names, p);
-    swp.time = static_cast<double>(i);
-    MoveInstruction move_f(swp, MoveInstructionType::FREESPACE, "DEFAULT");
-    program.push_back(move_f);
+    trajectory.push_back(JointState(joint_names, p));
+    trajectory.back().time = static_cast<double>(i);
   }
 
   TrajectoryPlayer player;
-  player.setProgram(program);
+  player.setTrajectory(trajectory);
 
   EXPECT_NEAR(player.trajectoryDuration(), 9, 1e-5);
   EXPECT_NEAR(player.currentDuration(), 0, 1e-5);
 
   for (long i = 0; i < 10; ++i)
   {
-    MoveInstruction mi = player.setCurrentDurationByIndex(i);
-    const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, static_cast<double>(i), 1e-5);
-    EXPECT_NEAR(swp->position(0), static_cast<double>(i), 1e-5);
+    JointState s = player.setCurrentDurationByIndex(i);
+    EXPECT_NEAR(s.time, static_cast<double>(i), 1e-5);
+    EXPECT_NEAR(s.position(0), static_cast<double>(i), 1e-5);
   }
 
   for (long i = 0; i < 10; ++i)
   {
-    MoveInstruction mi = player.setCurrentDuration(static_cast<double>(i));
-    const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, static_cast<double>(i), 1e-5);
-    EXPECT_NEAR(swp->position(0), static_cast<double>(i), 1e-5);
+    JointState s = player.setCurrentDuration(static_cast<double>(i));
+    EXPECT_NEAR(s.time, static_cast<double>(i), 1e-5);
+    EXPECT_NEAR(s.position(0), static_cast<double>(i), 1e-5);
   }
 
   {
-    MoveInstruction mi = player.setCurrentDurationByIndex(10);
-    const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, 9, 1e-5);
-    EXPECT_NEAR(swp->position(0), 9, 1e-5);
+    JointState s = player.setCurrentDurationByIndex(10);
+    EXPECT_NEAR(s.time, 9, 1e-5);
+    EXPECT_NEAR(s.position(0), 9, 1e-5);
   }
 
   {
-    MoveInstruction mi = player.setCurrentDuration(10);
-    const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, 9, 1e-5);
-    EXPECT_NEAR(swp->position(0), 9, 1e-5);
+    JointState s = player.setCurrentDuration(10);
+    EXPECT_NEAR(s.time, 9, 1e-5);
+    EXPECT_NEAR(s.position(0), 9, 1e-5);
   }
 
   {
-    MoveInstruction mi = player.setCurrentDurationByIndex(-1);
-    const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, 0, 1e-5);
-    EXPECT_NEAR(swp->position(0), 0, 1e-5);
+    JointState s = player.setCurrentDurationByIndex(-1);
+    EXPECT_NEAR(s.time, 0, 1e-5);
+    EXPECT_NEAR(s.position(0), 0, 1e-5);
   }
 
   {
-    MoveInstruction mi = player.setCurrentDuration(-1);
-    const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, 0, 1e-5);
-    EXPECT_NEAR(swp->position(0), 0, 1e-5);
+    JointState s = player.setCurrentDuration(-1);
+    EXPECT_NEAR(s.time, 0, 1e-5);
+    EXPECT_NEAR(s.position(0), 0, 1e-5);
   }
 }
 
 TEST(TesseracTrajectoryInterpolatorUnit, TrajectoryInterpolatorTest)  // NOLINT
 {
   using namespace tesseract_visualization;
-  using namespace tesseract_planning;
+  using namespace tesseract_common;
 
   std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
-  CompositeInstruction program;
+  JointTrajectory trajectory;
 
-  // Define start instruction
-  StateWaypoint wp0(joint_names, Eigen::VectorXd::Zero(6));
-  MoveInstruction start_instruction(wp0, MoveInstructionType::START);
-  program.setStartInstruction(start_instruction);
-
-  // Define move instructions
-  for (long i = 1; i < 10; ++i)
+  // Define trajectory
+  for (long i = 0; i < 10; ++i)
   {
     Eigen::VectorXd p = Eigen::VectorXd::Zero(6);
     p(0) = static_cast<double>(i);
-    StateWaypoint swp(joint_names, p);
-    swp.time = static_cast<double>(i);
-    MoveInstruction move_f(swp, MoveInstructionType::FREESPACE, "DEFAULT");
-    program.push_back(move_f);
+    trajectory.push_back(JointState(joint_names, p));
+    trajectory.back().time = static_cast<double>(i);
   }
 
-  TrajectoryInterpolator interpolator(program);
+  TrajectoryInterpolator interpolator(trajectory);
 
-  EXPECT_EQ(interpolator.getMoveInstructionCount(), 10);
+  EXPECT_EQ(interpolator.getStateCount(), 10);
 
   for (long i = 0; i < 19; ++i)
   {
-    MoveInstruction mi = interpolator.getMoveInstruction(static_cast<double>(i) * 0.5);
-    EXPECT_TRUE(isStateWaypoint(mi.getWaypoint()));
-    const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, static_cast<double>(i) * 0.5, 1e-5);
-    EXPECT_NEAR(swp->position(0), static_cast<double>(i) * 0.5, 1e-5);
+    JointState s = interpolator.getState(static_cast<double>(i) * 0.5);
+    EXPECT_NEAR(s.time, static_cast<double>(i) * 0.5, 1e-5);
+    EXPECT_NEAR(s.position(0), static_cast<double>(i) * 0.5, 1e-5);
   }
 
   // Test above max duration
-  MoveInstruction mi = interpolator.getMoveInstruction(10);
-  EXPECT_TRUE(isStateWaypoint(mi.getWaypoint()));
-  const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-  EXPECT_NEAR(swp->time, 9, 1e-5);
-  EXPECT_NEAR(swp->position(0), 9, 1e-5);
+  JointState s = interpolator.getState(10);
+  EXPECT_NEAR(s.time, 9, 1e-5);
+  EXPECT_NEAR(s.position(0), 9, 1e-5);
 
   // Test get instruction duration
   for (long i = 0; i < 10; ++i)
   {
-    double duration = interpolator.getMoveInstructionDuration(i);
+    double duration = interpolator.getStateDuration(i);
     EXPECT_NEAR(duration, static_cast<double>(i), 1e-5);
   }
 }
