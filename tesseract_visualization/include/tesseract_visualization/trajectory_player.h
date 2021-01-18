@@ -32,8 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/trajectory_interpolator.h>
-#include <tesseract_command_language/composite_instruction.h>
-#include <tesseract_command_language/move_instruction.h>
 
 namespace tesseract_visualization
 {
@@ -44,10 +42,10 @@ public:
   TrajectoryPlayer() = default;
 
   /**
-   * @brief Set the the program for the trajectory player
-   * @param program The program to play
+   * @brief Set the the trajectory for the trajectory player
+   * @param program The trajectory to play
    */
-  void setProgram(tesseract_planning::CompositeInstruction program);
+  void setTrajectory(tesseract_common::JointTrajectory trajectory);
 
   /**
    * @brief Set the scale factor for the play back of the trajectory
@@ -56,31 +54,31 @@ public:
   void setScale(double scale);
 
   /**
-   * @brief Set the current time for the player by index of the input program
+   * @brief Set the current time for the player by index of the input trajectoy
    * @param index The input trajectory index for which to set the current time from
-   * @return The move instruction at the input trajectory index
+   * @return The trajectory state at the input trajectory index
    */
-  tesseract_planning::MoveInstruction setCurrentDurationByIndex(long index);
+  tesseract_common::JointState setCurrentDurationByIndex(long index);
 
   /**
    * @brief Set the current time for the player by duration
    * @param duration The duration for which to set the current time from
-   * @return The move instruction at the provided duration
+   * @return The trajectory state at the provided duration
    */
-  tesseract_planning::MoveInstruction setCurrentDuration(double duration);
+  tesseract_common::JointState setCurrentDuration(double duration);
 
   /**
    * @brief Get the next move instruction from the player
    * @return The move instruction at the next time interval
    */
-  tesseract_planning::MoveInstruction getNext();
+  tesseract_common::JointState getNext();
 
   /**
    * @brief Get move instruction by index
    * @param index The index of the input program to extract the move instruction from
    * @return The move instruction at the input index
    */
-  tesseract_planning::MoveInstruction getByIndex(long index) const;
+  tesseract_common::JointState getByIndex(long index) const;
 
   /**
    * @brief Get the current duration populated by the last call to getNext()

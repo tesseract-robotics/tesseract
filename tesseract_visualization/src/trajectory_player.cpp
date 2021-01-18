@@ -33,13 +33,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_visualization
 {
-void TrajectoryPlayer::setProgram(tesseract_planning::CompositeInstruction program)
+void TrajectoryPlayer::setTrajectory(tesseract_common::JointTrajectory trajectory)
 {
   // Prepare the new trajectory message
-  trajectory_ = std::make_unique<TrajectoryInterpolator>(program);
+  trajectory_ = std::make_unique<TrajectoryInterpolator>(trajectory);
 
   // Get the duration
-  trajectory_duration_ = trajectory_->getMoveInstructionDuration(trajectory_->getMoveInstructionCount() - 1);
+  trajectory_duration_ = trajectory_->getStateDuration(trajectory_->getStateCount() - 1);
 
   // Reset state
   reset();
@@ -47,19 +47,15 @@ void TrajectoryPlayer::setProgram(tesseract_planning::CompositeInstruction progr
 
 void TrajectoryPlayer::setScale(double scale) { scale_ = scale; }
 
-tesseract_planning::MoveInstruction TrajectoryPlayer::setCurrentDurationByIndex(long index)
+tesseract_common::JointState TrajectoryPlayer::setCurrentDurationByIndex(long index)
 {
-  using tesseract_planning::MoveInstruction;
-  using tesseract_planning::MoveInstructionType;
-  using tesseract_planning::NullWaypoint;
-
   if (!trajectory_ || trajectory_->empty())
     throw std::runtime_error("Trajectory is empty!");
 
-  if (trajectory_->getMoveInstructionCount() > 0)
+  if (trajectory_->getStateCount() > 0)
   {
     if (index > 0)
-      current_duration_ = trajectory_->getMoveInstructionDuration(index);
+      current_duration_ = trajectory_->getStateDuration(index);
     else
       current_duration_ = 0;
   }
@@ -69,15 +65,11 @@ tesseract_planning::MoveInstruction TrajectoryPlayer::setCurrentDurationByIndex(
                     std::chrono::duration<double>(current_duration_));
 
   // Compute the interpolated state
-  return trajectory_->getMoveInstruction(current_duration_);
+  return trajectory_->getState(current_duration_);
 }
 
-tesseract_planning::MoveInstruction TrajectoryPlayer::setCurrentDuration(double duration)
+tesseract_common::JointState TrajectoryPlayer::setCurrentDuration(double duration)
 {
-  using tesseract_planning::MoveInstruction;
-  using tesseract_planning::MoveInstructionType;
-  using tesseract_planning::NullWaypoint;
-
   if (!trajectory_ || trajectory_->empty())
     throw std::runtime_error("Trajectory is empty!");
 
@@ -93,15 +85,11 @@ tesseract_planning::MoveInstruction TrajectoryPlayer::setCurrentDuration(double 
                     std::chrono::duration<double>(current_duration_));
 
   // Compute the interpolated state
-  return trajectory_->getMoveInstruction(current_duration_);
+  return trajectory_->getState(current_duration_);
 }
 
-tesseract_planning::MoveInstruction TrajectoryPlayer::getNext()
+tesseract_common::JointState TrajectoryPlayer::getNext()
 {
-  using tesseract_planning::MoveInstruction;
-  using tesseract_planning::MoveInstructionType;
-  using tesseract_planning::NullWaypoint;
-
   if (!trajectory_ || trajectory_->empty())
     throw std::runtime_error("Trajectory is empty!");
 
@@ -113,7 +101,7 @@ tesseract_planning::MoveInstruction TrajectoryPlayer::getNext()
     current_duration_ = trajectory_duration_;
 
     // Compute the interpolated state
-    auto mi = trajectory_->getMoveInstruction(current_duration_);
+    auto mi = trajectory_->getState(current_duration_);
 
     // Reset the player
     if (loop_)
@@ -124,12 +112,12 @@ tesseract_planning::MoveInstruction TrajectoryPlayer::getNext()
     return mi;
   }
 
-  return trajectory_->getMoveInstruction(current_duration_);
+  return trajectory_->getState(current_duration_);
 }
 
-tesseract_planning::MoveInstruction TrajectoryPlayer::getByIndex(long index) const
+tesseract_common::JointState TrajectoryPlayer::getByIndex(long index) const
 {
-  return trajectory_->getMoveInstruction(trajectory_->getMoveInstructionDuration(index));
+  return trajectory_->getState(trajectory_->getStateDuration(index));
 }
 
 double TrajectoryPlayer::currentDuration() const { return current_duration_; }
@@ -154,6 +142,6 @@ void TrajectoryPlayer::reset()
   finished_ = false;
 }
 
-long TrajectoryPlayer::size() const { return trajectory_->getMoveInstructionCount(); }
+long TrajectoryPlayer::size() const { return trajectory_->getStateCount(); }
 
 }  // namespace tesseract_visualization

@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_command_language/command_language.h>
+#include <tesseract_common/types.h>
 
 namespace tesseract_visualization
 {
@@ -43,32 +43,30 @@ class TrajectoryInterpolator
 public:
   using UPtr = std::unique_ptr<TrajectoryInterpolator>;
 
-  TrajectoryInterpolator(tesseract_planning::CompositeInstruction program);
+  TrajectoryInterpolator(tesseract_common::JointTrajectory trajectory);
   virtual ~TrajectoryInterpolator() = default;
   TrajectoryInterpolator(const TrajectoryInterpolator&) = delete;
   TrajectoryInterpolator& operator=(const TrajectoryInterpolator&) = delete;
   TrajectoryInterpolator(TrajectoryInterpolator&&) = delete;
   TrajectoryInterpolator& operator=(TrajectoryInterpolator&&) = delete;
 
-  tesseract_planning::MoveInstruction getMoveInstruction(double request_duration) const;
+  tesseract_common::JointState getState(double request_duration) const;
 
-  double getMoveInstructionDuration(long index) const;
+  double getStateDuration(long index) const;
 
-  long getMoveInstructionCount() const;
+  long getStateCount() const;
 
   bool empty() const;
 
 private:
-  tesseract_planning::CompositeInstruction program_;
-  std::vector<std::reference_wrapper<tesseract_planning::Instruction>> flattened_program_;
-  std::vector<std::reference_wrapper<tesseract_planning::Waypoint>> waypoints_;
+  tesseract_common::JointTrajectory trajectory_;
   std::vector<double> duration_from_previous_;
 
-  void findMoveInstructionIndices(const double& duration, long& before, long& after, double& blend) const;
+  void findStateIndices(const double& duration, long& before, long& after, double& blend) const;
 
-  tesseract_planning::StateWaypoint interpolate(const tesseract_planning::StateWaypoint& start,
-                                                const tesseract_planning::StateWaypoint& end,
-                                                double t) const;
+  tesseract_common::JointState interpolate(const tesseract_common::JointState& start,
+                                           const tesseract_common::JointState& end,
+                                           double t) const;
 };
 }  // namespace tesseract_visualization
 #endif  // TESSERACT_VISUALIZATION_TRAJECTORY_INTERPOLATOR_H

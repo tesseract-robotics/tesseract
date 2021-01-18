@@ -26,38 +26,18 @@
 
 /* Based on MoveIt code authored by: Ioan Sucan, Adam Leeper */
 
-#include <tesseract_command_language/command_language.h>
-#include <tesseract_command_language/utils/utils.h>
 #include <tesseract_visualization/trajectory_interpolator.h>
 
 namespace tesseract_visualization
 {
-static tesseract_planning::locateFilterFn moveFilter = [](const tesseract_planning::Instruction& i,
-                                                          const tesseract_planning::CompositeInstruction& /*composite*/,
-                                                          bool parent_is_first_composite) {
-  if (tesseract_planning::isMoveInstruction(i))
-  {
-    if (i.cast_const<tesseract_planning::MoveInstruction>()->isStart())
-      return (parent_is_first_composite);
-
-    return true;
-  }
-  return false;
-};
-
-TrajectoryInterpolator::TrajectoryInterpolator(tesseract_planning::CompositeInstruction program) : program_(program)
+TrajectoryInterpolator::TrajectoryInterpolator(tesseract_common::JointTrajectory trajectory) : trajectory_(trajectory)
 {
-  flattened_program_ = tesseract_planning::flatten(program_, moveFilter);
-  for (auto& mi : flattened_program_)
-    waypoints_.emplace_back(mi.get().cast<tesseract_planning::MoveInstruction>()->getWaypoint());
-
   double last_time = 0;
   double current_time = 0;
   double total_time = 0;
-  for (auto& waypoint : waypoints_)
+  for (auto& state : trajectory_)
   {
-    auto* swp = waypoint.get().cast<tesseract_planning::StateWaypoint>();
-    current_time = swp->time;
+    current_time = state.time;
 
     // It is possible for sub composites to start back from zero, this accounts for it
     if (current_time < last_time)
@@ -66,15 +46,12 @@ TrajectoryInterpolator::TrajectoryInterpolator(tesseract_planning::CompositeInst
     double dt = current_time - last_time;
     total_time += dt;
     duration_from_previous_.push_back(dt);
-    swp->time = total_time;
+    state.time = total_time;
     last_time = current_time;
   }
 }
 
-void TrajectoryInterpolator::findMoveInstructionIndices(const double& duration,
-                                                        long& before,
-                                                        long& after,
-                                                        double& blend) const
+void TrajectoryInterpolator::findStateIndices(const double& duration, long& before, long& after, double& blend) const
 {
   if (duration < 0.0)
   {
@@ -86,7 +63,7 @@ void TrajectoryInterpolator::findMoveInstructionIndices(const double& duration,
 
   // Find indicies
   std::size_t index = 0;
-  std::size_t num_points = waypoints_.size();
+  std::size_t num_points = trajectory_.size();
   double running_duration = 0.0;
   for (; index < num_points; ++index)
   {
@@ -105,63 +82,55 @@ void TrajectoryInterpolator::findMoveInstructionIndices(const double& duration,
     blend = (duration - before_time) / duration_from_previous_[index];
 }
 
-tesseract_planning::MoveInstruction TrajectoryInterpolator::getMoveInstruction(double request_duration) const
+tesseract_common::JointState TrajectoryInterpolator::getState(double request_duration) const
 {
   // If there are no waypoints we can't do anything
-  if (waypoints_.empty())
+  if (trajectory_.empty())
     throw std::runtime_error("Invalid duration");
 
   long before = 0;
   long after = 0;
   double blend = 1.0;
-  findMoveInstructionIndices(request_duration, before, after, blend);
+  findStateIndices(request_duration, before, after, blend);
 
   if (before < 0 && after < 0)
     throw std::runtime_error("Invalid duration");
 
   if (before < 0 && after == 0)
-    return *(
-        flattened_program_[static_cast<std::size_t>(after)].get().cast_const<tesseract_planning::MoveInstruction>());
+    return trajectory_[static_cast<std::size_t>(after)];
 
-  if (before == static_cast<int>(waypoints_.size()) - 1)
-    return *(
-        flattened_program_[static_cast<std::size_t>(before)].get().cast_const<tesseract_planning::MoveInstruction>());
+  if (before == static_cast<int>(trajectory_.size()) - 1)
+    return trajectory_[static_cast<std::size_t>(before)];
 
   if (before >= 0 && after > 0)
   {
-    const auto* swp0 =
-        waypoints_[static_cast<std::size_t>(before)].get().cast_const<tesseract_planning::StateWaypoint>();
-    const auto* swp1 =
-        waypoints_[static_cast<std::size_t>(after)].get().cast_const<tesseract_planning::StateWaypoint>();
-
-    tesseract_planning::MoveInstruction output_instruction =
-        *(flattened_program_[static_cast<std::size_t>(after)].get().cast_const<tesseract_planning::MoveInstruction>());
-    output_instruction.setWaypoint(interpolate(*swp0, *swp1, blend));
-    return output_instruction;
+    const tesseract_common::JointState& swp0 = trajectory_[static_cast<std::size_t>(before)];
+    const tesseract_common::JointState& swp1 = trajectory_[static_cast<std::size_t>(after)];
+    return interpolate(swp0, swp1, blend);
   }
 
   throw std::runtime_error("Invalid duration");
 }
 
-double TrajectoryInterpolator::getMoveInstructionDuration(long index) const
+double TrajectoryInterpolator::getStateDuration(long index) const
 {
-  if (waypoints_.empty())
+  if (trajectory_.empty())
     return 0.0;
 
-  int s = static_cast<int>(waypoints_.size());
+  int s = static_cast<int>(trajectory_.size());
   if (index >= s)
     index = s - 1;
 
-  return waypoints_[static_cast<std::size_t>(index)].get().cast_const<tesseract_planning::StateWaypoint>()->time;
+  return trajectory_[static_cast<std::size_t>(index)].time;
 }
 
-long TrajectoryInterpolator::getMoveInstructionCount() const { return static_cast<long>(waypoints_.size()); }
+long TrajectoryInterpolator::getStateCount() const { return static_cast<long>(trajectory_.size()); }
 
-tesseract_planning::StateWaypoint TrajectoryInterpolator::interpolate(const tesseract_planning::StateWaypoint& start,
-                                                                      const tesseract_planning::StateWaypoint& end,
-                                                                      double t) const
+tesseract_common::JointState TrajectoryInterpolator::interpolate(const tesseract_common::JointState& start,
+                                                                 const tesseract_common::JointState& end,
+                                                                 double t) const
 {
-  tesseract_planning::StateWaypoint out;
+  tesseract_common::JointState out;
   out.time = start.time + t;
   out.joint_names = start.joint_names;
   out.position.resize(static_cast<long>(out.joint_names.size()));
@@ -172,6 +141,6 @@ tesseract_planning::StateWaypoint TrajectoryInterpolator::interpolate(const tess
   return out;
 }
 
-bool TrajectoryInterpolator::empty() const { return waypoints_.empty(); };
+bool TrajectoryInterpolator::empty() const { return trajectory_.empty(); };
 
 }  // namespace tesseract_visualization

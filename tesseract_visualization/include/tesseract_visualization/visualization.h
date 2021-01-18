@@ -30,21 +30,18 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <any>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 #include <tesseract_collision/core/types.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_environment/core/environment.h>
+#include <tesseract_visualization/markers/marker.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_visualization::Visualization)
 #endif  // SWIG
-
-namespace tesseract_planning
-{
-class Instruction;
-}
 
 namespace tesseract_visualization
 {
@@ -63,13 +60,6 @@ public:
   Visualization& operator=(Visualization&&) = default;
 
   /**
-   * @brief Initialize the visualization tool
-   * @param env The environment object
-   * @return True if successful, otherwise false
-   */
-  virtual bool init(tesseract_environment::Environment::ConstPtr env) = 0;
-
-  /**
    * @brief Some plotters may require connecting to external software.
    * @return True if connected, otherwise false
    */
@@ -83,86 +73,47 @@ public:
 
   /**
    * @brief Plot environment
-   * @param env The environment. If provided a nullptr it should the current environent.
+   * @param env The environment.
    */
-  virtual void plotEnvironment(tesseract_environment::Environment::ConstPtr env = nullptr) = 0;
+  virtual void plotEnvironment(tesseract_environment::Environment::ConstPtr env, std::string ns = "") = 0;
 
   /**
    * @brief Plot state of the environment
-   * @param state The state of the environment. If provided a nullptr it should the current state.
+   * @param state The state of the environment.
    */
-  virtual void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state = nullptr) = 0;
-
-  /**
-   * @brief \deprecated Plot a trajectory using joint_names and a TrajArray
-   * @param joint_names Joint Names
-   * @param traj Rows are timesteps. Columns correspond to joint_names
-   */
-  virtual void plotTrajectory(const std::vector<std::string>& joint_names,
-                              const Eigen::Ref<const tesseract_common::TrajArray>& traj) = 0;
+  virtual void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state, std::string ns = "") = 0;
 
   /**
    * @brief Plot a JointTrajectory
+   * @param state_solver The environment
    * @param trajectory JointTrajectory to be plotted
    */
-  virtual void plotTrajectory(const tesseract_common::JointTrajectory& traj) = 0;
+  virtual void plotTrajectory(const tesseract_common::JointTrajectory& traj,
+                              tesseract_environment::StateSolver::Ptr state_solver,
+                              std::string ns = "") = 0;
 
   /**
-   * @brief Plot trajectory provided in the instruction
-   *
-   * This can either be a composite instruction which includes move instructions or a single move instruction.
-   *
-   * @param instruction
+   * @brief Plot marker
+   * @param marker The marker to plot
+   * @param ns The namespace to plot the object under
    */
-  virtual void plotTrajectory(const tesseract_planning::Instruction& instruction) = 0;
+  virtual void plotMarker(const Marker& marker, std::string ns = "") = 0;
 
   /**
-   * @brief Plot tool path provided in the instruction
-   *
-   * This can either be a composite instruction which includes plan/move instructions or a single plan/move instruction.
-   *
-   * @param instruction
+   * @brief Plot a vector of markers under a given namespace
+   * @param markers The markers to plot
+   * @param ns The namespace to plot the objects under
    */
-  virtual void plotToolPath(const tesseract_planning::Instruction& instruction) = 0;
-
-  /**
-   * @brief Plot the collision results data
-   * @param link_names List of link names for which to plot data
-   * @param dist_results The collision results data
-   * @param safety_distance Vector of safety Distance corresponding to dist_results (Must be in the same order and
-   * length).
-   */
-  virtual void plotContactResults(const std::vector<std::string>& link_names,
-                                  const tesseract_collision::ContactResultVector& dist_results,
-                                  const Eigen::Ref<const Eigen::VectorXd>& safety_distances) = 0;
-
-  /**
-   * @brief Plot arrow defined by two points
-   * @param pt1 Start position of the arrow
-   * @param pt2 Final position of the arrow
-   * @param rgba Color of the arrow
-   * @param scale The size of the arrow (related to diameter)
-   */
-  virtual void plotArrow(const Eigen::Ref<const Eigen::Vector3d>& pt1,
-                         const Eigen::Ref<const Eigen::Vector3d>& pt2,
-                         const Eigen::Ref<const Eigen::Vector4d>& rgba,
-                         double scale) = 0;
-
-  /**
-   * @brief Plot axis
-   * @param axis The axis
-   * @param scale The size of the axis
-   */
-  virtual void plotAxis(const Eigen::Isometry3d& axis, double scale) = 0;
+  virtual void plotMarkers(const std::vector<Marker::Ptr>& markers, std::string ns = "") = 0;
 
   /**
    * @brief This is called at the start of the plotting for each iteration
    *        to clear previous iteration graphics if neccessary.
    */
-  virtual void clear() = 0;
+  virtual void clear(std::string ns = "") = 0;
 
   /** @brief Pause code and wait for enter key in terminal*/
-  virtual void waitForInput() = 0;
+  virtual void waitForInput(std::string message = "Hit enter key to continue!") = 0;
 };
 
 }  // namespace tesseract_visualization
