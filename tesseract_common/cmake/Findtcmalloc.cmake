@@ -3,7 +3,7 @@
 #  tcmalloc_LIBRARIES   - List of libraries when using tcmalloc.
 #  tcmalloc_FOUND       - True if tcmalloc found.
 
-set(tcmalloc_NAMES tcmalloc_minimal tcmalloc tcmalloc_minimal4 libtcmalloc_minimal.so.4)
+set(tcmalloc_NAMES tcmalloc_minimal libtcmalloc_minimal tcmalloc tcmalloc_minimal4 libtcmalloc_minimal.so.4)
 
 find_library(tcmalloc_LIBRARY NO_DEFAULT_PATH
   NAMES ${tcmalloc_NAMES}
@@ -19,7 +19,7 @@ endif()
 if(tcmalloc_FOUND)
   message(STATUS "Found tcmalloc: ${tcmalloc_LIBRARY}")
 else()
-  message(STATUS "Not Found Tcmalloc: ${tcmalloc_LIBRARY} with names ${tcmalloc_NAMES}")
+  message(STATUS "Not Found tcmalloc: ${tcmalloc_LIBRARY} with names ${tcmalloc_NAMES}")
 endif()
 
 mark_as_advanced(tcmalloc_LIBRARY)
