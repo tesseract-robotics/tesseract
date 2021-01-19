@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - feature/CommandLanguage
   pull_request:
   schedule:
     - cron: '0 5 * * *'
@@ -25,7 +24,7 @@ jobs:
       CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Focal-Build/.ccache"
       PARALLEL_TESTS: false
       PARALLEL_BUILDS: false
-      BEFORE_RUN_TARGET_TEST_EMBED: "source /root/target_ws/install/setup.bash"
+      BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source /root/target_ws/install/setup.bash"
       UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
       TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
     steps:
