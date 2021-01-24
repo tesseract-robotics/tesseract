@@ -351,6 +351,15 @@ bool SceneGraph::changeJointLimits(const std::string& name, const JointLimits& l
     return false;
   }
 
+  if (found->second.first->type == JointType::FIXED)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint limits for a fixed joint type.", name.c_str());
+    return false;
+  }
+
+  if (found->second.first->limits == nullptr)
+    found->second.first->limits = std::make_shared<JointLimits>();
+
   found->second.first->limits->lower = limits.lower;
   found->second.first->limits->upper = limits.upper;
   found->second.first->limits->effort = limits.effort;
