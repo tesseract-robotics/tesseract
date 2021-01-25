@@ -69,7 +69,7 @@ std::vector<uint8_t> SimpleLocatedResource::getResourceContents()
   // https://codereview.stackexchange.com/questions/22901/reading-all-bytes-from-a-file
 
   std::ifstream ifs(filename_, std::ios::binary | std::ios::ate);
-  if (!ifs)
+  if (ifs.fail())
   {
     CONSOLE_BRIDGE_logError("Could not read all bytes from file: %s", filename_.c_str());
     return std::vector<uint8_t>();
@@ -86,8 +86,13 @@ std::vector<uint8_t> SimpleLocatedResource::getResourceContents()
 
 std::shared_ptr<std::istream> SimpleLocatedResource::getResourceContentStream()
 {
-  std::shared_ptr<std::ifstream> f = std::make_shared<std::ifstream>(filename_, std::ios::binary);
-  return f;
+  std::shared_ptr<std::ifstream> ifs = std::make_shared<std::ifstream>(filename_, std::ios::binary);
+  if (ifs->fail())
+  {
+    CONSOLE_BRIDGE_logError("Could not get resource: %s", filename_.c_str());
+    return nullptr;
+  }
+  return ifs;
 }
 
 tesseract_common::Resource::Ptr SimpleLocatedResource::locateSubResource(const std::string& relative_path)
