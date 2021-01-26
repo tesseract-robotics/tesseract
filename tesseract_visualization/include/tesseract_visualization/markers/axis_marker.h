@@ -16,7 +16,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   AxisMarker() = default;
-  AxisMarker(Eigen::Isometry3d axis) : axis(std::move(axis)) {}
+  AxisMarker(const Eigen::Isometry3d& axis) : axis(axis) {}
 
   int getType() const override { return static_cast<int>(MarkerType::AXIS); }
 

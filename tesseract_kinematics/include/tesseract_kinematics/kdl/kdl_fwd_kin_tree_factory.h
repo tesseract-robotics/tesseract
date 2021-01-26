@@ -44,11 +44,11 @@ public:
 
   ForwardKinematicsFactoryType getType() const override { return ForwardKinematicsFactoryType::TREE; }
 
-  ForwardKinematics::Ptr
-  create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-         const std::vector<std::string>& joint_names,
-         const std::string name,
-         std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>()) const override
+  ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+                                const std::vector<std::string>& joint_names,
+                                const std::string& name,
+                                const std::unordered_map<std::string, double>& start_state =
+                                    std::unordered_map<std::string, double>()) const override
   {
     auto kin = std::make_shared<KDLFwdKinTree>();
     if (!kin->init(scene_graph, joint_names, name, start_state))

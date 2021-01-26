@@ -56,7 +56,9 @@ namespace tesseract_kinematics
 class KDLFwdKinChain : public ForwardKinematics
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   using Ptr = std::shared_ptr<KDLFwdKinChain>;
   using ConstPtr = std::shared_ptr<const KDLFwdKinChain>;
@@ -142,15 +144,7 @@ public:
    * @brief Checks if kinematics has been initialized
    * @return True if init() has completed successfully
    */
-  bool checkInitialized() const
-  {
-    if (!initialized_)
-    {
-      CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
-    }
-
-    return initialized_;
-  }
+  bool checkInitialized() const;
 
 private:
   bool initialized_{ false };                                  /**< Identifies if the object has been initialized */
