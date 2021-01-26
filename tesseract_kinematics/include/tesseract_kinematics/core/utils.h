@@ -285,8 +285,8 @@ createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_gra
  * @return True if joint values are within the joint limits, otherwise false
  */
 template <typename FloatType>
-inline static bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >& joint_values,
-                                  const Eigen::MatrixX2d& limits)
+inline bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >& joint_values,
+                           const Eigen::MatrixX2d& limits)
 {
   for (int i = 0; i < limits.rows(); ++i)
     if ((joint_values[i] < limits(i, 0)) || (joint_values[i] > limits(i, 1)))

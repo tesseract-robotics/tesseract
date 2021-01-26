@@ -27,7 +27,7 @@ public:
    * @param pt1 The starting point
    * @param pt2 The final point
    */
-  ArrowMarker(Eigen::Vector3d pt1, Eigen::Vector3d pt2)
+  ArrowMarker(const Eigen::Vector3d& pt1, const Eigen::Vector3d& pt2)
   {
     Eigen::Vector3d x, y, z;
     z = (pt2 - pt1).normalized();

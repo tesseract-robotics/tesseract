@@ -76,10 +76,10 @@ public:
    * @param name The name of the kinematic chain
    * @return If failed to create, nullptr is returned.
    */
-  virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,
-                                        const std::string& /*base_link*/,
-                                        const std::string& /*tip_link*/,
-                                        const std::string /*name*/) const  // NOLINT
+  virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,  // NOLINT
+                                        const std::string& /*base_link*/,                             // NOLINT
+                                        const std::string& /*tip_link*/,                              // NOLINT
+                                        const std::string& /*name*/) const                            // NOLINT
   {
     return nullptr;
   }
@@ -94,7 +94,7 @@ public:
    */
   virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,         // NOLINT
                                         const std::vector<std::pair<std::string, std::string>>& /*chains*/,  // NOLINT
-                                        const std::string /*name*/) const                                    // NOLINT
+                                        const std::string& /*name*/) const                                   // NOLINT
   {
     return nullptr;
   }
@@ -108,10 +108,10 @@ public:
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return If failed to create, nullptr is returned.
    */
-  virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,
-                                        const std::vector<std::string>& /*joint_names*/,
-                                        const std::string /*name*/,
-                                        std::unordered_map<std::string, double> /*start_state*/ =
+  virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,  // NOLINT
+                                        const std::vector<std::string>& /*joint_names*/,              // NOLINT
+                                        const std::string& /*name*/,                                  // NOLINT
+                                        const std::unordered_map<std::string, double>& /*start_state*/ =
                                             std::unordered_map<std::string, double>()) const  // NOLINT
   {
     return nullptr;

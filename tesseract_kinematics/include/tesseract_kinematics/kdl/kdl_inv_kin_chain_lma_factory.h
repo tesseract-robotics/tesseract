@@ -47,7 +47,7 @@ public:
   InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                                 const std::string& base_link,
                                 const std::string& tip_link,
-                                const std::string name) const override
+                                const std::string& name) const override
   {
     auto kin = std::make_shared<KDLInvKinChainLMA>();
     if (!kin->init(scene_graph, base_link, tip_link, name))
@@ -58,7 +58,7 @@ public:
 
   InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                                 const std::vector<std::pair<std::string, std::string>>& chains,  // NOLINT
-                                const std::string name) const override
+                                const std::string& name) const override
   {
     auto kin = std::make_shared<KDLInvKinChainLMA>();
     if (!kin->init(scene_graph, chains, name))

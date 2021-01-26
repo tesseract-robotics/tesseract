@@ -79,7 +79,7 @@ public:
   virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,  // NOLINT
                                         const std::string& /*base_link*/,                             // NOLINT
                                         const std::string& /*tip_link*/,                              // NOLINT
-                                        const std::string /*name*/) const                             // NOLINT
+                                        const std::string& /*name*/) const                            // NOLINT
   {
     return nullptr;
   }
@@ -94,7 +94,7 @@ public:
    */
   virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,         // NOLINT
                                         const std::vector<std::pair<std::string, std::string>>& /*chains*/,  // NOLINT
-                                        const std::string /*name*/) const                                    // NOLINT
+                                        const std::string& /*name*/) const                                   // NOLINT
   {
     return nullptr;
   }
@@ -110,8 +110,8 @@ public:
    */
   virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,  // NOLINT
                                         const std::vector<std::string>& /*joint_names*/,              // NOLINT
-                                        const std::string /*name*/,                                   // NOLINT
-                                        std::unordered_map<std::string, double> /*start_state*/ =
+                                        const std::string& /*name*/,                                  // NOLINT
+                                        const std::unordered_map<std::string, double>& /*start_state*/ =
                                             std::unordered_map<std::string, double>()) const  // NOLINT
   {
     return nullptr;

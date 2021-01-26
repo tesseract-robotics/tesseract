@@ -51,7 +51,9 @@ namespace tesseract_kinematics
 class KDLInvKinChainLMA : public InverseKinematics
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   using Ptr = std::shared_ptr<KDLInvKinChainLMA>;
   using ConstPtr = std::shared_ptr<const KDLInvKinChainLMA>;

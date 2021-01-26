@@ -305,4 +305,14 @@ bool KDLFwdKinChain::init(const KDLFwdKinChain& kin)
   return initialized_;
 }
 
+bool KDLFwdKinChain::checkInitialized() const
+{
+  if (!initialized_)
+  {
+    CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
+  }
+
+  return initialized_;
+}
+
 }  // namespace tesseract_kinematics
