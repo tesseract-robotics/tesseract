@@ -12,7 +12,7 @@
   <buildtool_depend>cmake</buildtool_depend>
 
   <depend>tesseract_common</depend>
-  <build_depend>cmake_common_scripts</build_depend>
+  <build_depend>ros_industrial_cmake_boilerplate</build_depend>
 
   <export>
     <build_type>cmake</build_type>

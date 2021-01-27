@@ -17,7 +17,7 @@ jobs:
              ROS_DISTRO: noetic,
              ROS_REPO: main,
              UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
-             ROSDEP_SKIP_KEYS: "bullet cmake_common_scripts fcl iwyu",
+             ROSDEP_SKIP_KEYS: "bullet ros_industrial_cmake_boilerplate fcl iwyu",
              DOCKER_IMAGE: "rosindustrial/tesseract:noetic",
              CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Focal-Benchmark/.ccache",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",

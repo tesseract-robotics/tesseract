@@ -19,7 +19,7 @@ jobs:
       ROS_DISTRO: melodic
       ROS_REPO: main
       UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
-      ROSDEP_SKIP_KEYS: "bullet cmake_common_scripts iwyu fcl taskflow"
+      ROSDEP_SKIP_KEYS: "bullet ros_industrial_cmake_boilerplate iwyu fcl taskflow"
       DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
       CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Bionic-Build/.ccache"
       PARALLEL_BUILDS: false
