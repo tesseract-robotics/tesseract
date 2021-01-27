@@ -64,6 +64,17 @@ TEST(TesseractKinematicsUnit, CoreUtilsWithinLimitsUnit)  // NOLINT
   EXPECT_FALSE(tesseract_kinematics::isWithinLimits<double>(joint_values, limits));
 }
 
+TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT
+{
+  std::array<double, 2> q;
+  q[0] = (4 * M_PI) + M_PI_4;
+  q[1] = -(4 * M_PI) - M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardZero(q.data(), 2);
+  EXPECT_NEAR(q[0], M_PI_4, 1e-6);
+  EXPECT_NEAR(q[1], -M_PI_4, 1e-6);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
