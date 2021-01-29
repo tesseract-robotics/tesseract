@@ -360,10 +360,8 @@ inline void harmonizeTowardZero(FloatType* qs, int dof)
 
   for (int i = 0; i < dof; i++)
   {
-    FloatType dif = std::fmod(qs[i] + pi, two_pi);
-    if (dif < 0)
-      dif += two_pi;
-    qs[i] = dif - pi;
+    FloatType diff = std::fmod(qs[i] + pi, two_pi);
+    qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);
   }
 }
 
