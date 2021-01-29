@@ -343,6 +343,7 @@ inline tinyxml2::XMLError QueryDoubleAttributeRequired(const tinyxml2::XMLElemen
 
 /**
  * @brief Check if two double are relatively equal
+ * @details The max_diff is for handling when comparing numbers near zero
  * @param a Double
  * @param b Double
  * @param max_diff The max diff when comparing std::abs(a - b) <= max_diff, if true they are considered equal
@@ -355,8 +356,6 @@ inline bool almostEqualRelativeAndAbs(double a,
                                       double max_diff,
                                       double max_rel_diff = std::numeric_limits<double>::epsilon())
 {
-  // Check if the numbers are really close -- needed
-  // when comparing numbers near zero.
   double diff = std::fabs(a - b);
   if (diff <= max_diff)
     return true;
@@ -366,6 +365,34 @@ inline bool almostEqualRelativeAndAbs(double a,
   double largest = (b > a) ? b : a;
 
   return (diff <= largest * max_rel_diff);
+}
+
+/**
+ * @brief Check if two Eigen VectorXd are relatively and absolute equal
+ * @details
+ *    This is a vectorized implementation of the function above.
+ *    The max_diff is for handling when comparing numbers near zero
+ * @param a A vector of double
+ * @param b A vector of double
+ * @param max_diff The max diff when comparing max(abs(a - b)) <= max_diff, if true they are considered equal
+ * @param max_rel_diff The max relative diff abs(a - b) <= largest * max_rel_diff, if true considered equal. The
+ * largest is the largest of the absolute values of a and b.
+ * @return True if they are relativily equal, otherwise false.
+ */
+inline bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
+                                      const Eigen::Ref<const Eigen::VectorXd>& v2,
+                                      double max_diff,
+                                      double max_rel_diff = std::numeric_limits<double>::epsilon())
+{
+  Eigen::ArrayWrapper<const Eigen::Ref<const Eigen::VectorXd>> a1 = v1.array();
+  Eigen::ArrayWrapper<const Eigen::Ref<const Eigen::VectorXd>> a2 = v2.array();
+
+  auto diff_abs = (a1 - a2).abs();
+  double diff = diff_abs.maxCoeff();
+  if (diff <= max_diff)
+    return true;
+
+  return (diff_abs <= (max_rel_diff * a1.abs().max(a2.abs()))).all();
 }
 
 }  // namespace tesseract_common
