@@ -37,20 +37,13 @@ inline GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene
     if (status != tinyxml2::XML_SUCCESS)
       continue;
 
-    auto group_tcp = group_tcps.find(group_name_string);
-    if (group_tcp == group_tcps.end())
-    {
-      group_tcps[group_name_string] = GroupsTCPs();
-      group_tcp = group_tcps.find(group_name_string);
-    }
-
     for (const tinyxml2::XMLElement* xml_element = xml_group_element->FirstChildElement("tcp"); xml_element;
          xml_element = xml_element->NextSiblingElement("tcp"))
     {
       Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
 
-      if (xml_element->Attribute("name") == nullptr && xml_element->Attribute("xyz") == nullptr &&
-          xml_element->Attribute("rpy") == nullptr && xml_element->Attribute("wxyz") == nullptr)
+      if (xml_element->Attribute("name") == nullptr || xml_element->Attribute("xyz") == nullptr ||
+          (xml_element->Attribute("rpy") == nullptr && xml_element->Attribute("wxyz") == nullptr))
       {
         CONSOLE_BRIDGE_logError("Invalid tcp definition");
         continue;
@@ -152,6 +145,13 @@ inline GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene
 
           tcp.linear() = q.toRotationMatrix();
         }
+      }
+
+      auto group_tcp = group_tcps.find(group_name_string);
+      if (group_tcp == group_tcps.end())
+      {
+        group_tcps[group_name_string] = GroupsTCPs();
+        group_tcp = group_tcps.find(group_name_string);
       }
 
       group_tcp->second[tcp_name_string] = tcp;

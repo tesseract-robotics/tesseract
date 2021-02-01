@@ -15,6 +15,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/srdf/group_states.h>
 #include <tesseract_scene_graph/srdf/group_tool_center_points.h>
 #include <tesseract_scene_graph/srdf/groups.h>
+#include <tesseract_common/utils.h>
 
 std::string locateResource(const std::string& url)
 {
@@ -43,7 +44,14 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph()
+enum class ABBConfig
+{
+  ROBOT_ONLY,
+  ROBOT_ON_RAIL,
+  ROBOT_WITH_POSITIONER
+};
+
+tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBConfig::ROBOT_ONLY)
 {
   using namespace tesseract_scene_graph;
   auto g = std::make_shared<SceneGraph>();
@@ -67,6 +75,45 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph()
   g->addLink(std::move(link_5));
   g->addLink(std::move(link_6));
   g->addLink(std::move(tool0));
+
+  if (config == ABBConfig::ROBOT_ON_RAIL)
+  {
+    g->addLink(Link("world"));
+    g->addLink(Link("axis_1"));
+
+    Joint joint_a("joint_axis_1");
+    joint_a.axis = Eigen::Vector3d(0, 1, 0);
+    joint_a.parent_link_name = "world";
+    joint_a.child_link_name = "axis_1";
+    joint_a.type = JointType::PRISMATIC;
+    g->addJoint(std::move(joint_a));
+
+    Joint joint_b("joint_base_link");
+    joint_b.axis = Eigen::Vector3d(0, 1, 0);
+    joint_b.parent_link_name = "axis_1";
+    joint_b.child_link_name = "base_link";
+    joint_b.type = JointType::FIXED;
+    g->addJoint(std::move(joint_b));
+  }
+  else if (config == ABBConfig::ROBOT_WITH_POSITIONER)
+  {
+    g->addLink(Link("world"));
+    g->addLink(Link("axis_1"));
+
+    Joint joint_a("joint_axis_1");
+    joint_a.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 0, 0);
+    joint_a.axis = Eigen::Vector3d(0, 1, 0);
+    joint_a.parent_link_name = "world";
+    joint_a.child_link_name = "axis_1";
+    joint_a.type = JointType::PRISMATIC;
+    g->addJoint(std::move(joint_a));
+
+    Joint joint_b("joint_base_link");
+    joint_b.parent_link_name = "world";
+    joint_b.child_link_name = "base_link";
+    joint_b.type = JointType::FIXED;
+    g->addJoint(std::move(joint_b));
+  }
 
   Joint joint_1("joint_1");
   joint_1.parent_link_name = "base_link";
@@ -117,7 +164,7 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph()
   return g;
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFUnit)  // NOLINT
+TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFileUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
 
@@ -203,6 +250,10 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFUnit)  // NOLINT
 
   SRDFModel srdf;
   EXPECT_TRUE(srdf.initFile(g, srdf_file));
+  EXPECT_EQ(srdf.getName(), "kuka_lbr_iiwa_14_r820");
+  EXPECT_EQ(srdf.getVersion()[0], 1);
+  EXPECT_EQ(srdf.getVersion()[1], 0);
+  EXPECT_EQ(srdf.getVersion()[2], 0);
 
   processSRDFAllowedCollisions(g, srdf);
 
@@ -220,6 +271,619 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFUnit)  // NOLINT
 
   g.clearAllowedCollisions();
   EXPECT_EQ(acm->getAllAllowedCollisions().size(), 0);
+}
+
+TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph::Ptr g = getABBSceneGraph();
+
+  std::string xml_string =
+      R"(<robot name="abb_irb2400" version="1.0.0">
+           <group name="manipulator">
+             <chain base_link="base_link" tip_link="tool0" />
+           </group>
+         </robot>)";
+
+  SRDFModel srdf;
+  EXPECT_TRUE(srdf.initString(*g, xml_string));
+  EXPECT_EQ(srdf.getName(), "abb_irb2400");
+  EXPECT_EQ(srdf.getVersion()[0], 1);
+  EXPECT_EQ(srdf.getVersion()[1], 0);
+  EXPECT_EQ(srdf.getVersion()[2], 0);
+
+  // Now test failures
+  {  // missing name
+    std::string xml_string =
+        R"(<robot version="1.0.0">
+             <group name="manipulator">
+               <chain base_link="base_link" tip_link="tool0" />
+             </group>
+           </robot>)";
+
+    SRDFModel srdf;
+    EXPECT_FALSE(srdf.initString(*g, xml_string));
+  }
+  {  // invalid version
+    std::string xml_string =
+        R"(<robot name="abb_irb2400" version="1 0 0">
+             <group name="manipulator">
+               <chain base_link="base_link" tip_link="tool0" />
+             </group>
+           </robot>)";
+
+    SRDFModel srdf;
+    EXPECT_FALSE(srdf.initString(*g, xml_string));
+  }
+  {  // invalid xml
+    std::string xml_string =
+        R"(<robot name="abb_irb2400" version="1 0 0">
+             <group name="manipulator">
+               <chain base_link="base_link" tip_link="tool0" />
+             </group>
+           </robot_invalid>)";
+
+    SRDFModel srdf;
+    EXPECT_FALSE(srdf.initString(*g, xml_string));
+  }
+  {  // initXml missing robot element
+    std::string xml_string =
+        R"(<missing_robot name="abb_irb2400" version="1.0.0">
+             <group name="manipulator">
+               <chain base_link="base_link" tip_link="tool0" />
+             </group>
+           </missing_robot>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    SRDFModel srdf;
+    EXPECT_FALSE(srdf.initXml(*g, &xml_doc));
+  }
+  {  // initFile file path does not exist
+    SRDFModel srdf;
+    EXPECT_FALSE(srdf.initFile(*g, "/tmp/file_does_not_exist.srdf"));
+  }
+}
+TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph::Ptr g = getABBSceneGraph(ABBConfig::ROBOT_ON_RAIL);
+  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
+
+  std::string xml_string =
+      R"(<robot name="abb_irb2400" version="1.0.0">
+           <group name="manipulator">
+             <chain base_link="base_link" tip_link="tool0" />
+           </group>
+           <group name="positioner">
+             <chain base_link="world" tip_link="base_link" />
+           </group>
+           <group name="gantry">
+             <chain base_link="world" tip_link="tool0" />
+           </group>
+
+           <group name="manipulator_joint">
+             <joint name="joint_1"/>
+             <joint name="joint_2"/>
+             <joint name="joint_3"/>
+             <joint name="joint_4"/>
+             <joint name="joint_5"/>
+             <joint name="joint_6"/>
+             <joint name="joint_tool0"/>
+           </group>
+
+           <group_state name="all-zeros" group="manipulator">
+             <joint name="joint_1" value="0"/>
+             <joint name="joint_2" value="0"/>
+             <joint name="joint_3" value="0"/>
+             <joint name="joint_4" value="0"/>
+             <joint name="joint_5" value="0"/>
+             <joint name="joint_6" value="0"/>
+           </group_state>
+
+           <group_rop group="gantry">
+             <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+             <positioner group="positioner" fk_solver="KDLFwdKin">
+               <joint name="axis_1" resolution="0.1"/>
+             </positioner>
+           </group_rop>
+
+           <group_tcps group="gantry">
+             <tcp name="laser" xyz="1 .1 1" rpy="0 1.57 0" />
+             <tcp name="welder" xyz=".1 1 .2" wxyz="1 0 0 0" />
+           </group_tcps>
+
+           <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+
+           <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
+           <disable_collisions link1="base_link" link2="link_2" reason="Never" />
+           <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+         </robot>)";
+
+  SRDFModel srdf_save;
+  EXPECT_TRUE(srdf_save.initString(*g, xml_string));
+  std::string save_path = tesseract_common::getTempPath() + "unit_test_save_srdf.srdf";
+  EXPECT_TRUE(srdf_save.saveToFile(save_path));
+
+  SRDFModel srdf;
+  EXPECT_TRUE(srdf.initFile(*g, save_path));
+  EXPECT_EQ(srdf.getName(), "abb_irb2400");
+  EXPECT_EQ(srdf.getVersion()[0], 1);
+  EXPECT_EQ(srdf.getVersion()[1], 0);
+  EXPECT_EQ(srdf.getVersion()[2], 0);
+
+  processSRDFAllowedCollisions(*g, srdf);
+
+  KinematicsInformation& kin_info = srdf.getKinematicsInformation();
+
+  // Check for tcp information
+  EXPECT_EQ(kin_info.group_tcps.size(), 1);
+  auto tcp_it = kin_info.group_tcps.find("gantry");
+  EXPECT_TRUE(tcp_it != kin_info.group_tcps.end());
+  EXPECT_EQ(tcp_it->second.size(), 2);
+  EXPECT_TRUE(tcp_it->second.find("laser") != tcp_it->second.end());
+  EXPECT_TRUE(tcp_it->second.find("welder") != tcp_it->second.end());
+
+  // Check for chain group information
+  EXPECT_EQ(kin_info.chain_groups.size(), 3);
+  auto chain_gantry_it = kin_info.chain_groups.find("gantry");
+  auto chain_manipulator_it = kin_info.chain_groups.find("manipulator");
+  auto chain_positioner_it = kin_info.chain_groups.find("positioner");
+  EXPECT_TRUE(chain_gantry_it != kin_info.chain_groups.end());
+  EXPECT_TRUE(chain_manipulator_it != kin_info.chain_groups.end());
+  EXPECT_TRUE(chain_positioner_it != kin_info.chain_groups.end());
+
+  // Check for joint group information
+  EXPECT_EQ(kin_info.joint_groups.size(), 1);
+  auto joint_manipulator_it = kin_info.joint_groups.find("manipulator_joint");
+  EXPECT_TRUE(joint_manipulator_it != kin_info.joint_groups.end());
+
+  // Check for rop group information
+  EXPECT_EQ(kin_info.group_rop_kinematics.size(), 1);
+  auto rop_solver_it = kin_info.group_rop_kinematics.find("gantry");
+  EXPECT_TRUE(rop_solver_it != kin_info.group_rop_kinematics.end());
+
+  // Check for opw group information
+  EXPECT_EQ(kin_info.group_opw_kinematics.size(), 1);
+  auto opw_solver_it = kin_info.group_opw_kinematics.find("manipulator");
+  EXPECT_TRUE(opw_solver_it != kin_info.group_opw_kinematics.end());
+
+  // Check for group states information
+  EXPECT_EQ(kin_info.group_states.size(), 1);
+  auto group_state_it = kin_info.group_states.find("manipulator");
+  EXPECT_TRUE(group_state_it != kin_info.group_states.end());
+  EXPECT_EQ(group_state_it->second.size(), 1);
+  EXPECT_TRUE(group_state_it->second.find("all-zeros") != group_state_it->second.end());
+
+  AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_2"));
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
+}
+TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph::Ptr g = getABBSceneGraph(ABBConfig::ROBOT_WITH_POSITIONER);
+  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
+
+  std::string xml_string =
+      R"(<robot name="abb_irb2400" version="1.0.0">
+           <group name="manipulator">
+             <chain base_link="base_link" tip_link="tool0" />
+           </group>
+           <group name="positioner">
+             <chain base_link="world" tip_link="axis_1" />
+           </group>
+           <group name="gantry">
+             <joint name="axis_1"/>
+             <joint name="joint_1"/>
+             <joint name="joint_2"/>
+             <joint name="joint_3"/>
+             <joint name="joint_4"/>
+             <joint name="joint_5"/>
+             <joint name="joint_6"/>
+             <joint name="joint_tool0"/>
+           </group>
+
+           <group_state name="all-zeros" group="manipulator">
+             <joint name="joint_1" value="0"/>
+             <joint name="joint_2" value="0"/>
+             <joint name="joint_3" value="0"/>
+             <joint name="joint_4" value="0"/>
+             <joint name="joint_5" value="0"/>
+             <joint name="joint_6" value="0"/>
+           </group_state>
+
+           <group_rep group="gantry">
+             <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+             <positioner group="positioner" fk_solver="KDLFwdKin">
+               <joint name="axis_1" resolution="0.1"/>
+             </positioner>
+           </group_rep>
+
+           <group_tcps group="gantry">
+             <tcp name="laser" xyz="1 .1 1" rpy="0 1.57 0" />
+             <tcp name="welder" xyz=".1 1 .2" wxyz="1 0 0 0" />
+           </group_tcps>
+
+           <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+
+           <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
+           <disable_collisions link1="base_link" link2="link_2" reason="Never" />
+           <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+         </robot>)";
+
+  SRDFModel srdf_save;
+  EXPECT_TRUE(srdf_save.initString(*g, xml_string));
+  std::string save_path = tesseract_common::getTempPath() + "unit_test_save2_srdf.srdf";
+  EXPECT_TRUE(srdf_save.saveToFile(save_path));
+
+  SRDFModel srdf;
+  EXPECT_TRUE(srdf.initFile(*g, save_path));
+  EXPECT_EQ(srdf.getName(), "abb_irb2400");
+  EXPECT_EQ(srdf.getVersion()[0], 1);
+  EXPECT_EQ(srdf.getVersion()[1], 0);
+  EXPECT_EQ(srdf.getVersion()[2], 0);
+
+  processSRDFAllowedCollisions(*g, srdf);
+
+  KinematicsInformation& kin_info = srdf.getKinematicsInformation();
+
+  // Check for tcp information
+  EXPECT_EQ(kin_info.group_tcps.size(), 1);
+  auto tcp_it = kin_info.group_tcps.find("gantry");
+  EXPECT_TRUE(tcp_it != kin_info.group_tcps.end());
+  EXPECT_EQ(tcp_it->second.size(), 2);
+  EXPECT_TRUE(tcp_it->second.find("laser") != tcp_it->second.end());
+  EXPECT_TRUE(tcp_it->second.find("welder") != tcp_it->second.end());
+
+  // Check for chain group information
+  EXPECT_EQ(kin_info.chain_groups.size(), 2);
+  auto chain_manipulator_it = kin_info.chain_groups.find("manipulator");
+  auto chain_positioner_it = kin_info.chain_groups.find("positioner");
+  EXPECT_TRUE(chain_manipulator_it != kin_info.chain_groups.end());
+  EXPECT_TRUE(chain_positioner_it != kin_info.chain_groups.end());
+
+  // Check for joint group information
+  EXPECT_EQ(kin_info.joint_groups.size(), 1);
+  auto joint_manipulator_it = kin_info.joint_groups.find("gantry");
+  EXPECT_TRUE(joint_manipulator_it != kin_info.joint_groups.end());
+
+  // Check for rop group information
+  EXPECT_EQ(kin_info.group_rep_kinematics.size(), 1);
+  auto rep_solver_it = kin_info.group_rep_kinematics.find("gantry");
+  EXPECT_TRUE(rep_solver_it != kin_info.group_rep_kinematics.end());
+
+  // Check for opw group information
+  EXPECT_EQ(kin_info.group_opw_kinematics.size(), 1);
+  auto opw_solver_it = kin_info.group_opw_kinematics.find("manipulator");
+  EXPECT_TRUE(opw_solver_it != kin_info.group_opw_kinematics.end());
+
+  // Check for group states information
+  EXPECT_EQ(kin_info.group_states.size(), 1);
+  auto group_state_it = kin_info.group_states.find("manipulator");
+  EXPECT_TRUE(group_state_it != kin_info.group_states.end());
+  EXPECT_EQ(group_state_it->second.size(), 1);
+  EXPECT_TRUE(group_state_it->second.find("all-zeros") != group_state_it->second.end());
+
+  AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_2"));
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
+}
+
+TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph::Ptr g = getABBSceneGraph(ABBConfig::ROBOT_ON_RAIL);
+  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
+
+  std::string xml_string =
+      R"(<robot name="abb_irb2400" version="1.0.0">
+           <group name="manipulator">
+             <chain base_link="base_link" tip_link="tool0" />
+           </group>
+           <group name="positioner">
+             <chain base_link="world" tip_link="base_link" />
+           </group>
+           <group name="gantry">
+             <chain base_link="world" tip_link="tool0" />
+           </group>
+
+           <group name="manipulator_joint">
+             <joint name="joint_1"/>
+             <joint name="joint_2"/>
+             <joint name="joint_3"/>
+             <joint name="joint_4"/>
+             <joint name="joint_5"/>
+             <joint name="joint_6"/>
+             <joint name="joint_tool0"/>
+           </group>
+
+           <group_state name="all-zeros" group="manipulator">
+             <joint name="joint_1" value="0"/>
+             <joint name="joint_2" value="0"/>
+             <joint name="joint_3" value="0"/>
+             <joint name="joint_4" value="0"/>
+             <joint name="joint_5" value="0"/>
+             <joint name="joint_6" value="0"/>
+           </group_state>
+
+           <group_rop group="gantry">
+             <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+             <positioner group="positioner" fk_solver="KDLFwdKin">
+               <joint name="axis_1" resolution="0.1"/>
+             </positioner>
+           </group_rop>
+
+           <group_tcps group="gantry">
+             <tcp name="laser" xyz="1 .1 1" rpy="0 1.57 0" />
+             <tcp name="welder" xyz=".1 1 .2" wxyz="1 0 0 0" />
+           </group_tcps>
+
+           <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+
+           <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
+           <disable_collisions link1="base_link" link2="link_2" reason="Never" />
+           <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+         </robot>)";
+
+  SRDFModel srdf;
+  const SRDFModel& srdf_const = srdf;
+  EXPECT_TRUE(srdf.initString(*g, xml_string));
+  EXPECT_EQ(srdf.getName(), "abb_irb2400");
+  EXPECT_EQ(srdf_const.getName(), "abb_irb2400");
+  EXPECT_EQ(srdf.getVersion()[0], 1);
+  EXPECT_EQ(srdf.getVersion()[1], 0);
+  EXPECT_EQ(srdf.getVersion()[2], 0);
+
+  processSRDFAllowedCollisions(*g, srdf);
+
+  KinematicsInformation& kin_info = srdf.getKinematicsInformation();
+  const KinematicsInformation& kin_info_const = srdf_const.getKinematicsInformation();
+  EXPECT_TRUE(&kin_info == &kin_info_const);
+
+  // Check for tcp information
+  EXPECT_EQ(kin_info.group_tcps.size(), 1);
+  auto tcp_it = kin_info.group_tcps.find("gantry");
+  EXPECT_TRUE(tcp_it != kin_info.group_tcps.end());
+  EXPECT_EQ(tcp_it->second.size(), 2);
+  EXPECT_TRUE(tcp_it->second.find("laser") != tcp_it->second.end());
+  EXPECT_TRUE(tcp_it->second.find("welder") != tcp_it->second.end());
+
+  // Check for chain group information
+  EXPECT_EQ(kin_info.chain_groups.size(), 3);
+  auto chain_gantry_it = kin_info.chain_groups.find("gantry");
+  auto chain_manipulator_it = kin_info.chain_groups.find("manipulator");
+  auto chain_positioner_it = kin_info.chain_groups.find("positioner");
+  EXPECT_TRUE(chain_gantry_it != kin_info.chain_groups.end());
+  EXPECT_TRUE(chain_manipulator_it != kin_info.chain_groups.end());
+  EXPECT_TRUE(chain_positioner_it != kin_info.chain_groups.end());
+
+  // Check for joint group information
+  EXPECT_EQ(kin_info.joint_groups.size(), 1);
+  auto joint_manipulator_it = kin_info.joint_groups.find("manipulator_joint");
+  EXPECT_TRUE(joint_manipulator_it != kin_info.joint_groups.end());
+
+  // Check for rop group information
+  EXPECT_EQ(kin_info.group_rop_kinematics.size(), 1);
+  auto rop_solver_it = kin_info.group_rop_kinematics.find("gantry");
+  EXPECT_TRUE(rop_solver_it != kin_info.group_rop_kinematics.end());
+
+  // Check for opw group information
+  EXPECT_EQ(kin_info.group_opw_kinematics.size(), 1);
+  auto opw_solver_it = kin_info.group_opw_kinematics.find("manipulator");
+  EXPECT_TRUE(opw_solver_it != kin_info.group_opw_kinematics.end());
+
+  // Check for group states information
+  EXPECT_EQ(kin_info.group_states.size(), 1);
+  auto group_state_it = kin_info.group_states.find("manipulator");
+  EXPECT_TRUE(group_state_it != kin_info.group_states.end());
+  EXPECT_EQ(group_state_it->second.size(), 1);
+  EXPECT_TRUE(group_state_it->second.find("all-zeros") != group_state_it->second.end());
+
+  AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_2"));
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
+}
+
+TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph::Ptr g = getABBSceneGraph(ABBConfig::ROBOT_WITH_POSITIONER);
+  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
+
+  std::string xml_string =
+      R"(<robot name="abb_irb2400" version="1.0.0">
+           <group name="manipulator">
+             <chain base_link="base_link" tip_link="tool0" />
+           </group>
+           <group name="positioner">
+             <chain base_link="world" tip_link="axis_1" />
+           </group>
+           <group name="gantry">
+             <joint name="axis_1"/>
+             <joint name="joint_1"/>
+             <joint name="joint_2"/>
+             <joint name="joint_3"/>
+             <joint name="joint_4"/>
+             <joint name="joint_5"/>
+             <joint name="joint_6"/>
+             <joint name="joint_tool0"/>
+           </group>
+
+           <group_state name="all-zeros" group="manipulator">
+             <joint name="joint_1" value="0"/>
+             <joint name="joint_2" value="0"/>
+             <joint name="joint_3" value="0"/>
+             <joint name="joint_4" value="0"/>
+             <joint name="joint_5" value="0"/>
+             <joint name="joint_6" value="0"/>
+           </group_state>
+
+           <group_rep group="gantry">
+             <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+             <positioner group="positioner" fk_solver="KDLFwdKin">
+               <joint name="axis_1" resolution="0.1"/>
+             </positioner>
+           </group_rep>
+
+           <group_tcps group="gantry">
+             <tcp name="laser" xyz="1 .1 1" rpy="0 1.57 0" />
+             <tcp name="welder" xyz=".1 1 .2" wxyz="1 0 0 0" />
+           </group_tcps>
+
+           <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+
+           <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
+           <disable_collisions link1="base_link" link2="link_2" reason="Never" />
+           <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+         </robot>)";
+
+  SRDFModel srdf;
+  EXPECT_TRUE(srdf.initString(*g, xml_string));
+  EXPECT_EQ(srdf.getName(), "abb_irb2400");
+  EXPECT_EQ(srdf.getVersion()[0], 1);
+  EXPECT_EQ(srdf.getVersion()[1], 0);
+  EXPECT_EQ(srdf.getVersion()[2], 0);
+
+  processSRDFAllowedCollisions(*g, srdf);
+
+  KinematicsInformation& kin_info = srdf.getKinematicsInformation();
+
+  // Check for tcp information
+  EXPECT_EQ(kin_info.group_tcps.size(), 1);
+  auto tcp_it = kin_info.group_tcps.find("gantry");
+  EXPECT_TRUE(tcp_it != kin_info.group_tcps.end());
+  EXPECT_EQ(tcp_it->second.size(), 2);
+  EXPECT_TRUE(tcp_it->second.find("laser") != tcp_it->second.end());
+  EXPECT_TRUE(tcp_it->second.find("welder") != tcp_it->second.end());
+
+  // Check for chain group information
+  EXPECT_EQ(kin_info.chain_groups.size(), 2);
+  auto chain_manipulator_it = kin_info.chain_groups.find("manipulator");
+  auto chain_positioner_it = kin_info.chain_groups.find("positioner");
+  EXPECT_TRUE(chain_manipulator_it != kin_info.chain_groups.end());
+  EXPECT_TRUE(chain_positioner_it != kin_info.chain_groups.end());
+
+  // Check for joint group information
+  EXPECT_EQ(kin_info.joint_groups.size(), 1);
+  auto joint_manipulator_it = kin_info.joint_groups.find("gantry");
+  EXPECT_TRUE(joint_manipulator_it != kin_info.joint_groups.end());
+
+  // Check for rop group information
+  EXPECT_EQ(kin_info.group_rep_kinematics.size(), 1);
+  auto rep_solver_it = kin_info.group_rep_kinematics.find("gantry");
+  EXPECT_TRUE(rep_solver_it != kin_info.group_rep_kinematics.end());
+
+  // Check for opw group information
+  EXPECT_EQ(kin_info.group_opw_kinematics.size(), 1);
+  auto opw_solver_it = kin_info.group_opw_kinematics.find("manipulator");
+  EXPECT_TRUE(opw_solver_it != kin_info.group_opw_kinematics.end());
+
+  // Check for group states information
+  EXPECT_EQ(kin_info.group_states.size(), 1);
+  auto group_state_it = kin_info.group_states.find("manipulator");
+  EXPECT_TRUE(group_state_it != kin_info.group_states.end());
+  EXPECT_EQ(group_state_it->second.size(), 1);
+  EXPECT_TRUE(group_state_it->second.find("all-zeros") != group_state_it->second.end());
+
+  AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_2"));
+  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
+}
+
+TEST(TesseractSceneGraphSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph::Ptr g = getABBSceneGraph();
+
+  std::string xml_string =
+      R"(<robot name="abb_irb2400">
+           <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
+           <disable_collisions link1="base_link" link2="link_2" reason="Never" />
+           <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+         </robot>)";
+  tinyxml2::XMLDocument xml_doc;
+  EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+  tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+  EXPECT_TRUE(element != nullptr);
+
+  AllowedCollisionMatrix acm = parseDisabledCollisions(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+  EXPECT_TRUE(acm.isCollisionAllowed("base_link", "link_1"));
+  EXPECT_TRUE(acm.isCollisionAllowed("base_link", "link_2"));
+  EXPECT_TRUE(acm.isCollisionAllowed("base_link", "link_3"));
+
+  // Now test failures
+  auto is_failure = [g](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    AllowedCollisionMatrix acm = parseDisabledCollisions(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    return (acm.getAllAllowedCollisions().size() != 3);
+  };
+
+  {  // missing link1
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <disable_collisions link2="link_1" reason="Adjacent" />
+             <disable_collisions link1="base_link" link2="link_2" reason="Never" />
+             <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing link2
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
+             <disable_collisions link1="base_link" reason="Never" />
+             <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing reason but should not fail
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
+             <disable_collisions link1="base_link" link2="link_2" reason="Never" />
+             <disable_collisions link1="base_link" link2="link_3" />
+           </robot>)";
+    EXPECT_FALSE(is_failure(xml_string));
+  }
+  {  // invalid link1
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <disable_collisions link1="missing_link" link2="link_1" reason="Adjacent" />
+             <disable_collisions link1="base_link" link2="link_2" reason="Never" />
+             <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid link2
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
+             <disable_collisions link1="base_link" link2="missing_link" reason="Never" />
+             <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid reason
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
+             <disable_collisions link1="base_link" link2="missing_link" reason="Never" />
+             <disable_collisions link1="base_link" link2="link_3" reason="2.335" />
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
 }
 
 TEST(TesseractSceneGraphSRDFUnit, LoadSRDFOPWKinematicsUnit)  // NOLINT
@@ -258,6 +922,153 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFOPWKinematicsUnit)  // NOLINT
   EXPECT_EQ(opw.sign_corrections[3], -1);
   EXPECT_EQ(opw.sign_corrections[4], 1);
   EXPECT_EQ(opw.sign_corrections[5], 1);
+
+  // Now test failures
+  auto is_failure = [g](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    GroupOPWKinematics opw_groups = parseGroupOPWKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    return opw_groups.empty();
+  };
+
+  {  // missing a1
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing a2
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing b
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing c1
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing c2
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing c3
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing c4
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing offset is allowed
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_FALSE(is_failure(xml_string));
+  }
+  {  // missing sign_corrections is allowed
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0"/>
+           </robot>)";
+    EXPECT_FALSE(is_failure(xml_string));
+  }
+
+  {  // invalid a1
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="adfa" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid a2
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="adfas" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid b
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="adfas" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid c1
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="adfsa" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid c2
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="asdfasd" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalide c3
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="adfas" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid c4
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="asdfa" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid offset
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="avd 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid sign_corrections
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="a 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid sign_corrections
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="5 1 1 -1 1 1"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
 }
 
 TEST(TesseractSceneGraphSRDFUnit, SRDFChainGroupUnit)  // NOLINT
@@ -288,6 +1099,70 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFChainGroupUnit)  // NOLINT
   EXPECT_EQ(chain_groups["manipulator"].size(), 1);
   EXPECT_EQ(chain_groups["manipulator"][0].first, "base_link");
   EXPECT_EQ(chain_groups["manipulator"][0].second, "tool0");
+
+  // Now test failures
+  auto is_failure = [g](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    auto [group_names, chain_groups, joint_groups, link_groups] =
+        parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+
+    UNUSED(group_names);
+    UNUSED(joint_groups);
+    UNUSED(link_groups);
+    return chain_groups.empty();
+  };
+
+  {  // missing name
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group>
+                             <chain base_link="base_link" tip_link="tool0" />
+                           </group>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing chains
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group name="manipulator"/>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing chain base_link
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group name="manipulator">
+                             <chain tip_link="tool0" />
+                           </group>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing chain tip_link
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group name="manipulator">
+                             <chain base_link="base_link" />
+                           </group>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // invalid chain base_link
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group name="manipulator">
+                             <chain base_link="missing_link" tip_link="tool0" />
+                           </group>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // invalid chain tip_link
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group name="manipulator">
+                             <chain base_link="base_link" tip_link="missing_link" />
+                           </group>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
 }
 
 TEST(TesseractSceneGraphSRDFUnit, SRDFJointGroupUnit)  // NOLINT
@@ -322,6 +1197,49 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFJointGroupUnit)  // NOLINT
   EXPECT_EQ(joint_groups.size(), 1);
   EXPECT_TRUE(link_groups.empty());
   EXPECT_EQ(joint_groups["manipulator"].size(), 7);
+
+  // Now test failures
+  auto is_failure = [g](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    auto [group_names, chain_groups, joint_groups, link_groups] =
+        parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+
+    UNUSED(group_names);
+    UNUSED(chain_groups);
+    UNUSED(link_groups);
+    return joint_groups.empty();
+  };
+
+  {  // missing name
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group>
+                             <joint name="joint_1"/>
+                           </group>
+                         </robot>)";
+
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing joints
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group name="manipulator"/>
+                         </robot>)";
+
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing joint name
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group name="manipulator">
+                             <joint/>
+                           </group>
+                         </robot>)";
+
+    EXPECT_TRUE(is_failure(str));
+  }
 }
 
 TEST(TesseractSceneGraphSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
@@ -357,6 +1275,49 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
   EXPECT_TRUE(joint_groups.empty());
   EXPECT_EQ(link_groups.size(), 1);
   EXPECT_EQ(link_groups["manipulator"].size(), 8);
+
+  // Now test failures
+  auto is_failure = [g](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    auto [group_names, chain_groups, joint_groups, link_groups] =
+        parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+
+    UNUSED(group_names);
+    UNUSED(chain_groups);
+    UNUSED(joint_groups);
+    return link_groups.empty();
+  };
+
+  {  // missing name
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group>
+                             <link name="joint_1"/>
+                           </group>
+                         </robot>)";
+
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing joints
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group name="manipulator"/>
+                         </robot>)";
+
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing joint name
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group name="manipulator">
+                             <link/>
+                           </group>
+                         </robot>)";
+
+    EXPECT_TRUE(is_failure(str));
+  }
 }
 
 TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
@@ -391,6 +1352,156 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
   EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
   EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
   EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+
+  // Now test failures
+  auto is_failure = [g](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    GroupREPKinematics rep_groups = parseGroupREPKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    return rep_groups.empty();
+  };
+
+  {  // missing group
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep>
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing manipulator element
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing manipulator group
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing manipulator ik_solver
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator group="manipulator" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing manipulator reach
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner element
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner group
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner fk_solver is allowed
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_FALSE(is_failure(xml_string));
+  }
+  {  // missing positioner no joints
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin"/>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner joint name
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner joint resolution
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
 }
 
 TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
@@ -425,6 +1536,156 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
   EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
   EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
   EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+
+  // Now test failures
+  auto is_failure = [g](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    GroupROPKinematics rop_groups = parseGroupROPKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    return rop_groups.empty();
+  };
+
+  {  // missing group
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop>
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing manipulator element
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing manipulator group
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing manipulator ik_solver
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator group="manipulator" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing manipulator reach
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner element
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner group
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner fk_solver is allowed
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_FALSE(is_failure(xml_string));
+  }
+  {  // missing positioner no joints
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin"/>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner joint name
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint resolution="0.1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner joint resolution
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_TRUE(is_failure(xml_string));
+  }
 }
 
 TEST(TesseractSceneGraphSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
@@ -465,6 +1726,80 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
   EXPECT_DOUBLE_EQ(it2->second["joint_4"], 0);
   EXPECT_DOUBLE_EQ(it2->second["joint_5"], 0);
   EXPECT_DOUBLE_EQ(it2->second["joint_6"], 0);
+
+  // Now test failures
+  auto is_failure = [g, &group_names](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    GroupJointStates group_states = parseGroupStates(*g, group_names, element, std::array<int, 3>({ 1, 0, 0 }));
+    return group_states.empty();
+  };
+
+  {  // missing name
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_state group="manipulator">
+               <joint name="joint_1" value="0"/>
+             </group_state>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing group
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_state name="all-zeros">
+               <joint name="joint_1" value="0"/>
+             </group_state>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid group
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_state name="all-zeros" group="missing_group">
+               <joint name="joint_1" value="0"/>
+             </group_state>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // no joints
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_state name="all-zeros" group="manipulator"/>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing joint name
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_state name="all-zeros" group="manipulator">
+               <joint value="0"/>
+             </group_state>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing joint value
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_state name="all-zeros" group="manipulator">
+               <joint name="joint_1"/>
+             </group_state>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // invalid joint value
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_state name="all-zeros" group="manipulator">
+               <joint name="joint_1" value="abc"/>
+             </group_state>
+           </robot>)";
+    EXPECT_TRUE(is_failure(xml_string));
+  }
 }
 
 TEST(TesseractSceneGraphSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
@@ -498,6 +1833,81 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
 
   auto it3 = it->second.find("welder");
   EXPECT_TRUE(it3 != it->second.end());
+
+  // Now test failures
+  auto is_failure = [g](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    GroupTCPs group_tcps = parseGroupTCPs(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    return group_tcps.empty();
+  };
+
+  {  // missing group
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group_tcps>
+                             <tcp name="laser" xyz="1 .1 1" rpy="0 1.57 0" />
+                           </group_tcps>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing tcp element
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group_tcps group="manipulator"/>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing tcp name
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group_tcps group="manipulator">
+                             <tcp xyz="1 .1 1" rpy="0 1.57 0" />
+                           </group_tcps>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing tcp xyz
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group_tcps group="manipulator">
+                             <tcp name="laser" rpy="0 1.57 0" />
+                           </group_tcps>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // missing tcp orientation
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group_tcps group="manipulator">
+                             <tcp name="laser" xyz="1 .1 1" />
+                           </group_tcps>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // invalid tcp xyz
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group_tcps group="manipulator">
+                             <tcp name="laser" xyz="a .1 1" rpy="0 1.57 0" />
+                           </group_tcps>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // invalid orientation
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group_tcps group="manipulator">
+                             <tcp name="laser" xyz="1 .1 1" rpy="a 1.57 0" />
+                           </group_tcps>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
+  {  // invalid orientation
+    std::string str = R"(<robot name="abb_irb2400">
+                           <group_tcps group="manipulator">
+                             <tcp name="laser" xyz="1 .1 1" wxyz="a 1.57 0 0" />
+                           </group_tcps>
+                         </robot>)";
+    EXPECT_TRUE(is_failure(str));
+  }
 }
 
 int main(int argc, char** argv)
