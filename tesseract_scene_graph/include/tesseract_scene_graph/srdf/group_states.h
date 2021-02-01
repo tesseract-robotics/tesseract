@@ -49,16 +49,10 @@ inline GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph
       continue;
     }
 
-    auto gs = group_states.find(group_name);
-    if (gs == group_states.end())
-    {
-      group_states[group_name] = GroupsJointStates();
-      gs = group_states.find(group_name);
-    }
-
     GroupsJointState joint_state;
 
     // get the joint values in the group state
+    bool parse_joints_failed = false;
     for (const tinyxml2::XMLElement* joint_xml = xml_element->FirstChildElement("joint"); joint_xml;
          joint_xml = joint_xml->NextSiblingElement("joint"))
     {
@@ -66,28 +60,44 @@ inline GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph
       double joint_value{ 0 };
       status = tesseract_common::QueryStringAttributeRequired(joint_xml, "name", joint_name);
       if (status != tinyxml2::XML_SUCCESS)
-        continue;
+      {
+        parse_joints_failed = true;
+        break;
+      }
 
       if (!scene_graph.getJoint(joint_name))
       {
         CONSOLE_BRIDGE_logError("Joint '%s' declared as part of group state '%s' is not known to the URDF",
                                 joint_name.c_str(),
                                 state_name.c_str());
-        continue;
+        parse_joints_failed = true;
+        break;
       }
 
       status = tesseract_common::QueryDoubleAttributeRequired(joint_xml, "value", joint_value);
       if (status != tinyxml2::XML_SUCCESS)
-        continue;
-
-      joint_state[joint_name] = joint_value;
-
-      if (joint_state.empty())
+      {
         CONSOLE_BRIDGE_logError("Unable to parse joint value ('%s') for joint '%s' in group state '%s'",
                                 joint_value,
                                 joint_name.c_str(),
                                 state_name.c_str());
+        parse_joints_failed = true;
+        break;
+      }
+
+      joint_state[joint_name] = joint_value;
     }
+
+    if (parse_joints_failed || joint_state.empty())
+      continue;
+
+    auto gs = group_states.find(group_name);
+    if (gs == group_states.end())
+    {
+      group_states[group_name] = GroupsJointStates();
+      gs = group_states.find(group_name);
+    }
+
     gs->second[state_name] = joint_state;
   }
 

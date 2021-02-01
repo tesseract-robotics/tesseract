@@ -37,16 +37,11 @@ inline GroupOPWKinematics parseGroupOPWKinematics(const tesseract_scene_graph::S
     if (status != tinyxml2::XML_SUCCESS)
       continue;
 
-    auto group_opw = group_opw_kinematics.find(group_name_string);
-    if (group_opw == group_opw_kinematics.end())
-    {
-      group_opw_kinematics[group_name_string] = OPWKinematicParameters();
-      group_opw = group_opw_kinematics.find(group_name_string);
-    }
+    OPWKinematicParameters group_opw;
 
-    if (xml_element->Attribute("a1") == nullptr && xml_element->Attribute("a2") == nullptr &&
-        xml_element->Attribute("b") == nullptr && xml_element->Attribute("c1") == nullptr &&
-        xml_element->Attribute("c2") == nullptr && xml_element->Attribute("c3") == nullptr &&
+    if (xml_element->Attribute("a1") == nullptr || xml_element->Attribute("a2") == nullptr ||
+        xml_element->Attribute("b") == nullptr || xml_element->Attribute("c1") == nullptr ||
+        xml_element->Attribute("c2") == nullptr || xml_element->Attribute("c3") == nullptr ||
         xml_element->Attribute("c4") == nullptr)
     {
       CONSOLE_BRIDGE_logError("Invalid group_opw definition, must have attributes 'a1', 'a2', 'b', 'c1', 'c2', 'c3' "
@@ -54,31 +49,31 @@ inline GroupOPWKinematics parseGroupOPWKinematics(const tesseract_scene_graph::S
       continue;
     }
 
-    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "a1", group_opw->second.a1);
+    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "a1", group_opw.a1);
     if (status != tinyxml2::XML_SUCCESS)
       continue;
 
-    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "a2", group_opw->second.a2);
+    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "a2", group_opw.a2);
     if (status != tinyxml2::XML_SUCCESS)
       continue;
 
-    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "b", group_opw->second.b);
+    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "b", group_opw.b);
     if (status != tinyxml2::XML_SUCCESS)
       continue;
 
-    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "c1", group_opw->second.c1);
+    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "c1", group_opw.c1);
     if (status != tinyxml2::XML_SUCCESS)
       continue;
 
-    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "c2", group_opw->second.c2);
+    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "c2", group_opw.c2);
     if (status != tinyxml2::XML_SUCCESS)
       continue;
 
-    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "c3", group_opw->second.c3);
+    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "c3", group_opw.c3);
     if (status != tinyxml2::XML_SUCCESS)
       continue;
 
-    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "c4", group_opw->second.c4);
+    status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "c4", group_opw.c4);
     if (status != tinyxml2::XML_SUCCESS)
       continue;
 
@@ -102,7 +97,7 @@ inline GroupOPWKinematics parseGroupOPWKinematics(const tesseract_scene_graph::S
 
       // No need to check return values because the tokens are verified above
       for (std::size_t i = 0; i < 6; ++i)
-        tesseract_common::toNumeric<double>(tokens[i], group_opw->second.offsets[i]);
+        tesseract_common::toNumeric<double>(tokens[i], group_opw.offsets[i]);
     }
 
     std::string sign_corrections_string;
@@ -123,21 +118,27 @@ inline GroupOPWKinematics parseGroupOPWKinematics(const tesseract_scene_graph::S
       }
 
       // No need to check return values because the tokens are verified above
+      bool parse_sc_failed = false;
       for (std::size_t i = 0; i < 6; ++i)
       {
         int sc{ 0 };
         tesseract_common::toNumeric<int>(tokens[i], sc);
         if (sc == 1)
-          group_opw->second.sign_corrections[i] = 1;
+          group_opw.sign_corrections[i] = 1;
         else if (sc == -1)
-          group_opw->second.sign_corrections[i] = -1;
+          group_opw.sign_corrections[i] = -1;
         else
         {
+          parse_sc_failed = true;
           CONSOLE_BRIDGE_logError("OPW Group '%s' has incorrect sign correction values!", group_name_string.c_str());
-          break;
+          continue;
         }
       }
+
+      if (parse_sc_failed)
+        continue;
     }
+    group_opw_kinematics[group_name_string] = group_opw;
   }
 
   return group_opw_kinematics;

@@ -77,21 +77,38 @@ inline GroupROPKinematics parseGroupROPKinematics(const tesseract_scene_graph::S
     }
 
     // get the chains in the groups
+    bool parse_joints_failed = false;
     for (const tinyxml2::XMLElement* joint_xml = positioner_xml->FirstChildElement("joint"); positioner_xml;
          positioner_xml = positioner_xml->NextSiblingElement("joint"))
     {
+      if (joint_xml == nullptr)
+      {
+        parse_joints_failed = true;
+        continue;
+      }
+
       std::string joint_name;
       status = tesseract_common::QueryStringAttributeRequired(joint_xml, "name", joint_name);
       if (status != tinyxml2::XML_SUCCESS)
+      {
+        parse_joints_failed = true;
         continue;
+      }
 
       double resolution;
       status = tesseract_common::QueryDoubleAttributeRequired(joint_xml, "resolution", resolution);
       if (status != tinyxml2::XML_SUCCESS)
+      {
+        parse_joints_failed = true;
         continue;
+      }
 
       rop_info.positioner_sample_resolution[joint_name] = resolution;
     }
+
+    if (parse_joints_failed || rop_info.positioner_sample_resolution.empty())
+      continue;
+
     group_rop_kinematics[group_name_string] = rop_info;
   }
 
