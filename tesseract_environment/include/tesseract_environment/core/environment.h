@@ -284,8 +284,8 @@ public:
   /**
    * @brief Apply command to the environment
    * @param command Command to be applied to the environment
-   * @return true if successful. If returned false, then only a partial set of commands have been applied. Call
-   * getCommandHistory to check. Some commands are not checked for success
+   * @return true if successful. If returned false, then the command have not been applied.
+   * Some type of Command are not checked for success
    */
   bool applyCommand(const Command& command);
 
@@ -496,8 +496,9 @@ public:
   virtual bool changeJointPositionLimits(const std::string& joint_name, double lower, double upper);
 
   /**
-   * @brief Changes the position limits associated with a joint
-   * @param limits A map of joint names to new position limits
+   * @brief Changes the position limits associated with one or more joints
+   * @param limits A map of joint names to new position limits.
+   * For each limit pair, first is the lower limit second is the upper limit
    * @return
    */
   virtual bool changeJointPositionLimits(const std::unordered_map<std::string, std::pair<double, double>>& limits);
