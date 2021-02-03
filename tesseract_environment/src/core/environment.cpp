@@ -1236,8 +1236,35 @@ bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_g
 {
   if (scene_graph_->isEmpty())
   {
+    std::vector<tesseract_scene_graph::Link::ConstPtr> pre_links = scene_graph_->getLinks();
     if (!scene_graph_->insertSceneGraph(scene_graph, prefix))
       return false;
+
+    // Now need to get list of added links to add to the contact manager
+    std::vector<tesseract_scene_graph::Link::ConstPtr> post_links = scene_graph_->getLinks();
+    std::sort(pre_links.begin(), pre_links.end());
+    std::sort(post_links.begin(), post_links.end());
+    std::vector<tesseract_scene_graph::Link::ConstPtr> diff_links;
+    std::set_difference(pre_links.begin(),
+                        pre_links.end(),
+                        post_links.begin(),
+                        post_links.end(),
+                        std::inserter(diff_links, diff_links.begin()));
+
+    for (const auto& link : diff_links)
+    {
+      if (!link->collision.empty())
+      {
+        tesseract_collision::CollisionShapesConst shapes;
+        tesseract_common::VectorIsometry3d shape_poses;
+        getCollisionObject(shapes, shape_poses, *link);
+
+        if (discrete_manager_ != nullptr)
+          discrete_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+        if (continuous_manager_ != nullptr)
+          continuous_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+      }
+    }
 
     ++revision_;
     commands_.push_back(std::make_shared<AddSceneGraphCommand>(scene_graph, nullptr, prefix));
@@ -1261,8 +1288,35 @@ bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_g
                                 const std::string& prefix)
 {
   std::string joint_name = joint.getName();
+  std::vector<tesseract_scene_graph::Link::ConstPtr> pre_links = scene_graph_->getLinks();
   if (!scene_graph_->insertSceneGraph(scene_graph, std::move(joint), prefix))
     return false;
+
+  // Now need to get list of added links to add to the contact manager
+  std::vector<tesseract_scene_graph::Link::ConstPtr> post_links = scene_graph_->getLinks();
+  std::sort(pre_links.begin(), pre_links.end());
+  std::sort(post_links.begin(), post_links.end());
+  std::vector<tesseract_scene_graph::Link::ConstPtr> diff_links;
+  std::set_difference(pre_links.begin(),
+                      pre_links.end(),
+                      post_links.begin(),
+                      post_links.end(),
+                      std::inserter(diff_links, diff_links.begin()));
+
+  for (const auto& link : diff_links)
+  {
+    if (!link->collision.empty())
+    {
+      tesseract_collision::CollisionShapesConst shapes;
+      tesseract_common::VectorIsometry3d shape_poses;
+      getCollisionObject(shapes, shape_poses, *link);
+
+      if (discrete_manager_ != nullptr)
+        discrete_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+      if (continuous_manager_ != nullptr)
+        continuous_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+    }
+  }
 
   ++revision_;
   commands_.push_back(std::make_shared<AddSceneGraphCommand>(scene_graph, getJoint(joint_name), prefix));
