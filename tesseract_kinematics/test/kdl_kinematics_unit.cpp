@@ -125,7 +125,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainUnit)  // NOLINT
 
   Eigen::MatrixXd jacobian;
   jacobian.resize(6, derived_kin.numJoints());
-  EXPECT_ANY_THROW(derived_kin.calcJacobian(jacobian, Eigen::VectorXd::Zero(7), "missing_link"));
+  EXPECT_ANY_THROW(derived_kin.calcJacobian(jacobian, Eigen::VectorXd::Zero(7), "missing_link"));  // NOLINT
 }
 
 TEST(TesseractKinematicsUnit, KDLKinTreeUnit)  // NOLINT

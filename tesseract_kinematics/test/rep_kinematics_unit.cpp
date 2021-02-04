@@ -11,8 +11,25 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/rep_inverse_kinematics.h>
 #include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
+#include <opw_kinematics/opw_parameters.h>
 
 using namespace tesseract_kinematics::test_suite;
+
+inline opw_kinematics::Parameters<double> getOPWKinematicsParamABB()
+{
+  opw_kinematics::Parameters<double> opw_params;
+  opw_params.a1 = (0.100);
+  opw_params.a2 = (-0.135);
+  opw_params.b = (0.000);
+  opw_params.c1 = (0.615);
+  opw_params.c2 = (0.705);
+  opw_params.c3 = (0.755);
+  opw_params.c4 = (0.085);
+
+  opw_params.offsets[2] = -M_PI / 2.0;
+
+  return opw_params;
+}
 
 tesseract_kinematics::ForwardKinematics::Ptr
 getRobotFwdKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph)
