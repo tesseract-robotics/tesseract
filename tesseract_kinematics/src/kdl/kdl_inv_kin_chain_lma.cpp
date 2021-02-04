@@ -64,6 +64,7 @@ bool KDLInvKinChainLMA::calcInvKinHelper(Eigen::VectorXd& solutions,
   int status = ik_solver_->CartToJnt(kdl_seed, kdl_pose, kdl_solution);
   if (status < 0)
   {
+    // LCOV_EXCL_START
 #ifndef KDL_LESS_1_4_0
     if (status == KDL::ChainIkSolverPos_LMA::E_GRADIENT_JOINTS_TOO_SMALL)
     {
@@ -80,6 +81,7 @@ bool KDLInvKinChainLMA::calcInvKinHelper(Eigen::VectorXd& solutions,
 #else
     CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK");
 #endif
+    // LCOV_EXCL_STOP
     return false;
   }
 
@@ -102,11 +104,8 @@ bool KDLInvKinChainLMA::calcInvKin(Eigen::VectorXd& /*solutions*/,
                                    const std::string& /*link_name*/) const
 {
   assert(checkInitialized());
-  assert(false);
 
-  CONSOLE_BRIDGE_logError("This method call is not supported by KDLInvKinChainLMA yet.");
-
-  return false;
+  throw std::runtime_error("This method call is not supported by KDLInvKinChainLMA yet.");
 }
 
 bool KDLInvKinChainLMA::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const

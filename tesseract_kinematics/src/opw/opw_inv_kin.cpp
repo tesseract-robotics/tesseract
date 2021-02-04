@@ -104,7 +104,19 @@ bool OPWInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
     return false;
   }
 
-  return isWithinLimits<double>(vec, limits_.joint_limits);
+  for (int i = 0; i < vec.size(); ++i)
+  {
+    if ((vec[i] < limits_.joint_limits(i, 0)) || (vec(i) > limits_.joint_limits(i, 1)))
+    {
+      CONSOLE_BRIDGE_logDebug("Joint %s is out-of-range (%g < %g < %g)",
+                              joint_names_[static_cast<size_t>(i)].c_str(),
+                              limits_.joint_limits(i, 0),
+                              vec(i),
+                              limits_.joint_limits(i, 1));
+    }
+  }
+
+  return true;
 }
 
 unsigned int OPWInvKin::numJoints() const { return 6; }

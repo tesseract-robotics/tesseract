@@ -49,7 +49,7 @@ namespace tesseract_kinematics
  * @brief ROS kinematics functions.
  *
  * Typically, just wrappers around the equivalent KDL calls.
- *
+ * @todo The tip link sould be provided in the init and update srdf to require a tip link
  */
 class KDLFwdKinTree : public ForwardKinematics
 {

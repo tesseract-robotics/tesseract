@@ -90,12 +90,9 @@ bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& /*pose*/, const Eigen::Ref<con
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
-  assert(false);
   UNUSED(joint_angles);
 
-  CONSOLE_BRIDGE_logError("This method call is not supported by KDLFwdKinTree, must pass link name.");
-
-  return false;
+  throw std::runtime_error("This method call is not supported by KDLFwdKinTree, must pass link name.");
 }
 
 bool KDLFwdKinTree::calcFwdKin(tesseract_common::VectorIsometry3d& /*poses*/,
@@ -103,12 +100,9 @@ bool KDLFwdKinTree::calcFwdKin(tesseract_common::VectorIsometry3d& /*poses*/,
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
-  assert(false);
   UNUSED(joint_angles);
 
-  CONSOLE_BRIDGE_logError("This method call is not supported by KDLFwdKinTree, must pass link name.");
-
-  return false;
+  throw std::runtime_error("This method call is not supported by KDLFwdKinTree, must pass link name.");
 }
 
 bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& pose,
@@ -156,7 +150,6 @@ bool KDLFwdKinTree::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
-  assert(std::find(link_list_.begin(), link_list_.end(), link_name) != link_list_.end());
 
   KDL::JntArray kdl_joint_vals = getKDLJntArray(joint_list_, joint_angles);
   KDL::Jacobian kdl_jacobian;
@@ -273,6 +266,17 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph
     return false;
   }
 
+  for (const auto& joint_name : joint_names)
+  {
+    if (scene_graph_->getJoint(joint_name) == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("The parameter joint_names contains a joint name '%s' which does not exist in the scene "
+                              "graph!",
+                              joint_name.c_str());
+      return false;
+    }
+  }
+
   joint_list_.resize(joint_names.size());
   limits_.joint_limits.resize(static_cast<long int>(joint_names.size()), 2);
   limits_.velocity_limits.resize(static_cast<long int>(joint_names.size()));
@@ -281,10 +285,12 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph
 
   unsigned j = 0;
   const std::vector<tesseract_scene_graph::Link::ConstPtr> links = scene_graph_->getLinks();
+  link_list_.clear();
   link_list_.reserve(links.size());
   for (const auto& link : links)
     link_list_.push_back(link->getName());
 
+  joint_to_qnr_.clear();
   active_link_list_.clear();
   for (const auto& tree_element : kdl_tree_.getSegments())
   {
