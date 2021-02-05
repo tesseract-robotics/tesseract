@@ -43,7 +43,8 @@ Packages
 .. toctree::
    :maxdepth: 1
 
-   tesseract_scene_graph <_source/tesseract_scene_graph_doc.rst>
+   Getting Started <_source/getting_started.rst>
+   Tesseract Scene Graph <_source/tesseract_scene_graph_doc.rst>
    tesseract_collision <_source/tesseract_collision_doc.rst>
    tesseract_geometry <_source/tesseract_geometry_doc.rst>
    tesseract_ros <_source/tesseract_ros_doc.rst>
