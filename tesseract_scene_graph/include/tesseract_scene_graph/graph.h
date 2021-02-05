@@ -175,6 +175,27 @@ public:
    */
   const std::string& getRoot() const;
 
+  /**
+   * @brief Adds a link to the graph
+   *
+   * The first link added to the graph is set as the root by default. Use setRoot to change the root link of the graph.
+   *
+   * @param link The link to be added to the graph
+   * @return Return False if a link with the same name allready exists, otherwise true
+   */
+  bool addLink(const Link::ConstPtr& link);
+
+  /**
+   * @brief Adds a link/joint to the graph
+   *
+   * The first link added to the graph is set as the root by default. Use setRoot to change the root link of the graph.
+   *
+   * @param link The link to be added to the graph
+   * @param joint The associated joint to be added to the graph
+   * @return Return False if a link with the same name allready exists, otherwise true
+   */
+  bool addLink(const Link::ConstPtr& link, const Joint::ConstPtr& joint);
+
 #ifndef SWIG
   /**
    * @brief Adds a link to the graph
@@ -245,6 +266,14 @@ public:
    * @return True if should be condisdered during collision checking, otherwise false
    */
   bool getLinkCollisionEnabled(const std::string& name) const;
+
+  /**
+   * @brief Adds joint to the graph
+   * @param joint The joint to be added
+   * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
+   * otherwise true
+   */
+  bool addJoint(const Joint::ConstPtr& joint);
 
 #ifndef SWIG
 
@@ -475,6 +504,20 @@ public:
    */
   bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
 
+  /**
+   * @brief Merge a graph into the current environment
+   * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
+   * @param joint The joint that connects current environment with the inserted graph
+   * @param prefix string Will be prepended to every link and joint of the merged graph
+   * @return Return False if any link or joint name collides with current environment, otherwise True
+   * Merge a subgraph into the current environment. Every joint and link of the subgraph will be copied into the
+   * environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with different
+   * names
+   */
+  bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
+                        const tesseract_scene_graph::Joint::ConstPtr& joint,
+                        const std::string& prefix = "");
+
 #ifndef SWIG
   /**
    * @brief Merge a graph into the current environment
@@ -636,33 +679,5 @@ inline std::ostream& operator<<(std::ostream& os, const SceneGraph::Path& path)
 }
 
 }  // namespace tesseract_scene_graph
-
-#ifdef SWIG
-%extend tesseract_scene_graph::SceneGraph
-{
-
-  bool addJoint(tesseract_scene_graph::Joint::Ptr joint)
-  {
-    return $self->addJoint(std::move(joint->clone()));
-  }
-
-  bool addLink(tesseract_scene_graph::Link::Ptr link)
-  {
-    return $self->addLink(std::move(link->clone()));
-  }
-  
-  bool addLink(tesseract_scene_graph::Link::Ptr link, tesseract_scene_graph::Joint::Ptr joint)
-  {
-    return $self->addLink(std::move(link->clone()),std::move(joint->clone()));
-  }
-
-  bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                        tesseract_scene_graph::Joint::Ptr joint,
-                        const std::string& prefix = "")
-  {
-    return $self->insertSceneGraph(scene_graph,std::move(joint->clone()),prefix);
-  }
-}
-#endif  // SWIG
 
 #endif  // TESSERACT_SCENE_GRAPH_GRAPH_H

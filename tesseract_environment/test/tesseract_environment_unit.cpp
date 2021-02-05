@@ -122,16 +122,16 @@ void runAddandRemoveLinkTest()
   const std::string link_name1 = "link_n1";
   const std::string link_name2 = "link_n2";
   const std::string joint_name1 = "joint_n1";
-  Link link_1(link_name1);
-  Link link_2(link_name2);
+  auto link_1 = std::make_shared<Link>(link_name1);
+  auto link_2 = std::make_shared<Link>(link_name2);
 
-  Joint joint_1(joint_name1);
-  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_name = link_name1;
-  joint_1.child_link_name = link_name2;
-  joint_1.type = JointType::FIXED;
+  auto joint_1 = std::make_shared<Joint>(joint_name1);
+  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1->parent_link_name = link_name1;
+  joint_1->child_link_name = link_name2;
+  joint_1->type = JointType::FIXED;
 
-  EXPECT_TRUE(env->addLink(std::move(link_1)));
+  EXPECT_TRUE(env->addLink(link_1));
 
   std::vector<std::string> link_names = env->getLinkNames();
   std::vector<std::string> joint_names = env->getJointNames();
@@ -143,7 +143,7 @@ void runAddandRemoveLinkTest()
               env->getCurrentState()->joint_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joints.find("joint_" + link_name1) == env->getCurrentState()->joints.end());
 
-  env->addLink(std::move(link_2), std::move(joint_1));
+  env->addLink(link_2, joint_1);
   link_names = env->getLinkNames();
   joint_names = env->getJointNames();
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
@@ -193,28 +193,28 @@ void runMoveLinkandJointTest()
   const std::string link_name2 = "link_n2";
   const std::string joint_name1 = "joint_n1";
   const std::string joint_name2 = "joint_n2";
-  Link link_1(link_name1);
-  Link link_2(link_name2);
+  auto link_1 = std::make_shared<Link>(link_name1);
+  auto link_2 = std::make_shared<Link>(link_name2);
 
-  Joint joint_1(joint_name1);
-  joint_1.parent_link_name = env->getRootLinkName();
-  joint_1.child_link_name = link_name1;
-  joint_1.type = JointType::FIXED;
+  auto joint_1 = std::make_shared<Joint>(joint_name1);
+  joint_1->parent_link_name = env->getRootLinkName();
+  joint_1->child_link_name = link_name1;
+  joint_1->type = JointType::FIXED;
 
-  Joint joint_2(joint_name2);
-  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = link_name1;
-  joint_2.child_link_name = link_name2;
-  joint_2.type = JointType::FIXED;
+  auto joint_2 = std::make_shared<Joint>(joint_name2);
+  joint_2->parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_2->parent_link_name = link_name1;
+  joint_2->child_link_name = link_name2;
+  joint_2->type = JointType::FIXED;
 
-  env->addLink(std::move(link_1), std::move(joint_1));
+  env->addLink(link_1, joint_1);
   EXPECT_TRUE(env->getCurrentState()->link_transforms.find(link_name1) !=
               env->getCurrentState()->link_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joint_transforms.find(joint_name1) !=
               env->getCurrentState()->joint_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joints.find(joint_name1) == env->getCurrentState()->joints.end());
 
-  env->addLink(std::move(link_2), std::move(joint_2));
+  env->addLink(link_2, joint_2);
   std::vector<std::string> link_names = env->getLinkNames();
   std::vector<std::string> joint_names = env->getJointNames();
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name1) != link_names.end());
@@ -264,14 +264,14 @@ void runChangeJointOriginTest()
 
   const std::string link_name1 = "link_n1";
   const std::string joint_name1 = "joint_n1";
-  Link link_1(link_name1);
+  auto link_1 = std::make_shared<Link>(link_name1);
 
-  Joint joint_1(joint_name1);
-  joint_1.parent_link_name = env->getRootLinkName();
-  joint_1.child_link_name = link_name1;
-  joint_1.type = JointType::FIXED;
+  auto joint_1 = std::make_shared<Joint>(joint_name1);
+  joint_1->parent_link_name = env->getRootLinkName();
+  joint_1->child_link_name = link_name1;
+  joint_1->type = JointType::FIXED;
 
-  env->addLink(std::move(link_1), std::move(joint_1));
+  env->addLink(link_1, joint_1);
   EXPECT_TRUE(env->getCurrentState()->link_transforms.find(link_name1) !=
               env->getCurrentState()->link_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joint_transforms.find(joint_name1) !=
@@ -378,14 +378,14 @@ void runCurrentStatePreservedWhenEnvChangesTest()
     EXPECT_NEAR(current_state->joints.at(joint_state.first), joint_state.second, 1e-5);
   }
 
-  Link link("link_n1");
+  auto link = std::make_shared<Link>("link_n1");
 
-  Joint joint("joint_n1");
-  joint.parent_link_name = env->getRootLinkName();
-  joint.child_link_name = "link_n1";
-  joint.type = JointType::FIXED;
+  auto joint = std::make_shared<Joint>("joint_n1");
+  joint->parent_link_name = env->getRootLinkName();
+  joint->child_link_name = "link_n1";
+  joint->type = JointType::FIXED;
 
-  env->addLink(std::move(link), std::move(joint));
+  env->addLink(link, joint);
 
   current_state = env->getCurrentState();
   for (auto& joint_state : joint_states)
@@ -475,7 +475,7 @@ void runApplyCommandsTest()
       EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
     }
     {
-      Commands commands{ std::make_shared<AddCommand>(link_2, nullptr) };
+      Commands commands{ std::make_shared<AddCommand>(link_2) };
       EXPECT_TRUE(env->applyCommands(commands));
       std::vector<std::string> link_names = env->getLinkNames();
       std::vector<std::string> joint_names = env->getJointNames();
@@ -483,12 +483,13 @@ void runApplyCommandsTest()
       EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name2) != joint_names.end());
     }
     {
-      Commands commands{ std::make_shared<AddCommand>(nullptr, joint_1) };
-      EXPECT_FALSE(env->applyCommands(commands));
+      EXPECT_DEATH(Commands commands{ std::make_shared<AddCommand>(nullptr, joint_1) }, "");
     }
     {
-      Commands commands{ std::make_shared<AddCommand>(nullptr, nullptr) };
-      EXPECT_FALSE(env->applyCommands(commands));
+      EXPECT_DEATH(Commands commands{ std::make_shared<AddCommand>(link_2, nullptr) }, "");
+    }
+    {
+      EXPECT_DEATH(Commands commands{ std::make_shared<AddCommand>(nullptr, nullptr) }, "");
     }
   }
   /// @todo Add tests for applying commands to the environment

@@ -34,10 +34,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <map>
 #include <unordered_map>
+#include <boost/filesystem.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+/** @brief Enable easy switching to std::filesystem when available */
+namespace fs = boost::filesystem;
+
 template <typename T>
 using AlignedVector = std::vector<T, Eigen::aligned_allocator<T>>;
 

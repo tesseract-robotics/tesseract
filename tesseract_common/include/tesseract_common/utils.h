@@ -39,9 +39,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <algorithm>
 #include <tinyxml2.h>
-#include <boost/filesystem.hpp>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_common/types.h>
 
 namespace tesseract_common
 {
@@ -59,8 +60,7 @@ inline std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(n
  */
 inline std::string getTempPath()
 {
-  return boost::filesystem::temp_directory_path().string() +
-         std::string(1, boost::filesystem::path::preferred_separator);
+  return fs::temp_directory_path().string() + std::string(1, fs::path::preferred_separator);
 }
 
 /**
