@@ -53,7 +53,9 @@ namespace tesseract_environment
 class OFKTStateSolver : public StateSolver
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   using Ptr = std::shared_ptr<OFKTStateSolver>;
   using ConstPtr = std::shared_ptr<const OFKTStateSolver>;

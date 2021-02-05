@@ -41,7 +41,9 @@ namespace tesseract_environment
 class OFKTBaseNode : public OFKTNode
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   OFKTBaseNode(tesseract_scene_graph::JointType type, OFKTNode* parent, std::string link_name);
 
@@ -108,7 +110,9 @@ protected:
 class OFKTRootNode : public OFKTBaseNode
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   /**
    * @brief This should only be used for the root node of the tree
@@ -135,7 +139,9 @@ private:
 class OFKTFixedNode : public OFKTBaseNode
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   OFKTFixedNode(OFKTNode* parent, std::string link_name, std::string joint_name, Eigen::Isometry3d static_tf);
 
@@ -155,7 +161,9 @@ private:
 class OFKTRevoluteNode : public OFKTBaseNode
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   OFKTRevoluteNode(OFKTNode* parent,
                    std::string link_name,
@@ -182,7 +190,9 @@ private:
 class OFKTContinuousNode : public OFKTBaseNode
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   OFKTContinuousNode(OFKTNode* parent,
                      std::string link_name,
@@ -208,7 +218,9 @@ private:
 class OFKTPrismaticNode : public OFKTBaseNode
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   OFKTPrismaticNode(OFKTNode* parent,
                     std::string link_name,

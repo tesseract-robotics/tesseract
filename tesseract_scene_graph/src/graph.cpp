@@ -130,6 +130,38 @@ bool SceneGraph::addLink(Link link, Joint joint)
   return true;
 }
 
+bool SceneGraph::addLink(const Link::ConstPtr& link)
+{
+  auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(link->clone());
+  return addLink(link_ptr);
+}
+
+bool SceneGraph::addLink(const Link::ConstPtr& link, const Joint::ConstPtr& joint)
+{
+  if (getLink(link->getName()) != nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) with same name as an existing link.", link->getName().c_str());
+    return false;
+  }
+
+  if (getJoint(joint->getName()) != nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add joint (%s) with same name as an existing joint.", joint->getName().c_str());
+    return false;
+  }
+
+  std::string link_name = link->getName();
+  std::string joint_name = joint->getName();
+
+  if (!addLink(link))
+    return false;
+
+  if (!addJoint(joint))
+    return false;
+
+  return true;
+}
+
 bool SceneGraph::addLink(Link::Ptr link_ptr)
 {
   auto found = link_map_.find(link_ptr->getName());
@@ -230,6 +262,12 @@ bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
 bool SceneGraph::addJoint(tesseract_scene_graph::Joint joint)
 {
   auto joint_ptr = std::make_shared<tesseract_scene_graph::Joint>(std::move(joint));
+  return addJoint(joint_ptr);
+}
+
+bool SceneGraph::addJoint(const Joint::ConstPtr& joint)
+{
+  auto joint_ptr = std::make_shared<tesseract_scene_graph::Joint>(joint->clone());
   return addJoint(joint_ptr);
 }
 
@@ -738,6 +776,13 @@ bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene
     setRoot(scene_graph.getRoot());
 
   return true;
+}
+
+bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                  const tesseract_scene_graph::Joint::ConstPtr& joint,
+                                  const std::string& prefix)
+{
+  return insertSceneGraph(scene_graph, joint->clone(), prefix);
 }
 
 bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,

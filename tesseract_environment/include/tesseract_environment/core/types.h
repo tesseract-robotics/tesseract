@@ -59,7 +59,9 @@ namespace tesseract_environment
  */
 struct EnvState
 {
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   using Ptr = std::shared_ptr<EnvState>;
   using ConstPtr = std::shared_ptr<const EnvState>;
@@ -84,16 +86,17 @@ struct EnvState
   }
 };
 
-/**
- * @brief The AdjacencyMapPair struct
- */
+/** @brief The AdjacencyMapPair struct */
 struct AdjacencyMapPair
 {
   using Ptr = std::shared_ptr<AdjacencyMapPair>;
   using ConstPtr = std::shared_ptr<const AdjacencyMapPair>;
 
-  std::string link_name;       /**< @brief The kinematic link associated with the adjacent link */
-  Eigen::Isometry3d transform; /**< @brief A transform from the kinematic link (link_name) to the adjacent link */
+  /** @brief The kinematic link associated with the adjacent link */
+  std::string link_name;
+
+  /** @brief A transform from the kinematic link (link_name) to the adjacent link */
+  Eigen::Isometry3d transform;
 };
 
 class AdjacencyMap
