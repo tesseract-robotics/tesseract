@@ -166,7 +166,6 @@ bool KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
-  assert(kdl_data_.segment_index.find(link_name) != kdl_data_.segment_index.end());
 
   int segment_nr = kdl_data_.segment_index.at(link_name);
   KDL::Jacobian kdl_jacobian;

@@ -399,7 +399,8 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
   link_names_.erase(std::unique(link_names_.begin(), link_names_.end()), link_names_.end());
 
   active_link_names_ = positioner_fwd_kin_->getActiveLinkNames();
-  active_link_names_.insert(active_link_names_.end(), manip_links.begin(), manip_links.end());
+  const auto& manip_active_links = manip_inv_kin_->getActiveLinkNames();
+  active_link_names_.insert(active_link_names_.end(), manip_active_links.begin(), manip_active_links.end());
 
   // Remove duplicates
   std::sort(active_link_names_.begin(), active_link_names_.end());
@@ -434,6 +435,7 @@ bool RobotWithExternalPositionerInvKin::init(const RobotWithExternalPositionerIn
   manip_reach_ = kin.manip_reach_;
   positioner_fwd_kin_ = kin.positioner_fwd_kin_->clone();
   positioner_sample_resolution_ = kin.positioner_sample_resolution_;
+  manip_base_to_positioner_base_ = kin.manip_base_to_positioner_base_;
   dof_ = kin.dof_;
   limits_ = kin.limits_;
   joint_names_ = kin.joint_names_;

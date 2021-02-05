@@ -64,6 +64,7 @@ bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
   int status = ik_solver_->CartToJnt(kdl_seed, kdl_pose, kdl_solution);
   if (status < 0)
   {
+    // LCOV_EXCL_START
     if (status == KDL::ChainIkSolverPos_NR::E_DEGRADED)
     {
       CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, solution converged to <eps in maxiter, but solution is "
@@ -87,6 +88,7 @@ bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
     {
       CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK");
     }
+    // LCOV_EXCL_STOP
     return false;
   }
 
@@ -109,11 +111,8 @@ bool KDLInvKinChainNR::calcInvKin(Eigen::VectorXd& /*solutions*/,
                                   const std::string& /*link_name*/) const
 {
   assert(checkInitialized());
-  assert(false);
 
-  CONSOLE_BRIDGE_logError("This method call is not supported by KDLInvKinChainNR yet.");
-
-  return false;
+  throw std::runtime_error("This method call is not supported by KDLInvKinChainNR yet.");
 }
 
 bool KDLInvKinChainNR::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const

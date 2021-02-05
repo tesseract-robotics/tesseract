@@ -256,12 +256,6 @@ bool RobotOnPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr s
     return false;
   }
 
-  if (manipulator == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Provided manipulator is a nullptr");
-    return false;
-  }
-
   if (!(manipulator_reach > 0))
   {
     CONSOLE_BRIDGE_logError("Manipulator reach is not greather than zero");
@@ -280,7 +274,7 @@ bool RobotOnPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr s
     return false;
   }
 
-  // TODO: Check if the manipulator base link is the child of the positioner tip link.
+  /** @todo Check if the manipulator base link is the child of the positioner tip link. */
 
   for (long i = 0; i < positioner_sample_resolution.size(); ++i)
   {
