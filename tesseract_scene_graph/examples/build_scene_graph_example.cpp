@@ -125,7 +125,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   // Test again if the graph is Acyclic
   is_acyclic = g.isAcyclic();
-  std::cout << toString(is_acyclic).c_str();
+  CONSOLE_BRIDGE_logInform(toString(is_acyclic).c_str());
 
   // Test again if the graph is Tree
   is_tree = g.isTree();

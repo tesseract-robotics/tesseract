@@ -18,40 +18,12 @@ std::string toString(const SceneGraph::Path& path)
 
 std::string toString(bool b) { return b ? "true" : "false"; }
 
-// Define a resource locator function
-std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://tesseract_support") == 0)
-  {
-    mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find('/');
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
-  }
-
-  return mod_url;
-}
-
 int main(int /*argc*/, char** /*argv*/)
 {
+  // Get the srdf file path
   std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
   // Create scene graph
-  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
   SceneGraph g;
 
   g.setName("kuka_lbr_iiwa_14_r820");
@@ -142,8 +114,12 @@ int main(int /*argc*/, char** /*argv*/)
     return 1;
   }
 
+  // Add allowed collision matrix to scene graph
+  g.addAllowedCollision("link_1", "link_2", "adjacent");
+
   processSRDFAllowedCollisions(g, srdf);
 
+  // Get info about allowed collision matrix
   AllowedCollisionMatrix::ConstPtr acm = g.getAllowedCollisionMatrix();
   const AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
   CONSOLE_BRIDGE_logInform("ACM Number of entries: %d", acm_entries.size());
