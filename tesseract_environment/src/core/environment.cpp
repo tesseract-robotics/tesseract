@@ -1163,7 +1163,7 @@ bool Environment::applyChangeLinkCollisionEnabledCommand(const ChangeLinkCollisi
 
   scene_graph_->setLinkCollisionEnabled(cmd->getLinkName(), cmd->getEnabled());
 
-  if (getLinkCollisionEnabled(cmd->getLinkName()) != cmd->getEnabled())
+  if (scene_graph_->getLinkCollisionEnabled(cmd->getLinkName()) != cmd->getEnabled())
     return false;
 
   ++revision_;
@@ -1175,7 +1175,7 @@ bool Environment::applyChangeLinkCollisionEnabledCommand(const ChangeLinkCollisi
 bool Environment::applyChangeLinkVisibilityCommand(const ChangeLinkVisibilityCommand::ConstPtr& cmd)
 {
   scene_graph_->setLinkVisibility(cmd->getLinkName(), cmd->getEnabled());
-  if (getLinkVisibility(cmd->getLinkName()) != cmd->getEnabled())
+  if (scene_graph_->getLinkVisibility(cmd->getLinkName()) != cmd->getEnabled())
     return false;
 
   ++revision_;
@@ -1219,6 +1219,7 @@ bool Environment::applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd)
   if (scene_graph_->isEmpty() && cmd->getJoint())
     return false;
 
+  std::vector<tesseract_scene_graph::Link::ConstPtr> pre_links = scene_graph_->getLinks();
   if (scene_graph_->isEmpty())
   {
     if (!scene_graph_->insertSceneGraph(*cmd->getSceneGraph(), cmd->getPrefix()))
@@ -1227,12 +1228,11 @@ bool Environment::applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd)
   else if (!cmd->getJoint())
   {
     // Connect root of subgraph to graph
-    auto root_joint =
-        std::make_shared<tesseract_scene_graph::Joint>(cmd->getPrefix() + cmd->getSceneGraph()->getName() + "_joint");
-    root_joint->type = tesseract_scene_graph::JointType::FIXED;
-    root_joint->parent_link_name = getRootLinkName();
-    root_joint->child_link_name = cmd->getPrefix() + cmd->getSceneGraph()->getRoot();
-    root_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+    tesseract_scene_graph::Joint root_joint(cmd->getPrefix() + cmd->getSceneGraph()->getName() + "_joint");
+    root_joint.type = tesseract_scene_graph::JointType::FIXED;
+    root_joint.parent_link_name = getRootLinkName();
+    root_joint.child_link_name = cmd->getPrefix() + cmd->getSceneGraph()->getRoot();
+    root_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
 
     tesseract_scene_graph::SceneGraph::ConstPtr sg = cmd->getSceneGraph();
     std::string prefix = cmd->getPrefix();
@@ -1244,6 +1244,33 @@ bool Environment::applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd)
   {
     if (!scene_graph_->insertSceneGraph(*cmd->getSceneGraph(), cmd->getJoint(), cmd->getPrefix()))
       return false;
+  }
+
+  // Now need to get list of added links to add to the contact manager
+  std::vector<tesseract_scene_graph::Link::ConstPtr> post_links = scene_graph_->getLinks();
+  assert(post_links.size() > pre_links.size());
+  std::sort(pre_links.begin(), pre_links.end());
+  std::sort(post_links.begin(), post_links.end());
+  std::vector<tesseract_scene_graph::Link::ConstPtr> diff_links;
+  std::set_difference(post_links.begin(),
+                      post_links.end(),
+                      pre_links.begin(),
+                      pre_links.end(),
+                      std::inserter(diff_links, diff_links.begin()));
+
+  for (const auto& link : diff_links)
+  {
+    if (!link->collision.empty())
+    {
+      tesseract_collision::CollisionShapesConst shapes;
+      tesseract_common::VectorIsometry3d shape_poses;
+      getCollisionObject(shapes, shape_poses, *link);
+
+      if (discrete_manager_ != nullptr)
+        discrete_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+      if (continuous_manager_ != nullptr)
+        continuous_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+    }
   }
 
   ++revision_;

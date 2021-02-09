@@ -245,6 +245,12 @@ struct CollisionMarginData
   }
 
   /**
+   * @brief Get the default collision margin
+   * @return default collision margin
+   */
+  double getDefaultCollisionMarginData() const { return default_collision_margin_; };
+
+  /**
    * @brief Set the margin for a given contact pair
    *
    * The order of the object names does not matter, that is handled internal to
