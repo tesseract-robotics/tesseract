@@ -101,7 +101,7 @@ const std::string& SceneGraph::getRoot() const
 bool SceneGraph::addLink(Link link)
 {
   auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(std::move(link));
-  return addLink(link_ptr);
+  return addLinkHelper(link_ptr);
 }
 
 bool SceneGraph::addLink(Link link, Joint joint)
@@ -133,7 +133,7 @@ bool SceneGraph::addLink(Link link, Joint joint)
 bool SceneGraph::addLink(const Link::ConstPtr& link)
 {
   auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(link->clone());
-  return addLink(link_ptr);
+  return addLinkHelper(link_ptr);
 }
 
 bool SceneGraph::addLink(const Link::ConstPtr& link, const Joint::ConstPtr& joint)
@@ -162,13 +162,16 @@ bool SceneGraph::addLink(const Link::ConstPtr& link, const Joint::ConstPtr& join
   return true;
 }
 
-bool SceneGraph::addLink(Link::Ptr link_ptr)
+bool SceneGraph::addLinkHelper(Link::Ptr link_ptr)
 {
   auto found = link_map_.find(link_ptr->getName());
   if (found != link_map_.end())
     return false;
 
-  VertexProperty info(link_ptr);
+  // Set default visibility and collision enabled to true
+  boost::property<boost::vertex_link_visible_t, bool, boost::property<boost::vertex_link_collision_enabled_t, bool>>
+      data(true, true);
+  VertexProperty info(link_ptr, data);
   Vertex v = boost::add_vertex(info, static_cast<Graph&>(*this));
   link_map_[link_ptr->getName()] = std::make_pair(link_ptr, v);
 
@@ -262,16 +265,16 @@ bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
 bool SceneGraph::addJoint(tesseract_scene_graph::Joint joint)
 {
   auto joint_ptr = std::make_shared<tesseract_scene_graph::Joint>(std::move(joint));
-  return addJoint(joint_ptr);
+  return addJointHelper(joint_ptr);
 }
 
 bool SceneGraph::addJoint(const Joint::ConstPtr& joint)
 {
   auto joint_ptr = std::make_shared<tesseract_scene_graph::Joint>(joint->clone());
-  return addJoint(joint_ptr);
+  return addJointHelper(joint_ptr);
 }
 
-bool SceneGraph::addJoint(tesseract_scene_graph::Joint::Ptr joint_ptr)
+bool SceneGraph::addJointHelper(Joint::Ptr joint_ptr)
 {
   auto parent = link_map_.find(joint_ptr->parent_link_name);
   auto child = link_map_.find(joint_ptr->child_link_name);
@@ -342,7 +345,7 @@ bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_li
     return false;
 
   joint->parent_link_name = parent_link;
-  return addJoint(std::move(joint));
+  return addJointHelper(std::move(joint));
 }
 
 std::vector<Joint::ConstPtr> SceneGraph::getJoints() const
@@ -749,19 +752,23 @@ bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene
 
   for (const auto& link : scene_graph.getLinks())
   {
-    auto new_link = clone_prefix(link, prefix);
-    bool res = addLink(std::move(new_link));
+    auto new_link = std::make_shared<Link>(clone_prefix(link, prefix));
+    bool res = addLinkHelper(new_link);
     if (!res)
     {
       CONSOLE_BRIDGE_logError("Failed to add inserted graph link: %s", link->getName().c_str());
       return false;
     }
+
+    // Set link collision enabled and visibility
+    setLinkCollisionEnabled(new_link->getName(), scene_graph.getLinkCollisionEnabled(link->getName()));
+    setLinkVisibility(new_link->getName(), scene_graph.getLinkVisibility(link->getName()));
   }
 
   for (const auto& joint : scene_graph.getJoints())
   {
-    auto new_joint = clone_prefix(joint, prefix);
-    bool res = addJoint(std::move(new_joint));
+    auto new_joint = std::make_shared<Joint>(clone_prefix(joint, prefix));
+    bool res = addJointHelper(new_joint);
     if (!res)
     {
       CONSOLE_BRIDGE_logError("Failed to add inserted graph joint: %s", joint->getName().c_str());

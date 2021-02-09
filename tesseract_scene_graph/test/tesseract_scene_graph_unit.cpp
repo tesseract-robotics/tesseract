@@ -500,6 +500,13 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
   using namespace tesseract_scene_graph;
   SceneGraph g = buildTestSceneGraph();
 
+  // Check to make sure all links are enabled
+  for (const auto& link : g.getLinks())
+  {
+    EXPECT_TRUE(g.getLinkCollisionEnabled(link->getName()));
+    EXPECT_TRUE(g.getLinkVisibility(link->getName()));
+  }
+
   {
     KDL::Tree tree;
     EXPECT_TRUE(parseSceneGraph(g, tree));
@@ -516,6 +523,14 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
   }
 
   SceneGraph::Ptr g_clone = g.clone();
+
+  // Check to make sure all links are enabled
+  for (const auto& link : g_clone->getLinks())
+  {
+    EXPECT_TRUE(g_clone->getLinkCollisionEnabled(link->getName()));
+    EXPECT_TRUE(g_clone->getLinkVisibility(link->getName()));
+  }
+
   {
     KDL::Tree tree;
     EXPECT_TRUE(parseSceneGraph(*g_clone, tree));
