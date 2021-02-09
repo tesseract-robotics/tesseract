@@ -543,7 +543,7 @@ protected:
    * @param link_ptr Shared pointer to the link to be added to the graph
    * @return Return False if a link with the same name allready exists, otherwise true
    */
-  bool addLink(Link::Ptr link_ptr);
+  bool addLinkHelper(Link::Ptr link_ptr);
 
   /**
    * @brief Adds joint to the graph
@@ -551,7 +551,7 @@ protected:
    * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
    * otherwise true
    */
-  bool addJoint(Joint::Ptr joint_ptr);
+  bool addJointHelper(Joint::Ptr joint_ptr);
 
 private:
   std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>> link_map_;
