@@ -110,7 +110,11 @@ public:
    * @param relative_path Path relative to the parent directory of the current resource
    * @return Resource::Ptr The located resource, or nullptr if not found
    */
-  virtual Resource::Ptr locateSubResource(const std::string& relative_path) { return nullptr; }
+  virtual Resource::Ptr locateSubResource(const std::string& relative_path) 
+  { 
+    UNUSED(relative_path);
+    return nullptr; 
+  }
 };
 
 class BytesResource : public tesseract_common::Resource
@@ -140,7 +144,7 @@ public:
   std::shared_ptr<std::istream> getResourceContentStream() override
   {
     std::shared_ptr<std::stringstream> o = std::make_shared<std::stringstream>();
-    o->write((const char*)&bytes_.at(0), bytes_.size());
+    o->write((const char*)&bytes_.at(0), static_cast<std::streamsize>(bytes_.size()));
     o->seekg(0, o->beg);
     return o;
   }
