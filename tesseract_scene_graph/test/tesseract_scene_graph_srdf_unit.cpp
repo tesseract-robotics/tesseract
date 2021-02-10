@@ -67,14 +67,14 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
   Link link_6("link_6");
   Link tool0("tool0");
 
-  g->addLink(std::move(base_link));
-  g->addLink(std::move(link_1));
-  g->addLink(std::move(link_2));
-  g->addLink(std::move(link_3));
-  g->addLink(std::move(link_4));
-  g->addLink(std::move(link_5));
-  g->addLink(std::move(link_6));
-  g->addLink(std::move(tool0));
+  g->addLink(base_link);
+  g->addLink(link_1);
+  g->addLink(link_2);
+  g->addLink(link_3);
+  g->addLink(link_4);
+  g->addLink(link_5);
+  g->addLink(link_6);
+  g->addLink(tool0);
 
   if (config == ABBConfig::ROBOT_ON_RAIL)
   {
@@ -86,14 +86,14 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
     joint_a.parent_link_name = "world";
     joint_a.child_link_name = "axis_1";
     joint_a.type = JointType::PRISMATIC;
-    g->addJoint(std::move(joint_a));
+    g->addJoint(joint_a);
 
     Joint joint_b("joint_base_link");
     joint_b.axis = Eigen::Vector3d(0, 1, 0);
     joint_b.parent_link_name = "axis_1";
     joint_b.child_link_name = "base_link";
     joint_b.type = JointType::FIXED;
-    g->addJoint(std::move(joint_b));
+    g->addJoint(joint_b);
   }
   else if (config == ABBConfig::ROBOT_WITH_POSITIONER)
   {
@@ -106,60 +106,60 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
     joint_a.parent_link_name = "world";
     joint_a.child_link_name = "axis_1";
     joint_a.type = JointType::PRISMATIC;
-    g->addJoint(std::move(joint_a));
+    g->addJoint(joint_a);
 
     Joint joint_b("joint_base_link");
     joint_b.parent_link_name = "world";
     joint_b.child_link_name = "base_link";
     joint_b.type = JointType::FIXED;
-    g->addJoint(std::move(joint_b));
+    g->addJoint(joint_b);
   }
 
   Joint joint_1("joint_1");
   joint_1.parent_link_name = "base_link";
   joint_1.child_link_name = "link_1";
   joint_1.type = JointType::FIXED;
-  g->addJoint(std::move(joint_1));
+  g->addJoint(joint_1);
 
   Joint joint_2("joint_2");
   joint_2.parent_link_name = "link_1";
   joint_2.child_link_name = "link_2";
   joint_2.type = JointType::REVOLUTE;
-  g->addJoint(std::move(joint_2));
+  g->addJoint(joint_2);
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_3.parent_link_name = "link_2";
   joint_3.child_link_name = "link_3";
   joint_3.type = JointType::REVOLUTE;
-  g->addJoint(std::move(joint_3));
+  g->addJoint(joint_3);
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_4.parent_link_name = "link_3";
   joint_4.child_link_name = "link_4";
   joint_4.type = JointType::REVOLUTE;
-  g->addJoint(std::move(joint_4));
+  g->addJoint(joint_4);
 
   Joint joint_5("joint_5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_5.parent_link_name = "link_4";
   joint_5.child_link_name = "link_5";
   joint_5.type = JointType::REVOLUTE;
-  g->addJoint(std::move(joint_5));
+  g->addJoint(joint_5);
 
   Joint joint_6("joint_6");
   joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_6.parent_link_name = "link_5";
   joint_6.child_link_name = "link_6";
   joint_6.type = JointType::REVOLUTE;
-  g->addJoint(std::move(joint_6));
+  g->addJoint(joint_6);
 
   Joint joint_tool0("joint_tool0");
   joint_tool0.parent_link_name = "link_6";
   joint_tool0.child_link_name = "tool0";
   joint_tool0.type = JointType::FIXED;
-  g->addJoint(std::move(joint_tool0));
+  g->addJoint(joint_tool0);
 
   return g;
 }
@@ -185,68 +185,68 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFileUnit)  // NOLINT
   Link link_7("link_7");
   Link tool0("tool0");
 
-  g.addLink(std::move(base_link));
-  g.addLink(std::move(link_1));
-  g.addLink(std::move(link_2));
-  g.addLink(std::move(link_3));
-  g.addLink(std::move(link_4));
-  g.addLink(std::move(link_5));
-  g.addLink(std::move(link_6));
-  g.addLink(std::move(link_7));
-  g.addLink(std::move(tool0));
+  g.addLink(base_link);
+  g.addLink(link_1);
+  g.addLink(link_2);
+  g.addLink(link_3);
+  g.addLink(link_4);
+  g.addLink(link_5);
+  g.addLink(link_6);
+  g.addLink(link_7);
+  g.addLink(tool0);
 
   Joint joint_1("joint_a1");
   joint_1.parent_link_name = "base_link";
   joint_1.child_link_name = "link_1";
   joint_1.type = JointType::FIXED;
-  g.addJoint(std::move(joint_1));
+  g.addJoint(joint_1);
 
   Joint joint_2("joint_a2");
   joint_2.parent_link_name = "link_1";
   joint_2.child_link_name = "link_2";
   joint_2.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_2));
+  g.addJoint(joint_2);
 
   Joint joint_3("joint_a3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_3.parent_link_name = "link_2";
   joint_3.child_link_name = "link_3";
   joint_3.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_3));
+  g.addJoint(joint_3);
 
   Joint joint_4("joint_a4");
   joint_4.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_4.parent_link_name = "link_3";
   joint_4.child_link_name = "link_4";
   joint_4.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_4));
+  g.addJoint(joint_4);
 
   Joint joint_5("joint_a5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_5.parent_link_name = "link_4";
   joint_5.child_link_name = "link_5";
   joint_5.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_5));
+  g.addJoint(joint_5);
 
   Joint joint_6("joint_a6");
   joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_6.parent_link_name = "link_5";
   joint_6.child_link_name = "link_6";
   joint_6.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_6));
+  g.addJoint(joint_6);
 
   Joint joint_7("joint_a7");
   joint_7.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_7.parent_link_name = "link_6";
   joint_7.child_link_name = "link_7";
   joint_7.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_7));
+  g.addJoint(joint_7);
 
   Joint joint_tool0("joint_tool0");
   joint_tool0.parent_link_name = "link_7";
   joint_tool0.child_link_name = "tool0";
   joint_tool0.type = JointType::FIXED;
-  g.addJoint(std::move(joint_tool0));
+  g.addJoint(joint_tool0);
 
   SRDFModel srdf;
   EXPECT_TRUE(srdf.initFile(g, srdf_file));

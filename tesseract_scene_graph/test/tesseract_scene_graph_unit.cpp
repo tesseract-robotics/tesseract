@@ -47,39 +47,39 @@ tesseract_scene_graph::SceneGraph createTestSceneGraph()
   Link link_4("link_4");
   Link link_5("link_5");
 
-  g.addLink(std::move(link_1));
-  g.addLink(std::move(link_2));
-  g.addLink(std::move(link_3));
-  g.addLink(std::move(link_4));
-  g.addLink(std::move(link_5));
+  g.addLink(link_1);
+  g.addLink(link_2);
+  g.addLink(link_3);
+  g.addLink(link_4);
+  g.addLink(link_5);
 
   Joint joint_1("joint_1");
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_1.parent_link_name = "link_1";
   joint_1.child_link_name = "link_2";
   joint_1.type = JointType::FIXED;
-  g.addJoint(std::move(joint_1));
+  g.addJoint(joint_1);
 
   Joint joint_2("joint_2");
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_2.parent_link_name = "link_2";
   joint_2.child_link_name = "link_3";
   joint_2.type = JointType::PLANAR;
-  g.addJoint(std::move(joint_2));
+  g.addJoint(joint_2);
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_3.parent_link_name = "link_3";
   joint_3.child_link_name = "link_4";
   joint_3.type = JointType::FLOATING;
-  g.addJoint(std::move(joint_3));
+  g.addJoint(joint_3);
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_4.parent_link_name = "link_2";
   joint_4.child_link_name = "link_5";
   joint_4.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_4));
+  g.addJoint(joint_4);
 
   g.addAllowedCollision("link_1", "link_2", "Adjacent");
   g.addAllowedCollision("link_2", "link_3", "Adjacent");
@@ -150,7 +150,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
 
   // Test for unused links
   Link link_6("link_6");
-  g.addLink(std::move(link_6));
+  g.addLink(link_6);
   std::cout << "Free Link, Is Tree: " << g.isTree() << std::endl;
   EXPECT_FALSE(g.isTree());
 
@@ -169,7 +169,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   joint_5.parent_link_name = "link_5";
   joint_5.child_link_name = "link_4";
   joint_5.type = JointType::CONTINUOUS;
-  g.addJoint(std::move(joint_5));
+  g.addJoint(joint_5);
 
   // Check Graph
   checkSceneGraph(g);
@@ -190,7 +190,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   joint_6.parent_link_name = "link_5";
   joint_6.child_link_name = "link_1";
   joint_6.type = JointType::CONTINUOUS;
-  g.addJoint(std::move(joint_6));
+  g.addJoint(joint_6);
 
   // Check Graph
   checkSceneGraph(g);
@@ -279,7 +279,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddLinkJointPairUnit)  // NOLIN
   joint_6.child_link_name = "link_6";
   joint_6.type = JointType::FIXED;
 
-  EXPECT_TRUE(g.addLink(std::move(link_6), std::move(joint_6)));
+  EXPECT_TRUE(g.addLink(link_6, joint_6));
   EXPECT_TRUE(g.getLink("link_6") != nullptr);
   EXPECT_TRUE(g.getJoint("joint_5") != nullptr);
   EXPECT_EQ(g.getLinks().size(), 6);
@@ -291,7 +291,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddLinkJointPairUnit)  // NOLIN
   joint_6d.parent_link_name = "link_5";
   joint_6d.child_link_name = "link_6";
   joint_6d.type = JointType::FIXED;
-  EXPECT_FALSE(g.addLink(std::move(link_6d), std::move(joint_6d)));
+  EXPECT_FALSE(g.addLink(link_6d, joint_6d));
   EXPECT_EQ(g.getLinks().size(), 6);
   EXPECT_EQ(g.getJoints().size(), 5);
 }
@@ -390,7 +390,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddJointUnit)  // NOLINT
   joint_6.type = JointType::FIXED;
 
   // Child does not exist
-  EXPECT_FALSE(g.addJoint(std::move(joint_6)));
+  EXPECT_FALSE(g.addJoint(joint_6));
   EXPECT_EQ(g.getLinks().size(), 5);
   EXPECT_EQ(g.getJoints().size(), 4);
 
@@ -401,7 +401,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddJointUnit)  // NOLINT
   joint_7.type = JointType::FIXED;
 
   // Parent does not exist
-  EXPECT_FALSE(g.addJoint(std::move(joint_7)));
+  EXPECT_FALSE(g.addJoint(joint_7));
   EXPECT_EQ(g.getLinks().size(), 5);
   EXPECT_EQ(g.getJoints().size(), 4);
 
@@ -412,7 +412,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddJointUnit)  // NOLINT
   joint_4.type = JointType::FIXED;
 
   // Joint already exist
-  EXPECT_FALSE(g.addJoint(std::move(joint_4)));
+  EXPECT_FALSE(g.addJoint(joint_4));
   EXPECT_EQ(g.getLinks().size(), 5);
   EXPECT_EQ(g.getJoints().size(), 4);
 }
@@ -452,45 +452,45 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraph()
   Link link_4("link_4");
   Link link_5("link_5");
 
-  g.addLink(std::move(base_link));
-  g.addLink(std::move(link_1));
-  g.addLink(std::move(link_2));
-  g.addLink(std::move(link_3));
-  g.addLink(std::move(link_4));
-  g.addLink(std::move(link_5));
+  g.addLink(base_link);
+  g.addLink(link_1);
+  g.addLink(link_2);
+  g.addLink(link_3);
+  g.addLink(link_4);
+  g.addLink(link_5);
 
   Joint base_joint("base_joint");
   base_joint.parent_link_name = "base_link";
   base_joint.child_link_name = "link_1";
   base_joint.type = JointType::FIXED;
-  g.addJoint(std::move(base_joint));
+  g.addJoint(base_joint);
 
   Joint joint_1("joint_1");
   joint_1.parent_link_name = "link_1";
   joint_1.child_link_name = "link_2";
   joint_1.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_1));
+  g.addJoint(joint_1);
 
   Joint joint_2("joint_2");
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_2.parent_link_name = "link_2";
   joint_2.child_link_name = "link_3";
   joint_2.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_2));
+  g.addJoint(joint_2);
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_3.parent_link_name = "link_3";
   joint_3.child_link_name = "link_4";
   joint_3.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_3));
+  g.addJoint(joint_3);
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_4.parent_link_name = "link_2";
   joint_4.child_link_name = "link_5";
   joint_4.type = JointType::REVOLUTE;
-  g.addJoint(std::move(joint_4));
+  g.addJoint(joint_4);
 
   return g;
 }
@@ -593,9 +593,9 @@ TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
   joint_1.child_link_name = "link_n2";
   joint_1.type = JointType::FIXED;
 
-  g.addLink(std::move(link_1));
-  g.addLink(std::move(link_2));
-  g.addJoint(std::move(joint_1));
+  g.addLink(link_1);
+  g.addLink(link_2);
+  g.addJoint(joint_1);
 
   Eigen::Isometry3d new_origin = Eigen::Isometry3d::Identity();
   new_origin.translation()(0) += 1.234;

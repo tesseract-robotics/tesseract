@@ -210,25 +210,24 @@ void runAddandRemoveLinkTest(bool use_command = false)
   const std::string link_name1 = "link_n1";
   const std::string link_name2 = "link_n2";
   const std::string joint_name1 = "joint_n1";
-  auto link_1 = std::make_shared<Link>(link_name1);
-  link_1->visual.push_back(visual);
-  link_1->collision.push_back(collision);
-  auto link_2 = std::make_shared<Link>(link_name2);
+  Link link_1(link_name1);
+  link_1.visual.push_back(visual);
+  link_1.collision.push_back(collision);
+  Link link_2(link_name2);
 
-  auto joint_1 = std::make_shared<Joint>(joint_name1);
-  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1->parent_link_name = link_name1;
-  joint_1->child_link_name = link_name2;
-  joint_1->type = JointType::FIXED;
+  Joint joint_1(joint_name1);
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = link_name1;
+  joint_1.child_link_name = link_name2;
+  joint_1.type = JointType::FIXED;
 
   if (use_command)
   {
-    auto cmd = std::make_shared<AddCommand>(*link_1);
+    auto cmd = std::make_shared<AddCommand>(link_1);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::ADD);
     EXPECT_TRUE(cmd->getLink() != nullptr);
     EXPECT_TRUE(cmd->getJoint() == nullptr);
-    EXPECT_TRUE(cmd->getLink() != link_1);
     EXPECT_TRUE(env->applyCommand(cmd));
   }
   else
@@ -254,13 +253,11 @@ void runAddandRemoveLinkTest(bool use_command = false)
 
   if (use_command)
   {
-    auto cmd = std::make_shared<AddCommand>(*link_2, *joint_1);
+    auto cmd = std::make_shared<AddCommand>(link_2, joint_1);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::ADD);
     EXPECT_TRUE(cmd->getLink() != nullptr);
     EXPECT_TRUE(cmd->getJoint() != nullptr);
-    EXPECT_TRUE(cmd->getLink() != link_1);
-    EXPECT_TRUE(cmd->getJoint() != joint_1);
     EXPECT_TRUE(env->applyCommand(cmd));
   }
   else
@@ -444,16 +441,16 @@ void runAddSceneGraphCommandTest(bool use_command = false)
   const std::string link_name1 = "subgraph_base_link";
   const std::string link_name2 = "subgraph_link_1";
   const std::string joint_name1 = "subgraph_joint1";
-  auto link_1 = std::make_shared<Link>(link_name1);
-  link_1->visual.push_back(visual);
-  link_1->collision.push_back(collision);
-  auto link_2 = std::make_shared<Link>(link_name2);
+  Link link_1(link_name1);
+  link_1.visual.push_back(visual);
+  link_1.collision.push_back(collision);
+  Link link_2(link_name2);
 
-  auto joint_1 = std::make_shared<Joint>(joint_name1);
-  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1->parent_link_name = link_name1;
-  joint_1->child_link_name = link_name2;
-  joint_1->type = JointType::FIXED;
+  Joint joint_1(joint_name1);
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = link_name1;
+  joint_1.child_link_name = link_name2;
+  joint_1.type = JointType::FIXED;
 
   subgraph->addLink(link_1);
   subgraph->addLink(link_2);
@@ -675,12 +672,12 @@ void runChangeJointOriginCommandTest(bool use_command = false)
 
   const std::string link_name1 = "link_n1";
   const std::string joint_name1 = "joint_n1";
-  auto link_1 = std::make_shared<Link>(link_name1);
+  Link link_1(link_name1);
 
-  auto joint_1 = std::make_shared<Joint>(joint_name1);
-  joint_1->parent_link_name = env->getRootLinkName();
-  joint_1->child_link_name = link_name1;
-  joint_1->type = JointType::FIXED;
+  Joint joint_1(joint_name1);
+  joint_1.parent_link_name = env->getRootLinkName();
+  joint_1.child_link_name = link_name1;
+  joint_1.type = JointType::FIXED;
 
   env->addLink(link_1, joint_1);
   EXPECT_EQ(env->getRevision(), 3);
@@ -839,19 +836,19 @@ void runMoveJointCommandTest(bool use_command = false)
   const std::string link_name2 = "link_n2";
   const std::string joint_name1 = "joint_n1";
   const std::string joint_name2 = "joint_n2";
-  auto link_1 = std::make_shared<Link>(link_name1);
-  auto link_2 = std::make_shared<Link>(link_name2);
+  Link link_1(link_name1);
+  Link link_2(link_name2);
 
-  auto joint_1 = std::make_shared<Joint>(joint_name1);
-  joint_1->parent_link_name = env->getRootLinkName();
-  joint_1->child_link_name = link_name1;
-  joint_1->type = JointType::FIXED;
+  Joint joint_1(joint_name1);
+  joint_1.parent_link_name = env->getRootLinkName();
+  joint_1.child_link_name = link_name1;
+  joint_1.type = JointType::FIXED;
 
-  auto joint_2 = std::make_shared<Joint>(joint_name2);
-  joint_2->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2->parent_link_name = link_name1;
-  joint_2->child_link_name = link_name2;
-  joint_2->type = JointType::FIXED;
+  Joint joint_2(joint_name2);
+  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_2.parent_link_name = link_name1;
+  joint_2.child_link_name = link_name2;
+  joint_2.type = JointType::FIXED;
 
   env->addLink(link_1, joint_1);
   EXPECT_EQ(env->getRevision(), 3);
@@ -933,19 +930,19 @@ void runMoveLinkCommandTest(bool use_command = false)
   const std::string link_name2 = "link_n2";
   const std::string joint_name1 = "joint_n1";
   const std::string joint_name2 = "joint_n2";
-  auto link_1 = std::make_shared<Link>(link_name1);
-  auto link_2 = std::make_shared<Link>(link_name2);
+  Link link_1(link_name1);
+  Link link_2(link_name2);
 
-  auto joint_1 = std::make_shared<Joint>(joint_name1);
-  joint_1->parent_link_name = env->getRootLinkName();
-  joint_1->child_link_name = link_name1;
-  joint_1->type = JointType::FIXED;
+  Joint joint_1(joint_name1);
+  joint_1.parent_link_name = env->getRootLinkName();
+  joint_1.child_link_name = link_name1;
+  joint_1.type = JointType::FIXED;
 
-  auto joint_2 = std::make_shared<Joint>(joint_name2);
-  joint_2->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2->parent_link_name = link_name1;
-  joint_2->child_link_name = link_name2;
-  joint_2->type = JointType::FIXED;
+  Joint joint_2(joint_name2);
+  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_2.parent_link_name = link_name1;
+  joint_2.child_link_name = link_name2;
+  joint_2.type = JointType::FIXED;
 
   env->addLink(link_1, joint_1);
   EXPECT_EQ(env->getRevision(), 3);
@@ -981,15 +978,14 @@ void runMoveLinkCommandTest(bool use_command = false)
   env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "before_move_link_unit.dot");
 
   std::string moved_joint_name = joint_name1 + "_moved";
-  auto move_link_joint = std::make_shared<Joint>(joint_1->clone(moved_joint_name));
-  move_link_joint->parent_link_name = "tool0";
+  Joint move_link_joint = joint_1.clone(moved_joint_name);
+  move_link_joint.parent_link_name = "tool0";
   if (use_command)
   {
-    auto cmd = std::make_shared<MoveLinkCommand>(*move_link_joint);
+    auto cmd = std::make_shared<MoveLinkCommand>(move_link_joint);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::MOVE_LINK);
     EXPECT_TRUE(cmd->getJoint() != nullptr);
-    EXPECT_TRUE(cmd->getJoint() != move_link_joint);
     EXPECT_TRUE(env->applyCommand(cmd));
     EXPECT_EQ(env->getCommandHistory().back(), cmd);
   }
@@ -1045,12 +1041,12 @@ void runCurrentStatePreservedWhenEnvChangesTest()
     EXPECT_NEAR(current_state->joints.at(joint_state.first), joint_state.second, 1e-5);
   }
 
-  auto link = std::make_shared<Link>("link_n1");
+  Link link("link_n1");
 
-  auto joint = std::make_shared<Joint>("joint_n1");
-  joint->parent_link_name = env->getRootLinkName();
-  joint->child_link_name = "link_n1";
-  joint->type = JointType::FIXED;
+  Joint joint("joint_n1");
+  joint.parent_link_name = env->getRootLinkName();
+  joint.child_link_name = "link_n1";
+  joint.type = JointType::FIXED;
 
   env->addLink(link, joint);
 

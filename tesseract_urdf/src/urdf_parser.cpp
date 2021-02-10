@@ -85,7 +85,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
           URDFStatusCategory::ErrorLinkNamesNotUnique, status_cat, status);
 
     // Add link to scene graph
-    if (!sg->addLink(l))
+    if (!sg->addLink(*l))
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorAddingLinkToSceneGraph, status_cat, status);
   }
@@ -108,7 +108,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
           URDFStatusCategory::ErrorJointNamesNotUnique, status_cat, status);
 
     // Add joint to scene graph
-    if (!sg->addJoint(j))
+    if (!sg->addJoint(*j))
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorAddingJointToSceneGraph, status_cat, status);
   }
