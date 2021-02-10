@@ -69,7 +69,7 @@ public:
 
   StateSolver::Ptr clone() const override;
 
-  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) override;
+  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph, int revision = 1) override;
 
   /**
    * @brief Set the current state of the solver

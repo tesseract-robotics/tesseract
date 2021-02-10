@@ -157,7 +157,7 @@ void OFKTStateSolver::clear()
   revision_ = 0;
 }
 
-bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph)
+bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph, int revision)
 {
   assert(scene_graph->isTree());
 
@@ -198,7 +198,7 @@ bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_gra
     limits_.acceleration_limits(static_cast<long>(i)) = kinematic_joints[i]->limits->acceleration;
   }
 
-  revision_ = 1;
+  revision_ = revision;
 
   update(root_.get(), false);
 
@@ -442,8 +442,8 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
         throw std::runtime_error("OFKTStateSolver: Unhandled environment command");
       }
     }
-    revision_ = static_cast<int>(commands.size());
   }
+  revision_ = static_cast<int>(commands.size());
 
   // Remove deleted joints
   if (removed_joints.empty() == false)
@@ -562,12 +562,12 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint::ConstPtr& join
                               const std::string& child_link_name,
                               std::vector<tesseract_scene_graph::Joint::ConstPtr>& kinematic_joints)
 {
-  OFKTNode::UPtr n;
   switch (joint->type)
   {
     case tesseract_scene_graph::JointType::FIXED:
     {
       OFKTNode* parent_node = link_map_[parent_link_name];
+      assert(parent_node != nullptr);
       auto n = std::make_unique<OFKTFixedNode>(
           parent_node, child_link_name, joint_name, joint->parent_to_joint_origin_transform);
       link_map_[child_link_name] = n.get();
@@ -575,12 +575,12 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint::ConstPtr& join
       current_state_->link_transforms[n->getLinkName()] = n->getWorldTransformation();
       current_state_->joint_transforms[n->getJointName()] = n->getWorldTransformation();
       nodes_[joint_name] = std::move(n);
-
       break;
     }
     case tesseract_scene_graph::JointType::REVOLUTE:
     {
       OFKTNode* parent_node = link_map_[parent_link_name];
+      assert(parent_node != nullptr);
       auto n = std::make_unique<OFKTRevoluteNode>(
           parent_node, child_link_name, joint_name, joint->parent_to_joint_origin_transform, joint->axis);
       link_map_[child_link_name] = n.get();
@@ -596,6 +596,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint::ConstPtr& join
     case tesseract_scene_graph::JointType::CONTINUOUS:
     {
       OFKTNode* parent_node = link_map_[parent_link_name];
+      assert(parent_node != nullptr);
       auto n = std::make_unique<OFKTContinuousNode>(
           parent_node, child_link_name, joint_name, joint->parent_to_joint_origin_transform, joint->axis);
       link_map_[child_link_name] = n.get();
@@ -611,6 +612,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint::ConstPtr& join
     case tesseract_scene_graph::JointType::PRISMATIC:
     {
       OFKTNode* parent_node = link_map_[parent_link_name];
+      assert(parent_node != nullptr);
       auto n = std::make_unique<OFKTPrismaticNode>(
           parent_node, child_link_name, joint_name, joint->parent_to_joint_origin_transform, joint->axis);
       link_map_[child_link_name] = n.get();

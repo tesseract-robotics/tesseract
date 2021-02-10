@@ -43,7 +43,7 @@ StateSolver::Ptr KDLStateSolver::clone() const
   return cloned_solver;
 }
 
-bool KDLStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph)
+bool KDLStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph, int /*revision*/)
 {
   scene_graph_ = std::move(scene_graph);
   return createKDETree();

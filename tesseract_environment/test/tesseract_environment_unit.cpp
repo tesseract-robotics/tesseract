@@ -1058,6 +1058,36 @@ void runCurrentStatePreservedWhenEnvChangesTest()
 }
 
 template <typename S>
+void runEnvironmentResetTest()
+{
+  // Get the environment
+  auto env = getEnvironment<S>();
+  int init_rev = env->getRevision();
+
+  Link link("link_n1");
+  Joint joint("joint_n1");
+  joint.parent_link_name = env->getRootLinkName();
+  joint.child_link_name = "link_n1";
+  joint.type = JointType::FIXED;
+
+  env->addLink(link, joint);
+  EXPECT_EQ(env->getRevision(), init_rev + 1);
+  EXPECT_EQ(env->getCommandHistory().size(), init_rev + 1);
+
+  Commands commands = env->getCommandHistory();
+
+  // Check reset
+  EXPECT_TRUE(env->reset());
+  EXPECT_EQ(env->getRevision(), init_rev);
+  EXPECT_EQ(env->getCommandHistory().size(), init_rev);
+
+  // Check reinit
+  EXPECT_TRUE(env->template init<S>(commands));
+  EXPECT_EQ(env->getRevision(), init_rev + 1);
+  EXPECT_EQ(env->getCommandHistory().size(), init_rev + 1);
+}
+
+template <typename S>
 void runApplyCommandsTest()
 {
   // Get the environment
@@ -1466,6 +1496,12 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
 {
   runCurrentStatePreservedWhenEnvChangesTest<KDLStateSolver>();
   runCurrentStatePreservedWhenEnvChangesTest<OFKTStateSolver>();
+}
+
+TEST(TesseractEnvironmentUnit, EnvResetUnit)  // NOLINT
+{
+  runEnvironmentResetTest<KDLStateSolver>();
+  runEnvironmentResetTest<OFKTStateSolver>();
 }
 
 TEST(TesseractEnvironmentUnit, EnvApplyCommands)  // NOLINT
