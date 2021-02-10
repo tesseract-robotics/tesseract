@@ -110,10 +110,10 @@ public:
    * @param relative_path Path relative to the parent directory of the current resource
    * @return Resource::Ptr The located resource, or nullptr if not found
    */
-  virtual Resource::Ptr locateSubResource(const std::string& relative_path) 
-  { 
+  virtual Resource::Ptr locateSubResource(const std::string& relative_path)
+  {
     UNUSED(relative_path);
-    return nullptr; 
+    return nullptr;
   }
 };
 
