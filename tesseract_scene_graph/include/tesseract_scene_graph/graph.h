@@ -183,7 +183,7 @@ public:
    * @param link The link to be added to the graph
    * @return Return False if a link with the same name allready exists, otherwise true
    */
-  bool addLink(const Link::ConstPtr& link);
+  bool addLink(const Link& link);
 
   /**
    * @brief Adds a link/joint to the graph
@@ -194,31 +194,7 @@ public:
    * @param joint The associated joint to be added to the graph
    * @return Return False if a link with the same name allready exists, otherwise true
    */
-  bool addLink(const Link::ConstPtr& link, const Joint::ConstPtr& joint);
-
-#ifndef SWIG
-  /**
-   * @brief Adds a link to the graph
-   *
-   * The first link added to the graph is set as the root by default. Use setRoot to change the root link of the graph.
-   *
-   * @param link The link to be added to the graph
-   * @return Return False if a link with the same name allready exists, otherwise true
-   */
-  bool addLink(Link link);
-
-  /**
-   * @brief Adds a link/joint to the graph
-   *
-   * The first link added to the graph is set as the root by default. Use setRoot to change the root link of the graph.
-   *
-   * @param link The link to be added to the graph
-   * @param joint The associated joint to be added to the graph
-   * @return Return False if a link with the same name allready exists, otherwise true
-   */
-  bool addLink(Link link, Joint joint);
-
-#endif  // SWIG
+  bool addLink(const Link& link, const Joint& joint);
 
   /**
    * @brief Get a link in the graph
@@ -273,19 +249,7 @@ public:
    * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
    * otherwise true
    */
-  bool addJoint(const Joint::ConstPtr& joint);
-
-#ifndef SWIG
-
-  /**
-   * @brief Adds joint to the graph
-   * @param joint The joint to be added
-   * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
-   * otherwise true
-   */
-  bool addJoint(Joint joint);
-
-#endif  // SWIG
+  bool addJoint(const Joint& joint);
 
   /**
    * @brief Get a joint in the graph
@@ -515,24 +479,8 @@ public:
    * names
    */
   bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                        const tesseract_scene_graph::Joint::ConstPtr& joint,
+                        const tesseract_scene_graph::Joint& joint,
                         const std::string& prefix = "");
-
-#ifndef SWIG
-  /**
-   * @brief Merge a graph into the current environment
-   * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
-   * @param joint The joint that connects current environment with the inserted graph
-   * @param prefix string Will be prepended to every link and joint of the merged graph
-   * @return Return False if any link or joint name collides with current environment, otherwise True
-   * Merge a subgraph into the current environment. Every joint and link of the subgraph will be copied into the
-   * environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with different
-   * names
-   */
-  bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                        tesseract_scene_graph::Joint joint,
-                        const std::string& prefix = "");
-#endif  // SWIG
 
 protected:
   /**

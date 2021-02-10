@@ -98,13 +98,13 @@ const std::string& SceneGraph::getRoot() const
   return boost::get_property(static_cast<const Graph&>(*this), boost::graph_root);
 }
 
-bool SceneGraph::addLink(Link link)
+bool SceneGraph::addLink(const Link& link)
 {
-  auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(std::move(link));
+  auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(link.clone());
   return addLinkHelper(link_ptr);
 }
 
-bool SceneGraph::addLink(Link link, Joint joint)
+bool SceneGraph::addLink(const Link& link, const Joint& joint)
 {
   if (getLink(link.getName()) != nullptr)
   {
@@ -121,42 +121,10 @@ bool SceneGraph::addLink(Link link, Joint joint)
   std::string link_name = link.getName();
   std::string joint_name = joint.getName();
 
-  if (!addLink(std::move(link)))
+  if (!addLinkHelper(std::make_shared<Link>(link.clone())))
     return false;
 
-  if (!addJoint(std::move(joint)))
-    return false;
-
-  return true;
-}
-
-bool SceneGraph::addLink(const Link::ConstPtr& link)
-{
-  auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(link->clone());
-  return addLinkHelper(link_ptr);
-}
-
-bool SceneGraph::addLink(const Link::ConstPtr& link, const Joint::ConstPtr& joint)
-{
-  if (getLink(link->getName()) != nullptr)
-  {
-    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) with same name as an existing link.", link->getName().c_str());
-    return false;
-  }
-
-  if (getJoint(joint->getName()) != nullptr)
-  {
-    CONSOLE_BRIDGE_logWarn("Tried to add joint (%s) with same name as an existing joint.", joint->getName().c_str());
-    return false;
-  }
-
-  std::string link_name = link->getName();
-  std::string joint_name = joint->getName();
-
-  if (!addLink(link))
-    return false;
-
-  if (!addJoint(joint))
+  if (!addJointHelper(std::make_shared<Joint>(joint.clone())))
     return false;
 
   return true;
@@ -262,15 +230,9 @@ bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
   return param[getVertex(name)];
 }
 
-bool SceneGraph::addJoint(tesseract_scene_graph::Joint joint)
+bool SceneGraph::addJoint(const Joint& joint)
 {
-  auto joint_ptr = std::make_shared<tesseract_scene_graph::Joint>(std::move(joint));
-  return addJointHelper(joint_ptr);
-}
-
-bool SceneGraph::addJoint(const Joint::ConstPtr& joint)
-{
-  auto joint_ptr = std::make_shared<tesseract_scene_graph::Joint>(joint->clone());
+  auto joint_ptr = std::make_shared<tesseract_scene_graph::Joint>(joint.clone());
   return addJointHelper(joint_ptr);
 }
 
@@ -345,7 +307,7 @@ bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_li
     return false;
 
   joint->parent_link_name = parent_link;
-  return addJointHelper(std::move(joint));
+  return addJointHelper(joint);
 }
 
 std::vector<Joint::ConstPtr> SceneGraph::getJoints() const
@@ -786,14 +748,7 @@ bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene
 }
 
 bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                  const tesseract_scene_graph::Joint::ConstPtr& joint,
-                                  const std::string& prefix)
-{
-  return insertSceneGraph(scene_graph, joint->clone(), prefix);
-}
-
-bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                  tesseract_scene_graph::Joint joint,
+                                  const Joint& joint,
                                   const std::string& prefix)
 {
   std::string parent_link = joint.parent_link_name;
@@ -819,7 +774,7 @@ bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene
   if (!insertSceneGraph(scene_graph, prefix))
     return false;
 
-  return addJoint(std::move(joint));
+  return addJointHelper(std::make_shared<Joint>(joint.clone()));
 }
 
 }  // namespace tesseract_scene_graph

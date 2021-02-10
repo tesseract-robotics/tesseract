@@ -33,11 +33,11 @@ int main(int /*argc*/, char** /*argv*/)
   Link link_5("link_5");
 
   // Add links
-  g.addLink(std::move(link_1));
-  g.addLink(std::move(link_2));
-  g.addLink(std::move(link_3));
-  g.addLink(std::move(link_4));
-  g.addLink(std::move(link_5));
+  g.addLink(link_1);
+  g.addLink(link_2);
+  g.addLink(link_3);
+  g.addLink(link_4);
+  g.addLink(link_5);
 
   // Create joints
   Joint joint_1("joint_1");
@@ -65,10 +65,10 @@ int main(int /*argc*/, char** /*argv*/)
   joint_4.type = JointType::REVOLUTE;
 
   // Add joints
-  g.addJoint(std::move(joint_1));
-  g.addJoint(std::move(joint_2));
-  g.addJoint(std::move(joint_3));
-  g.addJoint(std::move(joint_4));
+  g.addJoint(joint_1);
+  g.addJoint(joint_2);
+  g.addJoint(joint_3);
+  g.addJoint(joint_4);
 
   // Check getAdjacentLinkNames Method
   std::vector<std::string> adjacent_links = g.getAdjacentLinkNames("link_3");
@@ -103,7 +103,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   // Test for unused links
   Link link_6("link_6");
-  g.addLink(std::move(link_6));
+  g.addLink(link_6);
   is_tree = g.isTree();
   CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
 
@@ -118,7 +118,7 @@ int main(int /*argc*/, char** /*argv*/)
   joint_5.parent_link_name = "link_5";
   joint_5.child_link_name = "link_4";
   joint_5.type = JointType::CONTINUOUS;
-  g.addJoint(std::move(joint_5));
+  g.addJoint(joint_5);
 
   // Save new graph
   g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_not_tree_example.dot");

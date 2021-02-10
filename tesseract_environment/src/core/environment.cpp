@@ -83,12 +83,12 @@ bool Environment::initHelper(const Commands& commands)
 
   environmentChanged();
 
+  initialized_ = true;
+  init_revision_ = revision_;
+
   // Register Default Managers, must be called after initialized after initialized_ is set to true
   if (register_default_contact_managers_)
     registerDefaultContactManagers();
-
-  initialized_ = true;
-  init_revision_ = revision_;
 
   return initialized_;
 }
@@ -888,46 +888,24 @@ bool Environment::addKinematicsInformation(const tesseract_scene_graph::Kinemati
   return applyCommand(std::make_shared<AddKinematicsInformationCommand>(kin_info));
 }
 
-bool Environment::addLink(const tesseract_scene_graph::Link::ConstPtr& link)
+bool Environment::addLink(const tesseract_scene_graph::Link& link)
 {
-  if (link == nullptr)
-    return false;
-
-  return applyCommand(std::make_shared<AddCommand>(*link));
+  return applyCommand(std::make_shared<AddCommand>(link));
 }
 
-bool Environment::addLink(const tesseract_scene_graph::Link::ConstPtr& link,
-                          const tesseract_scene_graph::Joint::ConstPtr& joint)
-{
-  if (link == nullptr || joint == nullptr)
-    return false;
-
-  return applyCommand(std::make_shared<AddCommand>(*link, *joint));
-}
-
-bool Environment::moveLink(const tesseract_scene_graph::Joint::ConstPtr& joint)
-{
-  if (joint == nullptr)
-    return false;
-
-  return applyCommand(std::make_shared<MoveLinkCommand>(*joint));
-}
-
-bool Environment::addLink(tesseract_scene_graph::Link link) { return applyCommand(std::make_shared<AddCommand>(link)); }
-
-bool Environment::addLink(tesseract_scene_graph::Link link, tesseract_scene_graph::Joint joint)
+bool Environment::addLink(const tesseract_scene_graph::Link& link, const tesseract_scene_graph::Joint& joint)
 {
   return applyCommand(std::make_shared<AddCommand>(link, joint));
+}
+
+bool Environment::moveLink(const tesseract_scene_graph::Joint& joint)
+{
+  return applyCommand(std::make_shared<MoveLinkCommand>(joint));
 }
 
 bool Environment::removeLink(const std::string& name)
 {
   return applyCommand(std::make_shared<RemoveLinkCommand>(name));
-}
-
-bool Environment::moveLink(tesseract_scene_graph::Joint joint)
-{
-  return applyCommand(std::make_shared<MoveLinkCommand>(joint));
 }
 
 bool Environment::removeJoint(const std::string& name)
@@ -1008,17 +986,7 @@ bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_g
 }
 
 bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                const tesseract_scene_graph::Joint::ConstPtr& joint,
-                                const std::string& prefix)
-{
-  if (joint == nullptr)
-    return false;
-
-  return applyCommand(std::make_shared<AddSceneGraphCommand>(scene_graph, *joint, prefix));
-}
-
-bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                tesseract_scene_graph::Joint joint,
+                                const tesseract_scene_graph::Joint& joint,
                                 const std::string& prefix)
 {
   return applyCommand(std::make_shared<AddSceneGraphCommand>(scene_graph, joint, prefix));
@@ -1047,7 +1015,7 @@ bool Environment::applyAddCommand(AddCommand::ConstPtr cmd)
   }
   std::string joint_name = cmd->getJoint()->getName();
 
-  if (!scene_graph_->addLink(cmd->getLink(), cmd->getJoint()))
+  if (!scene_graph_->addLink(*cmd->getLink(), *cmd->getJoint()))
     return false;
 
   // We have moved the original objects, get a pointer to them from scene_graph
@@ -1077,7 +1045,7 @@ bool Environment::applyMoveLinkCommand(const MoveLinkCommand::ConstPtr& cmd)
   if (!scene_graph_->removeJoint(joints[0]->getName()))
     return false;
 
-  if (!scene_graph_->addJoint(cmd->getJoint()))
+  if (!scene_graph_->addJoint(*cmd->getJoint()))
     return false;
 
   ++revision_;
@@ -1237,12 +1205,12 @@ bool Environment::applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd)
     tesseract_scene_graph::SceneGraph::ConstPtr sg = cmd->getSceneGraph();
     std::string prefix = cmd->getPrefix();
     cmd = std::make_shared<AddSceneGraphCommand>(*sg, root_joint, prefix);
-    if (!scene_graph_->insertSceneGraph(*cmd->getSceneGraph(), cmd->getJoint(), cmd->getPrefix()))
+    if (!scene_graph_->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
       return false;
   }
   else
   {
-    if (!scene_graph_->insertSceneGraph(*cmd->getSceneGraph(), cmd->getJoint(), cmd->getPrefix()))
+    if (!scene_graph_->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
       return false;
   }
 
