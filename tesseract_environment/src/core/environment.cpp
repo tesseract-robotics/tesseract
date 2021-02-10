@@ -75,16 +75,16 @@ bool Environment::initHelper(const Commands& commands)
 
   manipulator_manager_->revision_ = revision_;
 
-  if (!state_solver_->init(scene_graph_))
+  if (!state_solver_->init(scene_graph_, revision_))
   {
     CONSOLE_BRIDGE_logError("The environment state solver failed to initialize");
     return false;
   }
 
-  environmentChanged();
-
   initialized_ = true;
   init_revision_ = revision_;
+
+  environmentChanged();
 
   // Register Default Managers, must be called after initialized after initialized_ is set to true
   if (register_default_contact_managers_)
@@ -95,16 +95,15 @@ bool Environment::initHelper(const Commands& commands)
 
 bool Environment::reset()
 {
+  std::lock_guard<std::mutex> lock(mutex_);
+
   Commands init_command;
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
+  if (commands_.empty() || !initialized_)
+    return false;
 
-    if (commands_.empty() || !initialized_)
-      return false;
-
-    init_command.reserve(static_cast<std::size_t>(init_revision_));
-    std::copy(commands_.begin(), commands_.begin() + init_revision_, init_command.begin());
-  }
+  init_command.reserve(static_cast<std::size_t>(init_revision_));
+  for (std::size_t i = 0; i < static_cast<std::size_t>(init_revision_); ++i)
+    init_command.push_back(commands_[i]);
 
   return initHelper(init_command);
 }
@@ -816,11 +815,8 @@ void Environment::environmentChanged()
   if (continuous_manager_ != nullptr)
     continuous_manager_->setActiveCollisionObjects(active_link_names_);
 
-  if (initialized_)
-  {
-    state_solver_->onEnvironmentChanged(commands_);
-    manipulator_manager_->onEnvironmentChanged(commands_);
-  }
+  state_solver_->onEnvironmentChanged(commands_);
+  manipulator_manager_->onEnvironmentChanged(commands_);
 
   currentStateChanged();
 }

@@ -60,7 +60,7 @@ public:
   StateSolver(StateSolver&&) = delete;
   StateSolver& operator=(StateSolver&&) = delete;
 
-  virtual bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) = 0;
+  virtual bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph, int revision = 1) = 0;
 
   /**
    * @brief Set the current state of the solver
