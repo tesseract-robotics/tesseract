@@ -94,6 +94,7 @@ public:
   template <typename S>
   bool init(const Commands& commands)
   {
+    std::lock_guard<std::mutex> lock(mutex_);
     state_solver_ = std::make_shared<S>();
     return initHelper(commands);
   }
@@ -749,6 +750,10 @@ private:
   void getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
                           tesseract_common::VectorIsometry3d& shape_poses,
                           const tesseract_scene_graph::Link& link) const;
+
+  bool registerDefaultContactManagersHelper();
+  bool setActiveDiscreteContactManagerHelper(const std::string& name);
+  bool setActiveContinuousContactManagerHelper(const std::string& name);
 
   tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManagerHelper(const std::string& name) const;
 

@@ -88,7 +88,7 @@ bool Environment::initHelper(const Commands& commands)
 
   // Register Default Managers, must be called after initialized after initialized_ is set to true
   if (register_default_contact_managers_)
-    registerDefaultContactManagers();
+    registerDefaultContactManagersHelper();
 
   return initialized_;
 }
@@ -165,7 +165,9 @@ Commands Environment::getCommandHistory() const
 
 bool Environment::applyCommands(const Commands& commands)
 {
-  std::lock_guard<std::mutex> lock(mutex_);
+  // If this is not true then the init function has called applyCommand so do not lock.
+  if (initialized_)
+    std::lock_guard<std::mutex> lock(mutex_);
 
   bool success = true;
   for (const auto& command : commands)
@@ -557,25 +559,7 @@ void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& 
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  tesseract_collision::DiscreteContactManager::Ptr manager = getDiscreteContactManagerHelper(name);
-  if (manager == nullptr)
-  {
-    std::string msg = "\n  Discrete manager with " + name + " does not exist in factory!\n";
-    msg += "    Available Managers:\n";
-    for (const auto& m : discrete_factory_.getAvailableManagers())
-      msg += "      " + m + "\n";
-
-    CONSOLE_BRIDGE_logError(msg.c_str());
-    return false;
-  }
-
-  discrete_manager_name_ = name;
-  discrete_manager_ = std::move(manager);
-
-  // Update the current state information since the contact manager has been created/set
-  currentStateChanged();
-
-  return true;
+  return setActiveDiscreteContactManagerHelper(name);
 }
 
 tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManager(const std::string& name) const
@@ -594,26 +578,7 @@ tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContact
 bool Environment::setActiveContinuousContactManager(const std::string& name)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  tesseract_collision::ContinuousContactManager::Ptr manager = getContinuousContactManagerHelper(name);
-
-  if (manager == nullptr)
-  {
-    std::string msg = "\n  Continuous manager with " + name + " does not exist in factory!\n";
-    msg += "    Available Managers:\n";
-    for (const auto& m : continuous_factory_.getAvailableManagers())
-      msg += "      " + m + "\n";
-
-    CONSOLE_BRIDGE_logError(msg.c_str());
-    return false;
-  }
-
-  continuous_manager_name_ = name;
-  continuous_manager_ = std::move(manager);
-
-  // Update the current state information since the contact manager has been created/set
-  currentStateChanged();
-
-  return true;
+  return setActiveContinuousContactManagerHelper(name);
 }
 
 tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManager() const
@@ -664,19 +629,75 @@ bool Environment::registerContinuousContactManager(
 
 bool Environment::registerDefaultContactManagers()
 {
-  using namespace tesseract_collision;
   if (!initialized_)
     return false;
 
+  std::lock_guard<std::mutex> lock(mutex_);
+  return registerDefaultContactManagersHelper();
+}
+
+bool Environment::registerDefaultContactManagersHelper()
+{
+  using namespace tesseract_collision;
+
+  bool success = true;
   // Register contact manager
-  registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
-                                 &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
-  registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
-                                   &tesseract_collision_bullet::BulletCastBVHManager::create);
+  success &= discrete_factory_.registar(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
+                                        &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+
+  success &= continuous_factory_.registar(tesseract_collision_bullet::BulletCastBVHManager::name(),
+                                          &tesseract_collision_bullet::BulletCastBVHManager::create);
 
   // Set Active contact manager
-  setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name());
-  setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name());
+  success &= setActiveDiscreteContactManagerHelper(tesseract_collision_bullet::BulletDiscreteBVHManager::name());
+  success &= setActiveContinuousContactManagerHelper(tesseract_collision_bullet::BulletCastBVHManager::name());
+
+  return success;
+}
+
+bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
+{
+  tesseract_collision::DiscreteContactManager::Ptr manager = getDiscreteContactManagerHelper(name);
+  if (manager == nullptr)
+  {
+    std::string msg = "\n  Discrete manager with " + name + " does not exist in factory!\n";
+    msg += "    Available Managers:\n";
+    for (const auto& m : discrete_factory_.getAvailableManagers())
+      msg += "      " + m + "\n";
+
+    CONSOLE_BRIDGE_logError(msg.c_str());
+    return false;
+  }
+
+  discrete_manager_name_ = name;
+  discrete_manager_ = std::move(manager);
+
+  // Update the current state information since the contact manager has been created/set
+  currentStateChanged();
+
+  return true;
+}
+
+bool Environment::setActiveContinuousContactManagerHelper(const std::string& name)
+{
+  tesseract_collision::ContinuousContactManager::Ptr manager = getContinuousContactManagerHelper(name);
+
+  if (manager == nullptr)
+  {
+    std::string msg = "\n  Continuous manager with " + name + " does not exist in factory!\n";
+    msg += "    Available Managers:\n";
+    for (const auto& m : continuous_factory_.getAvailableManagers())
+      msg += "      " + m + "\n";
+
+    CONSOLE_BRIDGE_logError(msg.c_str());
+    return false;
+  }
+
+  continuous_manager_name_ = name;
+  continuous_manager_ = std::move(manager);
+
+  // Update the current state information since the contact manager has been created/set
+  currentStateChanged();
 
   return true;
 }
@@ -795,8 +816,11 @@ void Environment::environmentChanged()
   if (continuous_manager_ != nullptr)
     continuous_manager_->setActiveCollisionObjects(active_link_names_);
 
-  state_solver_->onEnvironmentChanged(commands_);
-  manipulator_manager_->onEnvironmentChanged(commands_);
+  if (initialized_)
+  {
+    state_solver_->onEnvironmentChanged(commands_);
+    manipulator_manager_->onEnvironmentChanged(commands_);
+  }
 
   currentStateChanged();
 }
