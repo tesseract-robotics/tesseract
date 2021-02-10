@@ -146,9 +146,22 @@ StateSolver::Ptr OFKTStateSolver::clone() const
   return cloned;
 }
 
+void OFKTStateSolver::clear()
+{
+  current_state_ = std::make_shared<EnvState>();
+  joint_names_.clear();
+  nodes_.clear();
+  link_map_.clear();
+  limits_ = tesseract_common::KinematicLimits();
+  root_ = nullptr;
+  revision_ = 0;
+}
+
 bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph)
 {
   assert(scene_graph->isTree());
+
+  clear();
 
   const std::string& root_name = scene_graph->getRoot();
 
@@ -294,6 +307,8 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
       case tesseract_environment::CommandType::ADD:
       {
         const auto& cmd = static_cast<const tesseract_environment::AddCommand&>(*command);
+        assert(cmd.getJoint() != nullptr);
+
         const tesseract_scene_graph::Joint::ConstPtr& joint = cmd.getJoint();
 
         addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_kinematic_joints);
@@ -302,6 +317,8 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
       case tesseract_environment::CommandType::MOVE_LINK:
       {
         const auto& cmd = static_cast<const tesseract_environment::MoveLinkCommand&>(*command);
+        assert(cmd.getJoint() != nullptr);
+
         const tesseract_scene_graph::Joint::ConstPtr& joint = cmd.getJoint();
 
         auto* old_node = link_map_[cmd.getJoint()->child_link_name];
@@ -371,6 +388,8 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
       case tesseract_environment::CommandType::ADD_SCENE_GRAPH:
       {
         const auto& cmd = static_cast<const tesseract_environment::AddSceneGraphCommand&>(*command);
+        assert(cmd.getJoint() != nullptr);
+
         const tesseract_scene_graph::Joint::ConstPtr& joint = cmd.getJoint();
 
         addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_kinematic_joints);

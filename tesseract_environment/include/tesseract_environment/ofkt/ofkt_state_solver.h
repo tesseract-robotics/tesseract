@@ -112,6 +112,8 @@ private:
   OFKTNode::UPtr root_;                                         /**< The root node of the tree */
   int revision_{ 0 };                                           /**< The environment revision number */
 
+  void clear();
+
   void onEnvironmentChanged(const Commands& commands) override;
 
   /**
