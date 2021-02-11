@@ -251,12 +251,6 @@ public:
   bool applyCommand(const Command::ConstPtr& command);
 
   /**
-   * @brief Check if environment has been initialized
-   * @return True if initialized otherwise false
-   */
-  virtual bool checkInitialized() const;
-
-  /**
    * @brief Get the Scene Graph
    * @return SceneGraphConstPtr
    */
