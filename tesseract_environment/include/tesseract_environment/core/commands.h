@@ -29,7 +29,7 @@
 #define TESSERACT_ENVIRONMENT_COMMANDS_H
 
 #include <tesseract_environment/core/commands/add_allowed_collision_command.h>
-#include <tesseract_environment/core/commands/add_command.h>
+#include <tesseract_environment/core/commands/add_link_command.h>
 #include <tesseract_environment/core/commands/add_kinematics_information_command.h>
 #include <tesseract_environment/core/commands/add_scene_graph_command.h>
 #include <tesseract_environment/core/commands/change_default_contact_margin_command.h>
@@ -51,7 +51,7 @@
 #ifdef SWIG
 
 %shared_ptr(tesseract_environment::Command)
-%shared_ptr(tesseract_environment::AddCommand)
+%shared_ptr(tesseract_environment::AddLinkCommand)
 %shared_ptr(tesseract_environment::MoveLinkCommand)
 %shared_ptr(tesseract_environment::MoveJointCommand)
 %shared_ptr(tesseract_environment::RemoveLinkCommand)
@@ -74,7 +74,7 @@
 
 %shared_factory(
   tesseract_environment::Command,
-  tesseract_environment::AddCommand,
+  tesseract_environment::AddLinkCommand,
 	tesseract_environment::MoveLinkCommand,
 	tesseract_environment::MoveJointCommand,
 	tesseract_environment::RemoveLinkCommand,

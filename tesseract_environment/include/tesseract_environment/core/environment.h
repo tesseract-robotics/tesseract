@@ -760,7 +760,7 @@ private:
                            const tesseract_scene_graph::SRDFModel::ConstPtr& srdf_model = nullptr);
 
   // Command Helper function
-  bool applyAddCommand(AddCommand::ConstPtr cmd);
+  bool applyAddCommand(AddLinkCommand::ConstPtr cmd);
   bool applyMoveLinkCommand(const MoveLinkCommand::ConstPtr& cmd);
   bool applyMoveJointCommand(const MoveJointCommand::ConstPtr& cmd);
   bool applyRemoveLinkCommand(const RemoveLinkCommand::ConstPtr& cmd);

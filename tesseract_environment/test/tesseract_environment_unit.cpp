@@ -277,9 +277,9 @@ void runAddandRemoveLinkTest(bool use_command = false)
 
   if (use_command)
   {
-    auto cmd = std::make_shared<AddCommand>(link_1);
+    auto cmd = std::make_shared<AddLinkCommand>(link_1);
     EXPECT_TRUE(cmd != nullptr);
-    EXPECT_EQ(cmd->getType(), CommandType::ADD);
+    EXPECT_EQ(cmd->getType(), CommandType::ADD_LINK);
     EXPECT_TRUE(cmd->getLink() != nullptr);
     EXPECT_TRUE(cmd->getJoint() == nullptr);
     EXPECT_TRUE(env->applyCommand(cmd));
@@ -307,9 +307,9 @@ void runAddandRemoveLinkTest(bool use_command = false)
 
   if (use_command)
   {
-    auto cmd = std::make_shared<AddCommand>(link_2, joint_1);
+    auto cmd = std::make_shared<AddLinkCommand>(link_2, joint_1);
     EXPECT_TRUE(cmd != nullptr);
-    EXPECT_EQ(cmd->getType(), CommandType::ADD);
+    EXPECT_EQ(cmd->getType(), CommandType::ADD_LINK);
     EXPECT_TRUE(cmd->getLink() != nullptr);
     EXPECT_TRUE(cmd->getJoint() != nullptr);
     EXPECT_TRUE(env->applyCommand(cmd));
@@ -1221,7 +1221,7 @@ void runApplyCommandsTest()
   // Add
   {
     {
-      Commands commands{ std::make_shared<AddCommand>(*link_1, *joint_1) };
+      Commands commands{ std::make_shared<AddLinkCommand>(*link_1, *joint_1) };
       EXPECT_TRUE(env->applyCommands(commands));
       EXPECT_FALSE(env->applyCommands(commands));
 
@@ -1231,7 +1231,7 @@ void runApplyCommandsTest()
       EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
     }
     {
-      Commands commands{ std::make_shared<AddCommand>(*link_2) };
+      Commands commands{ std::make_shared<AddLinkCommand>(*link_2) };
       EXPECT_TRUE(env->applyCommands(commands));
       std::vector<std::string> link_names = env->getLinkNames();
       std::vector<std::string> joint_names = env->getJointNames();
