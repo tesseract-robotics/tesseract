@@ -29,6 +29,7 @@
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
+#include <tesseract_collision/fcl/fcl_discrete_managers.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <queue>
@@ -313,8 +314,6 @@ bool Environment::applyCommands(const Commands& commands)
 
 bool Environment::applyCommand(const Command::ConstPtr& command) { return applyCommands({ command }); }
 
-bool Environment::checkInitialized() const { return initialized_; }
-
 const tesseract_scene_graph::SceneGraph::ConstPtr& Environment::getSceneGraph() const { return scene_graph_const_; }
 
 ManipulatorManager::Ptr Environment::getManipulatorManager() { return manipulator_manager_; }
@@ -323,6 +322,7 @@ ManipulatorManager::ConstPtr Environment::getManipulatorManager() const { return
 
 Eigen::Isometry3d Environment::findTCP(const tesseract_common::ManipulatorInfo& manip_info) const
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   if (manip_info.tcp.empty())
     return Eigen::Isometry3d::Identity();
 
@@ -383,9 +383,17 @@ void Environment::setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr
 
 tesseract_scene_graph::ResourceLocator::Ptr Environment::getResourceLocator() const { return resource_locator_; }
 
-void Environment::setName(const std::string& name) { scene_graph_->setName(name); }
+void Environment::setName(const std::string& name)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  scene_graph_->setName(name);
+}
 
-const std::string& Environment::getName() const { return scene_graph_->getName(); }
+const std::string& Environment::getName() const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  return scene_graph_->getName();
+}
 
 void Environment::setState(const std::unordered_map<std::string, double>& joints)
 {
@@ -433,7 +441,11 @@ EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names,
   return state;
 }
 
-EnvState::ConstPtr Environment::getCurrentState() const { return current_state_; }
+EnvState::ConstPtr Environment::getCurrentState() const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  return current_state_;
+}
 
 tesseract_scene_graph::Link::ConstPtr Environment::getLink(const std::string& name) const
 {
@@ -444,6 +456,7 @@ tesseract_scene_graph::Link::ConstPtr Environment::getLink(const std::string& na
 
 tesseract_scene_graph::JointLimits::ConstPtr Environment::getJointLimits(const std::string& joint_name) const
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   return scene_graph_->getJointLimits(joint_name);
 }
 
@@ -471,9 +484,17 @@ tesseract_scene_graph::AllowedCollisionMatrix::ConstPtr Environment::getAllowedC
   return acm;
 }
 
-std::vector<std::string> Environment::getJointNames() const { return joint_names_; }
+std::vector<std::string> Environment::getJointNames() const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  return joint_names_;
+}
 
-std::vector<std::string> Environment::getActiveJointNames() const { return active_joint_names_; }
+std::vector<std::string> Environment::getActiveJointNames() const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  return active_joint_names_;
+}
 
 tesseract_scene_graph::Joint::ConstPtr Environment::getJoint(const std::string& name) const
 {
@@ -509,11 +530,23 @@ Eigen::VectorXd Environment::getCurrentJointValues(const std::vector<std::string
   return jv;
 }
 
-const std::string& Environment::getRootLinkName() const { return scene_graph_->getRoot(); }
+const std::string& Environment::getRootLinkName() const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  return scene_graph_->getRoot();
+}
 
-std::vector<std::string> Environment::getLinkNames() const { return link_names_; }
+std::vector<std::string> Environment::getLinkNames() const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  return link_names_;
+}
 
-std::vector<std::string> Environment::getActiveLinkNames() const { return active_link_names_; }
+std::vector<std::string> Environment::getActiveLinkNames() const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  return active_link_names_;
+}
 
 tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 {
@@ -542,17 +575,6 @@ StateSolver::Ptr Environment::getStateSolver() const
   StateSolver::Ptr state_solver = state_solver_->clone();
 
   return state_solver;
-}
-
-void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
-                                     tesseract_common::VectorIsometry3d& shape_poses,
-                                     const tesseract_scene_graph::Link& link) const
-{
-  for (const auto& c : link.collision)
-  {
-    shapes.push_back(c->geometry);
-    shape_poses.push_back(c->origin);
-  }
 }
 
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
@@ -610,6 +632,17 @@ Environment::getContinuousContactManager(const std::string& name) const
   return manager;
 }
 
+void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
+                                     tesseract_common::VectorIsometry3d& shape_poses,
+                                     const tesseract_scene_graph::Link& link) const
+{
+  for (const auto& c : link.collision)
+  {
+    shapes.push_back(c->geometry);
+    shape_poses.push_back(c->origin);
+  }
+}
+
 bool Environment::registerDiscreteContactManager(
     const std::string& name,
     tesseract_collision::DiscreteContactManagerFactoryCreateMethod create_function)
@@ -643,6 +676,9 @@ bool Environment::registerDefaultContactManagersHelper()
   // Register contact manager
   success &= discrete_factory_.registar(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
                                         &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+
+  success &= discrete_factory_.registar(tesseract_collision_fcl::FCLDiscreteBVHManager::name(),
+                                        &tesseract_collision_fcl::FCLDiscreteBVHManager::create);
 
   success &= continuous_factory_.registar(tesseract_collision_bullet::BulletCastBVHManager::name(),
                                           &tesseract_collision_bullet::BulletCastBVHManager::create);

@@ -69,7 +69,7 @@ tesseract_scene_graph::SRDFModel::Ptr getSRDFModel(const SceneGraph::Ptr& scene_
 }
 
 template <typename S>
-Environment::Ptr getEnvironment()
+Environment::Ptr getEnvironment(bool register_default_contact_managers = false)
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -84,13 +84,22 @@ Environment::Ptr getEnvironment()
   auto srdf = getSRDFModel(scene_graph);
   EXPECT_TRUE(srdf != nullptr);
 
-  auto env = std::make_shared<Environment>(false);
+  auto env = std::make_shared<Environment>(register_default_contact_managers);
   EXPECT_TRUE(env != nullptr);
   EXPECT_EQ(0, env->getRevision());
+  EXPECT_FALSE(env->reset());
+  EXPECT_FALSE(env->isInitialized());
 
   bool success = env->init<S>(*scene_graph, srdf);
   EXPECT_TRUE(success);
   EXPECT_EQ(2, env->getRevision());
+  EXPECT_TRUE(env->isInitialized());
+  EXPECT_TRUE(env->getManipulatorManager() != nullptr);
+  EXPECT_TRUE(std::as_const(env)->getManipulatorManager() != nullptr);
+  EXPECT_TRUE(env->getResourceLocator() == nullptr);
+
+  env->setResourceLocator(std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource));
+  EXPECT_TRUE(env->getResourceLocator() != nullptr);
 
   // Check to make sure all links are enabled
   for (const auto& link : env->getSceneGraph()->getLinks())
@@ -99,15 +108,45 @@ Environment::Ptr getEnvironment()
     EXPECT_TRUE(env->getSceneGraph()->getLinkVisibility(link->getName()));
   }
 
-  // Register contact manager
-  EXPECT_TRUE(env->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
-                                                  &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
-  EXPECT_TRUE(env->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
-                                                    &tesseract_collision_bullet::BulletCastBVHManager::create));
+  if (!register_default_contact_managers)
+  {
+    // No contact managers should exist
+    EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()) ==
+                nullptr);
+    EXPECT_TRUE(env->getContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()) == nullptr);
 
-  // Set Active contact manager
-  EXPECT_TRUE(env->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()));
-  EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
+    EXPECT_TRUE(env->getDiscreteContactManager() == nullptr);
+    EXPECT_TRUE(env->getContinuousContactManager() == nullptr);
+
+    // Register contact manager
+    EXPECT_TRUE(env->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
+                                                    &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
+    EXPECT_TRUE(env->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
+                                                      &tesseract_collision_bullet::BulletCastBVHManager::create));
+
+    // Set Active contact manager
+    EXPECT_TRUE(env->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()));
+    EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
+
+    // Contact managers should exist now
+    EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()) !=
+                nullptr);
+    EXPECT_TRUE(env->getContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()) != nullptr);
+
+    EXPECT_TRUE(env->getDiscreteContactManager() != nullptr);
+    EXPECT_TRUE(env->getContinuousContactManager() != nullptr);
+  }
+  else
+  {
+    // Contact managers should exist
+    EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()) !=
+                nullptr);
+    EXPECT_TRUE(env->getContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()) != nullptr);
+    EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_fcl::FCLDiscreteBVHManager::name()) != nullptr);
+
+    EXPECT_TRUE(env->getDiscreteContactManager() != nullptr);
+    EXPECT_TRUE(env->getContinuousContactManager() != nullptr);
+  }
 
   return env;
 }
@@ -115,18 +154,33 @@ Environment::Ptr getEnvironment()
 template <typename S>
 void runContactManagerCloneTest()
 {
-  // Get the environment
-  auto env = getEnvironment<S>();
+  {  // Get the environment
+    auto env = getEnvironment<S>();
 
-  // Test after clone if active list correct
-  tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
-  const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
-  const std::vector<std::string>& d_active_list = discrete_manager->getActiveCollisionObjects();
-  EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), d_active_list.begin()));
+    // Test after clone if active list correct
+    tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
+    const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
+    const std::vector<std::string>& d_active_list = discrete_manager->getActiveCollisionObjects();
+    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), d_active_list.begin()));
 
-  tesseract_collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-  const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
-  EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
+    tesseract_collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
+    const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
+    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
+  }
+
+  {  // Get the environment with registared default contact managers
+    auto env = getEnvironment<S>(true);
+
+    // Test after clone if active list correct
+    tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
+    const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
+    const std::vector<std::string>& d_active_list = discrete_manager->getActiveCollisionObjects();
+    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), d_active_list.begin()));
+
+    tesseract_collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
+    const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
+    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
+  }
 }
 
 template <typename S>
@@ -1024,6 +1078,13 @@ void runCurrentStatePreservedWhenEnvChangesTest()
   // Get the environment
   auto env = getEnvironment<S>();
 
+  // Check if visibility and collision enabled
+  for (const auto& link_name : env->getLinkNames())
+  {
+    EXPECT_TRUE(env->getLinkCollisionEnabled(link_name));
+    EXPECT_TRUE(env->getLinkVisibility(link_name));
+  }
+
   // Set the initial state of the robot
   std::unordered_map<std::string, double> joint_states;
   joint_states["joint_a1"] = 0.0;
@@ -1055,6 +1116,13 @@ void runCurrentStatePreservedWhenEnvChangesTest()
   {
     EXPECT_NEAR(current_state->joints.at(joint_state.first), joint_state.second, 1e-5);
   }
+
+  // Check if visibility and collision enabled
+  for (const auto& link_name : env->getLinkNames())
+  {
+    EXPECT_TRUE(env->getLinkCollisionEnabled(link_name));
+    EXPECT_TRUE(env->getLinkVisibility(link_name));
+  }
 }
 
 template <typename S>
@@ -1062,6 +1130,14 @@ void runEnvironmentResetTest()
 {
   // Get the environment
   auto env = getEnvironment<S>();
+
+  // Check if visibility and collision enabled
+  for (const auto& link_name : env->getLinkNames())
+  {
+    EXPECT_TRUE(env->getLinkCollisionEnabled(link_name));
+    EXPECT_TRUE(env->getLinkVisibility(link_name));
+  }
+
   int init_rev = env->getRevision();
 
   Link link("link_n1");
@@ -1080,11 +1156,40 @@ void runEnvironmentResetTest()
   EXPECT_TRUE(env->reset());
   EXPECT_EQ(env->getRevision(), init_rev);
   EXPECT_EQ(env->getCommandHistory().size(), init_rev);
+  EXPECT_TRUE(env->isInitialized());
+
+  // Check if visibility and collision enabled
+  for (const auto& link_name : env->getLinkNames())
+  {
+    EXPECT_TRUE(env->getLinkCollisionEnabled(link_name));
+    EXPECT_TRUE(env->getLinkVisibility(link_name));
+  }
 
   // Check reinit
   EXPECT_TRUE(env->template init<S>(commands));
   EXPECT_EQ(env->getRevision(), init_rev + 1);
   EXPECT_EQ(env->getCommandHistory().size(), init_rev + 1);
+  EXPECT_TRUE(env->isInitialized());
+
+  // Check if visibility and collision enabled
+  for (const auto& link_name : env->getLinkNames())
+  {
+    EXPECT_TRUE(env->getLinkCollisionEnabled(link_name));
+    EXPECT_TRUE(env->getLinkVisibility(link_name));
+  }
+}
+
+template <typename S>
+void runEnvironmentChangeNameTest()
+{
+  // Get the environment
+  auto env = getEnvironment<S>();
+  EXPECT_EQ(env->getName(), "kuka_lbr_iiwa_14_r820");
+
+  std::string env_changed_name = "env_unit_change_name";
+  env->setName(env_changed_name);
+  EXPECT_EQ(env->getName(), env_changed_name);
+  EXPECT_EQ(env->getSceneGraph()->getName(), env_changed_name);
 }
 
 template <typename S>
@@ -1201,9 +1306,16 @@ void runEnvSetStateTest()
   // Test forward kinematics when tip link is the base of the chain
   //////////////////////////////////////////////////////////////////
   Eigen::Isometry3d pose;
+  std::vector<double> std_jvals = { 0, 0, 0, 0, 0, 0, 0 };
+  std::unordered_map<std::string, double> map_jvals;
   Eigen::VectorXd jvals;
   jvals.resize(7);
   jvals.setZero();
+
+  // Check current joint values
+  Eigen::VectorXd cjv = env->getCurrentJointValues();
+  EXPECT_TRUE(cjv.isApprox(jvals, 1e-6));
+
   std::vector<std::string> joint_names = { "base_link-base", "joint_a1", "joint_a2", "joint_a3",      "joint_a4",
                                            "joint_a5",       "joint_a6", "joint_a7", "joint_a7-tool0" };
   std::vector<std::string> link_names = { "base",   "base_link", "link_1", "link_2", "link_3",
@@ -1211,11 +1323,46 @@ void runEnvSetStateTest()
   std::vector<std::string> active_joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
                                                   "joint_a5", "joint_a6", "joint_a7" };
 
-  std::vector<EnvState::Ptr> states;
+  for (const auto& jn : active_joint_names)
+    map_jvals[jn] = 0;
+
+  std::vector<EnvState::ConstPtr> states;
 
   env->setState(active_joint_names, jvals);
   states.push_back(std::make_shared<EnvState>(*(env->getCurrentState())));
+
+  // Set the environment to a random state
+  env->setState(env->getStateSolver()->getRandomState()->joints);
+  cjv = env->getCurrentJointValues(active_joint_names);
+  EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
+
   states.push_back(env->getState(active_joint_names, jvals));
+  states.push_back(env->getState(active_joint_names, std_jvals));
+  states.push_back(env->getState(map_jvals));
+
+  env->setState(env->getStateSolver()->getRandomState()->joints);
+  cjv = env->getCurrentJointValues(active_joint_names);
+  EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
+  env->setState(active_joint_names, jvals);
+  cjv = env->getCurrentJointValues();
+  EXPECT_TRUE(cjv.isApprox(jvals, 1e-6));
+  states.push_back(env->getCurrentState());
+
+  env->setState(env->getStateSolver()->getRandomState()->joints);
+  cjv = env->getCurrentJointValues();
+  EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
+  env->setState(active_joint_names, std_jvals);
+  cjv = env->getCurrentJointValues(active_joint_names);
+  EXPECT_TRUE(cjv.isApprox(jvals, 1e-6));
+  states.push_back(env->getCurrentState());
+
+  env->setState(env->getStateSolver()->getRandomState()->joints);
+  cjv = env->getCurrentJointValues(active_joint_names);
+  EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
+  env->setState(map_jvals);
+  cjv = env->getCurrentJointValues();
+  EXPECT_TRUE(cjv.isApprox(jvals, 1e-6));
+  states.push_back(env->getCurrentState());
 
   for (auto& current_state : states)
   {
@@ -1240,46 +1387,46 @@ void runEnvSetStateTest()
       EXPECT_TRUE(current_state->joints.find(joint_name) != current_state->joints.end());
     }
 
-    EXPECT_TRUE(current_state->link_transforms["base_link"].isApprox(Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(current_state->link_transforms.at("base_link").isApprox(Eigen::Isometry3d::Identity()));
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity();
-      EXPECT_TRUE(current_state->link_transforms["link_1"].isApprox(result));
+      EXPECT_TRUE(current_state->link_transforms.at("link_1").isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-0.00043624, 0, 0.36);
-      EXPECT_TRUE(current_state->link_transforms["link_2"].isApprox(result));
+      EXPECT_TRUE(current_state->link_transforms.at("link_2").isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-0.00043624, 0, 0.36);
-      EXPECT_TRUE(current_state->link_transforms["link_3"].isApprox(result));
+      EXPECT_TRUE(current_state->link_transforms.at("link_3").isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.36 + 0.42);
-      EXPECT_TRUE(current_state->link_transforms["link_4"].isApprox(result));
+      EXPECT_TRUE(current_state->link_transforms.at("link_4").isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.36 + 0.42);
-      EXPECT_TRUE(current_state->link_transforms["link_5"].isApprox(result));
+      EXPECT_TRUE(current_state->link_transforms.at("link_5").isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.36 + 0.42 + 0.4);
-      EXPECT_TRUE(current_state->link_transforms["link_6"].isApprox(result));
+      EXPECT_TRUE(current_state->link_transforms.at("link_6").isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.36 + 0.42 + 0.4);
-      EXPECT_TRUE(current_state->link_transforms["link_7"].isApprox(result));
+      EXPECT_TRUE(current_state->link_transforms.at("link_7").isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 1.306);
-      EXPECT_TRUE(current_state->link_transforms["tool0"].isApprox(result));
+      EXPECT_TRUE(current_state->link_transforms.at("tool0").isApprox(result));
     }
   }
 }

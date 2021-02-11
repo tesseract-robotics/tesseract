@@ -43,6 +43,7 @@ target_link_libraries(${PROJECT_NAME}_core PUBLIC
   tesseract::tesseract_common
   tesseract::tesseract_collision_core
   tesseract::tesseract_collision_bullet
+  tesseract::tesseract_collision_fcl
   tesseract::tesseract_scene_graph
   tesseract::tesseract_urdf
   tesseract::tesseract_kinematics_kdl
