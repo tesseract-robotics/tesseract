@@ -6,6 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 #include <tesseract_common/sfinae_utils.h>
+#include <tesseract_common/resource.h>
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
@@ -199,6 +200,40 @@ TEST(TesseractCommonUnit, sfinaeHasMemberFunctionSignature)  // NOLINT
   bool t_add_false = has_member_func_signature_add<TestMissingMemberFunction>::value;
   EXPECT_TRUE(i_add_true);
   EXPECT_FALSE(t_add_false);
+}
+
+TEST(TesseractCommonUnit, bytesResource)
+{
+  std::vector<uint8_t> data;
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    data.push_back(i);
+  }
+
+  std::shared_ptr<tesseract_common::BytesResource> bytes_resource =
+      std::make_shared<tesseract_common::BytesResource>("package://test_package/data.bin", data);
+  EXPECT_EQ(bytes_resource->getUrl(), "package://test_package/data.bin");
+  EXPECT_EQ(bytes_resource->isFile(), false);
+  EXPECT_EQ(bytes_resource->getFilePath(), "");
+  EXPECT_EQ(bytes_resource->locateSubResource("test"), nullptr);
+  auto data2 = bytes_resource->getResourceContents();
+  ASSERT_EQ(data.size(), data2.size());
+  for (size_t i = 0; i < data.size(); i++)
+  {
+    EXPECT_EQ(data[i], data2[i]);
+  }
+  auto data2_stream = bytes_resource->getResourceContentStream();
+  for (size_t i = 0; i < data.size(); i++)
+  {
+    char data2_val;
+    data2_stream->read(&data2_val, 1);
+    EXPECT_EQ(data[i], *reinterpret_cast<uint8_t*>(&data2_val));
+  }
+
+  std::shared_ptr<tesseract_common::BytesResource> bytes_resource2 =
+      std::make_shared<tesseract_common::BytesResource>("package://test_package/data.bin", &data[0], data.size());
+  EXPECT_EQ(bytes_resource2->getUrl(), "package://test_package/data.bin");
+  EXPECT_EQ(bytes_resource->getResourceContents().size(), data.size());
 }
 
 int main(int argc, char** argv)
