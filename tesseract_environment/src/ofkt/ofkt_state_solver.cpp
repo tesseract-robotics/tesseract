@@ -304,9 +304,9 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
 
     switch (command->getType())
     {
-      case tesseract_environment::CommandType::ADD:
+      case tesseract_environment::CommandType::ADD_LINK:
       {
-        const auto& cmd = static_cast<const tesseract_environment::AddCommand&>(*command);
+        const auto& cmd = static_cast<const tesseract_environment::AddLinkCommand&>(*command);
         assert(cmd.getJoint() != nullptr);
 
         const tesseract_scene_graph::Joint::ConstPtr& joint = cmd.getJoint();

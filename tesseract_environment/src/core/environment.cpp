@@ -180,9 +180,9 @@ bool Environment::applyCommands(const Commands& commands)
 
     switch (command->getType())
     {
-      case tesseract_environment::CommandType::ADD:
+      case tesseract_environment::CommandType::ADD_LINK:
       {
-        auto cmd = std::static_pointer_cast<const AddCommand>(command);
+        auto cmd = std::static_pointer_cast<const AddLinkCommand>(command);
         success &= applyAddCommand(cmd);
         break;
       }
@@ -953,12 +953,12 @@ bool Environment::addKinematicsInformation(const tesseract_scene_graph::Kinemati
 
 bool Environment::addLink(const tesseract_scene_graph::Link& link)
 {
-  return applyCommand(std::make_shared<AddCommand>(link));
+  return applyCommand(std::make_shared<AddLinkCommand>(link));
 }
 
 bool Environment::addLink(const tesseract_scene_graph::Link& link, const tesseract_scene_graph::Joint& joint)
 {
-  return applyCommand(std::make_shared<AddCommand>(link, joint));
+  return applyCommand(std::make_shared<AddLinkCommand>(link, joint));
 }
 
 bool Environment::moveLink(const tesseract_scene_graph::Joint& joint)
@@ -1059,7 +1059,7 @@ bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_g
 //////////////// Internal Apply Command //////////////////////
 //////////////////////////////////////////////////////////////
 
-bool Environment::applyAddCommand(AddCommand::ConstPtr cmd)
+bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
 {
   if (!cmd->getLink() && !cmd->getJoint())
     return false;
@@ -1074,7 +1074,7 @@ bool Environment::applyAddCommand(AddCommand::ConstPtr cmd)
     joint.parent_link_name = getRootLinkName();
 
     tesseract_scene_graph::Link::ConstPtr link = cmd->getLink();
-    cmd = std::make_shared<AddCommand>(*link, joint);
+    cmd = std::make_shared<AddLinkCommand>(*link, joint);
   }
   std::string joint_name = cmd->getJoint()->getName();
 

@@ -38,7 +38,7 @@ namespace tesseract_environment
 {
 enum class CommandType
 {
-  ADD = 0,
+  ADD_LINK = 0,
   MOVE_LINK = 1,
   MOVE_JOINT = 2,
   REMOVE_LINK = 3,

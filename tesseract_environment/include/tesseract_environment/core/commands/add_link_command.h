@@ -1,5 +1,5 @@
 /**
- * @file add_command.h
+ * @file add_link_command.h
  * @brief Used to add link and joint to environment
  *
  * @author Levi Armstrong
@@ -37,11 +37,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-class AddCommand : public Command
+class AddLinkCommand : public Command
 {
 public:
-  using Ptr = std::shared_ptr<AddCommand>;
-  using ConstPtr = std::shared_ptr<const AddCommand>;
+  using Ptr = std::shared_ptr<AddLinkCommand>;
+  using ConstPtr = std::shared_ptr<const AddLinkCommand>;
 
   /**
    * @brief Adds a link to the environment
@@ -51,7 +51,7 @@ public:
    *
    * @param link The link to be added to the graph
    */
-  AddCommand(const tesseract_scene_graph::Link& link)
+  AddLinkCommand(const tesseract_scene_graph::Link& link)
     : link_(std::make_shared<tesseract_scene_graph::Link>(link.clone())), joint_(nullptr)
   {
   }
@@ -61,13 +61,13 @@ public:
    * @param link The link to be added to the graph
    * @param joint The joint to be used to attach link to environment
    */
-  AddCommand(const tesseract_scene_graph::Link& link, const tesseract_scene_graph::Joint& joint)
+  AddLinkCommand(const tesseract_scene_graph::Link& link, const tesseract_scene_graph::Joint& joint)
     : link_(std::make_shared<tesseract_scene_graph::Link>(link.clone()))
     , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
   {
   }
 
-  CommandType getType() const final { return CommandType::ADD; }
+  CommandType getType() const final { return CommandType::ADD_LINK; }
   const tesseract_scene_graph::Link::ConstPtr& getLink() const { return link_; }
   const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
 
