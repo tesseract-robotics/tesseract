@@ -29,7 +29,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
-#include <mutex>
+#include <shared_mutex>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -94,7 +94,7 @@ public:
   template <typename S>
   bool init(const Commands& commands)
   {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::unique_lock<std::shared_mutex> lock(mutex_);
     state_solver_ = std::make_shared<S>();
     return initHelper(commands);
   }
@@ -730,7 +730,9 @@ protected:
   std::string continuous_manager_name_; /**< Name of active continuous contact manager */
   tesseract_collision::DiscreteContactManagerFactory discrete_factory_;     /**< Descrete contact manager factory */
   tesseract_collision::ContinuousContactManagerFactory continuous_factory_; /**< Continuous contact manager factory */
-  mutable std::mutex mutex_; /**< The environment can be accessed from multiple threads, need use mutex throughout */
+
+  /** @brief The environment can be accessed from multiple threads, need use mutex throughout */
+  mutable std::shared_mutex mutex_;
 
   /** This will update the contact managers transforms */
   void currentStateChanged();
