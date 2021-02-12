@@ -47,6 +47,7 @@
 #include <tesseract_environment/core/commands/remove_allowed_collision_link_command.h>
 #include <tesseract_environment/core/commands/remove_joint_command.h>
 #include <tesseract_environment/core/commands/remove_link_command.h>
+#include <tesseract_environment/core/commands/replace_joint_command.h>
 
 #ifdef SWIG
 
@@ -56,6 +57,7 @@
 %shared_ptr(tesseract_environment::MoveJointCommand)
 %shared_ptr(tesseract_environment::RemoveLinkCommand)
 %shared_ptr(tesseract_environment::RemoveJointCommand)
+%shared_ptr(tesseract_environment::ReplaceJointCommand)
 %shared_ptr(tesseract_environment::ChangeLinkOriginCommand)
 %shared_ptr(tesseract_environment::ChangeJointOriginCommand)
 %shared_ptr(tesseract_environment::ChangeLinkCollisionEnabledCommand)
@@ -75,15 +77,16 @@
 %shared_factory(
   tesseract_environment::Command,
   tesseract_environment::AddLinkCommand,
-	tesseract_environment::MoveLinkCommand,
-	tesseract_environment::MoveJointCommand,
-	tesseract_environment::RemoveLinkCommand,
-	tesseract_environment::RemoveJointCommand,
-	tesseract_environment::ChangeLinkOriginCommand,
-	tesseract_environment::ChangeJointOriginCommand,
-	tesseract_environment::ChangeLinkCollisionEnabledCommand,
-	tesseract_environment::ChangeLinkVisibilityCommand,
-	tesseract_environment::AddAllowedCollisionCommand,
+  tesseract_environment::MoveLinkCommand,
+  tesseract_environment::MoveJointCommand,
+  tesseract_environment::RemoveLinkCommand,
+  tesseract_environment::RemoveJointCommand,
+  tesseract_environment::ReplaceJointCommand,
+  tesseract_environment::ChangeLinkOriginCommand,
+  tesseract_environment::ChangeJointOriginCommand,
+  tesseract_environment::ChangeLinkCollisionEnabledCommand,
+  tesseract_environment::ChangeLinkVisibilityCommand,
+  tesseract_environment::AddAllowedCollisionCommand,
   tesseract_environment::RemoveAllowedCollisionCommand,
   tesseract_environment::RemoveAllowedCollisionLinkCommand,
   tesseract_environment::AddSceneGraphCommand,

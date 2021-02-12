@@ -69,7 +69,7 @@ public:
    */
   AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph,
                        const tesseract_scene_graph::Joint& joint,
-                       std::string prefix)
+                       std::string prefix = "")
     : scene_graph_(scene_graph.clone())
     , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
     , prefix_(std::move(prefix))

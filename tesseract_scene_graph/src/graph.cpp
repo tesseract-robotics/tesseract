@@ -98,10 +98,10 @@ const std::string& SceneGraph::getRoot() const
   return boost::get_property(static_cast<const Graph&>(*this), boost::graph_root);
 }
 
-bool SceneGraph::addLink(const Link& link)
+bool SceneGraph::addLink(const Link& link, bool replace_allowed)
 {
   auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(link.clone());
-  return addLinkHelper(link_ptr);
+  return addLinkHelper(link_ptr, replace_allowed);
 }
 
 bool SceneGraph::addLink(const Link& link, const Joint& joint)
@@ -130,22 +130,32 @@ bool SceneGraph::addLink(const Link& link, const Joint& joint)
   return true;
 }
 
-bool SceneGraph::addLinkHelper(Link::Ptr link_ptr)
+bool SceneGraph::addLinkHelper(Link::Ptr link_ptr, bool replace_allowed)
 {
   auto found = link_map_.find(link_ptr->getName());
-  if (found != link_map_.end())
+  bool link_exists = (found != link_map_.end());
+  if (link_exists && !replace_allowed)
     return false;
 
-  // Set default visibility and collision enabled to true
-  boost::property<boost::vertex_link_visible_t, bool, boost::property<boost::vertex_link_collision_enabled_t, bool>>
-      data(true, true);
-  VertexProperty info(link_ptr, data);
-  Vertex v = boost::add_vertex(info, static_cast<Graph&>(*this));
-  link_map_[link_ptr->getName()] = std::make_pair(link_ptr, v);
+  if (link_exists && replace_allowed)
+  {  // replacing an existing link
+    found->second.first = link_ptr;
+    boost::property_map<Graph, boost::vertex_link_t>::type param = get(boost::vertex_link, static_cast<Graph&>(*this));
+    param[found->second.second] = link_ptr;
+  }
+  else
+  {  // Adding a new link
+    // Set default visibility and collision enabled to true
+    boost::property<boost::vertex_link_visible_t, bool, boost::property<boost::vertex_link_collision_enabled_t, bool>>
+        data(true, true);
+    VertexProperty info(link_ptr, data);
+    Vertex v = boost::add_vertex(info, static_cast<Graph&>(*this));
+    link_map_[link_ptr->getName()] = std::make_pair(link_ptr, v);
 
-  // First link added set as root
-  if (link_map_.size() == 1)
-    setRoot(link_ptr->getName());
+    // First link added set as root
+    if (link_map_.size() == 1)
+      setRoot(link_ptr->getName());
+  }
 
   return true;
 }

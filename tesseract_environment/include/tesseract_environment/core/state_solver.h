@@ -101,6 +101,12 @@ public:
   virtual EnvState::Ptr getRandomState() const = 0;
 
   /**
+   * @brief Get the vector of joint names which align with the limits
+   * @return A vector of joint names
+   */
+  virtual const std::vector<std::string>& getJointNames() const = 0;
+
+  /**
    * @brief Getter for kinematic limits
    * @return The kinematic limits
    */

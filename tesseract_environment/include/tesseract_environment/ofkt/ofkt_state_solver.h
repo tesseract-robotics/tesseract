@@ -101,6 +101,8 @@ public:
 
   EnvState::Ptr getRandomState() const override;
 
+  const std::vector<std::string>& getJointNames() const override;
+
   const tesseract_common::KinematicLimits& getLimits() const override;
 
 private:
@@ -163,6 +165,30 @@ private:
    * @param removed_joints_indices The removed joint names indices container
    */
   void removeNode(OFKTNode* node, std::vector<std::string>& removed_joints, std::vector<long>& removed_joints_indices);
+
+  /**
+   * @brief This a helper function for moving a link
+   * @param new_kinematic_joints The vector to store new kinematic joints added to the solver
+   * @param joint The joint performing the move
+   */
+  void moveLinkHelper(std::vector<tesseract_scene_graph::Joint::ConstPtr>& new_kinematic_joints,
+                      const tesseract_scene_graph::Joint::ConstPtr& joint);
+
+  /**
+   * @brief This is a helper function for replacing a joint
+   * @param new_kinematic_joints The vector to store new kinematic joints added to the solver
+   * @param joint The joint performing the replacement
+   */
+  void replaceJointHelper(std::vector<tesseract_scene_graph::Joint::ConstPtr>& new_kinematic_joints,
+                          const tesseract_scene_graph::Joint::ConstPtr& joint);
+
+  /**
+   * @brief This will clean up member variables joint_names_ and limits_
+   * @param removed_joints The removed joint names container
+   * @param removed_joints_indices The removed joint names indices container
+   */
+  void removeJointHelper(const std::vector<std::string>& removed_joints,
+                         const std::vector<long>& removed_joints_indices);
 
   friend struct ofkt_builder;
 };

@@ -167,6 +167,8 @@ EnvState::Ptr KDLStateSolver::getRandomState() const
   return getState(joint_names_, tesseract_common::generateRandomNumber(limits_.joint_limits));
 }
 
+const std::vector<std::string>& KDLStateSolver::getJointNames() const { return joint_names_; }
+
 const tesseract_common::KinematicLimits& KDLStateSolver::getLimits() const { return limits_; }
 
 bool KDLStateSolver::createKDETree()
@@ -184,6 +186,7 @@ bool KDLStateSolver::createKDETree()
   limits_.velocity_limits.resize(static_cast<long int>(kdl_tree_.getNrOfJoints()));
   limits_.acceleration_limits.resize(static_cast<long int>(kdl_tree_.getNrOfJoints()));
   joint_names_.resize(kdl_tree_.getNrOfJoints());
+  joint_to_qnr_.clear();
   size_t j = 0;
   for (const auto& seg : kdl_tree_.getSegments())
   {

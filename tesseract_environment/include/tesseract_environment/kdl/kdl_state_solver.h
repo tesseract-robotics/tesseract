@@ -58,6 +58,8 @@ public:
 
   EnvState::Ptr getRandomState() const override;
 
+  const std::vector<std::string>& getJointNames() const override;
+
   const tesseract_common::KinematicLimits& getLimits() const override;
 
 private:
