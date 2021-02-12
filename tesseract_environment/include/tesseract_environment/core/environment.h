@@ -213,7 +213,11 @@ public:
    */
   Environment::Ptr clone() const;
 
-  /** @brief reset to initialized state */
+  /**
+   * @brief reset to initialized state
+   * @details If the environment has not been initialized then this returns false
+   * @return True if environment was successfully reset, otherwise false.
+   */
   bool reset();
 
   /** @brief clear content and uninitialize */
@@ -449,7 +453,7 @@ public:
    * @brief Get the transform corresponding to the link.
    * @return Transform and is identity when no transform is available.
    */
-  virtual const Eigen::Isometry3d& getLinkTransform(const std::string& link_name) const;
+  virtual Eigen::Isometry3d getLinkTransform(const std::string& link_name) const;
 
   /**
    * @brief Returns a clone of the environments state solver
@@ -765,6 +769,7 @@ private:
   bool applyMoveJointCommand(const MoveJointCommand::ConstPtr& cmd);
   bool applyRemoveLinkCommand(const RemoveLinkCommand::ConstPtr& cmd);
   bool applyRemoveJointCommand(const RemoveJointCommand::ConstPtr& cmd);
+  bool applyReplaceJointCommand(const ReplaceJointCommand::ConstPtr& cmd);
   bool applyChangeLinkOriginCommand(const ChangeLinkOriginCommand::ConstPtr& cmd);
   bool applyChangeJointOriginCommand(const ChangeJointOriginCommand::ConstPtr& cmd);
   bool applyChangeLinkCollisionEnabledCommand(const ChangeLinkCollisionEnabledCommand::ConstPtr& cmd);

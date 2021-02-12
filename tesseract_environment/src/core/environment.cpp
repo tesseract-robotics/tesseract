@@ -210,6 +210,12 @@ bool Environment::applyCommands(const Commands& commands)
         success &= applyRemoveJointCommand(cmd);
         break;
       }
+      case tesseract_environment::CommandType::REPLACE_JOINT:
+      {
+        auto cmd = std::static_pointer_cast<const ReplaceJointCommand>(command);
+        success &= applyReplaceJointCommand(cmd);
+        break;
+      }
       case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
       {
         auto cmd = std::static_pointer_cast<const ChangeLinkOriginCommand>(command);
@@ -294,11 +300,13 @@ bool Environment::applyCommands(const Commands& commands)
         success &= applyChangePairContactMarginCommand(cmd);
         break;
       }
+      // LCOV_EXCL_START
       default:
       {
         CONSOLE_BRIDGE_logError("Unhandled environment command");
         success &= false;
       }
+        // LCOV_EXCL_STOP
     }
 
     if (!success)
@@ -557,29 +565,23 @@ tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   tesseract_common::VectorIsometry3d link_tfs;
-  link_tfs.resize(link_names_.size());
+  link_tfs.reserve(link_names_.size());
   for (const auto& link_name : link_names_)
-  {
     link_tfs.push_back(current_state_->link_transforms[link_name]);
-  }
 
   return link_tfs;
 }
 
-const Eigen::Isometry3d& Environment::getLinkTransform(const std::string& link_name) const
+Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  const Eigen::Isometry3d& tf = current_state_->link_transforms[link_name];
-
-  return tf;
+  return current_state_->link_transforms[link_name];
 }
 
 StateSolver::Ptr Environment::getStateSolver() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  StateSolver::Ptr state_solver = state_solver_->clone();
-
-  return state_solver;
+  return state_solver_->clone();
 }
 
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
@@ -1061,12 +1063,51 @@ bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_g
 
 bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
 {
-  if (!cmd->getLink() && !cmd->getJoint())
-    return false;
+  assert(!(!cmd->getLink() && !cmd->getJoint()));
 
-  std::string link_name = cmd->getLink()->getName();
-  if (!cmd->getJoint())
+  bool link_exists = false;
+  bool joint_exists = false;
+  std::string link_name, joint_name;
+
+  if (cmd->getLink() != nullptr)
   {
+    link_name = cmd->getLink()->getName();
+    link_exists = (scene_graph_->getLink(link_name) != nullptr);
+  }
+
+  if (cmd->getJoint() != nullptr)
+  {
+    joint_name = cmd->getJoint()->getName();
+    joint_exists = (scene_graph_->getJoint(joint_name) != nullptr);
+  }
+
+  if ((link_exists && !cmd->replaceAllowed()))
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists. Set replace_allowed to enable replacing.",
+                           link_name.c_str());
+    return false;
+  }
+
+  if ((link_exists && cmd->getJoint()))
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists with a joint provided. This is not supported.",
+                           link_name.c_str());
+    return false;
+  }
+
+  if (joint_exists)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) with a joint that already exists.", joint_name.c_str());
+    return false;
+  }
+
+  if (link_exists && !cmd->getJoint())
+  {  // A link is being replaced
+    if (!scene_graph_->addLink(*cmd->getLink(), true))
+      return false;
+  }
+  else if (!link_exists && !cmd->getJoint())
+  {  // Add a new link is being added attached to the world
     std::string joint_name = "joint_" + link_name;
     tesseract_scene_graph::Joint joint(joint_name);
     joint.type = tesseract_scene_graph::JointType::FIXED;
@@ -1075,11 +1116,24 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
 
     tesseract_scene_graph::Link::ConstPtr link = cmd->getLink();
     cmd = std::make_shared<AddLinkCommand>(*link, joint);
-  }
-  std::string joint_name = cmd->getJoint()->getName();
 
-  if (!scene_graph_->addLink(*cmd->getLink(), *cmd->getJoint()))
-    return false;
+    if (!scene_graph_->addLink(*cmd->getLink(), *cmd->getJoint()))
+      return false;
+  }
+  else
+  {  // A new link and joint is being added
+    if (!scene_graph_->addLink(*cmd->getLink(), *cmd->getJoint()))
+      return false;
+  }
+
+  // If Link existed remove it from collision before adding the replacing links geometry
+  if (link_exists)
+  {
+    if (discrete_manager_ != nullptr)
+      discrete_manager_->removeCollisionObject(link_name);
+    if (continuous_manager_ != nullptr)
+      continuous_manager_->removeCollisionObject(link_name);
+  }
 
   // We have moved the original objects, get a pointer to them from scene_graph
   if (!cmd->getLink()->collision.empty())
@@ -1151,6 +1205,40 @@ bool Environment::applyRemoveJointCommand(const RemoveJointCommand::ConstPtr& cm
 
   if (!removeLinkHelper(target_link_name))
     return false;
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applyReplaceJointCommand(const ReplaceJointCommand::ConstPtr& cmd)
+{
+  tesseract_scene_graph::Joint::ConstPtr current_joint = scene_graph_->getJoint(cmd->getJoint()->getName());
+  if (current_joint == nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to replace Joint (%s) that does not exist", cmd->getJoint()->getName().c_str());
+    return false;
+  }
+
+  if (cmd->getJoint()->child_link_name != current_joint->child_link_name)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to replace Joint (%s) where the child links are not the same",
+                           cmd->getJoint()->getName().c_str());
+    return false;
+  }
+
+  if (!scene_graph_->removeJoint(cmd->getJoint()->getName()))
+    return false;
+
+  if (!scene_graph_->addJoint(*cmd->getJoint()))
+  {
+    // Add old joint back
+    if (!scene_graph_->addJoint(*current_joint))
+      throw std::runtime_error("Environment: Failed to add old joint back when replace failed!");
+
+    return false;
+  }
 
   ++revision_;
   commands_.push_back(cmd);

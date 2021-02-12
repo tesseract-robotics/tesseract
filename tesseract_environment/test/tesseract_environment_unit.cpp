@@ -49,6 +49,13 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
+Eigen::Isometry3d tcpCallback(const tesseract_common::ManipulatorInfo&)
+{
+  Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
+  tcp.translation() = Eigen::Vector3d(0, 0, 0.1);
+  return tcp;
+}
+
 SceneGraph::Ptr getSceneGraph()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
@@ -68,8 +75,132 @@ tesseract_scene_graph::SRDFModel::Ptr getSRDFModel(const SceneGraph::Ptr& scene_
   return srdf;
 }
 
+SceneGraph::Ptr getSubSceneGraph()
+{
+  SceneGraph::Ptr subgraph = std::make_shared<SceneGraph>();
+  subgraph->setName("subgraph");
+
+  // Now add a link to empty environment
+  auto visual = std::make_shared<Visual>();
+  visual->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  auto collision = std::make_shared<Collision>();
+  collision->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+
+  const std::string link_name1 = "subgraph_base_link";
+  const std::string link_name2 = "subgraph_link_1";
+  const std::string joint_name1 = "subgraph_joint1";
+  Link link_1(link_name1);
+  link_1.visual.push_back(visual);
+  link_1.collision.push_back(collision);
+  Link link_2(link_name2);
+
+  Joint joint_1(joint_name1);
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = link_name1;
+  joint_1.child_link_name = link_name2;
+  joint_1.type = JointType::FIXED;
+
+  subgraph->addLink(link_1);
+  subgraph->addLink(link_2);
+  subgraph->addJoint(joint_1);
+
+  return subgraph;
+}
+
+void runCompareEnvStates(const std::vector<std::string>& base_joint_names,
+                         const EnvState& base_state,
+                         const EnvState& compare_state)
+{
+  EXPECT_EQ(base_state.joints.size(), compare_state.joints.size());
+  EXPECT_EQ(base_state.joint_transforms.size(), compare_state.joint_transforms.size());
+  EXPECT_EQ(base_state.link_transforms.size(), compare_state.link_transforms.size());
+
+  for (const auto& joint_name : base_joint_names)
+  {
+    EXPECT_NEAR(base_state.joints.at(joint_name), compare_state.joints.at(joint_name), 1e-6);
+    EXPECT_TRUE(
+        base_state.joint_transforms.at(joint_name).isApprox(compare_state.joint_transforms.at(joint_name), 1e-6));
+  }
+
+  for (const auto& link_pair : base_state.link_transforms)
+  {
+    EXPECT_TRUE(link_pair.second.isApprox(compare_state.link_transforms.at(link_pair.first), 1e-6));
+  }
+}
+
+void runGetLinkTransformsTest(Environment& env)
+{
+  StateSolver::Ptr state_solver = env.getStateSolver();
+  for (int i = 0; i < 20; ++i)
+  {
+    EnvState::Ptr random_state = state_solver->getRandomState();
+    env.setState(random_state->joints);
+
+    std::vector<std::string> link_names = env.getLinkNames();
+    EnvState::ConstPtr env_state = env.getCurrentState();
+    tesseract_common::VectorIsometry3d link_transforms = env.getLinkTransforms();
+    for (std::size_t i = 0; i < link_names.size(); ++i)
+    {
+      EXPECT_TRUE(env_state->link_transforms.at(link_names.at(i)).isApprox(link_transforms.at(i), 1e-6));
+      EXPECT_TRUE(
+          env_state->link_transforms.at(link_names.at(i)).isApprox(env.getLinkTransform(link_names.at(i)), 1e-6));
+    }
+  }
+}
+
+// The base solver should be KDL as the base line
+void runCompareStateSolvers(StateSolver& base_solver, StateSolver& compare_solver)
+{
+  const std::vector<std::string>& base_joint_names = base_solver.getJointNames();
+  const std::vector<std::string>& compare_joint_names = compare_solver.getJointNames();
+
+  const tesseract_common::KinematicLimits& base_limits = base_solver.getLimits();
+  const tesseract_common::KinematicLimits& compare_limits = compare_solver.getLimits();
+
+  EXPECT_EQ(base_joint_names.size(), compare_joint_names.size());
+  EXPECT_EQ(base_joint_names.size(), compare_limits.joint_limits.rows());
+  EXPECT_EQ(base_joint_names.size(), compare_limits.velocity_limits.size());
+  EXPECT_EQ(base_joint_names.size(), compare_limits.acceleration_limits.size());
+
+  for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(base_solver.getJointNames().size()); ++i)
+  {
+    auto it = std::find(
+        compare_joint_names.begin(), compare_joint_names.end(), base_joint_names.at(static_cast<std::size_t>(i)));
+    EXPECT_TRUE(it != compare_joint_names.end());
+    Eigen::Index compare_idx = std::distance(compare_joint_names.begin(), it);
+
+    EXPECT_NEAR(base_limits.joint_limits(i, 0), compare_limits.joint_limits(compare_idx, 0), 1e-6);
+    EXPECT_NEAR(base_limits.joint_limits(i, 1), compare_limits.joint_limits(compare_idx, 1), 1e-6);
+    EXPECT_NEAR(base_limits.velocity_limits(i), compare_limits.velocity_limits(compare_idx), 1e-6);
+    EXPECT_NEAR(base_limits.acceleration_limits(i), compare_limits.acceleration_limits(compare_idx), 1e-6);
+  }
+
+  runCompareEnvStates(base_joint_names, *base_solver.getCurrentState(), *compare_solver.getCurrentState());
+
+  for (int i = 0; i < 20; ++i)
+  {
+    EnvState::Ptr random_state = base_solver.getRandomState();
+    EnvState::Ptr compare_state = compare_solver.getState(random_state->joints);
+    runCompareEnvStates(base_joint_names, *random_state, *compare_state);
+  }
+
+  for (int i = 0; i < 20; ++i)
+  {
+    EnvState::Ptr random_state = base_solver.getRandomState();
+    compare_solver.setState(random_state->joints);
+    runCompareEnvStates(base_joint_names, *random_state, *compare_solver.getCurrentState());
+  }
+}
+
+enum class EnvRegistarMethod
+{
+  MANUAL_REGISTAR = 0,
+  ON_CONSTRUCTION = 1,
+  CALL_DEFAULT_REGISTAR = 2
+};
+
 template <typename S>
-Environment::Ptr getEnvironment(bool register_default_contact_managers = false)
+Environment::Ptr getEnvironment(EnvRegistarMethod register_contact_managers = EnvRegistarMethod::MANUAL_REGISTAR)
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -84,18 +215,21 @@ Environment::Ptr getEnvironment(bool register_default_contact_managers = false)
   auto srdf = getSRDFModel(scene_graph);
   EXPECT_TRUE(srdf != nullptr);
 
-  auto env = std::make_shared<Environment>(register_default_contact_managers);
+  auto env = std::make_shared<Environment>(register_contact_managers == EnvRegistarMethod::ON_CONSTRUCTION);
   EXPECT_TRUE(env != nullptr);
   EXPECT_EQ(0, env->getRevision());
+  EXPECT_EQ(0, env->getCommandHistory().size());
   EXPECT_FALSE(env->reset());
   EXPECT_FALSE(env->isInitialized());
+  EXPECT_TRUE(env->clone() != nullptr);
 
   bool success = env->init<S>(*scene_graph, srdf);
+  Environment::ConstPtr env_const = env;
   EXPECT_TRUE(success);
   EXPECT_EQ(2, env->getRevision());
   EXPECT_TRUE(env->isInitialized());
   EXPECT_TRUE(env->getManipulatorManager() != nullptr);
-  EXPECT_TRUE(std::as_const(env)->getManipulatorManager() != nullptr);
+  EXPECT_TRUE(env_const->getManipulatorManager() != nullptr);
   EXPECT_TRUE(env->getResourceLocator() == nullptr);
 
   env->setResourceLocator(std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource));
@@ -108,7 +242,7 @@ Environment::Ptr getEnvironment(bool register_default_contact_managers = false)
     EXPECT_TRUE(env->getSceneGraph()->getLinkVisibility(link->getName()));
   }
 
-  if (!register_default_contact_managers)
+  if (register_contact_managers == EnvRegistarMethod::MANUAL_REGISTAR)
   {
     // No contact managers should exist
     EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()) ==
@@ -124,6 +258,10 @@ Environment::Ptr getEnvironment(bool register_default_contact_managers = false)
     EXPECT_TRUE(env->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
                                                       &tesseract_collision_bullet::BulletCastBVHManager::create));
 
+    // Set active contact manager to one that does not exist
+    EXPECT_FALSE(env->setActiveDiscreteContactManager("does_not_exist"));
+    EXPECT_FALSE(env->setActiveContinuousContactManager("does_not_exist"));
+
     // Set Active contact manager
     EXPECT_TRUE(env->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()));
     EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
@@ -138,6 +276,9 @@ Environment::Ptr getEnvironment(bool register_default_contact_managers = false)
   }
   else
   {
+    if (register_contact_managers == EnvRegistarMethod::CALL_DEFAULT_REGISTAR)
+      env->registerDefaultContactManagers();
+
     // Contact managers should exist
     EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()) !=
                 nullptr);
@@ -148,7 +289,34 @@ Environment::Ptr getEnvironment(bool register_default_contact_managers = false)
     EXPECT_TRUE(env->getContinuousContactManager() != nullptr);
   }
 
+  EXPECT_EQ(env->getFindTCPCallbacks().size(), 0);
+  env->addFindTCPCallback(tcpCallback);
+  EXPECT_EQ(env->getFindTCPCallbacks().size(), 1);
+
   return env;
+}
+
+template <typename S>
+void runEnvInitFailuresTest()
+{
+  auto env = std::make_shared<Environment>();
+  EXPECT_TRUE(env != nullptr);
+  EXPECT_EQ(0, env->getRevision());
+  EXPECT_FALSE(env->reset());
+  EXPECT_FALSE(env->isInitialized());
+  EXPECT_TRUE(env->clone() != nullptr);
+
+  // Test Empty commands
+  Commands commands;
+  EXPECT_FALSE(env->init<S>(commands));
+  EXPECT_FALSE(env->isInitialized());
+
+  // Test scene graph is not first command
+  commands.clear();
+  auto cmd = std::make_shared<MoveJointCommand>("joint_name", "parent_link");
+  commands.push_back(cmd);
+  EXPECT_FALSE(env->init<S>(commands));
+  EXPECT_FALSE(env->isInitialized());
 }
 
 template <typename S>
@@ -169,7 +337,21 @@ void runContactManagerCloneTest()
   }
 
   {  // Get the environment with registared default contact managers
-    auto env = getEnvironment<S>(true);
+    auto env = getEnvironment<S>(EnvRegistarMethod::ON_CONSTRUCTION);
+
+    // Test after clone if active list correct
+    tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
+    const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
+    const std::vector<std::string>& d_active_list = discrete_manager->getActiveCollisionObjects();
+    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), d_active_list.begin()));
+
+    tesseract_collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
+    const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
+    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
+  }
+
+  {  // Get the environment with registared default contact managers function
+    auto env = getEnvironment<S>(EnvRegistarMethod::CALL_DEFAULT_REGISTAR);
 
     // Test after clone if active list correct
     tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
@@ -184,7 +366,89 @@ void runContactManagerCloneTest()
 }
 
 template <typename S>
-void runAddandRemoveAllowedCollisionCommandTest()
+void runFindTCPTest()
+{
+  // Get the environment
+  auto env = getEnvironment<S>();
+
+  // Add link to tip of kinematic chain
+  Eigen::Isometry3d tcp_link_tf = Eigen::Isometry3d::Identity();
+  tcp_link_tf.translation() = Eigen::Vector3d(0, 0, 0.35);
+  Link tcp_link("tcp_link");
+  Joint tcp_joint("tcp_joint");
+  tcp_joint.parent_link_name = "tool0";
+  tcp_joint.child_link_name = "tcp_link";
+  tcp_joint.parent_to_joint_origin_transform = tcp_link_tf;
+  tcp_joint.type = JointType::FIXED;
+  env->addLink(tcp_link, tcp_joint);
+
+  // Add external tcp
+  Eigen::Isometry3d external_tcp_link_tf = Eigen::Isometry3d::Identity();
+  external_tcp_link_tf.translation() = Eigen::Vector3d(1, 0, 1);
+  Link external_tcp_link("external_tcp_link");
+  Joint external_tcp_joint("external_tcp_joint");
+  external_tcp_joint.parent_link_name = "base_link";
+  external_tcp_joint.child_link_name = "external_tcp_link";
+  external_tcp_joint.parent_to_joint_origin_transform = external_tcp_link_tf;
+  external_tcp_joint.type = JointType::FIXED;
+  env->addLink(external_tcp_link, external_tcp_joint);
+
+  {  // Should return the solution form the provided callback
+    tesseract_common::ManipulatorInfo manip_info("manipulator");
+    manip_info.tcp = tesseract_common::ToolCenterPoint("unknown");
+
+    Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
+    tcp.translation() = Eigen::Vector3d(0, 0, 0.1);
+
+    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
+    EXPECT_TRUE(tcp.isApprox(found_tcp, 1e-6));
+  }
+
+  {  // Empty tcp should return identity
+    tesseract_common::ManipulatorInfo manip_info("manipulator");
+
+    Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
+    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
+    EXPECT_TRUE(tcp.isApprox(found_tcp, 1e-6));
+  }
+
+  {  // The tcp is a link attached to the tip of the kinematic chain
+    tesseract_common::ManipulatorInfo manip_info("manipulator");
+    manip_info.tcp = tesseract_common::ToolCenterPoint("tcp_link");
+
+    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
+    EXPECT_TRUE(tcp_link_tf.isApprox(found_tcp, 1e-6));
+  }
+
+  {  // The tcp is external link name
+    tesseract_common::ManipulatorInfo manip_info("manipulator");
+    manip_info.tcp = tesseract_common::ToolCenterPoint("external_tcp_link", true);
+
+    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
+    EXPECT_TRUE(external_tcp_link_tf.isApprox(found_tcp, 1e-6));
+  }
+
+  {  // If the manipulator has a tcp transform then it should be returned
+    tesseract_common::ManipulatorInfo manip_info("manipulator");
+
+    Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
+    tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
+
+    manip_info.tcp = tesseract_common::ToolCenterPoint(tcp);
+
+    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
+    EXPECT_TRUE(tcp.isApprox(found_tcp, 1e-6));
+  }
+
+  {  // If the manipulator does not exist it should throw an exception
+    tesseract_common::ManipulatorInfo manip_info("missing_manipulator");
+    manip_info.tcp = tesseract_common::ToolCenterPoint("unknown");
+    EXPECT_ANY_THROW(env->findTCP(manip_info));
+  }
+}
+
+template <typename S>
+void runAddandRemoveAllowedCollisionCommandTest(bool use_command = false)
 {
   // Get the environment
   auto env = getEnvironment<S>();
@@ -204,50 +468,79 @@ void runAddandRemoveAllowedCollisionCommandTest()
   EXPECT_EQ(env->getRevision(), 2);
   EXPECT_EQ(env->getCommandHistory().size(), 2);
 
-  // Remove allowed collision
-  auto cmd_remove = std::make_shared<RemoveAllowedCollisionCommand>(l1, l2);
-  EXPECT_EQ(cmd_remove->getType(), CommandType::REMOVE_ALLOWED_COLLISION);
-  EXPECT_EQ(cmd_remove->getLinkName1(), l1);
-  EXPECT_EQ(cmd_remove->getLinkName2(), l2);
+  if (use_command)
+  {
+    // Remove allowed collision
+    auto cmd_remove = std::make_shared<RemoveAllowedCollisionCommand>(l1, l2);
+    EXPECT_EQ(cmd_remove->getType(), CommandType::REMOVE_ALLOWED_COLLISION);
+    EXPECT_EQ(cmd_remove->getLinkName1(), l1);
+    EXPECT_EQ(cmd_remove->getLinkName2(), l2);
 
-  EXPECT_TRUE(env->applyCommand(cmd_remove));
+    EXPECT_TRUE(env->applyCommand(cmd_remove));
 
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, l2));
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
-  EXPECT_EQ(env->getCommandHistory().back(), cmd_remove);
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, l2));
+    EXPECT_EQ(env->getRevision(), 3);
+    EXPECT_EQ(env->getCommandHistory().size(), 3);
+    EXPECT_EQ(env->getCommandHistory().back(), cmd_remove);
 
-  // Add allowed collision back
-  auto cmd_add = std::make_shared<AddAllowedCollisionCommand>(l1, l2, r);
-  EXPECT_EQ(cmd_add->getType(), CommandType::ADD_ALLOWED_COLLISION);
-  EXPECT_EQ(cmd_add->getLinkName1(), l1);
-  EXPECT_EQ(cmd_add->getLinkName2(), l2);
-  EXPECT_EQ(cmd_add->getReason(), r);
+    // Add allowed collision back
+    auto cmd_add = std::make_shared<AddAllowedCollisionCommand>(l1, l2, r);
+    EXPECT_EQ(cmd_add->getType(), CommandType::ADD_ALLOWED_COLLISION);
+    EXPECT_EQ(cmd_add->getLinkName1(), l1);
+    EXPECT_EQ(cmd_add->getLinkName2(), l2);
+    EXPECT_EQ(cmd_add->getReason(), r);
 
-  EXPECT_TRUE(env->applyCommand(cmd_add));
+    EXPECT_TRUE(env->applyCommand(cmd_add));
 
-  EXPECT_TRUE(acm->isCollisionAllowed(l1, l2));
-  EXPECT_EQ(env->getRevision(), 4);
-  EXPECT_EQ(env->getCommandHistory().size(), 4);
-  EXPECT_EQ(env->getCommandHistory().back(), cmd_add);
+    EXPECT_TRUE(acm->isCollisionAllowed(l1, l2));
+    EXPECT_EQ(env->getRevision(), 4);
+    EXPECT_EQ(env->getCommandHistory().size(), 4);
+    EXPECT_EQ(env->getCommandHistory().back(), cmd_add);
 
-  // Remove allowed collision
-  auto cmd_remove_link = std::make_shared<RemoveAllowedCollisionLinkCommand>(l1);
-  EXPECT_EQ(cmd_remove_link->getType(), CommandType::REMOVE_ALLOWED_COLLISION_LINK);
-  EXPECT_EQ(cmd_remove_link->getLinkName(), l1);
+    // Remove allowed collision
+    auto cmd_remove_link = std::make_shared<RemoveAllowedCollisionLinkCommand>(l1);
+    EXPECT_EQ(cmd_remove_link->getType(), CommandType::REMOVE_ALLOWED_COLLISION_LINK);
+    EXPECT_EQ(cmd_remove_link->getLinkName(), l1);
 
-  EXPECT_TRUE(env->applyCommand(cmd_remove_link));
+    EXPECT_TRUE(env->applyCommand(cmd_remove_link));
 
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "base_link"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_2"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_3"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_4"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_5"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_6"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_7"));
-  EXPECT_EQ(env->getRevision(), 5);
-  EXPECT_EQ(env->getCommandHistory().size(), 5);
-  EXPECT_EQ(env->getCommandHistory().back(), cmd_remove_link);
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "base_link"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_2"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_3"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_4"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_5"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_6"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_7"));
+    EXPECT_EQ(env->getRevision(), 5);
+    EXPECT_EQ(env->getCommandHistory().size(), 5);
+    EXPECT_EQ(env->getCommandHistory().back(), cmd_remove_link);
+  }
+  else
+  {
+    // Remove allowed collision
+    EXPECT_TRUE(env->removeAllowedCollision(l1, l2));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, l2));
+    EXPECT_EQ(env->getRevision(), 3);
+    EXPECT_EQ(env->getCommandHistory().size(), 3);
+
+    // Add allowed collision back
+    EXPECT_TRUE(env->addAllowedCollision(l1, l2, r));
+    EXPECT_TRUE(acm->isCollisionAllowed(l1, l2));
+    EXPECT_EQ(env->getRevision(), 4);
+    EXPECT_EQ(env->getCommandHistory().size(), 4);
+
+    // Remove allowed collision
+    EXPECT_TRUE(env->removeAllowedCollision(l1));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "base_link"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_2"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_3"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_4"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_5"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_6"));
+    EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_7"));
+    EXPECT_EQ(env->getRevision(), 5);
+    EXPECT_EQ(env->getCommandHistory().size(), 5);
+  }
 }
 
 template <typename S>
@@ -486,29 +779,32 @@ void runAddSceneGraphCommandTest(bool use_command = false)
   EXPECT_EQ(env->getRevision(), 2);
   EXPECT_EQ(env->getCommandHistory().size(), 2);
 
-  // Now add a link to empty environment
-  auto visual = std::make_shared<Visual>();
-  visual->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
-  auto collision = std::make_shared<Collision>();
-  collision->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  Joint joint_1("provided_subgraph_joint");
+  joint_1.parent_link_name = "base_link";
+  joint_1.child_link_name = "prefix_subgraph_base_link";
+  joint_1.type = JointType::FIXED;
+
+  // Adding an empty scene graph which should fail with joint
+  if (use_command)
+  {
+    auto cmd = std::make_shared<AddSceneGraphCommand>(*subgraph, joint_1);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::ADD_SCENE_GRAPH);
+    EXPECT_TRUE(cmd->getSceneGraph() != nullptr);
+    EXPECT_FALSE(env->applyCommand(cmd));
+  }
+  else
+  {
+    EXPECT_FALSE(env->addSceneGraph(*subgraph, joint_1));
+  }
+  EXPECT_EQ(env->getRevision(), 2);
+  EXPECT_EQ(env->getCommandHistory().size(), 2);
+
+  subgraph = getSubSceneGraph();
 
   const std::string link_name1 = "subgraph_base_link";
   const std::string link_name2 = "subgraph_link_1";
   const std::string joint_name1 = "subgraph_joint1";
-  Link link_1(link_name1);
-  link_1.visual.push_back(visual);
-  link_1.collision.push_back(collision);
-  Link link_2(link_name2);
-
-  Joint joint_1(joint_name1);
-  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_name = link_name1;
-  joint_1.child_link_name = link_name2;
-  joint_1.type = JointType::FIXED;
-
-  subgraph->addLink(link_1);
-  subgraph->addLink(link_2);
-  subgraph->addJoint(joint_1);
 
   if (use_command)
   {
@@ -553,6 +849,7 @@ void runAddSceneGraphCommandTest(bool use_command = false)
   EXPECT_EQ(env->getRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 3);
 
+  // Add subgraph with prefix
   if (use_command)
   {
     auto cmd = std::make_shared<AddSceneGraphCommand>(*subgraph, "prefix_");
@@ -580,6 +877,31 @@ void runAddSceneGraphCommandTest(bool use_command = false)
   EXPECT_TRUE(env->getCurrentState()->joint_transforms.find("prefix_subgraph_joint") !=
               env->getCurrentState()->joint_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joints.find("prefix_subgraph_joint") == env->getCurrentState()->joints.end());
+
+  // Add subgraph with prefix and joint
+  joint_1.child_link_name = "prefix2_subgraph_base_link";
+  if (use_command)
+  {
+    auto cmd = std::make_shared<AddSceneGraphCommand>(*subgraph, joint_1, "prefix2_");
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::ADD_SCENE_GRAPH);
+    EXPECT_TRUE(cmd->getSceneGraph() != nullptr);
+    EXPECT_TRUE(env->applyCommand(cmd));
+  }
+  else
+  {
+    EXPECT_TRUE(env->addSceneGraph(*subgraph, joint_1, "prefix2_"));
+  }
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
+
+  EXPECT_TRUE(env->getJoint("provided_subgraph_joint") != nullptr);
+  EXPECT_TRUE(env->getLink("prefix2_subgraph_base_link") != nullptr);
+  EXPECT_TRUE(env->getCurrentState()->link_transforms.find("prefix2_subgraph_base_link") !=
+              env->getCurrentState()->link_transforms.end());
+  EXPECT_TRUE(env->getCurrentState()->joint_transforms.find("provided_subgraph_joint") !=
+              env->getCurrentState()->joint_transforms.end());
+  EXPECT_TRUE(env->getCurrentState()->joints.find("provided_subgraph_joint") == env->getCurrentState()->joints.end());
 }
 
 template <typename S>
@@ -699,6 +1021,88 @@ void runChangeJointLimitsCommandTest(bool use_command = false)
     EXPECT_NEAR(kin->getLimits().velocity_limits(0), new_velocity, 1e-5);
     EXPECT_NEAR(kin->getLimits().acceleration_limits(0), new_acceleration, 1e-5);
   }
+  {  // call map method
+    double new_lower = 1.0;
+    double new_upper = 2.0;
+    double new_velocity = 3.0;
+    double new_acceleration = 4.0;
+
+    std::unordered_map<std::string, std::pair<double, double> > position_limit_map;
+    position_limit_map["joint_a1"] = std::make_pair(new_lower, new_upper);
+
+    std::unordered_map<std::string, double> velocity_limit_map;
+    velocity_limit_map["joint_a1"] = new_velocity;
+
+    std::unordered_map<std::string, double> acceleration_limit_map;
+    acceleration_limit_map["joint_a1"] = new_acceleration;
+
+    int revision = env->getRevision();
+    if (use_command)
+    {
+      auto cmd_jpl = std::make_shared<ChangeJointPositionLimitsCommand>(position_limit_map);
+      EXPECT_EQ(cmd_jpl->getType(), CommandType::CHANGE_JOINT_POSITION_LIMITS);
+      EXPECT_EQ(cmd_jpl->getLimits().size(), 1);
+      auto it_jpl = cmd_jpl->getLimits().find("joint_a1");
+      EXPECT_TRUE(it_jpl != cmd_jpl->getLimits().end());
+      EXPECT_EQ(it_jpl->first, "joint_a1");
+      EXPECT_NEAR(it_jpl->second.first, new_lower, 1e-6);
+      EXPECT_NEAR(it_jpl->second.second, new_upper, 1e-6);
+      EXPECT_TRUE(env->applyCommand(cmd_jpl));
+      EXPECT_EQ(revision + 1, env->getRevision());
+      EXPECT_EQ(revision + 1, env->getCommandHistory().size());
+      EXPECT_EQ(env->getCommandHistory().back(), cmd_jpl);
+
+      auto cmd_jvl = std::make_shared<ChangeJointVelocityLimitsCommand>(velocity_limit_map);
+      EXPECT_EQ(cmd_jvl->getType(), CommandType::CHANGE_JOINT_VELOCITY_LIMITS);
+      EXPECT_EQ(cmd_jvl->getLimits().size(), 1);
+      auto it_jvl = cmd_jvl->getLimits().find("joint_a1");
+      EXPECT_TRUE(it_jvl != cmd_jvl->getLimits().end());
+      EXPECT_EQ(it_jvl->first, "joint_a1");
+      EXPECT_NEAR(it_jvl->second, new_velocity, 1e-6);
+      EXPECT_TRUE(env->applyCommand(cmd_jvl));
+      EXPECT_EQ(revision + 2, env->getRevision());
+      EXPECT_EQ(revision + 2, env->getCommandHistory().size());
+      EXPECT_EQ(env->getCommandHistory().back(), cmd_jvl);
+
+      auto cmd_jal = std::make_shared<ChangeJointAccelerationLimitsCommand>(acceleration_limit_map);
+      EXPECT_EQ(cmd_jal->getType(), CommandType::CHANGE_JOINT_ACCELERATION_LIMITS);
+      EXPECT_EQ(cmd_jal->getLimits().size(), 1);
+      auto it_jal = cmd_jal->getLimits().find("joint_a1");
+      EXPECT_TRUE(it_jal != cmd_jal->getLimits().end());
+      EXPECT_EQ(it_jal->first, "joint_a1");
+      EXPECT_NEAR(it_jal->second, new_acceleration, 1e-6);
+      EXPECT_TRUE(env->applyCommand(cmd_jal));
+      EXPECT_EQ(revision + 3, env->getRevision());
+      EXPECT_EQ(revision + 3, env->getCommandHistory().size());
+      EXPECT_EQ(env->getCommandHistory().back(), cmd_jal);
+    }
+    else
+    {
+      env->changeJointPositionLimits(position_limit_map);
+      EXPECT_EQ(revision + 1, env->getRevision());
+      EXPECT_EQ(revision + 1, env->getCommandHistory().size());
+      env->changeJointVelocityLimits(velocity_limit_map);
+      EXPECT_EQ(revision + 2, env->getRevision());
+      EXPECT_EQ(revision + 2, env->getCommandHistory().size());
+      env->changeJointAccelerationLimits(acceleration_limit_map);
+      EXPECT_EQ(revision + 3, env->getRevision());
+      EXPECT_EQ(revision + 3, env->getCommandHistory().size());
+    }
+
+    // Check that the environment returns the correct limits
+    JointLimits new_limits = *(env->getJointLimits("joint_a1"));
+    EXPECT_NEAR(new_limits.lower, new_lower, 1e-5);
+    EXPECT_NEAR(new_limits.upper, new_upper, 1e-5);
+    EXPECT_NEAR(new_limits.velocity, new_velocity, 1e-5);
+    EXPECT_NEAR(new_limits.acceleration, new_acceleration, 1e-5);
+
+    // Check that the manipulator correctly set the limits
+    auto kin = env->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+    EXPECT_NEAR(kin->getLimits().joint_limits(0, 0), new_lower, 1e-5);
+    EXPECT_NEAR(kin->getLimits().joint_limits(0, 1), new_upper, 1e-5);
+    EXPECT_NEAR(kin->getLimits().velocity_limits(0), new_velocity, 1e-5);
+    EXPECT_NEAR(kin->getLimits().acceleration_limits(0), new_acceleration, 1e-5);
+  }
   {
     Eigen::MatrixX2d original;
     Eigen::MatrixX2d new_limits;
@@ -772,6 +1176,25 @@ void runChangeJointOriginCommandTest(bool use_command = false)
 }
 
 template <typename S>
+void runChangeLinkOriginCommandTest()
+{
+  // Get the environment
+  auto env = getEnvironment<S>();
+  EXPECT_EQ(env->getRevision(), 2);
+  EXPECT_EQ(env->getCommandHistory().size(), 2);
+
+  std::string link_name = "base_link";
+  Eigen::Isometry3d new_origin = Eigen::Isometry3d::Identity();
+  new_origin.translation()(0) += 1.234;
+
+  auto cmd = std::make_shared<ChangeLinkOriginCommand>(link_name, new_origin);
+  EXPECT_EQ(cmd->getType(), CommandType::CHANGE_LINK_ORIGIN);
+  EXPECT_EQ(cmd->getLinkName(), link_name);
+  EXPECT_TRUE(new_origin.isApprox(cmd->getOrigin()));
+  EXPECT_ANY_THROW(env->applyCommand(cmd));
+}
+
+template <typename S>
 void runChangeLinkCollisionEnabledCommandTest(bool use_command = false)
 {
   // Get the environment
@@ -783,6 +1206,7 @@ void runChangeLinkCollisionEnabledCommandTest(bool use_command = false)
   std::string link_name = "link_1";
   EXPECT_TRUE(env->getSceneGraph()->getLinkCollisionEnabled(link_name));
 
+  // Disable Link collision
   if (use_command)
   {
     auto cmd = std::make_shared<ChangeLinkCollisionEnabledCommand>(link_name, false);
@@ -801,6 +1225,26 @@ void runChangeLinkCollisionEnabledCommandTest(bool use_command = false)
   EXPECT_EQ(env->getRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 3);
   EXPECT_FALSE(env->getSceneGraph()->getLinkCollisionEnabled(link_name));
+
+  // Enable Link collision
+  if (use_command)
+  {
+    auto cmd = std::make_shared<ChangeLinkCollisionEnabledCommand>(link_name, true);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::CHANGE_LINK_COLLISION_ENABLED);
+    EXPECT_EQ(cmd->getEnabled(), true);
+    EXPECT_EQ(cmd->getLinkName(), link_name);
+    EXPECT_TRUE(env->applyCommand(cmd));
+    EXPECT_EQ(env->getCommandHistory().back(), cmd);
+  }
+  else
+  {
+    EXPECT_TRUE(env->setLinkCollisionEnabled(link_name, true));
+  }
+
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_TRUE(env->getSceneGraph()->getLinkCollisionEnabled(link_name));
 }
 
 template <typename S>
@@ -1193,53 +1637,281 @@ void runEnvironmentChangeNameTest()
 }
 
 template <typename S>
-void runApplyCommandsTest()
+void runApplyCommandsStateSolverCompareTest()
 {
-  // Get the environment
-  auto env = getEnvironment<S>();
+  // This is testing commands that modify the connectivity of scene graph
+  // It checks that the state solver are updated correctly
 
-  const std::string link_name1 = "link_n1";
-  const std::string link_name2 = "link_n2";
-  const std::string joint_name1 = "joint_n1";
-  auto link_1 = std::make_shared<Link>(link_name1);
-  auto link_2 = std::make_shared<Link>(link_name2);
+  {  // Add new link no joint
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
 
-  auto joint_1 = std::make_shared<Joint>(joint_name1);
-  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1->parent_link_name = "base_link";
-  joint_1->child_link_name = link_name1;
-  joint_1->type = JointType::FIXED;
-
-  // Empty or invalid
-  {
-    Commands commands;
-    EXPECT_TRUE(env->applyCommands(commands));
-    commands.push_back(nullptr);
-    EXPECT_FALSE(env->applyCommands(commands));
+    Link link_1("link_n1");
+    Commands commands{ std::make_shared<AddLinkCommand>(link_1) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
   }
 
-  // Add
-  {
-    {
-      Commands commands{ std::make_shared<AddLinkCommand>(*link_1, *joint_1) };
-      EXPECT_TRUE(env->applyCommands(commands));
-      EXPECT_FALSE(env->applyCommands(commands));
+  {  // Add new link with joint
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
 
-      std::vector<std::string> link_names = env->getLinkNames();
-      std::vector<std::string> joint_names = env->getJointNames();
-      EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name1) != link_names.end());
-      EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
-    }
-    {
-      Commands commands{ std::make_shared<AddLinkCommand>(*link_2) };
-      EXPECT_TRUE(env->applyCommands(commands));
-      std::vector<std::string> link_names = env->getLinkNames();
-      std::vector<std::string> joint_names = env->getJointNames();
-      EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
-      EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name2) != joint_names.end());
-    }
+    Link link_1("link_n1");
+    Joint joint_1("joint_link_n1");
+    joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+    joint_1.parent_link_name = "base_link";
+    joint_1.child_link_name = "link_n1";
+    joint_1.type = JointType::FIXED;
+
+    Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
   }
-  /// @todo Add tests for applying commands to the environment
+
+  {  // Replace link
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Link link_1("link_1");
+
+    Commands commands{ std::make_shared<AddLinkCommand>(link_1, true) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace link which is not allowed
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Link link_1("link_1");
+
+    Commands commands{ std::make_shared<AddLinkCommand>(link_1, false) };
+    EXPECT_FALSE(base_env->applyCommands(commands));
+    EXPECT_FALSE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace joint but not move and same type
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Joint new_joint_a1 = base_env->getJoint("joint_a1")->clone();
+    new_joint_a1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+
+    Commands commands{ std::make_shared<ReplaceJointCommand>(new_joint_a1) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace joint but not move with different type (Fixed)
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Joint new_joint_a1 = base_env->getJoint("joint_a1")->clone();
+    new_joint_a1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+    new_joint_a1.type = JointType::FIXED;
+
+    Commands commands{ std::make_shared<ReplaceJointCommand>(new_joint_a1) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace joint but not move with different type (Continuous)
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Joint new_joint_a1 = base_env->getJoint("joint_a1")->clone();
+    new_joint_a1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+    new_joint_a1.type = JointType::CONTINUOUS;
+
+    Commands commands{ std::make_shared<ReplaceJointCommand>(new_joint_a1) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace joint and move with same type
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Joint new_joint_a3 = base_env->getJoint("joint_a3")->clone();
+    new_joint_a3.parent_link_name = "base_link";
+
+    Commands commands{ std::make_shared<ReplaceJointCommand>(new_joint_a3) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace joint and move with different type (Fixed)
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Joint new_joint_a3 = base_env->getJoint("joint_a3")->clone();
+    new_joint_a3.parent_link_name = "base_link";
+    new_joint_a3.type = JointType::FIXED;
+
+    Commands commands{ std::make_shared<ReplaceJointCommand>(new_joint_a3) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace joint and move with different type (Prismatic)
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Joint new_joint_a3 = base_env->getJoint("joint_a3")->clone();
+    new_joint_a3.parent_link_name = "base_link";
+    new_joint_a3.type = JointType::PRISMATIC;
+
+    Commands commands{ std::make_shared<ReplaceJointCommand>(new_joint_a3) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // move link
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Joint new_joint_a3 = base_env->getJoint("joint_a3")->clone();
+    new_joint_a3.parent_link_name = "base_link";
+    new_joint_a3.type = JointType::FIXED;
+
+    Commands commands{ std::make_shared<MoveLinkCommand>(new_joint_a3) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // move joint
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Commands commands{ std::make_shared<MoveJointCommand>("joint_a3", "base_link") };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // remove link
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Commands commands{ std::make_shared<RemoveLinkCommand>("link_4") };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // remove link
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Commands commands{ std::make_shared<RemoveJointCommand>("joint_a3") };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Change Joint Origin
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+    Eigen::Isometry3d joint_origin = base_env->getJoint("joint_a3")->parent_to_joint_origin_transform;
+    joint_origin.translation() = joint_origin.translation() + Eigen::Vector3d(0, 0, 1);
+    Commands commands{ std::make_shared<ChangeJointOriginCommand>("joint_a3", joint_origin) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Add SceneGraph case 1
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+    auto subgraph = getSubSceneGraph();
+    Commands commands{ std::make_shared<AddSceneGraphCommand>(*subgraph) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Add SceneGraph case 2
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+    auto subgraph = getSceneGraph();
+    Commands commands{ std::make_shared<AddSceneGraphCommand>(*subgraph, "prefix_") };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Add SceneGraph case 3
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+    auto subgraph = getSceneGraph();
+
+    Joint attach_joint("prefix_base_link_joint");
+    attach_joint.parent_link_name = "tool0";
+    attach_joint.child_link_name = "prefix_base_link";
+    attach_joint.type = JointType::FIXED;
+
+    Commands commands{ std::make_shared<AddSceneGraphCommand>(*subgraph, attach_joint, "prefix_") };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
 }
 
 template <typename S>
@@ -1540,10 +2212,31 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
   runContactManagerCloneTest<OFKTStateSolver>();
 }
 
+TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
+{
+  runEnvInitFailuresTest<KDLStateSolver>();
+  runEnvInitFailuresTest<OFKTStateSolver>();
+}
+
+TEST(TesseractEnvironmentUnit, EnvChangeNameUnit)  // NOLINT
+{
+  runEnvironmentChangeNameTest<KDLStateSolver>();
+  runEnvironmentChangeNameTest<OFKTStateSolver>();
+}
+
+TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
+{
+  runFindTCPTest<KDLStateSolver>();
+  runFindTCPTest<OFKTStateSolver>();
+}
+
 TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // NOLINT
 {
   runAddandRemoveAllowedCollisionCommandTest<KDLStateSolver>();
   runAddandRemoveAllowedCollisionCommandTest<OFKTStateSolver>();
+
+  runAddandRemoveAllowedCollisionCommandTest<KDLStateSolver>(true);
+  runAddandRemoveAllowedCollisionCommandTest<OFKTStateSolver>(true);
 }
 
 TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
@@ -1595,6 +2288,12 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
 
   runChangeJointOriginCommandTest<KDLStateSolver>(true);
   runChangeJointOriginCommandTest<OFKTStateSolver>(true);
+}
+
+TEST(TesseractEnvironmentUnit, EnvChangeLinkOriginCommandUnit)  // NOLINT
+{
+  runChangeLinkOriginCommandTest<KDLStateSolver>();
+  runChangeLinkOriginCommandTest<OFKTStateSolver>();
 }
 
 TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledCommandUnit)  // NOLINT
@@ -1651,10 +2350,10 @@ TEST(TesseractEnvironmentUnit, EnvResetUnit)  // NOLINT
   runEnvironmentResetTest<OFKTStateSolver>();
 }
 
-TEST(TesseractEnvironmentUnit, EnvApplyCommands)  // NOLINT
+TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLINT
 {
-  runApplyCommandsTest<KDLStateSolver>();
-  runApplyCommandsTest<OFKTStateSolver>();
+  // KDL state solver is used as the baseline for this set of test
+  runApplyCommandsStateSolverCompareTest<OFKTStateSolver>();
 }
 
 TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT

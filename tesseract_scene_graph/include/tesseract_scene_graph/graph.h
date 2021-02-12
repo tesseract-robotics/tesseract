@@ -181,9 +181,10 @@ public:
    * The first link added to the graph is set as the root by default. Use setRoot to change the root link of the graph.
    *
    * @param link The link to be added to the graph
-   * @return Return False if a link with the same name allready exists, otherwise true
+   * @param replace_allowed If true and the link exist it will be replaced
+   * @return Return False if a link with the same name already exists and replace is not allowed, otherwise true
    */
-  bool addLink(const Link& link);
+  bool addLink(const Link& link, bool replace_allowed = false);
 
   /**
    * @brief Adds a link/joint to the graph
@@ -269,7 +270,7 @@ public:
    * @brief Move joint to new parent link
    * @param name Name of the joint to move
    * @param parent_link Name of parent link to move to
-   * @return Returns true if successfull, otherwise false.
+   * @return Returns true if successful, otherwise false.
    */
   bool moveJoint(const std::string& name, const std::string& parent_link);
 
@@ -489,9 +490,10 @@ protected:
    * The first link added to the graph is set as the root by default. Use setRoot to change the root link of the graph.
    *
    * @param link_ptr Shared pointer to the link to be added to the graph
-   * @return Return False if a link with the same name allready exists, otherwise true
+   * @param replace_allowed If true and the link exist it will be replaced
+   * @return Return False if a link with the same name already exists and replace is not allowed, otherwise true
    */
-  bool addLinkHelper(Link::Ptr link_ptr);
+  bool addLinkHelper(Link::Ptr link_ptr, bool replace_allowed = false);
 
   /**
    * @brief Adds joint to the graph
