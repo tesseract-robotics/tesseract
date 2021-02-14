@@ -28,6 +28,24 @@
         <joint name="joint_5" value="0" />
         <joint name="joint_6" value="0" />
     </group_state>
+
+    <!--GROUP ROBOT WITH EXTERNAL POSITIONER INVERSE KINEMATICS PARAMETERS-->
+    <group_rep group="full_manipulator">
+      <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+      <positioner group="positioner" fk_solver="KDLFwdKinChain">
+        <joint name="positioner_joint_1" resolution="0.1"/>
+      </positioner>
+    </group_rep>
+
+    <!--GROUP OPW KINEMATICS PARAMETERS-->
+    <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 1 1 1"/>
+
+    <!--GROUP TOOL CENTER POINTS -->
+    <group_tcps group="full_manipulator">
+      <tcp name="laser" xyz="1 .1 1" rpy="0 1.57 0" />
+      <tcp name="welder" xyz=".1 1 .2" wxyz="1 0 0 0" />
+    </group_tcps>
+
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="FixedBase" type="fixed" parent_frame="world" child_link="base_link" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->

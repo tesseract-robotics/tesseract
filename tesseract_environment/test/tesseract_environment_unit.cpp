@@ -192,7 +192,7 @@ void runCompareStateSolvers(StateSolver& base_solver, StateSolver& compare_solve
   }
 }
 
-enum class EnvRegistarMethod
+enum class EnvRegisterMethod
 {
   MANUAL_REGISTAR = 0,
   ON_CONSTRUCTION = 1,
@@ -200,7 +200,7 @@ enum class EnvRegistarMethod
 };
 
 template <typename S>
-Environment::Ptr getEnvironment(EnvRegistarMethod register_contact_managers = EnvRegistarMethod::MANUAL_REGISTAR)
+Environment::Ptr getEnvironment(EnvRegisterMethod register_contact_managers = EnvRegisterMethod::MANUAL_REGISTAR)
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -215,7 +215,7 @@ Environment::Ptr getEnvironment(EnvRegistarMethod register_contact_managers = En
   auto srdf = getSRDFModel(scene_graph);
   EXPECT_TRUE(srdf != nullptr);
 
-  auto env = std::make_shared<Environment>(register_contact_managers == EnvRegistarMethod::ON_CONSTRUCTION);
+  auto env = std::make_shared<Environment>(register_contact_managers == EnvRegisterMethod::ON_CONSTRUCTION);
   EXPECT_TRUE(env != nullptr);
   EXPECT_EQ(0, env->getRevision());
   EXPECT_EQ(0, env->getCommandHistory().size());
@@ -242,7 +242,7 @@ Environment::Ptr getEnvironment(EnvRegistarMethod register_contact_managers = En
     EXPECT_TRUE(env->getSceneGraph()->getLinkVisibility(link->getName()));
   }
 
-  if (register_contact_managers == EnvRegistarMethod::MANUAL_REGISTAR)
+  if (register_contact_managers == EnvRegisterMethod::MANUAL_REGISTAR)
   {
     // No contact managers should exist
     EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()) ==
@@ -276,7 +276,7 @@ Environment::Ptr getEnvironment(EnvRegistarMethod register_contact_managers = En
   }
   else
   {
-    if (register_contact_managers == EnvRegistarMethod::CALL_DEFAULT_REGISTAR)
+    if (register_contact_managers == EnvRegisterMethod::CALL_DEFAULT_REGISTAR)
       env->registerDefaultContactManagers();
 
     // Contact managers should exist
@@ -337,7 +337,7 @@ void runContactManagerCloneTest()
   }
 
   {  // Get the environment with registared default contact managers
-    auto env = getEnvironment<S>(EnvRegistarMethod::ON_CONSTRUCTION);
+    auto env = getEnvironment<S>(EnvRegisterMethod::ON_CONSTRUCTION);
 
     // Test after clone if active list correct
     tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
@@ -351,7 +351,7 @@ void runContactManagerCloneTest()
   }
 
   {  // Get the environment with registared default contact managers function
-    auto env = getEnvironment<S>(EnvRegistarMethod::CALL_DEFAULT_REGISTAR);
+    auto env = getEnvironment<S>(EnvRegisterMethod::CALL_DEFAULT_REGISTAR);
 
     // Test after clone if active list correct
     tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
