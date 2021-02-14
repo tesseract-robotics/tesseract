@@ -60,8 +60,20 @@ public:
   ManipulatorManager(ManipulatorManager&&) = default;
   ManipulatorManager& operator=(ManipulatorManager&&) = default;
 
+  /**
+   * @brief Initialize the manipulator manager
+   * @param scene_graph The scene graph associated with the manipulator manager
+   * @param kinematics_information The kinematic information used to initialize the manager
+   * @return True if successful, otherwise false.
+   */
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
             tesseract_scene_graph::KinematicsInformation kinematics_information);
+
+  /**
+   * @brief Check if manipulator manager has been initialized
+   * @return True if successful, otherwise false
+   */
+  bool isInitialized() const;
 
   /**
    * @brief This will clone the manager and assign the new environment object
@@ -81,34 +93,40 @@ public:
 
   bool addChainGroup(const std::string& group_name, const tesseract_scene_graph::ChainGroup& chain_group);
   void removeChainGroup(const std::string& group_name);
+  bool hasChainGroup(const std::string& group_name) const;
   const tesseract_scene_graph::ChainGroup& getChainGroup(const std::string& group_name) const;
   const tesseract_scene_graph::ChainGroups& getChainGroups() const;
 
   bool addJointGroup(const std::string& group_name, const tesseract_scene_graph::JointGroup& joint_group);
   void removeJointGroup(const std::string& group_name);
+  bool hasJointGroup(const std::string& group_name) const;
   const tesseract_scene_graph::JointGroup& getJointGroup(const std::string& group_name) const;
   const tesseract_scene_graph::JointGroups& getJointGroups() const;
 
   bool addLinkGroup(const std::string& group_name, const tesseract_scene_graph::LinkGroup& link_group);
   void removeLinkGroup(const std::string& group_name);
+  bool hasLinkGroup(const std::string& group_name) const;
   const tesseract_scene_graph::LinkGroup& getLinkGroup(const std::string& group_name) const;
   const tesseract_scene_graph::LinkGroups& getLinkGroups() const;
 
   bool addROPKinematicsSolver(const std::string& group_name,
                               const tesseract_scene_graph::ROPKinematicParameters& rop_group);
   void removeROPKinematicsSolver(const std::string& group_name);
+  bool hasROPKinematicsSolver(const std::string& group_name) const;
   const tesseract_scene_graph::ROPKinematicParameters& getROPKinematicsSolver(const std::string& group_name) const;
   const tesseract_scene_graph::GroupROPKinematics& getROPKinematicsSolvers() const;
 
   bool addREPKinematicsSolver(const std::string& group_name,
                               const tesseract_scene_graph::REPKinematicParameters& rep_group);
   void removeREPKinematicsSolver(const std::string& group_name);
+  bool hasREPKinematicsSolver(const std::string& group_name) const;
   const tesseract_scene_graph::REPKinematicParameters& getREPKinematicsSolver(const std::string& group_name) const;
   const tesseract_scene_graph::GroupREPKinematics& getREPKinematicsSolvers() const;
 
   bool addOPWKinematicsSolver(const std::string& group_name,
                               const tesseract_scene_graph::OPWKinematicParameters& opw_params);
   void removeOPWKinematicsSovler(const std::string& group_name);
+  bool hasOPWKinematicsSolver(const std::string& group_name) const;
   const tesseract_scene_graph::OPWKinematicParameters& getOPWKinematicsSolver(const std::string& group_name) const;
   const tesseract_scene_graph::GroupOPWKinematics& getOPWKinematicsSolvers() const;
 
@@ -116,6 +134,7 @@ public:
                           const std::string& state_name,
                           const tesseract_scene_graph::GroupsJointState& joint_state);
   void removeGroupJointState(const std::string& group_name, const std::string& state_name);
+  bool hasGroupJointState(const std::string& group_name, const std::string& state_name) const;
   const tesseract_scene_graph::GroupsJointState& getGroupsJointState(const std::string& group_name,
                                                                      const std::string& state_name) const;
   const tesseract_scene_graph::GroupsJointStates& getGroupsJointStates(const std::string& group_name) const;
@@ -123,10 +142,10 @@ public:
 
   bool addGroupTCP(const std::string& group_name, const std::string& tcp_name, const Eigen::Isometry3d& tcp);
   void removeGroupTCP(const std::string& group_name, const std::string& tcp_name);
+  bool hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const;
   const Eigen::Isometry3d& getGroupsTCP(const std::string& group_name, const std::string& tcp_name) const;
   const tesseract_scene_graph::GroupsTCPs& getGroupsTCPs(const std::string& group_name) const;
   const tesseract_scene_graph::GroupTCPs& getGroupTCPs() const;
-  bool hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const;
 
   /**
    * @brief Register a forward kinematics factory
@@ -301,6 +320,7 @@ public:
   tesseract_kinematics::InverseKinematics::Ptr getInvKinematicSolver(const std::string& manipulator) const;
 
 private:
+  bool initialized_{ false };
   tesseract_scene_graph::KinematicsInformation kinematics_information_;
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_chain_default_factory_;
