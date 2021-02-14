@@ -229,18 +229,21 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotOnPositionerUnit)  // NOLI
   EXPECT_TRUE(chain_gantry_it != chain_groups.end());
   EXPECT_TRUE(chain_manipulator_it != chain_groups.end());
   EXPECT_TRUE(chain_positioner_it != chain_groups.end());
+  /** @todo check for solver */
 
   // Check for rop group information
   const tesseract_scene_graph::GroupROPKinematics& group_rop_kinematics = manager.getROPKinematicsSolvers();
   EXPECT_EQ(group_rop_kinematics.size(), 1);
   auto rop_solver_it = group_rop_kinematics.find("full_manipulator");
   EXPECT_TRUE(rop_solver_it != group_rop_kinematics.end());
+  /** @todo check for solver */
 
   // Check for opw group information
   const tesseract_scene_graph::GroupOPWKinematics& group_opw_kinematics = manager.getOPWKinematicsSolvers();
   EXPECT_EQ(group_opw_kinematics.size(), 1);
   auto opw_solver_it = group_opw_kinematics.find("manipulator");
   EXPECT_TRUE(opw_solver_it != group_opw_kinematics.end());
+  /** @todo check for solver */
 
   // Check for group states information
   const tesseract_scene_graph::GroupJointStates& group_states = manager.getGroupJointStates();
@@ -293,18 +296,21 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotWithExternalPositionerUnit
   EXPECT_TRUE(chain_gantry_it != chain_groups.end());
   EXPECT_TRUE(chain_manipulator_it != chain_groups.end());
   EXPECT_TRUE(chain_positioner_it != chain_groups.end());
+  /** @todo check for solver */
 
   // Check for rop group information
   const tesseract_scene_graph::GroupREPKinematics& group_rep_kinematics = manager.getREPKinematicsSolvers();
   EXPECT_EQ(group_rep_kinematics.size(), 1);
   auto rep_solver_it = group_rep_kinematics.find("full_manipulator");
   EXPECT_TRUE(rep_solver_it != group_rep_kinematics.end());
+  /** @todo check for solver */
 
   // Check for opw group information
   const tesseract_scene_graph::GroupOPWKinematics& group_opw_kinematics = manager.getOPWKinematicsSolvers();
   EXPECT_EQ(group_opw_kinematics.size(), 1);
   auto opw_solver_it = group_opw_kinematics.find("manipulator");
   EXPECT_TRUE(opw_solver_it != group_opw_kinematics.end());
+  /** @todo check for solver */
 
   // Check for group states information
   const tesseract_scene_graph::GroupJointStates& group_states = manager.getGroupJointStates();
@@ -344,6 +350,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveChainGroupUnit)  // NO
   EXPECT_EQ(manager.getChainGroups().size(), 1);
   EXPECT_EQ(manager.getGroupNames().size(), 1);
   EXPECT_TRUE(manager.hasGroup("manipulator"));
+  /** @todo check for solver */
 
   // Remove
   manager.removeChainGroup("manipulator");
@@ -351,6 +358,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveChainGroupUnit)  // NO
   EXPECT_EQ(manager.getChainGroups().size(), 0);
   EXPECT_EQ(manager.getGroupNames().size(), 0);
   EXPECT_FALSE(manager.hasGroup("manipulator"));
+  /** @todo check that solver was removed */
 }
 
 TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveJointGroupUnit)  // NOLINT
@@ -372,6 +380,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveJointGroupUnit)  // NO
   EXPECT_EQ(manager.getJointGroups().size(), 1);
   EXPECT_EQ(manager.getGroupNames().size(), 1);
   EXPECT_TRUE(manager.hasGroup("manipulator"));
+  /** @todo check for solver */
 
   // Remove
   manager.removeJointGroup("manipulator");
@@ -379,6 +388,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveJointGroupUnit)  // NO
   EXPECT_EQ(manager.getJointGroups().size(), 0);
   EXPECT_EQ(manager.getGroupNames().size(), 0);
   EXPECT_FALSE(manager.hasGroup("manipulator"));
+  /** @todo check that solver was removed */
 }
 
 TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveLinkGroupUnit)  // NOLINT
@@ -399,6 +409,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveLinkGroupUnit)  // NOL
   EXPECT_EQ(manager.getLinkGroups().size(), 0);
   EXPECT_EQ(manager.getGroupNames().size(), 0);
   EXPECT_FALSE(manager.hasGroup("manipulator"));
+  /** @todo check for solver */
 
   // Remove
   manager.removeLinkGroup("manipulator");
@@ -406,6 +417,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveLinkGroupUnit)  // NOL
   EXPECT_EQ(manager.getLinkGroups().size(), 0);
   EXPECT_EQ(manager.getGroupNames().size(), 0);
   EXPECT_FALSE(manager.hasGroup("manipulator"));
+  /** @todo check that solver was removed */
 }
 
 TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveROPKinematicsSolverUnit)  // NOLINT
@@ -463,11 +475,13 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveROPKinematicsSolverUni
   EXPECT_TRUE(manager.hasROPKinematicsSolver("full_manipulator"));
   EXPECT_EQ(manager.getROPKinematicsSolvers().size(), 1);
   EXPECT_EQ(manager.getGroupNames().size(), 3);
+  /** @todo check for solver */
 
   // Remove
   manager.removeROPKinematicsSolver("full_manipulator");
   EXPECT_FALSE(manager.hasROPKinematicsSolver("full_manipulator"));
   EXPECT_EQ(manager.getROPKinematicsSolvers().size(), 0);
+  /** @todo check that solver was removed */
 }
 
 TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveREPKinematicsSolverUnit)  // NOLINT
@@ -525,11 +539,13 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveREPKinematicsSolverUni
   EXPECT_TRUE(manager.hasREPKinematicsSolver("full_manipulator"));
   EXPECT_EQ(manager.getREPKinematicsSolvers().size(), 1);
   EXPECT_EQ(manager.getGroupNames().size(), 3);
+  /** @todo check for solver */
 
   // Remove
   manager.removeREPKinematicsSolver("full_manipulator");
   EXPECT_FALSE(manager.hasREPKinematicsSolver("full_manipulator"));
   EXPECT_EQ(manager.getREPKinematicsSolvers().size(), 0);
+  /** @todo check that solver was removed */
 }
 
 TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveOPWKinematicsSolverUnit)  // NOLINT
@@ -571,11 +587,13 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveOPWKinematicsSolverUni
   EXPECT_EQ(manager.getOPWKinematicsSolvers().size(), 1);
   EXPECT_EQ(manager.getGroupNames().size(), 1);
   EXPECT_TRUE(manager.hasGroup("manipulator"));
+  /** @todo check for solver */
 
   // Remove
   manager.removeOPWKinematicsSovler("manipulator");
   EXPECT_FALSE(manager.hasOPWKinematicsSolver("manipulator"));
   EXPECT_EQ(manager.getOPWKinematicsSolvers().size(), 0);
+  /** @todo check that solver was removed */
 }
 
 TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveGroupJointStateUnit)  // NOLINT

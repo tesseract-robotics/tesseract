@@ -31,6 +31,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <deque>
 #include <memory>
+#include <algorithm>
 #include <mutex>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -81,7 +82,13 @@ public:
       return nullptr;
 
     if (cache_.empty())
-      return original_->clone();
+    {
+      std::shared_ptr<CacheType> cache = getClone();
+      if (cache == nullptr)
+        return nullptr;
+
+      return cache;
+    }
 
     // If the cache needs updating, then update it
     std::unique_lock<std::mutex> lock(cache_mutex_);
@@ -90,9 +97,17 @@ public:
       // Update if possible
       std::shared_ptr<CacheType> t;
       if constexpr (has_member_func_signature_update<CacheType>::value)
+      {
         cache_.back()->update(original_);
+      }
       else
-        cache_.back() = original_->clone();
+      {
+        std::shared_ptr<CacheType> cache = getClone();
+        if (cache == nullptr)
+          return nullptr;
+
+        cache_.back() = cache;
+      }
       t = cache_.back();
       cache_.pop_back();
       return t;
@@ -118,10 +133,20 @@ public:
   }
 
   /**
-   * @brief Get the cache size
-   * @return The size of the cache.
+   * @brief Get the set cache size
+   * @return The set size of the cache.
    */
   long getCacheSize() const { return static_cast<long>(cache_size_); }
+
+  /**
+   * @brief Get the current size of the cache
+   * @return The current size fo the cache
+   */
+  long getCurrentCacheSize() const
+  {
+    std::unique_lock<std::mutex> lock(cache_mutex_);
+    return static_cast<long>(cache_.size());
+  }
 
   /** @brief If original_ has changed it will update or rebuild the cache of objects */
   void updateCache()
@@ -139,24 +164,28 @@ public:
       {
         // Update if possible
         if constexpr (has_member_func_signature_update<CacheType>::value)
+        {
           cache->update(original_);
+        }
         else
-          cache = original_->clone();
+        {  // Update is not available to assign new clone
+          cache = getClone();
+        }
       }
     }
+
+    // Prune nullptr
+    cache_.erase(std::remove_if(cache_.begin(),
+                                cache_.end(),
+                                [](const std::shared_ptr<CacheType>& cache) { return (cache == nullptr); }),
+                 cache_.end());
 
     while (cache_.size() < cache_size_)
     {
       CONSOLE_BRIDGE_logDebug("Adding clone to the cache. Current cache size: %i", cache_.size());
-      try
-      {
-        cache_.push_back(original_->clone());
-      }
-      catch (std::exception& e)
-      {
-        CONSOLE_BRIDGE_logError("Clone Cache failed to update cache with the following exception: %s", e.what());
-        break;
-      }
+      std::shared_ptr<CacheType> clone = getClone();
+      if (clone != nullptr)
+        cache_.push_back(clone);
     }
   }
 
@@ -165,15 +194,31 @@ public:
 protected:
   void createClone()
   {
-    std::shared_ptr<CacheType> clone;
     if (original_ == nullptr)
       return;
 
-    clone = original_->clone();
+    std::shared_ptr<CacheType> clone = getClone();
+    if (clone == nullptr)
+      return;
 
     // Lock cache
     std::unique_lock<std::mutex> lock(cache_mutex_);
     cache_.push_back(clone);
+  }
+
+  std::shared_ptr<CacheType> getClone() const
+  {
+    std::shared_ptr<CacheType> clone;
+    try
+    {
+      clone = original_->clone();
+    }
+    catch (std::exception& e)
+    {
+      CONSOLE_BRIDGE_logError("Clone Cache failed to update cache with the following exception: %s", e.what());
+      return nullptr;
+    }
+    return clone;
   }
 
   std::shared_ptr<CacheType> original_;
