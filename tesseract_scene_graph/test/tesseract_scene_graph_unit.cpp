@@ -495,6 +495,90 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraph()
   return g;
 }
 
+TEST(TesseractSceneGraphUnit, GetSourceLinkUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g = buildTestSceneGraph();
+
+  for (int i = 1; i <= 3; ++i)
+  {
+    std::string link_name = "link_" + std::to_string(i);
+    std::string joint_name = "joint_" + std::to_string(i);
+    Link::ConstPtr l = g.getSourceLink(joint_name);
+    Joint::ConstPtr j = g.getJoint(joint_name);
+    EXPECT_EQ(l->getName(), link_name);
+    EXPECT_EQ(j->parent_link_name, link_name);
+    EXPECT_TRUE(g.getLink(link_name) == l);
+  }
+}
+
+TEST(TesseractSceneGraphUnit, GetTargetLinkUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g = buildTestSceneGraph();
+
+  for (int i = 1; i <= 3; ++i)
+  {
+    std::string link_name = "link_" + std::to_string(i + 1);
+    std::string joint_name = "joint_" + std::to_string(i);
+    Link::ConstPtr l = g.getTargetLink(joint_name);
+    Joint::ConstPtr j = g.getJoint(joint_name);
+    EXPECT_EQ(l->getName(), link_name);
+    EXPECT_EQ(j->child_link_name, link_name);
+    EXPECT_TRUE(g.getLink(link_name) == l);
+  }
+}
+
+TEST(TesseractSceneGraphUnit, GetInboundJointsUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g = buildTestSceneGraph();
+
+  for (int i = 2; i <= 4; ++i)
+  {
+    std::string link_name = "link_" + std::to_string(i);
+    std::string joint_name = "joint_" + std::to_string(i - 1);
+    std::vector<Joint::ConstPtr> j = g.getInboundJoints(link_name);
+    Link::ConstPtr l = g.getLink(link_name);
+    EXPECT_EQ(j.size(), 1);
+    EXPECT_EQ(j[0]->getName(), joint_name);
+    EXPECT_EQ(j[0]->child_link_name, link_name);
+    EXPECT_TRUE(g.getJoint(joint_name) == j[0]);
+  }
+}
+
+TEST(TesseractSceneGraphUnit, GetOutboundJointsUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g = buildTestSceneGraph();
+
+  for (int i = 1; i <= 3; ++i)
+  {
+    std::string link_name = "link_" + std::to_string(i);
+    std::string joint_name = "joint_" + std::to_string(i);
+    std::vector<Joint::ConstPtr> j = g.getOutboundJoints(link_name);
+    Link::ConstPtr l = g.getLink(link_name);
+    if (i == 2)
+    {
+      EXPECT_EQ(j.size(), 2);
+      EXPECT_EQ(j[0]->getName(), joint_name);
+      EXPECT_EQ(j[0]->parent_link_name, link_name);
+      EXPECT_TRUE(g.getJoint(joint_name) == j[0]);
+
+      EXPECT_EQ(j[1]->getName(), "joint_4");
+      EXPECT_EQ(j[1]->parent_link_name, link_name);
+      EXPECT_TRUE(g.getJoint("joint_4") == j[1]);
+    }
+    else
+    {
+      EXPECT_EQ(j.size(), 1);
+      EXPECT_EQ(j[0]->getName(), joint_name);
+      EXPECT_EQ(j[0]->parent_link_name, link_name);
+      EXPECT_TRUE(g.getJoint(joint_name) == j[0]);
+    }
+  }
+}
+
 TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
@@ -831,10 +915,14 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+  EXPECT_TRUE(g.isCollisionAllowed("link1", "link2"));
+  EXPECT_TRUE(g.isCollisionAllowed("link1", "link3"));
 
   tesseract_scene_graph::SceneGraph ng = buildTestSceneGraph();
   ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+  EXPECT_TRUE(ng.isCollisionAllowed("link1", "link2"));
+  EXPECT_TRUE(ng.isCollisionAllowed("link1", "link3"));
 
   std::string prefix = "r1::";
 
