@@ -328,12 +328,19 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
 
         // These check are handled by the environment but just as a precaution adding asserts here
         assert(!(link_exists && !cmd.replaceAllowed()));
-        assert(!(link_exists && cmd.getJoint()));
-        assert(!joint_exists);
+        assert(!(joint_exists && !cmd.replaceAllowed()));
+        assert(!(link_exists && cmd.getJoint() && !joint_exists));
+        assert(!(!link_exists && joint_exists));
 
         if (link_exists && !cmd.getJoint())
         {  // A link is being replaced there is nothing to be done
           break;
+        }
+        else if (link_exists && joint_exists)
+        {  // A link and joint is being replaced
+          assert(!((cmd.getLink() != nullptr) && (cmd.getJoint() != nullptr) &&
+                   (cmd.getJoint()->child_link_name != cmd.getLink()->getName())));
+          replaceJointHelper(new_kinematic_joints, cmd.getJoint());
         }
         else
         {  // A new joint and link was added

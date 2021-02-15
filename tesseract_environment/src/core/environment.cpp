@@ -1063,7 +1063,10 @@ bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_g
 
 bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
 {
+  // The command should not allow this to occur but adding an assert to catch if something changes
   assert(!(!cmd->getLink() && !cmd->getJoint()));
+  assert(!((cmd->getLink() != nullptr) && (cmd->getJoint() != nullptr) &&
+           (cmd->getJoint()->child_link_name != cmd->getLink()->getName())));
 
   bool link_exists = false;
   bool joint_exists = false;
@@ -1088,16 +1091,28 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
     return false;
   }
 
-  if ((link_exists && cmd->getJoint()))
+  if ((joint_exists && !cmd->replaceAllowed()))
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists with a joint provided. This is not supported.",
+    CONSOLE_BRIDGE_logWarn("Tried to replace link (%s) and joint (%s) where the joint exist but the link does not. "
+                           "This is not supported.",
+                           link_name.c_str(),
+                           joint_name.c_str());
+    return false;
+  }
+
+  if (!link_exists && joint_exists)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists with a joint provided which does not exist. "
+                           "This is not supported.",
                            link_name.c_str());
     return false;
   }
 
-  if (joint_exists)
+  if ((link_exists && cmd->getJoint() && !joint_exists))
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) with a joint that already exists.", joint_name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists with a joint provided which does not exist. "
+                           "This is not supported.",
+                           link_name.c_str());
     return false;
   }
 
@@ -1105,6 +1120,45 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
   {  // A link is being replaced
     if (!scene_graph_->addLink(*cmd->getLink(), true))
       return false;
+  }
+  else if (link_exists && joint_exists)
+  {  // A link and joint pair is being replaced
+    tesseract_scene_graph::Link::ConstPtr orig_link = getLink(link_name);
+    tesseract_scene_graph::Joint::ConstPtr orig_joint = getJoint(joint_name);
+
+    if (orig_joint->child_link_name != orig_link->getName())
+    {
+      CONSOLE_BRIDGE_logWarn("Tried to replace link (%s) and joint (%s) which are currently not linked. This is not "
+                             "supported.",
+                             link_name.c_str(),
+                             joint_name.c_str());
+      return false;
+    }
+
+    if (!scene_graph_->addLink(*cmd->getLink(), true))
+      return false;
+
+    if (!scene_graph_->removeJoint(joint_name))
+    {
+      // Replace with original link
+      if (!scene_graph_->addLink(*orig_link, true))
+        throw std::runtime_error("Environment: Failed to replace link and joint and reset to original state.");
+
+      return false;
+    }
+
+    if (!scene_graph_->addJoint(*cmd->getJoint()))
+    {
+      // Replace with original link
+      if (!scene_graph_->addLink(*orig_link, true))
+        throw std::runtime_error("Environment: Failed to replace link and joint reset to original state.");
+
+      // Replace with original link
+      if (!scene_graph_->addJoint(*orig_joint))
+        throw std::runtime_error("Environment: Failed to replace link and joint and reset to original state.");
+
+      return false;
+    }
   }
   else if (!link_exists && !cmd->getJoint())
   {  // Add a new link is being added attached to the world

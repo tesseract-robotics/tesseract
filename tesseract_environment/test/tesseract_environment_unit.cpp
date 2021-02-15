@@ -1690,6 +1690,85 @@ void runApplyCommandsStateSolverCompareTest()
     runGetLinkTransformsTest(*base_env);
     runGetLinkTransformsTest(*compare_env);
   }
+  {  // Replace link and joint which is allowed
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Link link_1("link_1");
+    Joint joint_1("joint_a1");
+    joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+    joint_1.parent_link_name = "base_link";
+    joint_1.child_link_name = "link_1";
+    joint_1.type = JointType::FIXED;
+
+    Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1, true) };
+    EXPECT_TRUE(base_env->applyCommands(commands));
+    EXPECT_TRUE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace link and joint which is not allowed
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Link link_1("link_1");
+    Joint joint_1("joint_a1");
+    joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+    joint_1.parent_link_name = "base_link";
+    joint_1.child_link_name = "link_1";
+    joint_1.type = JointType::FIXED;
+
+    Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1, false) };
+    EXPECT_FALSE(base_env->applyCommands(commands));
+    EXPECT_FALSE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace joint wich exist but the link does not which should fail
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Link link_1("link_2_does_not_exist");
+    Joint joint_1("joint_a1");
+    joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+    joint_1.parent_link_name = "base_link";
+    joint_1.child_link_name = "link_2_does_not_exist";
+    joint_1.type = JointType::FIXED;
+
+    Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1, true) };
+    EXPECT_FALSE(base_env->applyCommands(commands));
+    EXPECT_FALSE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
+
+  {  // Replace link and joint which is not allowed but they are not currently linked
+    // Get the environment
+    auto base_env = getEnvironment<KDLStateSolver>();
+    auto compare_env = getEnvironment<S>();
+
+    Link link_1("link_2");
+    Joint joint_1("joint_a1");
+    joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+    joint_1.parent_link_name = "base_link";
+    joint_1.child_link_name = "link_2";
+    joint_1.type = JointType::FIXED;
+
+    Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1, false) };
+    EXPECT_FALSE(base_env->applyCommands(commands));
+    EXPECT_FALSE(compare_env->applyCommands(commands));
+    runCompareStateSolvers(*base_env->getStateSolver(), *compare_env->getStateSolver());
+    runGetLinkTransformsTest(*base_env);
+    runGetLinkTransformsTest(*compare_env);
+  }
 
   {  // Replace link which is not allowed
     // Get the environment
