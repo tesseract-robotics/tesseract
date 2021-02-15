@@ -72,17 +72,29 @@ public:
   /**
    * @brief Adds a link and joint in the environment
    *
-   * If the link or joint exists:
+   * If the link and joint exist and replace is allowed
+   *
+   *        This command will replace both link and joint if the link is the child link, otherwise this results in error
+   *
+   * If the link and joint exist and replace is not allowed
+   *
+   *        This command should result in an error
+   *
+   * If the link or joint only exists:
    *
    *        This command should result in an error
    *
    * @param link The link to be added to the graph
    * @param joint The joint to be used to attach link to environment
-   * @param replace_allowed If true then if the link exists it will be replaced, otherwise if false it will fail.
+   * @param replace_allowed If true then if the link and joint exists it will be replaced, otherwise if false it will
+   * fail.
    */
-  AddLinkCommand(const tesseract_scene_graph::Link& link, const tesseract_scene_graph::Joint& joint)
+  AddLinkCommand(const tesseract_scene_graph::Link& link,
+                 const tesseract_scene_graph::Joint& joint,
+                 bool replace_allowed = false)
     : link_(std::make_shared<tesseract_scene_graph::Link>(link.clone()))
     , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
+    , replace_allowed_(replace_allowed)
   {
     if (joint_->child_link_name != link.getName())
       throw std::runtime_error("AddLinkCommand: The provided joint child link name must equal the name of the provided "
