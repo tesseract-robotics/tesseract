@@ -384,6 +384,11 @@ inline bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v
                                       double max_diff,
                                       double max_rel_diff = std::numeric_limits<double>::epsilon())
 {
+  if (v1.size() == 0 && v2.size() == 0)
+    return true;
+  if (v1.size() != v2.size())
+    return false;
+
   Eigen::ArrayWrapper<const Eigen::Ref<const Eigen::VectorXd>> a1 = v1.array();
   Eigen::ArrayWrapper<const Eigen::Ref<const Eigen::VectorXd>> a2 = v2.array();
 
