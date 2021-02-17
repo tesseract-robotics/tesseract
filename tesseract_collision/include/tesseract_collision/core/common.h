@@ -264,6 +264,38 @@ inline tesseract_geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract_geomet
 }
 
 /**
+ * @brief Apply scaling to the geometry coordinates.
+ * @details Given a scaling factor s, and center c, a given vertice v is transformed according to s (v - c) + c.
+ * @param vertices The vertices to scale
+ * @param center The point at which to scale the data about
+ * @param scale The scale factor to apply to the vertices.
+ */
+inline void scaleVertices(tesseract_common::VectorVector3d& vertices,
+                          const Eigen::Vector3d& center,
+                          const Eigen::Vector3d& scale)
+{
+  for (auto& v : vertices)
+    v = scale.cwiseProduct(v - center) + center;
+}
+
+/**
+ * @brief Apply scaling to the geometry coordinates.
+ * @details Given a scaling factor s, and center c, a given vertice v is transformed according to s (v - c) + c.
+ * @param vertices The vertices to scale
+ * @param scale The scale factor to apply to the vertices.
+ */
+inline void scaleVertices(tesseract_common::VectorVector3d& vertices, const Eigen::Vector3d& scale)
+{
+  Eigen::Vector3d center(0, 0, 0);
+  for (const auto& v : vertices)
+    center = center + v;
+
+  center = (1.0 / static_cast<double>(vertices.size())) * center;
+
+  scaleVertices(vertices, center, scale);
+}
+
+/**
  * @brief Write a simple ply file given vertices and faces
  * @param path The file path
  * @param vertices A vector of vertices
