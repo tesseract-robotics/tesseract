@@ -45,7 +45,7 @@ Packages
 
    Getting Started <_source/getting_started.rst>
    Tesseract Scene Graph <_source/tesseract_scene_graph_doc.rst>
-   tesseract_collision <_source/tesseract_collision_doc.rst>
+   Tesseract Collision <_source/tesseract_collision_doc.rst>
    tesseract_geometry <_source/tesseract_geometry_doc.rst>
    tesseract_ros <_source/tesseract_ros_doc.rst>
    tesseract_msgs <_source/tesseract_msgs_doc.rst>
