@@ -17,7 +17,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 
-from sphinxext.remoteliteralinclude import *
+#from sphinxcontrib.remoteliteralinclude import *
 import os
 import git
 curr_path = os.path.abspath('.')
@@ -38,7 +38,7 @@ except git.exc.InvalidGitRepositoryError:
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.githubpages']
+extensions = ['sphinx.ext.githubpages', 'sphinxext.remoteliteralinclude']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
