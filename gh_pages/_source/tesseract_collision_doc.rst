@@ -80,37 +80,44 @@ Add collision object in a disabled state
    :start-after: // Add thin box to checker which is disabled
    :end-before: // Add second box to checker, but convert to convex hull mesh.
 
-Add another collision object
-""""""""""""""""""""""""""""
+Create convex hull from mesh file
+"""""""""""""""""""""""""""""""""
 
 .. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :start-after: // This is required because convex hull cannot have multiple faces on the same plane.
-   :end-before: CONSOLE_BRIDGE_logInform("Test when object is inside another");
+   :start-after: documentation:start:create_convex_hull
+   :end-before: documentation:end:create_convex_hull
 
-Set the active collision object's
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Add convex hull collision object
+""""""""""""""""""""""""""""""""
+.. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
+   :language: c++
+   :start-after: documentation:start:add_convex_hull_collision
+   :end-before: documentation:end:add_convex_hull_collision
+
+Set the active collision objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :start-after: CONSOLE_BRIDGE_logInform("Test when object is inside another");
-   :end-before: checker.setContactDistanceThreshold(0.1);
+   :start-after: documentation:start:set_active_collision_object
+   :end-before: documentation:end:set_active_collision_object
 
 Set the contact distance threshold
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :start-after: checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
-   :end-before: // Set the collision object transforms
+   :start-after: documentation:start:set_contact_distance_threshold
+   :end-before: documentation:end:set_contact_distance_threshold
 
 Set the collision object's transform
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :start-after: // Set the collision object transforms
-   :end-before: // Perform collision check
+   :start-after: documentation:start:set_collision_object_transform_1
+   :end-before: documentation:end:set_collision_object_transform_1
 
 Perform collision check
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -121,21 +128,16 @@ Perform collision check
 
 .. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :start-after: // Perform collision check
-   :end-before: CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
+   :start-after: documentation:start:perform_collision_check_1
+   :end-before: documentation:end:perform_collision_check_1
 
 Set the collision object's transform
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :start-after: CONSOLE_BRIDGE_logInform("Test object is out side the contact distance");
-   :end-before: result.clear();
-
-.. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
-   :language: c++
-   :start-after: result_vector.clear();
-   :end-before: // Check for collision
+   :start-after: documentation:start:set_collision_object_transform_2
+   :end-before: documentation:end:set_collision_object_transform_2
 
 Perform collision check
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -146,8 +148,8 @@ Perform collision check
 
 .. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :start-after: // Check for collision after moving object
-   :end-before: CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
+   :start-after: documentation:start:perform_collision_check_2
+   :end-before: documentation:end:perform_collision_check_2
 
 Change contact distance threshold
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

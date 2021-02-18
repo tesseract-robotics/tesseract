@@ -42,6 +42,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses, false);
 
+  // documentation:start:create_convex_hull
   // Add second box to checker, but convert to convex hull mesh.
   CollisionShapePtr second_box;
 
@@ -54,7 +55,9 @@ int main(int /*argc*/, char** /*argv*/)
   auto ch_faces = std::make_shared<Eigen::VectorXi>();
   int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
   second_box = std::make_shared<ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+  // documentation:end:create_convex_hull
 
+  // documentation:start:add_convex_hull_collision
   Eigen::Isometry3d second_box_pose;
   second_box_pose.setIdentity();
 
@@ -64,11 +67,19 @@ int main(int /*argc*/, char** /*argv*/)
   obj3_poses.push_back(second_box_pose);
 
   checker.addCollisionObject("second_box_link", 0, obj3_shapes, obj3_poses);
+  // documentation:end:add_convex_hull_collision
 
   CONSOLE_BRIDGE_logInform("Test when object is inside another");
+  // documentation:start:set_active_collision_object
   checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
-  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  // documentation:end:set_active_collision_object
 
+
+  // documentation:start:set_contact_distance_threshold
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  // documentation:end:set_contact_distance_threshold
+
+  // documentation:start:set_collision_object_transform_1
   // Set the collision object transforms
   tesseract_common::TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
@@ -77,11 +88,14 @@ int main(int /*argc*/, char** /*argv*/)
   location["second_box_link"] = Eigen::Isometry3d::Identity();
 
   checker.setCollisionObjectsTransform(location);
+  // documentation:end:set_collision_object_transform_1
 
+  // documentation:start:perform_collision_check_1
   // Perform collision check
   ContactResultMap result;
   ContactRequest request(ContactTestType::CLOSEST);
   checker.contactTest(result, request);
+  // documentation:end:perform_collision_check_1
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -99,17 +113,21 @@ int main(int /*argc*/, char** /*argv*/)
                            result_vector[0].link_names[1].c_str(),
                            toString(result_vector[0].normal).c_str());
 
+  // documentation:start:set_collision_object_transform_2
   CONSOLE_BRIDGE_logInform("Test object is out side the contact distance");
   location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
+  checker.setCollisionObjectsTransform(location);
+  // documentation:end:set_collision_object_transform_2
+
+  // documentation:start:perform_collision_check_2
   result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
-  checker.setCollisionObjectsTransform(location);
-
   // Check for collision after moving object
   checker.contactTest(result, request);
   flattenResults(std::move(result), result_vector);
+  // documentation:end:perform_collision_check_2
 
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
 
