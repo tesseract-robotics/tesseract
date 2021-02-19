@@ -70,51 +70,41 @@ void KDLFwdKinTree::setStartState(std::unordered_map<std::string, double> start_
   start_state_ = kdl_joints;
 }
 
-bool KDLFwdKinTree::calcFwdKinHelper(Eigen::Isometry3d& pose,
-                                     const KDL::JntArray& kdl_joints,
-                                     const std::string& link_name) const
+Eigen::Isometry3d KDLFwdKinTree::calcFwdKinHelper(const KDL::JntArray& kdl_joints, const std::string& link_name) const
 {
   KDL::Frame kdl_pose;
   if (fk_solver_->JntToCart(kdl_joints, kdl_pose, link_name) < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to calculate FK");
-    return false;
+    throw std::runtime_error("KDLFwdKinTree: Failed to calculate forward kinematics.");
   }
 
+  Eigen::Isometry3d pose;
   KDLToEigen(kdl_pose, pose);
 
-  return true;
+  return pose;
 }
 
-bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& /*pose*/, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+Eigen::Isometry3d KDLFwdKinTree::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& /*joint_angles*/) const
 {
-  assert(checkInitialized());
-  assert(checkJoints(joint_angles));
-  UNUSED(joint_angles);
-
   throw std::runtime_error("This method call is not supported by KDLFwdKinTree, must pass link name.");
 }
 
-bool KDLFwdKinTree::calcFwdKin(tesseract_common::VectorIsometry3d& /*poses*/,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+tesseract_common::VectorIsometry3d
+KDLFwdKinTree::calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& /*joint_angles*/) const
 {
-  assert(checkInitialized());
-  assert(checkJoints(joint_angles));
-  UNUSED(joint_angles);
-
   throw std::runtime_error("This method call is not supported by KDLFwdKinTree, must pass link name.");
 }
 
-bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& pose,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name) const
+Eigen::Isometry3d KDLFwdKinTree::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                            const std::string& link_name) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
   assert(std::find(link_list_.begin(), link_list_.end(), link_name) != link_list_.end());
 
   KDL::JntArray kdl_joint_vals = getKDLJntArray(joint_list_, joint_angles);
-  return calcFwdKinHelper(pose, kdl_joint_vals, link_name);
+  return calcFwdKinHelper(kdl_joint_vals, link_name);
 }
 
 bool KDLFwdKinTree::calcJacobianHelper(KDL::Jacobian& jacobian,
@@ -131,22 +121,13 @@ bool KDLFwdKinTree::calcJacobianHelper(KDL::Jacobian& jacobian,
   return true;
 }
 
-bool KDLFwdKinTree::calcJacobian(Eigen::Ref<Eigen::MatrixXd> /*jacobian*/,
-                                 const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+Eigen::MatrixXd KDLFwdKinTree::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& /*joint_angles*/) const
 {
-  assert(checkInitialized());
-  assert(checkJoints(joint_angles));
-  assert(false);
-  UNUSED(joint_angles);
-
-  CONSOLE_BRIDGE_logError("This method call is not supported by KDLFwdKinTree, must pass link name.");
-
-  return false;
+  throw std::runtime_error("KDLFwdKinTree: This method call is not supported by KDLFwdKinTree, must pass link name.");
 }
 
-bool KDLFwdKinTree::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                                 const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                 const std::string& link_name) const
+Eigen::MatrixXd KDLFwdKinTree::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                            const std::string& link_name) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
@@ -155,11 +136,12 @@ bool KDLFwdKinTree::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   KDL::Jacobian kdl_jacobian;
   if (calcJacobianHelper(kdl_jacobian, kdl_joint_vals, link_name))
   {
+    Eigen::MatrixXd jacobian(6, numJoints());
     KDLToEigen(kdl_jacobian, joint_qnr_, jacobian);
-    return true;
+    return jacobian;
   }
 
-  return false;
+  throw std::runtime_error("KDLFwdKinTree: Failed to calculate jacobian.");
 }
 
 bool KDLFwdKinTree::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const

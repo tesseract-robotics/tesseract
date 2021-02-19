@@ -72,21 +72,18 @@ public:
 
   bool update() override;
 
-  bool calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
-  bool calcFwdKin(tesseract_common::VectorIsometry3d& poses,
-                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  tesseract_common::VectorIsometry3d
+  calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
-  bool calcFwdKin(Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                  const std::string& link_name) const override;
+  Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                               const std::string& link_name) const override;
 
-  bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
-  bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                    const std::string& link_name) const override;
+  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                               const std::string& link_name) const override;
 
   bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
 
@@ -164,7 +161,7 @@ private:
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /** @brief calcFwdKin helper function */
-  bool calcFwdKinHelper(Eigen::Isometry3d& pose, const KDL::JntArray& kdl_joints, const std::string& link_name) const;
+  Eigen::Isometry3d calcFwdKinHelper(const KDL::JntArray& kdl_joints, const std::string& link_name) const;
 
   /** @brief calcJacobian helper function */
   bool calcJacobianHelper(KDL::Jacobian& jacobian, const KDL::JntArray& kdl_joints, const std::string& link_name) const;
