@@ -275,53 +275,44 @@ Parse SRDF adding Allowed Collision Matrix to Graph
 Example Explanation
 -------------------
 
-Create Resource Locator
-^^^^^^^^^^^^^^^^^^^^^^^
-
-Because this is ROS agnostic you need to provide a resource locator for interpreting **package:/**.
-
+Create Scene Graph
+^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :start-after: // Define a resource locator function
-   :end-before: int main(int /*argc*/, char** /*argv*/)
+   :start-after: // documentation:start:1: Create scene graph
+   :end-before: // documentation:end:1: Create scene graph
 
-Load URDF and SRDF
+
+Load SRDF
 ^^^^^^^^^^^^^^^^^^
 
 Get the file path to the SRDF file
 
 .. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :start-after: // Get the srdf file path
-   :end-before: // Create scene graph
-
-Create Scene Graph
-
-.. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
-   :language: c++
-   :start-after: // Create scene graph
-   :end-before: // Parse the srdf
+   :start-after: // documentation:start:2: Get the srdf file path
+   :end-before: // documentation:end:2: Get the srdf file path
 
 Parse SRDF
 
 .. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :start-after: // Parse the srdf
-   :end-before: // Add allowed collision matrix to scene graph
+   :start-after: // documentation:start:3: Parse the srdf
+   :end-before: // documentation:end:3: Parse the srdf
 
 Add Allowed Collision Matrix to Scene Graph
 
 .. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :start-after: // Add allowed collision matrix to scene graph
-   :end-before: // Get info about allowed collision matrix
+   :start-after: // documentation:start:4: Add allowed collision matrix to scene graph
+   :end-before: // documentation:end:4: Add allowed collision matrix to scene graph
 
 Methods for getting Allowed Collision Matrix from Scene Graph
 
 .. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :start-after: // Get info about allowed collision matrix
-   :end-before: }
+   :start-after: // documentation:start:5: Get info about allowed collision matrix
+   :end-before: // documentation:end:5: Get info about allowed collision matrix
 
 .. _ex4:
 
@@ -336,7 +327,7 @@ Example Explanation
 Parse Mesh from File
 ^^^^^^^^^^^^^^^^^^^^
 
-Mesh files can contain multiple meshes. This is a critical difference between MoveIt which merges all shapes in to a single triangle list for collision checking. By keeping each mesh independent, each will have its own bounding box and if you want to convert to a convex hull you will get a closer representation of the geometry.
+Mesh files can contain multiple meshes. This is a critical difference between MoveIt! which merges all shapes in to a single triangle list for collision checking. By keeping each mesh independent, each will have its own bounding box and if you want to convert to a convex hull you will get a closer representation of the geometry.
 
 .. literalinclude:: ../../tesseract_geometry/examples/parse_mesh_example.cpp
    :language: c++
