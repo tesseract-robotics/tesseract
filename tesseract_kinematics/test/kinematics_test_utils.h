@@ -153,19 +153,13 @@ inline void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin,
   jacobian.resize(6, kin.numJoints());
   if (link_name.empty())
   {
-    bool calc_fwd = kin.calcFwdKin(pose, jvals);
-    EXPECT_TRUE(calc_fwd);
-
-    bool calc_jac = kin.calcJacobian(jacobian, jvals);
-    EXPECT_TRUE(calc_jac);
+    pose = kin.calcFwdKin(jvals);
+    jacobian = kin.calcJacobian(jvals);
   }
   else
   {
-    bool calc_fwd = kin.calcFwdKin(pose, jvals, link_name);
-    EXPECT_TRUE(calc_fwd);
-
-    bool calc_jac = kin.calcJacobian(jacobian, jvals, link_name);
-    EXPECT_TRUE(calc_jac);
+    pose = kin.calcFwdKin(jvals, link_name);
+    jacobian = kin.calcJacobian(jvals, link_name);
   }
   tesseract_kinematics::jacobianChangeBase(jacobian, change_base);
   tesseract_kinematics::jacobianChangeRefPoint(jacobian, (change_base * pose).linear() * link_point);
@@ -300,8 +294,7 @@ inline void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin
 
   for (const auto& sol : solutions)
   {
-    Eigen::Isometry3d result;
-    EXPECT_TRUE(fwd_kin.calcFwdKin(result, sol));
+    Eigen::Isometry3d result = fwd_kin.calcFwdKin(sol);
     EXPECT_TRUE(target_pose.translation().isApprox(result.translation(), 1e-4));
 
     Eigen::Quaterniond rot_pose(target_pose.rotation());
@@ -325,15 +318,14 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
   jvals.resize(7);
   jvals.setZero();
 
-  EXPECT_TRUE(kin.calcFwdKin(pose, jvals, "base_link"));
+  pose = kin.calcFwdKin(jvals, "base_link");
   EXPECT_TRUE(pose.isApprox(Eigen::Isometry3d::Identity()));
 
   ///////////////////////////
   // Test forward kinematics
   ///////////////////////////
   {
-    pose.setIdentity();
-    EXPECT_TRUE(kin.calcFwdKin(pose, jvals, "link_1"));
+    pose = kin.calcFwdKin(jvals, "link_1");
     Eigen::Isometry3d result;
     result.setIdentity();
     result.translation()[0] = 0;
@@ -343,8 +335,7 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
   }
 
   {
-    pose.setIdentity();
-    EXPECT_TRUE(kin.calcFwdKin(pose, jvals, "link_2"));
+    pose = kin.calcFwdKin(jvals, "link_2");
     Eigen::Isometry3d result;
     result.setIdentity();
     result.translation()[0] = -0.00043624;
@@ -354,8 +345,7 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
   }
 
   {
-    pose.setIdentity();
-    EXPECT_TRUE(kin.calcFwdKin(pose, jvals, "link_3"));
+    pose = kin.calcFwdKin(jvals, "link_3");
     Eigen::Isometry3d result;
     result.setIdentity();
     result.translation()[0] = -0.00043624;
@@ -365,8 +355,7 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
   }
 
   {
-    pose.setIdentity();
-    EXPECT_TRUE(kin.calcFwdKin(pose, jvals, "link_4"));
+    pose = kin.calcFwdKin(jvals, "link_4");
     Eigen::Isometry3d result;
     result.setIdentity();
     result.translation()[0] = 0;
@@ -376,8 +365,7 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
   }
 
   {
-    pose.setIdentity();
-    EXPECT_TRUE(kin.calcFwdKin(pose, jvals, "link_5"));
+    pose = kin.calcFwdKin(jvals, "link_5");
     Eigen::Isometry3d result;
     result.setIdentity();
     result.translation()[0] = 0;
@@ -387,8 +375,7 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
   }
 
   {
-    pose.setIdentity();
-    EXPECT_TRUE(kin.calcFwdKin(pose, jvals, "link_6"));
+    pose = kin.calcFwdKin(jvals, "link_6");
     Eigen::Isometry3d result;
     result.setIdentity();
     result.translation()[0] = 0;
@@ -398,8 +385,7 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
   }
 
   {
-    pose.setIdentity();
-    EXPECT_TRUE(kin.calcFwdKin(pose, jvals, "link_7"));
+    pose = kin.calcFwdKin(jvals, "link_7");
     Eigen::Isometry3d result;
     result.setIdentity();
     result.translation()[0] = 0;
@@ -408,8 +394,7 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
     EXPECT_TRUE(pose.isApprox(result));
   }
 
-  pose.setIdentity();
-  EXPECT_TRUE(kin.calcFwdKin(pose, jvals, "tool0"));
+  pose = kin.calcFwdKin(jvals, "tool0");
   Eigen::Isometry3d result;
   result.setIdentity();
   result.translation()[0] = 0;
@@ -433,11 +418,11 @@ inline void runFwdKinAllPosesIIWATest(tesseract_kinematics::ForwardKinematics& k
   ///////////////////////////
   if (!supported)
   {
-    EXPECT_FALSE(kin.calcFwdKin(poses, jvals));
+    EXPECT_ANY_THROW(kin.calcFwdKinAll(jvals));  // NOLINT
   }
   else
   {
-    EXPECT_TRUE(kin.calcFwdKin(poses, jvals));
+    poses = kin.calcFwdKinAll(jvals);
     Eigen::Isometry3d result;
     result.setIdentity();
     result.translation()[0] = 0;
@@ -531,8 +516,6 @@ inline void runJacobianIIWATest(tesseract_kinematics::ForwardKinematics& kin, bo
   ///////////////////////////
   // Test Jacobian at Point
   ///////////////////////////
-  Eigen::Isometry3d pose;
-  kin.calcFwdKin(pose, jvals, "tool0");
   for (int k = 0; k < 3; ++k)
   {
     Eigen::Vector3d link_point(0, 0, 0);

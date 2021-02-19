@@ -40,6 +40,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+template <typename FloatType>
+using VectorX = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>;
+
 /**
  * @brief Change the base coordinate system of the jacobian
  * @param jacobian The current Jacobian which gets modified in place
@@ -90,16 +93,14 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 {
   Eigen::VectorXd njvals;
   double delta = 0.001;
-  Eigen::Isometry3d pose;
-  kin.calcFwdKin(pose, joint_values, link_name);
+  Eigen::Isometry3d pose = kin.calcFwdKin(joint_values, link_name);
   pose = change_base * pose;
 
   for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
   {
     njvals = joint_values;
     njvals[i] += delta;
-    Eigen::Isometry3d updated_pose;
-    kin.calcFwdKin(updated_pose, njvals, link_name);
+    Eigen::Isometry3d updated_pose = kin.calcFwdKin(njvals, link_name);
     updated_pose = change_base * updated_pose;
 
     Eigen::Vector3d temp = pose * link_point;
@@ -286,8 +287,7 @@ createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_gra
  * @return True if joint values are within the joint limits, otherwise false
  */
 template <typename FloatType>
-inline bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& joint_values,
-                           const Eigen::MatrixX2d& limits)
+inline bool isWithinLimits(const Eigen::Ref<const VectorX<FloatType>>& joint_values, const Eigen::MatrixX2d& limits)
 {
   for (int i = 0; i < limits.rows(); ++i)
     if ((joint_values[i] < limits(i, 0)) || (joint_values[i] > limits(i, 1)))
@@ -302,19 +302,17 @@ inline bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen
  * @param limits The joint limits of the robot
  */
 template <typename FloatType>
-inline std::vector<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>
-getRedundantSolutions(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& sol,
-                      const Eigen::MatrixX2d& limits)
+inline std::vector<VectorX<FloatType>> getRedundantSolutions(const Eigen::Ref<const VectorX<FloatType>>& sol,
+                                                             const Eigen::MatrixX2d& limits)
 {
   FloatType val;
-  std::vector<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> redundant_sols;
+  std::vector<VectorX<FloatType>> redundant_sols;
   for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(sol.size()); ++i)
   {
     val = sol[i];
     while ((val -= (2 * M_PI)) > limits(i, 0))
     {
-      Eigen::Matrix<FloatType, Eigen::Dynamic, 1> new_sol =
-          Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(sol.data(), 6);
+      VectorX<FloatType> new_sol = sol;
       new_sol[i] = val;
       redundant_sols.push_back(new_sol);
     }
@@ -322,8 +320,7 @@ getRedundantSolutions(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dyn
     val = sol[i];
     while ((val += (static_cast<FloatType>(2.0 * M_PI))) < limits(i, 1))
     {
-      Eigen::Matrix<FloatType, Eigen::Dynamic, 1> new_sol =
-          Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(sol.data(), 6);
+      VectorX<FloatType> new_sol = sol;
       new_sol[i] = val;
       redundant_sols.push_back(new_sol);
     }
@@ -357,7 +354,7 @@ inline bool isValid(const std::array<FloatType, 6>& qs)
  * @param dof The length of the float array
  */
 template <typename FloatType>
-inline void harmonizeTowardZero(Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> qs)
+inline void harmonizeTowardZero(Eigen::Ref<VectorX<FloatType>> qs)
 {
   const static auto pi = FloatType(M_PI);
   const static auto two_pi = FloatType(2.0 * M_PI);

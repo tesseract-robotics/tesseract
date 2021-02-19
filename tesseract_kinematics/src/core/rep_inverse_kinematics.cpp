@@ -83,10 +83,7 @@ void RobotWithExternalPositionerInvKin::ikAt(IKSolutions& solutions,
                                              Eigen::VectorXd& positioner_pose,
                                              const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  Eigen::Isometry3d positioner_tf;
-  if (!positioner_fwd_kin_->calcFwdKin(positioner_tf, positioner_pose))
-    return;
-
+  Eigen::Isometry3d positioner_tf = positioner_fwd_kin_->calcFwdKin(positioner_pose);
   Eigen::Isometry3d robot_target_pose = manip_base_to_positioner_base_ * positioner_tf * target_pose;
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;

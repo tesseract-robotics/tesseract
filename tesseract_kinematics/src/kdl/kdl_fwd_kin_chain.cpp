@@ -46,9 +46,8 @@ ForwardKinematics::Ptr KDLFwdKinChain::clone() const
 
 bool KDLFwdKinChain::update() { return init(scene_graph_, kdl_data_.base_name, kdl_data_.tip_name, name_); }
 
-bool KDLFwdKinChain::calcFwdKinHelper(Eigen::Isometry3d& pose,
-                                      const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                      int segment_num) const
+Eigen::Isometry3d KDLFwdKinChain::calcFwdKinHelper(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                                   int segment_num) const
 {
   KDL::JntArray kdl_joints;
   EigenToKDL(joint_angles, kdl_joints);
@@ -58,19 +57,19 @@ bool KDLFwdKinChain::calcFwdKinHelper(Eigen::Isometry3d& pose,
   if (fk_solver_->JntToCart(kdl_joints, kdl_pose, segment_num) < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to calculate FK");
-    return false;
+    throw std::runtime_error("KDLFwdKinChain: Failed to calculate forward kinematics.");
   }
 
+  Eigen::Isometry3d pose;
   KDLToEigen(kdl_pose, pose);
 
-  return true;
+  return pose;
 }
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 
-bool KDLFwdKinChain::calcFwdKinHelper(tesseract_common::VectorIsometry3d& poses,
-                                      const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                      int segment_num) const
+tesseract_common::VectorIsometry3d
+KDLFwdKinChain::calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles, int segment_num) const
 {
 #ifndef KDL_LESS_1_4_0
   KDL::JntArray kdl_joints;
@@ -81,49 +80,48 @@ bool KDLFwdKinChain::calcFwdKinHelper(tesseract_common::VectorIsometry3d& poses,
   if (fk_solver_->JntToCart(kdl_joints, kdl_pose, segment_num) < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to calculate FK");
-    return false;
+    throw std::runtime_error("KDLFwdKinChain: Failed to calculate forward kinematics.");
   }
 
+  tesseract_common::VectorIsometry3d poses;
   KDLToEigen(kdl_pose, poses);
 
-  return true;
+  return poses;
 #else
-  return false;
+  throw std::runtime_error("KDLFwdKinChain: Failed to calculate forward kinematics.");
 #endif
-  UNUSED(poses);
   UNUSED(joint_angles);
   UNUSED(segment_num);
 }
 
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-bool KDLFwdKinChain::calcFwdKin(tesseract_common::VectorIsometry3d& poses,
-                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+tesseract_common::VectorIsometry3d
+KDLFwdKinChain::calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
 
-  return calcFwdKinHelper(poses, joint_angles);
+  return calcFwdKinHelperAll(joint_angles);
 }
 
-bool KDLFwdKinChain::calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+Eigen::Isometry3d KDLFwdKinChain::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
 
-  return calcFwdKinHelper(pose, joint_angles);
+  return calcFwdKinHelper(joint_angles);
 }
 
-bool KDLFwdKinChain::calcFwdKin(Eigen::Isometry3d& pose,
-                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                const std::string& link_name) const
+Eigen::Isometry3d KDLFwdKinChain::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                             const std::string& link_name) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
   assert(kdl_data_.segment_index.find(link_name) != kdl_data_.segment_index.end());
 
   int segment_nr = kdl_data_.segment_index.at(link_name);
-  return calcFwdKinHelper(pose, joint_angles, segment_nr);
+  return calcFwdKinHelper(joint_angles, segment_nr);
 }
 
 bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
@@ -144,8 +142,7 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
   return true;
 }
 
-bool KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+Eigen::MatrixXd KDLFwdKinChain::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
@@ -153,16 +150,16 @@ bool KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   KDL::Jacobian kdl_jacobian;
   if (calcJacobianHelper(kdl_jacobian, joint_angles))
   {
+    Eigen::MatrixXd jacobian(6, numJoints());
     KDLToEigen(kdl_jacobian, jacobian);
-    return true;
+    return jacobian;
   }
 
-  return false;
+  throw std::runtime_error("KDLFwdKinChain: Failed to calculate jacobian.");
 }
 
-bool KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                  const std::string& link_name) const
+Eigen::MatrixXd KDLFwdKinChain::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                             const std::string& link_name) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
@@ -172,11 +169,12 @@ bool KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 
   if (calcJacobianHelper(kdl_jacobian, joint_angles, segment_nr))
   {
+    Eigen::MatrixXd jacobian(6, numJoints());
     KDLToEigen(kdl_jacobian, jacobian);
-    return true;
+    return jacobian;
   }
 
-  return false;
+  throw std::runtime_error("KDLFwdKinChain: Failed to calculate jacobian.");
 }
 
 bool KDLFwdKinChain::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const

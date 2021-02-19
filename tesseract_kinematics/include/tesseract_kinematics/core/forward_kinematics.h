@@ -74,51 +74,49 @@ public:
 
   /**
    * @brief Calculates tool pose of robot chain
+   * @details Throws an exception on failures (including uninitialized)
    * @param pose Transform of end-of-tip relative to root
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
-  virtual bool calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
+  virtual Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
    * @brief Calculates pose for all links of robot chain
+   * @details Throws an exception on failures (including uninitialized)
    * @param poses Transform of each link relative to root. Same order as getLinkNames()
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
-  virtual bool calcFwdKin(tesseract_common::VectorIsometry3d& poses,
-                          const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
+  virtual tesseract_common::VectorIsometry3d
+  calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
    * @brief Calculates pose for a given link
+   * @details Throws an exception on failures (including uninitialized)
    * @param pose Transform of link relative to root
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    * @param link_name Name of link to calculate pose which is part of the kinematics
-   * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
-  virtual bool calcFwdKin(Eigen::Isometry3d& pose,
-                          const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                          const std::string& link_name) const = 0;
+  virtual Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                       const std::string& link_name) const = 0;
 
   /**
    * @brief Calculated jacobian of robot given joint angles
+   * @details Throws an exception on failures (including uninitialized)
    * @param jacobian Output jacobian
    * @param joint_angles Input vector of joint angles
-   * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
-  virtual bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                            const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
+  virtual Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
    * @brief Calculated jacobian at a link given joint angles
+   * @details Throws an exception on failures (including uninitialized)
    * @param jacobian Output jacobian for a given link
    * @param joint_angles Input vector of joint angles
    * @param link_name Name of link to calculate jacobian
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
-  virtual bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                            const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                            const std::string& link_name) const = 0;
+  virtual Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                       const std::string& link_name) const = 0;
 
   /**
    * @brief Check for consistency in # and limits of joints

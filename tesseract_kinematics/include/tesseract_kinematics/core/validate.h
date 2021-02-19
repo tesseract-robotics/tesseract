@@ -140,11 +140,11 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
   {
     joint_angles2[t] = M_PI / 2;
 
-    fwd_kin->calcFwdKin(test1, joint_angles2);
+    test1 = fwd_kin->calcFwdKin(joint_angles2);
     IKSolutions sols = inv_kin->calcInvKin(test1, seed_angles);
     for (const auto& sol : sols)
     {
-      fwd_kin->calcFwdKin(test2, sol);
+      test2 = fwd_kin->calcFwdKin(sol);
 
       if ((test1.translation() - test2.translation()).norm() > tol)
       {
@@ -267,8 +267,8 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
   {
     joint_angles2[t] = M_PI / 2;
 
-    fwd_kin1->calcFwdKin(test1, joint_angles2);
-    fwd_kin2->calcFwdKin(test2, joint_angles2);
+    test1 = fwd_kin1->calcFwdKin(joint_angles2);
+    test2 = fwd_kin2->calcFwdKin(joint_angles2);
 
     if ((test1.translation() - test2.translation()).norm() > tol)
     {

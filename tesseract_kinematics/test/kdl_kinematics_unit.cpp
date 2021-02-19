@@ -123,9 +123,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainUnit)  // NOLINT
   kin2 = kin_factory.create(nullptr, { std::make_pair("base_link", "tool0") }, "manip");
   EXPECT_TRUE(kin2 == nullptr);
 
-  Eigen::MatrixXd jacobian;
-  jacobian.resize(6, derived_kin.numJoints());
-  EXPECT_ANY_THROW(derived_kin.calcJacobian(jacobian, Eigen::VectorXd::Zero(7), "missing_link"));  // NOLINT
+  EXPECT_ANY_THROW(derived_kin.calcJacobian(Eigen::VectorXd::Zero(7), "missing_link"));  // NOLINT
 }
 
 TEST(TesseractKinematicsUnit, KDLKinTreeUnit)  // NOLINT
@@ -218,9 +216,7 @@ TEST(TesseractKinematicsUnit, KDLKinTreeUnit)  // NOLINT
   kin = kin_factory.create(scene_graph, joint_names, "manip", start_state);
   EXPECT_TRUE(kin == nullptr);
 
-  Eigen::MatrixXd jacobian;
-  jacobian.resize(6, derived_kin.numJoints());
-  EXPECT_FALSE(derived_kin.calcJacobian(jacobian, Eigen::VectorXd::Zero(7), "missing_link"));
+  EXPECT_ANY_THROW(derived_kin.calcJacobian(Eigen::VectorXd::Zero(7), "missing_link"));
 }
 
 TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)  // NOLINT
