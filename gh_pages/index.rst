@@ -43,7 +43,8 @@ Packages
 .. toctree::
    :maxdepth: 1
 
-   Getting Started <_source/getting_started.rst>
+   Getting Started <_source/getting_started_doc.rst>
+   URDF and SRDF <_source/urdf_and_srdf_doc.rst>
    Tesseract Scene Graph <_source/tesseract_scene_graph_doc.rst>
    Tesseract Collision <_source/tesseract_collision_doc.rst>
    tesseract_geometry <_source/tesseract_geometry_doc.rst>
