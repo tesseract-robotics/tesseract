@@ -49,17 +49,16 @@ bool RobotWithExternalPositionerInvKin::update()
   return init(scene_graph_, manip_inv_kin_, manip_reach_, positioner_fwd_kin_, positioner_sample_resolution_, name_);
 }
 
-bool RobotWithExternalPositionerInvKin::calcInvKinHelper(std::vector<double>& solutions,
-                                                         const Eigen::Isometry3d& pose,
-                                                         const Eigen::Ref<const Eigen::VectorXd>& seed) const
+IKSolutions RobotWithExternalPositionerInvKin::calcInvKinHelper(const Eigen::Isometry3d& pose,
+                                                                const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
+  IKSolutions solutions;
   nested_ik(solutions, 0, dof_range_, pose, positioner_pose, seed);
-
-  return !solutions.empty();
+  return solutions;
 }
 
-void RobotWithExternalPositionerInvKin::nested_ik(std::vector<double>& solutions,
+void RobotWithExternalPositionerInvKin::nested_ik(IKSolutions& solutions,
                                                   int loop_level,
                                                   const std::vector<Eigen::VectorXd>& dof_range,
                                                   const Eigen::Isometry3d& target_pose,
@@ -79,64 +78,49 @@ void RobotWithExternalPositionerInvKin::nested_ik(std::vector<double>& solutions
   }
 }
 
-bool RobotWithExternalPositionerInvKin::ikAt(std::vector<double>& solutions,
+void RobotWithExternalPositionerInvKin::ikAt(IKSolutions& solutions,
                                              const Eigen::Isometry3d& target_pose,
                                              Eigen::VectorXd& positioner_pose,
                                              const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::Isometry3d positioner_tf;
   if (!positioner_fwd_kin_->calcFwdKin(positioner_tf, positioner_pose))
-    return false;
+    return;
 
   Eigen::Isometry3d robot_target_pose = manip_base_to_positioner_base_ * positioner_tf * target_pose;
   if (robot_target_pose.translation().norm() > manip_reach_)
-    return false;
+    return;
 
-  Eigen::VectorXd robot_solution_set;
-  auto robot_dof = static_cast<int>(manip_inv_kin_->numJoints());
-  if (!manip_inv_kin_->calcInvKin(robot_solution_set, robot_target_pose, seed))
-    return false;
+  auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
+  auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
 
-  long num_sols = robot_solution_set.size() / robot_dof;
-  for (long i = 0; i < num_sols; i++)
+  IKSolutions robot_solution_set = manip_inv_kin_->calcInvKin(robot_target_pose, seed.tail(robot_dof));
+  if (robot_solution_set.empty())
+    return;
+
+  for (const auto& robot_solution : robot_solution_set)
   {
-    double* sol = robot_solution_set.data() + robot_dof * i;
-
-    std::vector<double> full_sol;
-    full_sol.insert(end(full_sol), positioner_pose.data(), positioner_pose.data() + positioner_pose.size());
-    full_sol.insert(end(full_sol), std::make_move_iterator(sol), std::make_move_iterator(sol + robot_dof));
-
-    solutions.insert(
-        begin(solutions), std::make_move_iterator(full_sol.begin()), std::make_move_iterator(full_sol.end()));
+    Eigen::VectorXd full_sol;
+    full_sol.resize(positioner_dof + robot_dof);
+    full_sol.head(positioner_dof) = positioner_pose;
+    full_sol.tail(robot_dof) = robot_solution;
+    solutions.push_back(full_sol);
   }
-
-  return !solutions.empty();
 }
 
-bool RobotWithExternalPositionerInvKin::calcInvKin(Eigen::VectorXd& solutions,
-                                                   const Eigen::Isometry3d& pose,
-                                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
+IKSolutions RobotWithExternalPositionerInvKin::calcInvKin(const Eigen::Isometry3d& pose,
+                                                          const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(checkInitialized());
-  std::vector<double> solution_set;
-  if (!calcInvKinHelper(solution_set, pose, seed))
-    return false;
-
-  solutions = Eigen::Map<Eigen::VectorXd>(solution_set.data(), static_cast<long>(solution_set.size()));
-  return true;
+  return calcInvKinHelper(pose, seed);
 }
 
-bool RobotWithExternalPositionerInvKin::calcInvKin(Eigen::VectorXd& /*solutions*/,
-                                                   const Eigen::Isometry3d& /*pose*/,
-                                                   const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
-                                                   const std::string& /*link_name*/) const
+IKSolutions RobotWithExternalPositionerInvKin::calcInvKin(const Eigen::Isometry3d& /*pose*/,
+                                                          const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
+                                                          const std::string& /*link_name*/) const
 {
   assert(checkInitialized());
-  assert(false);
-
-  CONSOLE_BRIDGE_logError("This method call is not supported by RobotWithExternalPositionerInvKin yet.");
-
-  return false;
+  throw std::runtime_error("This method call is not supported by RobotWithExternalPositionerInvKin yet.");
 }
 
 bool RobotWithExternalPositionerInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const

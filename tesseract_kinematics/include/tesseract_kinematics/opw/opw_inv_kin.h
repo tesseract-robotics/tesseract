@@ -61,14 +61,11 @@ public:
 
   bool update() override;
 
-  bool calcInvKin(Eigen::VectorXd& solutions,
-                  const Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
+  IKSolutions calcInvKin(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
-  bool calcInvKin(Eigen::VectorXd& solutions,
-                  const Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& seed,
-                  const std::string& link_name) const override;
+  IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed,
+                         const std::string& link_name) const override;
 
   bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
   unsigned int numJoints() const override;

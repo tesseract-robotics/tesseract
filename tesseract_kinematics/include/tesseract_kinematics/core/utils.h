@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
@@ -285,7 +286,7 @@ createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_gra
  * @return True if joint values are within the joint limits, otherwise false
  */
 template <typename FloatType>
-inline bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >& joint_values,
+inline bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& joint_values,
                            const Eigen::MatrixX2d& limits)
 {
   for (int i = 0; i < limits.rows(); ++i)
@@ -301,27 +302,30 @@ inline bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen
  * @param limits The joint limits of the robot
  */
 template <typename FloatType>
-inline std::vector<FloatType> getRedundantSolutions(const FloatType* sol, const Eigen::MatrixX2d& limits)
+inline std::vector<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>
+getRedundantSolutions(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& sol,
+                      const Eigen::MatrixX2d& limits)
 {
-  auto dof = static_cast<int>(limits.rows());
   FloatType val;
-  std::vector<FloatType> redundant_sols;
-  for (int i = 0; i < dof; ++i)
+  std::vector<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> redundant_sols;
+  for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(sol.size()); ++i)
   {
     val = sol[i];
     while ((val -= (2 * M_PI)) > limits(i, 0))
     {
-      std::vector<FloatType> new_sol(sol, sol + dof);
-      new_sol[static_cast<size_t>(i)] = val;
-      redundant_sols.insert(redundant_sols.end(), new_sol.begin(), new_sol.end());
+      Eigen::Matrix<FloatType, Eigen::Dynamic, 1> new_sol =
+          Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(sol.data(), 6);
+      new_sol[i] = val;
+      redundant_sols.push_back(new_sol);
     }
 
     val = sol[i];
     while ((val += (static_cast<FloatType>(2.0 * M_PI))) < limits(i, 1))
     {
-      std::vector<FloatType> new_sol(sol, sol + dof);
-      new_sol[static_cast<size_t>(i)] = val;
-      redundant_sols.insert(redundant_sols.end(), new_sol.begin(), new_sol.end());
+      Eigen::Matrix<FloatType, Eigen::Dynamic, 1> new_sol =
+          Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(sol.data(), 6);
+      new_sol[i] = val;
+      redundant_sols.push_back(new_sol);
     }
   }
 
@@ -338,10 +342,10 @@ inline std::vector<FloatType> getRedundantSolutions(const FloatType* sol, const 
  * @return True if the array is valid, otherwise false
  */
 template <typename FloatType>
-inline bool isValid(const FloatType* qs, int dof)
+inline bool isValid(const std::array<FloatType, 6>& qs)
 {
-  for (int i = 0; i < dof; ++i)
-    if (!std::isfinite(qs[i]))
+  for (const auto& q : qs)
+    if (!std::isfinite(q))
       return false;
 
   return true;
@@ -353,12 +357,12 @@ inline bool isValid(const FloatType* qs, int dof)
  * @param dof The length of the float array
  */
 template <typename FloatType>
-inline void harmonizeTowardZero(FloatType* qs, int dof)
+inline void harmonizeTowardZero(Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> qs)
 {
   const static auto pi = FloatType(M_PI);
   const static auto two_pi = FloatType(2.0 * M_PI);
 
-  for (int i = 0; i < dof; i++)
+  for (Eigen::Index i = 0; i < qs.rows(); ++i)
   {
     FloatType diff = std::fmod(qs[i] + pi, two_pi);
     qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);

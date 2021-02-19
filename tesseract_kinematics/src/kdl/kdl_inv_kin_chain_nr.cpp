@@ -47,15 +47,14 @@ InverseKinematics::Ptr KDLInvKinChainNR::clone() const
 
 bool KDLInvKinChainNR::update() { return init(scene_graph_, kdl_data_.base_name, kdl_data_.tip_name, name_); }
 
-bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
-                                        const Eigen::Isometry3d& pose,
-                                        const Eigen::Ref<const Eigen::VectorXd>& seed,
-                                        int /*segment_num*/) const
+IKSolutions KDLInvKinChainNR::calcInvKinHelper(const Eigen::Isometry3d& pose,
+                                               const Eigen::Ref<const Eigen::VectorXd>& seed,
+                                               int /*segment_num*/) const
 {
   KDL::JntArray kdl_seed, kdl_solution;
   EigenToKDL(seed, kdl_seed);
   kdl_solution.resize(static_cast<unsigned>(seed.size()));
-  solutions.resize(seed.size());
+  Eigen::VectorXd solution(seed.size());
 
   // run IK solver
   // TODO: Need to update to handle seg number. Neet to create an IK solver for each seg.
@@ -89,26 +88,24 @@ bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
       CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK");
     }
     // LCOV_EXCL_STOP
-    return false;
+    return IKSolutions();
   }
 
-  KDLToEigen(kdl_solution, solutions);
+  KDLToEigen(kdl_solution, solution);
 
-  return true;
+  return { solution };
 }
 
-bool KDLInvKinChainNR::calcInvKin(Eigen::VectorXd& solutions,
-                                  const Eigen::Isometry3d& pose,
-                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
+IKSolutions KDLInvKinChainNR::calcInvKin(const Eigen::Isometry3d& pose,
+                                         const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(checkInitialized());
-  return calcInvKinHelper(solutions, pose, seed);
+  return calcInvKinHelper(pose, seed);
 }
 
-bool KDLInvKinChainNR::calcInvKin(Eigen::VectorXd& /*solutions*/,
-                                  const Eigen::Isometry3d& /*pose*/,
-                                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
-                                  const std::string& /*link_name*/) const
+IKSolutions KDLInvKinChainNR::calcInvKin(const Eigen::Isometry3d& /*pose*/,
+                                         const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
+                                         const std::string& /*link_name*/) const
 {
   assert(checkInitialized());
 
