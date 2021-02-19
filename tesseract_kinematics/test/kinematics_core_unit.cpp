@@ -66,25 +66,25 @@ TEST(TesseractKinematicsUnit, CoreUtilsWithinLimitsUnit)  // NOLINT
 
 TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT
 {
-  std::array<double, 2> q;
+  Eigen::VectorXd q(2);
   q[0] = (4 * M_PI) + M_PI_4;
   q[1] = -(4 * M_PI) - M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardZero(q.data(), 2);
+  tesseract_kinematics::harmonizeTowardZero<double>(q);
   EXPECT_NEAR(q[0], M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], -M_PI_4, 1e-6);
 
   q[0] = M_PI_4;
   q[1] = -M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardZero(q.data(), 2);
+  tesseract_kinematics::harmonizeTowardZero<double>(q);
   EXPECT_NEAR(q[0], M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], -M_PI_4, 1e-6);
 
   q[0] = 5 * M_PI_4;
   q[1] = -5 * M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardZero(q.data(), 2);
+  tesseract_kinematics::harmonizeTowardZero<double>(q);
   EXPECT_NEAR(q[0], -3 * M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], 3 * M_PI_4, 1e-6);
 }

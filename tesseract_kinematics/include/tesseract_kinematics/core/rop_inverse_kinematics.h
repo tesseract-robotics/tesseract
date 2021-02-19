@@ -67,14 +67,11 @@ public:
 
   bool update() override;
 
-  bool calcInvKin(Eigen::VectorXd& solutions,
-                  const Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
+  IKSolutions calcInvKin(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
-  bool calcInvKin(Eigen::VectorXd& solutions,
-                  const Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& seed,
-                  const std::string& link_name) const override;
+  IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed,
+                         const std::string& link_name) const override;
 
   bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
 
@@ -141,18 +138,16 @@ private:
   bool init(const RobotOnPositionerInvKin& kin);
 
   /** @brief calcFwdKin helper function */
-  bool calcInvKinHelper(std::vector<double>& solutions,
-                        const Eigen::Isometry3d& pose,
-                        const Eigen::Ref<const Eigen::VectorXd>& seed) const;
+  IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
-  void nested_ik(std::vector<double>& solutions,
+  void nested_ik(IKSolutions& solutions,
                  int loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
                  const Eigen::Isometry3d& target_pose,
                  Eigen::VectorXd& positioner_pose,
                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
-  bool ikAt(std::vector<double>& solutions,
+  void ikAt(IKSolutions& solutions,
             const Eigen::Isometry3d& target_pose,
             Eigen::VectorXd& positioner_pose,
             const Eigen::Ref<const Eigen::VectorXd>& seed) const;

@@ -141,12 +141,10 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
     joint_angles2[t] = M_PI / 2;
 
     fwd_kin->calcFwdKin(test1, joint_angles2);
-    Eigen::VectorXd sols;
-    inv_kin->calcInvKin(sols, test1, seed_angles);
-    const int num_sols = static_cast<int>(sols.size()) / nj;
-    for (int i = 0; i < num_sols; ++i)
+    IKSolutions sols = inv_kin->calcInvKin(test1, seed_angles);
+    for (const auto& sol : sols)
     {
-      fwd_kin->calcFwdKin(test2, sols.middleRows(nj * i, nj));
+      fwd_kin->calcFwdKin(test2, sol);
 
       if ((test1.translation() - test2.translation()).norm() > tol)
       {

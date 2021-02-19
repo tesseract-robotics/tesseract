@@ -55,9 +55,7 @@ bool IKFastInvKin::update()
   return init(name_, base_link_name_, tip_link_name_, joint_names_, link_names_, active_link_names_, limits_);
 }
 
-bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
-                              const Eigen::Isometry3d& pose,
-                              const Eigen::Ref<const Eigen::VectorXd>& seed) const
+IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   // Convert to ikfast data type
   Eigen::Transform<IkReal, 3, Eigen::Isometry> ikfast_tcp = pose.cast<IkReal>();
@@ -126,10 +124,9 @@ bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
   return !solution_set.empty();
 }
 
-bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
-                              const Eigen::Isometry3d& pose,
-                              const Eigen::Ref<const Eigen::VectorXd>& seed,
-                              const std::string& link_name) const
+IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose,
+                                     const Eigen::Ref<const Eigen::VectorXd>& seed,
+                                     const std::string& link_name) const
 {
   throw std::runtime_error("IKFastInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const "
                            "Eigen::Ref<const Eigen::VectorXd>&, const std::string&) Not Supported!");

@@ -45,6 +45,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+using IKSolutions = std::vector<Eigen::VectorXd>;
+
 /** @brief Inverse kinematics functions. */
 class InverseKinematics
 {
@@ -74,23 +76,20 @@ public:
    * @param solutions A vector of solutions, so check the size of the vector to determine the number of solutions
    * @param pose Transform of end-of-tip relative to root (base link)
    * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
-   * @return True if calculation successful, False if anything is wrong (including uninitialized)
+   * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
-  virtual bool calcInvKin(Eigen::VectorXd& solutions,
-                          const Eigen::Isometry3d& pose,
-                          const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
+  virtual IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
+                                 const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
 
   /**
    * @brief Calculates joint solutions given a pose for a specific link.
-   * @param solutions A vector of solutions, so check the size of the vector to determine the number of solutions
    * @param pose Transform of end-of-tip relative to root (base link)
    * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
-   * @return True if calculation successful, False if anything is wrong (including uninitialized)
+   * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
-  virtual bool calcInvKin(Eigen::VectorXd& solutions,
-                          const Eigen::Isometry3d& pose,
-                          const Eigen::Ref<const Eigen::VectorXd>& seed,
-                          const std::string& link_name) const = 0;
+  virtual IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
+                                 const Eigen::Ref<const Eigen::VectorXd>& seed,
+                                 const std::string& link_name) const = 0;
 
   /**
    * @brief Check for consistency in # and limits of joints

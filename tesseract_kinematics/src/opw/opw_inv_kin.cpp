@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 #include <console_bridge/console.h>
 #include <opw_kinematics/opw_kinematics.h>
+#include <opw_kinematics/opw_utilities.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/opw/opw_inv_kin.h>
@@ -47,52 +48,46 @@ bool OPWInvKin::update()
   return init(name_, params_, base_link_name_, tip_link_name_, joint_names_, link_names_, active_link_names_, limits_);
 }
 
-bool OPWInvKin::calcInvKin(Eigen::VectorXd& solutions,
-                           const Eigen::Isometry3d& pose,
-                           const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
+IKSolutions OPWInvKin::calcInvKin(const Eigen::Isometry3d& pose,
+                                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  std::array<double, 6 * 8> sols;
-  opw_kinematics::inverse(params_, pose, sols.data());
+  opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, pose);
 
   // Check the output
-  std::vector<double> solution_set;
+  IKSolutions solution_set;
   solution_set.reserve(sols.size());
-  for (int i = 0; i < 8; i++)
+  for (auto& sol : sols)
   {
-    double* sol = sols.data() + 6 * i;
-    if (isValid<double>(sol, 6))
+    if (opw_kinematics::isValid<double>(sol))
     {
-      harmonizeTowardZero<double>(sol, 6);  // Modifies 'sol' in place
+      Eigen::Map<Eigen::VectorXd> eigen_sol(sol.data(), static_cast<Eigen::Index>(sol.size()));
+
+      // Harmonize between [-PI, PI]
+      harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
 
       // Add solution
-      solution_set.insert(end(solution_set), sol, sol + 6);
+      solution_set.push_back(eigen_sol);
 
       // Add redundant solutions
-      std::vector<double> redundant_sols = getRedundantSolutions(sol, limits_.joint_limits);
+      IKSolutions redundant_sols = getRedundantSolutions<double>(eigen_sol, limits_.joint_limits);
       if (!redundant_sols.empty())
       {
-        auto num_sol = static_cast<int>(redundant_sols.size() / 6);
-        for (int s = 0; s < num_sol; ++s)
-        {
-          double* redundant_sol = redundant_sols.data() + 6 * s;
-          solution_set.insert(
-              end(solution_set), std::make_move_iterator(redundant_sol), std::make_move_iterator(redundant_sol + 6));
-        }
+        solution_set.insert(end(solution_set),
+                            std::make_move_iterator(redundant_sols.begin()),
+                            std::make_move_iterator(redundant_sols.end()));
       }
     }
   }
 
-  solutions = Eigen::Map<Eigen::VectorXd>(solution_set.data(), static_cast<long>(solution_set.size()));
-  return !solution_set.empty();
+  return solution_set;
 }
 
-bool OPWInvKin::calcInvKin(Eigen::VectorXd& /*solutions*/,
-                           const Eigen::Isometry3d& /*pose*/,
-                           const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
-                           const std::string& /*link_name*/) const
+IKSolutions OPWInvKin::calcInvKin(const Eigen::Isometry3d& /*pose*/,
+                                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
+                                  const std::string& /*link_name*/) const
 {
-  throw std::runtime_error("OPWInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const "
-                           "Eigen::Ref<const Eigen::VectorXd>&, const std::string&) Not Supported!");
+  throw std::runtime_error("OPWInvKin::calcInvKin(const Eigen::Isometry3d&, const Eigen::Ref<const Eigen::VectorXd>&, "
+                           "const std::string&) Not Supported!");
 }
 
 bool OPWInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const

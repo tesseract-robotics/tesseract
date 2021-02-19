@@ -71,14 +71,11 @@ public:
 
   bool update() override;
 
-  bool calcInvKin(Eigen::VectorXd& solutions,
-                  const Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
+  IKSolutions calcInvKin(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
-  bool calcInvKin(Eigen::VectorXd& solutions,
-                  const Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& seed,
-                  const std::string& link_name) const override;
+  IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed,
+                         const std::string& link_name) const override;
 
   bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
 
@@ -153,10 +150,9 @@ private:
   bool init(const KDLInvKinChainNR& kin);
 
   /** @brief calcFwdKin helper function */
-  bool calcInvKinHelper(Eigen::VectorXd& solutions,
-                        const Eigen::Isometry3d& pose,
-                        const Eigen::Ref<const Eigen::VectorXd>& seed,
-                        int segment_num = -1) const;
+  IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose,
+                               const Eigen::Ref<const Eigen::VectorXd>& seed,
+                               int segment_num = -1) const;
 };
 
 }  // namespace tesseract_kinematics

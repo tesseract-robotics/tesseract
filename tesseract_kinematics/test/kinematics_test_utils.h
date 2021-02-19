@@ -295,15 +295,11 @@ inline void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin
   ///////////////////////////
   // Test Inverse kinematics
   ///////////////////////////
-  Eigen::VectorXd solutions;
-  EXPECT_TRUE(inv_kin.calcInvKin(solutions, target_pose, seed));
+  IKSolutions solutions = inv_kin.calcInvKin(target_pose, seed);
+  EXPECT_TRUE(!solutions.empty());
 
-  int dof = static_cast<int>(inv_kin.numJoints());
-  int num_sol = static_cast<int>(solutions.size()) / dof;
-  for (int i = 0; i < num_sol; ++i)
+  for (const auto& sol : solutions)
   {
-    auto sol = solutions.middleRows(i * dof, dof);
-
     Eigen::Isometry3d result;
     EXPECT_TRUE(fwd_kin.calcFwdKin(result, sol));
     EXPECT_TRUE(target_pose.translation().isApprox(result.translation(), 1e-4));
