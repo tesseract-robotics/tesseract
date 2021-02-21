@@ -2,11 +2,17 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <type_traits>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 #include <tesseract_common/sfinae_utils.h>
 #include <tesseract_common/resource.h>
+#include <tesseract_common/serialization.h>
+#include <tesseract_common/manipulator_info.h>
+#include <tesseract_common/joint_state.h>
+#include <tesseract_common/types.h>
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
@@ -234,6 +240,193 @@ TEST(TesseractCommonUnit, bytesResource)
       std::make_shared<tesseract_common::BytesResource>("package://test_package/data.bin", &data[0], data.size());
   EXPECT_EQ(bytes_resource2->getUrl(), "package://test_package/data.bin");
   EXPECT_EQ(bytes_resource->getResourceContents().size(), data.size());
+}
+
+TEST(TesseractCommonUnit, serializationToolCenterPoint)
+{
+  Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
+
+  tesseract_common::ToolCenterPoint tcp(pose);
+
+  {
+    std::ofstream os("/tmp/tool_center_point_boost.xml");
+    boost::archive::xml_oarchive oa(os);
+    oa << BOOST_SERIALIZATION_NVP(tcp);
+  }
+
+  tesseract_common::ToolCenterPoint ntcp;
+  {
+    std::ifstream ifs("/tmp/tool_center_point_boost.xml");
+    assert(ifs.good());
+    boost::archive::xml_iarchive ia(ifs);
+
+    // restore the schedule from the archive
+    ia >> BOOST_SERIALIZATION_NVP(ntcp);
+  }
+
+  EXPECT_TRUE(tcp == ntcp);
+}
+
+TEST(TesseractCommonUnit, serializationManipulatorInfo)
+{
+  Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
+
+  tesseract_common::ManipulatorInfo manip_info("manipulator");
+  manip_info.tcp = tesseract_common::ToolCenterPoint(pose);
+
+  {
+    std::ofstream os("/tmp/manipulator_info_boost.xml");
+    boost::archive::xml_oarchive oa(os);
+    oa << BOOST_SERIALIZATION_NVP(manip_info);
+  }
+
+  tesseract_common::ManipulatorInfo nmanip_info;
+  {
+    std::ifstream ifs("/tmp/manipulator_info_boost.xml");
+    assert(ifs.good());
+    boost::archive::xml_iarchive ia(ifs);
+
+    // restore the schedule from the archive
+    ia >> BOOST_SERIALIZATION_NVP(nmanip_info);
+  }
+
+  EXPECT_TRUE(manip_info == nmanip_info);
+}
+
+TEST(TesseractCommonUnit, serializationJointState)
+{
+  tesseract_common::JointState joint_state;
+  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
+  joint_state.position = Eigen::VectorXd::Constant(3, 5);
+  joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
+  joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
+  joint_state.effort = Eigen::VectorXd::Constant(3, 8);
+  joint_state.time = 100;
+
+  {
+    std::ofstream os("/tmp/joint_state_boost.xml");
+    boost::archive::xml_oarchive oa(os);
+    oa << BOOST_SERIALIZATION_NVP(joint_state);
+  }
+
+  tesseract_common::JointState njoint_state;
+  {
+    std::ifstream ifs("/tmp/joint_state_boost.xml");
+    assert(ifs.good());
+    boost::archive::xml_iarchive ia(ifs);
+
+    // restore the schedule from the archive
+    ia >> BOOST_SERIALIZATION_NVP(njoint_state);
+  }
+
+  EXPECT_TRUE(joint_state == njoint_state);
+}
+
+TEST(TesseractCommonUnit, serializationKinematicLimits)
+{
+  tesseract_common::KinematicLimits limits;
+  limits.joint_limits.resize(3, 2);
+  limits.joint_limits << -5, 5, -5, 5, -5, 5;
+  limits.velocity_limits = Eigen::VectorXd::Constant(3, 6);
+  limits.acceleration_limits = Eigen::VectorXd::Constant(3, 7);
+
+  {
+    std::ofstream os("/tmp/kinematic_limits_boost.xml");
+    boost::archive::xml_oarchive oa(os);
+    oa << BOOST_SERIALIZATION_NVP(limits);
+  }
+
+  tesseract_common::KinematicLimits nlimits;
+  {
+    std::ifstream ifs("/tmp/kinematic_limits_boost.xml");
+    assert(ifs.good());
+    boost::archive::xml_iarchive ia(ifs);
+
+    // restore the schedule from the archive
+    ia >> BOOST_SERIALIZATION_NVP(nlimits);
+  }
+
+  EXPECT_TRUE(limits == nlimits);
+}
+
+TEST(TesseractCommonUnit, serializationVectorXd)
+{
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
+
+    {
+      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXd nev;
+    {
+      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+}
+
+TEST(TesseractCommonUnit, serializationMatrixX2d)
+{
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
+
+    {
+      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(em);
+    }
+
+    Eigen::MatrixX2d nem;
+    {
+      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nem);
+    }
+
+    EXPECT_TRUE(em.isApprox(nem, 1e-5));
+  }
+}
+
+TEST(TesseractCommonUnit, serializationIsometry3d)
+{
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::Isometry3d pose =
+        Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::Random().normalized());
+    pose.translation() = Eigen::Vector3d::Random();
+
+    {
+      std::ofstream os("/tmp/eigen_isometry3d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(pose);
+    }
+
+    Eigen::Isometry3d npose;
+    {
+      std::ifstream ifs("/tmp/eigen_isometry3d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(npose);
+    }
+
+    EXPECT_TRUE(pose.isApprox(npose, 1e-5));
+  }
 }
 
 int main(int argc, char** argv)

@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/types.h>
+#include <tesseract_common/joint_state.h>
 
 namespace tesseract_visualization
 {
