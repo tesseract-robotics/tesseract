@@ -37,6 +37,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/filesystem.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/serialization.h>
+
 namespace tesseract_common
 {
 /** @brief Enable easy switching to std::filesystem when available */
@@ -85,36 +87,6 @@ static inline LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, c
   return std::make_pair(link_name2, link_name1);
 }
 
-struct JointState
-{
-  JointState() = default;
-  JointState(std::vector<std::string> joint_names, Eigen::VectorXd position)
-    : joint_names(std::move(joint_names)), position(std::move(position))
-  {
-  }
-
-  /** @brief The joint corresponding to the position vector. */
-  std::vector<std::string> joint_names;
-
-  /** @brief The joint position at the waypoint */
-  Eigen::VectorXd position;
-
-  /** @brief The velocity at the waypoint (optional) */
-  Eigen::VectorXd velocity;
-
-  /** @brief The Acceleration at the waypoint (optional) */
-  Eigen::VectorXd acceleration;
-
-  /** @brief The Effort at the waypoint (optional) */
-  Eigen::VectorXd effort;
-
-  /** @brief The Time from start at the waypoint (optional) */
-  double time{ 0 };
-};
-
-/** @brief Represents a joint trajectory */
-using JointTrajectory = std::vector<JointState>;
-
 /** @brief Store kinematic limits */
 struct KinematicLimits
 {
@@ -123,6 +95,25 @@ struct KinematicLimits
   Eigen::MatrixX2d joint_limits;
   Eigen::VectorXd velocity_limits;
   Eigen::VectorXd acceleration_limits;
+
+  bool operator==(const KinematicLimits& other) const
+  {
+    bool ret_val = true;
+    ret_val &= (joint_limits.isApprox(other.joint_limits, 1e-5));
+    ret_val &= (velocity_limits.isApprox(other.velocity_limits, 1e-5));
+    ret_val &= (acceleration_limits.isApprox(other.acceleration_limits, 1e-5));
+    return ret_val;
+  }
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int /*version*/)
+  {
+    ar& BOOST_SERIALIZATION_NVP(joint_limits);
+    ar& BOOST_SERIALIZATION_NVP(velocity_limits);
+    ar& BOOST_SERIALIZATION_NVP(acceleration_limits);
+  }
 };
 }  // namespace tesseract_common
 #endif  // TESSERACT_COMMON_TYPES_H

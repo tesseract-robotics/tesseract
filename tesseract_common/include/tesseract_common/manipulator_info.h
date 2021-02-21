@@ -31,9 +31,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/nvp.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
+#include <tesseract_common/serialization.h>
 
 namespace tesseract_common
 {
@@ -125,7 +128,7 @@ public:
     bool ret_val = true;
     ret_val &= (type_ == other.type_);
     ret_val &= (name_ == other.name_);
-    ret_val &= (transform_.isApprox(transform_, 1e-5));
+    ret_val &= (transform_.isApprox(other.transform_, 1e-5));
     ret_val &= (external_ == other.external_);
     ret_val &= (external_frame_ == other.external_frame_);
     return ret_val;
@@ -134,7 +137,7 @@ public:
 protected:
   int type_{ 0 };
   std::string name_;
-  Eigen::Isometry3d transform_;
+  Eigen::Isometry3d transform_{ Eigen::Isometry3d::Identity() };
 
   /**
    * @brief The external TCP is used when the robot is holding the part versus the tool.
@@ -149,6 +152,17 @@ protected:
    * world.
    */
   std::string external_frame_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int /*version*/)
+  {
+    ar& boost::serialization::make_nvp("type", type_);
+    ar& boost::serialization::make_nvp("name", name_);
+    ar& boost::serialization::make_nvp("transform", transform_);
+    ar& boost::serialization::make_nvp("external", external_);
+    ar& boost::serialization::make_nvp("external_frame", external_frame_);
+  }
 };
 
 /**
@@ -199,6 +213,17 @@ struct ManipulatorInfo
     ret_val &= (tcp == other.tcp);
     ret_val &= (working_frame == other.working_frame);
     return ret_val;
+  }
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int /*version*/)
+  {
+    ar& boost::serialization::make_nvp("manipulator", manipulator);
+    ar& boost::serialization::make_nvp("manipulator_ik_solver", manipulator_ik_solver);
+    ar& boost::serialization::make_nvp("tcp", tcp);
+    ar& boost::serialization::make_nvp("working_frame", working_frame);
   }
 };
 }  // namespace tesseract_common

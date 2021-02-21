@@ -12,7 +12,7 @@ endif()
 include(cmake/tesseract_macros.cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-find_package(Boost REQUIRED COMPONENTS system filesystem program_options)
+find_package(Boost REQUIRED COMPONENTS system filesystem program_options serialization)
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 
