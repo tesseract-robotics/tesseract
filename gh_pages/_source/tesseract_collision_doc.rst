@@ -28,6 +28,8 @@ Discrete Collision Checker Example
 .. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
    :language: c++
 
+You can find this example `here <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_collision/examples/box_box_example.cpp>`_.
+
 
 Example Explanation
 -------------------
