@@ -91,43 +91,40 @@ IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen:
 
   // Check the output
   int num_sol = sols.size() / ikfast_dof;
-  std::vector<double> solution_set;
+  IKSolutions solution_set;
   solution_set.reserve(sols.size());
   for (int i = 0; i < num_sol; i++)
   {
-    double* sol = sols.data() + ikfast_dof * i;
-    if (isValid<double>(sol, ikfast_dof))
+    Eigen::Map<Eigen::VectorXd> eigen_sol(sols.data() + ikfast_dof * i, static_cast<Eigen::Index>(ikfast_dof));
+    if (eigen_sol.array().allFinite())
     {
-      harmonizeTowardZero<double>(sol, ikfast_dof);  // Modifies 'sol' in place
+      harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
 
       // Add solution
-      if (isWithinLimits<double>(Eigen::Map<Eigen::VectorXd>(sol, ikfast_dof), limits_.joint_limits))
-        solution_set.insert(end(solution_set), sol, sol + ikfast_dof);
+      if (isWithinLimits<double>(eigen_sol, limits_.joint_limits))
+        solution_set.push_back(eigen_sol);
 
       // Add redundant solutions
-      std::vector<double> redundant_sols = getRedundantSolutions(sol, limits_.joint_limits);
+      IKSolutions redundant_sols = getRedundantSolutions<double>(eigen_sol, limits_.joint_limits);
       if (!redundant_sols.empty())
       {
-        int num_sol = redundant_sols.size() / ikfast_dof;
-        for (int s = 0; s < num_sol; ++s)
-        {
-          double* redundant_sol = redundant_sols.data() + ikfast_dof * s;
-          solution_set.insert(end(solution_set),
-                              std::make_move_iterator(redundant_sol),
-                              std::make_move_iterator(redundant_sol + ikfast_dof));
-        }
+        solution_set.insert(end(solution_set),
+                            std::make_move_iterator(redundant_sols.begin()),
+                            std::make_move_iterator(redundant_sols.end()));
       }
     }
   }
 
-  solutions = Eigen::Map<Eigen::VectorXd>(solution_set.data(), solution_set.size());
-  return !solution_set.empty();
+  return solution_set;
 }
 
 IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose,
                                      const Eigen::Ref<const Eigen::VectorXd>& seed,
                                      const std::string& link_name) const
 {
+  if (link_name == tip_link_name_)
+    return calcInvKin(pose, seed);
+
   throw std::runtime_error("IKFastInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const "
                            "Eigen::Ref<const Eigen::VectorXd>&, const std::string&) Not Supported!");
 }
