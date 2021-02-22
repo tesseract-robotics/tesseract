@@ -27,14 +27,21 @@ Create a workspace (in this case we'll name it `tesseract_ws`): ::
 
   mkdir -p ~/tesseract_ws/src
 
-Move into source directory and clone repository into your workspace: ::
+Move into source directory: ::
 
-  cd ~/tesseract_ws/src
-  git clone https://github.com/ros-industrial-consortium/tesseract
+  cd ~/tesseract_ws/src 
+
+Clone Tesseract Planning repository into your workspace: ::
+
+  git clone https://github.com/ros-industrial-consortium/tesseract_planning
+
+If you are using the Robot Operating System (ROS), you can also clone the Tesseract ROS repository: ::
+
+  git clone https://github.com/ros-industrial-consortium/tesseract_ros
 
 Clone the repositories in the dependencies.rosinstall file using wstool or some other method (e.g. manually git cloning them): ::
 
-  wstool init ~/tesseract_ws/src/ ~/tesseract_ws/src/tesseract/dependencies.rosinstall
+  wstool init ~/tesseract_ws/src/ ~/tesseract_ws/src/tesseract_planning/dependencies.rosinstall
 
 Install dependencies: ::
 
