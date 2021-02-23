@@ -48,21 +48,36 @@ bool ToolCenterPoint::isString() const { return (type_ == 1); }
 bool ToolCenterPoint::isTransform() const { return (type_ == 2); }
 bool ToolCenterPoint::isExternal() const { return external_; }
 
-const std::string& ToolCenterPoint::getExternalFrame() const { return external_frame_; }
+const std::string& ToolCenterPoint::getExternalFrame() const
+{
+  if (isTransform() && external_)
+    return external_frame_;
+
+  throw std::runtime_error("ToolCenterPoint: Called getExternalFrame for invalid type.");
+}
 void ToolCenterPoint::setExternal(bool value, std::string external_frame)
 {
   external_ = value;
-  external_frame_ = std::move(external_frame);
+
+  // External frame is only valid when a Isometry3d tcp is provided.
+  if (isTransform() && value)
+    external_frame_ = std::move(external_frame);
+  else
+    external_frame_.clear();
 }
 
 const std::string& ToolCenterPoint::getString() const
 {
-  assert(type_ == 1);
+  if (type_ != 1)
+    throw std::runtime_error("ToolCenterPoint: Called getString for invalid type.");
+
   return name_;
 }
 const Eigen::Isometry3d& ToolCenterPoint::getTransform() const
 {
-  assert(type_ == 2);
+  if (type_ != 2)
+    throw std::runtime_error("ToolCenterPoint: Called getTransform for invalid type.");
+
   return transform_;
 }
 
