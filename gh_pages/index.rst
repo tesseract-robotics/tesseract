@@ -44,6 +44,7 @@ Packages
    :maxdepth: 1
 
    Getting Started <_source/getting_started_doc.rst>
+   Tesseract Interface: ROSCPP <_source/tesseract_interface_roscpp_doc.rst>
    URDF and SRDF <_source/urdf_and_srdf_doc.rst>
    Tesseract Scene Graph <_source/tesseract_scene_graph_doc.rst>
    Tesseract Collision <_source/tesseract_collision_doc.rst>
