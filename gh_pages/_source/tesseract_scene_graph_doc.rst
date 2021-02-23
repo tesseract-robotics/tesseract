@@ -216,6 +216,20 @@ Get Shortest Path
    :start-after: // documentation:start:19:
    :end-before: // documentation:end:19:
 
+Running the Example
+-------------------
+
+Build the Tesseract Workspace: ::
+
+  catkin build
+
+Navigate to the build folder containing the executable: ::
+
+  cd build/tesseract_scene_graph/examples
+
+Run the executable: ::
+
+  ./tesseract_scene_graph_build_graph_example
 
 .. _ex2:
 
@@ -270,6 +284,21 @@ Save the graph to a file.
    :language: c++
    :start-after: // documentation:start:5:
    :end-before: // documentation:end:5:
+
+Running the Example
+-------------------
+
+Build the Tesseract Workspace: ::
+
+  catkin build
+
+Navigate to the build folder containing the executable: ::
+
+  cd build/tesseract_urdf/examples
+
+Run the executable: ::
+
+  ./tesseract_urdf_load_urdf_example
 
 .. _ex3:
 
@@ -350,3 +379,18 @@ Print Mesh Information to Terminal
    :language: c++
    :start-after: // documentation:start:2:
    :end-before: // documentation:end:2:
+
+Running the Example
+-------------------
+
+Build the Tesseract Workspace: ::
+
+  catkin build
+
+Navigate to the build folder containing the executable: ::
+
+  cd build/tesseract_geometry/examples
+
+Run the executable: ::
+
+  ./tesseract_geometry_parse_mesh_example

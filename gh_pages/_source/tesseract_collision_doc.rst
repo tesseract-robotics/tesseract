@@ -30,7 +30,6 @@ Discrete Collision Checker Example
 
 You can find this example `here <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_collision/examples/box_box_example.cpp>`_.
 
-
 Example Explanation
 -------------------
 
@@ -172,3 +171,18 @@ Perform collision check
    :language: c++
    :start-after: // documentation:start:13:
    :end-before: // documentation:end:13:
+
+Running the Example
+-------------------
+
+Build the Tesseract Workspace: ::
+
+  catkin build
+
+Navigate to the build folder containing the executable: ::
+
+  cd build/tesseract_collision/examples
+
+Run the executable: ::
+
+  ./tesseract_collision_box_box_example
