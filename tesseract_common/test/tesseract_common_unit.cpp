@@ -242,6 +242,90 @@ TEST(TesseractCommonUnit, bytesResource)
   EXPECT_EQ(bytes_resource->getResourceContents().size(), data.size());
 }
 
+TEST(TesseractCommonUnit, ToolCenterPoint)
+{
+  {  // Empty tcp
+    tesseract_common::ToolCenterPoint tcp;
+    EXPECT_TRUE(tcp.empty());
+    EXPECT_FALSE(tcp.isString());
+    EXPECT_FALSE(tcp.isTransform());
+    EXPECT_FALSE(tcp.isExternal());
+    EXPECT_ANY_THROW(tcp.getString());
+    EXPECT_ANY_THROW(tcp.getTransform());
+    EXPECT_ANY_THROW(tcp.getExternalFrame());
+  }
+
+  {  // The tcp is a link attached to the tip of the kinematic chain
+    tesseract_common::ToolCenterPoint tcp("tcp_link");
+    EXPECT_FALSE(tcp.empty());
+    EXPECT_TRUE(tcp.isString());
+    EXPECT_FALSE(tcp.isTransform());
+    EXPECT_FALSE(tcp.isExternal());
+    EXPECT_EQ(tcp.getString(), "tcp_link");
+    EXPECT_ANY_THROW(tcp.getTransform());
+    EXPECT_ANY_THROW(tcp.getExternalFrame());
+  }
+
+  {  // The tcp is external
+    tesseract_common::ToolCenterPoint tcp("external_tcp_link", true);
+    EXPECT_FALSE(tcp.empty());
+    EXPECT_TRUE(tcp.isString());
+    EXPECT_FALSE(tcp.isTransform());
+    EXPECT_TRUE(tcp.isExternal());
+    EXPECT_EQ(tcp.getString(), "external_tcp_link");
+    EXPECT_ANY_THROW(tcp.getTransform());
+    EXPECT_ANY_THROW(tcp.getExternalFrame());
+
+    tcp.setExternal(false);
+    EXPECT_FALSE(tcp.isExternal());
+    EXPECT_ANY_THROW(tcp.getExternalFrame());
+
+    tcp.setExternal(true, "should_not_add");
+    EXPECT_TRUE(tcp.isExternal());
+    EXPECT_ANY_THROW(tcp.getExternalFrame());
+  }
+
+  {  // TCP as transform
+    Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
+    pose.translation() = Eigen::Vector3d(0, 0, 0.25);
+
+    tesseract_common::ToolCenterPoint tcp(pose);
+    EXPECT_FALSE(tcp.empty());
+    EXPECT_FALSE(tcp.isString());
+    EXPECT_TRUE(tcp.isTransform());
+    EXPECT_FALSE(tcp.isExternal());
+    EXPECT_TRUE(tcp.getTransform().isApprox(pose, 1e-6));
+    EXPECT_ANY_THROW(tcp.getString());
+    EXPECT_ANY_THROW(tcp.getExternalFrame());
+  }
+}
+
+TEST(TesseractCommonUnit, ManipulatorInfo)
+{
+  // Empty tcp
+  tesseract_common::ManipulatorInfo manip_info;
+  EXPECT_TRUE(manip_info.empty());
+  EXPECT_TRUE(manip_info.tcp.empty());
+  EXPECT_TRUE(manip_info.manipulator.empty());
+  EXPECT_TRUE(manip_info.manipulator_ik_solver.empty());
+  EXPECT_TRUE(manip_info.working_frame.empty());
+
+  Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
+  pose.translation() = Eigen::Vector3d(0, 0, 0.25);
+
+  tesseract_common::ManipulatorInfo manip_info_override("manipulator");
+  manip_info_override.tcp = tesseract_common::ToolCenterPoint(pose);
+  manip_info_override.manipulator_ik_solver = "OPWInvKin";
+  manip_info_override.working_frame = "tool0";
+
+  manip_info = manip_info.getCombined(manip_info_override);
+  EXPECT_FALSE(manip_info.empty());
+  EXPECT_TRUE(manip_info.tcp == manip_info_override.tcp);
+  EXPECT_EQ(manip_info.manipulator, manip_info_override.manipulator);
+  EXPECT_EQ(manip_info.manipulator_ik_solver, manip_info_override.manipulator_ik_solver);
+  EXPECT_EQ(manip_info.working_frame, manip_info_override.working_frame);
+}
+
 TEST(TesseractCommonUnit, serializationToolCenterPoint)
 {
   Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
@@ -351,6 +435,75 @@ TEST(TesseractCommonUnit, serializationKinematicLimits)
 
 TEST(TesseractCommonUnit, serializationVectorXd)
 {
+  {  // Serialize empty object
+    Eigen::VectorXd ev;
+
+    {
+      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXd nev;
+    {
+      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+  }
+
+  // Serialize to object which already has data
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
+
+    {
+      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXd nev = Eigen::VectorXd::Random(6);
+    {
+      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+
+  // Serialize to object which already has data and different size
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
+
+    {
+      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXd nev = Eigen::VectorXd::Random(3);
+    {
+      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+
+  // Default use case
   for (int i = 0; i < 5; ++i)
   {
     Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
@@ -377,6 +530,77 @@ TEST(TesseractCommonUnit, serializationVectorXd)
 
 TEST(TesseractCommonUnit, serializationMatrixX2d)
 {
+  {  // Serialize empty
+    Eigen::MatrixX2d em;
+
+    {
+      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(em);
+    }
+
+    Eigen::MatrixX2d nem;
+    {
+      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nem);
+    }
+
+    EXPECT_TRUE(em.isApprox(nem, 1e-5));
+  }
+
+  // Serialize to object which already has data
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
+
+    {
+      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(em);
+    }
+
+    Eigen::MatrixX2d nem = Eigen::MatrixX2d::Random(4, 2);
+    {
+      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nem);
+    }
+
+    EXPECT_TRUE(em.isApprox(nem, 1e-5));
+  }
+
+  // Serialize to object which already has data and different size
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
+
+    {
+      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(em);
+    }
+
+    Eigen::MatrixX2d nem = Eigen::MatrixX2d::Random(2, 2);
+    {
+      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nem);
+    }
+
+    EXPECT_TRUE(em.isApprox(nem, 1e-5));
+  }
+
+  // Default
   for (int i = 0; i < 5; ++i)
   {
     Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);

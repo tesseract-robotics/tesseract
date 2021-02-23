@@ -103,7 +103,7 @@ public:
    * @param external_frame If an external tcp was defined as an Isometry then an external can be provided. If empty
    * assumed relative to world.
    */
-  void setExternal(bool value, std::string external_frame);
+  void setExternal(bool value, std::string external_frame = "");
 
   /**
    * @brief If an external tcp was defined as an Isometry then an external frame can be provided.
@@ -133,6 +133,7 @@ public:
     ret_val &= (external_frame_ == other.external_frame_);
     return ret_val;
   }
+  bool operator!=(const ToolCenterPoint& rhs) const { return !operator==(rhs); }
 
 protected:
   int type_{ 0 };
@@ -214,6 +215,7 @@ struct ManipulatorInfo
     ret_val &= (working_frame == other.working_frame);
     return ret_val;
   }
+  bool operator!=(const ManipulatorInfo& rhs) const { return !operator==(rhs); }
 
 private:
   friend class boost::serialization::access;
