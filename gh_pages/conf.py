@@ -17,7 +17,6 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 
-#from sphinxcontrib.remoteliteralinclude import *
 import os
 import git
 curr_path = os.path.abspath('.')
