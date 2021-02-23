@@ -167,6 +167,12 @@ Tesseract currently leverages Compiler Warnigs, Clang Tidy and Code Coverage. Al
   - readability-rary-objects
 
 ## Build Branch Sphinx Documentation
+Install Sphinx and necessary extensions:
+
+```bash
+pip3 install sphinx==3.4.3 -v
+python3 -m pip install sphinxext-remoteliteralinclude
+```
 
 ```
 cd gh_pages
