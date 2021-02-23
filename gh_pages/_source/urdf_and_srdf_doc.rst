@@ -5,6 +5,9 @@ URDF
 ----
 Tesseract is compatible with URDFs (Universal Robot Description Format), the native format for describing robots in ROS. In this tutorial, you will find resources for the URDF and important tips.
 
+
+.. attention:: Tesseract has extended capabilities for URDFs and SRDFs. For more information, see `Tesseract URDF <tesseract_urdf_doc.html>`_ and `Tesseract SRDF <tesseract_urdf_doc.html>`_.
+
 URDF Resources
 ^^^^^^^^^^^^^^
 
@@ -18,7 +21,7 @@ This section contains a set of tips on making sure that the URDF that you genera
 
 Special Characters in Joint Names
 """""""""""""""""""""""""""""""""
-Joint names should not contain any of the following special characters: -,[,],(,),
+Joint names should not contain any of the following special characters: -, [, ], (, )
 
 Safety Limits
 """""""""""""
@@ -49,14 +52,6 @@ SRDF
 ----
 
 The SRDF or Semantic Robot Description Format complement the URDF and specifies joint groups, default robot configurations, additional collision checking information, and additional transforms that may be needed to completely specify the robot's pose. The recommended way to generate a SRDF is using the MoveIt! Setup Assistant.
-
-Virtual Joints
-^^^^^^^^^^^^^^
-The URDF contains information only about the physical joints on the robot. Often, additional joints need to be defined to specify the pose of the root link on the robot with respect to a world coordinate system. In such cases, a virtual joint is used to specify this connection. E.g., a mobile robot like the PR2 that moves around in the plane is specified using a planar virtual joint that attaches the world coordinate frame to the frame of the robot. A fixed robot (like an industrial manipulator) should be attached to the world using a fixed joint.
-
-Passive Joints
-^^^^^^^^^^^^^^
-Passive joints are unactuated joints on a robot, e.g. passive casters on a differential drive robots. They are specified separately in the SRDF to make sure that different components in the motion planning or control pipelines know that the joints cannot be directly controlled. If your robot has unactuated casters, they should be specified as passive casters.
 
 Groups
 ^^^^^^
