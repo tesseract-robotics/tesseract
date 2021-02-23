@@ -59,7 +59,7 @@ Building A Scene Graph
 .. literalinclude:: ../../tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
 
-You can find this example `here <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_scene_graph/examples/build_scene_graph_example.cpp>`_.
+You can find this example `https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_scene_graph/examples/build_scene_graph_example.cpp <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_scene_graph/examples/build_scene_graph_example.cpp>`_
 
 Example Explanation
 -------------------
@@ -225,7 +225,7 @@ Create Scene Graph from URDF
 .. literalinclude:: ../../tesseract_urdf/examples/load_urdf_example.cpp
    :language: c++
 
-You can find this example `here <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_urdf/examples/load_urdf_example.cpp>`_.
+You can find this example `https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_urdf/examples/load_urdf_example.cpp <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_urdf/examples/load_urdf_example.cpp>`_
 
 Example Explanation
 -------------------
@@ -279,7 +279,7 @@ Parse SRDF adding Allowed Collision Matrix to Graph
 .. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
 
-You can find this example `here <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_scene_graph/examples/parse_srdf_example.cpp>`_.
+You can find this example at `https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_scene_graph/examples/parse_srdf_example.cpp <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_scene_graph/examples/parse_srdf_example.cpp>`_
 
 Example Explanation
 -------------------

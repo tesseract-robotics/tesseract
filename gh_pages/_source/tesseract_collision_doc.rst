@@ -63,7 +63,7 @@ Add Collision Objects to Contact Checker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Add a collision object in a enabled state
-"""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""
 
 .. literalinclude:: ../../tesseract_collision/examples/box_box_example.cpp
    :language: c++

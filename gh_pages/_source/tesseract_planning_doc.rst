@@ -9,4 +9,4 @@ Packages
 .. toctree::
    :maxdepth: 1
 
-   tesseract_command_language <_source/tesseract_command_language_doc.rst>
+   tesseract_command_language <tesseract_command_language_doc.rst>
