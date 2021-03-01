@@ -36,6 +36,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/array.hpp>
+#include <boost/serialization/tracking.hpp>
+#include <boost/serialization/tracking_enum.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace boost
@@ -122,7 +124,13 @@ inline void serialize(Archive& ar, Eigen::MatrixX2d& g, const unsigned int versi
 {
   split_free(ar, g, version);
 }
+
 }  // namespace serialization
 }  // namespace boost
+
+// Set the tracking to track_never for all Eigen types.
+BOOST_CLASS_TRACKING(Eigen::VectorXd, boost::serialization::track_never);
+BOOST_CLASS_TRACKING(Eigen::Isometry3d, boost::serialization::track_never);
+BOOST_CLASS_TRACKING(Eigen::MatrixX2d, boost::serialization::track_never);
 
 #endif  // TESSERACT_COMMON_SERIALIZATION_H
