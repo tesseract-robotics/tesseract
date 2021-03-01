@@ -654,7 +654,7 @@ TEST(TesseractCommonUnit, serializationIsometry3d)
   }
 }
 
-TESSERACT_ANY_EXPORT(tesseract_common::JointState);
+TESSERACT_ANY_EXPORT(tesseract_common::JointState);  // NOLINT
 
 TEST(TesseractCommonUnit, anyUnit)
 {

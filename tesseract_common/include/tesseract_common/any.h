@@ -220,6 +220,6 @@ private:
 
 }  // namespace tesseract_common
 
-TESSERACT_ANY_EXPORT(tesseract_common::NullAny);
+TESSERACT_ANY_EXPORT(tesseract_common::NullAny);  // NOLINT
 BOOST_CLASS_TRACKING(tesseract_common::Any, boost::serialization::track_never);
 #endif  // TESSERACT_COMMON_ANY_H
