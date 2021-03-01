@@ -106,7 +106,22 @@ target_include_directories(${PROJECT_NAME}_opw PUBLIC
 target_include_directories(${PROJECT_NAME}_opw SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ikfast ${PROJECT_NAME}_opw)
+# Add Universal Robot implementation of tesseract_kinematics
+add_library(${PROJECT_NAME}_ur src/ur/ur_inv_kin.cpp)
+target_link_libraries(${PROJECT_NAME}_ur PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph console_bridge::console_bridge)
+target_compile_options(${PROJECT_NAME}_ur PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+target_compile_options(${PROJECT_NAME}_ur PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(${PROJECT_NAME}_ur PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_clang_tidy(${PROJECT_NAME}_ur ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_ur PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_ur ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+target_include_directories(${PROJECT_NAME}_ur PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_opw SYSTEM PUBLIC
+    ${EIGEN3_INCLUDE_DIRS})
+
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ikfast ${PROJECT_NAME}_opw ${PROJECT_NAME}_ur)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
