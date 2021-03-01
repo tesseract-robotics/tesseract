@@ -13,6 +13,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/joint_state.h>
 #include <tesseract_common/types.h>
+#include <tesseract_common/any.h>
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
@@ -651,6 +652,53 @@ TEST(TesseractCommonUnit, serializationIsometry3d)
 
     EXPECT_TRUE(pose.isApprox(npose, 1e-5));
   }
+}
+
+TESSERACT_ANY_EXPORT(tesseract_common::JointState);  // NOLINT
+
+TEST(TesseractCommonUnit, anyUnit)
+{
+  tesseract_common::Any any_type;
+
+  tesseract_common::JointState joint_state;
+  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
+  joint_state.position = Eigen::VectorXd::Constant(3, 5);
+  joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
+  joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
+  joint_state.effort = Eigen::VectorXd::Constant(3, 8);
+  joint_state.time = 100;
+
+  any_type = joint_state;
+  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
+  EXPECT_TRUE(any_type.cast<tesseract_common::JointState>() == joint_state);
+
+  // Check to make sure it is not making a copy during cast
+  auto& any_type_ref1 = any_type.cast<tesseract_common::JointState>();
+  auto& any_type_ref2 = any_type.cast<tesseract_common::JointState>();
+  EXPECT_TRUE(&any_type_ref1 == &any_type_ref2);
+
+  const auto& any_type_const_ref1 = any_type.cast_const<tesseract_common::JointState>();
+  const auto& any_type_const_ref2 = any_type.cast_const<tesseract_common::JointState>();
+  EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
+
+  {
+    std::ofstream os("/tmp/any_type_boost.xml");
+    boost::archive::xml_oarchive oa(os);
+    oa << BOOST_SERIALIZATION_NVP(any_type);
+  }
+
+  tesseract_common::Any nany_type;
+  {
+    std::ifstream ifs("/tmp/any_type_boost.xml");
+    assert(ifs.good());
+    boost::archive::xml_iarchive ia(ifs);
+
+    // restore the schedule from the archive
+    ia >> BOOST_SERIALIZATION_NVP(nany_type);
+  }
+
+  EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
+  EXPECT_TRUE(nany_type.cast<tesseract_common::JointState>() == joint_state);
 }
 
 int main(int argc, char** argv)
