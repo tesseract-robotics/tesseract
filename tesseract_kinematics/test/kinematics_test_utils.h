@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
 #include <tesseract_kinematics/core/utils.h>
+#include <tesseract_kinematics/core/types.h>
 
 namespace tesseract_kinematics
 {
@@ -107,6 +108,140 @@ inline tesseract_scene_graph::SceneGraph::Ptr getSceneGraphABB()
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
 
   return tesseract_urdf::parseURDFFile(path, locator);
+}
+
+inline tesseract_scene_graph::SceneGraph::Ptr getSceneGraphUR(const tesseract_kinematics::URParameters& params)
+{
+  using namespace tesseract_scene_graph;
+
+  auto sg = std::make_shared<SceneGraph>("universal_robot");
+  sg->addLink(Link("base_link"));
+  sg->addLink(Link("shoulder_link"));
+  sg->addLink(Link("upper_arm_link"));
+  sg->addLink(Link("forearm_link"));
+  sg->addLink(Link("wrist_1_link"));
+  sg->addLink(Link("wrist_2_link"));
+  sg->addLink(Link("wrist_3_link"));
+  sg->addLink(Link("ee_link"));
+  sg->addLink(Link("tool0"));
+
+  {
+    Joint j("shoulder_pan_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "base_link";
+    j.child_link_name = "shoulder_link";
+    j.axis = Eigen::Vector3d::UnitZ();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, params.d1);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -2.0 * M_PI;
+    j.limits->upper = 2.0 * M_PI;
+    j.limits->velocity = 2.16;
+    j.limits->acceleration = 0.5 * j.limits->velocity;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("shoulder_lift_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "shoulder_link";
+    j.child_link_name = "upper_arm_link";
+    j.axis = Eigen::Vector3d::UnitY();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0.220941, 0);
+    j.parent_to_joint_origin_transform =
+        j.parent_to_joint_origin_transform * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY());
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -2.0 * M_PI;
+    j.limits->upper = 2.0 * M_PI;
+    j.limits->velocity = 2.16;
+    j.limits->acceleration = 0.5 * j.limits->velocity;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("elbow_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "upper_arm_link";
+    j.child_link_name = "forearm_link";
+    j.axis = Eigen::Vector3d::UnitY();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, -0.1719, -params.a2);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -2.0 * M_PI;
+    j.limits->upper = 2.0 * M_PI;
+    j.limits->velocity = 2.16;
+    j.limits->acceleration = 0.5 * j.limits->velocity;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("wrist_1_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "forearm_link";
+    j.child_link_name = "wrist_1_link";
+    j.axis = Eigen::Vector3d::UnitY();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, -params.a3);
+    j.parent_to_joint_origin_transform =
+        j.parent_to_joint_origin_transform * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY());
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -2.0 * M_PI;
+    j.limits->upper = 2.0 * M_PI;
+    j.limits->velocity = 2.16;
+    j.limits->acceleration = 0.5 * j.limits->velocity;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("wrist_2_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "wrist_1_link";
+    j.child_link_name = "wrist_2_link";
+    j.axis = Eigen::Vector3d::UnitZ();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, params.d4 + 0.1719 - 0.220941, 0);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -2.0 * M_PI;
+    j.limits->upper = 2.0 * M_PI;
+    j.limits->velocity = 2.16;
+    j.limits->acceleration = 0.5 * j.limits->velocity;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("wrist_3_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "wrist_2_link";
+    j.child_link_name = "wrist_3_link";
+    j.axis = Eigen::Vector3d::UnitY();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, params.d5);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -2.0 * M_PI;
+    j.limits->upper = 2.0 * M_PI;
+    j.limits->velocity = 2.16;
+    j.limits->acceleration = 0.5 * j.limits->velocity;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("ee_fixed_joint");
+    j.type = JointType::FIXED;
+    j.parent_link_name = "wrist_3_link";
+    j.child_link_name = "ee_link";
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, params.d6, 0);
+    j.parent_to_joint_origin_transform =
+        j.parent_to_joint_origin_transform * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ());
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("wrist_3_link-tool0_fixed_joint");
+    j.type = JointType::FIXED;
+    j.parent_link_name = "wrist_3_link";
+    j.child_link_name = "tool0";
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, params.d6, 0);
+    j.parent_to_joint_origin_transform =
+        j.parent_to_joint_origin_transform * Eigen::AngleAxisd(-M_PI_2, Eigen::Vector3d::UnitX());
+    sg->addJoint(j);
+  }
+
+  return sg;
 }
 
 inline tesseract_common::KinematicLimits getTargetLimits(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
@@ -665,6 +800,25 @@ inline void runActiveLinkNamesABBTest(const tesseract_kinematics::InverseKinemat
 
   std::vector<std::string> target_active_link_names = { "link_1", "link_2", "link_3", "link_4",
                                                         "link_5", "link_6", "tool0" };
+  std::vector<std::string> target_link_names = target_active_link_names;
+  target_link_names.emplace_back("base_link");
+
+  std::vector<std::string> link_names = kin.getActiveLinkNames();
+  runStringVectorEqualTest(link_names, target_active_link_names);
+
+  link_names = kin.getLinkNames();
+  runStringVectorEqualTest(link_names, target_link_names);
+}
+
+inline void runActiveLinkNamesURTest(const tesseract_kinematics::InverseKinematics& kin)
+{
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(7)));
+  EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Constant(6, std::numeric_limits<double>::max())));
+  EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(6)));
+
+  std::vector<std::string> target_active_link_names = { "shoulder_link", "upper_arm_link", "forearm_link",
+                                                        "wrist_1_link",  "wrist_2_link",   "wrist_3_link",
+                                                        "tool0" };
   std::vector<std::string> target_link_names = target_active_link_names;
   target_link_names.emplace_back("base_link");
 
