@@ -41,6 +41,8 @@
 
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 
+extern btScalar gDbvtMargin;
+
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
@@ -50,6 +52,9 @@ static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORM
 
 BulletDiscreteBVHManager::BulletDiscreteBVHManager()
 {
+  // Bullet adds a margin of 5cm to which is an extern variable, so we set it to zero.
+  gDbvtMargin = 0;
+
   dispatcher_ = std::make_unique<btCollisionDispatcher>(&coll_config_);
 
   dispatcher_->registerCollisionCreateFunc(
