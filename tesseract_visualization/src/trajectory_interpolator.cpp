@@ -35,6 +35,11 @@ TrajectoryInterpolator::TrajectoryInterpolator(tesseract_common::JointTrajectory
   double last_time = 0;
   double current_time = 0;
   double total_time = 0;
+  bool overwrite_dt = false;
+  // Check if time is populated
+  if (!trajectory_.empty() && (trajectory_.back().time - trajectory_.front().time) < 1e-3)
+    overwrite_dt = true;
+
   for (auto& state : trajectory_)
   {
     current_time = state.time;
@@ -44,6 +49,9 @@ TrajectoryInterpolator::TrajectoryInterpolator(tesseract_common::JointTrajectory
       last_time = 0;
 
     double dt = current_time - last_time;
+    if (overwrite_dt)
+      dt = 0.1;
+
     total_time += dt;
     duration_from_previous_.push_back(dt);
     state.time = total_time;
