@@ -1994,6 +1994,54 @@ void runApplyCommandsStateSolverCompareTest()
 }
 
 template <typename S>
+void runMultithreadedApplyCommandsTest(bool use_command, int num_threads)
+{
+  // Get the environment
+  auto env = getEnvironment<S>();
+
+#pragma omp parallel for num_threads(num_threads) shared(env)
+  for (long i = 0; i < num_threads; ++i)  // NOLINT
+  {
+    const int tn = omp_get_thread_num();
+    CONSOLE_BRIDGE_logDebug("Thread (ID: %i): %i of %i", tn, i, num_threads);
+
+    auto visual = std::make_shared<Visual>();
+    visual->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+    auto collision = std::make_shared<Collision>();
+    collision->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+
+    const std::string link_name1 = "link_n" + std::to_string(i);
+    Link link_1(link_name1);
+    link_1.visual.push_back(visual);
+    link_1.collision.push_back(collision);
+
+    for (int idx = 0; idx < 10; idx++)
+    {
+      // addLink
+      if (use_command)
+      {
+        auto cmd = std::make_shared<AddLinkCommand>(link_1);
+        EXPECT_TRUE(env->applyCommand(cmd));
+      }
+      else
+      {
+        EXPECT_TRUE(env->addLink(link_1));
+      }
+      // removeLink
+      if (use_command)
+      {
+        auto cmd = std::make_shared<RemoveLinkCommand>(link_1.getName());
+        EXPECT_TRUE(env->applyCommand(cmd));
+      }
+      else
+      {
+        EXPECT_TRUE(env->removeLink(link_1.getName()));
+      }
+    }
+  }
+}
+
+template <typename S>
 void runEnvCloneTest()
 {
   // Get the environment
@@ -2433,6 +2481,15 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
 {
   // KDL state solver is used as the baseline for this set of test
   runApplyCommandsStateSolverCompareTest<OFKTStateSolver>();
+}
+
+TEST(TesseractEnvironmentUnit, EnvMultithreadedApplyCommandsTest)  // NOLINT
+{
+  runMultithreadedApplyCommandsTest<KDLStateSolver>(true, 10);
+  runMultithreadedApplyCommandsTest<OFKTStateSolver>(true, 10);
+
+  runMultithreadedApplyCommandsTest<KDLStateSolver>(false, 10);
+  runMultithreadedApplyCommandsTest<OFKTStateSolver>(false, 10);
 }
 
 TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
