@@ -63,7 +63,7 @@ bool Environment::initHelper(const Commands& commands)
   manipulator_manager_ = std::make_shared<ManipulatorManager>();
   manipulator_manager_->init(scene_graph_, tesseract_scene_graph::KinematicsInformation());
 
-  if (!applyCommands(commands))
+  if (!applyCommandsHelper(commands))
   {
     CONSOLE_BRIDGE_logError("When initializing environment from command history, it failed to apply a command!");
     return false;
@@ -153,9 +153,17 @@ Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& s
   return commands;
 }
 
-bool Environment::isInitialized() const { return initialized_; }
+bool Environment::isInitialized() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return initialized_;
+}
 
-int Environment::getRevision() const { return revision_; }
+int Environment::getRevision() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return revision_;
+}
 
 Commands Environment::getCommandHistory() const
 {
@@ -165,159 +173,8 @@ Commands Environment::getCommandHistory() const
 
 bool Environment::applyCommands(const Commands& commands)
 {
-  // If this is not true then the initHelper function has called applyCommand so do not lock.
-  if (initialized_)
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-
-  bool success = true;
-  for (const auto& command : commands)
-  {
-    if (!command)
-    {
-      success = false;
-      break;
-    }
-
-    switch (command->getType())
-    {
-      case tesseract_environment::CommandType::ADD_LINK:
-      {
-        auto cmd = std::static_pointer_cast<const AddLinkCommand>(command);
-        success &= applyAddCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::MOVE_LINK:
-      {
-        auto cmd = std::static_pointer_cast<const MoveLinkCommand>(command);
-        success &= applyMoveLinkCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::MOVE_JOINT:
-      {
-        auto cmd = std::static_pointer_cast<const MoveJointCommand>(command);
-        success &= applyMoveJointCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::REMOVE_LINK:
-      {
-        auto cmd = std::static_pointer_cast<const RemoveLinkCommand>(command);
-        success &= applyRemoveLinkCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::REMOVE_JOINT:
-      {
-        auto cmd = std::static_pointer_cast<const RemoveJointCommand>(command);
-        success &= applyRemoveJointCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::REPLACE_JOINT:
-      {
-        auto cmd = std::static_pointer_cast<const ReplaceJointCommand>(command);
-        success &= applyReplaceJointCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
-      {
-        auto cmd = std::static_pointer_cast<const ChangeLinkOriginCommand>(command);
-        success &= applyChangeLinkOriginCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_JOINT_ORIGIN:
-      {
-        auto cmd = std::static_pointer_cast<const ChangeJointOriginCommand>(command);
-        success &= applyChangeJointOriginCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_LINK_COLLISION_ENABLED:
-      {
-        auto cmd = std::static_pointer_cast<const ChangeLinkCollisionEnabledCommand>(command);
-        success &= applyChangeLinkCollisionEnabledCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_LINK_VISIBILITY:
-      {
-        auto cmd = std::static_pointer_cast<const ChangeLinkVisibilityCommand>(command);
-        success &= applyChangeLinkVisibilityCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
-      {
-        auto cmd = std::static_pointer_cast<const AddAllowedCollisionCommand>(command);
-        success &= applyAddAllowedCollisionCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
-      {
-        auto cmd = std::static_pointer_cast<const RemoveAllowedCollisionCommand>(command);
-        success &= applyRemoveAllowedCollisionCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
-      {
-        auto cmd = std::static_pointer_cast<const RemoveAllowedCollisionLinkCommand>(command);
-        success &= applyRemoveAllowedCollisionLinkCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::ADD_SCENE_GRAPH:
-      {
-        auto cmd = std::static_pointer_cast<const AddSceneGraphCommand>(command);
-        success &= applyAddSceneGraphCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_JOINT_POSITION_LIMITS:
-      {
-        auto cmd = std::static_pointer_cast<const ChangeJointPositionLimitsCommand>(command);
-        success &= applyChangeJointPositionLimitsCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
-      {
-        auto cmd = std::static_pointer_cast<const ChangeJointVelocityLimitsCommand>(command);
-        success &= applyChangeJointVelocityLimitsCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
-      {
-        auto cmd = std::static_pointer_cast<const ChangeJointAccelerationLimitsCommand>(command);
-        success &= applyChangeJointAccelerationLimitsCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
-      {
-        auto cmd = std::static_pointer_cast<const AddKinematicsInformationCommand>(command);
-        success &= applyAddKinematicsInformationCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
-      {
-        auto cmd = std::static_pointer_cast<const ChangeDefaultContactMarginCommand>(command);
-        success &= applyChangeDefaultContactMarginCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_PAIR_CONTACT_MARGIN:
-      {
-        auto cmd = std::static_pointer_cast<const ChangePairContactMarginCommand>(command);
-        success &= applyChangePairContactMarginCommand(cmd);
-        break;
-      }
-      // LCOV_EXCL_START
-      default:
-      {
-        CONSOLE_BRIDGE_logError("Unhandled environment command");
-        success &= false;
-      }
-        // LCOV_EXCL_STOP
-    }
-
-    if (!success)
-      break;
-  }
-
-  // If this is not true then the initHelper function has called applyCommand so do not call.
-  if (initialized_)
-    environmentChanged();
-
-  return success;
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  return applyCommandsHelper(commands);
 }
 
 bool Environment::applyCommand(const Command::ConstPtr& command) { return applyCommands({ command }); }
@@ -458,7 +315,6 @@ EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names,
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   EnvState::Ptr state = state_solver_->getState(joint_names, joint_values);
-
   return state;
 }
 
@@ -944,6 +800,159 @@ Environment::Ptr Environment::clone() const
   return cloned_env;
 }
 
+bool Environment::applyCommandsHelper(const Commands& commands)
+{
+  bool success = true;
+  for (const auto& command : commands)
+  {
+    if (!command)
+    {
+      success = false;
+      break;
+    }
+
+    switch (command->getType())
+    {
+      case tesseract_environment::CommandType::ADD_LINK:
+      {
+        auto cmd = std::static_pointer_cast<const AddLinkCommand>(command);
+        success &= applyAddCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::MOVE_LINK:
+      {
+        auto cmd = std::static_pointer_cast<const MoveLinkCommand>(command);
+        success &= applyMoveLinkCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::MOVE_JOINT:
+      {
+        auto cmd = std::static_pointer_cast<const MoveJointCommand>(command);
+        success &= applyMoveJointCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::REMOVE_LINK:
+      {
+        auto cmd = std::static_pointer_cast<const RemoveLinkCommand>(command);
+        success &= applyRemoveLinkCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::REMOVE_JOINT:
+      {
+        auto cmd = std::static_pointer_cast<const RemoveJointCommand>(command);
+        success &= applyRemoveJointCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::REPLACE_JOINT:
+      {
+        auto cmd = std::static_pointer_cast<const ReplaceJointCommand>(command);
+        success &= applyReplaceJointCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
+      {
+        auto cmd = std::static_pointer_cast<const ChangeLinkOriginCommand>(command);
+        success &= applyChangeLinkOriginCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_JOINT_ORIGIN:
+      {
+        auto cmd = std::static_pointer_cast<const ChangeJointOriginCommand>(command);
+        success &= applyChangeJointOriginCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_LINK_COLLISION_ENABLED:
+      {
+        auto cmd = std::static_pointer_cast<const ChangeLinkCollisionEnabledCommand>(command);
+        success &= applyChangeLinkCollisionEnabledCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_LINK_VISIBILITY:
+      {
+        auto cmd = std::static_pointer_cast<const ChangeLinkVisibilityCommand>(command);
+        success &= applyChangeLinkVisibilityCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
+      {
+        auto cmd = std::static_pointer_cast<const AddAllowedCollisionCommand>(command);
+        success &= applyAddAllowedCollisionCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
+      {
+        auto cmd = std::static_pointer_cast<const RemoveAllowedCollisionCommand>(command);
+        success &= applyRemoveAllowedCollisionCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
+      {
+        auto cmd = std::static_pointer_cast<const RemoveAllowedCollisionLinkCommand>(command);
+        success &= applyRemoveAllowedCollisionLinkCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::ADD_SCENE_GRAPH:
+      {
+        auto cmd = std::static_pointer_cast<const AddSceneGraphCommand>(command);
+        success &= applyAddSceneGraphCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_JOINT_POSITION_LIMITS:
+      {
+        auto cmd = std::static_pointer_cast<const ChangeJointPositionLimitsCommand>(command);
+        success &= applyChangeJointPositionLimitsCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
+      {
+        auto cmd = std::static_pointer_cast<const ChangeJointVelocityLimitsCommand>(command);
+        success &= applyChangeJointVelocityLimitsCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
+      {
+        auto cmd = std::static_pointer_cast<const ChangeJointAccelerationLimitsCommand>(command);
+        success &= applyChangeJointAccelerationLimitsCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
+      {
+        auto cmd = std::static_pointer_cast<const AddKinematicsInformationCommand>(command);
+        success &= applyAddKinematicsInformationCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
+      {
+        auto cmd = std::static_pointer_cast<const ChangeDefaultContactMarginCommand>(command);
+        success &= applyChangeDefaultContactMarginCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_PAIR_CONTACT_MARGIN:
+      {
+        auto cmd = std::static_pointer_cast<const ChangePairContactMarginCommand>(command);
+        success &= applyChangePairContactMarginCommand(cmd);
+        break;
+      }
+      // LCOV_EXCL_START
+      default:
+      {
+        CONSOLE_BRIDGE_logError("Unhandled environment command");
+        success &= false;
+      }
+        // LCOV_EXCL_STOP
+    }
+
+    if (!success)
+      break;
+  }
+
+  // If this is not true then the initHelper function has called applyCommand so do not call.
+  if (initialized_)
+    environmentChanged();
+
+  return success;
+}
+
 //////////////////////////////////////////////////////////////
 /// External Helper Commands wrapping environment commands ///
 //////////////////////////////////////////////////////////////
@@ -1123,8 +1132,8 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
   }
   else if (link_exists && joint_exists)
   {  // A link and joint pair is being replaced
-    tesseract_scene_graph::Link::ConstPtr orig_link = getLink(link_name);
-    tesseract_scene_graph::Joint::ConstPtr orig_joint = getJoint(joint_name);
+    tesseract_scene_graph::Link::ConstPtr orig_link = scene_graph_->getLink(link_name);
+    tesseract_scene_graph::Joint::ConstPtr orig_joint = scene_graph_->getJoint(joint_name);
 
     if (orig_joint->child_link_name != orig_link->getName())
     {
@@ -1166,7 +1175,7 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
     tesseract_scene_graph::Joint joint(joint_name);
     joint.type = tesseract_scene_graph::JointType::FIXED;
     joint.child_link_name = link_name;
-    joint.parent_link_name = getRootLinkName();
+    joint.parent_link_name = scene_graph_->getRoot();
 
     tesseract_scene_graph::Link::ConstPtr link = cmd->getLink();
     cmd = std::make_shared<AddLinkCommand>(*link, joint);
@@ -1403,7 +1412,7 @@ bool Environment::applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd)
     // Connect root of subgraph to graph
     tesseract_scene_graph::Joint root_joint(cmd->getPrefix() + cmd->getSceneGraph()->getName() + "_joint");
     root_joint.type = tesseract_scene_graph::JointType::FIXED;
-    root_joint.parent_link_name = getRootLinkName();
+    root_joint.parent_link_name = scene_graph_->getRoot();
     root_joint.child_link_name = cmd->getPrefix() + cmd->getSceneGraph()->getRoot();
     root_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
 

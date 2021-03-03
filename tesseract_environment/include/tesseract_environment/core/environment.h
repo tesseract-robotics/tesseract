@@ -763,6 +763,9 @@ private:
   Commands getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
                            const tesseract_scene_graph::SRDFModel::ConstPtr& srdf_model = nullptr);
 
+  /** @brief Apply Command Helper which does not lock */
+  bool applyCommandsHelper(const Commands& commands);
+
   // Command Helper function
   bool applyAddCommand(AddLinkCommand::ConstPtr cmd);
   bool applyMoveLinkCommand(const MoveLinkCommand::ConstPtr& cmd);
