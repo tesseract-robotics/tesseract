@@ -120,6 +120,8 @@ public:
    * @param positioner
    * @param positioner_sample_resolution
    * @param name The name of the kinematic object
+   * @param solver_name The name given to the solver. This is exposed so you may have same solver with different
+   * sampling resolutions
    * @return True if init() completes successfully
    */
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
@@ -127,7 +129,8 @@ public:
             double manipulator_reach,
             ForwardKinematics::Ptr positioner,
             Eigen::VectorXd positioner_sample_resolution,
-            std::string name);
+            std::string name,
+            std::string solver_name = "RobotWithExternalPositionerInvKin");
 
   /**
    * @brief Initializes Inverse Kinematics for a robot on a positioner
@@ -138,6 +141,8 @@ public:
    * @param positioner_sample_resolution
    * @param robot_to_positioner
    * @param name The name of the kinematic object
+   * @param solver_name The name given to the solver. This is exposed so you may have same solver with different
+   * sampling resolutions
    * @return True if init() completes successfully
    */
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
@@ -146,7 +151,8 @@ public:
             ForwardKinematics::Ptr positioner,
             Eigen::VectorXd positioner_sample_resolution,
             const Eigen::Isometry3d& robot_to_positioner,
-            std::string name);
+            std::string name,
+            std::string solver_name = "RobotWithExternalPositionerInvKin");
 
   /**
    * @brief Checks if kinematics has been initialized

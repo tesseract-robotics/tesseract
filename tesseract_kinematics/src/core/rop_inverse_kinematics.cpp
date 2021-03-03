@@ -215,9 +215,16 @@ bool RobotOnPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr s
                                    double manipulator_reach,
                                    ForwardKinematics::Ptr positioner,
                                    Eigen::VectorXd positioner_sample_resolution,
-                                   std::string name)
+                                   std::string name,
+                                   std::string solver_name)
 {
   initialized_ = false;
+
+  if (solver_name.empty())
+  {
+    CONSOLE_BRIDGE_logError("Solver name nust not be empty.");
+    return false;
+  }
 
   if (scene_graph == nullptr)
   {
@@ -268,6 +275,7 @@ bool RobotOnPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr s
 
   scene_graph_ = std::move(scene_graph);
   name_ = std::move(name);
+  solver_name_ = std::move(solver_name);
   manip_inv_kin_ = manipulator->clone();
   manip_reach_ = manipulator_reach;
   positioner_fwd_kin_ = positioner->clone();

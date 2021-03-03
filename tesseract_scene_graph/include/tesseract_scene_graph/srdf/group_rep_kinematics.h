@@ -39,6 +39,14 @@ inline GroupREPKinematics parseGroupREPKinematics(const tesseract_scene_graph::S
 
     // get the robot with external positioner group information
     REPKinematicParameters rep_info;
+
+    status = tesseract_common::QueryStringAttribute(xml_element, "solver_name", rep_info.solver_name);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+    {
+      CONSOLE_BRIDGE_logInform("REP Group, group_rep element failed to parse 'solver_name' attribute!");
+      continue;
+    }
+
     const tinyxml2::XMLElement* manip_xml = xml_element->FirstChildElement("manipulator");
     if (manip_xml == nullptr)
     {

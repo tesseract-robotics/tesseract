@@ -1096,13 +1096,27 @@ bool ManipulatorManager::registerROPSolver(const std::string& group_name,
   }
 
   auto solver = std::make_shared<tesseract_kinematics::RobotOnPositionerInvKin>();
-  if (!solver->init(scene_graph_,
-                    manip_ik_solver,
-                    rop_group.manipulator_reach,
-                    positioner_fk_solver,
-                    positioner_sample_resolution,
-                    group_name))
-    return false;
+  if (rop_group.solver_name.empty())
+  {
+    if (!solver->init(scene_graph_,
+                      manip_ik_solver,
+                      rop_group.manipulator_reach,
+                      positioner_fk_solver,
+                      positioner_sample_resolution,
+                      group_name))
+      return false;
+  }
+  else
+  {
+    if (!solver->init(scene_graph_,
+                      manip_ik_solver,
+                      rop_group.manipulator_reach,
+                      positioner_fk_solver,
+                      positioner_sample_resolution,
+                      group_name,
+                      rop_group.solver_name))
+      return false;
+  }
 
   if (!addInvKinematicSolver(solver))
   {
@@ -1167,13 +1181,27 @@ bool ManipulatorManager::registerREPSolver(const std::string& group_name,
   }
 
   auto solver = std::make_shared<tesseract_kinematics::RobotWithExternalPositionerInvKin>();
-  if (!solver->init(scene_graph_,
-                    manip_ik_solver,
-                    rep_group.manipulator_reach,
-                    positioner_fk_solver,
-                    positioner_sample_resolution,
-                    group_name))
-    return false;
+  if (rep_group.solver_name.empty())
+  {
+    if (!solver->init(scene_graph_,
+                      manip_ik_solver,
+                      rep_group.manipulator_reach,
+                      positioner_fk_solver,
+                      positioner_sample_resolution,
+                      group_name))
+      return false;
+  }
+  else
+  {
+    if (!solver->init(scene_graph_,
+                      manip_ik_solver,
+                      rep_group.manipulator_reach,
+                      positioner_fk_solver,
+                      positioner_sample_resolution,
+                      group_name,
+                      rep_group.solver_name))
+      return false;
+  }
 
   if (!addInvKinematicSolver(solver))
   {
