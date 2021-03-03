@@ -72,6 +72,8 @@ struct OPWKinematicParameters
 
 struct ROPKinematicParameters
 {
+  /** @brief The name of the solver. If empty it will use the default solver name */
+  std::string solver_name;
   std::string manipulator_group;
   std::string manipulator_ik_solver;
   double manipulator_reach;
@@ -82,6 +84,7 @@ struct ROPKinematicParameters
   bool operator==(const ROPKinematicParameters& rhs) const
   {
     bool success = true;
+    success &= (solver_name == rhs.solver_name);
     success &= (manipulator_group == rhs.manipulator_group);
     success &= (manipulator_ik_solver == rhs.manipulator_ik_solver);
     success &= (tesseract_common::almostEqualRelativeAndAbs(manipulator_reach, rhs.manipulator_reach, 1e-6));
@@ -108,6 +111,8 @@ struct ROPKinematicParameters
 
 struct REPKinematicParameters
 {
+  /** @brief The name of the solver. If empty it will use the default solver name */
+  std::string solver_name;
   std::string manipulator_group;
   std::string manipulator_ik_solver;
   double manipulator_reach;
@@ -118,6 +123,7 @@ struct REPKinematicParameters
   bool operator==(const REPKinematicParameters& rhs) const
   {
     bool success = true;
+    success &= (solver_name == rhs.solver_name);
     success &= (manipulator_group == rhs.manipulator_group);
     success &= (manipulator_ik_solver == rhs.manipulator_ik_solver);
     success &= (tesseract_common::almostEqualRelativeAndAbs(manipulator_reach, rhs.manipulator_reach, 1e-6));

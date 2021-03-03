@@ -257,7 +257,8 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
                                              double manipulator_reach,
                                              ForwardKinematics::Ptr positioner,
                                              Eigen::VectorXd positioner_sample_resolution,
-                                             std::string name)
+                                             std::string name,
+                                             std::string solver_name)
 {
   if (manipulator == nullptr)
   {
@@ -283,7 +284,8 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
               positioner,
               positioner_sample_resolution,
               Eigen::Isometry3d::Identity(),
-              name);
+              name,
+              solver_name);
 }
 
 bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
@@ -292,9 +294,16 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
                                              ForwardKinematics::Ptr positioner,
                                              Eigen::VectorXd positioner_sample_resolution,
                                              const Eigen::Isometry3d& robot_to_positioner,
-                                             std::string name)
+                                             std::string name,
+                                             std::string solver_name)
 {
   initialized_ = false;
+
+  if (solver_name.empty())
+  {
+    CONSOLE_BRIDGE_logError("Solver name nust not be empty.");
+    return false;
+  }
 
   if (scene_graph == nullptr)
   {
@@ -350,6 +359,7 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
   manip_base_to_positioner_base_ = robot_to_positioner;
   scene_graph_ = std::move(scene_graph);
   name_ = std::move(name);
+  solver_name_ = std::move(solver_name);
   manip_inv_kin_ = manipulator->clone();
   manip_reach_ = manipulator_reach;
   positioner_fwd_kin_ = positioner->clone();

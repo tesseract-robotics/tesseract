@@ -1344,6 +1344,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
   EXPECT_EQ(rep_groups.size(), 1);
 
   REPKinematicParameters params = rep_groups["gantry"];
+  EXPECT_TRUE(params.solver_name.empty());
   EXPECT_EQ(params.manipulator_group, "manipulator");
   EXPECT_EQ(params.manipulator_ik_solver, "OPWInvKin");
   EXPECT_DOUBLE_EQ(params.manipulator_reach, 2.3);
@@ -1352,6 +1353,37 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
   EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
   EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
   EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+
+  {  // Test provided name
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry" solver_name="REPSolver1">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    GroupREPKinematics rep_groups = parseGroupREPKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    EXPECT_EQ(rep_groups.size(), 1);
+
+    REPKinematicParameters params = rep_groups["gantry"];
+    EXPECT_EQ(params.solver_name, "REPSolver1");
+    EXPECT_EQ(params.manipulator_group, "manipulator");
+    EXPECT_EQ(params.manipulator_ik_solver, "OPWInvKin");
+    EXPECT_DOUBLE_EQ(params.manipulator_reach, 2.3);
+    EXPECT_EQ(params.positioner_group, "positioner");
+    EXPECT_EQ(params.positioner_fk_solver, "KDLFwdKin");
+    EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
+    EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
+    EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+  }
 
   // Now test failures
   auto is_failure = [g](const std::string& xml_string) {
@@ -1528,6 +1560,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
   EXPECT_EQ(rop_groups.size(), 1);
 
   ROPKinematicParameters params = rop_groups["gantry"];
+  EXPECT_TRUE(params.solver_name.empty());
   EXPECT_EQ(params.manipulator_group, "manipulator");
   EXPECT_EQ(params.manipulator_ik_solver, "OPWInvKin");
   EXPECT_DOUBLE_EQ(params.manipulator_reach, 2.3);
@@ -1536,6 +1569,37 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
   EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
   EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
   EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+
+  {  // Now test with name provided
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry" solver_name="ROPSolver2">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    GroupROPKinematics rop_groups = parseGroupROPKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    EXPECT_EQ(rop_groups.size(), 1);
+
+    ROPKinematicParameters params = rop_groups["gantry"];
+    EXPECT_EQ(params.solver_name, "ROPSolver2");
+    EXPECT_EQ(params.manipulator_group, "manipulator");
+    EXPECT_EQ(params.manipulator_ik_solver, "OPWInvKin");
+    EXPECT_DOUBLE_EQ(params.manipulator_reach, 2.3);
+    EXPECT_EQ(params.positioner_group, "positioner");
+    EXPECT_EQ(params.positioner_fk_solver, "KDLFwdKin");
+    EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
+    EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
+    EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+  }
 
   // Now test failures
   auto is_failure = [g](const std::string& xml_string) {
