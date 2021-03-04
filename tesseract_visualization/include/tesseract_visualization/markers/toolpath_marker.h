@@ -28,6 +28,7 @@ public:
   bool show_path{ true };
   bool show_axis{ true };
   tesseract_common::Toolpath toolpath;
+  Eigen::Vector3d scale{ Eigen::Vector3d::Constant(0.03) };
 };
 
 }  // namespace tesseract_visualization
