@@ -100,7 +100,7 @@ tesseract_common::VectorIsometry3d
 KDLFwdKinChain::calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
-  assert(checkJoints(joint_angles));
+  assert(joint_angles.size() == numJoints());
 
   return calcFwdKinHelperAll(joint_angles);
 }
@@ -108,7 +108,7 @@ KDLFwdKinChain::calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& joint_ang
 Eigen::Isometry3d KDLFwdKinChain::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
-  assert(checkJoints(joint_angles));
+  assert(joint_angles.size() == numJoints());
 
   return calcFwdKinHelper(joint_angles);
 }
@@ -117,7 +117,7 @@ Eigen::Isometry3d KDLFwdKinChain::calcFwdKin(const Eigen::Ref<const Eigen::Vecto
                                              const std::string& link_name) const
 {
   assert(checkInitialized());
-  assert(checkJoints(joint_angles));
+  assert(joint_angles.size() == numJoints());
   assert(kdl_data_.segment_index.find(link_name) != kdl_data_.segment_index.end());
 
   int segment_nr = kdl_data_.segment_index.at(link_name);
@@ -145,7 +145,7 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
 Eigen::MatrixXd KDLFwdKinChain::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
-  assert(checkJoints(joint_angles));
+  assert(joint_angles.size() == numJoints());
 
   KDL::Jacobian kdl_jacobian;
   if (calcJacobianHelper(kdl_jacobian, joint_angles))
@@ -162,7 +162,7 @@ Eigen::MatrixXd KDLFwdKinChain::calcJacobian(const Eigen::Ref<const Eigen::Vecto
                                              const std::string& link_name) const
 {
   assert(checkInitialized());
-  assert(checkJoints(joint_angles));
+  assert(joint_angles.size() == numJoints());
 
   int segment_nr = kdl_data_.segment_index.at(link_name);
   KDL::Jacobian kdl_jacobian;
@@ -196,6 +196,7 @@ bool KDLFwdKinChain::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) c
                               kdl_data_.limits.joint_limits(i, 0),
                               vec(i),
                               kdl_data_.limits.joint_limits(i, 1));
+      return false;
     }
   }
 

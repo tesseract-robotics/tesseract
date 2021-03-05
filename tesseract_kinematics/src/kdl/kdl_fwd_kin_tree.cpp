@@ -100,7 +100,7 @@ Eigen::Isometry3d KDLFwdKinTree::calcFwdKin(const Eigen::Ref<const Eigen::Vector
                                             const std::string& link_name) const
 {
   assert(checkInitialized());
-  assert(checkJoints(joint_angles));
+  assert(joint_angles.size() == numJoints());
   assert(std::find(link_list_.begin(), link_list_.end(), link_name) != link_list_.end());
 
   KDL::JntArray kdl_joint_vals = getKDLJntArray(joint_list_, joint_angles);
@@ -130,7 +130,7 @@ Eigen::MatrixXd KDLFwdKinTree::calcJacobian(const Eigen::Ref<const Eigen::Vector
                                             const std::string& link_name) const
 {
   assert(checkInitialized());
-  assert(checkJoints(joint_angles));
+  assert(joint_angles.size() == numJoints());
 
   KDL::JntArray kdl_joint_vals = getKDLJntArray(joint_list_, joint_angles);
   KDL::Jacobian kdl_jacobian;
@@ -163,6 +163,7 @@ bool KDLFwdKinTree::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) co
                               limits_.joint_limits(i, 0),
                               vec(i),
                               limits_.joint_limits(i, 1));
+      return false;
     }
   }
 

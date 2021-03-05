@@ -124,6 +124,7 @@ bool KDLInvKinChainLMA::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec
                               kdl_data_.limits.joint_limits(i, 0),
                               vec(i),
                               kdl_data_.limits.joint_limits(i, 1));
+      return false;
     }
   }
 
