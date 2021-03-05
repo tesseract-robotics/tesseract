@@ -138,6 +138,7 @@ bool RobotWithExternalPositionerInvKin::checkJoints(const Eigen::Ref<const Eigen
                               limits_.joint_limits(i, 0),
                               vec(i),
                               limits_.joint_limits(i, 1));
+      return false;
     }
   }
 
