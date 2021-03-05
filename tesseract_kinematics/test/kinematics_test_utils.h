@@ -311,6 +311,7 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
 
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(8)));
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, std::numeric_limits<double>::max())));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, -std::numeric_limits<double>::max())));
   EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(7)));
 
   Eigen::Isometry3d pose;
@@ -640,6 +641,7 @@ inline void runActiveLinkNamesIIWATest(const tesseract_kinematics::InverseKinema
 {
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(8)));
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, std::numeric_limits<double>::max())));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, -std::numeric_limits<double>::max())));
   EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(7)));
 
   std::vector<std::string> target_active_link_names = { "link_1", "link_2", "link_3", "link_4",
@@ -658,6 +660,7 @@ inline void runActiveLinkNamesABBTest(const tesseract_kinematics::InverseKinemat
 {
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(7)));
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(6, std::numeric_limits<double>::max())));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(6, -std::numeric_limits<double>::max())));
   EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(6)));
 
   std::vector<std::string> target_active_link_names = { "link_1", "link_2", "link_3", "link_4",
@@ -676,6 +679,7 @@ inline void runActiveLinkNamesABBOnPositionerTest(const tesseract_kinematics::In
 {
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(8)));
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, std::numeric_limits<double>::max())));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, -std::numeric_limits<double>::max())));
   EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(7)));
 
   std::vector<std::string> target_active_link_names = { "positioner_tool0", "base_link", "link_1", "link_2", "link_3",
@@ -694,6 +698,7 @@ inline void runActiveLinkNamesABBExternalPositionerTest(const tesseract_kinemati
 {
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(8)));
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, std::numeric_limits<double>::max())));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, -std::numeric_limits<double>::max())));
   EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(7)));
 
   std::vector<std::string> target_active_link_names = { "positioner_tool0", "link_1", "link_2", "link_3",
