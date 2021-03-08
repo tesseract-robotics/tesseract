@@ -294,6 +294,7 @@ bool URInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
                               limits_.joint_limits(i, 0),
                               vec(i),
                               limits_.joint_limits(i, 1));
+      return false;
     }
   }
 
