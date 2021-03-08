@@ -813,7 +813,8 @@ inline void runActiveLinkNamesABBTest(const tesseract_kinematics::InverseKinemat
 inline void runActiveLinkNamesURTest(const tesseract_kinematics::InverseKinematics& kin)
 {
   EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(7)));
-  EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Constant(6, std::numeric_limits<double>::max())));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(6, std::numeric_limits<double>::max())));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(6, -std::numeric_limits<double>::max())));
   EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(6)));
 
   std::vector<std::string> target_active_link_names = { "shoulder_link", "upper_arm_link", "forearm_link",
