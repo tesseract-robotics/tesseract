@@ -240,8 +240,7 @@ struct CollisionMarginData
   void setDefaultCollisionMarginData(double default_collision_margin)
   {
     default_collision_margin_ = default_collision_margin;
-    if (default_collision_margin_ > max_collision_margin_)
-      max_collision_margin_ = default_collision_margin_;
+    updateMaxCollisionMargin();
   }
 
   /**
@@ -264,11 +263,7 @@ struct CollisionMarginData
   {
     auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
     lookup_table_[key] = collision_margin;
-
-    if (collision_margin > max_collision_margin_)
-    {
-      max_collision_margin_ = collision_margin;
-    }
+    updateMaxCollisionMargin();
   }
 
   /**
@@ -286,9 +281,7 @@ struct CollisionMarginData
     const auto it = lookup_table_.find(key);
 
     if (it != lookup_table_.end())
-    {
       return it->second;
-    }
 
     return default_collision_margin_;
   }
@@ -327,14 +320,25 @@ struct CollisionMarginData
   }
 
 private:
-  /// Stores the collision margin used if no pair-specific one is set
+  /** @brief Stores the collision margin used if no pair-specific one is set */
   double default_collision_margin_{ 0 };
 
-  /// Stores the largest collision margin
+  /** @brief Stores the largest collision margin */
   double max_collision_margin_{ 0 };
 
-  /// A map of link pair names to contact distance
+  /** @brief A map of link pair names to contact distance */
   std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> lookup_table_;
+
+  /** @brief Update the max collision margin */
+  void updateMaxCollisionMargin()
+  {
+    max_collision_margin_ = default_collision_margin_;
+    for (const auto& p : lookup_table_)
+    {
+      if (p.second > max_collision_margin_)
+        max_collision_margin_ = p.second;
+    }
+  }
 };
 
 #ifndef SWIG
