@@ -263,9 +263,10 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::str
 }
 
 const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
-void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
+void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data,
+                                                   CollisionMarginOverrideType override_type)
 {
-  collision_margin_data_ = collision_margin_data;
+  collision_margin_data_.apply(collision_margin_data, override_type);
   onCollisionMarginDataChanged();
 }
 
