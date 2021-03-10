@@ -115,7 +115,9 @@ public:
 
   const std::vector<std::string>& getActiveCollisionObjects() const override;
 
-  void setCollisionMarginData(CollisionMarginData collision_margin_data) override;
+  void
+  setCollisionMarginData(CollisionMarginData collision_margin_data,
+                         CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE) override;
 
   const CollisionMarginData& getCollisionMarginData() const override;
 

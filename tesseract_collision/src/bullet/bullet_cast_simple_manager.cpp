@@ -329,9 +329,10 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::s
 
 const std::vector<std::string>& BulletCastSimpleManager::getActiveCollisionObjects() const { return active_; }
 
-void BulletCastSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
+void BulletCastSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data,
+                                                     CollisionMarginOverrideType override_type)
 {
-  contact_test_data_.collision_margin_data = collision_margin_data;
+  contact_test_data_.collision_margin_data.apply(collision_margin_data, override_type);
   onCollisionMarginDataChanged();
 }
 
