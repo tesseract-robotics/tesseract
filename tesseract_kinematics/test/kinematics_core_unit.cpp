@@ -5,7 +5,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
+#include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract_kinematics/core/utils.h>
+#include "kinematics_test_utils.h"
 
 const static std::string FACTORY_NAME = "TestFactory";
 
@@ -87,6 +89,25 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT
   tesseract_kinematics::harmonizeTowardZero<double>(q);
   EXPECT_NEAR(q[0], -3 * M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], 3 * M_PI_4, 1e-6);
+}
+
+TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
+{
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB();
+
+  tesseract_kinematics::KDLFwdKinChain fwd_kin;
+  fwd_kin.init(scene_graph, "base_link", "tool0", "manip");
+
+  Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
+  Eigen::MatrixXd jacobian = fwd_kin.calcJacobian(jv);
+  EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian, 0.001));
+  jv[4] = 1 * M_PI / 180.0;
+  jacobian = fwd_kin.calcJacobian(jv);
+  EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian));
+  jv[4] = 2 * M_PI / 180.0;
+  jacobian = fwd_kin.calcJacobian(jv);
+  EXPECT_FALSE(tesseract_kinematics::isNearSingularity(jacobian));
+  EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian, 0.02));
 }
 
 int main(int argc, char** argv)
