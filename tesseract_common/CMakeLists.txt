@@ -36,7 +36,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} src/manipulator_info.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${TinyXML2_LIBRARIES} ${Boost_LIBRARIES} console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen ${TinyXML2_LIBRARIES} ${Boost_LIBRARIES} console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -47,7 +47,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS}
     ${TinyXML2_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})

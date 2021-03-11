@@ -35,7 +35,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} src/graph.cpp src/resource_locator.cpp src/srdf_model.cpp src/kinematics_information.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES} tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES} Eigen3::Eigen tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
@@ -46,7 +46,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS} # Orocos did not export target correctly
     ${Boost_INCLUDE_DIRS})
 

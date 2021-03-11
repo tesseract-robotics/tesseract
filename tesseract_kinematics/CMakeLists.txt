@@ -39,7 +39,7 @@ tesseract_variables()
 add_library(${PROJECT_NAME}_core
   src/core/rop_inverse_kinematics.cpp
   src/core/rep_inverse_kinematics.cpp)
-target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_scene_graph console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME}_core PUBLIC Eigen3::Eigen tesseract::tesseract_scene_graph console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -49,12 +49,10 @@ target_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE
 target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS})
 
 # Create ikfast kinematics interface
 add_library(${PROJECT_NAME}_ikfast INTERFACE)
-target_link_libraries(${PROJECT_NAME}_ikfast INTERFACE ${PROJECT_NAME}_core console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME}_ikfast INTERFACE ${PROJECT_NAME}_core Eigen3::Eigen console_bridge::console_bridge)
 target_compile_definitions(${PROJECT_NAME}_ikfast INTERFACE -DIKFAST_NO_MAIN -DIKFAST_CLIBRARY -DIKFAST_HAS_LIBRARY)
 target_compile_options(${PROJECT_NAME}_ikfast INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ikfast INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
@@ -64,8 +62,6 @@ target_code_coverage(${PROJECT_NAME}_ikfast INTERFACE ALL EXCLUDE ${COVERAGE_EXC
 target_include_directories(${PROJECT_NAME}_ikfast INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_ikfast SYSTEM INTERFACE
-    ${EIGEN3_INCLUDE_DIRS})
 
 # Add KDL implementation of tesseract_kinematics
 add_library(${PROJECT_NAME}_kdl
@@ -74,7 +70,7 @@ add_library(${PROJECT_NAME}_kdl
   src/kdl/kdl_inv_kin_chain_lma.cpp
   src/kdl/kdl_inv_kin_chain_nr.cpp
 )
-target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph orocos-kdl console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core Eigen3::Eigen tesseract::tesseract_scene_graph orocos-kdl console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -87,13 +83,10 @@ endif()
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS}
-    ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
 # Add OPW implementation of tesseract_kinematics
 add_library(${PROJECT_NAME}_opw src/opw/opw_inv_kin.cpp)
-target_link_libraries(${PROJECT_NAME}_opw PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph opw_kinematics::opw_kinematics console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME}_opw PUBLIC ${PROJECT_NAME}_core Eigen3::Eigen tesseract::tesseract_scene_graph opw_kinematics::opw_kinematics console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_opw PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_opw PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_opw PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -103,12 +96,10 @@ target_code_coverage(${PROJECT_NAME}_opw ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE 
 target_include_directories(${PROJECT_NAME}_opw PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_opw SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS})
 
 # Add Universal Robot implementation of tesseract_kinematics
 add_library(${PROJECT_NAME}_ur src/ur/ur_inv_kin.cpp)
-target_link_libraries(${PROJECT_NAME}_ur PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME}_ur PUBLIC ${PROJECT_NAME}_core Eigen3::Eigen tesseract::tesseract_scene_graph console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_ur PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_ur PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ur PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -118,8 +109,6 @@ target_code_coverage(${PROJECT_NAME}_ur ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE $
 target_include_directories(${PROJECT_NAME}_ur PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_opw SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ikfast ${PROJECT_NAME}_opw ${PROJECT_NAME}_ur)
 
