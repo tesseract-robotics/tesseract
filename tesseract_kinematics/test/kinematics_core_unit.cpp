@@ -98,15 +98,22 @@ TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
   tesseract_kinematics::KDLFwdKinChain fwd_kin;
   fwd_kin.init(scene_graph, "base_link", "tool0", "manip");
 
+  // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
   Eigen::MatrixXd jacobian = fwd_kin.calcJacobian(jv);
   EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian, 0.001));
+
+  // Set joint 5 angle to 1 deg and it with the default threshold it should still be in singularity
   jv[4] = 1 * M_PI / 180.0;
   jacobian = fwd_kin.calcJacobian(jv);
   EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian));
+
+  // Set joint 5 angle to 2 deg and it should no longer be in a singularity
   jv[4] = 2 * M_PI / 180.0;
   jacobian = fwd_kin.calcJacobian(jv);
   EXPECT_FALSE(tesseract_kinematics::isNearSingularity(jacobian));
+
+  // Increase threshold and now with joint 5 at 2 deg it will now be considered in a singularity
   EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian, 0.02));
 }
 
