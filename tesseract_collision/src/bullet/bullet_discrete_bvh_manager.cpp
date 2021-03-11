@@ -237,9 +237,10 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::
 }
 
 const std::vector<std::string>& BulletDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
-void BulletDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
+void BulletDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data,
+                                                      CollisionMarginOverrideType override_type)
 {
-  contact_test_data_.collision_margin_data = collision_margin_data;
+  contact_test_data_.collision_margin_data.apply(collision_margin_data, override_type);
   onCollisionMarginDataChanged();
 }
 

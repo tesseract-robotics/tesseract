@@ -41,6 +41,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_collision/core/collision_margin_data.h>
+
 #ifdef SWIG
 %tesseract_aligned_vector(ContactResultVector, tesseract_collision::ContactResult);
 %tesseract_aligned_map_of_aligned_vector(ContactResultMap, %arg(std::pair<std::string,std::string>), tesseract_collision::ContactResult);
@@ -220,123 +222,6 @@ inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
   return flattenMoveResults(std::move(m), v);
 }
 
-/** @brief Stores information about how the margins allowed between collision objects */
-struct CollisionMarginData
-{
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-  using Ptr = std::shared_ptr<CollisionMarginData>;
-  using ConstPtr = std::shared_ptr<const CollisionMarginData>;
-
-  CollisionMarginData(double default_collision_margin = 0)
-    : default_collision_margin_(default_collision_margin), max_collision_margin_(default_collision_margin)
-  {
-  }
-
-  /**
-   * @brief Set the default collision margin
-   * @param default_collision_margin New default collision margin
-   */
-  void setDefaultCollisionMarginData(double default_collision_margin)
-  {
-    default_collision_margin_ = default_collision_margin;
-    if (default_collision_margin_ > max_collision_margin_)
-      max_collision_margin_ = default_collision_margin_;
-  }
-
-  /**
-   * @brief Get the default collision margin
-   * @return default collision margin
-   */
-  double getDefaultCollisionMarginData() const { return default_collision_margin_; };
-
-  /**
-   * @brief Set the margin for a given contact pair
-   *
-   * The order of the object names does not matter, that is handled internal to
-   * the class.
-   *
-   * @param obj1 The first object name. Order doesn't matter
-   * @param obj2 The Second object name. Order doesn't matter
-   * @param collision_margin contacts with distance < collision_margin are considered in collision
-   */
-  void setPairCollisionMarginData(const std::string& obj1, const std::string& obj2, double collision_margin)
-  {
-    auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
-    lookup_table_[key] = collision_margin;
-
-    if (collision_margin > max_collision_margin_)
-    {
-      max_collision_margin_ = collision_margin;
-    }
-  }
-
-  /**
-   * @brief Get the pairs collision margin data
-   *
-   * If a collision margin for the request pair does not exist it returns the default collision margin data.
-   *
-   * @param obj1 The first object name
-   * @param obj2 The second object name
-   * @return A Vector2d[Contact Distance Threshold, Coefficient]
-   */
-  double getPairCollisionMarginData(const std::string& obj1, const std::string& obj2) const
-  {
-    auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
-    const auto it = lookup_table_.find(key);
-
-    if (it != lookup_table_.end())
-    {
-      return it->second;
-    }
-
-    return default_collision_margin_;
-  }
-
-  /**
-   * @brief Get the largest collision margin
-   *
-   * This used when setting the contact distance in the contact manager.
-   *
-   * @return Max contact distance threshold
-   */
-  double getMaxCollisionMargin() const { return max_collision_margin_; }
-
-  /**
-   * @brief Increment all margins by input amount. Useful for inflating or reducing margins
-   * @param increment Amount to increment margins
-   */
-  void incrementMargins(const double& increment)
-  {
-    default_collision_margin_ += increment;
-    max_collision_margin_ += increment;
-    for (auto& pair : lookup_table_)
-      pair.second += increment;
-  }
-
-  /**
-   * @brief Scale all margins by input value
-   * @param scale Value by which all margins are multipled
-   */
-  void scaleMargins(const double& scale)
-  {
-    default_collision_margin_ *= scale;
-    max_collision_margin_ *= scale;
-    for (auto& pair : lookup_table_)
-      pair.second *= scale;
-  }
-
-private:
-  /// Stores the collision margin used if no pair-specific one is set
-  double default_collision_margin_{ 0 };
-
-  /// Stores the largest collision margin
-  double max_collision_margin_{ 0 };
-
-  /// A map of link pair names to contact distance
-  std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> lookup_table_;
-};
-
 #ifndef SWIG
 /**
  * @brief This data is intended only to be used internal to the collision checkers as a container and should not
@@ -390,10 +275,15 @@ struct ContactTestData
  */
 enum class CollisionEvaluatorType
 {
+  /** @brief None */
   NONE,
+  /** @brief Discrete contact manager using only steps specified */
   DISCRETE,
+  /** @brief Discrete contact manager interpolating using longest valid segment */
   LVS_DISCRETE,
+  /** @brief Continuous contact manager using only steps specified */
   CONTINUOUS,
+  /** @brief Continuous contact manager interpolating using longest valid segment */
   LVS_CONTINUOUS
 };
 
@@ -414,6 +304,8 @@ struct CollisionCheckConfig
   {
   }
 
+  /** @brief Identify how the collision margin data should be applied to the contact manager */
+  CollisionMarginOverrideType collision_margin_override_type{ CollisionMarginOverrideType::NONE };
   /** @brief Stores information about how the margins allowed between collision objects*/
   CollisionMarginData collision_margin_data;
   /** @brief ContactRequest that will be used for this check. Default test type: FIRST*/

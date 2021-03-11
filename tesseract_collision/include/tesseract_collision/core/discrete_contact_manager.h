@@ -161,8 +161,11 @@ public:
   /**
    * @brief Set the contact distance thresholds for which collision should be considered on a per pair basis
    * @param collision_margin_data Contains the data that will replace the current settings
+   * @param override_type This determines how the provided CollisionMarginData is applied
    */
-  virtual void setCollisionMarginData(CollisionMarginData collision_margin_data) = 0;
+  virtual void
+  setCollisionMarginData(CollisionMarginData collision_margin_data,
+                         CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE) = 0;
 
   /**
    * @brief Set the default collision margin
