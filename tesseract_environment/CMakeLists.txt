@@ -40,6 +40,7 @@ tesseract_variables()
 # Create interface for core
 add_library(${PROJECT_NAME}_core src/core/environment.cpp src/core/manipulator_manager.cpp)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC
+  Eigen3::Eigen
   tesseract::tesseract_common
   tesseract::tesseract_collision_core
   tesseract::tesseract_collision_bullet
@@ -57,11 +58,9 @@ target_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE
 target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_kdl src/kdl/kdl_state_solver.cpp)
-target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph orocos-kdl console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core Eigen3::Eigen tesseract::tesseract_scene_graph orocos-kdl console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -72,11 +71,10 @@ target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
 add_library(${PROJECT_NAME}_ofkt src/ofkt/ofkt_state_solver.cpp src/ofkt/ofkt_nodes.cpp)
-target_link_libraries(${PROJECT_NAME}_ofkt PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME}_ofkt PUBLIC ${PROJECT_NAME}_core Eigen3::Eigen tesseract::tesseract_scene_graph console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_ofkt PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_ofkt PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ofkt PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -86,8 +84,6 @@ target_code_coverage(${PROJECT_NAME}_ofkt ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE
 target_include_directories(${PROJECT_NAME}_ofkt PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_ofkt SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt)
 
