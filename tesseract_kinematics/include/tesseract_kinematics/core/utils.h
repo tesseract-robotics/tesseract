@@ -219,6 +219,21 @@ inline static bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
 }
 
 /**
+ * @brief Check if the provided jacobian is near a singularity
+ * @details This is keep separated from the forward kinematics because special consideration may need to be made
+ * based on the kinematics arrangement.
+ * @param jacobian The jacobian to check if near a singularity
+ * @param threshold The threshold that all singular values must be greater than or equal to not be considered near a
+ * singularity
+ */
+inline bool isNearSingularity(const Eigen::Ref<const Eigen::MatrixXd>& jacobian, double threshold = 0.01)
+{
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd(jacobian, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  const Eigen::VectorXd& sv = svd.singularValues();
+  return (sv.tail(1).value() < threshold);
+}
+
+/**
  * @brief Create a kinematics map from the srdf model
  * @param scene_graph Tesseract Scene Graph
  * @param srdf_model Tesseract SRDF Model
