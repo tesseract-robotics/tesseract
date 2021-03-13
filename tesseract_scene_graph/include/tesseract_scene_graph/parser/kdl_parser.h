@@ -45,7 +45,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <console_bridge/console.h>
 
-#include <boost/utility.hpp>  // for boost::tie
+#include <boost/tuple/tuple.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>

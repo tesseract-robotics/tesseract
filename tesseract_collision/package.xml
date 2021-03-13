@@ -8,7 +8,6 @@
   <author>Levi Armstrong</author>
 
   <!-- Following recommendations of REP 136 -->
-  <exec_depend>catkin</exec_depend>
   <buildtool_depend>cmake</buildtool_depend>
 
   <depend>tesseract_geometry</depend>
@@ -21,6 +20,12 @@
   <depend>fcl</depend>
   <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_support</depend>
+
+  <build_depend>libboost-system-dev</build_depend>
+  <exec_depend>libboost-system</exec_depend>
+
+  <build_depend>libboost-program-options-dev</build_depend>
+  <exec_depend>libboost-program-options</exec_depend>
 
   <test_depend>benchmark</test_depend>
   <test_depend>gtest</test_depend>

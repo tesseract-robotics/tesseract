@@ -8,7 +8,6 @@
   <author >Levi Armstrong</author>
 
   <!-- Following recommendations of REP 136 -->
-  <exec_depend>catkin</exec_depend>
   <buildtool_depend>cmake</buildtool_depend>
 
   <build_depend>ros_industrial_cmake_boilerplate</build_depend>

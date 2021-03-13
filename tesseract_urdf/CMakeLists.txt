@@ -37,7 +37,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} src/urdf_parser.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry tesseract::tesseract_scene_graph tesseract::tesseract_collision_core console_bridge::console_bridge ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry tesseract::tesseract_scene_graph tesseract::tesseract_collision_core console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -73,8 +73,6 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${Boost_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
@@ -92,4 +90,26 @@ if (TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
+endif()
+
+if (TESSERACT_PACKAGE)
+  tesseract_cpack(
+    VERSION ${pkg_extracted_version}
+    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    DESCRIPTION ${pkg_extracted_description}
+    LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
+    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
+    LINUX_DEPENDS
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "libconsole-bridge-dev"
+      "libeigen3-dev"
+    WINDOWS_DEPENDS
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "Eigen3")
 endif()
