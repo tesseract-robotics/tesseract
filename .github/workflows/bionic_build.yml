@@ -18,7 +18,7 @@ jobs:
       OS_CODE_NAME: bionic
       ROS_DISTRO: melodic
       ROS_REPO: main
-      BEFORE_INIT: "pip install cmake"
+      BEFORE_INIT: "apt install pip && pip install cmake"
       UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
       ROSDEP_SKIP_KEYS: "bullet ros_industrial_cmake_boilerplate iwyu fcl taskflow"
       DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
