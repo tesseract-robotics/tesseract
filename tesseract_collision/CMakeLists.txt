@@ -61,7 +61,7 @@ tesseract_variables()
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry ${BULLET_LIBRARIES} Boost::boost Boost::system Boost::thread Boost::program_options)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry ${BULLET_LIBRARIES} Boost::boost Boost::system Boost::thread)
 target_compile_options(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_core ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -155,7 +155,7 @@ set(PACKAGE_LIBRARIES ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME
 if (NOT MSVC)
   # Create target for creating convex hull's from meshes
   add_executable(create_convex_hull src/create_convex_hull.cpp)
-  target_link_libraries(create_convex_hull PUBLIC ${PROJECT_NAME}_core ${BULLET_LIBRARIES} Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry console_bridge::console_bridge octomap octomath)
+  target_link_libraries(create_convex_hull PUBLIC ${PROJECT_NAME}_core ${BULLET_LIBRARIES} Boost::boost Boost::program_options Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry console_bridge::console_bridge octomap octomath)
   target_compile_options(create_convex_hull PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(create_convex_hull PRIVATE ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
   target_clang_tidy(create_convex_hull ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})

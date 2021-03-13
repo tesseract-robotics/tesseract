@@ -12,7 +12,7 @@ endif()
 include(cmake/tesseract_macros.cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-find_package(Boost REQUIRED COMPONENTS system filesystem program_options serialization)
+find_package(Boost REQUIRED COMPONENTS system filesystem serialization)
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 
@@ -36,7 +36,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} src/manipulator_info.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen ${TinyXML2_LIBRARIES} Boost::boost Boost::system Boost::program_options Boost::serialization console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen ${TinyXML2_LIBRARIES} Boost::boost Boost::system Boost::serialization console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -79,7 +79,6 @@ if (TESSERACT_PACKAGE)
     LINUX_DEPENDS
       "libboost-system1.71.0"
       "libboost-filesystem1.71.0"
-      "libboost-program-options1.71.0"
       "libboost-serialization1.71.0"
       "libconsole-bridge-dev"
       "libtinyxml2-dev"
@@ -87,7 +86,6 @@ if (TESSERACT_PACKAGE)
     WINDOWS_DEPENDS
       "boost_system"
       "boost_filesystem;"
-      "boost_program_options"
       "boost_serialization"
       "tinyxml2"
       "Eigen3")

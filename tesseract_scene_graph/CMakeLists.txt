@@ -9,7 +9,7 @@ if(WIN32)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-find_package(Boost REQUIRED COMPONENTS filesystem graph)
+find_package(Boost REQUIRED COMPONENTS filesystem graph serialization)
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(orocos_kdl REQUIRED)

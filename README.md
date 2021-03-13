@@ -109,6 +109,20 @@ NOTE: Must be a clean build when generating a code coverage report. Also must bu
 
 .. NOTE: You can replace **LCOV** above with **GCOV** or **GCOVR**.
 
+## Create Debian Package (Linux) or NuGet Package (Windows)
+
+The following process will generate a Debian or NuGet package leveraging cmake and cpack based on the OS.
+
+The package should be located in the current directory.
+
+``` bash
+cd <workspace directory>
+catkin build -DCMAKE_BUILD_TYPE=Release -DTESSERACT_PACKAGE=ON
+./src/tesseract/.run-cpack
+```
+
+.. NOTE: You can add a prefix to the package name by setting -DTESSERACT_PACKAGE_PREFIX="ros-noetic-".
+
 ## Quality Tools Leverage
 
 Tesseract currently leverages Compiler Warnigs, Clang Tidy and Code Coverage. All warnings produced by Compiler and Clang Tidy are treated as errors during CI builds.
