@@ -10,7 +10,7 @@ if(WIN32)
 endif()
 
 find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system thread program_options serialization graph)
+find_package(Boost REQUIRED COMPONENTS system program_options)
 find_package(octomap REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_geometry REQUIRED)
@@ -61,7 +61,7 @@ tesseract_variables()
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry ${BULLET_LIBRARIES} Boost::boost Boost::system Boost::thread)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry ${BULLET_LIBRARIES} Boost::boost Boost::system)
 target_compile_options(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_core ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
