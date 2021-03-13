@@ -9,7 +9,7 @@ if(WIN32)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem graph)
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(orocos_kdl REQUIRED)
@@ -35,7 +35,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} src/graph.cpp src/resource_locator.cpp src/srdf_model.cpp src/kinematics_information.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES} Eigen3::Eigen tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost Boost::filesystem Boost::graph Eigen3::Eigen tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
@@ -45,9 +45,6 @@ target_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TE
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${orocos_kdl_INCLUDE_DIRS} # Orocos did not export target correctly
-    ${Boost_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
@@ -65,4 +62,23 @@ if (TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
+endif()
+
+if (TESSERACT_PACKAGE)
+  tesseract_cpack(
+    VERSION ${pkg_extracted_version}
+    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    DESCRIPTION ${pkg_extracted_description}
+    LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
+    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
+    LINUX_DEPENDS
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "libconsole-bridge-dev"
+      "libboost-all-dev"
+      "liborocos-kdl-dev"
+      "libeigen3-dev"
+    WINDOWS_DEPENDS
+      "Eigen3"
+      "console_bridge")
 endif()
