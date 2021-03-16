@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+DEPRECATED("Please use ChangeCollisionMarginsCommand going forward.")
 class ChangeDefaultContactMarginCommand : public Command
 {
 public:

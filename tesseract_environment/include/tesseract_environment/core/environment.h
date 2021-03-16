@@ -491,6 +491,9 @@ public:
   /** @brief Get a copy of the environments available continuous contact manager by name */
   virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager(const std::string& name) const;
 
+  /** @brief Get the environment collision margin data */
+  virtual tesseract_common::CollisionMarginData getCollisionMarginData() const;
+
   /**
    * @brief Set the discrete contact manager
    *
@@ -787,6 +790,7 @@ private:
   bool applyAddKinematicsInformationCommand(const AddKinematicsInformationCommand::ConstPtr& cmd);
   bool applyChangeDefaultContactMarginCommand(const ChangeDefaultContactMarginCommand::ConstPtr& cmd);
   bool applyChangePairContactMarginCommand(const ChangePairContactMarginCommand::ConstPtr& cmd);
+  bool applyChangeCollisionMarginsCommand(const ChangeCollisionMarginsCommand::ConstPtr& cmd);
 };
 }  // namespace tesseract_environment
 

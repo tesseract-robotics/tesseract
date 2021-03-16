@@ -10,7 +10,7 @@ namespace tesseract_scene_graph
 {
 inline void processSRDFAllowedCollisions(SceneGraph& scene_graph, const tesseract_scene_graph::SRDFModel& srdf_model)
 {
-  for (const auto& pair : srdf_model.getAllowedCollisionMatrix().getAllAllowedCollisions())
+  for (const auto& pair : srdf_model.acm.getAllAllowedCollisions())
     scene_graph.addAllowedCollision(pair.first.first, pair.first.second, pair.second);
 }
 
