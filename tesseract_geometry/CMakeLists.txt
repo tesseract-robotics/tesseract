@@ -90,3 +90,23 @@ if (TESSERACT_ENABLE_TESTING)
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
 endif()
+
+if (TESSERACT_PACKAGE)
+  tesseract_cpack(
+    VERSION ${pkg_extracted_version}
+    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    DESCRIPTION ${pkg_extracted_description}
+    LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
+    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
+    LINUX_DEPENDS
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "libassimp-dev"
+      "libconsole-bridge-dev"
+      "liboctomap-dev (>= 1.9.6) | ${TESSERACT_PACKAGE_PREFIX}octomap"
+      "libeigen3-dev"
+    WINDOWS_DEPENDS
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "Assimp"
+      "Eigen3"
+      "console_bridge")
+endif()

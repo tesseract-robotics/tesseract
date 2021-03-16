@@ -70,8 +70,6 @@ target_code_coverage(${PROJECT_NAME}_kdl ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE 
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
-    ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
 add_library(${PROJECT_NAME}_ofkt src/ofkt/ofkt_state_solver.cpp src/ofkt/ofkt_nodes.cpp)
 target_link_libraries(${PROJECT_NAME}_ofkt PUBLIC ${PROJECT_NAME}_core Eigen3::Eigen tesseract::tesseract_scene_graph console_bridge::console_bridge)
@@ -102,4 +100,32 @@ endif()
 
 if (TESSERACT_ENABLE_BENCHMARKING)
   add_subdirectory(test/benchmarks)
+endif()
+
+if (TESSERACT_PACKAGE)
+  tesseract_cpack(
+    VERSION ${pkg_extracted_version}
+    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    DESCRIPTION ${pkg_extracted_description}
+    LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
+    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
+    LINUX_DEPENDS
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
+      "libconsole-bridge-dev"
+      "liborocos-kdl-dev"
+      "libeigen3-dev"
+    WINDOWS_DEPENDS
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
+      "console_bridge"
+      "Eigen3")
 endif()

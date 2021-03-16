@@ -10,7 +10,7 @@ if(WIN32)
 endif()
 
 find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system thread program_options)
+find_package(Boost REQUIRED COMPONENTS system program_options)
 find_package(octomap REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_geometry REQUIRED)
@@ -61,7 +61,7 @@ tesseract_variables()
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry ${BULLET_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry ${BULLET_LIBRARIES} Boost::boost Boost::system)
 target_compile_options(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_core ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -71,8 +71,7 @@ target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
-    "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}"
-    ${Boost_INCLUDE_DIRS})
+    "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
 # Create target for Bullet implementation
 add_library(${PROJECT_NAME}_bullet
@@ -99,8 +98,7 @@ target_include_directories(${PROJECT_NAME}_bullet PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC
-    "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}"
-    ${Boost_INCLUDE_DIRS})
+    "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
 # Create target for FCL implementation
 add_library(${PROJECT_NAME}_fcl
@@ -118,8 +116,7 @@ target_include_directories(${PROJECT_NAME}_fcl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_fcl SYSTEM PUBLIC
-    "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}"
-    ${Boost_INCLUDE_DIRS})
+    "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
   # Create target that profiles the collision checkers.
 add_executable(${PROJECT_NAME}_profile src/collision_profile.cpp)
@@ -158,15 +155,14 @@ set(PACKAGE_LIBRARIES ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME
 if (NOT MSVC)
   # Create target for creating convex hull's from meshes
   add_executable(create_convex_hull src/create_convex_hull.cpp)
-  target_link_libraries(create_convex_hull PUBLIC ${PROJECT_NAME}_core ${BULLET_LIBRARIES} Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry ${Boost_LIBRARIES} console_bridge::console_bridge octomap octomath)
+  target_link_libraries(create_convex_hull PUBLIC ${PROJECT_NAME}_core ${BULLET_LIBRARIES} Boost::boost Boost::program_options Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_geometry console_bridge::console_bridge octomap octomath)
   target_compile_options(create_convex_hull PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(create_convex_hull PRIVATE ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
   target_clang_tidy(create_convex_hull ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_cxx_version(create_convex_hull PRIVATE VERSION ${TESSERACT_CXX_VERSION})
   target_include_directories(create_convex_hull PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
   target_include_directories(create_convex_hull SYSTEM PUBLIC
-      "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}"
-      ${Boost_INCLUDE_DIRS})
+      "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
   list(APPEND PACKAGE_LIBRARIES create_convex_hull)
 endif()
@@ -192,5 +188,27 @@ endif()
 
 if (TESSERACT_ENABLE_BENCHMARKING)
   add_subdirectory(test/benchmarks)
+endif()
+
+if (TESSERACT_PACKAGE)
+  tesseract_cpack(
+    VERSION ${pkg_extracted_version}
+    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    DESCRIPTION ${pkg_extracted_description}
+    LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
+    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
+    LINUX_DEPENDS
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-support"
+      "libbullet-dev"
+      "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
+      "libconsole-bridge-dev"
+      "libeigen3-dev"
+    WINDOWS_DEPENDS
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-support"
+      "Eigen3")
 endif()
 

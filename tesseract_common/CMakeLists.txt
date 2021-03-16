@@ -12,7 +12,7 @@ endif()
 include(cmake/tesseract_macros.cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-find_package(Boost REQUIRED COMPONENTS system filesystem program_options serialization)
+find_package(Boost REQUIRED COMPONENTS system filesystem serialization)
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 
@@ -36,7 +36,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} src/manipulator_info.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen ${TinyXML2_LIBRARIES} ${Boost_LIBRARIES} console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen ${TinyXML2_LIBRARIES} Boost::boost Boost::system Boost::filesystem Boost::serialization console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -46,7 +46,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${Boost_INCLUDE_DIRS}
     ${TinyXML2_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
@@ -68,4 +67,26 @@ if (TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
+endif()
+
+if (TESSERACT_PACKAGE)
+  tesseract_cpack(
+    VERSION ${pkg_extracted_version}
+    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    DESCRIPTION ${pkg_extracted_description}
+    LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
+    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
+    LINUX_DEPENDS
+      "libboost-system1.71.0"
+      "libboost-filesystem1.71.0"
+      "libboost-serialization1.71.0"
+      "libconsole-bridge-dev"
+      "libtinyxml2-dev"
+      "libeigen3-dev"
+    WINDOWS_DEPENDS
+      "boost_system"
+      "boost_filesystem;"
+      "boost_serialization"
+      "tinyxml2"
+      "Eigen3")
 endif()
