@@ -2069,7 +2069,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
 
     EXPECT_TRUE(margin_data != nullptr);
     EXPECT_NEAR(margin_data->getDefaultCollisionMarginData(), -0.025, 1e-6);
-    EXPECT_NEAR(margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
+    EXPECT_NEAR(margin_data->getMaxCollisionMargin(), -0.01, 1e-6);
     EXPECT_EQ(margin_data->getPairsCollisionMarginData().size(), 2);
     EXPECT_NEAR(margin_data->getPairCollisionMarginData("link_5", "link_6"), -0.01, 1e-6);
     EXPECT_NEAR(margin_data->getPairCollisionMarginData("link_5", "link_4"), -0.015, 1e-6);
