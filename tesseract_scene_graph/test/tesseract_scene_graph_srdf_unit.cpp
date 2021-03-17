@@ -2050,6 +2050,31 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_EQ(margin_data->getPairsCollisionMarginData().size(), 0);
   }
 
+  {  // Testing having negative default margin and pair margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="-0.025">
+                             <pair_margin link1="link_6" link2="link_5" margin="-0.01"/>
+                             <pair_margin link1="link_5" link2="link_4" margin="-0.015"/>
+                           </collision_margins>
+                         </robot>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::CollisionMarginData::Ptr margin_data =
+        parseCollisionMargins(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+
+    EXPECT_TRUE(margin_data != nullptr);
+    EXPECT_NEAR(margin_data->getDefaultCollisionMarginData(), -0.025, 1e-6);
+    EXPECT_NEAR(margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
+    EXPECT_EQ(margin_data->getPairsCollisionMarginData().size(), 2);
+    EXPECT_NEAR(margin_data->getPairCollisionMarginData("link_5", "link_6"), -0.01, 1e-6);
+    EXPECT_NEAR(margin_data->getPairCollisionMarginData("link_5", "link_4"), -0.015, 1e-6);
+  }
+
   {  // Test not having collision margin data
     std::string str = R"(<robot name="abb_irb2400">
                          </robot>)";
@@ -2113,6 +2138,26 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
                            <collision_margins default_margin="0.025">
                              <pair_margin link1="link_6" link2="link_5" margin="0.01"/>
                              <pair_margin link1="link_5" link2="link_4"/>
+                           </collision_margins>
+                         </robot>)";
+    EXPECT_ANY_THROW(is_failure(str));
+  }
+
+  {  // empty default margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="">
+                             <pair_margin link1="link_6" link2="link_5" margin="0.01"/>
+                             <pair_margin link1="link_5" link2="link_4" margin="0.01"/>
+                           </collision_margins>
+                         </robot>)";
+    EXPECT_ANY_THROW(is_failure(str));
+  }
+
+  {  // empty pair margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="0.025">
+                             <pair_margin link1="link_6" link2="link_5" margin=""/>
+                             <pair_margin link1="link_5" link2="link_4" margin="0.01"/>
                            </collision_margins>
                          </robot>)";
     EXPECT_ANY_THROW(is_failure(str));
