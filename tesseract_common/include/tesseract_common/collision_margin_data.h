@@ -92,7 +92,7 @@ public:
    * @brief Set the default collision margin
    * @param default_collision_margin New default collision margin
    */
-  void setDefaultCollisionMarginData(double default_collision_margin)
+  void setDefaultCollisionMargin(double default_collision_margin)
   {
     default_collision_margin_ = default_collision_margin;
     updateMaxCollisionMargin();
@@ -102,7 +102,7 @@ public:
    * @brief Get the default collision margin
    * @return default collision margin
    */
-  double getDefaultCollisionMarginData() const { return default_collision_margin_; };
+  double getDefaultCollisionMargin() const { return default_collision_margin_; };
 
   /**
    * @brief Set the margin for a given contact pair
@@ -114,7 +114,7 @@ public:
    * @param obj2 The Second object name. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
-  void setPairCollisionMarginData(const std::string& obj1, const std::string& obj2, double collision_margin)
+  void setPairCollisionMargin(const std::string& obj1, const std::string& obj2, double collision_margin)
   {
     auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
     lookup_table_[key] = collision_margin;
@@ -130,7 +130,7 @@ public:
    * @param obj2 The second object name
    * @return A Vector2d[Contact Distance Threshold, Coefficient]
    */
-  double getPairCollisionMarginData(const std::string& obj1, const std::string& obj2) const
+  double getPairCollisionMargin(const std::string& obj1, const std::string& obj2) const
   {
     auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
     const auto it = lookup_table_.find(key);
@@ -145,7 +145,7 @@ public:
    * @brief Get Collision Margin Data for stored pairs
    * @return A map of link pairs collision margin data
    */
-  const PairsCollisionMarginData& getPairsCollisionMarginData() const { return lookup_table_; }
+  const PairsCollisionMarginData& getPairCollisionMargins() const { return lookup_table_; }
 
   /**
    * @brief Get the largest collision margin

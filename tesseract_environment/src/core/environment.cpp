@@ -1570,7 +1570,7 @@ bool Environment::applyAddKinematicsInformationCommand(const AddKinematicsInform
 
 bool Environment::applyChangeDefaultContactMarginCommand(const ChangeDefaultContactMarginCommand::ConstPtr& cmd)
 {
-  collision_margin_data_.setDefaultCollisionMarginData(cmd->getDefaultCollisionMargin());
+  collision_margin_data_.setDefaultCollisionMargin(cmd->getDefaultCollisionMargin());
 
   if (continuous_manager_ != nullptr)
     continuous_manager_->setDefaultCollisionMarginData(cmd->getDefaultCollisionMargin());
@@ -1587,7 +1587,7 @@ bool Environment::applyChangeDefaultContactMarginCommand(const ChangeDefaultCont
 bool Environment::applyChangePairContactMarginCommand(const ChangePairContactMarginCommand::ConstPtr& cmd)
 {
   for (const auto& link_pair : cmd->getPairCollisionMarginData())
-    collision_margin_data_.setPairCollisionMarginData(link_pair.first.first, link_pair.first.second, link_pair.second);
+    collision_margin_data_.setPairCollisionMargin(link_pair.first.first, link_pair.first.second, link_pair.second);
 
   if (continuous_manager_ != nullptr)
     continuous_manager_->setCollisionMarginData(collision_margin_data_);
