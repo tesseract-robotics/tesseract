@@ -203,7 +203,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotOnPositionerUnit)  // NOLI
   SRDFModel::Ptr srdf = getSRDFModel(g, ABBConfig::ROBOT_ON_RAIL);
   g->saveDOT(tesseract_common::getTempPath() + "abb_robot_on_positioner.dot");
 
-  KinematicsInformation& kin_info = srdf->getKinematicsInformation();
+  KinematicsInformation& kin_info = srdf->kinematics_information;
 
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
@@ -270,7 +270,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotWithExternalPositionerUnit
   SRDFModel::Ptr srdf = getSRDFModel(g, ABBConfig::ROBOT_WITH_POSITIONER);
   g->saveDOT(tesseract_common::getTempPath() + "abb_robot_with_external_positioner.dot");
 
-  KinematicsInformation& kin_info = srdf->getKinematicsInformation();
+  KinematicsInformation& kin_info = srdf->kinematics_information;
 
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());

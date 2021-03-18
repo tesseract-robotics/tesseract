@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/srdf/group_rep_kinematics.h>
 #include <tesseract_scene_graph/srdf/group_rop_kinematics.h>
 #include <tesseract_scene_graph/srdf/disabled_collisions.h>
+#include <tesseract_scene_graph/srdf/collision_margins.h>
 #include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_common/utils.h>
 
@@ -52,11 +53,11 @@ bool SRDFModel::initXml(const tesseract_scene_graph::SceneGraph& scene_graph, co
   }
 
   // get the robot name
-  tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(srdf_xml, "name", name_);
+  tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(srdf_xml, "name", name);
   if (status != tinyxml2::XML_SUCCESS)
     return false;
 
-  if (name_ != scene_graph.getName())
+  if (name != scene_graph.getName())
     CONSOLE_BRIDGE_logError("Semantic description is not specified for the same robot as the URDF");
 
   std::string version_string;
@@ -76,40 +77,41 @@ bool SRDFModel::initXml(const tesseract_scene_graph::SceneGraph& scene_graph, co
       return false;
     }
 
-    tesseract_common::toNumeric<int>(tokens[0], version_[0]);
-    tesseract_common::toNumeric<int>(tokens[1], version_[1]);
+    tesseract_common::toNumeric<int>(tokens[0], version[0]);
+    tesseract_common::toNumeric<int>(tokens[1], version[1]);
     if (tokens.size() == 3)
-      tesseract_common::toNumeric<int>(tokens[2], version_[2]);
+      tesseract_common::toNumeric<int>(tokens[2], version[2]);
     else
-      version_[2] = 0;
+      version[2] = 0;
   }
   else
   {
     CONSOLE_BRIDGE_logWarn("SRDF Parser: No version number was provided so latest parser (version: %i.%i.%i) will be "
                            "used.",
-                           version_[0],
-                           version_[1],
-                           version_[2]);
+                           version[0],
+                           version[1],
+                           version[2]);
     CONSOLE_BRIDGE_logDebug("SRDF Parser: The version number warning can be suppressed by adding the attribute: "
                             "version=%i.%i.%i",
-                            version_[0],
-                            version_[1],
-                            version_[2]);
+                            version[0],
+                            version[1],
+                            version[2]);
   }
 
   std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups> groups_info =
-      parseGroups(scene_graph, srdf_xml, version_);
-  kinematics_information_.group_names = std::get<0>(groups_info);
-  kinematics_information_.chain_groups = std::get<1>(groups_info);
-  kinematics_information_.joint_groups = std::get<2>(groups_info);
-  kinematics_information_.link_groups = std::get<3>(groups_info);
-  kinematics_information_.group_states =
-      parseGroupStates(scene_graph, kinematics_information_.group_names, srdf_xml, version_);
-  kinematics_information_.group_tcps = parseGroupTCPs(scene_graph, srdf_xml, version_);
-  kinematics_information_.group_opw_kinematics = parseGroupOPWKinematics(scene_graph, srdf_xml, version_);
-  kinematics_information_.group_rop_kinematics = parseGroupROPKinematics(scene_graph, srdf_xml, version_);
-  kinematics_information_.group_rep_kinematics = parseGroupREPKinematics(scene_graph, srdf_xml, version_);
-  acm_ = parseDisabledCollisions(scene_graph, srdf_xml, version_);
+      parseGroups(scene_graph, srdf_xml, version);
+  kinematics_information.group_names = std::get<0>(groups_info);
+  kinematics_information.chain_groups = std::get<1>(groups_info);
+  kinematics_information.joint_groups = std::get<2>(groups_info);
+  kinematics_information.link_groups = std::get<3>(groups_info);
+  kinematics_information.group_states =
+      parseGroupStates(scene_graph, kinematics_information.group_names, srdf_xml, version);
+  kinematics_information.group_tcps = parseGroupTCPs(scene_graph, srdf_xml, version);
+  kinematics_information.group_opw_kinematics = parseGroupOPWKinematics(scene_graph, srdf_xml, version);
+  kinematics_information.group_rop_kinematics = parseGroupROPKinematics(scene_graph, srdf_xml, version);
+  kinematics_information.group_rep_kinematics = parseGroupREPKinematics(scene_graph, srdf_xml, version);
+  acm = parseDisabledCollisions(scene_graph, srdf_xml, version);
+  collision_margin_data = parseCollisionMargins(scene_graph, srdf_xml, version);
 
   return true;
 }
@@ -163,12 +165,12 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
 {
   tinyxml2::XMLDocument doc;
   tinyxml2::XMLElement* xml_root = doc.NewElement("robot");
-  xml_root->SetAttribute("name", name_.c_str());
+  xml_root->SetAttribute("name", name.c_str());
   xml_root->SetAttribute(
       "version",
-      (std::to_string(version_[0]) + "." + std::to_string(version_[1]) + "." + std::to_string(version_[2])).c_str());
+      (std::to_string(version[0]) + "." + std::to_string(version[1]) + "." + std::to_string(version[2])).c_str());
 
-  for (const auto& chain : kinematics_information_.chain_groups)
+  for (const auto& chain : kinematics_information.chain_groups)
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", chain.first.c_str());
@@ -182,7 +184,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group);
   }
 
-  for (const auto& joint : kinematics_information_.joint_groups)
+  for (const auto& joint : kinematics_information.joint_groups)
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", joint.first.c_str());
@@ -195,7 +197,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group);
   }
 
-  for (const auto& link : kinematics_information_.link_groups)
+  for (const auto& link : kinematics_information.link_groups)
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", link.first.c_str());
@@ -208,7 +210,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group);
   }
 
-  for (const auto& rop : kinematics_information_.group_rop_kinematics)
+  for (const auto& rop : kinematics_information.group_rop_kinematics)
   {
     tinyxml2::XMLElement* xml_group_rop = doc.NewElement("group_rop");
     xml_group_rop->SetAttribute("group", rop.first.c_str());
@@ -232,7 +234,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group_rop);
   }
 
-  for (const auto& rep : kinematics_information_.group_rep_kinematics)
+  for (const auto& rep : kinematics_information.group_rep_kinematics)
   {
     tinyxml2::XMLElement* xml_group_rep = doc.NewElement("group_rep");
     xml_group_rep->SetAttribute("group", rep.first.c_str());
@@ -256,7 +258,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group_rep);
   }
 
-  for (const auto& group_state : kinematics_information_.group_states)
+  for (const auto& group_state : kinematics_information.group_states)
   {
     for (const auto& joint_state : group_state.second)  // <chain base_link="base_link" tip_link="tool0" />
     {
@@ -276,7 +278,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   }
 
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
-  for (const auto& group_tcp : kinematics_information_.group_tcps)
+  for (const auto& group_tcp : kinematics_information.group_tcps)
   {
     tinyxml2::XMLElement* xml_group_tcps = doc.NewElement("group_tcps");
     xml_group_tcps->SetAttribute("group", group_tcp.first.c_str());
@@ -300,7 +302,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group_tcps);
   }
 
-  for (const auto& group_opw : kinematics_information_.group_opw_kinematics)
+  for (const auto& group_opw : kinematics_information.group_opw_kinematics)
   {
     tinyxml2::XMLElement* xml_group_opw = doc.NewElement("group_opw");
     xml_group_opw->SetAttribute("group", group_opw.first.c_str());
@@ -327,13 +329,29 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group_opw);
   }
 
-  for (const auto& entry : acm_.getAllAllowedCollisions())
+  for (const auto& entry : acm.getAllAllowedCollisions())
   {
     tinyxml2::XMLElement* xml_acm_entry = doc.NewElement("disable_collisions");
     xml_acm_entry->SetAttribute("link1", entry.first.first.c_str());
     xml_acm_entry->SetAttribute("link2", entry.first.second.c_str());
     xml_acm_entry->SetAttribute("reason", entry.second.c_str());
     xml_root->InsertEndChild(xml_acm_entry);
+  }
+
+  if (collision_margin_data != nullptr)
+  {
+    tinyxml2::XMLElement* xml_cm_entry = doc.NewElement("collision_margins");
+    xml_cm_entry->SetAttribute("default_margin", collision_margin_data->getDefaultCollisionMargin());
+    for (const auto& entry : collision_margin_data->getPairCollisionMargins())
+    {
+      tinyxml2::XMLElement* xml_cm_pair_entry = doc.NewElement("pair_margin");
+      xml_cm_pair_entry->SetAttribute("link1", entry.first.first.c_str());
+      xml_cm_pair_entry->SetAttribute("link2", entry.first.second.c_str());
+      xml_cm_pair_entry->SetAttribute("margin", entry.second);
+      xml_cm_entry->InsertEndChild(xml_cm_pair_entry);
+
+      xml_root->InsertEndChild(xml_cm_entry);
+    }
   }
 
   doc.InsertFirstChild(xml_root);
@@ -347,22 +365,13 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   return true;
 }
 
-const std::string& SRDFModel::getName() const { return name_; }
-std::string& SRDFModel::getName() { return name_; }
-
-const AllowedCollisionMatrix& SRDFModel::getAllowedCollisionMatrix() const { return acm_; }
-AllowedCollisionMatrix& SRDFModel::getAllowedCollisionMatrix() { return acm_; };
-
-const KinematicsInformation& SRDFModel::getKinematicsInformation() const { return kinematics_information_; };
-KinematicsInformation& SRDFModel::getKinematicsInformation() { return kinematics_information_; };
-
-const std::array<int, 3>& SRDFModel::getVersion() const { return version_; }
-
 void SRDFModel::clear()
 {
-  name_ = "";
-  acm_.clearAllowedCollisions();
-  kinematics_information_.clear();
+  name = "undefined";
+  version = { { 1, 0, 0 } };
+  acm.clearAllowedCollisions();
+  kinematics_information.clear();
+  collision_margin_data = nullptr;
 }
 
 }  // namespace tesseract_scene_graph

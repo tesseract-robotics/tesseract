@@ -43,6 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/kinematics_information.h>
 #include <tesseract_scene_graph/allowed_collision_matrix.h>
+#include <tesseract_common/collision_margin_data.h>
 
 #ifdef SWIG
 
@@ -86,29 +87,23 @@ public:
   /** @brief Save the model to a file */
   bool saveToFile(const std::string& file_path) const;
 
-  /** @brief Get the name of this model */
-  const std::string& getName() const;
-  std::string& getName();
-
-  /** @brief Get the version number {major, minor, patch} */
-  const std::array<int, 3>& getVersion() const;
-
-  /** @brief Get the allowed collision matrix */
-  const AllowedCollisionMatrix& getAllowedCollisionMatrix() const;
-  AllowedCollisionMatrix& getAllowedCollisionMatrix();
-
-  /** @brief Get the kinematics information */
-  const KinematicsInformation& getKinematicsInformation() const;
-  KinematicsInformation& getKinematicsInformation();
-
   /** @brief Clear the model */
   void clear();
 
-private:
-  std::string name_{ "undefined" };              /**< @brief The name of the srdf model */
-  std::array<int, 3> version_{ { 1, 0, 0 } };    /**< @brief The version number major.minor[.patch] */
-  AllowedCollisionMatrix acm_;                   /**< @brief The allowed collision matrix */
-  KinematicsInformation kinematics_information_; /**< @brief A map of group opw kinematics data */
+  /** @brief The name of the srdf model */
+  std::string name{ "undefined" };
+
+  /** @brief The version number major.minor[.patch] */
+  std::array<int, 3> version{ { 1, 0, 0 } };
+
+  /** @brief The allowed collision matrix */
+  AllowedCollisionMatrix acm;
+
+  /** @brief A map of group opw kinematics data */
+  KinematicsInformation kinematics_information;
+
+  /** @brief Collision margin data */
+  tesseract_common::CollisionMarginData::Ptr collision_margin_data;
 };
 
 }  // namespace tesseract_scene_graph

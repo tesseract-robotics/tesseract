@@ -699,31 +699,31 @@ TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
   SRDFModel srdf;
 
   // Set Name
-  srdf.getName() = "test_srdf";
-  EXPECT_TRUE(srdf.getName() == "test_srdf");
+  srdf.name = "test_srdf";
+  EXPECT_TRUE(srdf.name == "test_srdf");
 
   // Add chain groups
-  auto& chain_groups = srdf.getKinematicsInformation().chain_groups;
+  auto& chain_groups = srdf.kinematics_information.chain_groups;
   EXPECT_TRUE(chain_groups.empty());
 
   chain_groups["manipulator_chain"] = { std::make_pair("base_link", "link_5") };
-  EXPECT_FALSE(srdf.getKinematicsInformation().chain_groups.empty());
+  EXPECT_FALSE(srdf.kinematics_information.chain_groups.empty());
 
   // Add joint groups
-  auto& joint_groups = srdf.getKinematicsInformation().joint_groups;
+  auto& joint_groups = srdf.kinematics_information.joint_groups;
   EXPECT_TRUE(joint_groups.empty());
 
   joint_groups["manipulator_joint"] = { "joint_1", "joint_2", "joint_3", "joint_4" };
-  EXPECT_FALSE(srdf.getKinematicsInformation().joint_groups.empty());
+  EXPECT_FALSE(srdf.kinematics_information.joint_groups.empty());
 
   // Add link groups
-  auto& link_groups = srdf.getKinematicsInformation().link_groups;
+  auto& link_groups = srdf.kinematics_information.link_groups;
   EXPECT_TRUE(link_groups.empty());
   link_groups["manipulator_link"] = { "base_link", "link_1", "link_2", "link_3", "link_4", "link_5" };
-  EXPECT_FALSE(srdf.getKinematicsInformation().link_groups.empty());
+  EXPECT_FALSE(srdf.kinematics_information.link_groups.empty());
 
   // Add group states
-  auto& group_state = srdf.getKinematicsInformation().group_states;
+  auto& group_state = srdf.kinematics_information.group_states;
   EXPECT_TRUE(group_state.empty());
   tesseract_scene_graph::GroupsJointState joint_state;
   joint_state["joint_1"] = 0;
@@ -733,50 +733,50 @@ TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
   group_state["manipulator_chain"]["All Zeros"] = joint_state;
   group_state["manipulator_joint"]["All Zeros"] = joint_state;
   group_state["manipulator_link"]["All Zeros"] = joint_state;
-  EXPECT_EQ(srdf.getKinematicsInformation().group_states.size(), 3);
+  EXPECT_EQ(srdf.kinematics_information.group_states.size(), 3);
 
   // Add Tool Center Points
-  auto& group_tcps = srdf.getKinematicsInformation().group_tcps;
+  auto& group_tcps = srdf.kinematics_information.group_tcps;
   EXPECT_TRUE(group_tcps.empty());
   group_tcps["manipulator_chain"]["laser"] = Eigen::Isometry3d::Identity();
   group_tcps["manipulator_joint"]["laser"] = Eigen::Isometry3d::Identity();
   group_tcps["manipulator_link"]["laser"] = Eigen::Isometry3d::Identity();
-  EXPECT_FALSE(srdf.getKinematicsInformation().group_tcps.empty());
+  EXPECT_FALSE(srdf.kinematics_information.group_tcps.empty());
 
   // Add disabled collisions
-  auto& acm = srdf.getAllowedCollisionMatrix();
+  auto& acm = srdf.acm;
   EXPECT_TRUE(acm.getAllAllowedCollisions().empty());
   acm.addAllowedCollision("base_link", "link_1", "Adjacent");
   acm.addAllowedCollision("link_1", "link_2", "Adjacent");
   acm.addAllowedCollision("link_2", "link_3", "Adjacent");
   acm.addAllowedCollision("link_3", "link_4", "Adjacent");
   acm.addAllowedCollision("link_4", "link_5", "Adjacent");
-  EXPECT_FALSE(srdf.getAllowedCollisionMatrix().getAllAllowedCollisions().empty());
+  EXPECT_FALSE(srdf.acm.getAllAllowedCollisions().empty());
   srdf.saveToFile(tesseract_common::getTempPath() + "test.srdf");
 
   SceneGraph g = buildTestSceneGraph();
 
   tesseract_scene_graph::SRDFModel srdf_reload;
   srdf_reload.initFile(g, tesseract_common::getTempPath() + "test.srdf");
-  EXPECT_TRUE(srdf_reload.getName() == "test_srdf");
-  EXPECT_FALSE(srdf_reload.getKinematicsInformation().chain_groups.empty());
-  EXPECT_FALSE(srdf_reload.getKinematicsInformation().joint_groups.empty());
-  EXPECT_FALSE(srdf_reload.getKinematicsInformation().link_groups.empty());
-  EXPECT_EQ(srdf_reload.getKinematicsInformation().group_states.size(), 3);
-  EXPECT_TRUE(srdf_reload.getKinematicsInformation().group_states["manipulator_chain"].find("All Zeros") !=
-              srdf_reload.getKinematicsInformation().group_states["manipulator_chain"].end());
-  EXPECT_TRUE(srdf_reload.getKinematicsInformation().group_states["manipulator_joint"].find("All Zeros") !=
-              srdf_reload.getKinematicsInformation().group_states["manipulator_joint"].end());
-  EXPECT_TRUE(srdf_reload.getKinematicsInformation().group_states["manipulator_link"].find("All Zeros") !=
-              srdf_reload.getKinematicsInformation().group_states["manipulator_link"].end());
-  EXPECT_FALSE(srdf_reload.getKinematicsInformation().group_tcps.empty());
-  EXPECT_TRUE(srdf_reload.getKinematicsInformation().group_tcps["manipulator_chain"].find("laser") !=
-              srdf_reload.getKinematicsInformation().group_tcps["manipulator_chain"].end());
-  EXPECT_TRUE(srdf_reload.getKinematicsInformation().group_tcps["manipulator_joint"].find("laser") !=
-              srdf_reload.getKinematicsInformation().group_tcps["manipulator_joint"].end());
-  EXPECT_TRUE(srdf_reload.getKinematicsInformation().group_tcps["manipulator_link"].find("laser") !=
-              srdf_reload.getKinematicsInformation().group_tcps["manipulator_link"].end());
-  EXPECT_FALSE(srdf_reload.getAllowedCollisionMatrix().getAllAllowedCollisions().empty());
+  EXPECT_TRUE(srdf_reload.name == "test_srdf");
+  EXPECT_FALSE(srdf_reload.kinematics_information.chain_groups.empty());
+  EXPECT_FALSE(srdf_reload.kinematics_information.joint_groups.empty());
+  EXPECT_FALSE(srdf_reload.kinematics_information.link_groups.empty());
+  EXPECT_EQ(srdf_reload.kinematics_information.group_states.size(), 3);
+  EXPECT_TRUE(srdf_reload.kinematics_information.group_states["manipulator_chain"].find("All Zeros") !=
+              srdf_reload.kinematics_information.group_states["manipulator_chain"].end());
+  EXPECT_TRUE(srdf_reload.kinematics_information.group_states["manipulator_joint"].find("All Zeros") !=
+              srdf_reload.kinematics_information.group_states["manipulator_joint"].end());
+  EXPECT_TRUE(srdf_reload.kinematics_information.group_states["manipulator_link"].find("All Zeros") !=
+              srdf_reload.kinematics_information.group_states["manipulator_link"].end());
+  EXPECT_FALSE(srdf_reload.kinematics_information.group_tcps.empty());
+  EXPECT_TRUE(srdf_reload.kinematics_information.group_tcps["manipulator_chain"].find("laser") !=
+              srdf_reload.kinematics_information.group_tcps["manipulator_chain"].end());
+  EXPECT_TRUE(srdf_reload.kinematics_information.group_tcps["manipulator_joint"].find("laser") !=
+              srdf_reload.kinematics_information.group_tcps["manipulator_joint"].end());
+  EXPECT_TRUE(srdf_reload.kinematics_information.group_tcps["manipulator_link"].find("laser") !=
+              srdf_reload.kinematics_information.group_tcps["manipulator_link"].end());
+  EXPECT_FALSE(srdf_reload.acm.getAllAllowedCollisions().empty());
   srdf_reload.saveToFile(tesseract_common::getTempPath() + "test_reload.srdf");
 }
 

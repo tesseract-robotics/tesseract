@@ -79,6 +79,8 @@ struct JointState
     return ret_val;
   }
 
+  bool operator!=(const JointState& rhs) const { return !operator==(rhs); }
+
 private:
   friend class boost::serialization::access;
   template <class Archive>

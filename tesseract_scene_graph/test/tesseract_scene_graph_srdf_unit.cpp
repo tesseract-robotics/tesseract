@@ -8,6 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_scene_graph/srdf/collision_margins.h>
 #include <tesseract_scene_graph/srdf/disabled_collisions.h>
 #include <tesseract_scene_graph/srdf/group_opw_kinematics.h>
 #include <tesseract_scene_graph/srdf/group_rep_kinematics.h>
@@ -250,10 +251,10 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFileUnit)  // NOLINT
 
   SRDFModel srdf;
   EXPECT_TRUE(srdf.initFile(g, srdf_file));
-  EXPECT_EQ(srdf.getName(), "kuka_lbr_iiwa_14_r820");
-  EXPECT_EQ(srdf.getVersion()[0], 1);
-  EXPECT_EQ(srdf.getVersion()[1], 0);
-  EXPECT_EQ(srdf.getVersion()[2], 0);
+  EXPECT_EQ(srdf.name, "kuka_lbr_iiwa_14_r820");
+  EXPECT_EQ(srdf.version[0], 1);
+  EXPECT_EQ(srdf.version[1], 0);
+  EXPECT_EQ(srdf.version[2], 0);
 
   processSRDFAllowedCollisions(g, srdf);
 
@@ -287,10 +288,10 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
 
   SRDFModel srdf;
   EXPECT_TRUE(srdf.initString(*g, xml_string));
-  EXPECT_EQ(srdf.getName(), "abb_irb2400");
-  EXPECT_EQ(srdf.getVersion()[0], 1);
-  EXPECT_EQ(srdf.getVersion()[1], 0);
-  EXPECT_EQ(srdf.getVersion()[2], 0);
+  EXPECT_EQ(srdf.name, "abb_irb2400");
+  EXPECT_EQ(srdf.version[0], 1);
+  EXPECT_EQ(srdf.version[1], 0);
+  EXPECT_EQ(srdf.version[2], 0);
 
   // Now test failures
   {  // missing name
@@ -399,6 +400,11 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
            <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
            <disable_collisions link1="base_link" link2="link_2" reason="Never" />
            <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+
+           <collision_margins default_margin="0.025">
+             <pair_margin link1="link_6" link2="link_5" margin="0.01"/>
+             <pair_margin link1="link_5" link2="link_4" margin="0.015"/>
+           </collision_margins>
          </robot>)";
 
   SRDFModel srdf_save;
@@ -408,14 +414,14 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
 
   SRDFModel srdf;
   EXPECT_TRUE(srdf.initFile(*g, save_path));
-  EXPECT_EQ(srdf.getName(), "abb_irb2400");
-  EXPECT_EQ(srdf.getVersion()[0], 1);
-  EXPECT_EQ(srdf.getVersion()[1], 0);
-  EXPECT_EQ(srdf.getVersion()[2], 0);
+  EXPECT_EQ(srdf.name, "abb_irb2400");
+  EXPECT_EQ(srdf.version[0], 1);
+  EXPECT_EQ(srdf.version[1], 0);
+  EXPECT_EQ(srdf.version[2], 0);
 
   processSRDFAllowedCollisions(*g, srdf);
 
-  KinematicsInformation& kin_info = srdf.getKinematicsInformation();
+  KinematicsInformation& kin_info = srdf.kinematics_information;
 
   // Check for tcp information
   EXPECT_EQ(kin_info.group_tcps.size(), 1);
@@ -460,7 +466,15 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));
   EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_2"));
   EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
+
+  EXPECT_TRUE(srdf.collision_margin_data != nullptr);
+  EXPECT_NEAR(srdf.collision_margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
+  EXPECT_NEAR(srdf.collision_margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
+  EXPECT_EQ(srdf.collision_margin_data->getPairCollisionMargins().size(), 2);
+  EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
+  EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
 }
+
 TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
@@ -512,6 +526,11 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
            <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
            <disable_collisions link1="base_link" link2="link_2" reason="Never" />
            <disable_collisions link1="base_link" link2="link_3" reason="Never" />
+
+           <collision_margins default_margin="0.025">
+             <pair_margin link1="link_6" link2="link_5" margin="0.01"/>
+             <pair_margin link1="link_5" link2="link_4" margin="0.015"/>
+           </collision_margins>
          </robot>)";
 
   SRDFModel srdf_save;
@@ -521,14 +540,14 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
 
   SRDFModel srdf;
   EXPECT_TRUE(srdf.initFile(*g, save_path));
-  EXPECT_EQ(srdf.getName(), "abb_irb2400");
-  EXPECT_EQ(srdf.getVersion()[0], 1);
-  EXPECT_EQ(srdf.getVersion()[1], 0);
-  EXPECT_EQ(srdf.getVersion()[2], 0);
+  EXPECT_EQ(srdf.name, "abb_irb2400");
+  EXPECT_EQ(srdf.version[0], 1);
+  EXPECT_EQ(srdf.version[1], 0);
+  EXPECT_EQ(srdf.version[2], 0);
 
   processSRDFAllowedCollisions(*g, srdf);
 
-  KinematicsInformation& kin_info = srdf.getKinematicsInformation();
+  KinematicsInformation& kin_info = srdf.kinematics_information;
 
   // Check for tcp information
   EXPECT_EQ(kin_info.group_tcps.size(), 1);
@@ -571,6 +590,13 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
   EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));
   EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_2"));
   EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
+
+  EXPECT_TRUE(srdf.collision_margin_data != nullptr);
+  EXPECT_NEAR(srdf.collision_margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
+  EXPECT_NEAR(srdf.collision_margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
+  EXPECT_EQ(srdf.collision_margin_data->getPairCollisionMargins().size(), 2);
+  EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
+  EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
 }
 
 TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPUnit)  // NOLINT
@@ -632,16 +658,16 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPUnit)  // NOLINT
   SRDFModel srdf;
   const SRDFModel& srdf_const = srdf;
   EXPECT_TRUE(srdf.initString(*g, xml_string));
-  EXPECT_EQ(srdf.getName(), "abb_irb2400");
-  EXPECT_EQ(srdf_const.getName(), "abb_irb2400");
-  EXPECT_EQ(srdf.getVersion()[0], 1);
-  EXPECT_EQ(srdf.getVersion()[1], 0);
-  EXPECT_EQ(srdf.getVersion()[2], 0);
+  EXPECT_EQ(srdf.name, "abb_irb2400");
+  EXPECT_EQ(srdf_const.name, "abb_irb2400");
+  EXPECT_EQ(srdf.version[0], 1);
+  EXPECT_EQ(srdf.version[1], 0);
+  EXPECT_EQ(srdf.version[2], 0);
 
   processSRDFAllowedCollisions(*g, srdf);
 
-  KinematicsInformation& kin_info = srdf.getKinematicsInformation();
-  const KinematicsInformation& kin_info_const = srdf_const.getKinematicsInformation();
+  KinematicsInformation& kin_info = srdf.kinematics_information;
+  const KinematicsInformation& kin_info_const = srdf_const.kinematics_information;
   EXPECT_TRUE(&kin_info == &kin_info_const);
 
   // Check for tcp information
@@ -744,14 +770,14 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPUnit)  // NOLINT
 
   SRDFModel srdf;
   EXPECT_TRUE(srdf.initString(*g, xml_string));
-  EXPECT_EQ(srdf.getName(), "abb_irb2400");
-  EXPECT_EQ(srdf.getVersion()[0], 1);
-  EXPECT_EQ(srdf.getVersion()[1], 0);
-  EXPECT_EQ(srdf.getVersion()[2], 0);
+  EXPECT_EQ(srdf.name, "abb_irb2400");
+  EXPECT_EQ(srdf.version[0], 1);
+  EXPECT_EQ(srdf.version[1], 0);
+  EXPECT_EQ(srdf.version[2], 0);
 
   processSRDFAllowedCollisions(*g, srdf);
 
-  KinematicsInformation& kin_info = srdf.getKinematicsInformation();
+  KinematicsInformation& kin_info = srdf.kinematics_information;
 
   // Check for tcp information
   EXPECT_EQ(kin_info.group_tcps.size(), 1);
@@ -1971,6 +1997,170 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
                            </group_tcps>
                          </robot>)";
     EXPECT_TRUE(is_failure(str));
+  }
+}
+
+TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph::Ptr g = getABBSceneGraph();
+
+  {  // Testing having default margin and pair margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="0.025">
+                             <pair_margin link1="link_6" link2="link_5" margin="0.01"/>
+                             <pair_margin link1="link_5" link2="link_4" margin="0.015"/>
+                           </collision_margins>
+                         </robot>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::CollisionMarginData::Ptr margin_data =
+        parseCollisionMargins(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+
+    EXPECT_TRUE(margin_data != nullptr);
+    EXPECT_NEAR(margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
+    EXPECT_NEAR(margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
+    EXPECT_EQ(margin_data->getPairCollisionMargins().size(), 2);
+    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
+    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
+  }
+
+  {  // Test only having default margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="0.025"/>
+                         </robot>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::CollisionMarginData::Ptr margin_data =
+        parseCollisionMargins(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+
+    EXPECT_TRUE(margin_data != nullptr);
+    EXPECT_NEAR(margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
+    EXPECT_NEAR(margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
+    EXPECT_EQ(margin_data->getPairCollisionMargins().size(), 0);
+  }
+
+  {  // Testing having negative default margin and pair margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="-0.025">
+                             <pair_margin link1="link_6" link2="link_5" margin="-0.01"/>
+                             <pair_margin link1="link_5" link2="link_4" margin="-0.015"/>
+                           </collision_margins>
+                         </robot>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::CollisionMarginData::Ptr margin_data =
+        parseCollisionMargins(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+
+    EXPECT_TRUE(margin_data != nullptr);
+    EXPECT_NEAR(margin_data->getDefaultCollisionMargin(), -0.025, 1e-6);
+    EXPECT_NEAR(margin_data->getMaxCollisionMargin(), -0.01, 1e-6);
+    EXPECT_EQ(margin_data->getPairCollisionMargins().size(), 2);
+    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_6"), -0.01, 1e-6);
+    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_4"), -0.015, 1e-6);
+  }
+
+  {  // Test not having collision margin data
+    std::string str = R"(<robot name="abb_irb2400">
+                         </robot>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::CollisionMarginData::Ptr margin_data =
+        parseCollisionMargins(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+
+    EXPECT_TRUE(margin_data == nullptr);
+  }
+
+  // Now test failures
+  auto is_failure = [g](const std::string& xml_string) {
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::CollisionMarginData::Ptr margin_data =
+        parseCollisionMargins(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+  };
+
+  {  // missing default_margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins>
+                             <pair_margin link1="link_6" link2="link_5" margin="0.01"/>
+                             <pair_margin link1="link_5" link2="link_4" margin="0.015"/>
+                           </collision_margins>
+                         </robot>)";
+    EXPECT_ANY_THROW(is_failure(str));
+  }
+
+  {  // missing pair link1
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="0.025">
+                             <pair_margin link2="link_5" margin="0.01"/>
+                             <pair_margin link1="link_5" link2="link_4" margin="0.015"/>
+                           </collision_margins>
+                         </robot>)";
+    EXPECT_ANY_THROW(is_failure(str));
+  }
+
+  {  // missing pair link2
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="0.025">
+                             <pair_margin link1="link_6" link2="link_5" margin="0.01"/>
+                             <pair_margin link1="link_5" margin="0.015"/>
+                           </collision_margins>
+                         </robot>)";
+    EXPECT_ANY_THROW(is_failure(str));
+  }
+
+  {  // missing pair margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="0.025">
+                             <pair_margin link1="link_6" link2="link_5" margin="0.01"/>
+                             <pair_margin link1="link_5" link2="link_4"/>
+                           </collision_margins>
+                         </robot>)";
+    EXPECT_ANY_THROW(is_failure(str));
+  }
+
+  {  // empty default margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="">
+                             <pair_margin link1="link_6" link2="link_5" margin="0.01"/>
+                             <pair_margin link1="link_5" link2="link_4" margin="0.01"/>
+                           </collision_margins>
+                         </robot>)";
+    EXPECT_ANY_THROW(is_failure(str));
+  }
+
+  {  // empty pair margin
+    std::string str = R"(<robot name="abb_irb2400">
+                           <collision_margins default_margin="0.025">
+                             <pair_margin link1="link_6" link2="link_5" margin=""/>
+                             <pair_margin link1="link_5" link2="link_4" margin="0.01"/>
+                           </collision_margins>
+                         </robot>)";
+    EXPECT_ANY_THROW(is_failure(str));
   }
 }
 

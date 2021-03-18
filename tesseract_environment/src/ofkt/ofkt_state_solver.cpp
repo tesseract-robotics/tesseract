@@ -458,6 +458,7 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
       case tesseract_environment::CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
       case tesseract_environment::CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
       case tesseract_environment::CommandType::CHANGE_PAIR_CONTACT_MARGIN:
+      case tesseract_environment::CommandType::CHANGE_COLLISION_MARGINS:
       {
         break;
       }

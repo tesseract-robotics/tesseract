@@ -911,8 +911,8 @@ void runChangeDefaultContactMarginCommandTest()
   auto env = getEnvironment<S>();
   EXPECT_EQ(env->getRevision(), 2);
   EXPECT_EQ(env->getCommandHistory().size(), 2);
-  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMarginData(), 0.0, 1e-6);
-  EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMarginData(), 0.0, 1e-6);
+  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
+  EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
 
   auto cmd = std::make_shared<ChangeDefaultContactMarginCommand>(0.1);
   EXPECT_TRUE(cmd != nullptr);
@@ -923,8 +923,8 @@ void runChangeDefaultContactMarginCommandTest()
   EXPECT_EQ(env->getRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 3);
   EXPECT_EQ(env->getCommandHistory().back(), cmd);
-  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMarginData(), 0.1, 1e-6);
-  EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMarginData(), 0.1, 1e-6);
+  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
+  EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
 }
 
 template <typename S>
@@ -1290,12 +1290,11 @@ void runChangePairContactMarginCommandTest()
   auto env = getEnvironment<S>();
   EXPECT_EQ(env->getRevision(), 2);
   EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+              0.0,
+              1e-6);
   EXPECT_NEAR(
-      env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMarginData(link_name1, link_name2),
-      0.0,
-      1e-6);
-  EXPECT_NEAR(
-      env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMarginData(link_name1, link_name2),
+      env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
       0.0,
       1e-6);
 
@@ -1312,14 +1311,123 @@ void runChangePairContactMarginCommandTest()
   EXPECT_EQ(env->getRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 3);
   EXPECT_EQ(env->getCommandHistory().back(), cmd);
+  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+              margin,
+              1e-6);
   EXPECT_NEAR(
-      env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMarginData(link_name1, link_name2),
+      env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
       margin,
       1e-6);
-  EXPECT_NEAR(
-      env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMarginData(link_name1, link_name2),
-      margin,
-      1e-6);
+}
+
+template <typename S>
+void runChangeCollisionMarginsCommandTest()
+{
+  {  // MODIFY_PAIR_MARGIN  and OVERRIDE_PAIR_MARGIN Unit Test
+    std::string link_name1 = "link_1";
+    std::string link_name2 = "link_2";
+    double margin = 0.1;
+
+    auto env = getEnvironment<S>();
+    EXPECT_EQ(env->getRevision(), 2);
+    EXPECT_EQ(env->getCommandHistory().size(), 2);
+    EXPECT_NEAR(
+        env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        0.0,
+        1e-6);
+    EXPECT_NEAR(
+        env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        0.0,
+        1e-6);
+
+    // Test MODIFY_PAIR_MARGIN
+    tesseract_common::CollisionMarginData collision_margin_data;
+    collision_margin_data.setPairCollisionMargin(link_name1, link_name2, margin);
+    tesseract_common::CollisionMarginOverrideType overrid_type =
+        tesseract_common::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN;
+
+    auto cmd = std::make_shared<ChangeCollisionMarginsCommand>(collision_margin_data, overrid_type);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::CHANGE_COLLISION_MARGINS);
+    EXPECT_EQ(cmd->getCollisionMarginData(), collision_margin_data);
+    EXPECT_EQ(cmd->getCollisionMarginOverrideType(), tesseract_common::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN);
+    EXPECT_TRUE(env->applyCommand(cmd));
+
+    EXPECT_EQ(env->getRevision(), 3);
+    EXPECT_EQ(env->getCommandHistory().size(), 3);
+    EXPECT_EQ(env->getCommandHistory().back(), cmd);
+    EXPECT_NEAR(
+        env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        margin,
+        1e-6);
+    EXPECT_NEAR(
+        env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        margin,
+        1e-6);
+
+    // Test
+    std::string link_name3 = "link_3";
+    std::string link_name4 = "link_4";
+    margin = 0.2;
+    collision_margin_data = tesseract_common::CollisionMarginData();
+    collision_margin_data.setPairCollisionMargin(link_name3, link_name4, margin);
+    overrid_type = tesseract_common::CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN;
+
+    cmd = std::make_shared<ChangeCollisionMarginsCommand>(collision_margin_data, overrid_type);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::CHANGE_COLLISION_MARGINS);
+    EXPECT_EQ(cmd->getCollisionMarginData(), collision_margin_data);
+    EXPECT_EQ(cmd->getCollisionMarginOverrideType(),
+              tesseract_common::CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN);
+    EXPECT_TRUE(env->applyCommand(cmd));
+
+    EXPECT_EQ(env->getRevision(), 4);
+    EXPECT_EQ(env->getCommandHistory().size(), 4);
+    EXPECT_EQ(env->getCommandHistory().back(), cmd);
+    // Link1 and Link2 should be reset
+    EXPECT_NEAR(
+        env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        0,
+        1e-6);
+    EXPECT_NEAR(
+        env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        0,
+        1e-6);
+    EXPECT_NEAR(
+        env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name3, link_name4),
+        margin,
+        1e-6);
+    EXPECT_NEAR(
+        env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name3, link_name4),
+        margin,
+        1e-6);
+  }
+
+  {  // OVERRIDE_DEFAULT_MARGIN Unit Test
+    auto env = getEnvironment<S>();
+    EXPECT_EQ(env->getRevision(), 2);
+    EXPECT_EQ(env->getCommandHistory().size(), 2);
+    EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
+    EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
+
+    tesseract_common::CollisionMarginData collision_margin_data(0.1);
+    tesseract_common::CollisionMarginOverrideType overrid_type =
+        tesseract_common::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN;
+
+    auto cmd = std::make_shared<ChangeCollisionMarginsCommand>(collision_margin_data, overrid_type);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::CHANGE_COLLISION_MARGINS);
+    EXPECT_EQ(cmd->getCollisionMarginData(), collision_margin_data);
+    EXPECT_EQ(cmd->getCollisionMarginOverrideType(),
+              tesseract_common::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN);
+    EXPECT_TRUE(env->applyCommand(cmd));
+
+    EXPECT_EQ(env->getRevision(), 3);
+    EXPECT_EQ(env->getCommandHistory().size(), 3);
+    EXPECT_EQ(env->getCommandHistory().back(), cmd);
+    EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
+    EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
+  }
 }
 
 template <typename S>
@@ -2047,6 +2155,14 @@ void runEnvCloneTest()
   // Get the environment
   auto env = getEnvironment<S>();
 
+  // Modifying collision margin from default
+  tesseract_common::CollisionMarginData collision_margin_data(0.1);
+  collision_margin_data.setPairCollisionMargin("link_1", "link_2", 0.1);
+  tesseract_common::CollisionMarginOverrideType overrid_type = tesseract_common::CollisionMarginOverrideType::REPLACE;
+
+  auto cmd = std::make_shared<ChangeCollisionMarginsCommand>(collision_margin_data, overrid_type);
+  env->applyCommand(cmd);
+
   // Clone the environment
   auto clone = env->clone();
 
@@ -2093,6 +2209,9 @@ void runEnvCloneTest()
   Eigen::VectorXd joint_vals = env->getCurrentState()->getJointValues(active_joint_names);
   Eigen::VectorXd clone_joint_vals = clone->getCurrentState()->getJointValues(active_joint_names);
   EXPECT_TRUE(joint_vals.isApprox(clone_joint_vals));
+
+  // Check that the collision margin data is preserved
+  EXPECT_EQ(env->getCollisionMarginData(), clone->getCollisionMarginData());
 }
 
 template <typename S>
@@ -2384,7 +2503,7 @@ TEST(TesseractEnvironmentUnit, EnvAddKinematicsInformationCommandUnit)  // NOLIN
   runAddKinematicsInformationCommandTest<OFKTStateSolver>(true);
 }
 
-TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)
+TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
 {
   runAddSceneGraphCommandTest<KDLStateSolver>();
   runAddSceneGraphCommandTest<OFKTStateSolver>();
@@ -2393,10 +2512,16 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)
   runAddSceneGraphCommandTest<OFKTStateSolver>(true);
 }
 
-TEST(TesseractEnvironmentUnit, EnvChangeDefaultContactMarginCommandUnit)
+TEST(TesseractEnvironmentUnit, EnvChangeDefaultContactMarginCommandUnit)  // NOLINT
 {
   runChangeDefaultContactMarginCommandTest<KDLStateSolver>();
   runChangeDefaultContactMarginCommandTest<OFKTStateSolver>();
+}
+
+TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
+{
+  runChangeCollisionMarginsCommandTest<KDLStateSolver>();
+  runChangeCollisionMarginsCommandTest<OFKTStateSolver>();
 }
 
 TEST(TesseractEnvironmentUnit, EnvChangeJointLimitsCommandUnit)  // NOLINT
