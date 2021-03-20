@@ -10,6 +10,7 @@ Linux (Focal)        | [![Build Status](https://github.com/ros-industrial-consor
 Linux (Bionic)       | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Bionic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Windows              | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Windows-Noetic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Lint  (Clang-Format) | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Clang-Format/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+Lint  (CMake-Format) | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/CMake-Format/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Lint  (Clang-Tidy)   | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Clang-Tidy/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 Lint  (CodeCov)      | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/CodeCov/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
 

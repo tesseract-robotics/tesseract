@@ -16,7 +16,7 @@ jobs:
              OS_CODE_NAME: focal,
              ROS_DISTRO: noetic,
              ROS_REPO: main,
-             UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
+             UPSTREAM_WORKSPACE: 'dependencies.rosinstall',
              ROSDEP_SKIP_KEYS: "bullet ros_industrial_cmake_boilerplate fcl iwyu",
              DOCKER_IMAGE: "rosindustrial/tesseract:noetic",
              CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Focal-Benchmark/.ccache",

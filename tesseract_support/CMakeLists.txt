@@ -12,16 +12,16 @@ tesseract_variables()
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE)
-target_compile_definitions(${PROJECT_NAME} INTERFACE TESSERACT_SUPPORT_DIR="${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}")
+target_compile_definitions(${PROJECT_NAME}
+                           INTERFACE TESSERACT_SUPPORT_DIR="${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}")
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
 foreach(dir urdf meshes)
-   install(DIRECTORY ${dir}/
-      DESTINATION share/${PROJECT_NAME}/${dir})
+  install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
 endforeach()
 
-if (TESSERACT_PACKAGE)
+if(TESSERACT_PACKAGE)
   tesseract_cpack(
     VERSION ${pkg_extracted_version}
     MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
