@@ -1,14 +1,22 @@
-# - Find tcmalloc
+# * Find tcmalloc
 #
-#  tcmalloc_LIBRARIES   - List of libraries when using tcmalloc.
-#  tcmalloc_FOUND       - True if tcmalloc found.
+# tcmalloc_LIBRARIES   - List of libraries when using tcmalloc. tcmalloc_FOUND       - True if tcmalloc found.
 
-set(tcmalloc_NAMES tcmalloc_minimal libtcmalloc_minimal tcmalloc tcmalloc_minimal4 libtcmalloc_minimal.so.4)
+set(tcmalloc_NAMES
+    tcmalloc_minimal
+    libtcmalloc_minimal
+    tcmalloc
+    tcmalloc_minimal4
+    libtcmalloc_minimal.so.4)
 
-find_library(tcmalloc_LIBRARY NO_DEFAULT_PATH
+find_library(
+  tcmalloc_LIBRARY NO_DEFAULT_PATH
   NAMES ${tcmalloc_NAMES}
-  PATHS /lib /usr/lib /usr/lib/x86_64-linux-gnu /usr/local/lib /opt/local/lib
-)
+  PATHS /lib
+        /usr/lib
+        /usr/lib/x86_64-linux-gnu
+        /usr/local/lib
+        /opt/local/lib)
 
 if(tcmalloc_LIBRARY)
   set(tcmalloc_FOUND TRUE)
