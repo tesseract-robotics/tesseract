@@ -25,8 +25,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COLLISION_COLLISION_MARGIN_DATA_H
-#define TESSERACT_COLLISION_COLLISION_MARGIN_DATA_H
+#ifndef TESSERACT_COMMON_COLLISION_MARGIN_DATA_H
+#define TESSERACT_COMMON_COLLISION_MARGIN_DATA_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -36,8 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
+#include <tesseract_common/utils.h>
 
-namespace tesseract_collision
+namespace tesseract_common
 {
 /** @brief Identifies how the provided contact margin data should be applied */
 enum class CollisionMarginOverrideType
@@ -58,6 +59,9 @@ enum class CollisionMarginOverrideType
   MODIFY_PAIR_MARGIN
 };
 
+using PairsCollisionMarginData =
+    std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>;
+
 /** @brief Stores information about how the margins allowed between collision objects */
 class CollisionMarginData
 {
@@ -66,19 +70,29 @@ public:
 
   using Ptr = std::shared_ptr<CollisionMarginData>;
   using ConstPtr = std::shared_ptr<const CollisionMarginData>;
-  using PairsCollisionMarginData =
-      std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>;
 
   CollisionMarginData(double default_collision_margin = 0)
     : default_collision_margin_(default_collision_margin), max_collision_margin_(default_collision_margin)
   {
   }
 
+  CollisionMarginData(double default_collision_margin, PairsCollisionMarginData pair_collision_margins)
+    : default_collision_margin_(default_collision_margin), lookup_table_(std::move(pair_collision_margins))
+  {
+    updateMaxCollisionMargin();
+  }
+
+  CollisionMarginData(PairsCollisionMarginData pair_collision_margins)
+    : lookup_table_(std::move(pair_collision_margins))
+  {
+    updateMaxCollisionMargin();
+  }
+
   /**
    * @brief Set the default collision margin
    * @param default_collision_margin New default collision margin
    */
-  void setDefaultCollisionMarginData(double default_collision_margin)
+  void setDefaultCollisionMargin(double default_collision_margin)
   {
     default_collision_margin_ = default_collision_margin;
     updateMaxCollisionMargin();
@@ -88,7 +102,7 @@ public:
    * @brief Get the default collision margin
    * @return default collision margin
    */
-  double getDefaultCollisionMarginData() const { return default_collision_margin_; };
+  double getDefaultCollisionMargin() const { return default_collision_margin_; };
 
   /**
    * @brief Set the margin for a given contact pair
@@ -100,7 +114,7 @@ public:
    * @param obj2 The Second object name. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
-  void setPairCollisionMarginData(const std::string& obj1, const std::string& obj2, double collision_margin)
+  void setPairCollisionMargin(const std::string& obj1, const std::string& obj2, double collision_margin)
   {
     auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
     lookup_table_[key] = collision_margin;
@@ -116,7 +130,7 @@ public:
    * @param obj2 The second object name
    * @return A Vector2d[Contact Distance Threshold, Coefficient]
    */
-  double getPairCollisionMarginData(const std::string& obj1, const std::string& obj2) const
+  double getPairCollisionMargin(const std::string& obj1, const std::string& obj2) const
   {
     auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
     const auto it = lookup_table_.find(key);
@@ -131,7 +145,7 @@ public:
    * @brief Get Collision Margin Data for stored pairs
    * @return A map of link pairs collision margin data
    */
-  const PairsCollisionMarginData& getPairsCollisionMarginData() const { return lookup_table_; }
+  const PairsCollisionMarginData& getPairCollisionMargins() const { return lookup_table_; }
 
   /**
    * @brief Get the largest collision margin
@@ -207,6 +221,32 @@ public:
     }
   }
 
+  bool operator==(const CollisionMarginData& other) const
+  {
+    bool ret_val = true;
+    ret_val &=
+        (tesseract_common::almostEqualRelativeAndAbs(default_collision_margin_, other.default_collision_margin_, 1e-5));
+    ret_val &= (tesseract_common::almostEqualRelativeAndAbs(max_collision_margin_, other.max_collision_margin_, 1e-5));
+    ret_val &= (lookup_table_.size() == other.lookup_table_.size());
+    if (ret_val)
+    {
+      for (const auto& pair : lookup_table_)
+      {
+        auto cp = other.lookup_table_.find(pair.first);
+        ret_val = (cp != other.lookup_table_.end());
+        if (!ret_val)
+          break;
+
+        ret_val = tesseract_common::almostEqualRelativeAndAbs(pair.second, cp->second, 1e-5);
+        if (!ret_val)
+          break;
+      }
+    }
+    return ret_val;
+  }
+
+  bool operator!=(const CollisionMarginData& rhs) const { return !operator==(rhs); }
+
 private:
   /** @brief Stores the collision margin used if no pair-specific one is set */
   double default_collision_margin_{ 0 };
@@ -228,6 +268,6 @@ private:
     }
   }
 };
-}  // namespace tesseract_collision
+}  // namespace tesseract_common
 
-#endif  // TESSERACT_COLLISION_COLLISION_MARGIN_DATA_H
+#endif  // TESSERACT_COMMON_COLLISION_MARGIN_DATA_H

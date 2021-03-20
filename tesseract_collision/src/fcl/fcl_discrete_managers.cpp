@@ -272,7 +272,7 @@ void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision
 
 void FCLDiscreteBVHManager::setDefaultCollisionMarginData(double default_collision_margin)
 {
-  collision_margin_data_.setDefaultCollisionMarginData(default_collision_margin);
+  collision_margin_data_.setDefaultCollisionMargin(default_collision_margin);
   onCollisionMarginDataChanged();
 }
 
@@ -280,7 +280,7 @@ void FCLDiscreteBVHManager::setPairCollisionMarginData(const std::string& name1,
                                                        const std::string& name2,
                                                        double collision_margin)
 {
-  collision_margin_data_.setPairCollisionMarginData(name1, name2, collision_margin);
+  collision_margin_data_.setPairCollisionMargin(name1, name2, collision_margin);
   onCollisionMarginDataChanged();
 }
 

@@ -148,7 +148,14 @@ Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& s
   commands.push_back(std::make_shared<AddSceneGraphCommand>(*local_sg));
 
   if (srdf_model)
-    commands.push_back(std::make_shared<AddKinematicsInformationCommand>(srdf_model->getKinematicsInformation()));
+  {
+    commands.push_back(std::make_shared<AddKinematicsInformationCommand>(srdf_model->kinematics_information));
+
+    // Check srdf for collision margin data
+    if (srdf_model->collision_margin_data)
+      commands.push_back(std::make_shared<ChangeCollisionMarginsCommand>(
+          *srdf_model->collision_margin_data, tesseract_common::CollisionMarginOverrideType::REPLACE));
+  }
 
   return commands;
 }
@@ -495,6 +502,12 @@ Environment::getContinuousContactManager(const std::string& name) const
   return manager;
 }
 
+tesseract_common::CollisionMarginData Environment::getCollisionMarginData() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return collision_margin_data_;
+}
+
 bool Environment::registerDiscreteContactManager(
     const std::string& name,
     tesseract_collision::DiscreteContactManagerFactoryCreateMethod create_function)
@@ -776,6 +789,7 @@ Environment::Ptr Environment::clone() const
   cloned_env->active_link_names_ = active_link_names_;
   cloned_env->active_joint_names_ = active_joint_names_;
   cloned_env->find_tcp_cb_ = find_tcp_cb_;
+  cloned_env->collision_margin_data_ = collision_margin_data_;
   cloned_env->is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
                                                  cloned_env->scene_graph_,
                                                  std::placeholders::_1,
@@ -931,6 +945,12 @@ bool Environment::applyCommandsHelper(const Commands& commands)
       {
         auto cmd = std::static_pointer_cast<const ChangePairContactMarginCommand>(command);
         success &= applyChangePairContactMarginCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_COLLISION_MARGINS:
+      {
+        auto cmd = std::static_pointer_cast<const ChangeCollisionMarginsCommand>(command);
+        success &= applyChangeCollisionMarginsCommand(cmd);
         break;
       }
       // LCOV_EXCL_START
@@ -1550,7 +1570,7 @@ bool Environment::applyAddKinematicsInformationCommand(const AddKinematicsInform
 
 bool Environment::applyChangeDefaultContactMarginCommand(const ChangeDefaultContactMarginCommand::ConstPtr& cmd)
 {
-  collision_margin_data_.setDefaultCollisionMarginData(cmd->getDefaultCollisionMargin());
+  collision_margin_data_.setDefaultCollisionMargin(cmd->getDefaultCollisionMargin());
 
   if (continuous_manager_ != nullptr)
     continuous_manager_->setDefaultCollisionMarginData(cmd->getDefaultCollisionMargin());
@@ -1567,13 +1587,29 @@ bool Environment::applyChangeDefaultContactMarginCommand(const ChangeDefaultCont
 bool Environment::applyChangePairContactMarginCommand(const ChangePairContactMarginCommand::ConstPtr& cmd)
 {
   for (const auto& link_pair : cmd->getPairCollisionMarginData())
-    collision_margin_data_.setPairCollisionMarginData(link_pair.first.first, link_pair.first.second, link_pair.second);
+    collision_margin_data_.setPairCollisionMargin(link_pair.first.first, link_pair.first.second, link_pair.second);
 
   if (continuous_manager_ != nullptr)
     continuous_manager_->setCollisionMarginData(collision_margin_data_);
 
   if (discrete_manager_ != nullptr)
     discrete_manager_->setCollisionMarginData(collision_margin_data_);
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applyChangeCollisionMarginsCommand(const ChangeCollisionMarginsCommand::ConstPtr& cmd)
+{
+  collision_margin_data_.apply(cmd->getCollisionMarginData(), cmd->getCollisionMarginOverrideType());
+
+  if (continuous_manager_ != nullptr)
+    continuous_manager_->setCollisionMarginData(collision_margin_data_, CollisionMarginOverrideType::REPLACE);
+
+  if (discrete_manager_ != nullptr)
+    discrete_manager_->setCollisionMarginData(collision_margin_data_, CollisionMarginOverrideType::REPLACE);
 
   ++revision_;
   commands_.push_back(cmd);

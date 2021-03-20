@@ -31,6 +31,7 @@ jobs:
       - uses: actions/checkout@v1
 
       - name: Free Disk Space
+        continue-on-error: true
         run: |
           sudo swapoff -a
           sudo rm -f /swapfile
@@ -46,6 +47,7 @@ jobs:
           message("::set-output name=timestamp::${current_date}")
 
       - name: ccache cache files
+        continue-on-error: true
         uses: actions/cache@v1.1.0
         with:
           path: ${{ env.CI_NAME }}/.ccache

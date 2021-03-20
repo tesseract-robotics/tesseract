@@ -39,9 +39,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/bind.hpp>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/types.h>
+#include <tesseract_common/collision_margin_data.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_collision/core/collision_margin_data.h>
 
 #ifdef SWIG
 %tesseract_aligned_vector(ContactResultVector, tesseract_collision::ContactResult);
@@ -53,6 +52,9 @@ namespace tesseract_collision
 using CollisionShapesConst = std::vector<tesseract_geometry::Geometry::ConstPtr>;
 using CollisionShapeConstPtr = tesseract_geometry::Geometry::ConstPtr;
 using CollisionShapePtr = tesseract_geometry::Geometry::Ptr;
+using CollisionMarginData = tesseract_common::CollisionMarginData;
+using CollisionMarginOverrideType = tesseract_common::CollisionMarginOverrideType;
+using PairsCollisionMarginData = tesseract_common::PairsCollisionMarginData;
 
 /**
  * @brief Should return true if contact allowed, otherwise false.

@@ -223,7 +223,7 @@ void BulletDiscreteSimpleManager::setCollisionMarginData(CollisionMarginData col
 
 void BulletDiscreteSimpleManager::setDefaultCollisionMarginData(double default_collision_margin)
 {
-  contact_test_data_.collision_margin_data.setDefaultCollisionMarginData(default_collision_margin);
+  contact_test_data_.collision_margin_data.setDefaultCollisionMargin(default_collision_margin);
   onCollisionMarginDataChanged();
 }
 
@@ -231,7 +231,7 @@ void BulletDiscreteSimpleManager::setPairCollisionMarginData(const std::string& 
                                                              const std::string& name2,
                                                              double collision_margin)
 {
-  contact_test_data_.collision_margin_data.setPairCollisionMarginData(name1, name2, collision_margin);
+  contact_test_data_.collision_margin_data.setPairCollisionMargin(name1, name2, collision_margin);
   onCollisionMarginDataChanged();
 }
 

@@ -48,6 +48,7 @@
 #include <tesseract_environment/core/commands/remove_joint_command.h>
 #include <tesseract_environment/core/commands/remove_link_command.h>
 #include <tesseract_environment/core/commands/replace_joint_command.h>
+#include <tesseract_environment/core/commands/change_collision_margins_command.h>
 
 #ifdef SWIG
 
@@ -73,6 +74,7 @@
 %shared_ptr(tesseract_environment::ChangeJointAccelerationLimitsCommand)
 %shared_ptr(tesseract_environment::ChangeDefaultContactMarginCommand)
 %shared_ptr(tesseract_environment::ChangePairContactMarginCommand)
+%shared_ptr(tesseract_environment::ChangeCollisionMarginsCommand)
 
 %shared_factory(
   tesseract_environment::Command,
@@ -95,7 +97,8 @@
   tesseract_environment::ChangeJointVelocityLimitsCommand,
   tesseract_environment::ChangeJointAccelerationLimitsCommand,
   tesseract_environment::ChangeDefaultContactMarginCommand,
-  tesseract_environment::ChangePairContactMarginCommand
+  tesseract_environment::ChangePairContactMarginCommand,
+  tesseract_environment::ChangeCollisionMarginsCommand
 )
 
 %template(Commands) std::vector<tesseract_environment::Command::ConstPtr>;

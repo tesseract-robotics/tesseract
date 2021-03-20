@@ -33,6 +33,10 @@
 from bloom.generators import resolve_dependencies
 from bloom.generators.common import evaluate_package_conditions
 from dataclasses import dataclass
+from os import path
+from os import devnull
+import re
+import subprocess
 
 try:
     from catkin_pkg.packages import find_packages
@@ -90,6 +94,30 @@ def format_depends(depends, resolved_depends, peer_packages, ros_distro):
                 formatted.append(d.name + "(Not Found)")
 
     return formatted
+
+
+def extract_ubuntu_package_license(depends_name):
+    pattern = re.compile("^License:(.*)$")
+    file_path = "/usr/share/doc/{0}/copyright".format(depends_name)
+    licenses = []
+    if path.exists(file_path):
+        for i, line in enumerate(open(file_path)):
+            for match in re.finditer(pattern, line):
+                licenses.append(match.group(1).strip())
+    else:
+        licenses.append("Unknown")
+
+    return licenses
+
+
+def extract_ubuntu_package_version(depends_name):
+    pattern = re.compile("^Version:(.*)$")
+    output = subprocess.run(['dpkg', '-s', depends_name], stdout=subprocess.PIPE, stderr=open(devnull, 'wb')).stdout.decode('utf-8')
+    for i, line in enumerate(output.splitlines()):
+        for match in re.finditer(pattern, line):
+            return match.group(1).strip()
+
+    return "Unknown"
 
 
 def mine_packages():
@@ -156,7 +184,11 @@ def mine_packages():
                     dpkg = processed_pkgs[d.name]
                     print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
                 else:
-                    print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, "Unknown", "Unknown"))
+                    for rd in v.resolved_depends[d.name]:
+                        rd_pkg_version = extract_ubuntu_package_version(rd)
+                        rd_pkg_licenses = extract_ubuntu_package_license(rd)
+                        filtered_licenses = list(set(rd_pkg_licenses))
+                        print("{:<40} {:<40} {:<15} {:<30}".format("", rd, rd_pkg_version, ",".join(filtered_licenses)))
 
         # Print each packages build dependencies
         for k, v in dict(processed_pkgs).items():
@@ -170,7 +202,11 @@ def mine_packages():
                     dpkg = processed_pkgs[d.name]
                     print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
                 else:
-                    print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, "Unknown", "Unknown"))
+                    for rd in v.resolved_depends[d.name]:
+                        rd_pkg_version = extract_ubuntu_package_version(rd)
+                        rd_pkg_licenses = extract_ubuntu_package_license(rd)
+                        filtered_licenses = list(set(rd_pkg_licenses))
+                        print("{:<40} {:<40} {:<15} {:<30}".format("", rd, rd_pkg_version, ",".join(filtered_licenses)))
 
 
 # Press the green button in the gutter to run the script.
