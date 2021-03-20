@@ -117,6 +117,58 @@ TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
   EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian, 0.02));
 }
 
+TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
+{
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB();
+
+  tesseract_kinematics::KDLFwdKinChain fwd_kin;
+  fwd_kin.init(scene_graph, "base_link", "tool0", "manip");
+
+  // First test joint 4, 5 and 6 at zero which should be in a singularity
+  Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
+  Eigen::MatrixXd jacobian = fwd_kin.calcJacobian(jv);
+  tesseract_kinematics::Manipulability m = tesseract_kinematics::calcManipulability(jacobian);
+  EXPECT_EQ(m.m.eigen_values.size(), 6);
+  EXPECT_NEAR(m.m.volume, 0, 1e-6);
+  EXPECT_NEAR(m.m.condition, 1.2526941195405473e+18, 1);
+
+  EXPECT_EQ(m.m_linear.eigen_values.size(), 3);
+  EXPECT_NEAR(m.m_linear.eigen_values[0], 0.18153054745434696, 1e-6);
+  EXPECT_NEAR(m.m_linear.eigen_values[1], 1.960719452545653, 1e-6);
+  EXPECT_NEAR(m.m_linear.eigen_values[2], 0.8835999999999999, 1e-6);
+  EXPECT_NEAR(m.m_linear.condition, 10.801044122002406, 1e-6);
+  EXPECT_NEAR(m.m_linear.measure, 3.286494199295414, 1e-6);
+  EXPECT_NEAR(m.m_linear.volume, 0.5608031457314142, 1e-6);
+
+  EXPECT_EQ(m.m_angular.eigen_values.size(), 3);
+  EXPECT_NEAR(m.m_angular.eigen_values[0], 2.0, 1e-6);
+  EXPECT_NEAR(m.m_angular.eigen_values[1], 3.0, 1e-6);
+  EXPECT_NEAR(m.m_angular.eigen_values[2], 1.0, 1e-6);
+  EXPECT_NEAR(m.m_angular.condition, 3.0, 1e-6);
+  EXPECT_NEAR(m.m_angular.measure, 1.7320508075688772, 1e-6);
+  EXPECT_NEAR(m.m_angular.volume, 2.449489742783178, 1e-6);
+
+  EXPECT_EQ(m.f.eigen_values.size(), 6);
+  EXPECT_NEAR(m.m.volume, 0, 1e-6);
+  EXPECT_NEAR(m.m.condition, 1.2526941195405473e+18, 1);
+
+  EXPECT_EQ(m.f_linear.eigen_values.size(), 3);
+  EXPECT_NEAR(m.f_linear.eigen_values[0], 5.508714726106856, 1e-6);
+  EXPECT_NEAR(m.f_linear.eigen_values[1], 0.5100168709509535, 1e-6);
+  EXPECT_NEAR(m.f_linear.eigen_values[2], 1.1317338162064283, 1e-6);
+  EXPECT_NEAR(m.f_linear.condition, 10.801044122002406, 1e-6);
+  EXPECT_NEAR(m.f_linear.measure, 3.286494199295414, 1e-6);
+  EXPECT_NEAR(m.f_linear.volume, 1.783156902045858, 1e-6);
+
+  EXPECT_EQ(m.f_angular.eigen_values.size(), 3);
+  EXPECT_NEAR(m.f_angular.eigen_values[0], 0.5, 1e-6);
+  EXPECT_NEAR(m.f_angular.eigen_values[1], 0.3333333333333333, 1e-6);
+  EXPECT_NEAR(m.f_angular.eigen_values[2], 1.0, 1e-6);
+  EXPECT_NEAR(m.f_angular.condition, 3.0, 1e-6);
+  EXPECT_NEAR(m.f_angular.measure, 1.7320508075688774, 1e-6);
+  EXPECT_NEAR(m.f_angular.volume, 0.408248290463863, 1e-6);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

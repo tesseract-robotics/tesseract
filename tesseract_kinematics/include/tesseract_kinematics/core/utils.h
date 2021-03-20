@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <Eigen/Eigenvalues>
 #include <console_bridge/console.h>
 #include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_scene_graph/graph.h>
@@ -231,6 +232,104 @@ inline bool isNearSingularity(const Eigen::Ref<const Eigen::MatrixXd>& jacobian,
   Eigen::JacobiSVD<Eigen::MatrixXd> svd(jacobian, Eigen::ComputeThinU | Eigen::ComputeThinV);
   const Eigen::VectorXd& sv = svd.singularValues();
   return (sv.tail(1).value() < threshold);
+}
+
+/** @brief Used to store Manipulability and Force Ellipsoid data */
+struct ManipulabilityEllipsoid
+{
+  // LCOV_EXCL_START
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
+
+  /** @brief The manipulability ellipsoid eigen values */
+  Eigen::VectorXd eigen_values;
+
+  /**
+   * @brief The ratio of longest and shortes axes of the manipulability ellipsoid
+   * @details As this grows large it is approaching a singularity
+   *   - measure = sqrt(max eigen value) / sqrt(min eigen value)
+   *   - This should be greater than or equal to 1
+   *   - If equal to 1 it is isotropic
+   */
+  double measure{ 0 };
+
+  /**
+   * @brief The condition number of A
+   * @details
+   *   - condition = (max eigen value) / (min eigen value)
+   */
+  double condition{ 0 };
+
+  /** @brief This is propotial to the volume */
+  double volume{ 0 };
+};
+
+/** @brief Contains both manipulability ellipsoid and force ellipsoid data */
+struct Manipulability
+{
+  // LCOV_EXCL_START
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
+
+  /** @brief Full Manipulability Ellipsoid */
+  ManipulabilityEllipsoid m;
+
+  /** @brief Linear velocity manipulability ellipsoid */
+  ManipulabilityEllipsoid m_linear;
+
+  /** @brief Angular velocity manipulability ellipsoid */
+  ManipulabilityEllipsoid m_angular;
+
+  /** @brief Full Force Ellipsoid */
+  ManipulabilityEllipsoid f;
+
+  /** @brief Linear force manipulability ellipsoid */
+  ManipulabilityEllipsoid f_linear;
+
+  /** @brief Angular momentum manipulability ellipsoid */
+  ManipulabilityEllipsoid f_angular;
+};
+
+/**
+ * @brief Calculate manipulability data about the provided jacobian
+ * @param jacobian The jacobian used to calculate manipulability
+ * @return The manipulability data
+ */
+inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacobian)
+{
+  Manipulability manip;
+  Eigen::MatrixXd jacob_linear = jacobian.topRows(3);
+  Eigen::MatrixXd jacob_angular = jacobian.bottomRows(3);
+
+  auto fn = [](const Eigen::MatrixXd& m) {
+    ManipulabilityEllipsoid data;
+    Eigen::EigenSolver<Eigen::MatrixXd> sm(m, false);
+
+    data.eigen_values = sm.eigenvalues().real();
+    data.measure = std::sqrt(data.eigen_values.maxCoeff()) / std::sqrt(data.eigen_values.minCoeff());
+    data.condition = data.eigen_values.maxCoeff() / data.eigen_values.minCoeff();
+    data.volume = 1;
+    for (Eigen::Index i = 0; i < sm.eigenvalues().size(); ++i)
+      data.volume = data.volume * data.eigen_values[i];
+    data.volume = std::sqrt(data.volume);
+    return data;
+  };
+
+  Eigen::MatrixXd a = jacobian * jacobian.transpose();
+  Eigen::MatrixXd a_linear = jacob_linear * jacob_linear.transpose();
+  Eigen::MatrixXd a_angular = jacob_angular * jacob_angular.transpose();
+  manip.m = fn(a);
+  manip.m_linear = fn(a_linear);
+  manip.m_angular = fn(a_angular);
+
+  Eigen::MatrixXd a_inv = a.inverse();
+  Eigen::MatrixXd a_linear_inv = a_linear.inverse();
+  Eigen::MatrixXd a_angular_inv = a_angular.inverse();
+  manip.f = fn(a_inv);
+  manip.f_linear = fn(a_linear_inv);
+  manip.f_angular = fn(a_angular_inv);
+
+  return manip;
 }
 
 /**
