@@ -342,6 +342,40 @@ inline tinyxml2::XMLError QueryDoubleAttributeRequired(const tinyxml2::XMLElemen
 }
 
 /**
+ * @brief Query a int attribute from an xml element and print error log
+ *
+ * This is the same QueryIntAttribute but it will print out error messages for the failure conditions so the user
+ * only needs to check for the tinyxml2::XML_SUCCESS since it is a required attribute.
+ *
+ * @param xml_element The xml attribute to query attribute
+ * @param name The name of the attribute to query
+ * @param value The value to update from the xml attribute
+ * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or
+ * tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
+ */
+inline tinyxml2::XMLError QueryIntAttributeRequired(const tinyxml2::XMLElement* xml_element,
+                                                    const char* name,
+                                                    int& value)
+{
+  tinyxml2::XMLError status = xml_element->QueryIntAttribute(name, &value);
+
+  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+  {
+    CONSOLE_BRIDGE_logError("Invalid %s attribute '%s'", xml_element->Name(), name);
+  }
+  else if (status == tinyxml2::XML_NO_ATTRIBUTE)
+  {
+    CONSOLE_BRIDGE_logError("Missing %s required attribute '%s'", xml_element->Name(), name);
+  }
+  else if (status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE)
+  {
+    CONSOLE_BRIDGE_logError("Invalid %s attribute type '%s'", xml_element->Name(), name);
+  }
+
+  return status;
+}
+
+/**
  * @brief Check if two double are relatively equal
  * @details The max_diff is for handling when comparing numbers near zero
  * @param a Double
