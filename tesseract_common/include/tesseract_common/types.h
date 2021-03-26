@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/filesystem.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/serialization.h>
+#include <tesseract_common/kinematic_limits.h>
 
 namespace tesseract_common
 {
@@ -87,33 +87,5 @@ static inline LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, c
   return std::make_pair(link_name2, link_name1);
 }
 
-/** @brief Store kinematic limits */
-struct KinematicLimits
-{
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-  Eigen::MatrixX2d joint_limits;
-  Eigen::VectorXd velocity_limits;
-  Eigen::VectorXd acceleration_limits;
-
-  bool operator==(const KinematicLimits& other) const
-  {
-    bool ret_val = true;
-    ret_val &= (joint_limits.isApprox(other.joint_limits, 1e-5));
-    ret_val &= (velocity_limits.isApprox(other.velocity_limits, 1e-5));
-    ret_val &= (acceleration_limits.isApprox(other.acceleration_limits, 1e-5));
-    return ret_val;
-  }
-
-private:
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int /*version*/)
-  {
-    ar& BOOST_SERIALIZATION_NVP(joint_limits);
-    ar& BOOST_SERIALIZATION_NVP(velocity_limits);
-    ar& BOOST_SERIALIZATION_NVP(acceleration_limits);
-  }
-};
 }  // namespace tesseract_common
 #endif  // TESSERACT_COMMON_TYPES_H
