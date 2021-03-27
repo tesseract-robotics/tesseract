@@ -10,7 +10,6 @@ find_dependency(tesseract_collision)
 find_dependency(tesseract_common)
 find_dependency(tesseract_environment)
 find_dependency(tesseract_scene_graph)
-find_dependency(class_loader)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)

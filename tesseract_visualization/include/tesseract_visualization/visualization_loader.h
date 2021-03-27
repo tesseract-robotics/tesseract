@@ -28,11 +28,15 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <class_loader/class_loader.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
+
+namespace tesseract_common
+{
+class PluginLoader;
+}
 
 namespace tesseract_visualization
 {
@@ -47,7 +51,12 @@ public:
   VisualizationLoader();
 
   /** @brief Dynamically load a visualization provided */
-  VisualizationLoader(const std::string& library_path, const std::string& derived_class);
+  VisualizationLoader(const std::string& library_name, const std::string& symbol_name);
+
+  /** @brief Dynamically load a visualization provided */
+  VisualizationLoader(const std::string& library_directory,
+                      const std::string& library_name,
+                      const std::string& symbol_name);
 
   /**
    * @brief Load the visualization
@@ -56,11 +65,8 @@ public:
   Visualization::Ptr get();
 
 protected:
-  std::string library_path_;
-  std::string derived_class_;
-  std::shared_ptr<class_loader::ClassLoader> loader_{ nullptr };
-
-  void createLoader(const std::string& library_path);
+  std::shared_ptr<tesseract_common::PluginLoader> loader_;
+  std::string symbol_name_;
 };
 
 }  // namespace tesseract_visualization
