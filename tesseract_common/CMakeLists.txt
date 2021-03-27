@@ -46,6 +46,7 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
          ${TinyXML2_LIBRARIES}
+         ${CMAKE_DL_LIBS}
          Boost::boost
          Boost::system
          Boost::filesystem
