@@ -41,8 +41,13 @@ struct KinematicLimits
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  /** @brief The position limits */
   Eigen::MatrixX2d joint_limits;
+
+  /** @brief The velocity limits */
   Eigen::VectorXd velocity_limits;
+
+  /** @brief The acceleration limits */
   Eigen::VectorXd acceleration_limits;
 
   bool operator==(const KinematicLimits& other) const;
