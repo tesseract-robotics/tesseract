@@ -15,7 +15,6 @@ find_package(tesseract_collision REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
-find_package(class_loader REQUIRED)
 
 # Optional to build ignition visualization
 find_package(ignition-common3 COMPONENTS profiler events av QUIET)
@@ -77,8 +76,7 @@ target_link_libraries(
          tesseract::tesseract_scene_graph
          tesseract::tesseract_collision_core
          tesseract::tesseract_common
-         console_bridge::console_bridge
-         ${class_loader_LIBRARIES})
+         console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -91,16 +89,8 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_compile_definitions(${PROJECT_NAME}
                            PRIVATE TESSERACT_VISUALIZATION_PLUGIN_PATH="${TESSERACT_VISUALIZATION_PLUGIN_PATH}")
-if(class_loader_VERSION VERSION_LESS "0.4.0")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE CLASS_LOADER_NOT_SUPPORTED=ON)
-elseif(class_loader_VERSION VERSION_LESS "1.2.0")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE CLASS_LOADER_SHARED_INSTANCE=ON)
-else()
-  target_compile_definitions(${PROJECT_NAME} PRIVATE CLASS_LOADER_INSTANCE=ON)
-endif()
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${class_loader_INCLUDE_DIRS})
 
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 if(IGNITION_FOUND)
@@ -157,24 +147,11 @@ if(IGNITION_FOUND)
     ${PROJECT_NAME}_ignition_visualization SYSTEM
     PUBLIC ${IGNITION-COMMON_INCLUDE_DIRS} ${IGNITION-TRANSPORT_INCLUDE_DIRS} ${IGNITION-MSGS_INCLUDE_DIRS})
 
-  add_library(${PROJECT_NAME}_ignition_visualization_plugin src/ignition/tesseract_ignition_visualization_plugin.cpp)
-  target_link_libraries(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC ${PROJECT_NAME}_ignition_visualization
-                                                                             ${class_loader_LIBRARIES})
-  target_compile_options(${PROJECT_NAME}_ignition_visualization_plugin PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                                               ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-  target_compile_definitions(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
-  target_cxx_version(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC VERSION ${TESSERACT_CXX_VERSION})
-  target_include_directories(
-    ${PROJECT_NAME}_ignition_visualization_plugin PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                         "$<INSTALL_INTERFACE:include>")
-  target_include_directories(${PROJECT_NAME}_ignition_visualization SYSTEM PUBLIC ${class_loader_INCLUDE_DIRS})
-
   list(
     APPEND
     PACKAGE_LIBRARIES
     ${PROJECT_NAME}_ignition
-    ${PROJECT_NAME}_ignition_visualization
-    ${PROJECT_NAME}_ignition_visualization_plugin)
+    ${PROJECT_NAME}_ignition_visualization)
 else()
   list(APPEND IGNITION_MISSING "")
   if(NOT ignition-common3_FOUND)
@@ -220,7 +197,6 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      "${TESSERACT_PACKAGE_PREFIX}class-loader"
       "libconsole-bridge-dev"
       "libeigen3-dev"
     WINDOWS_DEPENDS
@@ -228,6 +204,5 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      "${TESSERACT_PACKAGE_PREFIX}class-loader"
       "Eigen3")
 endif()
