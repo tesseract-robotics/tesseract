@@ -14,6 +14,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/joint_state.h>
 #include <tesseract_common/types.h>
 #include <tesseract_common/any.h>
+#include <tesseract_common/kinematic_limits.h>
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
@@ -699,6 +700,28 @@ TEST(TesseractCommonUnit, anyUnit)
 
   EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
   EXPECT_TRUE(nany_type.cast<tesseract_common::JointState>() == joint_state);
+}
+
+TEST(TesseractCommonUnit, boudsUnit)
+{
+  Eigen::VectorXd v = Eigen::VectorXd::Ones(6);
+  v = v.array() + std::numeric_limits<float>::epsilon();
+  Eigen::MatrixX2d limits(6, 2);
+  limits.col(0) = -Eigen::VectorXd::Ones(6);
+  limits.col(1) = Eigen::VectorXd::Ones(6);
+
+  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<float>::epsilon()));
+  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforcePositionLimits(v, limits);
+  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
+
+  v = -Eigen::VectorXd::Ones(6);
+  v = v.array() - std::numeric_limits<float>::epsilon();
+
+  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<float>::epsilon()));
+  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforcePositionLimits(v, limits);
+  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
 }
 
 int main(int argc, char** argv)
