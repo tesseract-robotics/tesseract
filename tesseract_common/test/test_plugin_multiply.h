@@ -34,6 +34,11 @@ class TestPluginMultiply : public TestPluginBase
 {
 public:
   TestPluginMultiply() = default;
+  ~TestPluginMultiply() override = default;
+  TestPluginMultiply(const TestPluginMultiply&) = default;
+  TestPluginMultiply& operator=(const TestPluginMultiply&) = default;
+  TestPluginMultiply(TestPluginMultiply&&) = default;
+  TestPluginMultiply& operator=(TestPluginMultiply&&) = default;
   double multiply(double x, double y) override;
 };
 }  // namespace tesseract_common

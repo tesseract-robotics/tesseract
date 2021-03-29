@@ -1,6 +1,6 @@
 /**
  * @file plugin_loader.h
- * @brief Plugin loader class to be used throughout Tesseract for loading plugins
+ * @brief Plugin Loader to be used throughout Tesseract for loading plugins
  *
  * @author Levi Armstrong
  * @date March 25, 2021
@@ -28,163 +28,75 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/dll/import.hpp>
-#include <boost/dll/alias.hpp>
-#include <boost/dll/import_class.hpp>
+#include <list>
+#include <unordered_map>
+#include <string>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
 /**
- * @brief This is a wrapper around Boost DLL for loading plugins within Tesseract
- * @details The library_name should not include the prefix 'lib' or postfix '.so'. It will add the correct prefix and
- * postfix based on the OS.
+ * @brief This is a utility class for loading plugins within Tesseract
+ * @details The library_name should not include the prefix 'lib' or suffix '.so'. It will add the correct prefix and
+ * suffix based on the OS.
  *
- * The plugin must be exported using the macro TESSERACT_EXPORT_PLUGIN.
+ * It supports providing additional search paths and set environment variable which should be used when searching for
+ * plugins.
+ *
+ * The plugin must be exported using the macro TESSERACT_ADD_PLUGIN.
  * In the example below, the first parameter is the derived object and the second is the assinged symbol name which is
- * used for looding Example: TESSERACT_EXPORT_PLUGIN(my_namespace::MyPlugin, plugin)
+ * used for looding Example: TESSERACT_ADD_PLUGIN(my_namespace::MyPlugin, plugin)
  *
- *   auto p = PluginLoader::createSharedInstance<my_namespace::MyPluginBase>("plugin");
+ *   PluginLoader loader;
+ *   loader.plugins["plugin"] = "my_plugin"; // libmy_plugin.so
+ *   std::shared_ptr<PluginBase> p = loader.instantiate<PluginBase>("plugin");
  */
 class PluginLoader
 {
 public:
-  /**
-   * @brief A PluginLoader which will only look in the provided directory for the library
-   * @details This will not search system folders for the library
-   * @param library_directory The directory it should search for the library
-   * @param library_name The library name to load which does not include the prefix 'lib' or postfix '.so'
-   */
-  PluginLoader(const std::string& library_directory, const std::string& library_name)
-    : library_directory_(library_directory), library_name_(library_name)
-  {
-  }
+  /** @brief Indicate is system folders may be search if plugin is not found in any of the paths */
+  bool search_system_folders{ true };
 
-  /**
-   * @brief A PluginLoader will search system folders for the library
-   * @param library_name The library name to load which does not include the prefix 'lib' or postfix '.so'
-   */
-  PluginLoader(const std::string& library_name) : library_name_(library_name) {}
+  /** @brief A list of paths to search for plugins */
+  std::list<std::string> search_paths;
 
-  /**
-   * @brief Get library directory. If empty then it will search system for the library name provided
-   * @return The library directory to search for library
+  /** @brief A map of plugin names to libraries */
+  std::unordered_map<std::string, std::string> plugins;
+
+  /** @brief The environment variable containing plugin search paths */
+  std::string search_paths_env;
+
+  /** @brief The environment variable containing plugins
+   * @details The plugins are store ins the following formate. The library name does not contain prefix or suffix
+   *   Format: plugin_name,library_name:plugin_name1,library_name1
    */
-  const std::string& getLibraryDirectory() const { return library_directory_; }
+  std::string plugins_env;
 
   /**
-   * @brief Get the library name
-   * @return The library name
+   * @brief Instantiate a plugin with the provided name
+   * @param plugin_name The plugin name to find
+   * @return A instantiation of the plugin, if nullptr it failed to create plugin
    */
-  const std::string& getLibraryName() const { return library_name_; }
+  template <class PluginBase>
+  std::shared_ptr<PluginBase> instantiate(const std::string& plugin_name) const;
 
   /**
-   * @brief Create a shared instance for the provided symbol_name
-   * @details The symbol name is the alias provide when calling TESSERACT_EXPORT_PLUGIN
-   * @param symbol_name The symbol to create a shared instance of
-   * @return A shared pointer of the object with the symbol name located in library_name_
+   * @brief Check if plugin is available
+   * @param plugin_name The plugin name to find
+   * @return True if plugin is found
    */
-  template <class Base>
-  std::shared_ptr<Base> createSharedInstance(const std::string& symbol_name)
-  {
-    if (library_directory_.empty())
-      return createSharedInstance<Base>(library_name_, symbol_name);
-
-    return createSharedInstance<Base>(library_directory_, library_name_, symbol_name);
-  }
+  inline bool isPluginAvailable(const std::string& plugin_name) const;
 
   /**
-   * @brief Check if the symbol is available in the library_name_
-   * @details The symbol name is the alias provide when calling TESSERACT_EXPORT_PLUGIN
-   * @param symbol_name The symbol to create a shared instance of
-   * @return True if the symbol exists, otherwise false
+   * @brief The number of plugins stored. The size of plugins variable
+   * @return The number of plugins.
    */
-  template <class Base>
-  bool isClassAvailable(const std::string& symbol_name)
-  {
-    if (library_directory_.empty())
-      return isClassAvailable<Base>(library_name_, symbol_name);
-
-    return isClassAvailable<Base>(library_directory_, library_name_, symbol_name);
-  }
-
-  // Static methods below
-
-  /**
-   * @brief Create a shared instance for the provided symbol_name loaded from the library_name searching system folders
-   * for library
-   * @details The symbol name is the alias provide when calling TESSERACT_EXPORT_PLUGIN
-   * @param library_name The library name to load which does not include the prefix 'lib' or postfix '.so'
-   * @param symbol_name The symbol to create a shared instance of
-   * @return A shared pointer of the object with the symbol name located in library_name_
-   */
-  template <class Base>
-  static std::shared_ptr<Base> createSharedInstance(const std::string& library_name, const std::string& symbol_name)
-  {
-    boost::shared_ptr<Base> plugin = boost::dll::import<Base>(library_name,
-                                                              symbol_name,
-                                                              boost::dll::load_mode::append_decorations |
-                                                                  boost::dll::load_mode::search_system_folders);
-    return std::shared_ptr<Base>(plugin.get(), [plugin](Base*) mutable { plugin.reset(); });
-  }
-
-  /**
-   * @brief Create a shared instance for the provided symbol_name loaded from the library_name located in
-   * library_directory.
-   * @details The symbol name is the alias provide when calling TESSERACT_EXPORT_PLUGIN
-   * @param library_name The library name to load which does not include the prefix 'lib' or postfix '.so'
-   * @param symbol_name The symbol to create a shared instance of
-   * @return A shared pointer of the object with the symbol name located in library_name_
-   */
-  template <class Base>
-  static std::shared_ptr<Base> createSharedInstance(const std::string& library_directory,
-                                                    const std::string& library_name,
-                                                    const std::string& symbol_name)
-  {
-    boost::dll::fs::path lib_dir(library_directory);
-    boost::shared_ptr<Base> plugin =
-        boost::dll::import<Base>(lib_dir / library_name, symbol_name, boost::dll::load_mode::append_decorations);
-    return std::shared_ptr<Base>(plugin.get(), [plugin](Base*) mutable { plugin.reset(); });
-  }
-
-  /**
-   * @brief Check if the symbol is available in the library_name searching system folders for library
-   * @details The symbol name is the alias provide when calling TESSERACT_EXPORT_PLUGIN
-   * @param symbol_name The symbol to create a shared instance of
-   * @return True if the symbol exists, otherwise false
-   */
-  template <class Base>
-  static bool isClassAvailable(const std::string& library_name, const std::string& symbol_name)
-  {
-    boost::dll::shared_library lib(
-        library_name, boost::dll::load_mode::append_decorations | boost::dll::load_mode::search_system_folders);
-    return lib.has(symbol_name);
-  }
-
-  /**
-   * @brief Check if the symbol is available in the library_name searching library_directory for library
-   * @details The symbol name is the alias provide when calling TESSERACT_EXPORT_PLUGIN
-   * @param symbol_name The symbol to create a shared instance of
-   * @return True if the symbol exists, otherwise false
-   */
-  template <class Base>
-  static bool isClassAvailable(const std::string& library_directory,
-                               const std::string& library_name,
-                               const std::string& symbol_name)
-  {
-    boost::dll::fs::path lib_dir(library_directory);
-    boost::dll::shared_library lib(lib_dir / library_name, boost::dll::load_mode::append_decorations);
-    return lib.has(symbol_name);
-  }
-
-protected:
-  std::string library_directory_;
-  std::string library_name_;
+  inline int count() const;
 };
+
 }  // namespace tesseract_common
 
-#define TESSERACT_EXPORT_PLUGIN(DERIVED_CLASS, ALIAS)                                                                  \
-  extern "C" BOOST_SYMBOL_EXPORT DERIVED_CLASS ALIAS;                                                                  \
-  DERIVED_CLASS ALIAS;
+#include <tesseract_common/plugin_loader.hpp>
 
 #endif  // TESSERACT_COMMON_PLUGIN_LOADER_H

@@ -32,11 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
-
-namespace tesseract_common
-{
-class PluginLoader;
-}
+#include <tesseract_common/plugin_loader.h>
 
 namespace tesseract_visualization
 {
@@ -44,29 +40,18 @@ namespace tesseract_visualization
  * @brief This is used to dynamically load tesseract visualizer.
  * This class must remain around for the life of the loaded visualization class.
  */
-class VisualizationLoader
+class VisualizationLoader : public tesseract_common::PluginLoader
 {
 public:
   /** @brief This will attempt to load the tesseract_ignition visualizer provided by snap package */
   VisualizationLoader();
 
-  /** @brief Dynamically load a visualization provided */
-  VisualizationLoader(const std::string& library_name, const std::string& symbol_name);
-
-  /** @brief Dynamically load a visualization provided */
-  VisualizationLoader(const std::string& library_directory,
-                      const std::string& library_name,
-                      const std::string& symbol_name);
-
   /**
-   * @brief Load the visualization
+   * @brief Load the default visualization plugin
+   * @param plugin_name The plugin name, if empty it tries to load default plugin
    * @return Returns nullptr if failed
    */
-  Visualization::Ptr get();
-
-protected:
-  std::shared_ptr<tesseract_common::PluginLoader> loader_;
-  std::string symbol_name_;
+  Visualization::Ptr get(std::string plugin_name = "") const;
 };
 
 }  // namespace tesseract_visualization

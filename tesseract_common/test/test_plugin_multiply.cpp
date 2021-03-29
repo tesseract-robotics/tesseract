@@ -25,8 +25,8 @@
  */
 
 #include "test_plugin_multiply.h"
-#include <tesseract_common/plugin_loader.h>
+#include <tesseract_common/class_loader.h>
 
 double tesseract_common::TestPluginMultiply::multiply(double x, double y) { return x * y; }
 
-TESSERACT_EXPORT_PLUGIN(tesseract_common::TestPluginMultiply, plugin)
+TESSERACT_ADD_PLUGIN(tesseract_common::TestPluginMultiply, plugin)
