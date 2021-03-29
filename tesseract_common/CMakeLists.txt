@@ -74,6 +74,7 @@ install(
   DESTINATION include
   FILES_MATCHING
   PATTERN "*.h"
+  PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE)
 
 install(FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"

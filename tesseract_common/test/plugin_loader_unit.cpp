@@ -28,27 +28,131 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/class_loader.h>
 #include <tesseract_common/plugin_loader.h>
 #include "test_plugin_base.h"
 
-TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
+TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
 {
+  using tesseract_common::ClassLoader;
+  using tesseract_common::TestPluginBase;
+  const std::string lib_name = "tesseract_common_test_plugin_multiply";
+  const std::string lib_dir = std::string(TEST_PLUGIN_DIR);
+  const std::string symbol_name = "plugin";
+
   {
-    tesseract_common::PluginLoader loader(std::string(TEST_PLUGIN_DIR), "tesseract_common_test_plugin_multiply");
-    EXPECT_TRUE(loader.isClassAvailable<tesseract_common::TestPluginBase>("plugin"));
-    std::shared_ptr<tesseract_common::TestPluginBase> plugin =
-        loader.createSharedInstance<tesseract_common::TestPluginBase>("plugin");
+    EXPECT_TRUE(ClassLoader::isClassAvailable(symbol_name, lib_name, lib_dir));
+    auto plugin = ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, lib_name, lib_dir);
     EXPECT_TRUE(plugin != nullptr);
     EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
   }
 
+// For some reason on Ubuntu 18.04 it does not search the current directoy when only the library name is provided
+#if BOOST_VERSION > 106800
   {
-    tesseract_common::PluginLoader loader("tesseract_common_test_plugin_multiply");
-    EXPECT_TRUE(loader.isClassAvailable<tesseract_common::TestPluginBase>("plugin"));
-    std::shared_ptr<tesseract_common::TestPluginBase> plugin =
-        loader.createSharedInstance<tesseract_common::TestPluginBase>("plugin");
+    EXPECT_TRUE(ClassLoader::isClassAvailable(symbol_name, lib_name));
+    auto plugin = ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, lib_name);
     EXPECT_TRUE(plugin != nullptr);
     EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
+  }
+#endif
+
+  {
+    EXPECT_FALSE(ClassLoader::isClassAvailable(symbol_name, lib_name, "does_not_exist"));
+    EXPECT_FALSE(ClassLoader::isClassAvailable(symbol_name, "does_not_exist", lib_dir));
+    EXPECT_FALSE(ClassLoader::isClassAvailable("does_not_exist", lib_name, lib_dir));
+  }
+
+  {
+    EXPECT_FALSE(ClassLoader::isClassAvailable(symbol_name, "does_not_exist"));
+    EXPECT_FALSE(ClassLoader::isClassAvailable("does_not_exist", lib_name));
+  }
+
+  {
+    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, lib_name, "does_not_exist"));
+    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, "does_not_exist", lib_dir));
+    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>("does_not_exist", lib_name, lib_dir));
+  }
+
+  {
+    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, "does_not_exist"));
+    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>("does_not_exist", lib_name));
+  }
+}
+
+TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
+{
+  using tesseract_common::PluginLoader;
+  using tesseract_common::TestPluginBase;
+
+  {
+    PluginLoader plugin_loader;
+    plugin_loader.search_paths.push_back(std::string(TEST_PLUGIN_DIR));
+    plugin_loader.plugins["plugin"] = "tesseract_common_test_plugin_multiply";
+
+    EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
+    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+    EXPECT_TRUE(plugin != nullptr);
+    EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
+  }
+
+// For some reason on Ubuntu 18.04 it does not search the current directoy when only the library name is provided
+#if BOOST_VERSION > 106800
+  {
+    PluginLoader plugin_loader;
+    plugin_loader.plugins["plugin"] = "tesseract_common_test_plugin_multiply";
+
+    EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
+    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+    EXPECT_TRUE(plugin != nullptr);
+    EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
+  }
+#endif
+
+  {
+    PluginLoader plugin_loader;
+    plugin_loader.search_system_folders = false;
+    plugin_loader.search_paths.push_back("does_not_exist");
+    plugin_loader.plugins["plugin"] = "tesseract_common_test_plugin_multiply";
+
+    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
+    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+    EXPECT_TRUE(plugin == nullptr);
+  }
+
+  {
+    PluginLoader plugin_loader;
+    plugin_loader.search_system_folders = false;
+    plugin_loader.plugins["does_not_exist"] = "tesseract_common_test_plugin_multiply";
+
+    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
+    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+    EXPECT_TRUE(plugin == nullptr);
+  }
+
+  {
+    PluginLoader plugin_loader;
+    plugin_loader.search_system_folders = false;
+    plugin_loader.plugins["plugin"] = "does_not_exist";
+
+    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
+    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+    EXPECT_TRUE(plugin == nullptr);
+  }
+
+  {
+    PluginLoader plugin_loader;
+    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
+    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+    EXPECT_TRUE(plugin == nullptr);
+  }
+
+  {
+    PluginLoader plugin_loader;
+    plugin_loader.search_system_folders = false;
+    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
+    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+    EXPECT_TRUE(plugin == nullptr);
   }
 }
 
