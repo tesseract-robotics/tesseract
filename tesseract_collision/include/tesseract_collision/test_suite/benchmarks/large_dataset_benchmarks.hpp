@@ -79,7 +79,7 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
 
   // Check if they are in collision
   checker->setActiveCollisionObjects(link_names);
-  checker->setContactDistanceThreshold(0.1);
+  checker->setCollisionMarginData(CollisionMarginData(0.1));
   checker->setCollisionObjectsTransform(location);
 
   ContactResultVector result_vector;
@@ -169,7 +169,7 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
 
   // Check if they are in collision
   checker->setActiveCollisionObjects(link_names);
-  checker->setContactDistanceThreshold(0.1);
+  checker->setCollisionMarginData(CollisionMarginData(0.1));
   //  checker->setCollisionObjectsTransform(location);
 
   ContactResultVector result_vector;
