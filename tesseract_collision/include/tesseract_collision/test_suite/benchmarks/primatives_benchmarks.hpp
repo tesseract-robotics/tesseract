@@ -49,7 +49,7 @@ static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, int nu
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
   info.contact_manager_->setActiveCollisionObjects(active_obj);
-  info.contact_manager_->setContactDistanceThreshold(0.5);
+  info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   DiscreteContactManager::Ptr clone;
   for (auto _ : state)
@@ -65,7 +65,7 @@ static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
   info.contact_manager_->addCollisionObject(std::string("geom2"), 0, info.geom2_, info.obj2_poses);
 
   info.contact_manager_->setActiveCollisionObjects({ "geom1", "geom2" });
-  info.contact_manager_->setContactDistanceThreshold(0.5);
+  info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   ContactResultMap result;
   for (auto _ : state)
@@ -99,7 +99,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state, D
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
   info.contact_manager_->setActiveCollisionObjects(active_obj);
-  info.contact_manager_->setContactDistanceThreshold(0.5);
+  info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   for (auto _ : state)
   {
@@ -126,7 +126,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
   info.contact_manager_->setActiveCollisionObjects(active_obj);
-  info.contact_manager_->setContactDistanceThreshold(0.5);
+  info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   std::vector<std::string> selected_links(1);
   for (auto _ : state)
@@ -154,7 +154,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
   info.contact_manager_->setActiveCollisionObjects(active_obj);
-  info.contact_manager_->setContactDistanceThreshold(0.5);
+  info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   tesseract_common::TransformMap selected_link;
   for (auto _ : state)
