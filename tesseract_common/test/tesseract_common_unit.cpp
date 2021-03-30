@@ -702,7 +702,7 @@ TEST(TesseractCommonUnit, anyUnit)
   EXPECT_TRUE(nany_type.cast<tesseract_common::JointState>() == joint_state);
 }
 
-TEST(TesseractCommonUnit, boudsUnit)
+TEST(TesseractCommonUnit, boundsUnit)
 {
   Eigen::VectorXd v = Eigen::VectorXd::Ones(6);
   v = v.array() + std::numeric_limits<float>::epsilon();
@@ -722,6 +722,17 @@ TEST(TesseractCommonUnit, boudsUnit)
   EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
   tesseract_common::enforcePositionLimits(v, limits);
   EXPECT_TRUE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
+
+  // Check that clamp is done correctly on both sides
+  v = Eigen::VectorXd::Constant(6, -2);
+  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforcePositionLimits(v, limits);
+  ASSERT_EQ((v - limits.col(0)).norm(), 0);
+
+  v = Eigen::VectorXd::Constant(6, 2);
+  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforcePositionLimits(v, limits);
+  ASSERT_EQ((v - limits.col(1)).norm(), 0);
 }
 
 int main(int argc, char** argv)
