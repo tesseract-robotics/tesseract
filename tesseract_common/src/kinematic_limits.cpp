@@ -53,8 +53,6 @@ bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::VectorXd>& joint_posi
 void enforcePositionLimits(Eigen::Ref<Eigen::VectorXd> joint_positions,
                            const Eigen::Ref<const Eigen::MatrixX2d>& position_limits)
 {
-  joint_positions = (joint_positions.array() > position_limits.col(1).array() ||
-                     joint_positions.array() < position_limits.col(0).array())
-                        .select(position_limits.col(1).array(), joint_positions.array());
+  joint_positions = joint_positions.array().min(position_limits.col(1).array()).max(position_limits.col(0).array());
 }
 }  // namespace tesseract_common
