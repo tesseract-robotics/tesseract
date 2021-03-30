@@ -66,7 +66,8 @@ IKSolutions OPWInvKin::calcInvKin(const Eigen::Isometry3d& pose,
       harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
 
       // Add solution
-      solution_set.push_back(eigen_sol);
+      if (tesseract_common::satisfiesPositionLimits(eigen_sol, limits_.joint_limits))
+        solution_set.push_back(eigen_sol);
 
       // Add redundant solutions
       IKSolutions redundant_sols = getRedundantSolutions<double>(eigen_sol, limits_.joint_limits);

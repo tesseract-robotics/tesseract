@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
+#include <tesseract_kinematics/core/utils.h>
 
 namespace tesseract_kinematics
 {
@@ -93,7 +94,21 @@ IKSolutions KDLInvKinChainNR::calcInvKinHelper(const Eigen::Isometry3d& pose,
 
   KDLToEigen(kdl_solution, solution);
 
-  return { solution };
+  IKSolutions solution_set;
+  tesseract_kinematics::harmonizeTowardZero<double>(solution);
+  if (tesseract_common::satisfiesPositionLimits(solution, kdl_data_.limits.joint_limits))
+    solution_set.push_back(solution);
+
+  // Add redundant solutions
+  IKSolutions redundant_sols = getRedundantSolutions<double>(solution, kdl_data_.limits.joint_limits);
+  if (!redundant_sols.empty())
+  {
+    solution_set.insert(end(solution_set),
+                        std::make_move_iterator(redundant_sols.begin()),
+                        std::make_move_iterator(redundant_sols.end()));
+  }
+
+  return solution_set;
 }
 
 IKSolutions KDLInvKinChainNR::calcInvKin(const Eigen::Isometry3d& pose,
