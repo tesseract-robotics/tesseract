@@ -39,15 +39,24 @@ bool KinematicLimits::operator==(const KinematicLimits& other) const
 
 bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::VectorXd>& joint_positions,
                              const Eigen::Ref<const Eigen::MatrixX2d>& position_limits,
-                             double epsilon)
+                             double max_diff,
+                             double max_rel_diff)
 {
-  if (((joint_positions.array() - epsilon) > position_limits.col(1).array()).any())
-    return false;
+  auto p = joint_positions.array();
+  auto l0 = position_limits.col(0).array();
+  auto l1 = position_limits.col(1).array();
 
-  if (((joint_positions.array() + epsilon) < position_limits.col(0).array()).any())
-    return false;
+  auto lower_diff_abs = (p - l0).abs();
+  auto lower_diff = (lower_diff_abs <= max_diff);
+  auto lower_relative_diff = (lower_diff_abs <= max_rel_diff * p.abs().max(l0.abs()));
+  auto lower_check = p > l0 || lower_diff || lower_relative_diff;
 
-  return true;
+  auto upper_diff_abs = (p - l1).abs();
+  auto upper_diff = (upper_diff_abs <= max_diff);
+  auto upper_relative_diff = (upper_diff_abs <= max_rel_diff * p.abs().max(l1.abs()));
+  auto upper_check = p < l1 || upper_diff || upper_relative_diff;
+
+  return (lower_check.all() && upper_check.all());
 }
 
 void enforcePositionLimits(Eigen::Ref<Eigen::VectorXd> joint_positions,

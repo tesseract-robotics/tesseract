@@ -387,7 +387,7 @@ inline tinyxml2::XMLError QueryIntAttributeRequired(const tinyxml2::XMLElement* 
  */
 inline bool almostEqualRelativeAndAbs(double a,
                                       double b,
-                                      double max_diff,
+                                      double max_diff = 1e-6,
                                       double max_rel_diff = std::numeric_limits<double>::epsilon())
 {
   double diff = std::fabs(a - b);
