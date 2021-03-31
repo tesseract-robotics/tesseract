@@ -46,6 +46,7 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
          ${TinyXML2_LIBRARIES}
+         ${CMAKE_DL_LIBS}
          Boost::boost
          Boost::system
          Boost::filesystem
@@ -73,6 +74,7 @@ install(
   DESTINATION include
   FILES_MATCHING
   PATTERN "*.h"
+  PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE)
 
 install(FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"

@@ -127,7 +127,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::
   {
     auto faces = std::make_shared<const std::vector<int>>(geom->getFaces()->data(),
                                                           geom->getFaces()->data() + geom->getFaces()->size());
-    return std::make_shared<fcl::Convexd>(geom->getVertices(), face_count, faces, false);
+    return std::make_shared<fcl::Convexd>(geom->getVertices(), face_count, faces);
   }
 
   CONSOLE_BRIDGE_logError("The mesh is empty!");

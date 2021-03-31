@@ -40,6 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/markers/axis_marker.h>
 #include <tesseract_visualization/markers/contact_results_marker.h>
 #include <tesseract_visualization/markers/toolpath_marker.h>
+#include <tesseract_common/class_loader.h>
 
 /** @brief Message type is ignition::msgs::Scene */
 static const std::string DEFAULT_SCENE_TOPIC_NAME = "/tesseract_ignition/topic/scene";
@@ -599,3 +600,5 @@ void TesseractIgnitionVisualization::sendEnvState(const tesseract_environment::E
 
 //  scene_pub_.Publish(scene_msg);
 //}
+
+TESSERACT_ADD_PLUGIN(tesseract_visualization::TesseractIgnitionVisualization, TesseractIgnitionVisualizationPlugin)
