@@ -39,10 +39,10 @@ struct DiscreteBenchmarkInfo
 };
 
 /** @brief Benchmark that checks the clone method in discrete contact managers*/
-static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, int num_obj)
+static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, std::size_t num_obj)
 {
   std::vector<std::string> active_obj(num_obj);
-  for (int ind = 0; ind < num_obj; ind++)
+  for (std::size_t ind = 0; ind < num_obj; ind++)
   {
     std::string name = "geom_" + std::to_string(ind);
     active_obj.push_back(name);
@@ -82,17 +82,19 @@ static void BM_SELECT_RANDOM_OBJECT(benchmark::State& state, int num_obj)
   int selected_link;
   for (auto _ : state)
   {
-    benchmark::DoNotOptimize(selected_link = rand() % static_cast<int>(num_obj));
+    benchmark::DoNotOptimize(selected_link = rand() % num_obj);
   }
 };
 
 /** @brief Benchmark that checks the setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d&
  * pose) method in discrete contact managers*/
-static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state, DiscreteBenchmarkInfo info, int num_obj)
+static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state,
+                                                      DiscreteBenchmarkInfo info,
+                                                      std::size_t num_obj)
 {
   // Setting up collision objects
   std::vector<std::string> active_obj(num_obj);
-  for (int ind = 0; ind < num_obj; ind++)
+  for (std::size_t ind = 0; ind < num_obj; ind++)
   {
     std::string name = "geom_" + std::to_string(ind);
     active_obj[ind] = name;
@@ -106,7 +108,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state, D
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for
     // the same one. Subtract off approximately BM_SELECT_RANDOM_OBJECT if you need absolute numbers rather than
     // relative.
-    int selected_link = rand() % num_obj;
+    std::size_t selected_link = static_cast<std::size_t>(rand()) % num_obj;
     info.contact_manager_->setCollisionObjectsTransform(active_obj[selected_link], info.obj2_poses[0]);
   }
 };
@@ -134,7 +136,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for
     // the same one. Subtract off approximately BM_SELECT_RANDOM_OBJECT if you need absolute numbers rather than
     // relative.
-    selected_links[0] = active_obj[rand() % num_obj];
+    selected_links[0] = active_obj[static_cast<std::size_t>(rand()) % num_obj];
     info.contact_manager_->setCollisionObjectsTransform(selected_links, info.obj2_poses);
   }
 };
@@ -161,7 +163,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
   {
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for
     // the same one. It might be worth it to manually time these as well if it's really important
-    selected_link[active_obj[rand() % num_obj]] = info.obj2_poses[0];
+    selected_link[active_obj[static_cast<std::size_t>(rand()) % num_obj]] = info.obj2_poses[0];
     info.contact_manager_->setCollisionObjectsTransform(selected_link);
   }
 };
