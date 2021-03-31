@@ -101,7 +101,7 @@ IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen:
       harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
 
       // Add solution
-      if (isWithinLimits<double>(eigen_sol, limits_.joint_limits))
+      if (tesseract_common::satisfiesPositionLimits(eigen_sol, limits_.joint_limits))
         solution_set.push_back(eigen_sol);
 
       // Add redundant solutions
@@ -138,7 +138,7 @@ bool IKFastInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) con
     return false;
   }
 
-  if (!isWithinLimits<double>(vec, limits_.joint_limits))
+  if (!tesseract_common::satisfiesPositionLimits(vec, limits_.joint_limits))
     return false;
 
   return true;

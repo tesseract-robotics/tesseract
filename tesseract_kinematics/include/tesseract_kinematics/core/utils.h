@@ -395,19 +395,56 @@ createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_gra
 }
 
 /**
- * @brief This will check if the provided joint values are within the privided limits
- * @param joint_values The joint values to check
- * @param limits The joint limits
- * @return True if joint values are within the joint limits, otherwise false
+ * @brief This a recursive function for caculating all permutations of the redundant solutions.
+ * @details This should not be used directly, use getRedundantSolutions function.
  */
 template <typename FloatType>
-inline bool isWithinLimits(const Eigen::Ref<const VectorX<FloatType>>& joint_values, const Eigen::MatrixX2d& limits)
+inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redundant_sols,
+                                        const Eigen::Ref<const Eigen::VectorXd>& sol,
+                                        const Eigen::MatrixX2d& limits,
+                                        Eigen::Index current_index)
 {
-  for (int i = 0; i < limits.rows(); ++i)
-    if ((joint_values[i] < limits(i, 0)) || (joint_values[i] > limits(i, 1)))
-      return false;
+  double val;
+  for (Eigen::Index i = current_index; i < static_cast<Eigen::Index>(sol.size()); ++i)
+  {
+    val = sol[i];
+    while ((val -= (2.0 * M_PI)) > limits(i, 0) || tesseract_common::almostEqualRelativeAndAbs(val, limits(i, 0)))
+    {
+      // It not guaranteed that the provided solution is within limits so this check is needed
+      if (val < limits(i, 1) || tesseract_common::almostEqualRelativeAndAbs(val, limits(i, 1)))
+      {
+        Eigen::VectorXd new_sol = sol;
+        new_sol[i] = val;
 
-  return true;
+        if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+        {
+          tesseract_common::enforcePositionLimits(new_sol, limits);
+          redundant_sols.push_back(new_sol.template cast<FloatType>());
+        }
+
+        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, i + 1);
+      }
+    }
+
+    val = sol[i];
+    while ((val += (2.0 * M_PI)) < limits(i, 1) || tesseract_common::almostEqualRelativeAndAbs(val, limits(i, 1)))
+    {
+      // It not guaranteed that the provided solution is within limits so this check is needed
+      if (val > limits(i, 0) || tesseract_common::almostEqualRelativeAndAbs(val, limits(i, 0)))
+      {
+        Eigen::VectorXd new_sol = sol;
+        new_sol[i] = val;
+
+        if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+        {
+          tesseract_common::enforcePositionLimits(new_sol, limits);
+          redundant_sols.push_back(new_sol.template cast<FloatType>());
+        }
+
+        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, i + 1);
+      }
+    }
+  }
 }
 
 /**
@@ -419,27 +456,8 @@ template <typename FloatType>
 inline std::vector<VectorX<FloatType>> getRedundantSolutions(const Eigen::Ref<const VectorX<FloatType>>& sol,
                                                              const Eigen::MatrixX2d& limits)
 {
-  FloatType val;
   std::vector<VectorX<FloatType>> redundant_sols;
-  for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(sol.size()); ++i)
-  {
-    val = sol[i];
-    while ((val -= (2 * M_PI)) > limits(i, 0))
-    {
-      VectorX<FloatType> new_sol = sol;
-      new_sol[i] = val;
-      redundant_sols.push_back(new_sol);
-    }
-
-    val = sol[i];
-    while ((val += (static_cast<FloatType>(2.0 * M_PI))) < limits(i, 1))
-    {
-      VectorX<FloatType> new_sol = sol;
-      new_sol[i] = val;
-      redundant_sols.push_back(new_sol);
-    }
-  }
-
+  getRedundantSolutionsHelper<FloatType>(redundant_sols, sol.template cast<double>(), limits, 0);
   return redundant_sols;
 }
 

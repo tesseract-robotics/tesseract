@@ -95,7 +95,6 @@ IKSolutions KDLInvKinChainNR::calcInvKinHelper(const Eigen::Isometry3d& pose,
   KDLToEigen(kdl_solution, solution);
 
   IKSolutions solution_set;
-  tesseract_kinematics::harmonizeTowardZero<double>(solution);
   if (tesseract_common::satisfiesPositionLimits(solution, kdl_data_.limits.joint_limits))
     solution_set.push_back(solution);
 

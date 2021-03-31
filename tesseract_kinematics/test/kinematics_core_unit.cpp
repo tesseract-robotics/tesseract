@@ -1,4 +1,4 @@
-#include <tesseract_common/macros.h>
+﻿#include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -43,29 +43,6 @@ TEST(TesseractKinematicsUnit, CoreFactoryUnit)  // NOLINT
   EXPECT_TRUE(test_inv_factory.create(nullptr, std::vector<std::string>(), "") == nullptr);
 }
 
-TEST(TesseractKinematicsUnit, CoreUtilsWithinLimitsUnit)  // NOLINT
-{
-  Eigen::VectorXd joint_values;
-  joint_values.resize(2);
-  joint_values(0) = 0;
-  joint_values(1) = 0;
-
-  Eigen::MatrixX2d limits;
-  limits.resize(2, 2);
-  limits(0, 0) = -1;
-  limits(0, 1) = 1;
-  limits(1, 0) = -1;
-  limits(1, 1) = 1;
-
-  EXPECT_TRUE(tesseract_kinematics::isWithinLimits<double>(joint_values, limits));
-
-  limits(0, 0) = .5;
-  limits(0, 1) = 1;
-  limits(1, 0) = .5;
-  limits(1, 1) = 1;
-  EXPECT_FALSE(tesseract_kinematics::isWithinLimits<double>(joint_values, limits));
-}
-
 TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT
 {
   Eigen::VectorXd q(2);
@@ -89,6 +66,84 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT
   tesseract_kinematics::harmonizeTowardZero<double>(q);
   EXPECT_NEAR(q[0], -3 * M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], 3 * M_PI_4, 1e-6);
+}
+
+template <typename FloatType>
+void runRedundantSolutionsTest()
+{
+  double max_diff = 1e-6;
+  Eigen::MatrixX2d limits(3, 2);
+  limits << 0, 2.0 * M_PI, 0, 2.0 * M_PI, 0, 2.0 * M_PI;
+
+  tesseract_kinematics::VectorX<FloatType> q(3);
+  q << 0, 0, 0;
+
+  {  // Test when initial solution is at the lower limit
+    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits);
+    if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
+      solutions.push_back(q);
+
+    EXPECT_EQ(solutions.size(), 8);
+
+    // Check and make sure they are unique
+    for (std::size_t i = 0; i < solutions.size() - 1; ++i)
+    {
+      for (std::size_t j = i + 1; j < solutions.size(); ++j)
+      {
+        EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(
+            solutions[i].template cast<double>(), solutions[j].template cast<double>(), 1e-6));
+      }
+    }
+  }
+
+  {  // Test when initial solution is within the limits
+    limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
+    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits);
+    if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
+      solutions.push_back(q);
+
+    EXPECT_EQ(solutions.size(), 27);
+
+    // Check and make sure they are unique
+    for (std::size_t i = 0; i < solutions.size() - 1; ++i)
+    {
+      for (std::size_t j = i + 1; j < solutions.size(); ++j)
+      {
+        EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(
+            solutions[i].template cast<double>(), solutions[j].template cast<double>(), 1e-6));
+      }
+    }
+  }
+
+  {  // Test when the initial solution outside the lower and upper limit
+    limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
+    q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(4.0 * M_PI);
+
+    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits);
+    if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
+      solutions.push_back(q);
+
+    EXPECT_EQ(solutions.size(), 27);
+
+    // Check and make sure they are unique
+    for (std::size_t i = 0; i < solutions.size() - 1; ++i)
+    {
+      for (std::size_t j = i + 1; j < solutions.size(); ++j)
+      {
+        EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(
+            solutions[i].template cast<double>(), solutions[j].template cast<double>(), 1e-6));
+      }
+    }
+  }
+}
+
+TEST(TesseractKinematicsUnit, RedundantSolutionsUnit)  // NOLINT
+{
+  runRedundantSolutionsTest<float>();
+  runRedundantSolutionsTest<double>();
 }
 
 TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT

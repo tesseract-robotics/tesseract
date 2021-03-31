@@ -64,15 +64,19 @@ private:
 };
 
 /**
- * @brief Check if joint position is within bounds provided the given epsilon
+ * @brief Check if joint position is within bounds or relativilty equal to a limit
  * @param joint_positions The joint position to check
  * @param joint_limits The joint limits to perform check
- * @param epsilon The epsilon to leverage for check. Default is float epsilon
- * @return True if bounds are satisfied, otherwise false
+ * @param max_diff The max diff when comparing position to limit value max(abs(position - limit)) <= max_diff, if true
+ * they are considered equal
+ * @param max_rel_diff The max relative diff between position and limit abs(position - limit) <= largest * max_rel_diff,
+ * if true considered equal. The largest is the largest of the absolute values of position and limit.
+ * @return True if the all position are within the limits or relativily equal to the limit, otherwise false.
  */
 bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::VectorXd>& joint_positions,
                              const Eigen::Ref<const Eigen::MatrixX2d>& position_limits,
-                             double epsilon = std::numeric_limits<float>::epsilon());
+                             double max_diff = 1e-6,
+                             double max_rel_diff = std::numeric_limits<double>::epsilon());
 
 /**
  * @brief Enforce position to be within the provided limits
