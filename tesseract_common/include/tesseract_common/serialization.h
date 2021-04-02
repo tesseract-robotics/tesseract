@@ -79,7 +79,7 @@ inline void save(Archive& ar, const Eigen::Isometry3d& g, const unsigned int /*v
 {
   ar& boost::serialization::make_nvp("xyz", boost::serialization::make_array(g.translation().data(), 3));
   Eigen::Quaterniond q(g.linear());
-  ar& boost::serialization::make_nvp("wxyz", boost::serialization::make_array(q.vec().data(), 4));
+  ar& boost::serialization::make_nvp("xyzw", boost::serialization::make_array(q.vec().data(), 4));
 }
 
 template <class Archive>
@@ -88,7 +88,7 @@ inline void load(Archive& ar, Eigen::Isometry3d& g, const unsigned int /*version
   g.setIdentity();
   ar& boost::serialization::make_nvp("xyz", boost::serialization::make_array(g.translation().data(), 3));
   Eigen::Quaterniond q;
-  ar& boost::serialization::make_nvp("wxyz", boost::serialization::make_array(q.vec().data(), 4));
+  ar& boost::serialization::make_nvp("xyzw", boost::serialization::make_array(q.vec().data(), 4));
   q.normalize();
   g.linear() = q.toRotationMatrix();
 }

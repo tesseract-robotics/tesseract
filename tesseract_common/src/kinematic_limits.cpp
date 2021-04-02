@@ -28,14 +28,16 @@
 
 namespace tesseract_common
 {
-bool KinematicLimits::operator==(const KinematicLimits& other) const
+bool KinematicLimits::operator==(const KinematicLimits& rhs) const
 {
   bool ret_val = true;
-  ret_val &= (joint_limits.isApprox(other.joint_limits, 1e-5));
-  ret_val &= (velocity_limits.isApprox(other.velocity_limits, 1e-5));
-  ret_val &= (acceleration_limits.isApprox(other.acceleration_limits, 1e-5));
+  ret_val &= (joint_limits.isApprox(rhs.joint_limits, 1e-5));
+  ret_val &= (velocity_limits.isApprox(rhs.velocity_limits, 1e-5));
+  ret_val &= (acceleration_limits.isApprox(rhs.acceleration_limits, 1e-5));
   return ret_val;
 }
+
+bool KinematicLimits::operator!=(const KinematicLimits& rhs) const { return !operator==(rhs); }
 
 bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::VectorXd>& joint_positions,
                              const Eigen::Ref<const Eigen::MatrixX2d>& position_limits,
