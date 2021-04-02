@@ -87,17 +87,17 @@ inline bool isContactAllowed(const std::string& name1,
 
   if (acm != nullptr && acm(name1, name2))
   {
-    if (verbose)
+//    if (verbose)
     {
-      CONSOLE_BRIDGE_logDebug(
+      CONSOLE_BRIDGE_logError(
           "Collision between '%s' and '%s' is allowed. No contacts are computed.", name1.c_str(), name2.c_str());
     }
     return true;
   }
 
-  if (verbose)
+//  if (verbose)
   {
-    CONSOLE_BRIDGE_logDebug("Actually checking collisions between %s and %s", name1.c_str(), name2.c_str());
+    CONSOLE_BRIDGE_logError("Actually checking collisions between %s and %s", name1.c_str(), name2.c_str());
   }
 
   return false;
