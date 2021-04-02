@@ -50,7 +50,8 @@ struct KinematicLimits
   /** @brief The acceleration limits */
   Eigen::VectorXd acceleration_limits;
 
-  bool operator==(const KinematicLimits& other) const;
+  bool operator==(const KinematicLimits& rhs) const;
+  bool operator!=(const KinematicLimits& rhs) const;
 
 private:
   friend class boost::serialization::access;
