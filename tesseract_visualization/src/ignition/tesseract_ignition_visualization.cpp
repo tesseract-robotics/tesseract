@@ -474,7 +474,7 @@ void TesseractIgnitionVisualization::sendEnvState(const tesseract_environment::E
 //      link_msg->set_name(link_name);
 
 //      // Check for updated manipulator information and get waypoint
-//      Waypoint wp = NullWaypoint();
+//      Waypoint wp;
 //      if (isPlanInstruction(i.get()))
 //      {
 //        const auto* pi = i.get().cast_const<PlanInstruction>();
