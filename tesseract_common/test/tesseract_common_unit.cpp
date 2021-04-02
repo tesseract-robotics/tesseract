@@ -671,15 +671,15 @@ TEST(TesseractCommonUnit, anyUnit)
 
   any_type = joint_state;
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
-  EXPECT_TRUE(any_type.cast<tesseract_common::JointState>() == joint_state);
+  EXPECT_TRUE(any_type.as<tesseract_common::JointState>() == joint_state);
 
   // Check to make sure it is not making a copy during cast
-  auto& any_type_ref1 = any_type.cast<tesseract_common::JointState>();
-  auto& any_type_ref2 = any_type.cast<tesseract_common::JointState>();
+  auto& any_type_ref1 = any_type.as<tesseract_common::JointState>();
+  auto& any_type_ref2 = any_type.as<tesseract_common::JointState>();
   EXPECT_TRUE(&any_type_ref1 == &any_type_ref2);
 
-  const auto& any_type_const_ref1 = any_type.cast_const<tesseract_common::JointState>();
-  const auto& any_type_const_ref2 = any_type.cast_const<tesseract_common::JointState>();
+  const auto& any_type_const_ref1 = any_type.as<tesseract_common::JointState>();
+  const auto& any_type_const_ref2 = any_type.as<tesseract_common::JointState>();
   EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
 
   {
@@ -699,7 +699,7 @@ TEST(TesseractCommonUnit, anyUnit)
   }
 
   EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
-  EXPECT_TRUE(nany_type.cast<tesseract_common::JointState>() == joint_state);
+  EXPECT_TRUE(nany_type.as<tesseract_common::JointState>() == joint_state);
 }
 
 TEST(TesseractCommonUnit, boundsUnit)
