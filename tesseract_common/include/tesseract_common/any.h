@@ -42,19 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-class NullAny
-{
-public:
-  NullAny() = default;
-
-private:
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive& /*ar*/, const unsigned int /*version*/)
-  {
-  }
-};
-
 #ifndef SWIG
 namespace detail_any
 {
@@ -157,7 +144,7 @@ public:
   }
 
   Any()  // NOLINT
-    : any_type_(std::make_unique<detail_any::AnyInner<uncvref_t<NullAny>>>())
+    : any_type_(nullptr)
   {
   }
 
@@ -191,11 +178,20 @@ public:
     return (*this);
   }
 
-  std::type_index getType() const { return any_type_->getType(); }
+  std::type_index getType() const
+  {
+    if (any_type_ == nullptr)
+      return std::type_index(typeid(nullptr));
+
+    return any_type_->getType();
+  }
 
   template <typename T>
   T& cast()
   {
+    if (getType() != typeid(T))
+      throw std::bad_cast();
+
     auto p = static_cast<uncvref_t<T>*>(any_type_->recover());
     return *p;
   }
@@ -203,6 +199,9 @@ public:
   template <typename T>
   const T& cast_const() const
   {
+    if (getType() != typeid(T))
+      throw std::bad_cast();
+
     auto p = static_cast<const uncvref_t<T>*>(any_type_->recover());
     return *p;
   }
@@ -220,6 +219,5 @@ private:
 
 }  // namespace tesseract_common
 
-TESSERACT_ANY_EXPORT(tesseract_common::NullAny);  // NOLINT
 BOOST_CLASS_TRACKING(tesseract_common::Any, boost::serialization::track_never);
 #endif  // TESSERACT_COMMON_ANY_H
