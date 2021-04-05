@@ -41,7 +41,12 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()
 
-add_library(${PROJECT_NAME} src/manipulator_info.cpp src/kinematic_limits.cpp)
+add_library(
+  ${PROJECT_NAME}
+  src/joint_state.cpp
+  src/manipulator_info.cpp
+  src/kinematic_limits.cpp
+  src/serialization.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen

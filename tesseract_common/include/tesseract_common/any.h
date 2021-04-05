@@ -36,9 +36,22 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/type_traits/is_virtual_base_of.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#define TESSERACT_ANY_EXPORT(any_t)                                                                                    \
-  BOOST_CLASS_EXPORT_GUID(tesseract_common::detail_any::AnyInner<any_t>, #any_t)                                       \
+/** @brief If shared library, this must go in the header after the class definition */
+#define TESSERACT_ANY_EXPORT_KEY(any_t)                                                                                \
+  BOOST_CLASS_EXPORT_KEY2(tesseract_common::detail_any::AnyInner<any_t>, #any_t)                                       \
   BOOST_CLASS_TRACKING(tesseract_common::detail_any::AnyInner<any_t>, boost::serialization::track_never)
+
+/** @brief If shared library, this must go in the cpp after the implicit instantiation of the serialize function */
+#define TESSERACT_ANY_EXPORT_IMPLEMENT(any_t)                                                                          \
+  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::detail_any::AnyInner<any_t>)
+
+/**
+ * @brief This should not be used within shared libraries use the two above.
+ * If not in a shared library it can go in header or cpp
+ */
+#define TESSERACT_ANY_EXPORT(any_t)                                                                                    \
+  TESSERACT_ANY_EXPORT_KEY(any_t)                                                                                      \
+  TESSERACT_ANY_EXPORT_IMPLEMENT(any_t)
 
 namespace tesseract_common
 {

@@ -33,9 +33,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Dense>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/array.hpp>
 #include <boost/serialization/tracking.hpp>
 #include <boost/serialization/tracking_enum.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -48,82 +45,38 @@ namespace serialization
 /****** Eigen::VectorXd ******/
 /*****************************/
 template <class Archive>
-inline void save(Archive& ar, const Eigen::VectorXd& g, const unsigned int /*version*/)
-{
-  long rows = g.rows();
-  ar& BOOST_SERIALIZATION_NVP(rows);
-  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows));
-}
+void save(Archive& ar, const Eigen::VectorXd& g, const unsigned int version);  // NOLINT
 
 template <class Archive>
-inline void load(Archive& ar, Eigen::VectorXd& g, const unsigned int /*version*/)
-{
-  long rows;
-  ar& BOOST_SERIALIZATION_NVP(rows);
-  g.resize(rows);
-  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows));
-}
+void load(Archive& ar, Eigen::VectorXd& g, const unsigned int version);  // NOLINT
 
 template <class Archive>
-inline void serialize(Archive& ar, Eigen::VectorXd& g, const unsigned int version)
-{
-  split_free(ar, g, version);
-}
+void serialize(Archive& ar, Eigen::VectorXd& g, const unsigned int version);  // NOLINT
 
 /*****************************/
 /****** Eigen::VectorXd ******/
 /*****************************/
 
 template <class Archive>
-inline void save(Archive& ar, const Eigen::Isometry3d& g, const unsigned int /*version*/)
-{
-  ar& boost::serialization::make_nvp("xyz", boost::serialization::make_array(g.translation().data(), 3));
-  Eigen::Quaterniond q(g.linear());
-  ar& boost::serialization::make_nvp("xyzw", boost::serialization::make_array(q.vec().data(), 4));
-}
+void save(Archive& ar, const Eigen::Isometry3d& g, const unsigned int version);  // NOLINT
 
 template <class Archive>
-inline void load(Archive& ar, Eigen::Isometry3d& g, const unsigned int /*version*/)
-{
-  g.setIdentity();
-  ar& boost::serialization::make_nvp("xyz", boost::serialization::make_array(g.translation().data(), 3));
-  Eigen::Quaterniond q;
-  ar& boost::serialization::make_nvp("xyzw", boost::serialization::make_array(q.vec().data(), 4));
-  q.normalize();
-  g.linear() = q.toRotationMatrix();
-}
+void load(Archive& ar, Eigen::Isometry3d& g, const unsigned int version);  // NOLINT
 
 template <class Archive>
-inline void serialize(Archive& ar, Eigen::Isometry3d& g, const unsigned int version)
-{
-  split_free(ar, g, version);
-}
+void serialize(Archive& ar, Eigen::Isometry3d& g, const unsigned int version);  // NOLINT
 
 /*****************************/
 /****** Eigen::MatrixX2d *****/
 /*****************************/
 template <class Archive>
-inline void save(Archive& ar, const Eigen::MatrixX2d& g, const unsigned int /*version*/)
-{
-  long rows = g.rows();
-  ar& BOOST_SERIALIZATION_NVP(rows);
-  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows * 2));
-}
+void save(Archive& ar, const Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
 
 template <class Archive>
-inline void load(Archive& ar, Eigen::MatrixX2d& g, const unsigned int /*version*/)
-{
-  long rows;
-  ar& BOOST_SERIALIZATION_NVP(rows);
-  g.resize(rows, 2);
-  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows * 2));
-}
+void load(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
 
 template <class Archive>
-inline void serialize(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version)
-{
-  split_free(ar, g, version);
-}
+void serialize(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
 
 }  // namespace serialization
 }  // namespace boost

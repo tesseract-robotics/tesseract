@@ -30,13 +30,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <Eigen/Geometry>
-#include <tinyxml2.h>
 #include <boost/serialization/base_object.hpp>
-#include <boost/serialization/nvp.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_common/utils.h>
-#include <tesseract_common/serialization.h>
 
 namespace tesseract_common
 {
@@ -123,17 +118,8 @@ public:
    */
   const Eigen::Isometry3d& getTransform() const;
 
-  bool operator==(const ToolCenterPoint& other) const
-  {
-    bool ret_val = true;
-    ret_val &= (type_ == other.type_);
-    ret_val &= (name_ == other.name_);
-    ret_val &= (transform_.isApprox(other.transform_, 1e-5));
-    ret_val &= (external_ == other.external_);
-    ret_val &= (external_frame_ == other.external_frame_);
-    return ret_val;
-  }
-  bool operator!=(const ToolCenterPoint& rhs) const { return !operator==(rhs); }
+  bool operator==(const ToolCenterPoint& rhs) const;
+  bool operator!=(const ToolCenterPoint& rhs) const;
 
 protected:
   int type_{ 0 };
@@ -156,14 +142,7 @@ protected:
 
   friend class boost::serialization::access;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int /*version*/)
-  {
-    ar& boost::serialization::make_nvp("type", type_);
-    ar& boost::serialization::make_nvp("name", name_);
-    ar& boost::serialization::make_nvp("transform", transform_);
-    ar& boost::serialization::make_nvp("external", external_);
-    ar& boost::serialization::make_nvp("external_frame", external_frame_);
-  }
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /**
@@ -175,7 +154,6 @@ struct ManipulatorInfo
 
   ManipulatorInfo() = default;
   ManipulatorInfo(std::string manipulator);
-  ManipulatorInfo(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Name of the manipulator group */
   std::string manipulator;
@@ -204,29 +182,13 @@ struct ManipulatorInfo
    */
   bool empty() const;
 
-  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
-
-  bool operator==(const ManipulatorInfo& other) const
-  {
-    bool ret_val = true;
-    ret_val &= (manipulator == other.manipulator);
-    ret_val &= (manipulator_ik_solver == other.manipulator_ik_solver);
-    ret_val &= (tcp == other.tcp);
-    ret_val &= (working_frame == other.working_frame);
-    return ret_val;
-  }
-  bool operator!=(const ManipulatorInfo& rhs) const { return !operator==(rhs); }
+  bool operator==(const ManipulatorInfo& rhs) const;
+  bool operator!=(const ManipulatorInfo& rhs) const;
 
 private:
   friend class boost::serialization::access;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int /*version*/)
-  {
-    ar& boost::serialization::make_nvp("manipulator", manipulator);
-    ar& boost::serialization::make_nvp("manipulator_ik_solver", manipulator_ik_solver);
-    ar& boost::serialization::make_nvp("tcp", tcp);
-    ar& boost::serialization::make_nvp("working_frame", working_frame);
-  }
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_common
 

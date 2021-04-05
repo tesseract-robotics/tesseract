@@ -73,7 +73,7 @@ TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
   limits(3, 1) = -5;
 
   Eigen::VectorXd random_numbers = tesseract_common::generateRandomNumber(limits);
-  EXPECT_EQ(limits.rows(), random_numbers.size());
+  EXPECT_EQ(limits.rows(), random_numbers.rows());
   for (long i = 0; i < limits.rows(); ++i)
   {
     EXPECT_LE(random_numbers(i), limits(i, 1));
@@ -82,7 +82,7 @@ TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
 
   Eigen::MatrixX2d empty_limits;
   Eigen::VectorXd random_numbers2 = tesseract_common::generateRandomNumber(empty_limits);
-  EXPECT_EQ(empty_limits.rows(), random_numbers2.size());
+  EXPECT_EQ(empty_limits.rows(), random_numbers2.rows());
 
   Eigen::MatrixX2d equal_limits(4, 2);
   equal_limits(0, 0) = 5;
@@ -94,7 +94,7 @@ TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
   equal_limits(3, 0) = 5;
   equal_limits(3, 1) = 5;
   Eigen::VectorXd random_numbers3 = tesseract_common::generateRandomNumber(equal_limits);
-  EXPECT_EQ(equal_limits.rows(), random_numbers3.size());
+  EXPECT_EQ(equal_limits.rows(), random_numbers3.rows());
   for (long i = 0; i < equal_limits.rows(); ++i)
   {
     EXPECT_NEAR(random_numbers3(i), 5, 1e-5);
@@ -110,7 +110,7 @@ TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
   wrong_limits(3, 0) = 5;
   wrong_limits(3, 1) = -5;
   Eigen::VectorXd random_numbers4 = tesseract_common::generateRandomNumber(wrong_limits);
-  EXPECT_EQ(wrong_limits.rows(), random_numbers4.size());
+  EXPECT_EQ(wrong_limits.rows(), random_numbers4.rows());
   for (long i = 0; i < limits.rows(); ++i)
   {
     EXPECT_GE(random_numbers4(i), wrong_limits(i, 1));
