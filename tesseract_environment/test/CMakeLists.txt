@@ -108,8 +108,6 @@ add_gtest_discover_tests(${PROJECT_NAME}_manipulator_manager_unit)
 add_dependencies(${PROJECT_NAME}_manipulator_manager_unit ${PROJECT_NAME}_kdl)
 add_dependencies(run_tests ${PROJECT_NAME}_manipulator_manager_unit)
 
-
-find_package(tesseract_visualization REQUIRED)
 add_executable(${PROJECT_NAME}_environment_collision tesseract_environment_collision.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_environment_collision
@@ -117,7 +115,6 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_ofkt
-          tesseract::tesseract_visualization
           tesseract::tesseract_support)
 target_compile_options(${PROJECT_NAME}_environment_collision PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                         ${TESSERACT_COMPILE_OPTIONS_PUBLIC})

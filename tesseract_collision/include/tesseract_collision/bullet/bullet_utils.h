@@ -1188,6 +1188,29 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
   broadphase->getOverlappingPairCache()->cleanProxyFromPairs(cow->getBroadphaseHandle(), dispatcher.get());
 }
 
+inline void refreshBroadphaseProxy(const COW::Ptr& cow,
+                                   const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                   const std::unique_ptr<btCollisionDispatcher>& dispatcher)
+{
+  if (cow->getBroadphaseHandle())
+  {
+    broadphase->destroyProxy(cow->getBroadphaseHandle(), dispatcher.get());
+
+    btVector3 aabb_min, aabb_max;
+    cow->getAABB(aabb_min, aabb_max);
+
+    // Add the active collision object to the broadphase
+    int type = cow->getCollisionShape()->getShapeType();
+    cow->setBroadphaseHandle(broadphase->createProxy(aabb_min,
+                                                     aabb_max,
+                                                     type,
+                                                     cow.get(),
+                                                     cow->m_collisionFilterGroup,
+                                                     cow->m_collisionFilterMask,
+                                                     dispatcher.get()));
+  }
+}
+
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_BULLET_UTILS_H

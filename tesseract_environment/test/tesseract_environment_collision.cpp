@@ -10,7 +10,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_geometry/impl/box.h>
 #include <tesseract_common/utils.h>
-#include <tesseract_visualization/visualization_loader.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/types.h>
@@ -72,11 +71,6 @@ tesseract_scene_graph::SRDFModel::Ptr getSRDFModel(const SceneGraph::Ptr& scene_
 template <typename S>
 void runEnvironmentCollisionTest()
 {
-
-
-
-
-
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
@@ -86,7 +80,6 @@ void runEnvironmentCollisionTest()
   auto env = std::make_shared<Environment>(true);
   bool success = env->init<S>(*scene_graph, srdf);
   EXPECT_TRUE(success);
-
 
   Link link_1("link_n1");
   {
@@ -99,7 +92,7 @@ void runEnvironmentCollisionTest()
     link_1.visual.push_back(v);
 
     Collision::Ptr c = std::make_shared<Collision>();
-    c->origin.translation() =  v->origin.translation();
+    c->origin.translation() = v->origin.translation();
     c->geometry = v->geometry;
     c->name = "link1_collision";
     link_1.collision.push_back(c);
@@ -116,7 +109,7 @@ void runEnvironmentCollisionTest()
     link_2.visual.push_back(v);
 
     Collision::Ptr c = std::make_shared<Collision>();
-    c->origin.translation() =  v->origin.translation();
+    c->origin.translation() = v->origin.translation();
     c->geometry = v->geometry;
     c->name = "link2_collision";
     link_2.collision.push_back(c);
@@ -128,16 +121,6 @@ void runEnvironmentCollisionTest()
   auto cmd2 = std::make_shared<AddLinkCommand>(link_2, true);
   env->applyCommand(cmd2);
 
-
-  // Load visualizer
-  tesseract_visualization::VisualizationLoader mLoader;
-  auto plotter = mLoader.get();
-  if (plotter != nullptr && env != nullptr)
-  {
-    plotter->waitForConnection(3);
-    plotter->plotEnvironment(env);
-  }
-
   // Setup collision margin data
   CollisionCheckConfig mCollisionCheckConfig;
   mCollisionCheckConfig.longest_valid_segment_length = 0.1;
@@ -146,9 +129,14 @@ void runEnvironmentCollisionTest()
   tesseract_collision::CollisionMarginData margin_data(0.0);
   mCollisionCheckConfig.collision_margin_data = margin_data;
 
-
   // Setup collision checker
   DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
+  {  // Check for collisions
+    tesseract_collision::ContactResultMap collision;
+    manager->contactTest(collision, mCollisionCheckConfig.contact_request);
+    EXPECT_FALSE(collision.empty());
+  }
+
   std::vector<std::string> active_links = { "link_n1" };
   manager->setActiveCollisionObjects(active_links);
   manager->setCollisionObjectsTransform("link_n1", Eigen::Isometry3d::Identity());
@@ -159,12 +147,10 @@ void runEnvironmentCollisionTest()
   manager->contactTest(collision, mCollisionCheckConfig.contact_request);
 
   EXPECT_FALSE(collision.empty());
-
 }
 
 TEST(TesseractEnvironmentCollisionUnit, runEnvironmentCollisionTest)  // NOLINT
 {
-//  runEnvironmentCollisionTest<KDLStateSolver>();
   runEnvironmentCollisionTest<OFKTStateSolver>();
 }
 
