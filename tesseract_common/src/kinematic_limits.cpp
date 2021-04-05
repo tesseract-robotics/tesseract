@@ -24,7 +24,14 @@
  * limitations under the License.
  */
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <numeric>
+#include <boost/serialization/nvp.hpp>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_common/kinematic_limits.h>
+#include <tesseract_common/serialization.h>
 
 namespace tesseract_common
 {
@@ -38,6 +45,14 @@ bool KinematicLimits::operator==(const KinematicLimits& rhs) const
 }
 
 bool KinematicLimits::operator!=(const KinematicLimits& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void KinematicLimits::serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
+{
+  ar& BOOST_SERIALIZATION_NVP(joint_limits);
+  ar& BOOST_SERIALIZATION_NVP(velocity_limits);
+  ar& BOOST_SERIALIZATION_NVP(acceleration_limits);
+}
 
 bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::VectorXd>& joint_positions,
                              const Eigen::Ref<const Eigen::MatrixX2d>& position_limits,
@@ -67,3 +82,10 @@ void enforcePositionLimits(Eigen::Ref<Eigen::VectorXd> joint_positions,
   joint_positions = joint_positions.array().min(position_limits.col(1).array()).max(position_limits.col(0).array());
 }
 }  // namespace tesseract_common
+
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+template void tesseract_common::KinematicLimits::serialize(boost::archive::xml_oarchive& ar,
+                                                           const unsigned int version);
+template void tesseract_common::KinematicLimits::serialize(boost::archive::xml_iarchive& ar,
+                                                           const unsigned int version);

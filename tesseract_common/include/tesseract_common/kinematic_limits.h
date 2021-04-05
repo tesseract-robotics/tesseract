@@ -29,10 +29,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <numeric>
+#include <boost/serialization/base_object.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_common/serialization.h>
 
 namespace tesseract_common
 {
@@ -56,12 +54,7 @@ struct KinematicLimits
 private:
   friend class boost::serialization::access;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int /*version*/)
-  {
-    ar& BOOST_SERIALIZATION_NVP(joint_limits);
-    ar& BOOST_SERIALIZATION_NVP(velocity_limits);
-    ar& BOOST_SERIALIZATION_NVP(acceleration_limits);
-  }
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /**
