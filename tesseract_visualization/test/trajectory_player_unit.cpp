@@ -79,6 +79,16 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTest)  // NOLINT
     JointState s = player.setCurrentDuration(10);
     EXPECT_NEAR(s.time, 9, 1e-5);
     EXPECT_NEAR(s.position(0), 9, 1e-5);
+    EXPECT_TRUE(player.isFinished());
+  }
+
+  {
+    JointState s = player.setCurrentDuration(11);
+    EXPECT_NEAR(s.time, 9, 1e-5);
+    EXPECT_NEAR(s.position(0), 9, 1e-5);
+    EXPECT_TRUE(player.isFinished());
+    player.setCurrentDuration(0);
+    EXPECT_FALSE(player.isFinished());
   }
 
   {
@@ -91,6 +101,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTest)  // NOLINT
     JointState s = player.setCurrentDuration(-1);
     EXPECT_NEAR(s.time, 0, 1e-5);
     EXPECT_NEAR(s.position(0), 0, 1e-5);
+    EXPECT_FALSE(player.isFinished());
   }
 }
 

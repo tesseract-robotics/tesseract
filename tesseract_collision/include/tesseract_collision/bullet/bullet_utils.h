@@ -1188,6 +1188,15 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
   broadphase->getOverlappingPairCache()->cleanProxyFromPairs(cow->getBroadphaseHandle(), dispatcher.get());
 }
 
+/**
+ * @brief Refresh the broadphase data structure
+ * @details When change certain properties of a collision object the broadphase is not aware so this function can be
+ * called to trigger an update. For example, when changing active links this changes internal flags which may require
+ * moving a collision object from the static BVH to the dynamic BVH so this function must be called.
+ * @param cow The collision object to update.
+ * @param broadphase The broadphase to update.
+ * @param dispatcher The dispatcher.
+ */
 inline void refreshBroadphaseProxy(const COW::Ptr& cow,
                                    const std::unique_ptr<btBroadphaseInterface>& broadphase,
                                    const std::unique_ptr<btCollisionDispatcher>& dispatcher)
