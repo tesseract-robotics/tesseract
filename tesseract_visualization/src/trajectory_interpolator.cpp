@@ -84,7 +84,7 @@ void TrajectoryInterpolator::findStateIndices(const double& duration, long& befo
 
   // Compute duration blend
   double before_time = running_duration - duration_from_previous_[index];
-  if (after == before)
+  if ((index == 0) || (after == before))
     blend = 1.0;
   else
     blend = (duration - before_time) / duration_from_previous_[index];

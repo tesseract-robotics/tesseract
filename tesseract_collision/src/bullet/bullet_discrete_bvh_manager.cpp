@@ -231,7 +231,6 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::
   for (auto& co : link2cow_)
   {
     COW::Ptr& cow = co.second;
-
     updateCollisionObjectFilters(active_, cow, broadphase_, dispatcher_);
     refreshBroadphaseProxy(cow, broadphase_, dispatcher_);
   }

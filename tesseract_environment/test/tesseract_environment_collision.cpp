@@ -4,9 +4,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <algorithm>
 #include <vector>
 #include <tesseract_urdf/urdf_parser.h>
-#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
-#include <tesseract_collision/fcl/fcl_discrete_managers.h>
-#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_geometry/impl/box.h>
 #include <tesseract_common/utils.h>
@@ -133,12 +130,12 @@ void runEnvironmentCollisionTest()
   DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
   {  // Check for collisions
     tesseract_collision::ContactResultMap collision;
+    std::vector<std::string> active_links = { "link_n1" };
+    manager->setActiveCollisionObjects(active_links);
     manager->contactTest(collision, mCollisionCheckConfig.contact_request);
     EXPECT_FALSE(collision.empty());
   }
 
-  std::vector<std::string> active_links = { "link_n1" };
-  manager->setActiveCollisionObjects(active_links);
   manager->setCollisionObjectsTransform("link_n1", Eigen::Isometry3d::Identity());
   manager->setCollisionMarginData(mCollisionCheckConfig.collision_margin_data);
 
@@ -151,6 +148,7 @@ void runEnvironmentCollisionTest()
 
 TEST(TesseractEnvironmentCollisionUnit, runEnvironmentCollisionTest)  // NOLINT
 {
+  runEnvironmentCollisionTest<KDLStateSolver>();
   runEnvironmentCollisionTest<OFKTStateSolver>();
 }
 

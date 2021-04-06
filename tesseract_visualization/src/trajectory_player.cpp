@@ -73,8 +73,12 @@ tesseract_common::JointState TrajectoryPlayer::setCurrentDuration(double duratio
   if (!trajectory_ || trajectory_->empty())
     throw std::runtime_error("Trajectory is empty!");
 
+  finished_ = false;
   if (duration > trajectory_duration_)
+  {
     current_duration_ = trajectory_duration_;
+    finished_ = true;
+  }
   else if (duration < 0)
     current_duration_ = 0;
   else
