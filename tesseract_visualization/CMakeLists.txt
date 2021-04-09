@@ -44,13 +44,13 @@ if(ignition-common3_FOUND
   message(STATUS "Ignition Visualization Library will be built!")
 endif()
 
-initialize_code_coverage()
+initialize_code_coverage(ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 set(COVERAGE_EXCLUDE
     /usr/*
     /opt/*
     ${CMAKE_CURRENT_LIST_DIR}/test/*
     /*/gtest/*)
-add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
+add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()
