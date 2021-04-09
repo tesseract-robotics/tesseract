@@ -32,7 +32,7 @@ else()
   endif()
 endif()
 
-initialize_code_coverage()
+initialize_code_coverage(ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 set(COVERAGE_EXCLUDE
     /usr/*
     /opt/*
@@ -40,7 +40,7 @@ set(COVERAGE_EXCLUDE
     /*/gtest/*
     /*/bullet/LinearMath/*
     /*/bullet/BulletCollision/*)
-add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
+add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()
