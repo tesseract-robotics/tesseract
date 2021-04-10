@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2021-04-09)
+------------------
 * Only enable code coverage if compiler definition is set
 * Move serialize implementation to cpp based on boost documentation for shared libraries
 * Rename Any method cast() and cast_const() to as()

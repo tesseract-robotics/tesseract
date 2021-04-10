@@ -2,8 +2,8 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2021-04-09)
+------------------
 * Only enable code coverage if compiler definition is set
 * Fix issue in trajectory player setCurrentDuration not handling finished bool
 * Move serialize implementation to cpp based on boost documentation for shared libraries

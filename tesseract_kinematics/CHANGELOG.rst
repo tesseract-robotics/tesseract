@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2021-04-09)
+------------------
 * Only enable code coverage if compiler definition is set
 * Fix satisfiesPositionLimits to use relative equal and calculation of redundant solutions to include all permutations
 * Fix inv kinematics to only return solution within limits and add redundant solutions for kdl ik solvers

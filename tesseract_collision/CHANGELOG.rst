@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2021-04-09)
+------------------
 * Only enable code coverage if compiler definition is set
 * Fix issue in trajectory player setCurrentDuration not handling finished bool
 * Fix bullet broadphase when new links are added
