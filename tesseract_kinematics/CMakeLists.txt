@@ -30,6 +30,9 @@ else()
   endif()
 endif()
 
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
+
 initialize_code_coverage(ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 set(COVERAGE_EXCLUDE
     /usr/*
@@ -38,9 +41,6 @@ set(COVERAGE_EXCLUDE
     /*/gtest/*
     /*/bullet/LinearMath/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-
-# Load variable for clang tidy args, compiler options and cxx version
-tesseract_variables()
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core src/core/rop_inverse_kinematics.cpp src/core/rep_inverse_kinematics.cpp)
