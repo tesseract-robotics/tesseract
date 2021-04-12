@@ -32,6 +32,9 @@ else()
   endif()
 endif()
 
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
+
 initialize_code_coverage(ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 set(COVERAGE_EXCLUDE
     /usr/*
@@ -41,9 +44,6 @@ set(COVERAGE_EXCLUDE
     /*/bullet/LinearMath/*
     /*/bullet/BulletCollision/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-
-# Load variable for clang tidy args, compiler options and cxx version
-tesseract_variables()
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core src/core/environment.cpp src/core/manipulator_manager.cpp)
