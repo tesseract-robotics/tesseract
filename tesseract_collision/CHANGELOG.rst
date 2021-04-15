@@ -2,6 +2,12 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add bullet-extras depends to tesseract_collision package.xml
+* Move tesseract_variables() before any use of custom macros
+* Contributors: Levi Armstrong
+
 0.3.0 (2021-04-09)
 ------------------
 * Only enable code coverage if compiler definition is set

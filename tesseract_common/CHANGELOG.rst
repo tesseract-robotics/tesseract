@@ -2,6 +2,11 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move tesseract_variables() before any use of custom macros
+* Contributors: Levi Armstrong
+
 0.3.0 (2021-04-09)
 ------------------
 * Only enable code coverage if compiler definition is set
