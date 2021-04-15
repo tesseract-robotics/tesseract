@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.1 (2021-04-14)
+------------------
 * Add bullet-extras depends to tesseract_collision package.xml
 * Move tesseract_variables() before any use of custom macros
 * Contributors: Levi Armstrong

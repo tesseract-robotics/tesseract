@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.1 (2021-04-14)
+------------------
 * Move tesseract_variables() before any use of custom macros
 * Contributors: Levi Armstrong
 
