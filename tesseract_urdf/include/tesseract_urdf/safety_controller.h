@@ -28,8 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
-#include <exception>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -37,41 +35,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-inline tesseract_scene_graph::JointSafety::Ptr parseSafetyController(const tinyxml2::XMLElement* xml_element,
-                                                                     const int /*version*/)
-{
-  auto s = std::make_shared<tesseract_scene_graph::JointSafety>();
-  if (xml_element->QueryDoubleAttribute("k_velocity", &(s->k_velocity)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("SafetyController: Missing or failed to parse attribute 'k_velocity'!"));
-
-  if (xml_element->Attribute("soft_upper_limit") == nullptr && xml_element->Attribute("soft_lower_limit") == nullptr &&
-      xml_element->Attribute("k_position") == nullptr)
-  {
-    CONSOLE_BRIDGE_logDebug("SafetyController: Missing attributes 'soft_upper_limit', 'soft_lower_limit', and "
-                            "'k_position', using default value 0, 0, and 0!");
-  }
-  else if (xml_element->Attribute("soft_upper_limit") == nullptr ||
-           xml_element->Attribute("soft_lower_limit") == nullptr || xml_element->Attribute("k_position") == nullptr)
-  {
-    if (xml_element->Attribute("soft_upper_limit") == nullptr)
-      CONSOLE_BRIDGE_logDebug("SafetyController: Missing attribute 'soft_upper_limit', using default value 0!");
-
-    if (xml_element->Attribute("soft_lower_limit") == nullptr)
-      CONSOLE_BRIDGE_logDebug("SafetyController: Missing attribute 'soft_lower_limit', using default value 0!");
-
-    if (xml_element->Attribute("k_position") == nullptr)
-      CONSOLE_BRIDGE_logDebug("SafetyController: Missing attribute 'k_position', using default value 0!");
-  }
-
-  s->soft_upper_limit = 0;
-  s->soft_lower_limit = 0;
-  s->k_position = 0;
-  xml_element->QueryDoubleAttribute("soft_upper_limit", &s->soft_upper_limit);
-  xml_element->QueryDoubleAttribute("soft_lower_limit", &s->soft_lower_limit);
-  xml_element->QueryDoubleAttribute("k_position", &s->k_position);
-
-  return s;
-}
+/**
+ * @brief Parse xml element safety_controller
+ * @param xml_element The xml element
+ * @param version The version number
+ * @return A Tesseract JointSafety
+ */
+tesseract_scene_graph::JointSafety::Ptr parseSafetyController(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 

@@ -28,47 +28,27 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <exception>
-#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
-#include <boost/iostreams/stream.hpp>
-#include <boost/iostreams/device/array.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/octree.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 
 namespace tesseract_urdf
 {
-inline tesseract_geometry::Octree::Ptr parseOctree(const tinyxml2::XMLElement* xml_element,
-                                                   const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                                   tesseract_geometry::Octree::SubType shape_type,
-                                                   const bool prune,
-                                                   const int /*version*/)
-{
-  std::string filename;
-  if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Octree: Missing or failed parsing attribute 'filename'!"));
-
-  tesseract_common::Resource::Ptr resource = locator->locateResource(filename);
-  if (!resource || !resource->isFile())
-    std::throw_with_nested(std::runtime_error("Octree: Missing resource '" + filename + "'!"));
-
-  auto ot = std::make_shared<octomap::OcTree>(resource->getFilePath());
-
-  if (ot == nullptr || ot->size() == 0)
-    std::throw_with_nested(std::runtime_error("Octree: Error importing from '" + filename + "'!"));
-
-  if (prune)
-    tesseract_geometry::Octree::prune(*ot);
-
-  auto geom = std::make_shared<tesseract_geometry::Octree>(ot, shape_type);
-  if (geom == nullptr)
-    std::throw_with_nested(std::runtime_error("Octree: Error creating octree geometry type from octomap::octree!"));
-
-  return geom;
-}
+/**
+ * @brief Parse xml element octree
+ * @param xml_element The xml element
+ * @param locator The Tesseract resource locator
+ * @param shape_type The collision/visual shape type to use
+ * @param prune Indicate if the octree should be pruned
+ * @return A Tesseract Geometry Octree
+ */
+tesseract_geometry::Octree::Ptr parseOctree(const tinyxml2::XMLElement* xml_element,
+                                            const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                                            tesseract_geometry::Octree::SubType shape_type,
+                                            bool prune,
+                                            int version);
 
 }  // namespace tesseract_urdf
 

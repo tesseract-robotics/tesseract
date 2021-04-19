@@ -44,7 +44,7 @@ bool runTest(ElementType& type,
              std::function<ElementType(const tinyxml2::XMLElement*, const int)> func,
              const std::string& xml_string,
              const std::string& element_name,
-             const int version)
+             int version)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -74,7 +74,7 @@ bool runTest(
     const std::string& xml_string,
     const std::string& element_name,
     const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-    const int version,
+    int version,
     bool visual)
 {
   tinyxml2::XMLDocument xml_doc;
@@ -104,7 +104,7 @@ bool runTest(
     const std::string& xml_string,
     const std::string& element_name,
     const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-    const int version)
+    int version)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -135,7 +135,7 @@ bool runTest(ElementType& type,
              const std::string& element_name,
              const tesseract_scene_graph::ResourceLocator::Ptr& locator,
              std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-             const int version)
+             int version)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -165,7 +165,7 @@ bool runTest(ElementType& type,
              const std::string& xml_string,
              const std::string& element_name,
              std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-             const int version,
+             int version,
              const bool visual)
 {
   tinyxml2::XMLDocument xml_doc;

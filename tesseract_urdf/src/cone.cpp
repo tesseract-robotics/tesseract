@@ -1,6 +1,6 @@
 /**
- * @file cylinder.h
- * @brief Parse cylinder from xml string
+ * @file cone.cpp
+ * @brief Parse cone from xml string
  *
  * @author Levi Armstrong
  * @date September 1, 2019
@@ -23,25 +23,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_URDF_CYLINDER_H
-#define TESSERACT_URDF_CYLINDER_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <stdexcept>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/impl/cylinder.h>
+#include <tesseract_urdf/cone.h>
 
-namespace tesseract_urdf
+tesseract_geometry::Cone::Ptr tesseract_urdf::parseCone(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {
-/**
- * @brief Parse a xml cylinder element
- * @param xml_element The xml element
- * @return Tesseract Geometry Cylinder
- */
-tesseract_geometry::Cylinder::Ptr parseCylinder(const tinyxml2::XMLElement* xml_element, int version);
+  double r, l;
+  if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS || !(l > 0))
+    std::throw_with_nested(std::runtime_error("Cone: Missing or failed parsing attribute 'length'!"));
 
-}  // namespace tesseract_urdf
+  if (xml_element->QueryDoubleAttribute("radius", &(r)) != tinyxml2::XML_SUCCESS || !(r > 0))
+    std::throw_with_nested(std::runtime_error("Cone: Missing or failed parsing attribute 'radius'!"));
 
-#endif  // TESSERACT_URDF_CYLINDER_H
+  return std::make_shared<tesseract_geometry::Cone>(r, l);
+}

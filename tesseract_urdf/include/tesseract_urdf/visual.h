@@ -28,107 +28,26 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <exception>
-#include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/link.h>
-#include <tesseract_urdf/origin.h>
-#include <tesseract_urdf/material.h>
-#include <tesseract_urdf/geometry.h>
 
 namespace tesseract_urdf
 {
-inline std::vector<tesseract_scene_graph::Visual::Ptr>
+/**
+ * @brief Parse xml element visual
+ * @param xml_element The xml element
+ * @param locator The Tesseract resource locator
+ * @param version The version number
+ * @return A vector tesseract_scene_graph Visual objects
+ */
+std::vector<tesseract_scene_graph::Visual::Ptr>
 parseVisual(const tinyxml2::XMLElement* xml_element,
             const tesseract_scene_graph::ResourceLocator::Ptr& locator,
             std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-            const int version)
-{
-  std::vector<tesseract_scene_graph::Visual::Ptr> visuals;
-
-  // get name
-  std::string visual_name = tesseract_common::StringAttribute(xml_element, "name", "");
-
-  // get origin
-  Eigen::Isometry3d visual_origin = Eigen::Isometry3d::Identity();
-  const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
-  if (origin != nullptr)
-  {
-    try
-    {
-      visual_origin = parseOrigin(origin, version);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Visual: Error parsing 'origin' element!"));
-    }
-  }
-
-  // get material
-  tesseract_scene_graph::Material::Ptr visual_material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
-  const tinyxml2::XMLElement* material = xml_element->FirstChildElement("material");
-  if (material != nullptr)
-  {
-    try
-    {
-      visual_material = parseMaterial(material, available_materials, true, version);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Visual: Error parsing 'material' element!"));
-    }
-  }
-
-  // get geometry
-  const tinyxml2::XMLElement* geometry = xml_element->FirstChildElement("geometry");
-  if (geometry == nullptr)
-    std::throw_with_nested(std::runtime_error("Visual: Error missing 'geometry' element!"));
-
-  std::vector<tesseract_geometry::Geometry::Ptr> geometries;
-  try
-  {
-    geometries = parseGeometry(geometry, locator, true, version);
-  }
-  catch (...)
-  {
-    std::throw_with_nested(std::runtime_error("Visual: Error parsing 'geometry' element!"));
-  }
-
-  if (geometries.size() == 1)
-  {
-    auto visual = std::make_shared<tesseract_scene_graph::Visual>();
-    visual->name = visual_name;
-    visual->origin = visual_origin;
-    visual->geometry = geometries[0];
-    visual->material = visual_material;
-    visuals.push_back(visual);
-  }
-  else
-  {
-    int i = 0;
-    for (const auto& g : geometries)
-    {
-      auto visual = std::make_shared<tesseract_scene_graph::Visual>();
-
-      if (visual_name.empty())
-        visual->name = visual_name;
-      else
-        visual->name = visual_name + "_" + std::to_string(i);
-
-      visual->origin = visual_origin;
-      visual->geometry = g;
-      visual->material = visual_material;
-      visuals.push_back(visual);
-    }
-  }
-
-  return visuals;
-}
+            int version);
 
 }  // namespace tesseract_urdf
 

@@ -43,7 +43,33 @@ set(COVERAGE_EXCLUDE
     /*/bullet/LinearMath/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
-add_library(${PROJECT_NAME} src/urdf_parser.cpp)
+add_library(
+  ${PROJECT_NAME}
+  src/box.cpp
+  src/calibration.cpp
+  src/capsule.cpp
+  src/collision.cpp
+  src/cone.cpp
+  src/convex_mesh.cpp
+  src/cylinder.cpp
+  src/dynamics.cpp
+  src/geometry.cpp
+  src/inertial.cpp
+  src/joint.cpp
+  src/limits.cpp
+  src/link.cpp
+  src/material.cpp
+  src/mesh.cpp
+  src/mimic.cpp
+  src/octomap.cpp
+  src/octree.cpp
+  src/origin.cpp
+  src/point_cloud.cpp
+  src/safety_controller.cpp
+  src/sdf_mesh.cpp
+  src/sphere.cpp
+  src/urdf_parser.cpp
+  src/visual.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Boost::boost
@@ -53,6 +79,7 @@ target_link_libraries(
          tesseract::tesseract_scene_graph
          tesseract::tesseract_collision_core
          console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})

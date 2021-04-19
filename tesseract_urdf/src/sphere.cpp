@@ -1,6 +1,6 @@
 /**
- * @file cylinder.h
- * @brief Parse cylinder from xml string
+ * @file sphere.cpp
+ * @brief Parse sphere from xml string
  *
  * @author Levi Armstrong
  * @date September 1, 2019
@@ -23,25 +23,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_URDF_CYLINDER_H
-#define TESSERACT_URDF_CYLINDER_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tinyxml2.h>
+#include <stdexcept>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/impl/cylinder.h>
+#include <tesseract_urdf/sphere.h>
 
-namespace tesseract_urdf
+tesseract_geometry::Sphere::Ptr tesseract_urdf::parseSphere(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {
-/**
- * @brief Parse a xml cylinder element
- * @param xml_element The xml element
- * @return Tesseract Geometry Cylinder
- */
-tesseract_geometry::Cylinder::Ptr parseCylinder(const tinyxml2::XMLElement* xml_element, int version);
+  double radius;
+  if (xml_element->QueryDoubleAttribute("radius", &(radius)) != tinyxml2::XML_SUCCESS || !(radius > 0))
+    std::throw_with_nested(std::runtime_error("Sphere: Missing or failed parsing attribute radius!"));
 
-}  // namespace tesseract_urdf
-
-#endif  // TESSERACT_URDF_CYLINDER_H
+  return std::make_shared<tesseract_geometry::Sphere>(radius);
+}

@@ -28,8 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
-#include <exception>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -37,30 +35,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-inline tesseract_scene_graph::JointCalibration::Ptr parseCalibration(const tinyxml2::XMLElement* xml_element,
-                                                                     const int /*version*/)
-{
-  if (xml_element->Attribute("rising") == nullptr && xml_element->Attribute("falling") == nullptr)
-    std::throw_with_nested(std::runtime_error("Calibration: Missing both attribute 'rising' and 'falling', either "
-                                              "remove tag add attributes and values!"));
-
-  auto calibration = std::make_shared<tesseract_scene_graph::JointCalibration>();
-  if (xml_element->Attribute("rising") == nullptr && xml_element->Attribute("falling") != nullptr)
-    CONSOLE_BRIDGE_logDebug("Calibration: Missing attribute 'rising', using default value 0!");
-
-  if (xml_element->Attribute("rising") != nullptr && xml_element->Attribute("falling") == nullptr)
-    CONSOLE_BRIDGE_logDebug("Calibration: Missing attribute 'falling', using default value 0!");
-
-  auto xml_status = xml_element->QueryDoubleAttribute("rising", &(calibration->rising));
-  if (xml_status != tinyxml2::XML_NO_ATTRIBUTE && xml_status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Calibration: Error parsing attribute 'rising'!"));
-
-  xml_status = xml_element->QueryDoubleAttribute("falling", &(calibration->falling));
-  if (xml_status != tinyxml2::XML_NO_ATTRIBUTE && xml_status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Calibration: Error parsing attribute 'falling'!"));
-
-  return calibration;
-}
+/**
+ * @brief Parse a xml calibration element
+ * @param xml_element The xml element
+ * @return Tesseract JointCalibration
+ */
+tesseract_scene_graph::JointCalibration::Ptr parseCalibration(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 

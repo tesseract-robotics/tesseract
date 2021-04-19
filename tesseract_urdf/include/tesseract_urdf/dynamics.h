@@ -28,8 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
-#include <exception>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -37,31 +35,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-inline tesseract_scene_graph::JointDynamics::Ptr parseDynamics(const tinyxml2::XMLElement* xml_element,
-                                                               const int /*version*/)
-{
-  if (xml_element->Attribute("damping") == nullptr && xml_element->Attribute("friction") == nullptr)
-    std::throw_with_nested(std::runtime_error("Dynamics: Missing both attributes 'damping' and 'friction', remove tag "
-                                              "or add attributes and values!"));
-
-  auto dynamics = std::make_shared<tesseract_scene_graph::JointDynamics>();
-
-  tinyxml2::XMLError status = xml_element->QueryDoubleAttribute("damping", &(dynamics->damping));
-  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Dynamics: Error parsing attribute 'damping'!"));
-
-  if (status == tinyxml2::XML_NO_ATTRIBUTE)
-    CONSOLE_BRIDGE_logDebug("Dynamics: Missing attribute 'damping', using default value 0!");
-
-  status = xml_element->QueryDoubleAttribute("friction", &(dynamics->friction));
-  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Dynamics: Error parsing attribute 'friction'!"));
-
-  if (status == tinyxml2::XML_NO_ATTRIBUTE)
-    CONSOLE_BRIDGE_logDebug("Dynamics: Missing attribute 'friction', using default value 0!");
-
-  return dynamics;
-}
+/**
+ * @brief Parse a xml dynamics element
+ * @param xml_element The xml element
+ * @return Tesseract JointDynamics
+ */
+tesseract_scene_graph::JointDynamics::Ptr parseDynamics(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 

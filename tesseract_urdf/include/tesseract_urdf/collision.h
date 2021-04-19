@@ -28,87 +28,24 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <exception>
-#include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_urdf/origin.h>
-#include <tesseract_urdf/geometry.h>
 
 namespace tesseract_urdf
 {
-inline std::vector<tesseract_scene_graph::Collision::Ptr>
+/**
+ * @brief Parse xml element collision
+ * @param xml_element The xml element
+ * @param locator The Tesseract resource locator
+ * @param version The version number
+ * @return A vector tesseract_scene_graph Collision objects
+ */
+std::vector<tesseract_scene_graph::Collision::Ptr>
 parseCollision(const tinyxml2::XMLElement* xml_element,
                const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-               const int version)
-{
-  std::vector<tesseract_scene_graph::Collision::Ptr> collisions;
-
-  // get name
-  std::string collision_name = tesseract_common::StringAttribute(xml_element, "name", "");
-
-  // get origin
-  Eigen::Isometry3d collision_origin = Eigen::Isometry3d::Identity();
-  const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
-  if (origin != nullptr)
-  {
-    try
-    {
-      collision_origin = parseOrigin(origin, version);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Collision: Error parsing 'origin' element!"));
-    }
-  }
-
-  // get geometry
-  const tinyxml2::XMLElement* geometry = xml_element->FirstChildElement("geometry");
-  if (geometry == nullptr)
-    std::throw_with_nested(std::runtime_error("Collision: Error missing 'geometry' element!"));
-
-  std::vector<tesseract_geometry::Geometry::Ptr> geometries;
-  try
-  {
-    geometries = parseGeometry(geometry, locator, false, version);
-  }
-  catch (...)
-  {
-    std::throw_with_nested(std::runtime_error("Collision: Error parsing 'geometry' element!"));
-  }
-
-  if (geometries.size() == 1)
-  {
-    auto collision = std::make_shared<tesseract_scene_graph::Collision>();
-    collision->name = collision_name;
-    collision->origin = collision_origin;
-    collision->geometry = geometries[0];
-    collisions.push_back(collision);
-  }
-  else
-  {
-    int i = 0;
-    for (const auto& g : geometries)
-    {
-      auto collision = std::make_shared<tesseract_scene_graph::Collision>();
-
-      if (collision_name.empty())
-        collision->name = collision_name;
-      else
-        collision->name = collision_name + "_" + std::to_string(i);
-
-      collision->origin = collision_origin;
-      collision->geometry = g;
-      collisions.push_back(collision);
-    }
-  }
-
-  return collisions;
-}
+               int version);
 
 }  // namespace tesseract_urdf
 
