@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <exception>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -36,33 +35,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-inline tesseract_scene_graph::JointLimits::Ptr parseLimits(const tinyxml2::XMLElement* xml_element,
-                                                           const int /*version*/)
-{
-  auto limits = std::make_shared<tesseract_scene_graph::JointLimits>();
-
-  tinyxml2::XMLError status = xml_element->QueryDoubleAttribute("lower", &(limits->lower));
-  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Limits: Missing or failed to parse attribute 'lower'!"));
-
-  status = xml_element->QueryDoubleAttribute("upper", &(limits->upper));
-  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Limits: Missing or failed to parse attribute 'upper'!"));
-
-  if (xml_element->QueryDoubleAttribute("effort", &(limits->effort)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Limits: Missing or failed to parse attribute 'effort'!"));
-
-  if (xml_element->QueryDoubleAttribute("velocity", &(limits->velocity)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Limits: Missing or failed to parse attribute 'velocity'!"));
-
-  status = xml_element->QueryDoubleAttribute("acceleration", &(limits->acceleration));
-  if (status == tinyxml2::XML_NO_ATTRIBUTE)
-    limits->acceleration = 0.5 * limits->velocity;
-  else if (status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Limits: Failed to parse attribute 'acceleration'!"));
-
-  return limits;
-}
+/**
+ * @brief Parse xml element limits
+ * @param xml_element The xml element
+ * @param version The version number
+ * @return A Tesseract JointLimits
+ */
+tesseract_scene_graph::JointLimits::Ptr parseLimits(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 

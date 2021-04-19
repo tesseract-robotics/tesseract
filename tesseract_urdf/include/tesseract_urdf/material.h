@@ -28,99 +28,26 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
-#include <exception>
-#include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
-#include <boost/algorithm/string.hpp>
-#include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 
 namespace tesseract_urdf
 {
-inline tesseract_scene_graph::Material::Ptr
+/**
+ * @brief Parse xml element material
+ * @param xml_element The xml element
+ * @param available_materials The current available materials
+ * @param allow_anonymous Indicate if anonymouse materials are allowed
+ * @param version The version number
+ * @return A Tesseract Material
+ */
+tesseract_scene_graph::Material::Ptr
 parseMaterial(const tinyxml2::XMLElement* xml_element,
               std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-              const bool allow_anonymous,
-              const int /*version*/)
-{
-  std::string material_name;
-  if (tesseract_common::QueryStringAttribute(xml_element, "name", material_name) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing attribute 'name'!"));
-
-  auto m = std::make_shared<tesseract_scene_graph::Material>(material_name);
-
-  m->texture_filename = "";
-  const tinyxml2::XMLElement* texture = xml_element->FirstChildElement("texture");
-  if (texture != nullptr)
-  {
-    if (tesseract_common::QueryStringAttribute(texture, "filename", m->texture_filename) != tinyxml2::XML_SUCCESS)
-      std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing texture attribute 'filename'!"));
-  }
-
-  const tinyxml2::XMLElement* color = xml_element->FirstChildElement("color");
-  if (color != nullptr)
-  {
-    std::string color_string;
-    if (tesseract_common::QueryStringAttribute(color, "rgba", color_string) != tinyxml2::XML_SUCCESS)
-      std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing color attribute 'rgba'!"));
-
-    if (!color_string.empty())
-    {
-      std::vector<std::string> tokens;
-      boost::split(tokens, color_string, boost::is_any_of(" "), boost::token_compress_on);
-      if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
-        std::throw_with_nested(std::runtime_error("Material: Failed to parse color attribute 'rgba' from string!"));
-
-      double r, g, b, a;
-      // No need to check return values because the tokens are verified above
-      tesseract_common::toNumeric<double>(tokens[0], r);
-      tesseract_common::toNumeric<double>(tokens[1], g);
-      tesseract_common::toNumeric<double>(tokens[2], b);
-      tesseract_common::toNumeric<double>(tokens[3], a);
-
-      m->color = Eigen::Vector4d(r, g, b, a);
-    }
-    else
-    {
-      std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing color attribute 'rgba'!"));
-    }
-  }
-
-  if (color == nullptr && texture == nullptr)
-  {
-    if (available_materials.empty())
-      std::throw_with_nested(
-          std::runtime_error("Material: Material name '" + material_name + "' only is not allowed!"));
-
-    auto it = available_materials.find(material_name);
-    if (it == available_materials.end())
-      std::throw_with_nested(std::runtime_error("Material with name only '" + material_name +
-                                                "' was not located in available materials!"));
-
-    m = it->second;
-  }
-  else
-  {
-    if (!material_name.empty())
-    {
-      auto it = available_materials.find(material_name);
-      if (it != available_materials.end())
-        CONSOLE_BRIDGE_logDebug("Multiple materials with the same name '%s' exist!", material_name.c_str());
-
-      available_materials[material_name] = m;
-    }
-    else if (!allow_anonymous)
-    {
-      std::throw_with_nested(std::runtime_error("Anonymous material names (empty string) not allowed!"));
-    }
-  }
-
-  return m;
-}
+              bool allow_anonymous,
+              int version);
 
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_MATERIAL_H

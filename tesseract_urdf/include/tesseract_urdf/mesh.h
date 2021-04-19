@@ -28,71 +28,26 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <exception>
-#include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/mesh.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_geometry/mesh_parser.h>
 
 namespace tesseract_urdf
 {
-inline std::vector<tesseract_geometry::Mesh::Ptr> parseMesh(const tinyxml2::XMLElement* xml_element,
-                                                            const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                                            const bool visual,
-                                                            const int /*version*/)
-{
-  std::vector<tesseract_geometry::Mesh::Ptr> meshes;
-
-  std::string filename;
-  if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Mesh: Missing or failed parsing attribute 'filename'!"));
-
-  std::string scale_string;
-  Eigen::Vector3d scale(1, 1, 1);
-  if (tesseract_common::QueryStringAttribute(xml_element, "scale", scale_string) == tinyxml2::XML_SUCCESS)
-  {
-    std::vector<std::string> tokens;
-    boost::split(tokens, scale_string, boost::is_any_of(" "), boost::token_compress_on);
-    if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-      std::throw_with_nested(std::runtime_error("Mesh: Failed parsing attribute 'scale'!"));
-
-    double sx{ 0 }, sy{ 0 }, sz{ 0 };
-    // No need to check return values because the tokens are verified above
-    tesseract_common::toNumeric<double>(tokens[0], sx);
-    tesseract_common::toNumeric<double>(tokens[1], sy);
-    tesseract_common::toNumeric<double>(tokens[2], sz);
-
-    if (!(sx > 0))
-      std::throw_with_nested(std::runtime_error("Mesh: Scale x value is not greater than zero!"));
-
-    if (!(sy > 0))
-      std::throw_with_nested(std::runtime_error("Mesh: Scale y value is not greater than zero!"));
-
-    if (!(sz > 0))
-      std::throw_with_nested(std::runtime_error("Mesh: Scale z value is not greater than zero!"));
-
-    scale = Eigen::Vector3d(sx, sy, sz);
-  }
-
-  if (visual)
-    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
-        locator->locateResource(filename), scale, true, true, true, true, true);
-  else
-    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
-        locator->locateResource(filename), scale, true, false);
-
-  if (meshes.empty())
-    std::throw_with_nested(std::runtime_error("Mesh: Error importing meshes from filename: '" + filename + "'!"));
-
-  return meshes;
-}
+/**
+ * @brief Parse xml element mesh
+ * @param xml_element The xml element
+ * @param locator The Tesseract resource locator
+ * @param visual Indicate if visual
+ * @param version The version number
+ * @return A vector of Tesseract Meshes
+ */
+std::vector<tesseract_geometry::Mesh::Ptr> parseMesh(const tinyxml2::XMLElement* xml_element,
+                                                     const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                                                     bool visual,
+                                                     int version);
 
 }  // namespace tesseract_urdf
 

@@ -28,62 +28,20 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <exception>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
-#include <tesseract_urdf/origin.h>
 
 namespace tesseract_urdf
 {
-inline tesseract_scene_graph::Inertial::Ptr parseInertial(const tinyxml2::XMLElement* xml_element, const int version)
-{
-  auto inertial = std::make_shared<tesseract_scene_graph::Inertial>();
-  const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
-  if (origin != nullptr)
-  {
-    try
-    {
-      inertial->origin = parseOrigin(origin, version);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Inertial: Failed parsing element 'origin'!"));
-    }
-  }
-
-  const tinyxml2::XMLElement* mass = xml_element->FirstChildElement("mass");
-  if (mass == nullptr)
-    std::throw_with_nested(std::runtime_error("Inertial: Missing element 'mass'!"));
-
-  if (mass->QueryDoubleAttribute("value", &(inertial->mass)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Inertial: Missing or failed parsing 'mass' attribute 'value'!"));
-
-  const tinyxml2::XMLElement* inertia = xml_element->FirstChildElement("inertia");
-  if (inertia == nullptr)
-    std::throw_with_nested(std::runtime_error("Inertial: Missing element 'inertia'!"));
-
-  if (inertia->QueryDoubleAttribute("ixx", &(inertial->ixx)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Inertial: Missing or failed parsing attribute 'ixx'!"));
-
-  if (inertia->QueryDoubleAttribute("ixy", &(inertial->ixy)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Inertial: Missing or failed parsing attribute 'ixy'!"));
-
-  if (inertia->QueryDoubleAttribute("ixz", &(inertial->ixz)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Inertial: Missing or failed parsing attribute 'ixz'!"));
-
-  if (inertia->QueryDoubleAttribute("iyy", &(inertial->iyy)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Inertial: Missing or failed parsing attribute 'iyy'!"));
-
-  if (inertia->QueryDoubleAttribute("iyz", &(inertial->iyz)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Inertial: Missing or failed parsing attribute 'iyz'!"));
-
-  if (inertia->QueryDoubleAttribute("izz", &(inertial->izz)) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Inertial: Missing or failed parsing attribute 'izz'!"));
-
-  return inertial;
-}
+/**
+ * @brief Parse xml element inertial
+ * @param xml_element The xml element
+ * @param version The version number
+ * @return A Tesseract Inertial
+ */
+tesseract_scene_graph::Inertial::Ptr parseInertial(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 

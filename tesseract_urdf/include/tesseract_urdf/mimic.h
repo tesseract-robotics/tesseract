@@ -28,9 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
-#include <exception>
-#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -38,29 +35,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-inline tesseract_scene_graph::JointMimic::Ptr parseMimic(const tinyxml2::XMLElement* xml_element, const int /*version*/)
-{
-  auto m = std::make_shared<tesseract_scene_graph::JointMimic>();
-  if (tesseract_common::QueryStringAttribute(xml_element, "joint", m->joint_name) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Mimic: Missing or failed to parse mimic attribute 'joint'!"));
-
-  if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") == nullptr)
-    CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'offset' and 'multiplier', using default value 0 and 1!");
-  else if (xml_element->Attribute("offset") != nullptr && xml_element->Attribute("multiplier") == nullptr)
-    CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'multiplier', using default value 1!");
-  else if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") != nullptr)
-    CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'offset', using default value 1!");
-
-  tinyxml2::XMLError s = xml_element->QueryDoubleAttribute("offset", &(m->offset));
-  if (s != tinyxml2::XML_NO_ATTRIBUTE && s != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Mimic: Error parsing attribute 'offset'!"));
-
-  s = xml_element->QueryDoubleAttribute("multiplier", &(m->multiplier));
-  if (s != tinyxml2::XML_NO_ATTRIBUTE && s != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Mimic: Error parsing attribute 'multiplier'!"));
-
-  return m;
-}
+/**
+ * @brief Parse xml element mimic
+ * @param xml_element The xml element
+ * @param version The version number
+ * @return A Tesseract JointMimic
+ */
+tesseract_scene_graph::JointMimic::Ptr parseMimic(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 

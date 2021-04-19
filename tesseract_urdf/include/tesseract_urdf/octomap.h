@@ -28,75 +28,26 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <exception>
-#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/octree.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_urdf/octree.h>
-
-#ifdef TESSERACT_PARSE_POINT_CLOUDS
-#include <tesseract_urdf/point_cloud.h>
-#endif
 
 namespace tesseract_urdf
 {
-inline tesseract_geometry::Octree::Ptr parseOctomap(const tinyxml2::XMLElement* xml_element,
-                                                    const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                                    const bool /*visual*/,
-                                                    const int version)
-{
-  std::string shape_type;
-  if (tesseract_common::QueryStringAttribute(xml_element, "shape_type", shape_type) != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("Octomap: Missing or failed parsing attribute 'shape_type'!"));
-
-  tesseract_geometry::Octree::SubType sub_type;
-  if (shape_type == "box")
-    sub_type = tesseract_geometry::Octree::SubType::BOX;
-  else if (shape_type == "sphere_inside")
-    sub_type = tesseract_geometry::Octree::SubType::SPHERE_INSIDE;
-  else if (shape_type == "sphere_outside")
-    sub_type = tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE;
-  else
-    std::throw_with_nested(std::runtime_error("Octomap: Invalide sub shape type, must be 'box', 'sphere_inside', or "
-                                              "'sphere_outside'!"));
-
-  bool prune = false;
-  xml_element->QueryBoolAttribute("prune", &prune);
-
-  const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement("octree");
-  if (octree_element != nullptr)
-  {
-    try
-    {
-      return parseOctree(octree_element, locator, sub_type, prune, version);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Octomap: Failed parsing element 'octree'"));
-    }
-  }
-
-#ifdef TESSERACT_PARSE_POINT_CLOUDS
-  const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement("point_cloud");
-  if (pcd_element != nullptr)
-  {
-    try
-    {
-      return parsePointCloud(pcd_element, locator, sub_type, prune, version);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Octomap: Failed parsing element 'pointcloud'"));
-    }
-  }
-#endif
-
-  std::throw_with_nested(std::runtime_error("Octomap: Missing element 'octree' or 'point_cloud', must define one!"));
-}
+/**
+ * @brief Parse xml element octomap
+ * @param xml_element The xml element
+ * @param locator The Tesseract resource locator
+ * @param visual Indicate if visual
+ * @param version The version number
+ * @return A Tesseract Geometry Octree
+ */
+tesseract_geometry::Octree::Ptr parseOctomap(const tinyxml2::XMLElement* xml_element,
+                                             const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                                             bool visual,
+                                             int version);
 
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_OCTOMAP_H

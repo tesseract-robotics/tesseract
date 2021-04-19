@@ -25,9 +25,9 @@
  */
 #ifndef TESSERACT_URDF_CAPSULE_H
 #define TESSERACT_URDF_CAPSULE_H
+
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <exception>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -35,17 +35,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-inline tesseract_geometry::Capsule::Ptr parseCapsule(const tinyxml2::XMLElement* xml_element, const int /*version*/)
-{
-  double r, l;
-  if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS || !(l > 0))
-    std::throw_with_nested(std::runtime_error("Capsule: Missing or failed parsing attribute 'length'!"));
-
-  if (xml_element->QueryDoubleAttribute("radius", &(r)) != tinyxml2::XML_SUCCESS || !(r > 0))
-    std::throw_with_nested(std::runtime_error("Capsule: Missing or failed parsing attribute 'radius'!"));
-
-  return std::make_shared<tesseract_geometry::Capsule>(r, l);
-}
+/**
+ * @brief Parse a xml capsule element
+ * @param xml_element The xml element
+ * @return Tesseract Geometry Capsule
+ */
+tesseract_geometry::Capsule::Ptr parseCapsule(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_CAPSULE_H

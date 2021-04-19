@@ -1,6 +1,6 @@
 /**
- * @file cylinder.h
- * @brief Parse cylinder from xml string
+ * @file capsule.cpp
+ * @brief Parse capsule from xml string
  *
  * @author Levi Armstrong
  * @date September 1, 2019
@@ -23,25 +23,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_URDF_CYLINDER_H
-#define TESSERACT_URDF_CYLINDER_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tinyxml2.h>
+#include <stdexcept>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/impl/cylinder.h>
+#include <tesseract_urdf/capsule.h>
 
-namespace tesseract_urdf
+tesseract_geometry::Capsule::Ptr tesseract_urdf::parseCapsule(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {
-/**
- * @brief Parse a xml cylinder element
- * @param xml_element The xml element
- * @return Tesseract Geometry Cylinder
- */
-tesseract_geometry::Cylinder::Ptr parseCylinder(const tinyxml2::XMLElement* xml_element, int version);
+  double r, l;
+  if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS || !(l > 0))
+    std::throw_with_nested(std::runtime_error("Capsule: Missing or failed parsing attribute 'length'!"));
 
-}  // namespace tesseract_urdf
+  if (xml_element->QueryDoubleAttribute("radius", &(r)) != tinyxml2::XML_SUCCESS || !(r > 0))
+    std::throw_with_nested(std::runtime_error("Capsule: Missing or failed parsing attribute 'radius'!"));
 
-#endif  // TESSERACT_URDF_CYLINDER_H
+  return std::make_shared<tesseract_geometry::Capsule>(r, l);
+}
