@@ -72,8 +72,8 @@ void printNestedException(const std::exception& e, int level)
   }
 }
 
-tesseract_scene_graph::SceneGraph::Ptr parseURDFStringHelper(const std::string& urdf_xml_string,
-                                                             const tesseract_scene_graph::ResourceLocator::Ptr& locator)
+tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_xml_string,
+                                                       const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   tinyxml2::XMLDocument xml_doc;
   if (xml_doc.Parse(urdf_xml_string.c_str()) != tinyxml2::XML_SUCCESS)
@@ -185,8 +185,8 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFStringHelper(const std::string& 
   return sg;
 }
 
-tesseract_scene_graph::SceneGraph::Ptr parseURDFFileHelper(const std::string& path,
-                                                           const tesseract_scene_graph::ResourceLocator::Ptr& locator)
+tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,
+                                                     const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   std::ifstream ifs(path);
   if (!ifs)
@@ -196,7 +196,7 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFFileHelper(const std::string& pa
   tesseract_scene_graph::SceneGraph::Ptr sg;
   try
   {
-    sg = parseURDFStringHelper(urdf_xml_string, locator);
+    sg = parseURDFString(urdf_xml_string, locator);
   }
   catch (...)
   {
@@ -204,42 +204,6 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFFileHelper(const std::string& pa
   }
 
   return sg;
-}
-
-tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,
-                                                     const tesseract_scene_graph::ResourceLocator::Ptr& locator)
-{
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph{ nullptr };
-
-  try
-  {
-    scene_graph = parseURDFFileHelper(path, locator);
-  }
-  catch (const std::exception& e)
-  {
-    scene_graph = nullptr;
-    printNestedException(e);
-  }
-
-  return scene_graph;
-}
-
-tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_xml_string,
-                                                       const tesseract_scene_graph::ResourceLocator::Ptr& locator)
-{
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph{ nullptr };
-
-  try
-  {
-    scene_graph = parseURDFStringHelper(urdf_xml_string, locator);
-  }
-  catch (const std::exception& e)
-  {
-    scene_graph = nullptr;
-    printNestedException(e);
-  }
-
-  return scene_graph;
 }
 
 }  // namespace tesseract_urdf
