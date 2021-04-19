@@ -20,12 +20,8 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                            </geometry>
                          </collision>)";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "CollisionStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(
+        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
     EXPECT_FALSE(elem[0]->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -38,10 +34,8 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                            </geometry>"
                          </collision>)";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(
+        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
     EXPECT_TRUE(elem[0]->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -54,10 +48,8 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                            </geometry>"
                          </collision>)";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(
+        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
     EXPECT_TRUE(elem.size() == 2);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
     EXPECT_TRUE(elem[0]->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -73,10 +65,9 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                            </geometry>
                          </collision>)";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(
+        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -86,19 +77,17 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                            </geometry>"
                          </collision>)";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(
+        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
     std::string str = R"(<collision>
                          </collision>)";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(
+        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
+    EXPECT_TRUE(elem.empty());
   }
 }

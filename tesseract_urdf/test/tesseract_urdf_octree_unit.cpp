@@ -34,11 +34,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <octree filename="package://tesseract_support/meshes/box_2m.bt" extra="0 0 0"/>
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "OctomapStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -49,9 +46,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <octree filename="package://tesseract_support/meshes/box_2m.bt"/>
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -62,9 +58,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <octree filename="package://tesseract_support/meshes/box_2m.bt"/>
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
     EXPECT_TRUE(geom->getSubType() == geom->SPHERE_INSIDE);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -76,9 +71,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <point_cloud filename="package://tesseract_support/meshes/box_pcd.pcd" resolution="0.1"/>
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 944);
@@ -90,9 +84,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <point_cloud filename="package://tesseract_support/meshes/box_pcd.pcd" resolution="0.1"/>
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 496);
@@ -104,9 +97,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <point_cloud />
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
   }
 #endif
 
@@ -115,9 +107,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <octree filename="package://tesseract_support/meshes/box_2m.bt"/>
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
     EXPECT_TRUE(geom->getSubType() == geom->SPHERE_OUTSIDE);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -128,9 +119,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <octree />
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
   }
 
   {
@@ -138,9 +128,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <octree filename="abc"/>
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
   }
 
   {
@@ -148,9 +137,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <octree />
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
   }
 
   {
@@ -158,9 +146,8 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <octree filename="package://tesseract_support/meshes/box_2m.bt"/>
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
   }
 
   {
@@ -168,16 +155,14 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                            <octree/>
                          </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
   }
 
   {
     std::string str = "<octomap />";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
   }
 }

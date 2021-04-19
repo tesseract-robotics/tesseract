@@ -28,7 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
@@ -41,58 +41,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_geometry/mesh_parser.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::MeshStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class MeshStatusCategory : public tesseract_common::StatusCategory
+inline std::vector<tesseract_geometry::Mesh::Ptr> parseMesh(const tinyxml2::XMLElement* xml_element,
+                                                            const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                                                            const bool visual,
+                                                            const int /*version*/)
 {
-public:
-  MeshStatusCategory() : name_("MeshStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed mesh element";
-      case ErrorAttributeFileName:
-        return "Missing or failed parsing mesh attribute 'filename'!";
-      case ErrorParsingAttributeScale:
-        return "Failed parsing mesh attribute 'scale'!";
-      case ErrorImportingMeshes:
-        return "Error importing meshes from filename!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeFileName = -1,
-    ErrorParsingAttributeScale = -2,
-    ErrorImportingMeshes = -3
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::Mesh::Ptr>& meshes,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                               const bool visual,
-                                               const int /*version*/)
-{
-  meshes.clear();
-  auto status_cat = std::make_shared<MeshStatusCategory>();
+  std::vector<tesseract_geometry::Mesh::Ptr> meshes;
 
   std::string filename;
   if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorAttributeFileName, status_cat);
+    std::throw_with_nested(std::runtime_error("Mesh: Missing or failed parsing attribute 'filename'!"));
 
   std::string scale_string;
   Eigen::Vector3d scale(1, 1, 1);
@@ -101,13 +61,22 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::M
     std::vector<std::string> tokens;
     boost::split(tokens, scale_string, boost::is_any_of(" "), boost::token_compress_on);
     if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-      return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorParsingAttributeScale, status_cat);
+      std::throw_with_nested(std::runtime_error("Mesh: Failed parsing attribute 'scale'!"));
 
     double sx{ 0 }, sy{ 0 }, sz{ 0 };
     // No need to check return values because the tokens are verified above
     tesseract_common::toNumeric<double>(tokens[0], sx);
     tesseract_common::toNumeric<double>(tokens[1], sy);
     tesseract_common::toNumeric<double>(tokens[2], sz);
+
+    if (!(sx > 0))
+      std::throw_with_nested(std::runtime_error("Mesh: Scale x value is not greater than zero!"));
+
+    if (!(sy > 0))
+      std::throw_with_nested(std::runtime_error("Mesh: Scale y value is not greater than zero!"));
+
+    if (!(sz > 0))
+      std::throw_with_nested(std::runtime_error("Mesh: Scale z value is not greater than zero!"));
 
     scale = Eigen::Vector3d(sx, sy, sz);
   }
@@ -120,10 +89,9 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::M
         locator->locateResource(filename), scale, true, false);
 
   if (meshes.empty())
-    return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorImportingMeshes, status_cat);
+    std::throw_with_nested(std::runtime_error("Mesh: Error importing meshes from filename!"));
 
-  return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::Success, status_cat);
-  ;
+  return meshes;
 }
 
 }  // namespace tesseract_urdf

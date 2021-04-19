@@ -28,9 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -41,59 +40,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/convex_mesh.h>
 #include <tesseract_collision/core/common.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::ConvexMeshStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class ConvexMeshStatusCategory : public tesseract_common::StatusCategory
+inline std::vector<tesseract_geometry::ConvexMesh::Ptr>
+parseConvexMesh(const tinyxml2::XMLElement* xml_element,
+                const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                const bool visual,
+                const int /*version*/)
 {
-public:
-  ConvexMeshStatusCategory() : name_("ConvexMeshStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed convex_mesh element";
-      case ErrorAttributeFileName:
-        return "Missing or failed parsing convex_mesh attribute 'filename'!";
-      case ErrorParsingAttributeScale:
-        return "Failed parsing convex_mesh attribute 'scale'!";
-      case ErrorImportingMeshes:
-        return "Error importing meshes from filename!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeFileName = -1,
-    ErrorParsingAttributeScale = -2,
-    ErrorImportingMeshes = -3
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::ConvexMesh::Ptr>& meshes,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                               const bool visual,
-                                               const int /*version*/)
-{
-  meshes.clear();
-  auto status_cat = std::make_shared<ConvexMeshStatusCategory>();
-  using SC = tesseract_common::StatusCode;
+  std::vector<tesseract_geometry::ConvexMesh::Ptr> meshes;
 
   std::string filename;
   if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<SC>(ConvexMeshStatusCategory::ErrorAttributeFileName, status_cat);
+    std::throw_with_nested(std::runtime_error("ConvexMesh: Missing or failed parsing attribute 'filename'!"));
 
   std::string scale_string;
   Eigen::Vector3d scale(1, 1, 1);
@@ -102,13 +61,22 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
     std::vector<std::string> tokens;
     boost::split(tokens, scale_string, boost::is_any_of(" "), boost::token_compress_on);
     if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-      return std::make_shared<SC>(ConvexMeshStatusCategory::ErrorParsingAttributeScale, status_cat);
+      std::throw_with_nested(std::runtime_error("ConvexMesh: Failed parsing attribute 'scale'!"));
 
     double sx{ 0 }, sy{ 0 }, sz{ 0 };
     // No need to check return values because the tokens are verified above
     tesseract_common::toNumeric<double>(tokens[0], sx);
     tesseract_common::toNumeric<double>(tokens[1], sy);
     tesseract_common::toNumeric<double>(tokens[2], sz);
+
+    if (!(sx > 0))
+      std::throw_with_nested(std::runtime_error("ConvexMesh: Scale x must be greater than zero!"));
+
+    if (!(sy > 0))
+      std::throw_with_nested(std::runtime_error("ConvexMesh: Scale y must be greater than zero!"));
+
+    if (!(sz > 0))
+      std::throw_with_nested(std::runtime_error("ConvexMesh: Scale z must be greater than zero!"));
 
     scale = Eigen::Vector3d(sx, sy, sz);
   }
@@ -137,10 +105,9 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
   }
 
   if (meshes.empty())
-    return std::make_shared<SC>(ConvexMeshStatusCategory::ErrorImportingMeshes, status_cat);
+    std::throw_with_nested(std::runtime_error("ConvexMesh: Error importing meshes from filename!!"));
 
-  return std::make_shared<SC>(ConvexMeshStatusCategory::Success, status_cat);
-  ;
+  return meshes;
 }
 
 }  // namespace tesseract_urdf

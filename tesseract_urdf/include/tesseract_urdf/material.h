@@ -28,7 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <console_bridge/console.h>
+#include <exception>
 #include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
@@ -38,77 +39,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::MaterialStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class MaterialStatusCategory : public tesseract_common::StatusCategory
+inline tesseract_scene_graph::Material::Ptr
+parseMaterial(const tinyxml2::XMLElement* xml_element,
+              std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
+              const bool allow_anonymous,
+              const int /*version*/)
 {
-public:
-  MaterialStatusCategory() : name_("MaterialStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed material element!";
-      case MultipleMaterialsWithSameName:
-        return "Multiple materials with the same name exist!";
-      case ErrorAttributeName:
-        return "Missing or failed parsing material attribute 'name'!";
-      case ErrorTextureAttributeFilename:
-        return "Missing or failed parsing material's texture attribute 'filename'!";
-      case ErrorColorAttributeRGBA:
-        return "Missing or failed parsing material's color attribute 'rgba'!";
-      case ErrorParsingColorAttributeRGBA:
-        return "Failed to parsing material's color attribute 'rgba' from string!";
-      case ErrorNameOnlyIsNotAllowed:
-        return "Material name only is not allowed!";
-      case ErrorLocatingMaterialByName:
-        return "Material with name only was not located in available materials!";
-      case ErrorAnonymousMaterialNamesNotAllowed:
-        return "Anonymous material names (empty string) not allowed!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    MultipleMaterialsWithSameName = 1,
-    Success = 0,
-    ErrorAttributeName = -1,
-    ErrorTextureAttributeFilename = -2,
-    ErrorColorAttributeRGBA = -3,
-    ErrorParsingColorAttributeRGBA = -4,
-    ErrorNameOnlyIsNotAllowed = -5,
-    ErrorLocatingMaterialByName = -6,
-    ErrorAnonymousMaterialNamesNotAllowed = -7
-
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr
-parse(tesseract_scene_graph::Material::Ptr& material,
-      const tinyxml2::XMLElement* xml_element,
-      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-      const bool allow_anonymous,
-      const int /*version*/)
-{
-  material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
-  auto status_cat = std::make_shared<MaterialStatusCategory>();
-  using SC = tesseract_common::StatusCode;
-  auto success_status = std::make_shared<SC>(MaterialStatusCategory::Success, status_cat);
-
   std::string material_name;
   if (tesseract_common::QueryStringAttribute(xml_element, "name", material_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<SC>(MaterialStatusCategory::ErrorAttributeName, status_cat);
+    std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing attribute 'name'!"));
 
   auto m = std::make_shared<tesseract_scene_graph::Material>(material_name);
 
@@ -117,7 +58,7 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   if (texture != nullptr)
   {
     if (tesseract_common::QueryStringAttribute(texture, "filename", m->texture_filename) != tinyxml2::XML_SUCCESS)
-      return std::make_shared<SC>(MaterialStatusCategory::ErrorTextureAttributeFilename, status_cat);
+      std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing texture attribute 'filename'!"));
   }
 
   const tinyxml2::XMLElement* color = xml_element->FirstChildElement("color");
@@ -125,14 +66,14 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   {
     std::string color_string;
     if (tesseract_common::QueryStringAttribute(color, "rgba", color_string) != tinyxml2::XML_SUCCESS)
-      return std::make_shared<SC>(MaterialStatusCategory::ErrorColorAttributeRGBA, status_cat);
+      std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing color attribute 'rgba'!"));
 
     if (!color_string.empty())
     {
       std::vector<std::string> tokens;
       boost::split(tokens, color_string, boost::is_any_of(" "), boost::token_compress_on);
       if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
-        return std::make_shared<SC>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA, status_cat);
+        std::throw_with_nested(std::runtime_error("Material: Failed to parse color attribute 'rgba' from string!"));
 
       double r, g, b, a;
       // No need to check return values because the tokens are verified above
@@ -145,20 +86,21 @@ parse(tesseract_scene_graph::Material::Ptr& material,
     }
     else
     {
-      return std::make_shared<SC>(MaterialStatusCategory::ErrorColorAttributeRGBA, status_cat);
+      std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing color attribute 'rgba'!"));
     }
   }
 
   if (color == nullptr && texture == nullptr)
   {
     if (available_materials.empty())
-    {
-      return std::make_shared<SC>(MaterialStatusCategory::ErrorNameOnlyIsNotAllowed, status_cat);
-    }
+      std::throw_with_nested(
+          std::runtime_error("Material: Material name '" + material_name + "' only is not allowed!"));
 
     auto it = available_materials.find(material_name);
     if (it == available_materials.end())
-      return std::make_shared<SC>(MaterialStatusCategory::ErrorLocatingMaterialByName, status_cat);
+      std::throw_with_nested(std::runtime_error("Material with name only '" + material_name +
+                                                "' was not located in available materials!"));
+
     m = it->second;
   }
   else
@@ -167,19 +109,17 @@ parse(tesseract_scene_graph::Material::Ptr& material,
     {
       auto it = available_materials.find(material_name);
       if (it != available_materials.end())
-        success_status->setChild(
-            std::make_shared<SC>(MaterialStatusCategory::MultipleMaterialsWithSameName, status_cat));
+        CONSOLE_BRIDGE_logDebug("Multiple materials with the same name '%s' exist!", material_name.c_str());
 
       available_materials[material_name] = m;
     }
     else if (!allow_anonymous)
     {
-      return std::make_shared<SC>(MaterialStatusCategory::ErrorAnonymousMaterialNamesNotAllowed, status_cat);
+      std::throw_with_nested(std::runtime_error("Anonymous material names (empty string) not allowed!"));
     }
   }
 
-  material = m;
-  return success_status;
+  return m;
 }
 
 }  // namespace tesseract_urdf

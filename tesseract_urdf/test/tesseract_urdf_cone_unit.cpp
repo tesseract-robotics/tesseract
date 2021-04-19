@@ -12,11 +12,7 @@ TEST(TesseractURDFUnit, parse_cone)  // NOLINT
   {
     std::string str = R"(<cone radius="1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Cone::Ptr geom;
-    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "ConeStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
     EXPECT_NEAR(geom->getRadius(), 1, 1e-8);
     EXPECT_NEAR(geom->getLength(), 2, 1e-8);
   }
@@ -24,10 +20,7 @@ TEST(TesseractURDFUnit, parse_cone)  // NOLINT
   {  // https://github.com/ros-industrial-consortium/tesseract_ros/issues/67
     std::string str = R"(<cone radius="0.25" length="0.5" extra="0 0 0"/>)";
     tesseract_geometry::Cone::Ptr geom;
-    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "ConeStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
     EXPECT_NEAR(geom->getRadius(), 0.25, 1e-8);
     EXPECT_NEAR(geom->getLength(), 0.5, 1e-8);
   }
@@ -35,33 +28,25 @@ TEST(TesseractURDFUnit, parse_cone)  // NOLINT
   {
     std::string str = R"(<cone radius="-1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Cone::Ptr geom;
-    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
   }
 
   {
     std::string str = R"(<cone radius="1" length="-2" extra="0 0 0"/>)";
     tesseract_geometry::Cone::Ptr geom;
-    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
   }
 
   {
     std::string str = R"(<cone radius="a" length="2"/>)";
     tesseract_geometry::Cone::Ptr geom;
-    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
   }
 
   {
     std::string str = R"(<cone radius="1" length="a"/>)";
     tesseract_geometry::Cone::Ptr geom;
-    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
   }
 
   // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
@@ -76,24 +61,18 @@ TEST(TesseractURDFUnit, parse_cone)  // NOLINT
   {
     std::string str = R"(<cone radius="1"/>)";
     tesseract_geometry::Cone::Ptr geom;
-    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
   }
 
   {
     std::string str = R"(<cone length="2"/>)";
     tesseract_geometry::Cone::Ptr geom;
-    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
   }
 
   {
     std::string str = "<cone />";
     tesseract_geometry::Cone::Ptr geom;
-    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
   }
 }

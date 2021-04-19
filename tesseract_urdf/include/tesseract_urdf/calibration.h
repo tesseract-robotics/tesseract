@@ -28,91 +28,38 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
-#include <Eigen/Geometry>
+#include <console_bridge/console.h>
+#include <exception>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/joint.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::CalibrationStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class CalibrationStatusCategory : public tesseract_common::StatusCategory
+inline tesseract_scene_graph::JointCalibration::Ptr parseCalibration(const tinyxml2::XMLElement* xml_element,
+                                                                     const int /*version*/)
 {
-public:
-  CalibrationStatusCategory() : name_("CalibrationStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessful";
-      case MissingAttributeRising:
-        return "Missing calibration attribute 'rising', using default value 0!";
-      case MissingAttributeFalling:
-        return "Missing calibration attribute 'falling', using default value 0!";
-      case ErrorMissingAttributeRisingAndFalling:
-        return "Missing calibration both attribute 'rising' and 'falling', either remove tag add attributes and values";
-      case ErrorParsingAttributeRising:
-        return "Error parsing calibration attribute 'rising'!";
-      case ErrorParsingAttributeFalling:
-        return "Error parsing calibration attribute 'falling'!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    MissingAttributeRising = 2,
-    MissingAttributeFalling = 1,
-    Success = 0,
-    ErrorMissingAttributeRisingAndFalling = -1,
-    ErrorParsingAttributeRising = -2,
-    ErrorParsingAttributeFalling = -3
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointCalibration::Ptr& calibration,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const int /*version*/)
-{
-  calibration = nullptr;
-  auto status_cat = std::make_shared<CalibrationStatusCategory>();
-
   if (xml_element->Attribute("rising") == nullptr && xml_element->Attribute("falling") == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(
-        CalibrationStatusCategory::ErrorMissingAttributeRisingAndFalling, status_cat);
+    std::throw_with_nested(std::runtime_error("Calibration: Missing both attribute 'rising' and 'falling', either "
+                                              "remove tag add attributes and values!"));
 
-  calibration = std::make_shared<tesseract_scene_graph::JointCalibration>();
-  auto status_code = std::make_shared<tesseract_common::StatusCode>(CalibrationStatusCategory::Success, status_cat);
+  auto calibration = std::make_shared<tesseract_scene_graph::JointCalibration>();
   if (xml_element->Attribute("rising") == nullptr && xml_element->Attribute("falling") != nullptr)
-    status_code =
-        std::make_shared<tesseract_common::StatusCode>(CalibrationStatusCategory::MissingAttributeRising, status_cat);
+    CONSOLE_BRIDGE_logDebug("Calibration: Missing attribute 'rising', using default value 0!");
 
   if (xml_element->Attribute("rising") != nullptr && xml_element->Attribute("falling") == nullptr)
-    status_code =
-        std::make_shared<tesseract_common::StatusCode>(CalibrationStatusCategory::MissingAttributeFalling, status_cat);
+    CONSOLE_BRIDGE_logDebug("Calibration: Missing attribute 'falling', using default value 0!");
 
   auto xml_status = xml_element->QueryDoubleAttribute("rising", &(calibration->rising));
   if (xml_status != tinyxml2::XML_NO_ATTRIBUTE && xml_status != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(CalibrationStatusCategory::ErrorParsingAttributeRising,
-                                                          status_cat);
+    std::throw_with_nested(std::runtime_error("Calibration: Error parsing attribute 'rising'!"));
 
   xml_status = xml_element->QueryDoubleAttribute("falling", &(calibration->falling));
   if (xml_status != tinyxml2::XML_NO_ATTRIBUTE && xml_status != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(CalibrationStatusCategory::ErrorParsingAttributeFalling,
-                                                          status_cat);
+    std::throw_with_nested(std::runtime_error("Calibration: Error parsing attribute 'falling'!"));
 
-  return status_code;
+  return calibration;
 }
 
 }  // namespace tesseract_urdf

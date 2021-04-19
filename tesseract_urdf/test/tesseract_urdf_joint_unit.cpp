@@ -21,11 +21,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "JointStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::FLOATING);
     EXPECT_FALSE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -51,9 +47,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::REVOLUTE);
     EXPECT_FALSE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -75,9 +69,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::REVOLUTE);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -99,9 +91,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0"/>
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::CONTINUOUS);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -122,9 +112,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <child link="link2"/>
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::CONTINUOUS);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -146,9 +134,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::FIXED);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -170,9 +156,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::PRISMATIC);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -194,9 +178,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::REVOLUTE);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -218,9 +200,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::PLANAR);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -240,9 +220,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <child link="link2"/>
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -251,9 +229,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <child link="link2"/>
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -261,9 +237,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <child link="link2"/>
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -271,9 +245,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <parent link="link1"/>
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -284,9 +256,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -297,9 +267,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -310,9 +278,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -323,9 +289,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -336,9 +300,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <limit effort="30" velocity="1.0" lower="-2.2" upper="0.7" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -353,9 +315,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -370,9 +330,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -387,9 +345,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -404,9 +360,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -421,9 +375,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -438,9 +390,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -456,9 +406,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -473,9 +421,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
              <safety_controller/>
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -487,9 +433,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <mimic multiplier="a" offset="1" />
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 
   {
@@ -499,8 +443,6 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                            <child link="link2"/>
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 }

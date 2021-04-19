@@ -25,11 +25,11 @@
  */
 #ifndef TESSERACT_URDF_OCTOMAP_H
 #define TESSERACT_URDF_OCTOMAP_H
+
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -42,65 +42,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/point_cloud.h>
 #endif
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::OctomapStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class OctomapStatusCategory : public tesseract_common::StatusCategory
+inline tesseract_geometry::Octree::Ptr parseOctomap(const tinyxml2::XMLElement* xml_element,
+                                                    const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                                                    const bool /*visual*/,
+                                                    const int version)
 {
-public:
-  OctomapStatusCategory() : name_("OctomapStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed octree element!";
-      case ErrorAttributeShapeType:
-        return "Missing or failed parsing octomap attribute 'shape_type'!";
-      case ErrorInvalidShapeType:
-        return "Invalide sub shape type for octoamp attribute 'shape_type', must be 'box', 'sphere_inside', or "
-               "'sphere_outside'!";
-      case ErrorMissingOctreeOrPointCloudElement:
-        return "Missing octomap element 'octree' or 'point_cloud', must define one!";
-      case ErrorParsingOctreeElement:
-        return "Failed parsing octomap element 'octree'!";
-      case ErrorParsingPointCloudElement:
-        return "Failed parsing octomap element 'pointcloud'!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeShapeType = -1,
-    ErrorInvalidShapeType = -2,
-    ErrorMissingOctreeOrPointCloudElement = -3,
-    ErrorParsingOctreeElement = -4,
-    ErrorParsingPointCloudElement = -5
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& octree,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                               const bool /*visual*/,
-                                               const int version)
-{
-  octree = nullptr;
-  auto status_cat = std::make_shared<OctomapStatusCategory>();
-
   std::string shape_type;
   if (tesseract_common::QueryStringAttribute(xml_element, "shape_type", shape_type) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorAttributeShapeType, status_cat);
+    std::throw_with_nested(std::runtime_error("Octomap: Missing or failed parsing attribute 'shape_type'!"));
 
   tesseract_geometry::Octree::SubType sub_type;
   if (shape_type == "box")
@@ -110,7 +61,8 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
   else if (shape_type == "sphere_outside")
     sub_type = tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE;
   else
-    return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorInvalidShapeType, status_cat);
+    std::throw_with_nested(std::runtime_error("Octomap: Invalide sub shape type, must be 'box', 'sphere_inside', or "
+                                              "'sphere_outside'!"));
 
   bool prune = false;
   xml_element->QueryBoolAttribute("prune", &prune);
@@ -118,28 +70,32 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
   const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement("octree");
   if (octree_element != nullptr)
   {
-    auto status = parseOctree(octree, octree_element, locator, sub_type, prune, version);
-    if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          OctomapStatusCategory::ErrorParsingOctreeElement, status_cat, status);
-
-    return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::Success, status_cat);
+    try
+    {
+      return parseOctree(octree_element, locator, sub_type, prune, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Octomap: Failed parsing element 'octree'"));
+    }
   }
 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
   const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement("point_cloud");
   if (pcd_element != nullptr)
   {
-    auto status = parsePointCloud(octree, pcd_element, locator, sub_type, prune, version);
-    if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          OctomapStatusCategory::ErrorParsingPointCloudElement, status_cat, status);
-
-    return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::Success, status_cat);
+    try
+    {
+      return parsePointCloud(pcd_element, locator, sub_type, prune, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Octomap: Failed parsing element 'pointcloud'"));
+    }
   }
 #endif
-  return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorMissingOctreeOrPointCloudElement,
-                                                        status_cat);
+
+  std::throw_with_nested(std::runtime_error("Octomap: Missing element 'octree' or 'point_cloud', must define one!"));
 }
 
 }  // namespace tesseract_urdf

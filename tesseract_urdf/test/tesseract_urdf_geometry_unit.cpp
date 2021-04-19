@@ -16,12 +16,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <box size="1 1 1" />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "GeometryStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::BOX);
   }
@@ -31,11 +27,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <sphere radius="1" />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "GeometryStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::SPHERE);
   }
@@ -45,11 +38,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <cylinder radius="1" length="1" />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "GeometryStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::CYLINDER);
   }
@@ -59,11 +49,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <cone radius="1" length="1" />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "GeometryStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::CONE);
   }
@@ -73,11 +60,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <capsule radius="1" length="1" />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "GeometryStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::CAPSULE);
   }
@@ -89,11 +73,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            </octomap>
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "GeometryStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::OCTREE);
   }
@@ -103,11 +84,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "GeometryStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::CONVEX_MESH);
   }
@@ -117,11 +95,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "GeometryStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::MESH);
   }
@@ -131,11 +106,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <sdf_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "GeometryStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::SDF_MESH);
   }
@@ -144,10 +116,9 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
     std::string str = R"(<geometry>
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -155,10 +126,9 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <box size="1 1 a" />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -166,10 +136,9 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <sphere />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -177,10 +146,9 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <cylinder />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -188,10 +156,9 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <cone />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -199,10 +166,9 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <capsule />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -212,10 +178,9 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            </octomap>
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -223,10 +188,9 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <convex_mesh />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -234,10 +198,9 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <mesh />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 
   {
@@ -245,9 +208,8 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                            <sdf_mesh />
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, 2, true);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
   }
 }

@@ -12,11 +12,7 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
   {
     std::string str = R"(<mimic joint="joint_1" multiplier="1" offset="2" extra="0 0 0"/>)";
     tesseract_scene_graph::JointMimic::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "MimicStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, &tesseract_urdf::parseMimic, str, "mimic", 2));
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 2, 1e-8);
@@ -25,9 +21,7 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
   {
     std::string str = R"(<mimic joint="joint_1" multiplier="1"/>)";
     tesseract_scene_graph::JointMimic::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, &tesseract_urdf::parseMimic, str, "mimic", 2));
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 0, 1e-8);
@@ -36,9 +30,7 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
   {
     std::string str = R"(<mimic joint="joint_1" offset="2"/>)";
     tesseract_scene_graph::JointMimic::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, &tesseract_urdf::parseMimic, str, "mimic", 2));
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 2, 1e-8);
@@ -47,9 +39,7 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
   {
     std::string str = R"(<mimic joint="joint_1"/>)";
     tesseract_scene_graph::JointMimic::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, &tesseract_urdf::parseMimic, str, "mimic", 2));
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 0, 1e-8);
@@ -58,24 +48,18 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
   {
     std::string str = R"(<mimic joint="joint_1" multiplier="a" offset="2"/>)";
     tesseract_scene_graph::JointMimic::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, &tesseract_urdf::parseMimic, str, "mimic", 2));
   }
 
   {
     std::string str = R"(<mimic joint="joint_1" multiplier="1" offset="a"/>)";
     tesseract_scene_graph::JointMimic::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, &tesseract_urdf::parseMimic, str, "mimic", 2));
   }
 
   {
     std::string str = "<mimic />";
     tesseract_scene_graph::JointMimic::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, &tesseract_urdf::parseMimic, str, "mimic", 2));
   }
 }

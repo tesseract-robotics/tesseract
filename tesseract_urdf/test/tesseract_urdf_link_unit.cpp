@@ -37,12 +37,8 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                            </collision>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "LinkStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial != nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
@@ -90,10 +86,8 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                            </collision>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial != nullptr);
     EXPECT_TRUE(elem->visual.size() == 2);
@@ -121,10 +115,8 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                            </collision>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
@@ -146,10 +138,8 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                            </visual>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
@@ -168,10 +158,8 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                            </collision>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.empty());
@@ -183,10 +171,8 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = R"(<link name="my_link"/>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.empty());
@@ -207,10 +193,8 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                            </visual>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
   }
 
   {
@@ -227,10 +211,8 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                            </visual>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
   }
 
   {
@@ -248,10 +230,8 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                            </collision>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
   }
 
   {
@@ -265,9 +245,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                            </collision>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
   }
 }

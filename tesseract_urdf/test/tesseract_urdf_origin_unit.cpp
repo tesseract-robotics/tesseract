@@ -34,20 +34,14 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
   {
     std::string str = R"(<origin xyz="0 0 0" rpy="0 0 0"/>)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "OriginStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
     EXPECT_TRUE(origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
   {
     std::string str = R"(<origin xyz="0 0 0" wxyz="1 0 0 0"/>)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
     EXPECT_TRUE(origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
@@ -57,9 +51,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     Eigen::Isometry3d check = Eigen::Isometry3d::Identity();
     check.linear() << 0.6435823, -0.5794841, 0.5000000, 0.7558624, 0.5838996, -0.2961981, -0.1203077, 0.5685591,
         0.8137977;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
     EXPECT_TRUE(origin.isApprox(check, 1e-6));
   }
 
@@ -68,18 +60,14 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     Eigen::Isometry3d origin;
     Eigen::Isometry3d check = Eigen::Isometry3d::Identity();
     check.linear() = fromRPY(0.3490659, 0.5235988, 0.7330383).toRotationMatrix();
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
     EXPECT_TRUE(origin.isApprox(check, 1e-6));
   }
 
   {
     std::string str = R"(<origin xyz="0 2.5 0" rpy="3.14159265359 0 0"/>)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
     EXPECT_TRUE(origin.translation().isApprox(Eigen::Vector3d(0, 2.5, 0), 1e-8));
     EXPECT_TRUE(origin.matrix().col(0).head(3).isApprox(Eigen::Vector3d(1, 0, 0), 1e-8));
     EXPECT_TRUE(origin.matrix().col(1).head(3).isApprox(Eigen::Vector3d(0, -1, 0), 1e-8));
@@ -94,9 +82,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
   {
     std::string str = R"(<origin xyz="0 2.5 0" rpy="3.14 0 0" wxyz="1 0 0 0"/>)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
     EXPECT_TRUE(origin.translation().isApprox(Eigen::Vector3d(0, 2.5, 0), 1e-8));
     EXPECT_TRUE(origin.rotation().isApprox(Eigen::Matrix3d::Identity(), 1e-8));
   }
@@ -104,50 +90,38 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
   {
     std::string str = R"(<origin xyz="0 0 0"/>)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
     EXPECT_TRUE(origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
   {
     std::string str = R"(<origin rpy="0 0 0"/>)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
     EXPECT_TRUE(origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
   {
     std::string str = R"(<origin xyz="0 0 a"/>)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
   }
 
   {
     std::string str = R"(<origin rpy="0 0 a"/>)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
   }
 
   {
     std::string str = R"(<origin wxyz="1 0 0 a"/>)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
   }
 
   {
     std::string str = R"(<origin />)";
     Eigen::Isometry3d origin;
-    auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
   }
 }
