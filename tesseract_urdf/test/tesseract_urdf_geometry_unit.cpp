@@ -114,6 +114,16 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
 
   {
     std::string str = R"(<geometry>
+                           <unknown_type extra="0 0 0"/>
+                         </geometry>)";
+    std::vector<tesseract_geometry::Geometry::Ptr> elem;
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(
+        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+    EXPECT_TRUE(elem.empty());
+  }
+
+  {
+    std::string str = R"(<geometry>
                          </geometry>)";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
     EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(

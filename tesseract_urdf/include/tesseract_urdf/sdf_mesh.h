@@ -90,7 +90,7 @@ parseSDFMesh(const tinyxml2::XMLElement* xml_element,
         locator->locateResource(filename), scale, true, false);
 
   if (meshes.empty())
-    std::throw_with_nested(std::runtime_error("SDFMesh: Error importing meshes from '" + filename + "'!"));
+    std::throw_with_nested(std::runtime_error("SDFMesh: Error importing meshes from filename: '" + filename + "'!"));
 
   return meshes;
 }

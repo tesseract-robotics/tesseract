@@ -105,7 +105,7 @@ parseConvexMesh(const tinyxml2::XMLElement* xml_element,
   }
 
   if (meshes.empty())
-    std::throw_with_nested(std::runtime_error("ConvexMesh: Error importing meshes from filename!!"));
+    std::throw_with_nested(std::runtime_error("ConvexMesh: Error importing meshes from filename: '" + filename + "'!"));
 
   return meshes;
 }
