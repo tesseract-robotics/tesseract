@@ -23,12 +23,8 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                            </material>
                          </visual>)";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
-        elem, str, "visual", resource_locator, empty_available_materials, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "VisualStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+        elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
     EXPECT_TRUE(elem[0]->material != nullptr);
@@ -46,10 +42,8 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                            </material>
                          </visual>)";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
-        elem, str, "visual", resource_locator, empty_available_materials, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+        elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
     EXPECT_TRUE(elem[0]->material != nullptr);
@@ -64,10 +58,8 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                            </geometry>
                          </visual>)";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
-        elem, str, "visual", resource_locator, empty_available_materials, 2);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+        elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
     EXPECT_TRUE(elem[0]->material != nullptr);
@@ -82,10 +74,8 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                            </material>
                          </visual>)";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
-        elem, str, "visual", resource_locator, empty_available_materials, 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+        elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
   }
 
   {
@@ -96,9 +86,7 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                            </geometry>
                          </visual>)";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
-        elem, str, "visual", resource_locator, empty_available_materials, 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+        elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
   }
 }

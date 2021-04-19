@@ -28,7 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
@@ -41,61 +41,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/material.h>
 #include <tesseract_urdf/geometry.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::VisualStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class VisualStatusCategory : public tesseract_common::StatusCategory
+inline std::vector<tesseract_scene_graph::Visual::Ptr>
+parseVisual(const tinyxml2::XMLElement* xml_element,
+            const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+            std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
+            const int version)
 {
-public:
-  VisualStatusCategory() : name_("VisualStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed 'visual' element";
-      case ErrorParsingOriginElement:
-        return "Error parsing visual 'origin' element!";
-      case ErrorMissingMaterialElement:
-        return "Error missing visual 'material' element!";
-      case ErrorParsingMaterialElement:
-        return "Error parsing visual 'material' element!";
-      case ErrorMissingGeometryElement:
-        return "Error missing visual 'geometry' element!";
-      case ErrorParsingGeometryElement:
-        return "Error parsing visual 'geometry' element!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorParsingOriginElement = -1,
-    ErrorMissingMaterialElement = -2,
-    ErrorParsingMaterialElement = -3,
-    ErrorMissingGeometryElement = -4,
-    ErrorParsingGeometryElement = -5,
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr
-parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
-      const tinyxml2::XMLElement* xml_element,
-      const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-      const int version)
-{
-  visuals.clear();
-  auto status_cat = std::make_shared<VisualStatusCategory>();
+  std::vector<tesseract_scene_graph::Visual::Ptr> visuals;
 
   // get name
   std::string visual_name = tesseract_common::StringAttribute(xml_element, "name", "");
@@ -105,10 +59,14 @@ parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
   const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
-    auto status = parse(visual_origin, origin, version);
-    if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          VisualStatusCategory::ErrorParsingOriginElement, status_cat, status);
+    try
+    {
+      visual_origin = parseOrigin(origin, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Visual: Error parsing 'origin' element!"));
+    }
   }
 
   // get material
@@ -116,23 +74,30 @@ parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
   const tinyxml2::XMLElement* material = xml_element->FirstChildElement("material");
   if (material != nullptr)
   {
-    auto status = parse(visual_material, material, available_materials, true, version);
-    if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          VisualStatusCategory::ErrorParsingMaterialElement, status_cat, status);
+    try
+    {
+      visual_material = parseMaterial(material, available_materials, true, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Visual: Error parsing 'material' element!"));
+    }
   }
 
   // get geometry
   const tinyxml2::XMLElement* geometry = xml_element->FirstChildElement("geometry");
   if (geometry == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(VisualStatusCategory::ErrorMissingGeometryElement,
-                                                          status_cat);
+    std::throw_with_nested(std::runtime_error("Visual: Error missing 'geometry' element!"));
 
   std::vector<tesseract_geometry::Geometry::Ptr> geometries;
-  auto status = parse(geometries, geometry, locator, true, version);
-  if (!(*status))
-    return std::make_shared<tesseract_common::StatusCode>(
-        VisualStatusCategory::ErrorParsingGeometryElement, status_cat, status);
+  try
+  {
+    geometries = parseGeometry(geometry, locator, true, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("Visual: Error parsing 'geometry' element!"));
+  }
 
   if (geometries.size() == 1)
   {
@@ -162,7 +127,7 @@ parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
     }
   }
 
-  return std::make_shared<tesseract_common::StatusCode>(VisualStatusCategory::Success, status_cat);
+  return visuals;
 }
 
 }  // namespace tesseract_urdf

@@ -28,7 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
@@ -42,100 +42,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/safety_controller.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::JointStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class JointStatusCategory : public tesseract_common::StatusCategory
+inline tesseract_scene_graph::Joint::Ptr parseJoint(const tinyxml2::XMLElement* xml_element, const int version)
 {
-public:
-  JointStatusCategory(std::string joint_name = "") : name_("JointStatusCategory"), joint_name_(std::move(joint_name)) {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed joint '" + joint_name_ + "'!";
-      case ErrorMissingAttributeName:
-        return "Missing or failed to parse joint attribute 'name' for joint '" + joint_name_ + "'!";
-      case ErrorParsingOrigin:
-        return "Failed parsing joint element 'origin' for joint '" + joint_name_ + "'!";
-      case ErrorMissingParentElement:
-        return "Missing joint element 'parent' for joint '" + joint_name_ + "'!";
-      case ErrorParsingParentAttributeLink:
-        return "Failed parsing joint element 'parent' attribute 'link' for joint '" + joint_name_ + "'!";
-      case ErrorMissingChildElement:
-        return "Missing joint element 'child' for joint '" + joint_name_ + "'!";
-      case ErrorParsingChildAttributeLink:
-        return "Failed parsing joint element 'child' attribute 'link' for joint '" + joint_name_ + "'!";
-      case ErrorMissingTypeElement:
-        return "Missing joint element 'type' for joint '" + joint_name_ + "'!";
-      case ErrorInvalidType:
-        return "Invalid joint type for joint '" + joint_name_ + "'!";
-      case ErrorMissingAxisElement:
-        return "Missing joint element 'axes' for joint '" + joint_name_ + "'!";
-      case ErrorParsingAxisAttributeXYZ:
-        return "Failed parsing joint element 'axis' attribute 'xyz' for joint '" + joint_name_ + "'!";
-      case ErrorMissingLimitsElement:
-        return "Missing joint element 'limits' for joint '" + joint_name_ + "'!";
-      case ErrorParsingLimits:
-        return "Failed parsing joint element 'limits' for joint '" + joint_name_ + "'!";
-      case ErrorParsingSafetyController:
-        return "Failed parsing joint element 'safety_controller' for joint '" + joint_name_ + "'!";
-      case ErrorParsingCalibration:
-        return "Failed parsing joint element 'calibration' for joint '" + joint_name_ + "'!";
-      case ErrorParsingMimic:
-        return "Failed parsing joint element 'mimic' for joint '" + joint_name_ + "'!";
-      case ErrorParsingDynamics:
-        return "Failed parsing joint element 'dynamics' for joint '" + joint_name_ + "'!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorMissingAttributeName = -1,
-    ErrorParsingOrigin = -2,
-    ErrorMissingParentElement = -3,
-    ErrorParsingParentAttributeLink = -4,
-    ErrorMissingChildElement = -5,
-    ErrorParsingChildAttributeLink = -6,
-    ErrorMissingTypeElement = -7,
-    ErrorInvalidType = -8,
-    ErrorMissingAxisElement = -9,
-    ErrorParsingAxisAttributeXYZ = -10,
-    ErrorMissingLimitsElement = -11,
-    ErrorParsingLimits = -12,
-    ErrorParsingSafetyController = -13,
-    ErrorParsingCalibration = -14,
-    ErrorParsingMimic = -15,
-    ErrorParsingDynamics = -16
-  };
-
-private:
-  std::string name_;
-  std::string joint_name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr& joint,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const int version)
-{
-  joint = nullptr;
-  auto status_cat = std::make_shared<JointStatusCategory>();
-  using SC = tesseract_common::StatusCode;
-
   // get joint name
   std::string joint_name;
   if (tesseract_common::QueryStringAttribute(xml_element, "name", joint_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<SC>(JointStatusCategory::ErrorMissingAttributeName, status_cat);
-
-  status_cat = std::make_shared<JointStatusCategory>(joint_name);
+    std::throw_with_nested(std::runtime_error("Joint: Missing or failed parsing attribute 'name'!"));
 
   // create joint
   auto j = std::make_shared<tesseract_scene_graph::Joint>(joint_name);
@@ -144,31 +58,39 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
-    auto status = parse(j->parent_to_joint_origin_transform, origin, version);
-    if (!(*status))
-      return std::make_shared<SC>(JointStatusCategory::ErrorParsingOrigin, status_cat, status);
+    try
+    {
+      j->parent_to_joint_origin_transform = parseOrigin(origin, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(
+          std::runtime_error("Joint: Error parsing 'origin' element for joint '" + joint_name + "'!"));
+    }
   }
 
   // get parent link
   const tinyxml2::XMLElement* parent = xml_element->FirstChildElement("parent");
   if (parent == nullptr)
-    return std::make_shared<SC>(JointStatusCategory::ErrorMissingParentElement, status_cat);
+    std::throw_with_nested(std::runtime_error("Joint: Missing element 'parent' for joint '" + joint_name + "'!"));
 
   if (tesseract_common::QueryStringAttribute(parent, "link", j->parent_link_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<SC>(JointStatusCategory::ErrorParsingParentAttributeLink, status_cat);
+    std::throw_with_nested(
+        std::runtime_error("Joint: Failed parsing element 'parent' attribute 'link' for joint '" + joint_name + "'!"));
 
   // get child link
   const tinyxml2::XMLElement* child = xml_element->FirstChildElement("child");
   if (child == nullptr)
-    return std::make_shared<SC>(JointStatusCategory::ErrorMissingChildElement, status_cat);
+    std::throw_with_nested(std::runtime_error("Joint: Missing element 'child' for joint '" + joint_name + "'!"));
 
   if (tesseract_common::QueryStringAttribute(child, "link", j->child_link_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<SC>(JointStatusCategory::ErrorParsingChildAttributeLink, status_cat);
+    std::throw_with_nested(
+        std::runtime_error("Joint: Failed parsing element 'child' attribute 'link' for joint '" + joint_name + "'!"));
 
   // get joint type
   std::string joint_type;
   if (tesseract_common::QueryStringAttribute(xml_element, "type", joint_type) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<SC>(JointStatusCategory::ErrorMissingTypeElement, status_cat);
+    std::throw_with_nested(std::runtime_error("Joint: Missing element 'type' for joint '" + joint_name + "'!"));
 
   if (joint_type == "planar")
     j->type = tesseract_scene_graph::JointType::PLANAR;
@@ -183,7 +105,8 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   else if (joint_type == "fixed")
     j->type = tesseract_scene_graph::JointType::FIXED;
   else
-    return std::make_shared<SC>(JointStatusCategory::ErrorInvalidType, status_cat);
+    std::throw_with_nested(
+        std::runtime_error("Joint: Invalid joint type '" + joint_type + "' for joint '" + joint_name + "'!"));
 
   // get joint axis
   if (j->type != tesseract_scene_graph::JointType::FLOATING && j->type != tesseract_scene_graph::JointType::FIXED)
@@ -197,12 +120,15 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
     {
       std::string axis_str;
       if (tesseract_common::QueryStringAttribute(axis, "xyz", axis_str) != tinyxml2::XML_SUCCESS)
-        return std::make_shared<SC>(JointStatusCategory::ErrorParsingAxisAttributeXYZ, status_cat);
+        std::throw_with_nested(
+            std::runtime_error("Joint: Failed parsing element 'axis' attribute 'xyz' for joint '" + joint_name + "'!"));
 
       std::vector<std::string> tokens;
       boost::split(tokens, axis_str, boost::is_any_of(" "), boost::token_compress_on);
       if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-        return std::make_shared<SC>(JointStatusCategory::ErrorParsingAxisAttributeXYZ, status_cat);
+        std::throw_with_nested(std::runtime_error("Joint: Failed parsing element 'axis' attribute 'xyz' string for "
+                                                  "joint '" +
+                                                  joint_name + "'!"));
 
       double ax, ay, az;
       // No need to check return values because the tokens are verified above
@@ -220,9 +146,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   {
     const tinyxml2::XMLElement* limits = xml_element->FirstChildElement("limit");
     if (limits == nullptr && j->type != tesseract_scene_graph::JointType::CONTINUOUS)
-    {
-      return std::make_shared<SC>(JointStatusCategory::ErrorMissingLimitsElement, status_cat);
-    }
+      std::throw_with_nested(std::runtime_error("Joint: Missing element 'limits' for joint '" + joint_name + "'!"));
 
     if (limits == nullptr && j->type == tesseract_scene_graph::JointType::CONTINUOUS)
     {
@@ -230,9 +154,15 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
     }
     else
     {
-      auto status = parse(j->limits, limits, version);
-      if (!(*status))
-        return std::make_shared<SC>(JointStatusCategory::ErrorParsingLimits, status_cat, status);
+      try
+      {
+        j->limits = parseLimits(limits, version);
+      }
+      catch (...)
+      {
+        std::throw_with_nested(
+            std::runtime_error("Joint: Failed parsing element 'limits' for joint '" + joint_name + "'!"));
+      }
     }
   }
 
@@ -240,40 +170,63 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   const tinyxml2::XMLElement* safety = xml_element->FirstChildElement("safety_controller");
   if (safety != nullptr)
   {
-    auto status = parse(j->safety, safety, version);
-    if (!(*status))
-      return std::make_shared<SC>(JointStatusCategory::ErrorParsingSafetyController, status_cat, status);
+    try
+    {
+      j->safety = parseSafetyController(safety, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(
+          std::runtime_error("Joint: Failed parsing element 'safety_controller' for joint '" + joint_name + "'!"));
+    }
   }
 
   // get joint calibration if exists
   const tinyxml2::XMLElement* calibration = xml_element->FirstChildElement("calibration");
   if (calibration != nullptr)
   {
-    auto status = parse(j->calibration, calibration, version);
-    if (!(*status))
-      return std::make_shared<SC>(JointStatusCategory::ErrorParsingCalibration, status_cat, status);
+    try
+    {
+      j->calibration = parseCalibration(calibration, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(
+          std::runtime_error("Joint: Failed parsing element 'calibration' for joint '" + joint_name + "'!"));
+    }
   }
 
   // get mimic joint if exists
   const tinyxml2::XMLElement* mimic = xml_element->FirstChildElement("mimic");
   if (mimic != nullptr)
   {
-    auto status = parse(j->mimic, mimic, version);
-    if (!(*status))
-      return std::make_shared<SC>(JointStatusCategory::ErrorParsingMimic, status_cat, status);
+    try
+    {
+      j->mimic = parseMimic(mimic, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(
+          std::runtime_error("Joint: Failed parsing element 'mimic' for joint '" + joint_name + "'!"));
+    }
   }
 
   // get dynamics if exists
   const tinyxml2::XMLElement* dynamics = xml_element->FirstChildElement("dynamics");
   if (dynamics != nullptr)
   {
-    auto status = parse(j->dynamics, dynamics, version);
-    if (!(*status))
-      return std::make_shared<SC>(JointStatusCategory::ErrorParsingDynamics, status_cat, status);
+    try
+    {
+      j->dynamics = parseDynamics(dynamics, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(
+          std::runtime_error("Joint: Failed parsing element 'dynamics' for joint '" + joint_name + "'!"));
+    }
   }
 
-  joint = std::move(j);
-  return std::make_shared<SC>(JointStatusCategory::Success, status_cat);
+  return j;
 }
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_JOINT_H

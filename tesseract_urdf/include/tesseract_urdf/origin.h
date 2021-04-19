@@ -28,7 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
@@ -36,84 +36,28 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::OriginStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class OriginStatusCategory : public tesseract_common::StatusCategory
+inline Eigen::Isometry3d parseOrigin(const tinyxml2::XMLElement* xml_element, const int /*version*/)
 {
-public:
-  OriginStatusCategory() : name_("OriginStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessful";
-      case ErrorParsingAttributeXYZ:
-        return "Failed to parse origin attribute 'xyz'!";
-      case ErrorParsingAttributeRPY:
-        return "Failed to parse origin attribute 'rpy'!";
-      case ErrorParsingAttributeQ:
-        return "Failed to parse origin attribute 'q'!";
-      case ErrorParsingAttributeXYZString:
-        return "Failed to parse origin attribute 'xyz' string!";
-      case ErrorParsingAttributeRPYString:
-        return "Failed to parse origin attribute 'rpy' string!";
-      case ErrorParsingAttributeQString:
-        return "Failed to parse origin attribute 'q' string!";
-      case ErrorMissingRequiredAttributes:
-        return "Error missing both attributes 'xyz' and 'rpy' and 'q' for origin element!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorMissingRequiredAttributes = -1,
-    ErrorParsingAttributeXYZ = -2,
-    ErrorParsingAttributeRPY = -3,
-    ErrorParsingAttributeQ = -4,
-    ErrorParsingAttributeXYZString = -5,
-    ErrorParsingAttributeRPYString = -6,
-    ErrorParsingAttributeQString = -7
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const int /*version*/)
-{
-  origin = Eigen::Isometry3d::Identity();
-  auto status_cat = std::make_shared<OriginStatusCategory>();
+  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
 
   if (xml_element->Attribute("xyz") == nullptr && xml_element->Attribute("rpy") == nullptr &&
       xml_element->Attribute("wxyz") == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorMissingRequiredAttributes,
-                                                          status_cat);
+    std::throw_with_nested(std::runtime_error("Origin: Error missing required attributes 'xyz' and 'rpy' and/or 'wxyz' "
+                                              "for origin element!"));
 
   std::string xyz_string, rpy_string, wxyz_string;
   tinyxml2::XMLError status = tesseract_common::QueryStringAttribute(xml_element, "xyz", xyz_string);
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-  {
-    return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZ, status_cat);
-  }
+    std::throw_with_nested(std::runtime_error("Origin: Failed to parse attribute 'xyz'!"));
 
   if (status != tinyxml2::XML_NO_ATTRIBUTE)
   {
     std::vector<std::string> tokens;
     boost::split(tokens, xyz_string, boost::is_any_of(" "), boost::token_compress_on);
     if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-      return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
-                                                            status_cat);
+      std::throw_with_nested(std::runtime_error("Origin: Failed to parse attribute 'xyz' string!"));
 
     double x{ 0 }, y{ 0 }, z{ 0 };
     // No need to check return values because the tokens are verified above
@@ -128,17 +72,14 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
   {
     status = tesseract_common::QueryStringAttribute(xml_element, "rpy", rpy_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    {
-      return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPY, status_cat);
-    }
+      std::throw_with_nested(std::runtime_error("Origin: Failed to parse attribute 'rpy'!"));
 
     if (status != tinyxml2::XML_NO_ATTRIBUTE)
     {
       std::vector<std::string> tokens;
       boost::split(tokens, rpy_string, boost::is_any_of(" "), boost::token_compress_on);
       if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-        return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
-                                                              status_cat);
+        std::throw_with_nested(std::runtime_error("Origin: Failed to parse attribute 'rpy' string!"));
 
       double r{ 0 }, p{ 0 }, y{ 0 };
       // No need to check return values because the tokens are verified above
@@ -159,17 +100,14 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
   {
     status = tesseract_common::QueryStringAttribute(xml_element, "wxyz", wxyz_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    {
-      return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQ, status_cat);
-    }
+      std::throw_with_nested(std::runtime_error("Origin: Failed to parse attribute 'wxyz'!"));
 
     if (status != tinyxml2::XML_NO_ATTRIBUTE)
     {
       std::vector<std::string> tokens;
       boost::split(tokens, wxyz_string, boost::is_any_of(" "), boost::token_compress_on);
       if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
-        return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
-                                                              status_cat);
+        std::throw_with_nested(std::runtime_error("Origin: Failed to parse attribute 'wxyz' string!"));
 
       double qw{ 0 }, qx{ 0 }, qy{ 0 }, qz{ 0 };
       // No need to check return values because the tokens are verified above
@@ -184,8 +122,7 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
       origin.linear() = q.toRotationMatrix();
     }
   }
-
-  return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::Success, status_cat);
+  return origin;
 }
 
 }  // namespace tesseract_urdf

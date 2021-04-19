@@ -28,9 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
 #include <pcl/io/pcd_io.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -39,96 +38,45 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::PointCloudStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class PointCloudStatusCategory : public tesseract_common::StatusCategory
+inline tesseract_geometry::Octree::Ptr parsePointCloud(const tinyxml2::XMLElement* xml_element,
+                                                       const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                                                       tesseract_geometry::Octree::SubType shape_type,
+                                                       const bool prune,
+                                                       const int /*version*/)
 {
-public:
-  PointCloudStatusCategory() : name_("PointCloudStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed point_cloud element!";
-      case ErrorAttributeFileName:
-        return "Missing or failed parsing point_cloud attribute 'filename'!";
-      case ErrorAttributeResolution:
-        return "Missing or failed parsing point_cloud attribute 'resolution'!";
-      case ErrorImportingPointCloud:
-        return "Error importing point_cloud from 'filename'!";
-      case ErrorPointCloudEmpty:
-        return "Error point cloud is empty!";
-      case ErrorCreatingGeometry:
-        return "Error create octree geometry type from point cloud!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeFileName = -1,
-    ErrorAttributeResolution = -2,
-    ErrorImportingPointCloud = -3,
-    ErrorPointCloudEmpty = -4,
-    ErrorCreatingGeometry = -5
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parsePointCloud(tesseract_geometry::Octree::Ptr& octree,
-                                                         const tinyxml2::XMLElement* xml_element,
-                                                         const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                                         tesseract_geometry::Octree::SubType shape_type,
-                                                         const bool prune,
-                                                         const int /*version*/)
-{
-  octree = nullptr;
-  auto status_cat = std::make_shared<PointCloudStatusCategory>();
-
   std::string filename;
   if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorAttributeFileName, status_cat);
+    std::throw_with_nested(std::runtime_error("PointCloud: Missing or failed parsing attribute 'filename'!"));
 
   double resolution;
   if (xml_element->QueryDoubleAttribute("resolution", &resolution) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorAttributeResolution,
-                                                          status_cat);
+    std::throw_with_nested(std::runtime_error("PointCloud: Missing or failed parsing point_cloud attribute "
+                                              "'resolution'!"));
 
   auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   tesseract_common::Resource::Ptr located_resource = locator->locateResource(filename);
-  if (!located_resource->isFile())
+  if (!located_resource || !located_resource->isFile())
   {
     // TODO: Handle point clouds that are not files
     CONSOLE_BRIDGE_logError("Point clouds can only be loaded from file");
-    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorImportingPointCloud,
-                                                          status_cat);
+    std::throw_with_nested(std::runtime_error("PointCloud: Unable to locate resource '" + filename + "'!"));
   }
 
   if (pcl::io::loadPCDFile<pcl::PointXYZ>(located_resource->getFilePath(), *cloud) == -1)
-    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorImportingPointCloud,
-                                                          status_cat);
+    std::throw_with_nested(std::runtime_error("PointCloud: Failed to import point cloud from '" + filename + "'!"));
 
   if (cloud->points.empty())
-    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorPointCloudEmpty, status_cat);
+    std::throw_with_nested(std::runtime_error("PointCloud: Imported point cloud from '" + filename + "' is empty!"));
 
   auto geom = std::make_shared<tesseract_geometry::Octree>(*cloud, resolution, shape_type, prune);
   if (geom == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorCreatingGeometry, status_cat);
+    std::throw_with_nested(std::runtime_error("PointCloud: Failed to create Tesseract Octree Geometry from point "
+                                              "cloud!"));
 
-  octree = std::move(geom);
-  return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::Success, status_cat);
-  ;
+  return geom;
 }
 
 }  // namespace tesseract_urdf

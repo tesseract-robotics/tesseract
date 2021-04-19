@@ -13,11 +13,7 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
   {
     std::string str = R"(<box size="1 2.0 3" extra="0 0 0"/>)";
     tesseract_geometry::Box::Ptr geom;
-    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "BoxStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::parseBox, str, "box", 2));
     EXPECT_NEAR(geom->getX(), 1, 1e-8);
     EXPECT_NEAR(geom->getY(), 2, 1e-8);
     EXPECT_NEAR(geom->getZ(), 3, 1e-8);
@@ -26,10 +22,7 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
   {  // https://github.com/ros-industrial-consortium/tesseract_ros/issues/67
     std::string str = R"(<box size="0.5 0.25 0.75" extra="0 0 0"/>)";
     tesseract_geometry::Box::Ptr geom;
-    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "BoxStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::parseBox, str, "box", 2));
     EXPECT_NEAR(geom->getX(), 0.5, 1e-8);
     EXPECT_NEAR(geom->getY(), 0.25, 1e-8);
     EXPECT_NEAR(geom->getZ(), 0.75, 1e-8);
@@ -38,48 +31,36 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
   {
     std::string str = R"(<box size="-1 2.0 3" extra="0 0 0"/>)";
     tesseract_geometry::Box::Ptr geom;
-    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::parseBox, str, "box", 2));
   }
 
   {
     std::string str = R"(<box size="1 -2.0 3" extra="0 0 0"/>)";
     tesseract_geometry::Box::Ptr geom;
-    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::parseBox, str, "box", 2));
   }
 
   {
     std::string str = R"(<box size="1 2.0 -3" extra="0 0 0"/>)";
     tesseract_geometry::Box::Ptr geom;
-    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::parseBox, str, "box", 2));
   }
 
   {
     std::string str = R"(<box size="1.0 2 a"/>)";
     tesseract_geometry::Box::Ptr geom;
-    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::parseBox, str, "box", 2));
   }
 
   {
     std::string str = R"(<box size="1 2"/>)";
     tesseract_geometry::Box::Ptr geom;
-    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::parseBox, str, "box", 2));
   }
 
   {
     std::string str = "<box />";
     tesseract_geometry::Box::Ptr geom;
-    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::parseBox, str, "box", 2));
   }
 }

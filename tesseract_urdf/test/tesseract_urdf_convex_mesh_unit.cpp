@@ -15,12 +15,8 @@ TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
     std::string str =
         R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "ConvexMeshStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 6);
     EXPECT_TRUE(geom[0]->getVerticeCount() == 8);
@@ -33,11 +29,8 @@ TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
     std::string str =
         R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, true);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "ConvexMeshStatusCategory");
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, true));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 12);
     EXPECT_TRUE(geom[0]->getVerticeCount() == 8);
@@ -50,10 +43,8 @@ TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
     std::string str =
         R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" convert="true"/>)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() >= 6);  // Because we are converting due to numerical variance you could end up
                                                 // with additional faces.
@@ -64,20 +55,16 @@ TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
     std::string str =
         R"(<convex_mesh filename="package://tesseract_support/meshes/box_box.dae" scale="1 2 1" convert="true"/>)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
     EXPECT_TRUE(geom.size() == 2);
   }
 
   {
     std::string str = R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply"/>)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 6);
     EXPECT_TRUE(geom[0]->getVerticeCount() == 8);
@@ -89,72 +76,64 @@ TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
   {
     std::string str = R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="a 2 1" />)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
+    EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 a 1" />)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
+    EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 a" />)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
+    EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<convex_mesh filename="abc" scale="1 2 1"/>)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
+    EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 a 1"/>)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
+    EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1 3"/>)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
+    EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<convex_mesh scale="1 2 1"/>)";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
+    EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = "<convex_mesh />";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status =
-        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", resource_locator, 2, false);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(
+        geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
+    EXPECT_TRUE(geom.empty());
   }
 }

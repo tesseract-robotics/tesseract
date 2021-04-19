@@ -28,9 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/array.hpp>
@@ -40,80 +39,35 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::OctreeStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class OctreeStatusCategory : public tesseract_common::StatusCategory
+inline tesseract_geometry::Octree::Ptr parseOctree(const tinyxml2::XMLElement* xml_element,
+                                                   const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                                                   tesseract_geometry::Octree::SubType shape_type,
+                                                   const bool prune,
+                                                   const int /*version*/)
 {
-public:
-  OctreeStatusCategory() : name_("OctreeStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed octree element!";
-      case ErrorAttributeFileName:
-        return "Missing or failed parsing octree attribute 'filename'!";
-      case ErrorImportingOctree:
-        return "Error importing octree from 'filename'!";
-      case ErrorCreatingGeometry:
-        return "Error create octree geometry type from octomap::octree!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeFileName = -1,
-    ErrorImportingOctree = -2,
-    ErrorCreatingGeometry = -3
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parseOctree(tesseract_geometry::Octree::Ptr& octree,
-                                                     const tinyxml2::XMLElement* xml_element,
-                                                     const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                                     tesseract_geometry::Octree::SubType shape_type,
-                                                     const bool prune,
-                                                     const int /*version*/)
-{
-  octree = nullptr;
-  auto status_cat = std::make_shared<OctreeStatusCategory>();
-
   std::string filename;
   if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorAttributeFileName, status_cat);
+    std::throw_with_nested(std::runtime_error("Octree: Missing or failed parsing attribute 'filename'!"));
 
   tesseract_common::Resource::Ptr resource = locator->locateResource(filename);
-  if (!resource)
-    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
-  if (!resource->isFile())
-    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
+  if (!resource || !resource->isFile())
+    std::throw_with_nested(std::runtime_error("Octree: Missing resource '" + filename + "'!"));
 
   auto ot = std::make_shared<octomap::OcTree>(resource->getFilePath());
 
   if (ot == nullptr || ot->size() == 0)
-    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
+    std::throw_with_nested(std::runtime_error("Octree: Error importing from '" + filename + "'!"));
 
   if (prune)
     tesseract_geometry::Octree::prune(*ot);
 
   auto geom = std::make_shared<tesseract_geometry::Octree>(ot, shape_type);
   if (geom == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorCreatingGeometry, status_cat);
+    std::throw_with_nested(std::runtime_error("Octree: Error creating octree geometry type from octomap::octree!"));
 
-  octree = std::move(geom);
-  return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::Success, status_cat);
+  return geom;
 }
 
 }  // namespace tesseract_urdf

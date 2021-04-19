@@ -28,9 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -40,75 +39,33 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/visual.h>
 #include <tesseract_urdf/collision.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::LinkStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class LinkStatusCategory : public tesseract_common::StatusCategory
+inline tesseract_scene_graph::Link::Ptr
+parseLink(const tinyxml2::XMLElement* xml_element,
+          const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+          std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
+          const int version)
 {
-public:
-  LinkStatusCategory(std::string link_name = "") : name_("LinkStatusCategory"), link_name_(std::move(link_name)) {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed link '" + link_name_ + "'!";
-      case ErrorAttributeName:
-        return "Missing or failed parsing link attribute 'name' for link '" + link_name_ + "'!";
-      case ErrorParsingInertialElement:
-        return "Error parsing link 'inertial' element for link '" + link_name_ + "'!";
-      case ErrorParsingVisualElement:
-        return "Error parsing link 'visual' element for link '" + link_name_ + "'!";
-      case ErrorParsingCollisionElement:
-        return "Error parsing link 'collision' element for link '" + link_name_ + "'!";
-      default:
-        return "Invalid error code for " + name_ + " for link '" + link_name_ + "'!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeName = -1,
-    ErrorParsingInertialElement = -2,
-    ErrorParsingVisualElement = -3,
-    ErrorParsingCollisionElement = -4
-  };
-
-private:
-  std::string name_;
-  std::string link_name_;
-};
-
-inline tesseract_common::StatusCode::Ptr
-parse(tesseract_scene_graph::Link::Ptr& link,
-      const tinyxml2::XMLElement* xml_element,
-      const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-      const int version)
-{
-  link = nullptr;
-  auto status_cat = std::make_shared<LinkStatusCategory>();
-
   std::string link_name;
   if (tesseract_common::QueryStringAttribute(xml_element, "name", link_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(LinkStatusCategory::ErrorAttributeName, status_cat);
+    std::throw_with_nested(std::runtime_error("Link: Missing or failed parsing attribute 'name'!"));
 
-  status_cat = std::make_shared<LinkStatusCategory>(link_name);
   auto l = std::make_shared<tesseract_scene_graph::Link>(link_name);
 
   // get inertia if it exists
   const tinyxml2::XMLElement* inertial = xml_element->FirstChildElement("inertial");
   if (inertial != nullptr)
   {
-    auto status = parse(l->inertial, inertial, version);
-    if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          LinkStatusCategory::ErrorParsingInertialElement, status_cat, status);
+    try
+    {
+      l->inertial = parseInertial(inertial, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(
+          std::runtime_error("Link: Error parsing 'inertial' element for link '" + link_name + "'!"));
+    }
   }
 
   // get visual if it exists
@@ -116,10 +73,14 @@ parse(tesseract_scene_graph::Link::Ptr& link,
        visual = visual->NextSiblingElement("visual"))
   {
     std::vector<tesseract_scene_graph::Visual::Ptr> temp_visual;
-    auto status = parse(temp_visual, visual, locator, available_materials, version);
-    if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          LinkStatusCategory::ErrorParsingVisualElement, status_cat, status);
+    try
+    {
+      temp_visual = parseVisual(visual, locator, available_materials, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Link: Error parsing 'visual' element for link '" + link_name + "'!"));
+    }
 
     l->visual.insert(l->visual.end(), temp_visual.begin(), temp_visual.end());
   }
@@ -129,17 +90,20 @@ parse(tesseract_scene_graph::Link::Ptr& link,
        collision = collision->NextSiblingElement("collision"))
   {
     std::vector<tesseract_scene_graph::Collision::Ptr> temp_collision;
-    auto status = parse(temp_collision, collision, locator, version);
-    if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          LinkStatusCategory::ErrorParsingCollisionElement, status_cat, status);
+    try
+    {
+      temp_collision = parseCollision(collision, locator, version);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(
+          std::runtime_error("Link: Error parsing 'collision' element for link '" + link_name + "'!"));
+    }
 
     l->collision.insert(l->collision.end(), temp_collision.begin(), temp_collision.end());
   }
 
-  link = std::move(l);
-
-  return std::make_shared<tesseract_common::StatusCode>(LinkStatusCategory::Success, status_cat);
+  return l;
 }
 
 }  // namespace tesseract_urdf

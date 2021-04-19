@@ -28,67 +28,26 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <exception>
 #include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
 #include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/box.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::BoxStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class BoxStatusCategory : public tesseract_common::StatusCategory
+inline tesseract_geometry::Box::Ptr parseBox(const tinyxml2::XMLElement* xml_element, const int /*version*/)
 {
-public:
-  BoxStatusCategory() : name_("BoxStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessful";
-      case ErrorAttributeSize:
-        return "Missing or failed parsing box attribute size!";
-      case ErrorAttributeSizeConversion:
-        return "Failed converting box attribute size to vector!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeSize = -1,
-    ErrorAttributeSizeConversion = -2
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Box::Ptr& box,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const int /*version*/)
-{
-  box = nullptr;
-  auto status_cat = std::make_shared<BoxStatusCategory>();
-
   std::string size_string;
   if (tesseract_common::QueryStringAttribute(xml_element, "size", size_string) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSize, status_cat);
+    std::throw_with_nested(std::runtime_error("Box: Missing or failed parsing box attribute size!"));
 
   std::vector<std::string> tokens;
   boost::split(tokens, size_string, boost::is_any_of(" "), boost::token_compress_on);
   if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-    return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
+    std::throw_with_nested(std::runtime_error("Box: Failed converting box attribute size to vector!"));
 
   double l{ 0 }, w{ 0 }, h{ 0 };
   // No need to check return values because the tokens are verified above
@@ -97,16 +56,15 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Box::Ptr& box
   tesseract_common::toNumeric<double>(tokens[2], h);
 
   if (!(l > 0))
-    return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
+    std::throw_with_nested(std::runtime_error("Box: The length must be greater than zero!"));
 
   if (!(w > 0))
-    return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
+    std::throw_with_nested(std::runtime_error("Box: The width must be greater than zero!"));
 
   if (!(h > 0))
-    return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
+    std::throw_with_nested(std::runtime_error("Box: The height must be greater than zero!"));
 
-  box = std::make_shared<tesseract_geometry::Box>(l, w, h);
-  return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::Success, status_cat);
+  return std::make_shared<tesseract_geometry::Box>(l, w, h);
 }
 
 }  // namespace tesseract_urdf

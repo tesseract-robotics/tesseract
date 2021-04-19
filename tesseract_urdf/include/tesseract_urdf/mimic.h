@@ -28,95 +28,38 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
+#include <console_bridge/console.h>
+#include <exception>
 #include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/joint.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::MimicStatusCategory)
-#endif  // SWIG
-
 namespace tesseract_urdf
 {
-class MimicStatusCategory : public tesseract_common::StatusCategory
+inline tesseract_scene_graph::JointMimic::Ptr parseMimic(const tinyxml2::XMLElement* xml_element, const int /*version*/)
 {
-public:
-  MimicStatusCategory() : name_("MimicStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessful";
-      case MissingAttributeOffsetAndMultiplier:
-        return "Missing mimic attribute 'offset' and 'multiplier', using default value 0 and 1!";
-      case MissingAttributeOffset:
-        return "Missing mimic attribute 'offset', using default value 0!";
-      case MissingAttributeMultiplier:
-        return "Missing mimic attribute 'multiplier', using default value 1!";
-      case ErrorAttributeJoint:
-        return "Missing or failed to parse mimic attribute 'joint'!";
-      case ErrorParsingAttributeOffset:
-        return "Error parsing mimic attribute 'offset'!";
-      case ErrorParsingAttributeMultiplier:
-        return "Error parsing mimic attribute 'multiplier'!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    MissingAttributeOffsetAndMultiplier = 3,
-    MissingAttributeOffset = 2,
-    MissingAttributeMultiplier = 1,
-    Success = 0,
-    ErrorAttributeJoint = -1,
-    ErrorParsingAttributeOffset = -2,
-    ErrorParsingAttributeMultiplier = -3
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointMimic::Ptr& mimic,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const int /*version*/)
-{
-  mimic = nullptr;
-  auto status_cat = std::make_shared<MimicStatusCategory>();
-
   auto m = std::make_shared<tesseract_scene_graph::JointMimic>();
   if (tesseract_common::QueryStringAttribute(xml_element, "joint", m->joint_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::ErrorAttributeJoint, status_cat);
+    std::throw_with_nested(std::runtime_error("Mimic: Missing or failed to parse mimic attribute 'joint'!"));
 
-  auto status = std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::Success, status_cat);
   if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") == nullptr)
-    status = std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::MissingAttributeOffsetAndMultiplier,
-                                                            status_cat);
+    CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'offset' and 'multiplier', using default value 0 and 1!");
   else if (xml_element->Attribute("offset") != nullptr && xml_element->Attribute("multiplier") == nullptr)
-    status =
-        std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::MissingAttributeMultiplier, status_cat);
+    CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'multiplier', using default value 1!");
   else if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") != nullptr)
-    status = std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::MissingAttributeOffset, status_cat);
+    CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'offset', using default value 1!");
 
   tinyxml2::XMLError s = xml_element->QueryDoubleAttribute("offset", &(m->offset));
   if (s != tinyxml2::XML_NO_ATTRIBUTE && s != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::ErrorParsingAttributeOffset, status_cat);
+    std::throw_with_nested(std::runtime_error("Mimic: Error parsing attribute 'offset'!"));
 
   s = xml_element->QueryDoubleAttribute("multiplier", &(m->multiplier));
   if (s != tinyxml2::XML_NO_ATTRIBUTE && s != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::ErrorParsingAttributeMultiplier,
-                                                          status_cat);
+    std::throw_with_nested(std::runtime_error("Mimic: Error parsing attribute 'multiplier'!"));
 
-  mimic = std::move(m);
-  return status;
+  return m;
 }
 
 }  // namespace tesseract_urdf
