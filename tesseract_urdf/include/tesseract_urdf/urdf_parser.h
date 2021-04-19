@@ -42,6 +42,8 @@ void printNestedException(const std::exception& e, int level = 0);
  * @brief Parse a URDF string into a Tesseract Scene Graph
  * @param urdf_xml_string URDF xml string
  * @param locator The resource locator function
+ * @throws std::nested_exception Thrown if error occurs during parsing. Use printNestedException to print contents of
+ * the nested exception.
  * @return Tesseract Scene Graph, nullptr if failed to parse URDF
  */
 tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_xml_string,
@@ -51,6 +53,8 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_x
  * @brief Parse a URDF file into a Tesseract Scene Graph
  * @param URDF file path
  * @param The resource locator function
+ * @throws std::nested_exception Thrown if error occurs during parsing. Use printNestedException to print contents of
+ * the nested exception.
  * @return Tesseract Scene Graph, nullptr if failed to parse URDF
  */
 tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,

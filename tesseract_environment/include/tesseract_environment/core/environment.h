@@ -121,11 +121,15 @@ public:
     resource_locator_ = locator;
 
     // Parse urdf string into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-        tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
-    if (scene_graph == nullptr)
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+    try
+    {
+      scene_graph = tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      tesseract_urdf::printNestedException(e);
       return false;
     }
 
@@ -141,11 +145,15 @@ public:
     resource_locator_ = locator;
 
     // Parse urdf string into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-        tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
-    if (scene_graph == nullptr)
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+    try
+    {
+      scene_graph = tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      tesseract_urdf::printNestedException(e);
       return false;
     }
 
@@ -167,11 +175,15 @@ public:
     resource_locator_ = locator;
 
     // Parse urdf file into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-        tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
-    if (scene_graph == nullptr)
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+    try
+    {
+      scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      tesseract_urdf::printNestedException(e);
       return false;
     }
 
@@ -187,11 +199,15 @@ public:
     resource_locator_ = locator;
 
     // Parse urdf file into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-        tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
-    if (scene_graph == nullptr)
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+    try
+    {
+      scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      tesseract_urdf::printNestedException(e);
       return false;
     }
 
