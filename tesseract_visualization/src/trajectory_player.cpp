@@ -146,6 +146,6 @@ void TrajectoryPlayer::reset()
   finished_ = false;
 }
 
-long TrajectoryPlayer::size() const { return trajectory_->getStateCount(); }
+long TrajectoryPlayer::size() const { return (trajectory_) ? trajectory_->getStateCount() : 0; }
 
 }  // namespace tesseract_visualization
