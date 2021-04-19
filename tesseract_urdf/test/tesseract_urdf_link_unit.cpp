@@ -136,6 +136,48 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                                <color rgba="0 1.0 1.0 1.0" />
                              </material>
                            </visual>
+                           <visual>
+                             <origin xyz="0 0 0" rpy="0 0 0"  />
+                             <geometry>
+                               <box size="1 1 1"  />
+                             </geometry>
+                             <material name="Cyan" />>
+                           </visual>
+                           <collision>
+                             <origin xyz="0 0 0" rpy="0 0 0" />
+                             <geometry>
+                               <cylinder radius="1" length="0.5" />
+                             </geometry>
+                           </collision>
+                           <collision>
+                             <origin xyz="0 0 0" rpy="0 0 0" />
+                             <geometry>
+                               <cylinder radius="1" length="0.5" />
+                             </geometry>
+                           </collision>
+                         </link>)";
+    tesseract_scene_graph::Link::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
+    EXPECT_TRUE(elem->getName() == "my_link");
+    EXPECT_TRUE(elem->inertial == nullptr);
+    EXPECT_TRUE(elem->visual.size() == 2);
+    EXPECT_TRUE(elem->collision.size() == 2);
+    EXPECT_TRUE(empty_available_materials.size() == 1);
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::string str = R"(<link name="my_link">
+                           <visual>
+                             <origin xyz="0 0 0" rpy="0 0 0"  />
+                             <geometry>
+                               <box size="1 1 1"  />
+                             </geometry>
+                             <material name="Cyan">
+                               <color rgba="0 1.0 1.0 1.0" />
+                             </material>
+                           </visual>
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
@@ -143,6 +185,36 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
+    EXPECT_TRUE(elem->collision.empty());
+    EXPECT_TRUE(empty_available_materials.size() == 1);
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::string str = R"(<link name="my_link">
+                           <visual>
+                             <origin xyz="0 0 0" rpy="0 0 0"  />
+                             <geometry>
+                               <box size="1 1 1"  />
+                             </geometry>
+                             <material name="Cyan">
+                               <color rgba="0 1.0 1.0 1.0" />
+                             </material>
+                           </visual>
+                           <visual>
+                             <origin xyz="0 0 0" rpy="0 0 0" />
+                             <geometry>
+                               <box size="1 1 1" />
+                             </geometry>
+                             <material name="Cyan" />
+                           </visual>
+                         </link>)";
+    tesseract_scene_graph::Link::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
+    EXPECT_TRUE(elem->getName() == "my_link");
+    EXPECT_TRUE(elem->inertial == nullptr);
+    EXPECT_TRUE(elem->visual.size() == 2);
     EXPECT_TRUE(elem->collision.empty());
     EXPECT_TRUE(empty_available_materials.size() == 1);
   }
@@ -164,6 +236,32 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.empty());
     EXPECT_TRUE(elem->collision.size() == 1);
+    EXPECT_TRUE(empty_available_materials.empty());
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::string str = R"(<link name="my_link">
+                           <collision>
+                             <origin xyz="0 0 0" rpy="0 0 0" />
+                             <geometry>
+                               <cylinder radius="1" length="0.5" />
+                             </geometry>
+                           </collision>
+                           <collision>
+                             <origin xyz="0 0 0" rpy="0 0 0" />
+                             <geometry>
+                               <cylinder radius="1" length="0.5" />
+                             </geometry>
+                           </collision>
+                         </link>)";
+    tesseract_scene_graph::Link::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
+        elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
+    EXPECT_TRUE(elem->getName() == "my_link");
+    EXPECT_TRUE(elem->inertial == nullptr);
+    EXPECT_TRUE(elem->visual.empty());
+    EXPECT_TRUE(elem->collision.size() == 2);
     EXPECT_TRUE(empty_available_materials.empty());
   }
 

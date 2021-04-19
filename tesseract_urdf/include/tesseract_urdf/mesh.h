@@ -89,7 +89,7 @@ inline std::vector<tesseract_geometry::Mesh::Ptr> parseMesh(const tinyxml2::XMLE
         locator->locateResource(filename), scale, true, false);
 
   if (meshes.empty())
-    std::throw_with_nested(std::runtime_error("Mesh: Error importing meshes from filename!"));
+    std::throw_with_nested(std::runtime_error("Mesh: Error importing meshes from filename: '" + filename + "'!"));
 
   return meshes;
 }
