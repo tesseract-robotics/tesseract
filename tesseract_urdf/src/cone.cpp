@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/cone.h>
+#include <tesseract_geometry/impl/cone.h>
 
 tesseract_geometry::Cone::Ptr tesseract_urdf::parseCone(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {

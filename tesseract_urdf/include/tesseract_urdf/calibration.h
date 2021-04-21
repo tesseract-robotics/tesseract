@@ -28,10 +28,17 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/joint.h>
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_scene_graph
+{
+class JointCalibration;
+}
 
 namespace tesseract_urdf
 {
@@ -40,7 +47,8 @@ namespace tesseract_urdf
  * @param xml_element The xml element
  * @return Tesseract JointCalibration
  */
-tesseract_scene_graph::JointCalibration::Ptr parseCalibration(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_scene_graph::JointCalibration> parseCalibration(const tinyxml2::XMLElement* xml_element,
+                                                                          int version);
 
 }  // namespace tesseract_urdf
 

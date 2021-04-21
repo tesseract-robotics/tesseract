@@ -29,9 +29,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <stdexcept>
 #include <tesseract_common/utils.h>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/mimic.h>
+#include <tesseract_scene_graph/joint.h>
 
 tesseract_scene_graph::JointMimic::Ptr tesseract_urdf::parseMimic(const tinyxml2::XMLElement* xml_element,
                                                                   int /*version*/)

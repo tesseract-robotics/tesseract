@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/convex_mesh.h>
+#include <tesseract_geometry/impl/convex_mesh.h>
 #include "tesseract_urdf_common_unit.h"
 
 TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT

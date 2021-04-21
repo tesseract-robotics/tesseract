@@ -46,7 +46,8 @@ add_library(
   src/joint_state.cpp
   src/manipulator_info.cpp
   src/kinematic_limits.cpp
-  src/serialization.cpp)
+  src/serialization.cpp
+  src/utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen

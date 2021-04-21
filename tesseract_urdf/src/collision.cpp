@@ -29,10 +29,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 #include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/collision.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/geometry.h>
 

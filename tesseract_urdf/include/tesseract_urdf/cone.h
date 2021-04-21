@@ -28,10 +28,17 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/impl/cone.h>
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_geometry
+{
+class Cone;
+}
 
 namespace tesseract_urdf
 {
@@ -40,7 +47,7 @@ namespace tesseract_urdf
  * @param xml_element The xml element
  * @return Tesseract Geometry Cone
  */
-tesseract_geometry::Cone::Ptr parseCone(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_geometry::Cone> parseCone(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 

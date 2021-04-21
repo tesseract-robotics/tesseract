@@ -28,10 +28,19 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tinyxml2.h>
+#include <memory>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/resource_locator.h>
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_scene_graph
+{
+class Collision;
+class ResourceLocator;
+}  // namespace tesseract_scene_graph
 
 namespace tesseract_urdf
 {
@@ -42,9 +51,9 @@ namespace tesseract_urdf
  * @param version The version number
  * @return A vector tesseract_scene_graph Collision objects
  */
-std::vector<tesseract_scene_graph::Collision::Ptr>
+std::vector<std::shared_ptr<tesseract_scene_graph::Collision>>
 parseCollision(const tinyxml2::XMLElement* xml_element,
-               const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+               const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
                int version);
 
 }  // namespace tesseract_urdf

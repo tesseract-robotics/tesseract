@@ -28,11 +28,14 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 #include <tesseract_common/utils.h>
+#include <console_bridge/console.h>
 #include <pcl/io/pcd_io.h>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/point_cloud.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 
 tesseract_geometry::Octree::Ptr
 tesseract_urdf::parsePointCloud(const tinyxml2::XMLElement* xml_element,

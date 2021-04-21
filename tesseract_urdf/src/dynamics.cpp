@@ -28,9 +28,11 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <stdexcept>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/dynamics.h>
+#include <tesseract_scene_graph/joint.h>
 
 tesseract_scene_graph::JointDynamics::Ptr tesseract_urdf::parseDynamics(const tinyxml2::XMLElement* xml_element,
                                                                         int /*version*/)

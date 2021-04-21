@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/utils.h>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/array.hpp>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/octree.h>

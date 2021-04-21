@@ -28,10 +28,17 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/link.h>
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_scene_graph
+{
+class Inertial;
+}
 
 namespace tesseract_urdf
 {
@@ -41,7 +48,7 @@ namespace tesseract_urdf
  * @param version The version number
  * @return A Tesseract Inertial
  */
-tesseract_scene_graph::Inertial::Ptr parseInertial(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_scene_graph::Inertial> parseInertial(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 
