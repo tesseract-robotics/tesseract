@@ -36,7 +36,7 @@
 namespace tesseract_environment
 {
 bool ManipulatorManager::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                              tesseract_scene_graph::KinematicsInformation kinematics_information)
+                              tesseract_srdf::KinematicsInformation kinematics_information)
 {
   if (scene_graph == nullptr)
     return false;
@@ -231,29 +231,28 @@ ManipulatorManager::Ptr ManipulatorManager::clone(tesseract_scene_graph::SceneGr
   return cloned_manager;
 }
 
-bool ManipulatorManager::addKinematicsInformation(
-    const tesseract_scene_graph::KinematicsInformation& kinematics_information)
+bool ManipulatorManager::addKinematicsInformation(const tesseract_srdf::KinematicsInformation& kinematics_information)
 {
   bool success = true;
 
-  tesseract_scene_graph::GroupNames& gn = kinematics_information_.group_names;
-  const tesseract_scene_graph::GroupNames& cgn = kinematics_information.group_names;
+  tesseract_srdf::GroupNames& gn = kinematics_information_.group_names;
+  const tesseract_srdf::GroupNames& cgn = kinematics_information.group_names;
   gn.insert(gn.end(), cgn.begin(), cgn.end());
 
-  tesseract_scene_graph::ChainGroups& cg = kinematics_information_.chain_groups;
-  const tesseract_scene_graph::ChainGroups& ccg = kinematics_information.chain_groups;
+  tesseract_srdf::ChainGroups& cg = kinematics_information_.chain_groups;
+  const tesseract_srdf::ChainGroups& ccg = kinematics_information.chain_groups;
   cg.insert(ccg.begin(), ccg.end());
 
-  tesseract_scene_graph::JointGroups& jg = kinematics_information_.joint_groups;
-  const tesseract_scene_graph::JointGroups& cjg = kinematics_information.joint_groups;
+  tesseract_srdf::JointGroups& jg = kinematics_information_.joint_groups;
+  const tesseract_srdf::JointGroups& cjg = kinematics_information.joint_groups;
   jg.insert(cjg.begin(), cjg.end());
 
-  tesseract_scene_graph::LinkGroups& lg = kinematics_information_.link_groups;
-  const tesseract_scene_graph::LinkGroups& clg = kinematics_information.link_groups;
+  tesseract_srdf::LinkGroups& lg = kinematics_information_.link_groups;
+  const tesseract_srdf::LinkGroups& clg = kinematics_information.link_groups;
   lg.insert(clg.begin(), clg.end());
 
-  tesseract_scene_graph::GroupTCPs& gtcps = kinematics_information_.group_tcps;
-  const tesseract_scene_graph::GroupTCPs& cgtcps = kinematics_information.group_tcps;
+  tesseract_srdf::GroupTCPs& gtcps = kinematics_information_.group_tcps;
+  const tesseract_srdf::GroupTCPs& cgtcps = kinematics_information.group_tcps;
   for (const auto& t : cgtcps)
   {
     auto it = gtcps.find(t.first);
@@ -263,8 +262,8 @@ bool ManipulatorManager::addKinematicsInformation(
       it->second.insert(t.second.begin(), t.second.end());
   }
 
-  tesseract_scene_graph::GroupJointStates& gjs = kinematics_information_.group_states;
-  const tesseract_scene_graph::GroupJointStates& cgjs = kinematics_information.group_states;
+  tesseract_srdf::GroupJointStates& gjs = kinematics_information_.group_states;
+  const tesseract_srdf::GroupJointStates& cgjs = kinematics_information.group_states;
   for (const auto& t : cgjs)
   {
     auto it = gjs.find(t.first);
@@ -274,16 +273,16 @@ bool ManipulatorManager::addKinematicsInformation(
       it->second.insert(t.second.begin(), t.second.end());
   }
 
-  tesseract_scene_graph::GroupOPWKinematics& gopwk = kinematics_information_.group_opw_kinematics;
-  const tesseract_scene_graph::GroupOPWKinematics& cgopwk = kinematics_information.group_opw_kinematics;
+  tesseract_srdf::GroupOPWKinematics& gopwk = kinematics_information_.group_opw_kinematics;
+  const tesseract_srdf::GroupOPWKinematics& cgopwk = kinematics_information.group_opw_kinematics;
   gopwk.insert(cgopwk.begin(), cgopwk.end());
 
-  tesseract_scene_graph::GroupROPKinematics& gropk = kinematics_information_.group_rop_kinematics;
-  const tesseract_scene_graph::GroupROPKinematics& cgropk = kinematics_information.group_rop_kinematics;
+  tesseract_srdf::GroupROPKinematics& gropk = kinematics_information_.group_rop_kinematics;
+  const tesseract_srdf::GroupROPKinematics& cgropk = kinematics_information.group_rop_kinematics;
   gropk.insert(cgropk.begin(), cgropk.end());
 
-  tesseract_scene_graph::GroupREPKinematics& grepk = kinematics_information_.group_rep_kinematics;
-  const tesseract_scene_graph::GroupREPKinematics& cgrepk = kinematics_information.group_rep_kinematics;
+  tesseract_srdf::GroupREPKinematics& grepk = kinematics_information_.group_rep_kinematics;
+  const tesseract_srdf::GroupREPKinematics& cgrepk = kinematics_information.group_rep_kinematics;
   grepk.insert(cgrepk.begin(), cgrepk.end());
 
   for (const auto& group : kinematics_information.chain_groups)
@@ -307,24 +306,23 @@ bool ManipulatorManager::addKinematicsInformation(
   return success;
 }
 
-const tesseract_scene_graph::KinematicsInformation& ManipulatorManager::getKinematicsInformation() const
+const tesseract_srdf::KinematicsInformation& ManipulatorManager::getKinematicsInformation() const
 {
   return kinematics_information_;
 }
 
-const tesseract_scene_graph::GroupNames& ManipulatorManager::getGroupNames() const
+const tesseract_srdf::GroupNames& ManipulatorManager::getGroupNames() const
 {
   return kinematics_information_.group_names;
 }
 
 bool ManipulatorManager::hasGroup(const std::string& group_name) const
 {
-  const tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
+  const tesseract_srdf::GroupNames& group_names = kinematics_information_.group_names;
   return std::find(group_names.begin(), group_names.end(), group_name) != group_names.end();
 }
 
-bool ManipulatorManager::addChainGroup(const std::string& group_name,
-                                       const tesseract_scene_graph::ChainGroup& chain_group)
+bool ManipulatorManager::addChainGroup(const std::string& group_name, const tesseract_srdf::ChainGroup& chain_group)
 {
   if (hasGroup(group_name))
   {
@@ -344,7 +342,7 @@ void ManipulatorManager::removeChainGroup(const std::string& group_name)
 {
   if (kinematics_information_.chain_groups.erase(group_name) > 0)
   {
-    tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
+    tesseract_srdf::GroupNames& group_names = kinematics_information_.group_names;
     group_names.erase(std::remove_if(
         group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
     removeFwdKinematicSolver(group_name);
@@ -352,7 +350,7 @@ void ManipulatorManager::removeChainGroup(const std::string& group_name)
   }
 }
 
-const tesseract_scene_graph::ChainGroup& ManipulatorManager::getChainGroup(const std::string& group_name) const
+const tesseract_srdf::ChainGroup& ManipulatorManager::getChainGroup(const std::string& group_name) const
 {
   return kinematics_information_.chain_groups.at(group_name);
 }
@@ -362,13 +360,12 @@ bool ManipulatorManager::hasChainGroup(const std::string& group_name) const
   return (kinematics_information_.chain_groups.find(group_name) != kinematics_information_.chain_groups.end());
 }
 
-const tesseract_scene_graph::ChainGroups& ManipulatorManager::getChainGroups() const
+const tesseract_srdf::ChainGroups& ManipulatorManager::getChainGroups() const
 {
   return kinematics_information_.chain_groups;
 }
 
-bool ManipulatorManager::addJointGroup(const std::string& group_name,
-                                       const tesseract_scene_graph::JointGroup& joint_group)
+bool ManipulatorManager::addJointGroup(const std::string& group_name, const tesseract_srdf::JointGroup& joint_group)
 {
   if (hasGroup(group_name))
   {
@@ -388,7 +385,7 @@ void ManipulatorManager::removeJointGroup(const std::string& group_name)
 {
   if (kinematics_information_.joint_groups.erase(group_name) > 0)
   {
-    tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
+    tesseract_srdf::GroupNames& group_names = kinematics_information_.group_names;
     group_names.erase(std::remove_if(
         group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
     removeFwdKinematicSolver(group_name);
@@ -401,17 +398,17 @@ bool ManipulatorManager::hasJointGroup(const std::string& group_name) const
   return (kinematics_information_.joint_groups.find(group_name) != kinematics_information_.joint_groups.end());
 }
 
-const tesseract_scene_graph::JointGroup& ManipulatorManager::getJointGroup(const std::string& group_name) const
+const tesseract_srdf::JointGroup& ManipulatorManager::getJointGroup(const std::string& group_name) const
 {
   return kinematics_information_.joint_groups.at(group_name);
 }
 
-const tesseract_scene_graph::JointGroups& ManipulatorManager::getJointGroups() const
+const tesseract_srdf::JointGroups& ManipulatorManager::getJointGroups() const
 {
   return kinematics_information_.joint_groups;
 }
 
-bool ManipulatorManager::addLinkGroup(const std::string& group_name, const tesseract_scene_graph::LinkGroup& link_group)
+bool ManipulatorManager::addLinkGroup(const std::string& group_name, const tesseract_srdf::LinkGroup& link_group)
 {
   if (hasGroup(group_name))
   {
@@ -431,7 +428,7 @@ void ManipulatorManager::removeLinkGroup(const std::string& group_name)
 {
   if (kinematics_information_.link_groups.erase(group_name) > 0)
   {
-    tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
+    tesseract_srdf::GroupNames& group_names = kinematics_information_.group_names;
     group_names.erase(std::remove_if(
         group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
     removeFwdKinematicSolver(group_name);
@@ -444,18 +441,18 @@ bool ManipulatorManager::hasLinkGroup(const std::string& group_name) const
   return (kinematics_information_.link_groups.find(group_name) != kinematics_information_.link_groups.end());
 }
 
-const tesseract_scene_graph::LinkGroup& ManipulatorManager::getLinkGroup(const std::string& group_name) const
+const tesseract_srdf::LinkGroup& ManipulatorManager::getLinkGroup(const std::string& group_name) const
 {
   return kinematics_information_.link_groups.at(group_name);
 }
 
-const tesseract_scene_graph::LinkGroups& ManipulatorManager::getLinkGroups() const
+const tesseract_srdf::LinkGroups& ManipulatorManager::getLinkGroups() const
 {
   return kinematics_information_.link_groups;
 }
 
 bool ManipulatorManager::addROPKinematicsSolver(const std::string& group_name,
-                                                const tesseract_scene_graph::ROPKinematicParameters& rop_group)
+                                                const tesseract_srdf::ROPKinematicParameters& rop_group)
 {
   if (!hasGroup(group_name))
   {
@@ -482,19 +479,19 @@ bool ManipulatorManager::hasROPKinematicsSolver(const std::string& group_name) c
           kinematics_information_.group_rop_kinematics.end());
 }
 
-const tesseract_scene_graph::ROPKinematicParameters&
+const tesseract_srdf::ROPKinematicParameters&
 ManipulatorManager::getROPKinematicsSolver(const std::string& group_name) const
 {
   return kinematics_information_.group_rop_kinematics.at(group_name);
 }
 
-const tesseract_scene_graph::GroupROPKinematics& ManipulatorManager::getROPKinematicsSolvers() const
+const tesseract_srdf::GroupROPKinematics& ManipulatorManager::getROPKinematicsSolvers() const
 {
   return kinematics_information_.group_rop_kinematics;
 }
 
 bool ManipulatorManager::addREPKinematicsSolver(const std::string& group_name,
-                                                const tesseract_scene_graph::REPKinematicParameters& rep_group)
+                                                const tesseract_srdf::REPKinematicParameters& rep_group)
 {
   if (!hasGroup(group_name))
   {
@@ -521,19 +518,19 @@ bool ManipulatorManager::hasREPKinematicsSolver(const std::string& group_name) c
           kinematics_information_.group_rep_kinematics.end());
 }
 
-const tesseract_scene_graph::REPKinematicParameters&
+const tesseract_srdf::REPKinematicParameters&
 ManipulatorManager::getREPKinematicsSolver(const std::string& group_name) const
 {
   return kinematics_information_.group_rep_kinematics.at(group_name);
 }
 
-const tesseract_scene_graph::GroupREPKinematics& ManipulatorManager::getREPKinematicsSolvers() const
+const tesseract_srdf::GroupREPKinematics& ManipulatorManager::getREPKinematicsSolvers() const
 {
   return kinematics_information_.group_rep_kinematics;
 }
 
 bool ManipulatorManager::addOPWKinematicsSolver(const std::string& group_name,
-                                                const tesseract_scene_graph::OPWKinematicParameters& opw_params)
+                                                const tesseract_srdf::OPWKinematicParameters& opw_params)
 {
   if (!hasGroup(group_name))
   {
@@ -560,20 +557,20 @@ bool ManipulatorManager::hasOPWKinematicsSolver(const std::string& group_name) c
           kinematics_information_.group_opw_kinematics.end());
 }
 
-const tesseract_scene_graph::OPWKinematicParameters&
+const tesseract_srdf::OPWKinematicParameters&
 ManipulatorManager::getOPWKinematicsSolver(const std::string& group_name) const
 {
   return kinematics_information_.group_opw_kinematics.at(group_name);
 }
 
-const tesseract_scene_graph::GroupOPWKinematics& ManipulatorManager::getOPWKinematicsSolvers() const
+const tesseract_srdf::GroupOPWKinematics& ManipulatorManager::getOPWKinematicsSolvers() const
 {
   return kinematics_information_.group_opw_kinematics;
 }
 
 bool ManipulatorManager::addGroupJointState(const std::string& group_name,
                                             const std::string& state_name,
-                                            const tesseract_scene_graph::GroupsJointState& joint_state)
+                                            const tesseract_srdf::GroupsJointState& joint_state)
 {
   if (!hasGroup(group_name))
   {
@@ -603,19 +600,18 @@ bool ManipulatorManager::hasGroupJointState(const std::string& group_name, const
   return (it->second.find(state_name) != it->second.end());
 }
 
-const tesseract_scene_graph::GroupsJointState&
-ManipulatorManager::getGroupsJointState(const std::string& group_name, const std::string& state_name) const
+const tesseract_srdf::GroupsJointState& ManipulatorManager::getGroupsJointState(const std::string& group_name,
+                                                                                const std::string& state_name) const
 {
   return kinematics_information_.group_states.at(group_name).at(state_name);
 }
 
-const tesseract_scene_graph::GroupsJointStates&
-ManipulatorManager::getGroupsJointStates(const std::string& group_name) const
+const tesseract_srdf::GroupsJointStates& ManipulatorManager::getGroupsJointStates(const std::string& group_name) const
 {
   return kinematics_information_.group_states.at(group_name);
 }
 
-const tesseract_scene_graph::GroupJointStates& ManipulatorManager::getGroupJointStates() const
+const tesseract_srdf::GroupJointStates& ManipulatorManager::getGroupJointStates() const
 {
   return kinematics_information_.group_states;
 }
@@ -657,15 +653,12 @@ const Eigen::Isometry3d& ManipulatorManager::getGroupsTCP(const std::string& gro
   return kinematics_information_.group_tcps.at(group_name).at(tcp_name);
 }
 
-const tesseract_scene_graph::GroupsTCPs& ManipulatorManager::getGroupsTCPs(const std::string& group_name) const
+const tesseract_srdf::GroupsTCPs& ManipulatorManager::getGroupsTCPs(const std::string& group_name) const
 {
   return kinematics_information_.group_tcps.at(group_name);
 }
 
-const tesseract_scene_graph::GroupTCPs& ManipulatorManager::getGroupTCPs() const
-{
-  return kinematics_information_.group_tcps;
-}
+const tesseract_srdf::GroupTCPs& ManipulatorManager::getGroupTCPs() const { return kinematics_information_.group_tcps; }
 
 bool ManipulatorManager::registerFwdKinematicsFactory(tesseract_kinematics::ForwardKinematicsFactory::ConstPtr factory)
 {
@@ -920,7 +913,7 @@ ManipulatorManager::getInvKinematicSolver(const std::string& manipulator) const
 }
 
 bool ManipulatorManager::registerDefaultChainSolver(const std::string& group_name,
-                                                    const tesseract_scene_graph::ChainGroup& chain_group)
+                                                    const tesseract_srdf::ChainGroup& chain_group)
 {
   if (chain_group.empty())
     return false;
@@ -959,7 +952,7 @@ bool ManipulatorManager::registerDefaultChainSolver(const std::string& group_nam
 }
 
 bool ManipulatorManager::registerDefaultJointSolver(const std::string& group_name,
-                                                    const tesseract_scene_graph::JointGroup& joint_group)
+                                                    const tesseract_srdf::JointGroup& joint_group)
 {
   if (joint_group.empty())
     return false;
@@ -986,14 +979,14 @@ bool ManipulatorManager::registerDefaultJointSolver(const std::string& group_nam
 }
 
 bool ManipulatorManager::registerDefaultLinkSolver(const std::string& /*group_name*/,
-                                                   const tesseract_scene_graph::LinkGroup& /*joint_group*/)
+                                                   const tesseract_srdf::LinkGroup& /*joint_group*/)
 {
   CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
   return false;
 }
 
 bool ManipulatorManager::registerOPWSolver(const std::string& group_name,
-                                           const tesseract_scene_graph::OPWKinematicParameters& opw_params)
+                                           const tesseract_srdf::OPWKinematicParameters& opw_params)
 {
   tesseract_kinematics::ForwardKinematics::Ptr fwd_kin = getFwdKinematicSolver(group_name);
   if (fwd_kin == nullptr)
@@ -1047,7 +1040,7 @@ bool ManipulatorManager::registerOPWSolver(const std::string& group_name,
 }
 
 bool ManipulatorManager::registerROPSolver(const std::string& group_name,
-                                           const tesseract_scene_graph::ROPKinematicParameters& rop_group)
+                                           const tesseract_srdf::ROPKinematicParameters& rop_group)
 {
   tesseract_kinematics::ForwardKinematics::Ptr fwd_kin = getFwdKinematicSolver(group_name);
   if (fwd_kin == nullptr)
@@ -1132,7 +1125,7 @@ bool ManipulatorManager::registerROPSolver(const std::string& group_name,
 }
 
 bool ManipulatorManager::registerREPSolver(const std::string& group_name,
-                                           const tesseract_scene_graph::REPKinematicParameters& rep_group)
+                                           const tesseract_srdf::REPKinematicParameters& rep_group)
 {
   tesseract_kinematics::ForwardKinematics::Ptr fwd_kin = getFwdKinematicSolver(group_name);
   if (fwd_kin == nullptr)

@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/srdf_model.h>
+#include <tesseract_srdf/srdf_model.h>
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
 #include <tesseract_environment/core/commands.h>
@@ -67,7 +67,7 @@ public:
    * @return True if successful, otherwise false.
    */
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-            tesseract_scene_graph::KinematicsInformation kinematics_information);
+            tesseract_srdf::KinematicsInformation kinematics_information);
 
   /**
    * @brief Check if manipulator manager has been initialized
@@ -82,70 +82,67 @@ public:
   ManipulatorManager::Ptr clone(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) const;
 
   /** @brief Kinematics Information */
-  bool addKinematicsInformation(const tesseract_scene_graph::KinematicsInformation& kinematics_information);
+  bool addKinematicsInformation(const tesseract_srdf::KinematicsInformation& kinematics_information);
 
   /** @brief Get the kinematics information */
-  const tesseract_scene_graph::KinematicsInformation& getKinematicsInformation() const;
+  const tesseract_srdf::KinematicsInformation& getKinematicsInformation() const;
 
   /** @brief Get Group Names */
-  const tesseract_scene_graph::GroupNames& getGroupNames() const;
+  const tesseract_srdf::GroupNames& getGroupNames() const;
   bool hasGroup(const std::string& group_name) const;
 
-  bool addChainGroup(const std::string& group_name, const tesseract_scene_graph::ChainGroup& chain_group);
+  bool addChainGroup(const std::string& group_name, const tesseract_srdf::ChainGroup& chain_group);
   void removeChainGroup(const std::string& group_name);
   bool hasChainGroup(const std::string& group_name) const;
-  const tesseract_scene_graph::ChainGroup& getChainGroup(const std::string& group_name) const;
-  const tesseract_scene_graph::ChainGroups& getChainGroups() const;
+  const tesseract_srdf::ChainGroup& getChainGroup(const std::string& group_name) const;
+  const tesseract_srdf::ChainGroups& getChainGroups() const;
 
-  bool addJointGroup(const std::string& group_name, const tesseract_scene_graph::JointGroup& joint_group);
+  bool addJointGroup(const std::string& group_name, const tesseract_srdf::JointGroup& joint_group);
   void removeJointGroup(const std::string& group_name);
   bool hasJointGroup(const std::string& group_name) const;
-  const tesseract_scene_graph::JointGroup& getJointGroup(const std::string& group_name) const;
-  const tesseract_scene_graph::JointGroups& getJointGroups() const;
+  const tesseract_srdf::JointGroup& getJointGroup(const std::string& group_name) const;
+  const tesseract_srdf::JointGroups& getJointGroups() const;
 
-  bool addLinkGroup(const std::string& group_name, const tesseract_scene_graph::LinkGroup& link_group);
+  bool addLinkGroup(const std::string& group_name, const tesseract_srdf::LinkGroup& link_group);
   void removeLinkGroup(const std::string& group_name);
   bool hasLinkGroup(const std::string& group_name) const;
-  const tesseract_scene_graph::LinkGroup& getLinkGroup(const std::string& group_name) const;
-  const tesseract_scene_graph::LinkGroups& getLinkGroups() const;
+  const tesseract_srdf::LinkGroup& getLinkGroup(const std::string& group_name) const;
+  const tesseract_srdf::LinkGroups& getLinkGroups() const;
 
-  bool addROPKinematicsSolver(const std::string& group_name,
-                              const tesseract_scene_graph::ROPKinematicParameters& rop_group);
+  bool addROPKinematicsSolver(const std::string& group_name, const tesseract_srdf::ROPKinematicParameters& rop_group);
   void removeROPKinematicsSolver(const std::string& group_name);
   bool hasROPKinematicsSolver(const std::string& group_name) const;
-  const tesseract_scene_graph::ROPKinematicParameters& getROPKinematicsSolver(const std::string& group_name) const;
-  const tesseract_scene_graph::GroupROPKinematics& getROPKinematicsSolvers() const;
+  const tesseract_srdf::ROPKinematicParameters& getROPKinematicsSolver(const std::string& group_name) const;
+  const tesseract_srdf::GroupROPKinematics& getROPKinematicsSolvers() const;
 
-  bool addREPKinematicsSolver(const std::string& group_name,
-                              const tesseract_scene_graph::REPKinematicParameters& rep_group);
+  bool addREPKinematicsSolver(const std::string& group_name, const tesseract_srdf::REPKinematicParameters& rep_group);
   void removeREPKinematicsSolver(const std::string& group_name);
   bool hasREPKinematicsSolver(const std::string& group_name) const;
-  const tesseract_scene_graph::REPKinematicParameters& getREPKinematicsSolver(const std::string& group_name) const;
-  const tesseract_scene_graph::GroupREPKinematics& getREPKinematicsSolvers() const;
+  const tesseract_srdf::REPKinematicParameters& getREPKinematicsSolver(const std::string& group_name) const;
+  const tesseract_srdf::GroupREPKinematics& getREPKinematicsSolvers() const;
 
-  bool addOPWKinematicsSolver(const std::string& group_name,
-                              const tesseract_scene_graph::OPWKinematicParameters& opw_params);
+  bool addOPWKinematicsSolver(const std::string& group_name, const tesseract_srdf::OPWKinematicParameters& opw_params);
   void removeOPWKinematicsSovler(const std::string& group_name);
   bool hasOPWKinematicsSolver(const std::string& group_name) const;
-  const tesseract_scene_graph::OPWKinematicParameters& getOPWKinematicsSolver(const std::string& group_name) const;
-  const tesseract_scene_graph::GroupOPWKinematics& getOPWKinematicsSolvers() const;
+  const tesseract_srdf::OPWKinematicParameters& getOPWKinematicsSolver(const std::string& group_name) const;
+  const tesseract_srdf::GroupOPWKinematics& getOPWKinematicsSolvers() const;
 
   bool addGroupJointState(const std::string& group_name,
                           const std::string& state_name,
-                          const tesseract_scene_graph::GroupsJointState& joint_state);
+                          const tesseract_srdf::GroupsJointState& joint_state);
   void removeGroupJointState(const std::string& group_name, const std::string& state_name);
   bool hasGroupJointState(const std::string& group_name, const std::string& state_name) const;
-  const tesseract_scene_graph::GroupsJointState& getGroupsJointState(const std::string& group_name,
-                                                                     const std::string& state_name) const;
-  const tesseract_scene_graph::GroupsJointStates& getGroupsJointStates(const std::string& group_name) const;
-  const tesseract_scene_graph::GroupJointStates& getGroupJointStates() const;
+  const tesseract_srdf::GroupsJointState& getGroupsJointState(const std::string& group_name,
+                                                              const std::string& state_name) const;
+  const tesseract_srdf::GroupsJointStates& getGroupsJointStates(const std::string& group_name) const;
+  const tesseract_srdf::GroupJointStates& getGroupJointStates() const;
 
   bool addGroupTCP(const std::string& group_name, const std::string& tcp_name, const Eigen::Isometry3d& tcp);
   void removeGroupTCP(const std::string& group_name, const std::string& tcp_name);
   bool hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const;
   const Eigen::Isometry3d& getGroupsTCP(const std::string& group_name, const std::string& tcp_name) const;
-  const tesseract_scene_graph::GroupsTCPs& getGroupsTCPs(const std::string& group_name) const;
-  const tesseract_scene_graph::GroupTCPs& getGroupTCPs() const;
+  const tesseract_srdf::GroupsTCPs& getGroupsTCPs(const std::string& group_name) const;
+  const tesseract_srdf::GroupTCPs& getGroupTCPs() const;
 
   /**
    * @brief Register a forward kinematics factory
@@ -321,7 +318,7 @@ public:
 
 private:
   bool initialized_{ false };
-  tesseract_scene_graph::KinematicsInformation kinematics_information_;
+  tesseract_srdf::KinematicsInformation kinematics_information_;
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_chain_default_factory_;
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_tree_default_factory_;
@@ -334,13 +331,12 @@ private:
   std::unordered_map<std::string, tesseract_kinematics::InverseKinematics::Ptr> inv_kin_manipulators_default_;
   int revision_{ 0 };
 
-  bool registerDefaultChainSolver(const std::string& group_name, const tesseract_scene_graph::ChainGroup& chain_group);
-  bool registerDefaultJointSolver(const std::string& group_name, const tesseract_scene_graph::JointGroup& joint_group);
-  bool registerDefaultLinkSolver(const std::string& group_name, const tesseract_scene_graph::LinkGroup& joint_group);
-  bool registerOPWSolver(const std::string& group_name,
-                         const tesseract_scene_graph::OPWKinematicParameters& opw_params);
-  bool registerROPSolver(const std::string& group_name, const tesseract_scene_graph::ROPKinematicParameters& rop_group);
-  bool registerREPSolver(const std::string& group_name, const tesseract_scene_graph::REPKinematicParameters& rep_group);
+  bool registerDefaultChainSolver(const std::string& group_name, const tesseract_srdf::ChainGroup& chain_group);
+  bool registerDefaultJointSolver(const std::string& group_name, const tesseract_srdf::JointGroup& joint_group);
+  bool registerDefaultLinkSolver(const std::string& group_name, const tesseract_srdf::LinkGroup& joint_group);
+  bool registerOPWSolver(const std::string& group_name, const tesseract_srdf::OPWKinematicParameters& opw_params);
+  bool registerROPSolver(const std::string& group_name, const tesseract_srdf::ROPKinematicParameters& rop_group);
+  bool registerREPSolver(const std::string& group_name, const tesseract_srdf::REPKinematicParameters& rep_group);
 
   /** @brief Apply environment command to update kinematics if needed */
   void onEnvironmentChanged(const Commands& commands);

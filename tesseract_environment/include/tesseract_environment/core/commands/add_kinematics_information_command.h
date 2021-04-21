@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/command.h>
-#include <tesseract_scene_graph/kinematics_information.h>
+#include <tesseract_srdf/kinematics_information.h>
 
 namespace tesseract_environment
 {
@@ -46,19 +46,16 @@ public:
    * @brief Add kinematics information to the environment
    * @param kin_info The kinematics information
    */
-  AddKinematicsInformationCommand(tesseract_scene_graph::KinematicsInformation kinematics_information)
+  AddKinematicsInformationCommand(tesseract_srdf::KinematicsInformation kinematics_information)
     : kinematics_information_(std::move(kinematics_information))
   {
   }
 
   CommandType getType() const final { return CommandType::ADD_KINEMATICS_INFORMATION; }
-  const tesseract_scene_graph::KinematicsInformation& getKinematicsInformation() const
-  {
-    return kinematics_information_;
-  }
+  const tesseract_srdf::KinematicsInformation& getKinematicsInformation() const { return kinematics_information_; }
 
 private:
-  tesseract_scene_graph::KinematicsInformation kinematics_information_;
+  tesseract_srdf::KinematicsInformation kinematics_information_;
 };
 }  // namespace tesseract_environment
 

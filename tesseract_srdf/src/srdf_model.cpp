@@ -26,22 +26,27 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <unordered_map>
+#include <vector>
+#include <utility>
+#include <console_bridge/console.h>
+#include <fstream>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/srdf/groups.h>
-#include <tesseract_scene_graph/srdf/group_states.h>
-#include <tesseract_scene_graph/srdf/group_tool_center_points.h>
-#include <tesseract_scene_graph/srdf/group_opw_kinematics.h>
-#include <tesseract_scene_graph/srdf/group_rep_kinematics.h>
-#include <tesseract_scene_graph/srdf/group_rop_kinematics.h>
-#include <tesseract_scene_graph/srdf/disabled_collisions.h>
-#include <tesseract_scene_graph/srdf/collision_margins.h>
-#include <tesseract_scene_graph/srdf_model.h>
+#include <tesseract_srdf/groups.h>
+#include <tesseract_srdf/group_states.h>
+#include <tesseract_srdf/group_tool_center_points.h>
+#include <tesseract_srdf/group_opw_kinematics.h>
+#include <tesseract_srdf/group_rep_kinematics.h>
+#include <tesseract_srdf/group_rop_kinematics.h>
+#include <tesseract_srdf/disabled_collisions.h>
+#include <tesseract_srdf/collision_margins.h>
+#include <tesseract_srdf/srdf_model.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_scene_graph
+namespace tesseract_srdf
 {
 bool SRDFModel::initXml(const tesseract_scene_graph::SceneGraph& scene_graph, const tinyxml2::XMLElement* srdf_xml)
 {
@@ -374,4 +379,4 @@ void SRDFModel::clear()
   collision_margin_data = nullptr;
 }
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract_srdf

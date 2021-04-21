@@ -19,6 +19,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 
 using namespace tesseract_scene_graph;
+using namespace tesseract_srdf;
 using namespace tesseract_collision;
 using namespace tesseract_environment;
 
@@ -65,11 +66,11 @@ SceneGraph::Ptr getSceneGraph()
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
-tesseract_scene_graph::SRDFModel::Ptr getSRDFModel(const SceneGraph::Ptr& scene_graph)
+SRDFModel::Ptr getSRDFModel(const SceneGraph::Ptr& scene_graph)
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
-  tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  auto srdf = std::make_shared<SRDFModel>();
   srdf->initFile(*scene_graph, path);
 
   return srdf;

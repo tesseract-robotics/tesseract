@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_SCENE_GRAPH_KINEMATICS_INFORMATION_H
-#define TESSERACT_SCENE_GRAPH_KINEMATICS_INFORMATION_H
+#ifndef TESSERACT_SRDF_KINEMATICS_INFORMATION_H
+#define TESSERACT_SRDF_KINEMATICS_INFORMATION_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_scene_graph
+namespace tesseract_srdf
 {
 /** @brief A structure to hold opw kinematics data */
 struct OPWKinematicParameters
@@ -47,27 +47,8 @@ struct OPWKinematicParameters
   std::array<double, 6> offsets = { 0, 0, 0, 0, 0, 0 };
   std::array<signed char, 6> sign_corrections = { 1, 1, 1, 1, 1, 1 };
 
-  bool operator==(const OPWKinematicParameters& rhs) const
-  {
-    bool success = true;
-    success &= (tesseract_common::almostEqualRelativeAndAbs(a1, rhs.a1, 1e-6));
-    success &= (tesseract_common::almostEqualRelativeAndAbs(a2, rhs.a2, 1e-6));
-    success &= (tesseract_common::almostEqualRelativeAndAbs(b, rhs.b, 1e-6));
-    success &= (tesseract_common::almostEqualRelativeAndAbs(c1, rhs.c1, 1e-6));
-    success &= (tesseract_common::almostEqualRelativeAndAbs(c2, rhs.c2, 1e-6));
-    success &= (tesseract_common::almostEqualRelativeAndAbs(c3, rhs.c3, 1e-6));
-    success &= (tesseract_common::almostEqualRelativeAndAbs(c4, rhs.c4, 1e-6));
-
-    for (std::size_t i = 0; i < 6; i++)
-    {
-      success &= (tesseract_common::almostEqualRelativeAndAbs(offsets[i], rhs.offsets[i], 1e-6));
-      success &= (sign_corrections[i] == rhs.sign_corrections[i]);
-    }
-
-    return success;
-  }
-
-  bool operator!=(const OPWKinematicParameters& rhs) const { return !(*this == rhs); }
+  bool operator==(const OPWKinematicParameters& rhs) const;
+  bool operator!=(const OPWKinematicParameters& rhs) const;
 };
 
 struct ROPKinematicParameters
@@ -81,32 +62,8 @@ struct ROPKinematicParameters
   std::string positioner_fk_solver;
   std::unordered_map<std::string, double> positioner_sample_resolution;
 
-  bool operator==(const ROPKinematicParameters& rhs) const
-  {
-    bool success = true;
-    success &= (solver_name == rhs.solver_name);
-    success &= (manipulator_group == rhs.manipulator_group);
-    success &= (manipulator_ik_solver == rhs.manipulator_ik_solver);
-    success &= (tesseract_common::almostEqualRelativeAndAbs(manipulator_reach, rhs.manipulator_reach, 1e-6));
-    success &= (positioner_group == rhs.positioner_group);
-    success &= (positioner_fk_solver == rhs.positioner_fk_solver);
-    success &= (positioner_sample_resolution.size() == rhs.positioner_sample_resolution.size());
-    for (const auto& joint_pair : positioner_sample_resolution)
-    {
-      auto it = rhs.positioner_sample_resolution.find(joint_pair.first);
-      success &= (it != rhs.positioner_sample_resolution.end());
-      if (!success)
-        break;
-
-      success &= (tesseract_common::almostEqualRelativeAndAbs(joint_pair.second, it->second, 1e-6));
-      if (!success)
-        break;
-    }
-
-    return success;
-  }
-
-  bool operator!=(const ROPKinematicParameters& rhs) const { return !(*this == rhs); }
+  bool operator==(const ROPKinematicParameters& rhs) const;
+  bool operator!=(const ROPKinematicParameters& rhs) const;
 };
 
 struct REPKinematicParameters
@@ -120,43 +77,19 @@ struct REPKinematicParameters
   std::string positioner_fk_solver;
   std::unordered_map<std::string, double> positioner_sample_resolution;
 
-  bool operator==(const REPKinematicParameters& rhs) const
-  {
-    bool success = true;
-    success &= (solver_name == rhs.solver_name);
-    success &= (manipulator_group == rhs.manipulator_group);
-    success &= (manipulator_ik_solver == rhs.manipulator_ik_solver);
-    success &= (tesseract_common::almostEqualRelativeAndAbs(manipulator_reach, rhs.manipulator_reach, 1e-6));
-    success &= (positioner_group == rhs.positioner_group);
-    success &= (positioner_fk_solver == rhs.positioner_fk_solver);
-    success &= (positioner_sample_resolution.size() == rhs.positioner_sample_resolution.size());
-    for (const auto& joint_pair : positioner_sample_resolution)
-    {
-      auto it = rhs.positioner_sample_resolution.find(joint_pair.first);
-      success &= (it != rhs.positioner_sample_resolution.end());
-      if (!success)
-        break;
-
-      success &= (tesseract_common::almostEqualRelativeAndAbs(joint_pair.second, it->second, 1e-6));
-      if (!success)
-        break;
-    }
-
-    return success;
-  }
-
-  bool operator!=(const REPKinematicParameters& rhs) const { return !(*this == rhs); }
+  bool operator==(const REPKinematicParameters& rhs) const;
+  bool operator!=(const REPKinematicParameters& rhs) const;
 };
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract_srdf
 
 #ifdef SWIG
-%template(GroupOPWKinematics) std::unordered_map<std::string, tesseract_scene_graph::OPWKinematicParameters>;
-%template(GroupROPKinematics) std::unordered_map<std::string, tesseract_scene_graph::ROPKinematicParameters>;
-%template(GroupREPKinematics) std::unordered_map<std::string, tesseract_scene_graph::REPKinematicParameters>;
+%template(GroupOPWKinematics) std::unordered_map<std::string, tesseract_srdf::OPWKinematicParameters>;
+%template(GroupROPKinematics) std::unordered_map<std::string, tesseract_srdf::ROPKinematicParameters>;
+%template(GroupREPKinematics) std::unordered_map<std::string, tesseract_srdf::REPKinematicParameters>;
 #endif  // SWIG
 
-namespace tesseract_scene_graph
+namespace tesseract_srdf
 {
 using GroupsJointState = std::unordered_map<std::string, double>;
 using GroupsJointStates = std::unordered_map<std::string, GroupsJointState>;
@@ -220,5 +153,5 @@ struct KinematicsInformation
   void clear();
 };
 
-}  // namespace tesseract_scene_graph
-#endif  // TESSERACT_SCENE_GRAPH_KINEMATICS_INFORMATION_H
+}  // namespace tesseract_srdf
+#endif  // TESSERACT_SRDF_KINEMATICS_INFORMATION_H

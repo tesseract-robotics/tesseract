@@ -16,6 +16,7 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_kinematics REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
+find_package(tesseract_srdf REQUIRED)
 find_package(tesseract_urdf REQUIRED)
 find_package(tesseract_common REQUIRED)
 
@@ -55,6 +56,7 @@ target_link_libraries(
          tesseract::tesseract_collision_bullet
          tesseract::tesseract_collision_fcl
          tesseract::tesseract_scene_graph
+         tesseract::tesseract_srdf
          tesseract::tesseract_urdf
          tesseract::tesseract_kinematics_kdl
          tesseract::tesseract_kinematics_opw)
