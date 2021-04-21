@@ -161,9 +161,14 @@ public:
 
     // Parse srdf string into SRDF Model
     auto srdf = std::make_shared<tesseract_srdf::SRDFModel>();
-    if (!srdf->initString(*scene_graph, srdf_string))
+    try
+    {
+      srdf->initString(*scene_graph, srdf_string);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+      tesseract_common::printNestedException(e);
       return false;
     }
 
@@ -215,9 +220,14 @@ public:
 
     // Parse srdf file into SRDF Model
     auto srdf = std::make_shared<tesseract_srdf::SRDFModel>();
-    if (!srdf->initFile(*scene_graph, srdf_path.string()))
+    try
+    {
+      srdf->initFile(*scene_graph, srdf_path.string());
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+      tesseract_common::printNestedException(e);
       return false;
     }
 

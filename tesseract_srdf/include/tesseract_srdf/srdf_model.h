@@ -31,7 +31,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <memory>
-#include <tinyxml2.h>
 #include <array>
 #include <Eigen/Core>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -48,6 +47,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 /// Main namespace
 namespace tesseract_srdf
 {
+using CollisionMarginData = tesseract_common::CollisionMarginData;
+using PairsCollisionMarginData = tesseract_common::PairsCollisionMarginData;
+
 /** @brief Representation of semantic information about the robot */
 class SRDFModel
 {
@@ -66,17 +68,17 @@ public:
   SRDFModel(SRDFModel&&) = default;
   SRDFModel& operator=(SRDFModel&&) = default;
 
-  /** @brief Load Model from TiXMLElement */
-  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, const tinyxml2::XMLElement* srdf_xml);
+  /**
+   * @brief Load Model given a filename
+   * @throws std::nested_exception if an error occurs during parsing srdf
+   */
+  void initFile(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& filename);
 
-  /** @brief Load Model from TiXMLDocument */
-  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, const tinyxml2::XMLDocument* srdf_xml);
-
-  /** @brief Load Model given a filename */
-  bool initFile(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& filename);
-
-  /** @brief Load Model from a XML-string */
-  bool initString(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& xmlstring);
+  /**
+   * @brief Load Model from a XML-string
+   * @throws std::nested_exception if an error occurs during parsing srdf
+   */
+  void initString(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& xmlstring);
 
   /** @brief Save the model to a file */
   bool saveToFile(const std::string& file_path) const;

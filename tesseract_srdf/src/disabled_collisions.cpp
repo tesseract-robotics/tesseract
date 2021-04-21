@@ -27,10 +27,13 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 #include <tesseract_srdf/disabled_collisions.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/allowed_collision_matrix.h>
 
 namespace tesseract_srdf
 {
@@ -47,11 +50,11 @@ parseDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph,
     std::string link1_name, link2_name, reason;
     tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "link1", link1_name);
     if (status != tinyxml2::XML_SUCCESS)
-      continue;
+      std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'link1'!"));
 
     status = tesseract_common::QueryStringAttributeRequired(xml_element, "link2", link2_name);
     if (status != tinyxml2::XML_SUCCESS)
-      continue;
+      std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'link2'!"));
 
     if (!scene_graph.getLink(link1_name))
     {
@@ -66,10 +69,7 @@ parseDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph,
 
     status = tesseract_common::QueryStringAttribute(xml_element, "reason", reason);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    {
-      CONSOLE_BRIDGE_logError("Invalid disable_collisions attribute 'reason'");
-      continue;
-    }
+      std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'reason'!"));
 
     acm.addAllowedCollision(link1_name, link2_name, reason);
   }

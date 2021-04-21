@@ -26,12 +26,13 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
+#include <tinyxml2.h>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
+#include <tesseract_scene_graph/graph.h>
 #include <tesseract_srdf/group_tool_center_points.h>
 
 namespace tesseract_srdf
@@ -55,7 +56,7 @@ GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene_graph*
     tinyxml2::XMLError status =
         tesseract_common::QueryStringAttributeRequired(xml_group_element, "group", group_name_string);
     if (status != tinyxml2::XML_SUCCESS)
-      continue;
+      std::throw_with_nested(std::runtime_error("GroupTCPs: Missing or failed to parse attribute 'group'!"));
 
     for (const tinyxml2::XMLElement* xml_element = xml_group_element->FirstChildElement("tcp"); xml_element;
          xml_element = xml_element->NextSiblingElement("tcp"))
@@ -64,32 +65,28 @@ GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene_graph*
 
       if (xml_element->Attribute("name") == nullptr || xml_element->Attribute("xyz") == nullptr ||
           (xml_element->Attribute("rpy") == nullptr && xml_element->Attribute("wxyz") == nullptr))
-      {
-        CONSOLE_BRIDGE_logError("Invalid tcp definition");
-        continue;
-      }
+        std::throw_with_nested(
+            std::runtime_error("GroupTCPs: Invalid tcp definition for group '" + group_name_string + "'!"));
+
       std::string tcp_name_string;
       tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "name", tcp_name_string);
       if (status != tinyxml2::XML_SUCCESS)
-        continue;
+        std::throw_with_nested(
+            std::runtime_error("GroupTCPS: Failed to parse attribute 'name' for group '" + group_name_string + "'!"));
 
       std::string xyz_string, rpy_string, wxyz_string;
       status = tesseract_common::QueryStringAttribute(xml_element, "xyz", xyz_string);
       if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-      {
-        CONSOLE_BRIDGE_logError("Invalid tcp attribute 'xyz'");
-        continue;
-      }
+        std::throw_with_nested(std::runtime_error("GroupTCPS: TCP '" + tcp_name_string + "' for group '" +
+                                                  group_name_string + "' failed to parse attribute 'xyz'!"));
 
       if (status != tinyxml2::XML_NO_ATTRIBUTE)
       {
         std::vector<std::string> tokens;
         boost::split(tokens, xyz_string, boost::is_any_of(" "), boost::token_compress_on);
         if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-        {
-          CONSOLE_BRIDGE_logError("Error parsing tcp attribute 'xyz'");
-          continue;
-        }
+          std::throw_with_nested(std::runtime_error("GroupTCPS: TCP '" + tcp_name_string + "' for group '" +
+                                                    group_name_string + "' failed to parse attribute 'xyz'!"));
 
         double x, y, z;
         // No need to check return values because the tokens are verified above
@@ -104,20 +101,16 @@ GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene_graph*
       {
         status = tesseract_common::QueryStringAttribute(xml_element, "rpy", rpy_string);
         if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-        {
-          CONSOLE_BRIDGE_logError("Invalid tcp attribute 'rpy'");
-          continue;
-        }
+          std::throw_with_nested(std::runtime_error("GroupTCPS: TCP '" + tcp_name_string + "' for group '" +
+                                                    group_name_string + "' failed to parse attribute 'rpy'!"));
 
         if (status != tinyxml2::XML_NO_ATTRIBUTE)
         {
           std::vector<std::string> tokens;
           boost::split(tokens, rpy_string, boost::is_any_of(" "), boost::token_compress_on);
           if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-          {
-            CONSOLE_BRIDGE_logError("Error parsing tcp attribute 'rpy'");
-            continue;
-          }
+            std::throw_with_nested(std::runtime_error("GroupTCPS: TCP '" + tcp_name_string + "' for group '" +
+                                                      group_name_string + "' failed to parse attribute 'rpy'!"));
 
           double r, p, y;
           // No need to check return values because the tokens are verified above
@@ -138,20 +131,16 @@ GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene_graph*
       {
         status = tesseract_common::QueryStringAttribute(xml_element, "wxyz", wxyz_string);
         if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-        {
-          CONSOLE_BRIDGE_logError("Invalid tcp attribute 'wxyz'");
-          continue;
-        }
+          std::throw_with_nested(std::runtime_error("GroupTCPS: TCP '" + tcp_name_string + "' for group '" +
+                                                    group_name_string + "' failed to parse attribute 'wxyz'!"));
 
         if (status != tinyxml2::XML_NO_ATTRIBUTE)
         {
           std::vector<std::string> tokens;
           boost::split(tokens, wxyz_string, boost::is_any_of(" "), boost::token_compress_on);
           if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
-          {
-            CONSOLE_BRIDGE_logError("Error parsing tcp attribute 'wxyz'");
-            continue;
-          }
+            std::throw_with_nested(std::runtime_error("GroupTCPS: TCP '" + tcp_name_string + "' for group '" +
+                                                      group_name_string + "' failed to parse attribute 'wxyz'!"));
 
           double qw, qx, qy, qz;
           // No need to check return values because the tokens are verified above
@@ -176,6 +165,10 @@ GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene_graph*
 
       group_tcp->second[tcp_name_string] = tcp;
     }
+
+    if (group_tcps.count(group_name_string) == 0)
+      std::throw_with_nested(
+          std::runtime_error("GroupTCPS: No tool centers points were found for group '" + group_name_string + "'!"));
   }
 
   return group_tcps;

@@ -29,11 +29,18 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <array>
-#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_srdf/kinematics_information.h>
-#include <tesseract_scene_graph/graph.h>
+
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_scene_graph
+{
+class SceneGraph;
+}
 
 namespace tesseract_srdf
 {
