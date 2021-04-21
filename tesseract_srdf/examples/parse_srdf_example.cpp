@@ -131,8 +131,16 @@ int main(int /*argc*/, char** /*argv*/)
 
   // Parse the srdf
   SRDFModel srdf;
-  bool success = srdf.initFile(g, srdf_file);
-  CONSOLE_BRIDGE_logInform("SRDF loaded: %s", toString(success).c_str());
+  try
+  {
+    srdf.initFile(g, srdf_file);
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    tesseract_common::printNestedException(e);
+    return 1;
+  }
 
   processSRDFAllowedCollisions(g, srdf);
 

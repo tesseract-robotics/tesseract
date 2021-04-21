@@ -26,11 +26,12 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
+#include <tinyxml2.h>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_scene_graph/graph.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_srdf/group_rep_kinematics.h>
 
@@ -48,54 +49,56 @@ GroupREPKinematics parseGroupREPKinematics(const tesseract_scene_graph::SceneGra
     std::string group_name_string;
     tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "group", group_name_string);
     if (status != tinyxml2::XML_SUCCESS)
-      continue;
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Missing or failed to parse attribute 'group'!"));
 
     // get the robot with external positioner group information
     REPKinematicParameters rep_info;
 
     status = tesseract_common::QueryStringAttribute(xml_element, "solver_name", rep_info.solver_name);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    {
-      CONSOLE_BRIDGE_logInform("REP Group, group_rep element failed to parse 'solver_name' attribute!");
-      continue;
-    }
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Failed to parse attribute 'solver_name' for group "
+                                                "'" +
+                                                group_name_string + "'!"));
 
     const tinyxml2::XMLElement* manip_xml = xml_element->FirstChildElement("manipulator");
     if (manip_xml == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("REP Group defined, but missing manipulator element!");
-      continue;
-    }
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Missing element 'manipulator' for group '" +
+                                                group_name_string + "'!"));
 
     status = tesseract_common::QueryStringAttributeRequired(manip_xml, "group", rep_info.manipulator_group);
     if (status != tinyxml2::XML_SUCCESS)
-      continue;
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Element 'manipulator' missing or failed to parse "
+                                                "attribute 'group' for group '" +
+                                                group_name_string + "'!"));
 
     status = tesseract_common::QueryStringAttributeRequired(manip_xml, "ik_solver", rep_info.manipulator_ik_solver);
     if (status != tinyxml2::XML_SUCCESS)
-      continue;
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Element 'manipulator' missing or failed to parse "
+                                                "attribute 'ik_solver' for group '" +
+                                                group_name_string + "'!"));
 
     status = tesseract_common::QueryDoubleAttributeRequired(manip_xml, "reach", rep_info.manipulator_reach);
     if (status != tinyxml2::XML_SUCCESS)
-      continue;
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Element 'manipulator' missing or failed to parse "
+                                                "attribute 'reach' for group '" +
+                                                group_name_string + "'!"));
 
     const tinyxml2::XMLElement* positioner_xml = xml_element->FirstChildElement("positioner");
     if (positioner_xml == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("REP Group defined, but missing positioner element!");
-      continue;
-    }
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Missing element 'positioner' for group '" +
+                                                group_name_string + "'!"));
 
     status = tesseract_common::QueryStringAttributeRequired(positioner_xml, "group", rep_info.positioner_group);
     if (status != tinyxml2::XML_SUCCESS)
-      continue;
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Element 'positioner' missing or failed to parse "
+                                                "attribute 'group' for group '" +
+                                                group_name_string + "'!"));
 
     status = tesseract_common::QueryStringAttribute(positioner_xml, "fk_solver", rep_info.positioner_fk_solver);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    {
-      CONSOLE_BRIDGE_logInform("REP Group, positioner element missing or failed to parse 'fk_solver' attribute!");
-      continue;
-    }
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Element 'positioner' missing or failed to parse "
+                                                "attribute 'fk_solver' for group '" +
+                                                group_name_string + "'!"));
 
     // get the chains in the groups
     bool parse_joints_failed = false;
@@ -128,7 +131,9 @@ GroupREPKinematics parseGroupREPKinematics(const tesseract_scene_graph::SceneGra
     }
 
     if (parse_joints_failed || rep_info.positioner_sample_resolution.empty())
-      continue;
+      std::throw_with_nested(std::runtime_error("GroupREPKinematics: Element 'positioner' missing or failed to parse "
+                                                "elements 'joint' for group '" +
+                                                group_name_string + "'!"));
 
     group_rep_kinematics[group_name_string] = rep_info;
   }

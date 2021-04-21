@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <utility>
 #include <console_bridge/console.h>
 #include <fstream>
+#include <tinyxml2.h>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -48,91 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_srdf
 {
-bool SRDFModel::initXml(const tesseract_scene_graph::SceneGraph& scene_graph, const tinyxml2::XMLElement* srdf_xml)
-{
-  clear();
-  if (!srdf_xml || std::strncmp(srdf_xml->Name(), "robot", 5) != 0)
-  {
-    CONSOLE_BRIDGE_logError("Could not find the 'robot' element in the xml file");
-    return false;
-  }
-
-  // get the robot name
-  tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(srdf_xml, "name", name);
-  if (status != tinyxml2::XML_SUCCESS)
-    return false;
-
-  if (name != scene_graph.getName())
-    CONSOLE_BRIDGE_logError("Semantic description is not specified for the same robot as the URDF");
-
-  std::string version_string;
-  status = tesseract_common::QueryStringAttribute(srdf_xml, "version", version_string);
-  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-  {
-    CONSOLE_BRIDGE_logError("Error parsing robot attribute 'version'");
-    return false;
-  }
-  else if (status != tinyxml2::XML_NO_ATTRIBUTE)
-  {
-    std::vector<std::string> tokens;
-    boost::split(tokens, version_string, boost::is_any_of("."), boost::token_compress_on);
-    if (tokens.size() < 2 || tokens.size() > 3 || !tesseract_common::isNumeric(tokens))
-    {
-      CONSOLE_BRIDGE_logError("Error parsing robot attribute 'version'");
-      return false;
-    }
-
-    tesseract_common::toNumeric<int>(tokens[0], version[0]);
-    tesseract_common::toNumeric<int>(tokens[1], version[1]);
-    if (tokens.size() == 3)
-      tesseract_common::toNumeric<int>(tokens[2], version[2]);
-    else
-      version[2] = 0;
-  }
-  else
-  {
-    CONSOLE_BRIDGE_logWarn("SRDF Parser: No version number was provided so latest parser (version: %i.%i.%i) will be "
-                           "used.",
-                           version[0],
-                           version[1],
-                           version[2]);
-    CONSOLE_BRIDGE_logDebug("SRDF Parser: The version number warning can be suppressed by adding the attribute: "
-                            "version=%i.%i.%i",
-                            version[0],
-                            version[1],
-                            version[2]);
-  }
-
-  std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups> groups_info =
-      parseGroups(scene_graph, srdf_xml, version);
-  kinematics_information.group_names = std::get<0>(groups_info);
-  kinematics_information.chain_groups = std::get<1>(groups_info);
-  kinematics_information.joint_groups = std::get<2>(groups_info);
-  kinematics_information.link_groups = std::get<3>(groups_info);
-  kinematics_information.group_states =
-      parseGroupStates(scene_graph, kinematics_information.group_names, srdf_xml, version);
-  kinematics_information.group_tcps = parseGroupTCPs(scene_graph, srdf_xml, version);
-  kinematics_information.group_opw_kinematics = parseGroupOPWKinematics(scene_graph, srdf_xml, version);
-  kinematics_information.group_rop_kinematics = parseGroupROPKinematics(scene_graph, srdf_xml, version);
-  kinematics_information.group_rep_kinematics = parseGroupREPKinematics(scene_graph, srdf_xml, version);
-  acm = parseDisabledCollisions(scene_graph, srdf_xml, version);
-  collision_margin_data = parseCollisionMargins(scene_graph, srdf_xml, version);
-
-  return true;
-}
-
-bool SRDFModel::initXml(const tesseract_scene_graph::SceneGraph& scene_graph, const tinyxml2::XMLDocument* srdf_xml)
-{
-  const tinyxml2::XMLElement* robot_xml = srdf_xml ? srdf_xml->FirstChildElement("robot") : nullptr;
-  if (!robot_xml)
-  {
-    CONSOLE_BRIDGE_logError("Could not find the 'robot' element in the xml file");
-    return false;
-  }
-  return initXml(scene_graph, robot_xml);
-}
-
-bool SRDFModel::initFile(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& filename)
+void SRDFModel::initFile(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& filename)
 {
   // get the entire file
   std::string xml_string;
@@ -146,24 +63,160 @@ bool SRDFModel::initFile(const tesseract_scene_graph::SceneGraph& scene_graph, c
       xml_string += (line + "\n");
     }
     xml_file.close();
-    return initString(scene_graph, xml_string);
+    try
+    {
+      initString(scene_graph, xml_string);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("SRDF: Failed to parse file '" + filename + "'!"));
+    }
   }
-
-  CONSOLE_BRIDGE_logError("Could not open file [%s] for parsing.", filename.c_str());
-  return false;
+  else
+  {
+    std::throw_with_nested(std::runtime_error("SRDF: Failed to open file '" + filename + "'!"));
+  }
 }
 
-bool SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& xmlstring)
+void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& xmlstring)
 {
   tinyxml2::XMLDocument xml_doc;
   tinyxml2::XMLError status = xml_doc.Parse(xmlstring.c_str());
   if (status != tinyxml2::XMLError::XML_SUCCESS)
+    std::throw_with_nested(std::runtime_error("SRDF: Failed to create XMLDocument from xml string!"));
+
+  clear();
+
+  const tinyxml2::XMLElement* srdf_xml = xml_doc.FirstChildElement("robot");
+  if (!srdf_xml)
+    std::throw_with_nested(std::runtime_error("SRDF: Missing 'robot' element in the xml file!"));
+
+  if (!srdf_xml || std::strncmp(srdf_xml->Name(), "robot", 5) != 0)
+    std::throw_with_nested(std::runtime_error("SRDF: Missing 'robot' element in the xml file!"));
+
+  // get the robot name
+  status = tesseract_common::QueryStringAttributeRequired(srdf_xml, "name", name);
+  if (status != tinyxml2::XML_SUCCESS)
+    std::throw_with_nested(std::runtime_error("SRDF: Missing or failed to parse attribute 'name'!"));
+
+  if (name != scene_graph.getName())
+    CONSOLE_BRIDGE_logError("Semantic description is not specified for the same robot as the URDF");
+
+  std::string version_string;
+  status = tesseract_common::QueryStringAttribute(srdf_xml, "version", version_string);
+  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
   {
-    CONSOLE_BRIDGE_logError("Could not parse the SRDF XML File");
-    return false;
+    std::throw_with_nested(std::runtime_error("SRDF: Failed to parse attribute 'version'!"));
+  }
+  else if (status != tinyxml2::XML_NO_ATTRIBUTE)
+  {
+    std::vector<std::string> tokens;
+    boost::split(tokens, version_string, boost::is_any_of("."), boost::token_compress_on);
+    if (tokens.size() < 2 || tokens.size() > 3 || !tesseract_common::isNumeric(tokens))
+      std::throw_with_nested(std::runtime_error("SRDF: Failed to parse attribute 'version'!"));
+
+    tesseract_common::toNumeric<int>(tokens[0], version[0]);
+    tesseract_common::toNumeric<int>(tokens[1], version[1]);
+    if (tokens.size() == 3)
+      tesseract_common::toNumeric<int>(tokens[2], version[2]);
+    else
+      version[2] = 0;
+  }
+  else
+  {
+    CONSOLE_BRIDGE_logDebug("SRDF Parser: The version number warning can be suppressed by adding the attribute: "
+                            "version=%i.%i.%i",
+                            version[0],
+                            version[1],
+                            version[2]);
   }
 
-  return initXml(scene_graph, &xml_doc);
+  std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups> groups_info;
+  try
+  {
+    groups_info = parseGroups(scene_graph, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("SRDF: Error parsing srdf groups for robot '" + name + "'!"));
+  }
+
+  kinematics_information.group_names = std::get<0>(groups_info);
+  kinematics_information.chain_groups = std::get<1>(groups_info);
+  kinematics_information.joint_groups = std::get<2>(groups_info);
+  kinematics_information.link_groups = std::get<3>(groups_info);
+
+  try
+  {
+    kinematics_information.group_states =
+        parseGroupStates(scene_graph, kinematics_information.group_names, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("SRDF: Error parsing srdf groups states for robot '" + name + "'!"));
+  }
+
+  try
+  {
+    kinematics_information.group_tcps = parseGroupTCPs(scene_graph, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(
+        std::runtime_error("SRDF: Error parsing srdf groups tool center points for robot '" + name + "'!"));
+  }
+
+  try
+  {
+    kinematics_information.group_opw_kinematics = parseGroupOPWKinematics(scene_graph, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(
+        std::runtime_error("SRDF: Error parsing srdf group opw kinematics for robot '" + name + "'!"));
+  }
+
+  try
+  {
+    kinematics_information.group_rop_kinematics = parseGroupROPKinematics(scene_graph, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("SRDF: Error parsing srdf group robot on a positioner kinematics for "
+                                              "robot '" +
+                                              name + "'!"));
+  }
+
+  try
+  {
+    kinematics_information.group_rep_kinematics = parseGroupREPKinematics(scene_graph, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("SRDF: Error parsing srdf group robot with external positioner "
+                                              "kinematics for robot '" +
+                                              name + "'!"));
+  }
+
+  try
+  {
+    acm = parseDisabledCollisions(scene_graph, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(
+        std::runtime_error("SRDF: Error parsing srdf disabled collisions for robot '" + name + "'!"));
+  }
+
+  try
+  {
+    collision_margin_data = parseCollisionMargins(scene_graph, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(
+        std::runtime_error("SRDF: Error parsing srdf collision margin data for robot '" + name + "'!"));
+  }
 }
 
 bool SRDFModel::saveToFile(const std::string& file_path) const

@@ -310,7 +310,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFileUnit)  // NOLINT
   g.addJoint(joint_tool0);
 
   SRDFModel srdf;
-  EXPECT_TRUE(srdf.initFile(g, srdf_file));
+  srdf.initFile(g, srdf_file);
   EXPECT_EQ(srdf.name, "kuka_lbr_iiwa_14_r820");
   EXPECT_EQ(srdf.version[0], 1);
   EXPECT_EQ(srdf.version[1], 0);
@@ -438,7 +438,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
          </robot>)";
 
   SRDFModel srdf;
-  EXPECT_TRUE(srdf.initString(*g, xml_string));
+  srdf.initString(*g, xml_string);
   EXPECT_EQ(srdf.name, "abb_irb2400");
   EXPECT_EQ(srdf.version[0], 1);
   EXPECT_EQ(srdf.version[1], 0);
@@ -454,7 +454,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
            </robot>)";
 
     SRDFModel srdf;
-    EXPECT_FALSE(srdf.initString(*g, xml_string));
+    EXPECT_ANY_THROW(srdf.initString(*g, xml_string));
   }
   {  // invalid version
     std::string xml_string =
@@ -465,7 +465,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
            </robot>)";
 
     SRDFModel srdf;
-    EXPECT_FALSE(srdf.initString(*g, xml_string));
+    EXPECT_ANY_THROW(srdf.initString(*g, xml_string));
   }
   {  // invalid xml
     std::string xml_string =
@@ -476,7 +476,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
            </robot_invalid>)";
 
     SRDFModel srdf;
-    EXPECT_FALSE(srdf.initString(*g, xml_string));
+    EXPECT_ANY_THROW(srdf.initString(*g, xml_string));
   }
   {  // initXml missing robot element
     std::string xml_string =
@@ -486,15 +486,12 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
              </group>
            </missing_robot>)";
 
-    tinyxml2::XMLDocument xml_doc;
-    EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
-
     SRDFModel srdf;
-    EXPECT_FALSE(srdf.initXml(*g, &xml_doc));
+    EXPECT_ANY_THROW(srdf.initString(*g, xml_string));
   }
   {  // initFile file path does not exist
     SRDFModel srdf;
-    EXPECT_FALSE(srdf.initFile(*g, "/tmp/file_does_not_exist.srdf"));
+    EXPECT_ANY_THROW(srdf.initFile(*g, "/tmp/file_does_not_exist.srdf"));
   }
 }
 TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
@@ -539,7 +536,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
            <group_rop group="gantry">
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
-               <joint name="axis_1" resolution="0.1"/>
+               <joint name="joint_axis_1" resolution="0.1"/>
              </positioner>
            </group_rop>
 
@@ -561,12 +558,12 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
          </robot>)";
 
   SRDFModel srdf_save;
-  EXPECT_TRUE(srdf_save.initString(*g, xml_string));
+  srdf_save.initString(*g, xml_string);
   std::string save_path = tesseract_common::getTempPath() + "unit_test_save_srdf.srdf";
   EXPECT_TRUE(srdf_save.saveToFile(save_path));
 
   SRDFModel srdf;
-  EXPECT_TRUE(srdf.initFile(*g, save_path));
+  srdf.initFile(*g, save_path);
   EXPECT_EQ(srdf.name, "abb_irb2400");
   EXPECT_EQ(srdf.version[0], 1);
   EXPECT_EQ(srdf.version[1], 0);
@@ -645,7 +642,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
              <chain base_link="world" tip_link="axis_1" />
            </group>
            <group name="gantry">
-             <joint name="axis_1"/>
+             <joint name="joint_axis_1"/>
              <joint name="joint_1"/>
              <joint name="joint_2"/>
              <joint name="joint_3"/>
@@ -667,7 +664,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
            <group_rep group="gantry">
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
-               <joint name="axis_1" resolution="0.1"/>
+               <joint name="joint_axis_1" resolution="0.1"/>
              </positioner>
            </group_rep>
 
@@ -689,12 +686,32 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
          </robot>)";
 
   SRDFModel srdf_save;
-  EXPECT_TRUE(srdf_save.initString(*g, xml_string));
+
+  try
+  {
+    srdf_save.initString(*g, xml_string);
+  }
+  catch (const std::exception& e)
+  {
+    tesseract_common::printNestedException(e);
+    throw e;
+  }
+
   std::string save_path = tesseract_common::getTempPath() + "unit_test_save2_srdf.srdf";
   EXPECT_TRUE(srdf_save.saveToFile(save_path));
 
   SRDFModel srdf;
-  EXPECT_TRUE(srdf.initFile(*g, save_path));
+
+  try
+  {
+    srdf.initFile(*g, save_path);
+  }
+  catch (const std::exception& e)
+  {
+    tesseract_common::printNestedException(e);
+    throw e;
+  }
+
   EXPECT_EQ(srdf.name, "abb_irb2400");
   EXPECT_EQ(srdf.version[0], 1);
   EXPECT_EQ(srdf.version[1], 0);
@@ -796,7 +813,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPUnit)  // NOLINT
            <group_rop group="gantry">
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
-               <joint name="axis_1" resolution="0.1"/>
+               <joint name="joint_axis_1" resolution="0.1"/>
              </positioner>
            </group_rop>
 
@@ -814,7 +831,16 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPUnit)  // NOLINT
 
   SRDFModel srdf;
   const SRDFModel& srdf_const = srdf;
-  EXPECT_TRUE(srdf.initString(*g, xml_string));
+  try
+  {
+    srdf.initString(*g, xml_string);
+  }
+  catch (const std::exception& e)
+  {
+    tesseract_common::printNestedException(e);
+    throw e;
+  }
+
   EXPECT_EQ(srdf.name, "abb_irb2400");
   EXPECT_EQ(srdf_const.name, "abb_irb2400");
   EXPECT_EQ(srdf.version[0], 1);
@@ -889,7 +915,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPUnit)  // NOLINT
              <chain base_link="world" tip_link="axis_1" />
            </group>
            <group name="gantry">
-             <joint name="axis_1"/>
+             <joint name="joint_axis_1"/>
              <joint name="joint_1"/>
              <joint name="joint_2"/>
              <joint name="joint_3"/>
@@ -911,7 +937,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPUnit)  // NOLINT
            <group_rep group="gantry">
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
-               <joint name="axis_1" resolution="0.1"/>
+               <joint name="joint_axis_1" resolution="0.1"/>
              </positioner>
            </group_rep>
 
@@ -928,7 +954,16 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPUnit)  // NOLINT
          </robot>)";
 
   SRDFModel srdf;
-  EXPECT_TRUE(srdf.initString(*g, xml_string));
+  try
+  {
+    srdf.initString(*g, xml_string);
+  }
+  catch (const std::exception& e)
+  {
+    tesseract_common::printNestedException(e);
+    throw e;
+  }
+
   EXPECT_EQ(srdf.name, "abb_irb2400");
   EXPECT_EQ(srdf.version[0], 1);
   EXPECT_EQ(srdf.version[1], 0);
@@ -1013,8 +1048,16 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    AllowedCollisionMatrix acm = parseDisabledCollisions(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-    return (acm.getAllAllowedCollisions().size() != 3);
+    try
+    {
+      parseDisabledCollisions(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing link1
@@ -1044,32 +1087,32 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
            </robot>)";
     EXPECT_FALSE(is_failure(xml_string));
   }
-  {  // invalid link1
+  {  // invalid link1 but should not fail
     std::string xml_string =
         R"(<robot name="abb_irb2400">
              <disable_collisions link1="missing_link" link2="link_1" reason="Adjacent" />
              <disable_collisions link1="base_link" link2="link_2" reason="Never" />
              <disable_collisions link1="base_link" link2="link_3" reason="Never" />
            </robot>)";
-    EXPECT_TRUE(is_failure(xml_string));
+    EXPECT_FALSE(is_failure(xml_string));
   }
-  {  // invalid link2
+  {  // invalid link2 but should not fail
     std::string xml_string =
         R"(<robot name="abb_irb2400">
              <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
              <disable_collisions link1="base_link" link2="missing_link" reason="Never" />
              <disable_collisions link1="base_link" link2="link_3" reason="Never" />
            </robot>)";
-    EXPECT_TRUE(is_failure(xml_string));
+    EXPECT_FALSE(is_failure(xml_string));
   }
-  {  // invalid reason
+  {  // The reason is numeric but still a valid string so should not fail
     std::string xml_string =
         R"(<robot name="abb_irb2400">
              <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
              <disable_collisions link1="base_link" link2="missing_link" reason="Never" />
              <disable_collisions link1="base_link" link2="link_3" reason="2.335" />
            </robot>)";
-    EXPECT_TRUE(is_failure(xml_string));
+    EXPECT_FALSE(is_failure(xml_string));
   }
 }
 
@@ -1120,8 +1163,16 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFOPWKinematicsUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    GroupOPWKinematics opw_groups = parseGroupOPWKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-    return opw_groups.empty();
+    try
+    {
+      parseGroupOPWKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing a1
@@ -1299,13 +1350,16 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFChainGroupUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    auto [group_names, chain_groups, joint_groups, link_groups] =
-        parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-
-    UNUSED(group_names);
-    UNUSED(joint_groups);
-    UNUSED(link_groups);
-    return chain_groups.empty();
+    try
+    {
+      parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing name
@@ -1399,13 +1453,16 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFJointGroupUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    auto [group_names, chain_groups, joint_groups, link_groups] =
-        parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-
-    UNUSED(group_names);
-    UNUSED(chain_groups);
-    UNUSED(link_groups);
-    return joint_groups.empty();
+    try
+    {
+      parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing name
@@ -1479,13 +1536,16 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    auto [group_names, chain_groups, joint_groups, link_groups] =
-        parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-
-    UNUSED(group_names);
-    UNUSED(chain_groups);
-    UNUSED(joint_groups);
-    return link_groups.empty();
+    try
+    {
+      parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing name
@@ -1590,8 +1650,16 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    GroupREPKinematics rep_groups = parseGroupREPKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-    return rep_groups.empty();
+    try
+    {
+      parseGroupREPKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing group
@@ -1808,8 +1876,16 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    GroupROPKinematics rop_groups = parseGroupROPKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-    return rop_groups.empty();
+    try
+    {
+      parseGroupROPKinematics(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing group
@@ -2000,8 +2076,16 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    GroupJointStates group_states = parseGroupStates(*g, group_names, element, std::array<int, 3>({ 1, 0, 0 }));
-    return group_states.empty();
+    try
+    {
+      parseGroupStates(*g, group_names, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing name
@@ -2109,8 +2193,16 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    GroupTCPs group_tcps = parseGroupTCPs(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-    return group_tcps.empty();
+    try
+    {
+      parseGroupTCPs(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing group
@@ -2278,8 +2370,16 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
     EXPECT_TRUE(element != nullptr);
 
-    tesseract_common::CollisionMarginData::Ptr margin_data =
-        parseCollisionMargins(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    try
+    {
+      parseCollisionMargins(*g, element, std::array<int, 3>({ 1, 0, 0 }));
+    }
+    catch (const std::exception& e)
+    {
+      tesseract_common::printNestedException(e);
+      return true;
+    }
+    return false;
   };
 
   {  // missing default_margin
@@ -2289,7 +2389,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
                              <pair_margin link1="link_5" link2="link_4" margin="0.015"/>
                            </collision_margins>
                          </robot>)";
-    EXPECT_ANY_THROW(is_failure(str));
+    EXPECT_TRUE(is_failure(str));
   }
 
   {  // missing pair link1
@@ -2299,7 +2399,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
                              <pair_margin link1="link_5" link2="link_4" margin="0.015"/>
                            </collision_margins>
                          </robot>)";
-    EXPECT_ANY_THROW(is_failure(str));
+    EXPECT_TRUE(is_failure(str));
   }
 
   {  // missing pair link2
@@ -2309,7 +2409,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
                              <pair_margin link1="link_5" margin="0.015"/>
                            </collision_margins>
                          </robot>)";
-    EXPECT_ANY_THROW(is_failure(str));
+    EXPECT_TRUE(is_failure(str));
   }
 
   {  // missing pair margin
@@ -2319,7 +2419,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
                              <pair_margin link1="link_5" link2="link_4"/>
                            </collision_margins>
                          </robot>)";
-    EXPECT_ANY_THROW(is_failure(str));
+    EXPECT_TRUE(is_failure(str));
   }
 
   {  // empty default margin
@@ -2329,7 +2429,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
                              <pair_margin link1="link_5" link2="link_4" margin="0.01"/>
                            </collision_margins>
                          </robot>)";
-    EXPECT_ANY_THROW(is_failure(str));
+    EXPECT_TRUE(is_failure(str));
   }
 
   {  // empty pair margin
@@ -2339,7 +2439,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
                              <pair_margin link1="link_5" link2="link_4" margin="0.01"/>
                            </collision_margins>
                          </robot>)";
-    EXPECT_ANY_THROW(is_failure(str));
+    EXPECT_TRUE(is_failure(str));
   }
 }
 

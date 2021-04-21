@@ -29,17 +29,24 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <array>
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/collision_margin_data.h>
-#include <tesseract_scene_graph/graph.h>
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_scene_graph
+{
+class SceneGraph;
+}
+namespace tesseract_common
+{
+class CollisionMarginData;
+}
 
 namespace tesseract_srdf
 {
-using CollisionMarginData = tesseract_common::CollisionMarginData;
-using PairsCollisionMarginData = tesseract_common::PairsCollisionMarginData;
-
 /**
  * @brief Parse allowed collisions from srdf xml element
  * @param scene_graph The tesseract scene graph
@@ -47,9 +54,10 @@ using PairsCollisionMarginData = tesseract_common::PairsCollisionMarginData;
  * @param version The srdf version number
  * @return Allowed Collision Matrix
  */
-CollisionMarginData::Ptr parseCollisionMargins(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                               const tinyxml2::XMLElement* srdf_xml,
-                                               const std::array<int, 3>& version);
+std::shared_ptr<tesseract_common::CollisionMarginData>
+parseCollisionMargins(const tesseract_scene_graph::SceneGraph& scene_graph,
+                      const tinyxml2::XMLElement* srdf_xml,
+                      const std::array<int, 3>& version);
 
 }  // namespace tesseract_srdf
 

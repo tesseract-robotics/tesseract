@@ -72,12 +72,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CUR
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
 # Mark cpp header files for installation
-install(
-  DIRECTORY include/${PROJECT_NAME}
-  DESTINATION include
-  FILES_MATCHING
-  PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE)
+install(FILES include/${PROJECT_NAME}/srdf_model.h include/${PROJECT_NAME}/kinematics_information.h
+              include/${PROJECT_NAME}/utils.h DESTINATION include/${PROJECT_NAME})
 
 # ADD Examples
 add_subdirectory(examples)
