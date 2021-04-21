@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<package format="3">
-  <name>tesseract_kinematics</name>
+<package format="2">
+  <name>tesseract_srdf</name>
   <version>0.3.1</version>
-  <description>The tesseract_kinematics package contains kinematics related libraries.</description>
+  <description>The tesseractsrdf package for parsing tesseract specific srdf</description>
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
   <author >Levi Armstrong</author>
@@ -11,22 +11,18 @@
   <buildtool_depend>cmake</buildtool_depend>
   <build_depend>ros_industrial_cmake_boilerplate</build_depend>
 
-  <depend>tesseract_common</depend>
   <depend>tesseract_scene_graph</depend>
-  <depend>tesseract_srdf</depend>
+  <depend>tesseract_common</depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>
   <depend>libconsole-bridge-dev</depend>
-  <depend>opw_kinematics</depend>
-  <depend condition="$ROS_DISTRO != noetic">orocos_kdl</depend>
-  <depend condition="$ROS_DISTRO == noetic">liborocos-kdl-dev</depend>
 
   <test_depend>gtest</test_depend>
   <test_depend>tesseract_support</test_depend>
-  <test_depend>tesseract_urdf</test_depend>
 
   <export>
     <build_type>cmake</build_type>
   </export>
+
 </package>

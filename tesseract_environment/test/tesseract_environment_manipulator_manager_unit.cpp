@@ -9,6 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
+using namespace tesseract_srdf;
 
 std::string locateResource(const std::string& url)
 {
@@ -74,7 +75,7 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph::Ptr& scene_graph, ABBConfig config
 {
   if (config == ABBConfig::ROBOT_ON_RAIL)
   {
-    tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+    auto srdf = std::make_shared<SRDFModel>();
     std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400_on_positioner.srdf";
     srdf->initFile(*scene_graph, path);
     return srdf;
@@ -82,7 +83,7 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph::Ptr& scene_graph, ABBConfig config
 
   if (config == ABBConfig::ROBOT_WITH_POSITIONER)
   {
-    tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+    auto srdf = std::make_shared<SRDFModel>();
     std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400_external_positioner.srdf";
     srdf->initFile(*scene_graph, path);
     return srdf;
@@ -90,7 +91,7 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph::Ptr& scene_graph, ABBConfig config
 
   if (config == ABBConfig::ROBOT_ONLY)
   {
-    tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+    auto srdf = std::make_shared<SRDFModel>();
     std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.srdf";
     srdf->initFile(*scene_graph, path);
     return srdf;
@@ -221,7 +222,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotOnPositionerUnit)  // NOLI
   }
 
   // Check for chain group information
-  const tesseract_scene_graph::ChainGroups& chain_groups = manager.getChainGroups();
+  const ChainGroups& chain_groups = manager.getChainGroups();
   EXPECT_EQ(chain_groups.size(), 3);
   auto chain_gantry_it = chain_groups.find("full_manipulator");
   auto chain_manipulator_it = chain_groups.find("manipulator");
@@ -232,21 +233,21 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotOnPositionerUnit)  // NOLI
   /** @todo check for solver */
 
   // Check for rop group information
-  const tesseract_scene_graph::GroupROPKinematics& group_rop_kinematics = manager.getROPKinematicsSolvers();
+  const GroupROPKinematics& group_rop_kinematics = manager.getROPKinematicsSolvers();
   EXPECT_EQ(group_rop_kinematics.size(), 1);
   auto rop_solver_it = group_rop_kinematics.find("full_manipulator");
   EXPECT_TRUE(rop_solver_it != group_rop_kinematics.end());
   /** @todo check for solver */
 
   // Check for opw group information
-  const tesseract_scene_graph::GroupOPWKinematics& group_opw_kinematics = manager.getOPWKinematicsSolvers();
+  const GroupOPWKinematics& group_opw_kinematics = manager.getOPWKinematicsSolvers();
   EXPECT_EQ(group_opw_kinematics.size(), 1);
   auto opw_solver_it = group_opw_kinematics.find("manipulator");
   EXPECT_TRUE(opw_solver_it != group_opw_kinematics.end());
   /** @todo check for solver */
 
   // Check for group states information
-  const tesseract_scene_graph::GroupJointStates& group_states = manager.getGroupJointStates();
+  const GroupJointStates& group_states = manager.getGroupJointStates();
   EXPECT_EQ(group_states.size(), 1);
   auto group_state_it = group_states.find("manipulator");
   EXPECT_TRUE(group_state_it != group_states.end());
@@ -254,7 +255,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotOnPositionerUnit)  // NOLI
   EXPECT_TRUE(group_state_it->second.find("all-zeros") != group_state_it->second.end());
 
   // Check for tcp information
-  const tesseract_scene_graph::GroupTCPs& group_tcps = manager.getGroupTCPs();
+  const GroupTCPs& group_tcps = manager.getGroupTCPs();
   EXPECT_EQ(group_tcps.size(), 1);
   auto tcp_it = group_tcps.find("full_manipulator");
   EXPECT_TRUE(tcp_it != group_tcps.end());
@@ -288,7 +289,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotWithExternalPositionerUnit
   }
 
   // Check for chain group information
-  const tesseract_scene_graph::ChainGroups& chain_groups = manager.getChainGroups();
+  const ChainGroups& chain_groups = manager.getChainGroups();
   EXPECT_EQ(chain_groups.size(), 3);
   auto chain_gantry_it = chain_groups.find("full_manipulator");
   auto chain_manipulator_it = chain_groups.find("manipulator");
@@ -299,21 +300,21 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotWithExternalPositionerUnit
   /** @todo check for solver */
 
   // Check for rop group information
-  const tesseract_scene_graph::GroupREPKinematics& group_rep_kinematics = manager.getREPKinematicsSolvers();
+  const GroupREPKinematics& group_rep_kinematics = manager.getREPKinematicsSolvers();
   EXPECT_EQ(group_rep_kinematics.size(), 1);
   auto rep_solver_it = group_rep_kinematics.find("full_manipulator");
   EXPECT_TRUE(rep_solver_it != group_rep_kinematics.end());
   /** @todo check for solver */
 
   // Check for opw group information
-  const tesseract_scene_graph::GroupOPWKinematics& group_opw_kinematics = manager.getOPWKinematicsSolvers();
+  const GroupOPWKinematics& group_opw_kinematics = manager.getOPWKinematicsSolvers();
   EXPECT_EQ(group_opw_kinematics.size(), 1);
   auto opw_solver_it = group_opw_kinematics.find("manipulator");
   EXPECT_TRUE(opw_solver_it != group_opw_kinematics.end());
   /** @todo check for solver */
 
   // Check for group states information
-  const tesseract_scene_graph::GroupJointStates& group_states = manager.getGroupJointStates();
+  const GroupJointStates& group_states = manager.getGroupJointStates();
   EXPECT_EQ(group_states.size(), 1);
   auto group_state_it = group_states.find("manipulator");
   EXPECT_TRUE(group_state_it != group_states.end());
@@ -321,7 +322,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotWithExternalPositionerUnit
   EXPECT_TRUE(group_state_it->second.find("all-zeros") != group_state_it->second.end());
 
   // Check for tcp information
-  const tesseract_scene_graph::GroupTCPs& group_tcps = manager.getGroupTCPs();
+  const GroupTCPs& group_tcps = manager.getGroupTCPs();
   EXPECT_EQ(group_tcps.size(), 1);
   auto tcp_it = group_tcps.find("full_manipulator");
   EXPECT_TRUE(tcp_it != group_tcps.end());
@@ -342,7 +343,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveChainGroupUnit)  // NO
   runCheckAvailableSolvers(manager);
 
   // ADD
-  tesseract_scene_graph::ChainGroup chain_group;
+  ChainGroup chain_group;
   chain_group.push_back(std::make_pair("base_link", "tool0"));
   EXPECT_TRUE(manager.addChainGroup("manipulator", chain_group));
   EXPECT_TRUE(manager.getChainGroup("manipulator") == chain_group);
@@ -373,7 +374,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveJointGroupUnit)  // NO
   runCheckAvailableSolvers(manager);
 
   // ADD
-  tesseract_scene_graph::JointGroup joint_group = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  JointGroup joint_group = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   EXPECT_TRUE(manager.addJointGroup("manipulator", joint_group));
   EXPECT_TRUE(manager.getJointGroup("manipulator") == joint_group);
   EXPECT_TRUE(manager.hasJointGroup("manipulator"));
@@ -403,7 +404,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveLinkGroupUnit)  // NOL
   runCheckAvailableSolvers(manager);
 
   // ADD this should fail because link groups are currently not supported.
-  tesseract_scene_graph::LinkGroup link_group = { "link_1", "link_2", "link_3", "link_4", "link_5", "link_6" };
+  LinkGroup link_group = { "link_1", "link_2", "link_3", "link_4", "link_5", "link_6" };
   EXPECT_FALSE(manager.addLinkGroup("manipulator", link_group));
   EXPECT_FALSE(manager.hasLinkGroup("manipulator"));
   EXPECT_EQ(manager.getLinkGroups().size(), 0);
@@ -431,7 +432,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveROPKinematicsSolverUni
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
-  tesseract_scene_graph::ROPKinematicParameters rop_group;
+  ROPKinematicParameters rop_group;
   rop_group.manipulator_group = "manipulator";
   rop_group.manipulator_ik_solver = "KDLInvKinChainLMA";
   rop_group.manipulator_reach = 2.3;
@@ -445,7 +446,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveROPKinematicsSolverUni
   EXPECT_EQ(manager.getGroupNames().size(), 0);
 
   // ADD full manipulator but manipulator and positioner does not exist
-  tesseract_scene_graph::ChainGroup full_group;
+  ChainGroup full_group;
   full_group.push_back(std::make_pair("positioner_base_link", "tool0"));
   EXPECT_TRUE(manager.addChainGroup("full_manipulator", full_group));
   EXPECT_TRUE(manager.hasGroup("full_manipulator"));
@@ -456,7 +457,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveROPKinematicsSolverUni
   EXPECT_EQ(manager.getGroupNames().size(), 1);
 
   // ADD manipulator exist and positioner do not exist
-  tesseract_scene_graph::ChainGroup chain_group;
+  ChainGroup chain_group;
   chain_group.push_back(std::make_pair("base_link", "tool0"));
   EXPECT_TRUE(manager.addChainGroup("manipulator", chain_group));
 
@@ -466,7 +467,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveROPKinematicsSolverUni
   EXPECT_EQ(manager.getGroupNames().size(), 2);
 
   // ADD manipulator and positioner exists but full manipulator does not exist
-  tesseract_scene_graph::ChainGroup positioner_group;
+  ChainGroup positioner_group;
   positioner_group.push_back(std::make_pair("positioner_base_link", "positioner_tool0"));
   EXPECT_TRUE(manager.addChainGroup("positioner", positioner_group));
 
@@ -495,7 +496,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveREPKinematicsSolverUni
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
-  tesseract_scene_graph::REPKinematicParameters rep_group;
+  REPKinematicParameters rep_group;
   rep_group.manipulator_group = "manipulator";
   rep_group.manipulator_ik_solver = "KDLInvKinChainLMA";
   rep_group.manipulator_reach = 2.3;
@@ -509,7 +510,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveREPKinematicsSolverUni
   EXPECT_EQ(manager.getGroupNames().size(), 0);
 
   // ADD full manipulator but manipulator and positioner does not exist
-  tesseract_scene_graph::ChainGroup full_group;
+  ChainGroup full_group;
   full_group.push_back(std::make_pair("world", "tool0"));
   EXPECT_TRUE(manager.addChainGroup("full_manipulator", full_group));
   EXPECT_TRUE(manager.hasGroup("full_manipulator"));
@@ -520,7 +521,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveREPKinematicsSolverUni
   EXPECT_EQ(manager.getGroupNames().size(), 1);
 
   // ADD manipulator exist and positioner do not exist
-  tesseract_scene_graph::ChainGroup chain_group;
+  ChainGroup chain_group;
   chain_group.push_back(std::make_pair("world", "tool0"));
   EXPECT_TRUE(manager.addChainGroup("manipulator", chain_group));
 
@@ -530,7 +531,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveREPKinematicsSolverUni
   EXPECT_EQ(manager.getGroupNames().size(), 2);
 
   // ADD manipulator and positioner exists but full manipulator does not exist
-  tesseract_scene_graph::ChainGroup positioner_group;
+  ChainGroup positioner_group;
   positioner_group.push_back(std::make_pair("world", "positioner_tool0"));
   EXPECT_TRUE(manager.addChainGroup("positioner", positioner_group));
 
@@ -559,7 +560,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveOPWKinematicsSolverUni
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
-  tesseract_scene_graph::OPWKinematicParameters opw_group;
+  OPWKinematicParameters opw_group;
   opw_group.a1 = 0.1;
   opw_group.a2 = -0.135;
   opw_group.b = 0;
@@ -577,7 +578,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveOPWKinematicsSolverUni
   EXPECT_EQ(manager.getGroupNames().size(), 0);
 
   // ADD manipulator exist
-  tesseract_scene_graph::ChainGroup chain_group;
+  ChainGroup chain_group;
   chain_group.push_back(std::make_pair("base_link", "tool0"));
   EXPECT_TRUE(manager.addChainGroup("manipulator", chain_group));
 
@@ -608,7 +609,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveGroupJointStateUnit)  
   runCheckAvailableSolvers(manager);
 
   // ADD
-  tesseract_scene_graph::GroupsJointState group_states;
+  GroupsJointState group_states;
   group_states["joint_1"] = 0;
   group_states["joint_2"] = 0;
   group_states["joint_3"] = 0;
@@ -621,7 +622,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveGroupJointStateUnit)  
   EXPECT_EQ(manager.getGroupJointStates().size(), 0);
 
   // ADD manipulator
-  tesseract_scene_graph::ChainGroup chain_group;
+  ChainGroup chain_group;
   chain_group.push_back(std::make_pair("base_link", "tool0"));
   EXPECT_TRUE(manager.addChainGroup("manipulator", chain_group));
 
@@ -649,7 +650,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveGroupTCPUnit)  // NOLI
   runCheckAvailableSolvers(manager);
 
   // ADD failure
-  tesseract_scene_graph::GroupsTCPs group_tcps;
+  GroupsTCPs group_tcps;
   Eigen::Isometry3d tcp_laser = Eigen::Isometry3d::Identity();
   tcp_laser.translation() = Eigen::Vector3d(1, 0.1, 1);
 
@@ -663,7 +664,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveGroupTCPUnit)  // NOLI
   EXPECT_EQ(manager.getGroupTCPs().size(), 0);
 
   // ADD manipulator exist
-  tesseract_scene_graph::ChainGroup chain_group;
+  ChainGroup chain_group;
   chain_group.push_back(std::make_pair("base_link", "tool0"));
   EXPECT_TRUE(manager.addChainGroup("manipulator", chain_group));
 

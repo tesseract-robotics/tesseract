@@ -9,12 +9,11 @@ if(WIN32)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-find_package(Boost REQUIRED COMPONENTS graph)
+find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
-find_package(orocos_kdl REQUIRED)
-find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(tesseract_scene_graph REQUIRED)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
@@ -37,27 +36,28 @@ set(COVERAGE_EXCLUDE
     /usr/*
     /opt/*
     ${CMAKE_CURRENT_LIST_DIR}/test/*
-    /*/gtest/*)
+    /*/gtest/*
+    /*/bullet/LinearMath/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
-add_library(${PROJECT_NAME} src/graph.cpp src/resource_locator.cpp src/utils.cpp)
-target_link_libraries(
+add_library(
   ${PROJECT_NAME}
-  PUBLIC Boost::boost
-         Boost::graph
-         Eigen3::Eigen
-         tesseract::tesseract_geometry
-         tesseract::tesseract_common
-         orocos-kdl
-         console_bridge::console_bridge)
+  src/collision_margins.cpp
+  src/disabled_collisions.cpp
+  src/group_opw_kinematics.cpp
+  src/group_rep_kinematics.cpp
+  src/group_rop_kinematics.cpp
+  src/group_states.cpp
+  src/group_tool_center_points.cpp
+  src/groups.cpp
+  src/kinematics_information.cpp
+  src/srdf_model.cpp
+  src/utils.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_scene_graph)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(
-  ${PROJECT_NAME}
-  PUBLIC ${TESSERACT_COMPILE_DEFINITIONS}
-         Boost_USE_STATIC_LIBS=OFF
-         Boost_USE_MULTITHREADED=ON
-         Boost_USE_STATIC_RUNTIME=OFF)
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -65,6 +65,7 @@ target_code_coverage(
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
@@ -96,10 +97,9 @@ if(TESSERACT_PACKAGE)
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "libconsole-bridge-dev"
-      "libboost-all-dev"
-      "liborocos-kdl-dev"
       "libeigen3-dev"
-    WINDOWS_DEPENDS "Eigen3" "console_bridge")
+    WINDOWS_DEPENDS "${TESSERACT_PACKAGE_PREFIX}tesseract-common" "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+                    "Eigen3")
 endif()

@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 #include <console_bridge/console.h>
-#include <tesseract_scene_graph/srdf_model.h>
+#include <tesseract_srdf/kinematics_information.h>
 #include <tesseract_scene_graph/graph.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -335,13 +335,12 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
 /**
  * @brief Create a kinematics map from the srdf model
  * @param scene_graph Tesseract Scene Graph
- * @param srdf_model Tesseract SRDF Model
+ * @param kinematics_information Tesseract Kinematics Information
  * @return Kinematics map between group name and kinematics object
  */
 template <class Chain_T, class Tree_T>
-ForwardKinematicsConstPtrMap
-createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
-                    const tesseract_scene_graph::KinematicsInformation& kinematics_information)
+ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
+                                                 const tesseract_srdf::KinematicsInformation& kinematics_information)
 {
   ForwardKinematicsConstPtrMap manipulators;
   for (const auto& group : kinematics_information.chain_groups)

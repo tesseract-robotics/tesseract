@@ -14,6 +14,7 @@ find_package(Eigen3 REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
+find_package(tesseract_srdf REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(opw_kinematics REQUIRED)
 
@@ -44,8 +45,12 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core src/core/rop_inverse_kinematics.cpp src/core/rep_inverse_kinematics.cpp)
-target_link_libraries(${PROJECT_NAME}_core PUBLIC Eigen3::Eigen tesseract::tesseract_scene_graph
-                                                  console_bridge::console_bridge)
+target_link_libraries(
+  ${PROJECT_NAME}_core
+  PUBLIC Eigen3::Eigen
+         tesseract::tesseract_scene_graph
+         tesseract::tesseract_srdf
+         console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})

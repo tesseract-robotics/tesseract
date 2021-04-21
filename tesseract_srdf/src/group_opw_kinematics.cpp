@@ -1,31 +1,44 @@
-#ifndef TESSERACT_SCENE_GRAPH_SRDF_GROUP_OPW_KINEMATICS_H
-#define TESSERACT_SCENE_GRAPH_SRDF_GROUP_OPW_KINEMATICS_H
+/**
+ * @file group_opw_kinematics.cpp
+ * @brief Parse group opw kinematics data from srdf file
+ *
+ * @author Levi Armstrong
+ * @date March 13, 2021
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2021, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <array>
 #include <console_bridge/console.h>
-#include <tinyxml2.h>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/kinematics_information.h>
+#include <tesseract_srdf/group_rep_kinematics.h>
 
-namespace tesseract_scene_graph
+namespace tesseract_srdf
 {
-/**
- * @brief Parse group opw kinematics from srdf xml element
- * @param scene_graph The tesseract scene graph
- * @param srdf_xml The xml element to parse
- * @param version The srdf version number
- * @return Group OPW kinematics parameters
- */
-inline GroupOPWKinematics parseGroupOPWKinematics(const tesseract_scene_graph::SceneGraph& /*scene_graph*/,
-                                                  const tinyxml2::XMLElement* srdf_xml,
-                                                  const std::array<int, 3>& /*version*/)
+GroupOPWKinematics parseGroupOPWKinematics(const tesseract_scene_graph::SceneGraph& /*scene_graph*/,
+                                           const tinyxml2::XMLElement* srdf_xml,
+                                           const std::array<int, 3>& /*version*/)
 {
   GroupOPWKinematics group_opw_kinematics;
 
@@ -143,7 +156,4 @@ inline GroupOPWKinematics parseGroupOPWKinematics(const tesseract_scene_graph::S
 
   return group_opw_kinematics;
 }
-
-}  // namespace tesseract_scene_graph
-
-#endif  // TESSERACT_SCENE_GRAPH_SRDF_GROUP_OPW_KINEMATICS_H
+}  // namespace tesseract_srdf

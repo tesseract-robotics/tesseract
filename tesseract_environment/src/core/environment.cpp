@@ -30,6 +30,7 @@
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
+#include <tesseract_srdf/utils.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <queue>
@@ -61,7 +62,7 @@ bool Environment::initHelper(const Commands& commands)
   scene_graph_const_ = scene_graph_;
 
   manipulator_manager_ = std::make_shared<ManipulatorManager>();
-  manipulator_manager_->init(scene_graph_, tesseract_scene_graph::KinematicsInformation());
+  manipulator_manager_->init(scene_graph_, tesseract_srdf::KinematicsInformation());
 
   if (!applyCommandsHelper(commands))
   {
@@ -125,7 +126,7 @@ void Environment::clear()
 }
 
 Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                      const tesseract_scene_graph::SRDFModel::ConstPtr& srdf_model)
+                                      const tesseract_srdf::SRDFModel::ConstPtr& srdf_model)
 {
   Commands commands;
 
@@ -143,7 +144,7 @@ Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& s
   }
 
   if (srdf_model != nullptr)
-    processSRDFAllowedCollisions(*local_sg, *srdf_model);
+    tesseract_srdf::processSRDFAllowedCollisions(*local_sg, *srdf_model);
 
   commands.push_back(std::make_shared<AddSceneGraphCommand>(*local_sg));
 
@@ -977,7 +978,7 @@ bool Environment::applyCommandsHelper(const Commands& commands)
 /// External Helper Commands wrapping environment commands ///
 //////////////////////////////////////////////////////////////
 
-bool Environment::addKinematicsInformation(const tesseract_scene_graph::KinematicsInformation& kin_info)
+bool Environment::addKinematicsInformation(const tesseract_srdf::KinematicsInformation& kin_info)
 {
   return applyCommand(std::make_shared<AddKinematicsInformationCommand>(kin_info));
 }

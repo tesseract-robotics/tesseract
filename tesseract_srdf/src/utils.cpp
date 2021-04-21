@@ -1,13 +1,13 @@
 /**
- * @file kinematics_information.cpp
- * @brief This hold the kinematics information
+ * @file utils.cpp
+ * @brief Tesseract SRDF utility functions
  *
  * @author Levi Armstrong
- * @date May 12, 2020
+ * @date Dec 18, 2017
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2020, Southwest Research Institute
+ * @copyright Copyright (c) 2017, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -23,24 +23,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <tesseract_srdf/utils.h>
 
-#include <tesseract_scene_graph/kinematics_information.h>
-
-namespace tesseract_scene_graph
+namespace tesseract_srdf
 {
-void KinematicsInformation::clear()
+void processSRDFAllowedCollisions(tesseract_scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)
 {
-  group_names.clear();
-  chain_groups.clear();
-  joint_groups.clear();
-  link_groups.clear();
-  group_rop_kinematics.clear();
-  group_rep_kinematics.clear();
-  group_states.clear();
-  group_tcps.clear();
-  group_opw_kinematics.clear();
-  group_default_fwd_kin.clear();
-  group_default_inv_kin.clear();
+  for (const auto& pair : srdf_model.acm.getAllAllowedCollisions())
+    scene_graph.addAllowedCollision(pair.first.first, pair.first.second, pair.second);
 }
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract_srdf

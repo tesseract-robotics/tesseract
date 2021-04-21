@@ -10,7 +10,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_scene_graph/srdf_model.h>
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkMaterialUnit)  // NOLINT
 {

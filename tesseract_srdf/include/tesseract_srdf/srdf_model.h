@@ -24,35 +24,29 @@
  * limitations under the License.
  */
 
-#ifndef TESSERACT_SCENE_GRAPH_SRDF_MODEL_H
-#define TESSERACT_SCENE_GRAPH_SRDF_MODEL_H
+#ifndef TESSERACT_SRDF_SRDF_MODEL_H
+#define TESSERACT_SRDF_SRDF_MODEL_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <unordered_map>
 #include <string>
-#include <vector>
-#include <utility>
 #include <memory>
 #include <tinyxml2.h>
-#include <console_bridge/console.h>
-#include <fstream>
 #include <array>
+#include <Eigen/Core>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_srdf/kinematics_information.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/kinematics_information.h>
 #include <tesseract_scene_graph/allowed_collision_matrix.h>
 #include <tesseract_common/collision_margin_data.h>
 
 #ifdef SWIG
-
-%shared_ptr(tesseract_scene_graph::SRDFModel)
-
+%shared_ptr(tesseract_srdf::SRDFModel)
 #endif  // SWIG
 
 /// Main namespace
-namespace tesseract_scene_graph
+namespace tesseract_srdf
 {
 /** @brief Representation of semantic information about the robot */
 class SRDFModel
@@ -97,7 +91,7 @@ public:
   std::array<int, 3> version{ { 1, 0, 0 } };
 
   /** @brief The allowed collision matrix */
-  AllowedCollisionMatrix acm;
+  tesseract_scene_graph::AllowedCollisionMatrix acm;
 
   /** @brief A map of group opw kinematics data */
   KinematicsInformation kinematics_information;
@@ -106,6 +100,6 @@ public:
   tesseract_common::CollisionMarginData::Ptr collision_margin_data;
 };
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract_srdf
 
-#endif  // TESSERACT_SCENE_GRAPH_SRDF_MODEL_H
+#endif  // TESSERACT_SRDF_SRDF_MODEL_H
