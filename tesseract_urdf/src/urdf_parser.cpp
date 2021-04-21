@@ -40,38 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-// Similar to rethrow_if_nested
-// but does nothing instead of calling std::terminate
-// when std::nested_exception is nullptr.
-template <typename E>
-std::enable_if_t<!std::is_polymorphic<E>::value> my_rethrow_if_nested(const E&)
-{
-}
-
-template <typename E>
-std::enable_if_t<std::is_polymorphic<E>::value> my_rethrow_if_nested(const E& e)
-{
-  const auto* p = dynamic_cast<const std::nested_exception*>(std::addressof(e));
-  if (p && p->nested_ptr())
-    p->rethrow_nested();
-}
-
-void printNestedException(const std::exception& e, int level)
-{
-  std::cerr << std::string(static_cast<unsigned>(2 * level), ' ') << "exception: " << e.what() << std::endl;
-  try
-  {
-    my_rethrow_if_nested(e);
-  }
-  catch (const std::exception& e)
-  {
-    printNestedException(e, level + 1);
-  }
-  catch (...)
-  {
-  }
-}
-
 tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_xml_string,
                                                        const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {

@@ -28,10 +28,17 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/joint.h>
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_scene_graph
+{
+class JointSafety;
+}
 
 namespace tesseract_urdf
 {
@@ -41,7 +48,8 @@ namespace tesseract_urdf
  * @param version The version number
  * @return A Tesseract JointSafety
  */
-tesseract_scene_graph::JointSafety::Ptr parseSafetyController(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_scene_graph::JointSafety> parseSafetyController(const tinyxml2::XMLElement* xml_element,
+                                                                          int version);
 
 }  // namespace tesseract_urdf
 

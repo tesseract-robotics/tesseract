@@ -47,6 +47,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/types.h>
+#include <tesseract_common/utils.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_environment::Environment)
@@ -129,7 +130,7 @@ public:
     catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-      tesseract_urdf::printNestedException(e);
+      tesseract_common::printNestedException(e);
       return false;
     }
 
@@ -153,7 +154,7 @@ public:
     catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-      tesseract_urdf::printNestedException(e);
+      tesseract_common::printNestedException(e);
       return false;
     }
 
@@ -183,7 +184,7 @@ public:
     catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-      tesseract_urdf::printNestedException(e);
+      tesseract_common::printNestedException(e);
       return false;
     }
 
@@ -207,7 +208,7 @@ public:
     catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-      tesseract_urdf::printNestedException(e);
+      tesseract_common::printNestedException(e);
       return false;
     }
 

@@ -31,11 +31,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/sdf_mesh.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_geometry/mesh_parser.h>
+#include <tesseract_geometry/impl/sdf_mesh.h>
 
 std::vector<tesseract_geometry::SDFMesh::Ptr>
 tesseract_urdf::parseSDFMesh(const tinyxml2::XMLElement* xml_element,

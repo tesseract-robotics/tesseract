@@ -10,6 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/urdf_parser.h>
+#include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 inline std::string locateResource(const std::string& url)
@@ -58,7 +59,7 @@ bool runTest(ElementType& type,
   }
   catch (const std::exception& e)
   {
-    tesseract_urdf::printNestedException(e);
+    tesseract_common::printNestedException(e);
     return false;
   }
 
@@ -89,7 +90,7 @@ bool runTest(
   }
   catch (const std::exception& e)
   {
-    tesseract_urdf::printNestedException(e);
+    tesseract_common::printNestedException(e);
     return false;
   }
 
@@ -118,7 +119,7 @@ bool runTest(
   }
   catch (const std::exception& e)
   {
-    tesseract_urdf::printNestedException(e);
+    tesseract_common::printNestedException(e);
     return false;
   }
 
@@ -149,7 +150,7 @@ bool runTest(ElementType& type,
   }
   catch (const std::exception& e)
   {
-    tesseract_urdf::printNestedException(e);
+    tesseract_common::printNestedException(e);
     return false;
   }
 
@@ -180,7 +181,7 @@ bool runTest(ElementType& type,
   }
   catch (const std::exception& e)
   {
-    tesseract_urdf::printNestedException(e);
+    tesseract_common::printNestedException(e);
     return false;
   }
 

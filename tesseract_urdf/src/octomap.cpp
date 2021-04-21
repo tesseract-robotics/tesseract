@@ -28,11 +28,14 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 #include <tesseract_common/utils.h>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/octomap.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_urdf/octree.h>
+#include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_geometry/impl/octree.h>
 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
 #include <tesseract_urdf/point_cloud.h>
@@ -55,7 +58,7 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctomap(const tinyxml2::XML
   else if (shape_type == "sphere_outside")
     sub_type = tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE;
   else
-    std::throw_with_nested(std::runtime_error("Octomap: Invalide sub shape type, must be 'box', 'sphere_inside', or "
+    std::throw_with_nested(std::runtime_error("Octomap: Invalid sub shape type, must be 'box', 'sphere_inside', or "
                                               "'sphere_outside'!"));
 
   bool prune = false;

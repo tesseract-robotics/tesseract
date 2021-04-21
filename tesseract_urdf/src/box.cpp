@@ -29,9 +29,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 #include <tesseract_common/utils.h>
 #include <boost/algorithm/string.hpp>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/box.h>
+#include <tesseract_geometry/impl/box.h>
 
 tesseract_geometry::Box::Ptr tesseract_urdf::parseBox(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {

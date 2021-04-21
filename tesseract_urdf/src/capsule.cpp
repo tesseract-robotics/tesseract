@@ -27,9 +27,11 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/capsule.h>
+#include <tesseract_geometry/impl/capsule.h>
 
 tesseract_geometry::Capsule::Ptr tesseract_urdf::parseCapsule(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {

@@ -27,9 +27,11 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/cylinder.h>
+#include <tesseract_geometry/impl/cylinder.h>
 
 tesseract_geometry::Cylinder::Ptr tesseract_urdf::parseCylinder(const tinyxml2::XMLElement* xml_element,
                                                                 int /*version*/)

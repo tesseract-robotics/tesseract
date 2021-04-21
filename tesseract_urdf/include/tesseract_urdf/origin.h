@@ -28,9 +28,14 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <memory>
 #include <Eigen/Geometry>
-#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+namespace tinyxml2
+{
+class XMLElement;
+}
 
 namespace tesseract_urdf
 {

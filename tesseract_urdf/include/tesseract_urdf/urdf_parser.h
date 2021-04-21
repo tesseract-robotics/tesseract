@@ -32,13 +32,6 @@
 namespace tesseract_urdf
 {
 /**
- * @brief Print a nested exception
- * @param e The exception to print
- * @param level The exception level which controls the indentation
- */
-void printNestedException(const std::exception& e, int level = 0);
-
-/**
  * @brief Parse a URDF string into a Tesseract Scene Graph
  * @param urdf_xml_string URDF xml string
  * @param locator The resource locator function

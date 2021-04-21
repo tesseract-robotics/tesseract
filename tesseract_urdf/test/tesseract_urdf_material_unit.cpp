@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_urdf/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/utils.h>
 #include <tesseract_urdf/material.h>
 #include "tesseract_urdf_common_unit.h"
 

@@ -28,11 +28,21 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/geometry.h>
-#include <tesseract_scene_graph/resource_locator.h>
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_scene_graph
+{
+class ResourceLocator;
+}
+namespace tesseract_geometry
+{
+class Geometry;
+}
 
 namespace tesseract_urdf
 {
@@ -44,10 +54,11 @@ namespace tesseract_urdf
  * @param version The version number
  * @return A Tesseract Geometry
  */
-std::vector<tesseract_geometry::Geometry::Ptr> parseGeometry(const tinyxml2::XMLElement* xml_element,
-                                                             const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                                             bool visual,
-                                                             int version);
+std::vector<std::shared_ptr<tesseract_geometry::Geometry>>
+parseGeometry(const tinyxml2::XMLElement* xml_element,
+              const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
+              bool visual,
+              int version);
 
 }  // namespace tesseract_urdf
 

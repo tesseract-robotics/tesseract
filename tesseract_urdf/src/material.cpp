@@ -32,9 +32,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <boost/algorithm/string.hpp>
 #include <unordered_map>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/material.h>
+#include <tesseract_scene_graph/link.h>
 
 tesseract_scene_graph::Material::Ptr tesseract_urdf::parseMaterial(
     const tinyxml2::XMLElement* xml_element,

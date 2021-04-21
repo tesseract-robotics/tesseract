@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <boost/algorithm/string.hpp>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/joint.h>
@@ -39,6 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/mimic.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/safety_controller.h>
+#include <tesseract_scene_graph/joint.h>
 
 tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XMLElement* xml_element, int version)
 {
