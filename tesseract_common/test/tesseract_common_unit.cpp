@@ -58,6 +58,9 @@ TEST(TesseractCommonUnit, toNumeric)  // NOLINT
     EXPECT_FALSE(tesseract_common::toNumeric(s, value));
     EXPECT_NEAR(value, 0, 1e-8);
   }
+
+  std::string empty_string;
+  EXPECT_FALSE(tesseract_common::isNumeric(empty_string));
 }
 
 TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
@@ -287,6 +290,24 @@ TEST(TesseractCommonUnit, ToolCenterPoint)
     EXPECT_ANY_THROW(tcp.getExternalFrame());
   }
 
+  {  // The tcp is external with transform
+    Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
+    pose.translation() = Eigen::Vector3d(0, 0, 0.25);
+    tesseract_common::ToolCenterPoint tcp(pose, true, "external_frame");
+    EXPECT_EQ(tcp.getExternalFrame(), "external_frame");
+    EXPECT_TRUE(tcp.isExternal());
+    EXPECT_TRUE(tcp.isTransform());
+    EXPECT_TRUE(tcp.getTransform().isApprox(pose, 1e-6));
+
+    // Set as external after construction
+    tcp = tesseract_common::ToolCenterPoint(pose);
+    tcp.setExternal(true, "external_frame");
+    EXPECT_EQ(tcp.getExternalFrame(), "external_frame");
+    EXPECT_TRUE(tcp.isExternal());
+    EXPECT_TRUE(tcp.isTransform());
+    EXPECT_TRUE(tcp.getTransform().isApprox(pose, 1e-6));
+  }
+
   {  // TCP as transform
     Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
     pose.translation() = Eigen::Vector3d(0, 0, 0.25);
@@ -326,6 +347,31 @@ TEST(TesseractCommonUnit, ManipulatorInfo)
   EXPECT_EQ(manip_info.manipulator, manip_info_override.manipulator);
   EXPECT_EQ(manip_info.manipulator_ik_solver, manip_info_override.manipulator_ik_solver);
   EXPECT_EQ(manip_info.working_frame, manip_info_override.working_frame);
+
+  // Test empty method
+  {
+    tesseract_common::ManipulatorInfo manip_info;
+    manip_info.manipulator = "manip";
+    EXPECT_FALSE(manip_info.empty());
+  }
+
+  {
+    tesseract_common::ManipulatorInfo manip_info;
+    manip_info.manipulator_ik_solver = "manip";
+    EXPECT_FALSE(manip_info.empty());
+  }
+
+  {
+    tesseract_common::ManipulatorInfo manip_info;
+    manip_info.working_frame = "manip";
+    EXPECT_FALSE(manip_info.empty());
+  }
+
+  {
+    tesseract_common::ManipulatorInfo manip_info;
+    manip_info.tcp = tesseract_common::ToolCenterPoint("manip");
+    EXPECT_FALSE(manip_info.empty());
+  }
 }
 
 TEST(TesseractCommonUnit, serializationToolCenterPoint)
@@ -351,6 +397,7 @@ TEST(TesseractCommonUnit, serializationToolCenterPoint)
   }
 
   EXPECT_TRUE(tcp == ntcp);
+  EXPECT_FALSE(tcp != ntcp);
 }
 
 TEST(TesseractCommonUnit, serializationManipulatorInfo)
@@ -377,6 +424,16 @@ TEST(TesseractCommonUnit, serializationManipulatorInfo)
   }
 
   EXPECT_TRUE(manip_info == nmanip_info);
+  EXPECT_FALSE(manip_info != nmanip_info);
+}
+
+TEST(TesseractCommonUnit, JointStateTest)
+{
+  std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3" };
+  Eigen::VectorXd positons = Eigen::VectorXd::Constant(3, 5);
+  tesseract_common::JointState joint_state(joint_names, positons);
+  EXPECT_TRUE(joint_state.joint_names == joint_names);
+  EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
 TEST(TesseractCommonUnit, serializationJointState)
@@ -406,6 +463,7 @@ TEST(TesseractCommonUnit, serializationJointState)
   }
 
   EXPECT_TRUE(joint_state == njoint_state);
+  EXPECT_FALSE(joint_state != njoint_state);
 }
 
 TEST(TesseractCommonUnit, serializationKinematicLimits)
@@ -433,6 +491,7 @@ TEST(TesseractCommonUnit, serializationKinematicLimits)
   }
 
   EXPECT_TRUE(limits == nlimits);
+  EXPECT_FALSE(limits != nlimits);
 }
 
 TEST(TesseractCommonUnit, serializationVectorXd)
@@ -733,6 +792,248 @@ TEST(TesseractCommonUnit, boundsUnit)
   EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
   tesseract_common::enforcePositionLimits(v, limits);
   ASSERT_EQ((v - limits.col(1)).norm(), 0);
+}
+
+TEST(TesseractCommonUnit, isIdenticalUnit)
+{
+  std::vector<std::string> v1{ "a", "b", "c" };
+  std::vector<std::string> v2{ "a", "b", "c" };
+  EXPECT_TRUE(tesseract_common::isIdentical(v1, v2, false));
+  EXPECT_TRUE(tesseract_common::isIdentical(v1, v2, true));
+
+  v2 = { "c", "b", "a" };
+  EXPECT_TRUE(tesseract_common::isIdentical(v1, v2, false));
+  EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, true));
+
+  v2 = { "a", "b", "d" };
+  EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, false));
+  EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, true));
+}
+
+TEST(TesseractCommonUnit, getTimestampStringUnit)
+{
+  std::string s1 = tesseract_common::getTimestampString();
+  EXPECT_FALSE(s1.empty());
+}
+
+TEST(TesseractCommonUnit, QueryStringValueUnit)
+{
+  {
+    std::string str = R"(<box>Test</box>)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    std::string string_value;
+    tinyxml2::XMLError status = tesseract_common::QueryStringValue(element, string_value);
+    EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
+    EXPECT_TRUE(string_value == "box");
+  }
+}
+
+TEST(TesseractCommonUnit, QueryStringTextUnit)
+{
+  {
+    std::string str = R"(<box>Test</box>)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    std::string string_value;
+    tinyxml2::XMLError status = tesseract_common::QueryStringText(element, string_value);
+    EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
+    EXPECT_TRUE(string_value == "Test");
+  }
+
+  {
+    std::string str = R"(<box></box>)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    std::string string_value;
+    tinyxml2::XMLError status = tesseract_common::QueryStringText(element, string_value);
+    EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
+  }
+}
+
+TEST(TesseractCommonUnit, QueryStringAttributeUnit)
+{
+  {
+    std::string str = R"(<box name="test" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    std::string string_value;
+    tinyxml2::XMLError status = tesseract_common::QueryStringAttribute(element, "name", string_value);
+    EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
+    EXPECT_TRUE(string_value == "test");
+  }
+
+  {
+    std::string str = R"(<box missing="test" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    std::string string_value;
+    tinyxml2::XMLError status = tesseract_common::QueryStringAttribute(element, "name", string_value);
+    EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
+  }
+}
+
+TEST(TesseractCommonUnit, StringAttributeUnit)
+{
+  {
+    std::string str = R"(<box name="test" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    std::string string_value = tesseract_common::StringAttribute(element, "name", "default");
+    EXPECT_TRUE(string_value == "test");
+  }
+
+  {
+    std::string str = R"(<box name="test" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    std::string string_value = tesseract_common::StringAttribute(element, "missing", "default");
+    EXPECT_TRUE(string_value == "default");
+  }
+}
+
+TEST(TesseractCommonUnit, QueryStringAttributeRequiredUnit)
+{
+  {
+    std::string str = R"(<box name="test" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    std::string string_value;
+    tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(element, "name", string_value);
+    EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
+    EXPECT_TRUE(string_value == "test");
+  }
+
+  {
+    std::string str = R"(<box name="test" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    std::string string_value;
+    tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(element, "missing", string_value);
+    EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
+  }
+}
+
+TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)
+{
+  {
+    std::string str = R"(<box name="1.5" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    double double_value;
+    tinyxml2::XMLError status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
+    EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
+    EXPECT_NEAR(double_value, 1.5, 1e-6);
+  }
+
+  {
+    std::string str = R"(<box name="1.5" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    double double_value;
+    tinyxml2::XMLError status = tesseract_common::QueryDoubleAttributeRequired(element, "missing", double_value);
+    EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
+  }
+
+  {
+    std::string str = R"(<box name="abc" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    double double_value;
+    tinyxml2::XMLError status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
+    EXPECT_TRUE(status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE);
+  }
+}
+
+TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)
+{
+  {
+    std::string str = R"(<box name="1" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    int int_value;
+    tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
+    EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
+    EXPECT_NEAR(int_value, 1, 1e-6);
+  }
+
+  {
+    std::string str = R"(<box name="1.5" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    int int_value;
+    tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "missing", int_value);
+    EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
+  }
+
+  {
+    std::string str = R"(<box name="abc" />)";
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
+    EXPECT_TRUE(element != nullptr);
+
+    int int_value;
+    tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
+    EXPECT_TRUE(status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE);
+  }
 }
 
 int main(int argc, char** argv)
