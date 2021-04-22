@@ -88,7 +88,17 @@ macro(tesseract_variables)
           -Wsign-conversion
           -Wno-sign-compare
           -Wnon-virtual-dtor)
-      set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
+      exec_program(uname ARGS -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
+      if(NOT
+         CMAKE_SYSTEM_NAME2
+         MATCHES
+         "aarch64"
+         AND NOT
+             CMAKE_SYSTEM_NAME2
+             MATCHES
+             "armv7l")
+        set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
+      endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
       set(TESSERACT_COMPILE_OPTIONS_PRIVATE
           -Wall
@@ -180,7 +190,17 @@ macro(tesseract_variables)
           -Werror=sign-conversion
           -Wno-sign-compare
           -Werror=non-virtual-dtor)
-      set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
+      exec_program(uname ARGS -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
+      if(NOT
+         CMAKE_SYSTEM_NAME2
+         MATCHES
+         "aarch64"
+         AND NOT
+             CMAKE_SYSTEM_NAME2
+             MATCHES
+             "armv7l")
+        set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
+      endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
       set(TESSERACT_COMPILE_OPTIONS_PRIVATE
           -Werror=all
