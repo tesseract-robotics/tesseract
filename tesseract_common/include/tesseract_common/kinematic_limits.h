@@ -37,7 +37,9 @@ namespace tesseract_common
 /** @brief Store kinematic limits */
 struct KinematicLimits
 {
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   /** @brief The position limits */
   Eigen::MatrixX2d joint_limits;

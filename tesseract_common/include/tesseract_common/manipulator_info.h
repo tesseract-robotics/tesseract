@@ -39,7 +39,9 @@ namespace tesseract_common
 class ToolCenterPoint
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   ToolCenterPoint() = default;
 
@@ -150,7 +152,9 @@ protected:
  */
 struct ManipulatorInfo
 {
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   ManipulatorInfo() = default;
   ManipulatorInfo(std::string manipulator);
