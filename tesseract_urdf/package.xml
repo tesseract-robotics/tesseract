@@ -17,6 +17,7 @@
   <depend>tesseract_scene_graph</depend>
 
   <build_depend>libpcl-all-dev</build_depend>
+  <build_export_depend>libpcl-all-dev</build_export_depend>
   <exec_depend>libpcl-all</exec_depend>
 
   <build_depend>eigen</build_depend>

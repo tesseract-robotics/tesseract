@@ -23,9 +23,11 @@
   <depend>tesseract_support</depend>
 
   <build_depend>libboost-system-dev</build_depend>
+  <build_export_depend>libboost-system-dev</build_export_depend>
   <exec_depend>libboost-system</exec_depend>
 
   <build_depend>libboost-program-options-dev</build_depend>
+  <build_export_depend>libboost-program-options-dev</build_export_depend>
   <exec_depend>libboost-program-options</exec_depend>
 
   <test_depend>benchmark</test_depend>
