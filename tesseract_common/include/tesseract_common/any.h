@@ -67,11 +67,19 @@ struct AnyInnerBase
   AnyInnerBase(AnyInnerBase&&) = delete;
   AnyInnerBase& operator=(AnyInnerBase&&) = delete;
 
+  virtual bool operator==(const AnyInnerBase& rhs) const = 0;
+
+  // This is not required for user defined implementation
+  virtual bool operator!=(const AnyInnerBase& rhs) const = 0;
+
   // This is not required for user defined implementation
   virtual std::type_index getType() const = 0;
 
   // This is not required for user defined implementation
   virtual void* recover() = 0;
+
+  // This is not required for user defined implementation
+  virtual const void* recover() const = 0;
 
   // This is not required for user defined implementation
   virtual std::unique_ptr<AnyInnerBase> clone() const = 0;
@@ -103,6 +111,22 @@ struct AnyInner final : AnyInnerBase
   std::type_index getType() const final { return std::type_index(typeid(T)); }
 
   void* recover() final { return &any_type_; }
+
+  const void* recover() const final { return &any_type_; }
+
+  bool operator==(const AnyInnerBase& rhs) const final
+  {
+    // Compare class types before casting the incoming object to the T type
+    if (rhs.getType() == getType())
+    {
+      auto any_type = static_cast<const T*>(rhs.recover());
+      return any_type_ == *any_type;
+    }
+    return false;
+  }
+
+  bool operator!=(const AnyInnerBase& rhs) const final { return !operator==(rhs); }
+
 
 private:
   friend class boost::serialization::access;
@@ -198,6 +222,10 @@ public:
 
     return any_type_->getType();
   }
+
+  bool operator==(const Any& rhs) const { return any_type_->operator==(*rhs.any_type_); }
+
+  bool operator!=(const Any& rhs) const { return !operator==(rhs); }
 
   template <typename T>
   T& as()
