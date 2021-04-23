@@ -2,6 +2,17 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add windows compile definition NOMINMAX
+* Improve tesseract_common unit test coverage
+* Add equal operator support to Any type erasure
+* Fix package build depends
+* Improve tesseract_common unit coverage
+* Disable compile option -mno-avx for arm builds
+* Move printNestedException and leverage forward declarations for tesseract_urdf
+* Contributors: Levi Armstrong
+
 0.3.1 (2021-04-14)
 ------------------
 * Move tesseract_variables() before any use of custom macros

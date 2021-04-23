@@ -2,6 +2,11 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix issue in trajectory_player calling size if trajectory does not exist
+* Contributors: Levi Armstrong
+
 0.3.1 (2021-04-14)
 ------------------
 * Move tesseract_variables() before any use of custom macros

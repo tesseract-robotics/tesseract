@@ -2,6 +2,18 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve tesseract_common unit test coverage
+* Improve exception text in urdf_parser
+* Fix package build depends
+* Move printNestedException and leverage forward declarations for tesseract_urdf
+* Do not catch exception in parseURDFString and parseURDFFile
+* Move tesseract_urdf implementation to cpp and fix clang tidy errors
+* Improve tesseract_urdf unit test coverage
+* Switch tesseract_urdf to use nested exception instead of custom status code class
+* Contributors: Levi Armstrong
+
 0.3.1 (2021-04-14)
 ------------------
 * Add missing pcl depends to tesseract_urdf package.xml

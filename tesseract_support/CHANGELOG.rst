@@ -2,6 +2,11 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix package build depends
+* Contributors: Levi Armstrong
+
 0.3.1 (2021-04-14)
 ------------------
 

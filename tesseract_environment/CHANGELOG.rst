@@ -2,6 +2,14 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update tesseract_srdf to leverage nested exceptions
+* Move srdf code to its own package tesseract_srdf
+* Move printNestedException and leverage forward declarations for tesseract_urdf
+* Do not catch exception in parseURDFString and parseURDFFile
+* Contributors: Levi Armstrong
+
 0.3.1 (2021-04-14)
 ------------------
 * Move tesseract_variables() before any use of custom macros
