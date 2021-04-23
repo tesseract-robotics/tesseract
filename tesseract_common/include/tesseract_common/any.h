@@ -127,7 +127,6 @@ struct AnyInner final : AnyInnerBase
 
   bool operator!=(const AnyInnerBase& rhs) const final { return !operator==(rhs); }
 
-
 private:
   friend class boost::serialization::access;
   template <class Archive>

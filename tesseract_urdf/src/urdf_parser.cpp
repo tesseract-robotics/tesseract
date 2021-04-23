@@ -139,8 +139,8 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_x
   if (!sg->isTree())
   {
     if (!sg->isAcyclic())
-      std::throw_with_nested(
-          std::runtime_error("URDF: Error, is not a tree structure and contains cycles for robot '" + robot_name + "'!"));
+      std::throw_with_nested(std::runtime_error("URDF: Error, is not a tree structure and contains cycles for robot '" +
+                                                robot_name + "'!"));
 
     std::throw_with_nested(std::runtime_error("URDF: Error, is not a tree structure for robot '" + robot_name + "'!"));
   }
