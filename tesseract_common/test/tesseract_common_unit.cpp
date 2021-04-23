@@ -33,6 +33,9 @@ TEST(TesseractCommonUnit, isNumeric)  // NOLINT
   {
     EXPECT_FALSE(tesseract_common::isNumeric(s));
   }
+
+  std::string empty_string;
+  EXPECT_FALSE(tesseract_common::isNumeric(empty_string));
 }
 
 TEST(TesseractCommonUnit, toNumeric)  // NOLINT
@@ -60,7 +63,8 @@ TEST(TesseractCommonUnit, toNumeric)  // NOLINT
   }
 
   std::string empty_string;
-  EXPECT_FALSE(tesseract_common::isNumeric(empty_string));
+  double value = 0;
+  EXPECT_FALSE(tesseract_common::toNumeric(empty_string, value));
 }
 
 TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
@@ -719,6 +723,7 @@ TESSERACT_ANY_EXPORT(tesseract_common::JointState);  // NOLINT
 TEST(TesseractCommonUnit, anyUnit)
 {
   tesseract_common::Any any_type;
+  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
 
   tesseract_common::JointState joint_state;
   joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
@@ -732,10 +737,17 @@ TEST(TesseractCommonUnit, anyUnit)
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
   EXPECT_TRUE(any_type.as<tesseract_common::JointState>() == joint_state);
 
+  // Check clone
+  tesseract_common::Any any_copy = any_type;
+  EXPECT_TRUE(any_copy == any_type);
+
   // Check to make sure it is not making a copy during cast
   auto& any_type_ref1 = any_type.as<tesseract_common::JointState>();
   auto& any_type_ref2 = any_type.as<tesseract_common::JointState>();
+  auto& any_copy_ref = any_copy.as<tesseract_common::JointState>();
   EXPECT_TRUE(&any_type_ref1 == &any_type_ref2);
+  EXPECT_TRUE(&any_type_ref1 != &any_copy_ref);
+  EXPECT_TRUE(&any_type_ref2 != &any_copy_ref);
 
   const auto& any_type_const_ref1 = any_type.as<tesseract_common::JointState>();
   const auto& any_type_const_ref2 = any_type.as<tesseract_common::JointState>();
@@ -759,6 +771,9 @@ TEST(TesseractCommonUnit, anyUnit)
 
   EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
   EXPECT_TRUE(nany_type.as<tesseract_common::JointState>() == joint_state);
+
+  // Test bad cast
+  EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());
 }
 
 TEST(TesseractCommonUnit, boundsUnit)
@@ -814,6 +829,13 @@ TEST(TesseractCommonUnit, getTimestampStringUnit)
 {
   std::string s1 = tesseract_common::getTimestampString();
   EXPECT_FALSE(s1.empty());
+}
+
+TEST(TesseractCommonUnit, getTempPathUnit)
+{
+  std::string s1 = tesseract_common::getTempPath();
+  EXPECT_FALSE(s1.empty());
+  EXPECT_TRUE(tesseract_common::fs::exists(s1));
 }
 
 TEST(TesseractCommonUnit, QueryStringValueUnit)
@@ -1034,6 +1056,69 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)
     tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE);
   }
+}
+
+// sample function that catches an exception and wraps it in a nested exception
+void runThrowNestedException()
+{
+  try
+  {
+    throw std::runtime_error("failed");
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("runThrowNestedException() failed"));
+  }
+}
+
+TEST(TesseractCommonUnit, printNestedExceptionUnit)
+{
+  try
+  {
+    runThrowNestedException();
+  }
+  catch (const std::exception& e)
+  {
+    tesseract_common::printNestedException(e);
+  }
+}
+
+TEST(TesseractCommonUnit, almostEqualRelativeAndAbsUnit)
+{
+  double a = 1e-5;
+  double b = 0;
+  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(a, b));
+
+  a = 1e-7;
+  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(a, b));
+
+  a = 100000000000000.01;
+  b = 100000000000000;
+  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(a, b));
+
+  a = 100000000000000.1;
+  b = 100000000000000;
+  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(a, b));
+
+  Eigen::VectorXd v1 = Eigen::VectorXd::Constant(3, 1e-5);
+  Eigen::VectorXd v2 = Eigen::VectorXd::Constant(3, 0);
+  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+
+  v1 = Eigen::VectorXd::Constant(3, 1e-7);
+  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+
+  v1 = Eigen::VectorXd::Constant(3, 100000000000000.01);
+  v2 = Eigen::VectorXd::Constant(3, 100000000000000);
+  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+
+  v1 = Eigen::VectorXd::Constant(3, 100000000000000.1);
+  v2 = Eigen::VectorXd::Constant(3, 100000000000000);
+  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+
+  v2 = Eigen::VectorXd::Constant(1, 100000000000000);
+  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+
+  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(Eigen::VectorXd(), Eigen::VectorXd()));
 }
 
 int main(int argc, char** argv)

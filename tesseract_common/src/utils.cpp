@@ -35,6 +35,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+// Implicit Instantiation
+template bool toNumeric<double>(const std::string&, double&);
+template bool toNumeric<float>(const std::string&, float&);
+template bool toNumeric<int>(const std::string&, int&);
+template bool toNumeric<long>(const std::string&, long&);
+
 // Similar to rethrow_if_nested
 // but does nothing instead of calling std::terminate
 // when std::nested_exception is nullptr.

@@ -235,7 +235,7 @@ bool almostEqualRelativeAndAbs(double a,
  */
 bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
                                const Eigen::Ref<const Eigen::VectorXd>& v2,
-                               double max_diff,
+                               double max_diff = 1e-6,
                                double max_rel_diff = std::numeric_limits<double>::epsilon());
 
 /**
