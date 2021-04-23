@@ -2,10 +2,10 @@
 <package format="2">
   <name>tesseract_srdf</name>
   <version>0.3.1</version>
-  <description>The tesseractsrdf package for parsing tesseract specific srdf</description>
+  <description>The tesseract_srdf package for parsing Tesseract specific srdf</description>
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
-  <author >Levi Armstrong</author>
+  <author>Levi Armstrong</author>
 
   <!-- Following recommendations of REP 136 -->
   <buildtool_depend>cmake</buildtool_depend>
