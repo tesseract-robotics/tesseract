@@ -2,8 +2,8 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2021-04-23)
+------------------
 * Move srdf code to its own package tesseract_srdf
 * Contributors: Levi Armstrong
 

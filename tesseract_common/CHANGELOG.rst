@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2021-04-23)
+------------------
 * Add windows compile definition NOMINMAX
 * Improve tesseract_common unit test coverage
 * Add equal operator support to Any type erasure

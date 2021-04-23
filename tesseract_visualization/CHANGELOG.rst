@@ -2,8 +2,8 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2021-04-23)
+------------------
 * Fix issue in trajectory_player calling size if trajectory does not exist
 * Contributors: Levi Armstrong
 

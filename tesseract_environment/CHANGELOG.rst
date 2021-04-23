@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2021-04-23)
+------------------
 * Update tesseract_srdf to leverage nested exceptions
 * Move srdf code to its own package tesseract_srdf
 * Move printNestedException and leverage forward declarations for tesseract_urdf
