@@ -224,7 +224,7 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraph()
   return g;
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFileUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -334,7 +334,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFileUnit)  // NOLINT
   EXPECT_EQ(acm->getAllAllowedCollisions().size(), 0);
 }
 
-TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
+TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -423,7 +423,7 @@ TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
   srdf_reload.saveToFile(tesseract_common::getTempPath() + "test_reload.srdf");
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -494,7 +494,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
     EXPECT_ANY_THROW(srdf.initFile(*g, "/tmp/file_does_not_exist.srdf"));
   }
 }
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -625,7 +625,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -771,7 +771,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
   EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFROPUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -898,7 +898,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPUnit)  // NOLINT
   EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFREPUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -1016,7 +1016,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPUnit)  // NOLINT
   EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -1116,7 +1116,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFOPWKinematicsUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFOPWKinematicsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -1311,7 +1311,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFOPWKinematicsUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSceneGraphSRDFUnit, SRDFChainGroupUnit)  // NOLINT
+TEST(TesseractSRDFUnit, SRDFChainGroupUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -1410,7 +1410,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFChainGroupUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSceneGraphSRDFUnit, SRDFJointGroupUnit)  // NOLINT
+TEST(TesseractSRDFUnit, SRDFJointGroupUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -1492,7 +1492,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFJointGroupUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSceneGraphSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
+TEST(TesseractSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -1575,7 +1575,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -1801,7 +1801,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -2027,7 +2027,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSceneGraphSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
+TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -2151,7 +2151,7 @@ TEST(TesseractSceneGraphSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSceneGraphSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
+TEST(TesseractSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
@@ -2269,7 +2269,7 @@ TEST(TesseractSceneGraphSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSceneGraphSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
+TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   using namespace tesseract_srdf;
