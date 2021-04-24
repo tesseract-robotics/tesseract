@@ -2,6 +2,9 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.4.0 (2021-04-23)
 ------------------
 * Improve tesseract_common unit test coverage

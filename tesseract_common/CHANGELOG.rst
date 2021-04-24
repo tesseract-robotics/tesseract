@@ -2,6 +2,12 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove windows compiler definition NOMINMAX
+* Do not add compiler option -mno-avx if processor is uknown
+* Contributors: Levi Armstrong
+
 0.4.0 (2021-04-23)
 ------------------
 * Add windows compile definition NOMINMAX
