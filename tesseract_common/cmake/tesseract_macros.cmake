@@ -96,7 +96,11 @@ macro(tesseract_variables)
          AND NOT
              CMAKE_SYSTEM_NAME2
              MATCHES
-             "armv7l")
+             "armv7l"
+         AND NOT
+             CMAKE_SYSTEM_NAME2
+             MATCHES
+             "unknown")
         set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
       endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -198,7 +202,11 @@ macro(tesseract_variables)
          AND NOT
              CMAKE_SYSTEM_NAME2
              MATCHES
-             "armv7l")
+             "armv7l"
+         AND NOT
+             CMAKE_SYSTEM_NAME2
+             MATCHES
+             "unknown")
         set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
       endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
