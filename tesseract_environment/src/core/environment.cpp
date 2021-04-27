@@ -332,6 +332,12 @@ EnvState::ConstPtr Environment::getCurrentState() const
   return current_state_;
 }
 
+std::chrono::high_resolution_clock::duration Environment::getCurrentStateTimestamp() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return current_state_timestamp_;
+}
+
 tesseract_scene_graph::Link::ConstPtr Environment::getLink(const std::string& name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -676,6 +682,7 @@ void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& 
 
 void Environment::currentStateChanged()
 {
+  current_state_timestamp_ = std::chrono::high_resolution_clock::now().time_since_epoch();
   current_state_ = std::make_shared<EnvState>(*(state_solver_->getCurrentState()));
   if (discrete_manager_ != nullptr)
     discrete_manager_->setCollisionObjectsTransform(current_state_->link_transforms);
