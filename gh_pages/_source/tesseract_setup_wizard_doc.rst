@@ -235,10 +235,21 @@ groups.
 
 * Click, hold, and drag left to move to the next page.
 
+
 Step 7: Setting OPW Parameters
 ==============================
 
-**TODO**
+OPW is an extremely effecient algorithm that solves inverse kinematics for robots with parallel bases and spherical wrists.
+This algorithm requires 7 measurements from the robot's specification sheet to be defined here. These values will be stored
+in the SRDF and used by the OPW solver.
+
+* To define your robot's OPW parameters, use the following diagram to determine each parameter, then enter each value
+  in it's respective field.
+
+.. image:: ../_static/tesseract_setup_wizard_opw_diagram.png
+
+* For more details on the OPW algorithm, visit the `opw_kinematics github repository <https://github.com/Jmeyer1292/opw_kinematics>`_.
+
 
 Step 8: Saving the SRDF File
 ============================
@@ -248,6 +259,6 @@ parameters are all stored in a Semantic Robot Description Format file (SRDF).
 
 * To save your SRDF file:
 
-  1. Scroll back to the left most page where you originally loaded in your URDF file.
+  1. Scroll back to the left most page where you originally loaded your URDF file.
 
   2. Click **SAVE** and select a file and location to save the SRDF to.
