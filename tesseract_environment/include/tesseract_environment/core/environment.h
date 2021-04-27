@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <shared_mutex>
+#include <chrono>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -380,6 +381,9 @@ public:
 
   /** @brief Get the current state of the environment */
   virtual EnvState::ConstPtr getCurrentState() const;
+
+  /** @brief Get the current state timestamp */
+  virtual std::chrono::high_resolution_clock::duration getCurrentStateTimestamp() const;
 
   /**
    * @brief Get a link in the environment
@@ -738,15 +742,16 @@ protected:
   int revision_{ 0 };         /**< This increments when the scene graph is modified */
   int init_revision_{ 0 };    /**< This is the revision number after initialization used when reset is called */
   Commands commands_;         /**< The history of commands applied to the environment after intialization */
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph_;            /**< Tesseract Scene Graph */
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_; /**< Tesseract Scene Graph Const */
-  ManipulatorManager::Ptr manipulator_manager_;                   /**< Managers for the kinematics objects */
-  EnvState::Ptr current_state_;                                   /**< Current state of the environment */
-  StateSolver::Ptr state_solver_;                                 /**< Tesseract State Solver */
-  std::vector<std::string> link_names_;                           /**< A vector of link names */
-  std::vector<std::string> joint_names_;                          /**< A vector of joint names */
-  std::vector<std::string> active_link_names_;                    /**< A vector of active link names */
-  std::vector<std::string> active_joint_names_;                   /**< A vector of active joint names */
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph_;                   /**< Tesseract Scene Graph */
+  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_;        /**< Tesseract Scene Graph Const */
+  ManipulatorManager::Ptr manipulator_manager_;                          /**< Managers for the kinematics objects */
+  EnvState::Ptr current_state_;                                          /**< Current state of the environment */
+  std::chrono::high_resolution_clock::duration current_state_timestamp_; /**< Current state timestamp */
+  StateSolver::Ptr state_solver_;                                        /**< Tesseract State Solver */
+  std::vector<std::string> link_names_;                                  /**< A vector of link names */
+  std::vector<std::string> joint_names_;                                 /**< A vector of joint names */
+  std::vector<std::string> active_link_names_;                           /**< A vector of active link names */
+  std::vector<std::string> active_joint_names_;                          /**< A vector of active joint names */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_; /**< The function used to determine if two objects are
                                                                      allowed in collision */
 
