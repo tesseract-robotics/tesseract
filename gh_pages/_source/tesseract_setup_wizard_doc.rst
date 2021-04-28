@@ -210,6 +210,8 @@ for the starting/ending state of your robot.
 Step 6: Create/Edit TCPs
 ========================
 
+.. image:: ../_static/tesseract_setup_wizard_user_defined_tcps.png
+
 The User Defined TCPs page allows you to define Tool Center Points for your kinematic
 groups.
 
@@ -239,20 +241,29 @@ groups.
 Step 7: Setting OPW Parameters
 ==============================
 
-OPW is an extremely effecient algorithm that solves inverse kinematics for robots with parallel bases and spherical wrists.
-This algorithm requires 7 measurements from the robot's specification sheet to be defined here. These values will be stored
+.. image:: ../_static/tesseract_setup_wizard_opw_kinematics.png
+
+OPW is an effecient inverse kinematics solver for robots with parallel bases and spherical wrists. This algorithm
+requires 7 measurements from the robot's specification sheet to be defined here. These values will be stored
 in the SRDF and used by the OPW solver.
 
-* To define your robot's OPW parameters, use the following diagram to determine each parameter, then enter each value
-  in it's respective field.
+* To define your robot's OPW parameters:
+
+1. Use the following diagram to determine each parameter
 
 .. image:: ../_static/tesseract_setup_wizard_opw_diagram.png
 
+2. Enter each value in it's respective field.
+
 * For more details on the OPW algorithm, visit the `opw_kinematics github repository <https://github.com/Jmeyer1292/opw_kinematics>`_.
+
+* Click, hold, and drag left to move to the next page.
 
 
 Step 8: Saving the SRDF File
 ============================
+
+.. image:: ../_static/tesseract_setup_wizard_save_srdf.png
 
 Settings for the allowed collision matrix, kinematics groups, joint states, tcp values, and OPW
 parameters are all stored in a Semantic Robot Description Format file (SRDF).

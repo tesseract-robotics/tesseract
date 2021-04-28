@@ -49,6 +49,7 @@ Packages
    URDF and SRDF <_source/urdf_and_srdf_doc.rst>
    Tesseract Scene Graph <_source/tesseract_scene_graph_doc.rst>
    Tesseract Collision <_source/tesseract_collision_doc.rst>
+   Tesseract Motion Planning API <_source/tesseract_motion_planning_api_doc.rst>
    tesseract_geometry <_source/tesseract_geometry_doc.rst>
    tesseract_ros <_source/tesseract_ros_doc.rst>
    tesseract_msgs <_source/tesseract_msgs_doc.rst>

@@ -305,17 +305,17 @@ Run the executable: ::
 Parse SRDF adding Allowed Collision Matrix to Graph
 ===================================================
 
-.. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
+.. literalinclude:: ../../tesseract_srdf/examples/parse_srdf_example.cpp
    :language: c++
 
-You can find this example at `https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_scene_graph/examples/parse_srdf_example.cpp <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_scene_graph/examples/parse_srdf_example.cpp>`_
+You can find this example at `https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_srdf/examples/parse_srdf_example.cpp <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_srdf/examples/parse_srdf_example.cpp>`_
 
 Example Explanation
 -------------------
 
 Create Scene Graph
 ^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
+.. literalinclude:: ../../tesseract_srdf/examples/parse_srdf_example.cpp
    :language: c++
    :start-after: // documentation:start:1:
    :end-before: // documentation:end:1:
@@ -326,28 +326,28 @@ Load SRDF
 
 Get the file path to the SRDF file
 
-.. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
+.. literalinclude:: ../../tesseract_srdf/examples/parse_srdf_example.cpp
    :language: c++
    :start-after: // documentation:start:2:
    :end-before: // documentation:end:2:
 
 Parse SRDF
 
-.. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
+.. literalinclude:: ../../tesseract_srdf/examples/parse_srdf_example.cpp
    :language: c++
    :start-after: // documentation:start:3:
    :end-before: // documentation:end:3:
 
 Add Allowed Collision Matrix to Scene Graph
 
-.. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
+.. literalinclude:: ../../tesseract_srdf/examples/parse_srdf_example.cpp
    :language: c++
    :start-after: // documentation:start:4:
    :end-before: // documentation:end:4:
 
 Methods for getting Allowed Collision Matrix from Scene Graph
 
-.. literalinclude:: ../../tesseract_scene_graph/examples/parse_srdf_example.cpp
+.. literalinclude:: ../../tesseract_srdf/examples/parse_srdf_example.cpp
    :language: c++
    :start-after: // documentation:start:5:
    :end-before: // documentation:end:5:
