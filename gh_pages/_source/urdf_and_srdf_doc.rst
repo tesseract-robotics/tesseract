@@ -51,7 +51,7 @@ There are lots of URDFs available for robots using ROS.
 SRDF
 ----
 
-The SRDF or Semantic Robot Description Format complement the URDF and specifies joint groups, default robot configurations, additional collision checking information, and additional transforms that may be needed to completely specify the robot's pose. The recommended way to generate a SRDF is using the MoveIt! Setup Assistant.
+The SRDF or Semantic Robot Description Format complement the URDF and specifies joint groups, default robot configurations, additional collision checking information, and additional transforms that may be needed to completely specify the robot's pose. The recommended way to generate a SRDF is using the Tesseract Setup Assistant.
 
 Groups
 ^^^^^^
