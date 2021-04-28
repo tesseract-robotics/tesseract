@@ -55,7 +55,7 @@ The SRDF or Semantic Robot Description Format complement the URDF and specifies 
 
 Groups
 ^^^^^^
-a 'Group' (sometimes called 'JointGroup' or 'Planning Group') is a central concept in Tesseract. Tesseract always acts on a particular group. Tesseract will only consider moving the joints in the group that it is planning for -- other joints are left stationary. (A motion plan where all joints in the robot may move can be achieved by creating a group containing all joints.) A group is simply a collection of joints and links. Each group can be specified in one of several different ways:
+Groups (also referred to as kinematics groups) define collections of links and joints that are used for planning. Groups can be specified in several ways:
 
 Collection of Joints
 """"""""""""""""""""
