@@ -1,6 +1,8 @@
 Getting Started
 ===============
 
+.. note:: Instructions are intended for installation on the Ubuntu 20.04 Focal operating system.
+
 Before installing Tesseract and it's dependencies, make sure you have the most up to date packages: ::
 
   sudo apt-get update
