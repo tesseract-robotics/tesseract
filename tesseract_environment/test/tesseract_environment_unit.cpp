@@ -906,29 +906,6 @@ void runAddSceneGraphCommandTest(bool use_command = false)
 }
 
 template <typename S>
-void runChangeDefaultContactMarginCommandTest()
-{
-  // Get the environment
-  auto env = getEnvironment<S>();
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
-  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
-  EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
-
-  auto cmd = std::make_shared<ChangeDefaultContactMarginCommand>(0.1);
-  EXPECT_TRUE(cmd != nullptr);
-  EXPECT_EQ(cmd->getType(), CommandType::CHANGE_DEFAULT_CONTACT_MARGIN);
-  EXPECT_NEAR(cmd->getDefaultCollisionMargin(), 0.1, 1e-6);
-  EXPECT_TRUE(env->applyCommand(cmd));
-
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
-  EXPECT_EQ(env->getCommandHistory().back(), cmd);
-  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
-  EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
-}
-
-template <typename S>
 void runChangeJointLimitsCommandTest(bool use_command = false)
 {
   // Get the environment
@@ -1278,47 +1255,6 @@ void runChangeLinkVisibilityCommandTest(bool use_command = false)
   EXPECT_EQ(env->getRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 3);
   EXPECT_FALSE(env->getSceneGraph()->getLinkVisibility(link_name));
-}
-
-template <typename S>
-void runChangePairContactMarginCommandTest()
-{
-  std::string link_name1 = "link_1";
-  std::string link_name2 = "link_2";
-  double margin = 0.1;
-
-  // Get the environment
-  auto env = getEnvironment<S>();
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
-  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
-              0.0,
-              1e-6);
-  EXPECT_NEAR(
-      env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
-      0.0,
-      1e-6);
-
-  std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> link_pair_margin;
-  auto ordered_pair = tesseract_common::makeOrderedLinkPair(link_name1, link_name2);
-  link_pair_margin[ordered_pair] = margin;
-  auto cmd = std::make_shared<ChangePairContactMarginCommand>(link_pair_margin);
-  EXPECT_TRUE(cmd != nullptr);
-  EXPECT_EQ(cmd->getType(), CommandType::CHANGE_PAIR_CONTACT_MARGIN);
-  EXPECT_EQ(cmd->getPairCollisionMarginData().size(), 1);
-  EXPECT_NEAR(cmd->getPairCollisionMarginData().at(ordered_pair), margin, 1e-6);
-  EXPECT_TRUE(env->applyCommand(cmd));
-
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
-  EXPECT_EQ(env->getCommandHistory().back(), cmd);
-  EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
-              margin,
-              1e-6);
-  EXPECT_NEAR(
-      env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
-      margin,
-      1e-6);
 }
 
 template <typename S>
@@ -2513,12 +2449,6 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
   runAddSceneGraphCommandTest<OFKTStateSolver>(true);
 }
 
-TEST(TesseractEnvironmentUnit, EnvChangeDefaultContactMarginCommandUnit)  // NOLINT
-{
-  runChangeDefaultContactMarginCommandTest<KDLStateSolver>();
-  runChangeDefaultContactMarginCommandTest<OFKTStateSolver>();
-}
-
 TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
 {
   runChangeCollisionMarginsCommandTest<KDLStateSolver>();
@@ -2565,12 +2495,6 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkVisibilityCommandUnit)  // NOLINT
 
   runChangeLinkVisibilityCommandTest<KDLStateSolver>(true);
   runChangeLinkVisibilityCommandTest<OFKTStateSolver>(true);
-}
-
-TEST(TesseractEnvironmentUnit, EnvChangePairContactMarginCommandUnit)  // NOLINT
-{
-  runChangePairContactMarginCommandTest<KDLStateSolver>();
-  runChangePairContactMarginCommandTest<OFKTStateSolver>();
 }
 
 TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
