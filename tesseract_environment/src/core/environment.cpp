@@ -943,18 +943,6 @@ bool Environment::applyCommandsHelper(const Commands& commands)
         success &= applyAddKinematicsInformationCommand(cmd);
         break;
       }
-      case tesseract_environment::CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
-      {
-        auto cmd = std::static_pointer_cast<const ChangeDefaultContactMarginCommand>(command);
-        success &= applyChangeDefaultContactMarginCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::CHANGE_PAIR_CONTACT_MARGIN:
-      {
-        auto cmd = std::static_pointer_cast<const ChangePairContactMarginCommand>(command);
-        success &= applyChangePairContactMarginCommand(cmd);
-        break;
-      }
       case tesseract_environment::CommandType::CHANGE_COLLISION_MARGINS:
       {
         auto cmd = std::static_pointer_cast<const ChangeCollisionMarginsCommand>(command);
@@ -1569,39 +1557,6 @@ bool Environment::applyAddKinematicsInformationCommand(const AddKinematicsInform
 {
   if (!manipulator_manager_->addKinematicsInformation(cmd->getKinematicsInformation()))
     return false;
-
-  ++revision_;
-  commands_.push_back(cmd);
-
-  return true;
-}
-
-bool Environment::applyChangeDefaultContactMarginCommand(const ChangeDefaultContactMarginCommand::ConstPtr& cmd)
-{
-  collision_margin_data_.setDefaultCollisionMargin(cmd->getDefaultCollisionMargin());
-
-  if (continuous_manager_ != nullptr)
-    continuous_manager_->setDefaultCollisionMarginData(cmd->getDefaultCollisionMargin());
-
-  if (discrete_manager_ != nullptr)
-    discrete_manager_->setDefaultCollisionMarginData(cmd->getDefaultCollisionMargin());
-
-  ++revision_;
-  commands_.push_back(cmd);
-
-  return true;
-}
-
-bool Environment::applyChangePairContactMarginCommand(const ChangePairContactMarginCommand::ConstPtr& cmd)
-{
-  for (const auto& link_pair : cmd->getPairCollisionMarginData())
-    collision_margin_data_.setPairCollisionMargin(link_pair.first.first, link_pair.first.second, link_pair.second);
-
-  if (continuous_manager_ != nullptr)
-    continuous_manager_->setCollisionMarginData(collision_margin_data_);
-
-  if (discrete_manager_ != nullptr)
-    discrete_manager_->setCollisionMarginData(collision_margin_data_);
 
   ++revision_;
   commands_.push_back(cmd);

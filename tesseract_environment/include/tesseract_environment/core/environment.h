@@ -821,8 +821,6 @@ private:
   bool applyChangeJointVelocityLimitsCommand(const ChangeJointVelocityLimitsCommand::ConstPtr& cmd);
   bool applyChangeJointAccelerationLimitsCommand(const ChangeJointAccelerationLimitsCommand::ConstPtr& cmd);
   bool applyAddKinematicsInformationCommand(const AddKinematicsInformationCommand::ConstPtr& cmd);
-  bool applyChangeDefaultContactMarginCommand(const ChangeDefaultContactMarginCommand::ConstPtr& cmd);
-  bool applyChangePairContactMarginCommand(const ChangePairContactMarginCommand::ConstPtr& cmd);
   bool applyChangeCollisionMarginsCommand(const ChangeCollisionMarginsCommand::ConstPtr& cmd);
 };
 }  // namespace tesseract_environment
