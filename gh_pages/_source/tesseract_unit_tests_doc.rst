@@ -2,8 +2,8 @@
 Tesseract Unit Tests
 ********************
 
-Building and Running Units Tests
-================================
+Building and Running Unit Tests
+===============================
 
 Build and Run All
 -----------------

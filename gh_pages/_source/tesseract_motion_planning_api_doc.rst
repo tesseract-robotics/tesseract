@@ -8,161 +8,202 @@ Tesseract contains an easy to use motion planning API that enables developers to
 custom-tailored motion plans. Tesseract's interface includes plugins for several popular planning
 algorithms such as OMPL, TrajOpt, TrajOpt IFOPT and Descartes.
 
-In this tutorial, we will step through an example using the Tesseract motion planning API to plan
-a simple catesian trajectory using the TrajOpt planner.
+In this tutorial, we will define each of the key components of Tesseract's motion planning API,
+then we will step through a simple freespace example.
 
-.. note: This example is currently specific to ROS, but will soon be converted to ROS-agnostic and
-         will moved from the tesseract_ros repository to the tesseract_planning repository.
+Components
+==========
+
+Environment Class
+-----------------
+
+The `Environment` class is responsible for storing all information about the environment. This
+includes the robot and collision objects defined by the URDF and SRDF as well as any links/joints that
+are dynamically added to the environment.
+
+The typical workflow for defining and initializing a `Environment` object is:
+
+- Create a `Environment` object: ::
+
+    tesseract_environment::Environment::Ptr env = std::make_shared<tesseract_environment::Environment>();
+
+- Initialize the `Environment` object with the URDF and SRDF files: ::
+
+    tesseract_common::fs::path urdf_path("/path/to/urdf/my_robot.urdf");
+    tesseract_common::fs::path srdf_path("/path/to/srdf/my_robot.srdf");
+    env->init<tesseract_environment::OFKTStateSolver>(urdf_path, srdf_path, locator);
 
 
-Running the Example
-===================
+For more information about the `Environment` class see [TODO: add link to Tesseract Environment page].
 
-* Run the following command: ::
+Instruction Class
+-----------------
 
-    roslaunch tesseract_ros_examples basic_cartesian_example.launch
+The `Instruction` class is a base class for all instruction type classes.
+
+PlanInstruction Class
+---------------------
+
+The `PlanInstruction` class inherits from the `Instruction` base class. This class allows the user to
+specify information about a singular movement in the trajectory. A `PlanInstruction` object holds
+information about the target pose and type of movement (`START`, `FREESPACE`, `LINEAR`, or `CIRCULAR`).
+
+CompositeInstruction Class
+--------------------------
+
+The `CompositeInstruction` class inherits from the `Instruction` base class. This class allows the user
+to combine multiple `Instruction` objects into one `Instruction`. A `CompositeInstruction` object holds
+a list of instructions and enum indicating the type of ordering for the instuctions (`ORDERED`, `UNORDERED`,
+`ORDERED_AND_REVERABLE`).
+
+ProcessPlanningRequest Class
+----------------------------
+
+The `ProcessPlanningRequest` class allows the user to specify information about the process plan that
+they would like to solve.
+
+The typical workflow for creating and initializing `ProcessPlanningRequest` objects is:
+
+- Create a `ProcessPlanningRequest` object: ::
+
+    ProcessPlanningRequest request;
+
+- Specify what type of planner to user: ::
+
+    request.name = process_planner_names::FREESPACE_PLANNER_NAME;
+
+- Create `Instruction` and/or `CompositeInstruction` object(s): ::
+
+    CompositeInstruction program = freespaceExampleProgramIIWA();
+
+- Add `Instruction` object to request: ::
+
+    request.instructions = Instruction(program);
+
+ProcessPlanningServer Class
+---------------------------
+
+The `ProcessPlanningServer` class is responsible for accepting `ProcessPlanningRequest` objects and returning
+the `ProcessPlanningFuture` objects.
+
+The typical workflow for creating a `ProcessPlanningServer` objcet and using it to solve a `ProcessPlanningRequest` is:
+
+- Create a `ProcessPlanningServer` object: ::
+
+    ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env), 1);
+
+- Load default process planners: ::
+
+    planning_server.loadDefaultProcessPlanners();
+
+- Create a `ProcessPlanningRequest` object (see section above).
+
+- Run the planning server and pass in the `ProcessPlanningRequest` object: ::
+
+    ProcessPlanningFuture response = planning_server.run(request);
+
+- Wait for the planning server to finish solving the process plan: ::
+
+    planning_server.waitForAll();
 
 
-The Full Example
-================
+ProcessPlanningFuture Class
+---------------------------
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+The `ProcessPlanningFuture` class is the type that gets returned when the `ProcessPlanningServer` solves a process
+plan. After calling `run()` the `ProcessPlanningServer` asynchonously solves the process plan and initializes the
+`ProcessPlanningFuture` object with the process plan results upon completion.
+
+Running the Freespace Example
+=============================
+
+* Run the executable: ::
+
+    ./devel/bin/tesseract_process_managers_freespace_manager_example
+
+The Full Freespace Example
+==========================
+
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
 
+Stepping Through the Freespace Example
+======================================
 
 Initial Setup
-=============
+-------------
 
-Load in the URDF and SRDF files.
+Define resource locator function:
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 133-139
+   :lines: 20-45
 
-Initialize the environment monitor.
+Create resource locator object:
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 142-144
+   :lines: 52-53
 
-Create an octomap and add it to the local environment.
+Create environment object:
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 147-149
+   :lines: 54
 
-Create plotting tool.
+Initialize environment with URDF and SRDF files:
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 152-154
+   :lines: 55-57
 
+Dynamically load in ignition visualizer if exists:
 
-Defining Instructions
-=====================
-
-Set the initial state of the robot.
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 157-175
+   :lines: 60-61
 
-Create a CompositeInstruction object. This will be our root instruction and will contain an ordered list of instructions corresponding to each movement.
+Visualize the environment:
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 178
+   :lines: 63-68
 
-Define the first waypoint as the starting position.
+Defining the Process Plan
+-------------------------
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+Create process planning server:
+
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 181
+   :lines: 71-72
 
-Create and set the starting instruction.
+Create process planning request:
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 182-183
+   :lines: 75-76
 
-Define two waypoints in cartesian space.
+Define the program:
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 186-190
+   :lines: 79-80
 
-Create an instruction for a freespace movement from waypoint 0 to waypoint 1.
+Solving the Process Plan
+------------------------
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+Solve the process plan:
+
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 193-194
+   :lines: 86-87
 
+Visualizing Results
+-------------------
 
-Create an instruction for a linear movement from waypoint 1 to waypoint 2.
+Plot the process trajectory:
 
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_planning/master/tesseract_process_managers/examples/freespace_manager_example.cpp
    :language: c++
-   :lines: 197
-
-
-Create an instruction for a linear movement from waypoint 2 to waypoint 0.
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
-   :language: c++
-   :lines: 200-201
-
-Push back each movement instruction into the root CompositeInstruction (in the order that they will be executed).
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
-   :language: c++
-   :lines: 204-206
-
-
-Generating a Motion Plan
-========================
-
-Initialize a process planning server.
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
-   :language: c++
-   :lines: 211
-
-Load default process planners.
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
-   :language: c++
-   :lines: 212
-
-Create a process planning request.
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
-   :language: c++
-   :lines: 215
-
-Set the planner type to TrajOpt.
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
-   :language: c++
-   :lines: 216
-
-Set instructions to the root CompositeInstruction.
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
-   :language: c++
-   :lines: 217
-
-Run the planning request and wait for a response.
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
-   :language: c++
-   :lines: 223-224
-
-
-Visualizing the Motion Plan
-===========================
-
-Plot the motion plan using Rviz.
-
-.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract_ros/master/tesseract_ros_examples/src/basic_cartesian_example.cpp
-   :language: c++
-   :lines: 227-235
+   :lines: 90-94
