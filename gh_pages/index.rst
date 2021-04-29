@@ -58,6 +58,7 @@ Packages
    tesseract_planning <_source/tesseract_planning_doc.rst>
    tesseract_urdf <_source/tesseract_urdf_doc.rst>
    tesseract_srdf <_source/tesseract_srdf_doc.rst>
+   Unit Tests <_source/tesseract_unit_tests_doc.rst>
 
 FAQ
 ---
