@@ -74,13 +74,14 @@ void runRedundantSolutionsTest()
   double max_diff = 1e-6;
   Eigen::MatrixX2d limits(3, 2);
   limits << 0, 2.0 * M_PI, 0, 2.0 * M_PI, 0, 2.0 * M_PI;
+  std::vector<Eigen::Index> redundancy_capable_joints = { 0, 1, 2 };
 
   tesseract_kinematics::VectorX<FloatType> q(3);
   q << 0, 0, 0;
 
   {  // Test when initial solution is at the lower limit
     std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits);
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
     if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
       solutions.push_back(q);
 
@@ -100,7 +101,7 @@ void runRedundantSolutionsTest()
   {  // Test when initial solution is within the limits
     limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
     std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits);
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
     if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
       solutions.push_back(q);
 
@@ -122,7 +123,7 @@ void runRedundantSolutionsTest()
     q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(4.0 * M_PI);
 
     std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits);
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
     if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
       solutions.push_back(q);
 
@@ -138,6 +139,7 @@ void runRedundantSolutionsTest()
       }
     }
   }
+
 }
 
 TEST(TesseractKinematicsUnit, RedundantSolutionsUnit)  // NOLINT
