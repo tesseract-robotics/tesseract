@@ -425,10 +425,11 @@ template <typename FloatType>
 inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redundant_sols,
                                         const Eigen::Ref<const Eigen::VectorXd>& sol,
                                         const Eigen::MatrixX2d& limits,
-                                        std::vector<Eigen::Index>::iterator current_index)
+                                        std::vector<Eigen::Index>::iterator current_index,
+                                        const std::vector<Eigen::Index>::iterator end_index)
 {
   double val;
-  for (; *current_index < static_cast<Eigen::Index>(sol.size()); ++current_index)
+  for (; current_index != end_index; ++current_index)
   {
     val = sol[*current_index];
     while ((val -= (2.0 * M_PI)) > limits(*current_index, 0) ||
@@ -447,7 +448,7 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
           redundant_sols.push_back(new_sol.template cast<FloatType>());
         }
 
-        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1);
+        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1, end_index);
       }
     }
 
@@ -468,7 +469,7 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
           redundant_sols.push_back(new_sol.template cast<FloatType>());
         }
 
-        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1);
+        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1, end_index);
       }
     }
   }
@@ -484,9 +485,26 @@ inline std::vector<VectorX<FloatType>> getRedundantSolutions(const Eigen::Ref<co
                                                              const Eigen::MatrixX2d& limits,
                                                              std::vector<Eigen::Index> redundancy_capable_joints)
 {
+  if (redundancy_capable_joints.empty())
+    return {};
+
+  for (const Eigen::Index& idx : redundancy_capable_joints)
+  {
+    if (idx >= sol.size())
+    {
+      std::stringstream ss;
+      ss << "Redunant joint index " << idx << " is greater than or equal to the joint state size (" << sol.size()
+         << ")";
+      throw std::runtime_error(ss.str());
+    }
+  }
+
   std::vector<VectorX<FloatType>> redundant_sols;
-  getRedundantSolutionsHelper<FloatType>(
-      redundant_sols, sol.template cast<double>(), limits, redundancy_capable_joints.begin());
+  getRedundantSolutionsHelper<FloatType>(redundant_sols,
+                                         sol.template cast<double>(),
+                                         limits,
+                                         redundancy_capable_joints.begin(),
+                                         redundancy_capable_joints.end());
   return redundant_sols;
 }
 
