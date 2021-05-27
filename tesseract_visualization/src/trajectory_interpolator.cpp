@@ -147,8 +147,8 @@ tesseract_common::JointState TrajectoryInterpolator::interpolate(const tesseract
 {
   assert(!start.joint_names.empty());
   assert(!end.joint_names.empty());
-  assert(start.position.rows()!=0);
-  assert(end.position.rows()!=0);
+  assert(start.position.rows() != 0);
+  assert(end.position.rows() != 0);
   tesseract_common::JointState out;
   out.time = start.time + t;
   out.joint_names = start.joint_names;
