@@ -40,6 +40,8 @@ TrajectoryInterpolator::TrajectoryInterpolator(tesseract_common::JointTrajectory
   if (!trajectory_.empty() && (trajectory_.back().time - trajectory_.front().time) < 1e-3)
     overwrite_dt = true;
 
+  bool initial_state = true;
+
   for (auto& state : trajectory_)
   {
     current_time = state.time;
@@ -50,8 +52,13 @@ TrajectoryInterpolator::TrajectoryInterpolator(tesseract_common::JointTrajectory
 
     double dt = current_time - last_time;
     if (overwrite_dt)
-      dt = 0.1;
-
+    {
+      if (initial_state)
+        dt = 0;
+      else
+        dt = 0.1;
+    }
+    initial_state = false;
     total_time += dt;
     duration_from_previous_.push_back(dt);
     state.time = total_time;
@@ -138,6 +145,10 @@ tesseract_common::JointState TrajectoryInterpolator::interpolate(const tesseract
                                                                  const tesseract_common::JointState& end,
                                                                  double t) const
 {
+  assert(!start.joint_names.empty());
+  assert(!end.joint_names.empty());
+  assert(start.position.rows() != 0);
+  assert(end.position.rows() != 0);
   tesseract_common::JointState out;
   out.time = start.time + t;
   out.joint_names = start.joint_names;
