@@ -71,72 +71,100 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT
 template <typename FloatType>
 void runRedundantSolutionsTest()
 {
-  double max_diff = 1e-6;
-  Eigen::MatrixX2d limits(3, 2);
-  limits << 0, 2.0 * M_PI, 0, 2.0 * M_PI, 0, 2.0 * M_PI;
-
-  tesseract_kinematics::VectorX<FloatType> q(3);
-  q << 0, 0, 0;
-
-  {  // Test when initial solution is at the lower limit
-    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits);
-    if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
-      solutions.push_back(q);
-
-    EXPECT_EQ(solutions.size(), 8);
-
-    // Check and make sure they are unique
-    for (std::size_t i = 0; i < solutions.size() - 1; ++i)
+  // Helper function for checking if all redundant solutions are unique
+  auto expect_unique_solutions = [](const std::vector<tesseract_kinematics::VectorX<FloatType>>& solutions) {
+    for (auto sol_1 = solutions.begin(); sol_1 != solutions.end() - 1; ++sol_1)
     {
-      for (std::size_t j = i + 1; j < solutions.size(); ++j)
+      for (auto sol_2 = sol_1 + 1; sol_2 != solutions.end(); ++sol_2)
       {
         EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(
-            solutions[i].template cast<double>(), solutions[j].template cast<double>(), 1e-6));
+            sol_1->template cast<double>(), sol_2->template cast<double>(), 1e-6));
       }
+    }
+  };
+
+  {
+    double max_diff = 1e-6;
+    Eigen::MatrixX2d limits(3, 2);
+    limits << 0, 2.0 * M_PI, 0, 2.0 * M_PI, 0, 2.0 * M_PI;
+    std::vector<Eigen::Index> redundancy_capable_joints = { 0, 1, 2 };
+
+    tesseract_kinematics::VectorX<FloatType> q(3);
+    q << 0, 0, 0;
+
+    {  // Test when initial solution is at the lower limit
+      std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
+          tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+      if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
+        solutions.push_back(q);
+
+      EXPECT_EQ(solutions.size(), 8);
+      expect_unique_solutions(solutions);
+    }
+
+    {  // Test when initial solution is within the limits
+      limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
+      std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
+          tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+      if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
+        solutions.push_back(q);
+
+      EXPECT_EQ(solutions.size(), 27);
+      expect_unique_solutions(solutions);
+    }
+
+    {  // Test when the initial solution outside the lower and upper limit
+      limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
+      q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(4.0 * M_PI);
+
+      std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
+          tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+      if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
+        solutions.push_back(q);
+
+      EXPECT_EQ(solutions.size(), 27);
+      expect_unique_solutions(solutions);
     }
   }
 
-  {  // Test when initial solution is within the limits
-    limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
+  {  // Test case when not all joints are redundancy capable
+    double max_diff = 1.0e-6;
+    Eigen::MatrixX2d limits(4, 2);
+    limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
+
+    tesseract_kinematics::VectorX<FloatType> q(4);
+    q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(0.0),
+        static_cast<FloatType>(4.0 * M_PI);
+
+    // Arbitrarily decide that joint 2 is not redundancy capable
+    std::vector<Eigen::Index> redundancy_capable_joints = { 0, 1, 3 };
+
     std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits);
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
     if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
       solutions.push_back(q);
 
     EXPECT_EQ(solutions.size(), 27);
-
-    // Check and make sure they are unique
-    for (std::size_t i = 0; i < solutions.size() - 1; ++i)
-    {
-      for (std::size_t j = i + 1; j < solutions.size(); ++j)
-      {
-        EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(
-            solutions[i].template cast<double>(), solutions[j].template cast<double>(), 1e-6));
-      }
-    }
+    expect_unique_solutions(solutions);
   }
 
-  {  // Test when the initial solution outside the lower and upper limit
-    limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
-    q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(4.0 * M_PI);
+  {  // Edge-case tests
+    Eigen::MatrixX2d limits(4, 2);
+    limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
 
+    tesseract_kinematics::VectorX<FloatType> q(4);
+    q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(0.0),
+        static_cast<FloatType>(4.0 * M_PI);
+
+    std::vector<Eigen::Index> redundancy_capable_joints = {};
     std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits);
-    if (tesseract_common::satisfiesPositionLimits(q.template cast<double>(), limits, max_diff))
-      solutions.push_back(q);
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
 
-    EXPECT_EQ(solutions.size(), 27);
+    EXPECT_EQ(solutions.size(), 0);
 
-    // Check and make sure they are unique
-    for (std::size_t i = 0; i < solutions.size() - 1; ++i)
-    {
-      for (std::size_t j = i + 1; j < solutions.size(); ++j)
-      {
-        EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(
-            solutions[i].template cast<double>(), solutions[j].template cast<double>(), 1e-6));
-      }
-    }
+    redundancy_capable_joints = { 10 };
+    EXPECT_THROW(tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints),
+                 std::runtime_error);
   }
 }
 

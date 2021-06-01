@@ -394,6 +394,31 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
 }
 
 /**
+ * @brief Creates a vector indicating which joints in the input list of joint names are capable of producing redundant
+ * solutions
+ */
+inline std::vector<Eigen::Index>
+getRedundancyCapableJointIndices(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
+                                 const std::vector<std::string>& joint_names)
+{
+  std::vector<Eigen::Index> idx;
+  for (std::size_t i = 0; i < joint_names.size(); ++i)
+  {
+    const auto& joint = scene_graph->getJoint(joint_names[i]);
+    switch (joint->type)
+    {
+      case tesseract_scene_graph::JointType::REVOLUTE:
+      case tesseract_scene_graph::JointType::CONTINUOUS:
+        idx.push_back(static_cast<Eigen::Index>(i));
+        break;
+      default:
+        break;
+    }
+  }
+  return idx;
+}
+
+/**
  * @brief This a recursive function for caculating all permutations of the redundant solutions.
  * @details This should not be used directly, use getRedundantSolutions function.
  */
@@ -401,46 +426,71 @@ template <typename FloatType>
 inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redundant_sols,
                                         const Eigen::Ref<const Eigen::VectorXd>& sol,
                                         const Eigen::MatrixX2d& limits,
-                                        Eigen::Index current_index)
+                                        std::vector<Eigen::Index>::iterator current_index,
+                                        const std::vector<Eigen::Index>::iterator end_index)
 {
   double val;
-  for (Eigen::Index i = current_index; i < static_cast<Eigen::Index>(sol.size()); ++i)
+  for (; current_index != end_index; ++current_index)
   {
-    val = sol[i];
-    while ((val -= (2.0 * M_PI)) > limits(i, 0) || tesseract_common::almostEqualRelativeAndAbs(val, limits(i, 0)))
+    if (std::isinf(limits(*current_index, 0)))
     {
-      // It not guaranteed that the provided solution is within limits so this check is needed
-      if (val < limits(i, 1) || tesseract_common::almostEqualRelativeAndAbs(val, limits(i, 1)))
+      std::stringstream ss;
+      ss << "Lower limit of joint " << *current_index << " is infinite; no redundant solutions will be generated"
+         << std::endl;
+      CONSOLE_BRIDGE_logWarn(ss.str().c_str());
+    }
+    else
+    {
+      val = sol[*current_index];
+      while ((val -= (2.0 * M_PI)) > limits(*current_index, 0) ||
+             tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
       {
-        Eigen::VectorXd new_sol = sol;
-        new_sol[i] = val;
-
-        if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+        // It not guaranteed that the provided solution is within limits so this check is needed
+        if (val < limits(*current_index, 1) ||
+            tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
         {
-          tesseract_common::enforcePositionLimits(new_sol, limits);
-          redundant_sols.push_back(new_sol.template cast<FloatType>());
-        }
+          Eigen::VectorXd new_sol = sol;
+          new_sol[*current_index] = val;
 
-        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, i + 1);
+          if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+          {
+            tesseract_common::enforcePositionLimits(new_sol, limits);
+            redundant_sols.push_back(new_sol.template cast<FloatType>());
+          }
+
+          getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1, end_index);
+        }
       }
     }
 
-    val = sol[i];
-    while ((val += (2.0 * M_PI)) < limits(i, 1) || tesseract_common::almostEqualRelativeAndAbs(val, limits(i, 1)))
+    if (std::isinf(limits(*current_index, 1)))
     {
-      // It not guaranteed that the provided solution is within limits so this check is needed
-      if (val > limits(i, 0) || tesseract_common::almostEqualRelativeAndAbs(val, limits(i, 0)))
+      std::stringstream ss;
+      ss << "Upper limit of joint " << *current_index << " is infinite; no redundant solutions will be generated"
+         << std::endl;
+      CONSOLE_BRIDGE_logWarn(ss.str().c_str());
+    }
+    else
+    {
+      val = sol[*current_index];
+      while ((val += (2.0 * M_PI)) < limits(*current_index, 1) ||
+             tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
       {
-        Eigen::VectorXd new_sol = sol;
-        new_sol[i] = val;
-
-        if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+        // It not guaranteed that the provided solution is within limits so this check is needed
+        if (val > limits(*current_index, 0) ||
+            tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
         {
-          tesseract_common::enforcePositionLimits(new_sol, limits);
-          redundant_sols.push_back(new_sol.template cast<FloatType>());
-        }
+          Eigen::VectorXd new_sol = sol;
+          new_sol[*current_index] = val;
 
-        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, i + 1);
+          if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+          {
+            tesseract_common::enforcePositionLimits(new_sol, limits);
+            redundant_sols.push_back(new_sol.template cast<FloatType>());
+          }
+
+          getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1, end_index);
+        }
       }
     }
   }
@@ -453,10 +503,29 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
  */
 template <typename FloatType>
 inline std::vector<VectorX<FloatType>> getRedundantSolutions(const Eigen::Ref<const VectorX<FloatType>>& sol,
-                                                             const Eigen::MatrixX2d& limits)
+                                                             const Eigen::MatrixX2d& limits,
+                                                             std::vector<Eigen::Index> redundancy_capable_joints)
 {
+  if (redundancy_capable_joints.empty())
+    return {};
+
+  for (const Eigen::Index& idx : redundancy_capable_joints)
+  {
+    if (idx >= sol.size())
+    {
+      std::stringstream ss;
+      ss << "Redunant joint index " << idx << " is greater than or equal to the joint state size (" << sol.size()
+         << ")";
+      throw std::runtime_error(ss.str());
+    }
+  }
+
   std::vector<VectorX<FloatType>> redundant_sols;
-  getRedundantSolutionsHelper<FloatType>(redundant_sols, sol.template cast<double>(), limits, 0);
+  getRedundantSolutionsHelper<FloatType>(redundant_sols,
+                                         sol.template cast<double>(),
+                                         limits,
+                                         redundancy_capable_joints.begin(),
+                                         redundancy_capable_joints.end());
   return redundant_sols;
 }
 
