@@ -408,6 +408,7 @@ getRedundancyCapableJointIndices(const tesseract_scene_graph::SceneGraph::ConstP
     switch (joint->type)
     {
       case tesseract_scene_graph::JointType::REVOLUTE:
+      case tesseract_scene_graph::JointType::CONTINUOUS:
         idx.push_back(static_cast<Eigen::Index>(i));
         break;
       default:
@@ -431,45 +432,65 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
   double val;
   for (; current_index != end_index; ++current_index)
   {
-    val = sol[*current_index];
-    while ((val -= (2.0 * M_PI)) > limits(*current_index, 0) ||
-           tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
+    if (std::isinf(limits(*current_index, 0)))
     {
-      // It not guaranteed that the provided solution is within limits so this check is needed
-      if (val < limits(*current_index, 1) ||
-          tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
+      std::stringstream ss;
+      ss << "Lower limit of joint " << *current_index << " is infinite; no redundant solutions will be generated"
+         << std::endl;
+      CONSOLE_BRIDGE_logWarn(ss.str().c_str());
+    }
+    else
+    {
+      val = sol[*current_index];
+      while ((val -= (2.0 * M_PI)) > limits(*current_index, 0) ||
+             tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
       {
-        Eigen::VectorXd new_sol = sol;
-        new_sol[*current_index] = val;
-
-        if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+        // It not guaranteed that the provided solution is within limits so this check is needed
+        if (val < limits(*current_index, 1) ||
+            tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
         {
-          tesseract_common::enforcePositionLimits(new_sol, limits);
-          redundant_sols.push_back(new_sol.template cast<FloatType>());
-        }
+          Eigen::VectorXd new_sol = sol;
+          new_sol[*current_index] = val;
 
-        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1, end_index);
+          if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+          {
+            tesseract_common::enforcePositionLimits(new_sol, limits);
+            redundant_sols.push_back(new_sol.template cast<FloatType>());
+          }
+
+          getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1, end_index);
+        }
       }
     }
 
-    val = sol[*current_index];
-    while ((val += (2.0 * M_PI)) < limits(*current_index, 1) ||
-           tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
+    if (std::isinf(limits(*current_index, 1)))
     {
-      // It not guaranteed that the provided solution is within limits so this check is needed
-      if (val > limits(*current_index, 0) ||
-          tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
+      std::stringstream ss;
+      ss << "Upper limit of joint " << *current_index << " is infinite; no redundant solutions will be generated"
+         << std::endl;
+      CONSOLE_BRIDGE_logWarn(ss.str().c_str());
+    }
+    else
+    {
+      val = sol[*current_index];
+      while ((val += (2.0 * M_PI)) < limits(*current_index, 1) ||
+             tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
       {
-        Eigen::VectorXd new_sol = sol;
-        new_sol[*current_index] = val;
-
-        if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+        // It not guaranteed that the provided solution is within limits so this check is needed
+        if (val > limits(*current_index, 0) ||
+            tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
         {
-          tesseract_common::enforcePositionLimits(new_sol, limits);
-          redundant_sols.push_back(new_sol.template cast<FloatType>());
-        }
+          Eigen::VectorXd new_sol = sol;
+          new_sol[*current_index] = val;
 
-        getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1, end_index);
+          if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+          {
+            tesseract_common::enforcePositionLimits(new_sol, limits);
+            redundant_sols.push_back(new_sol.template cast<FloatType>());
+          }
+
+          getRedundantSolutionsHelper<FloatType>(redundant_sols, new_sol, limits, current_index + 1, end_index);
+        }
       }
     }
   }
