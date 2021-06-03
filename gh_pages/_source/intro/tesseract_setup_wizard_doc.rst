@@ -42,7 +42,7 @@ Step 1: Start
 Step 2: Load URDF and SRDF
 ==========================
 
-.. image:: ../_static/tesseract_setup_wizard_startup.png
+.. image:: /_static/tesseract_setup_wizard_startup.png
 
 To use the Tesseract Setup Wizard and create/edit a SRDF file, we'll first need to
 load in your URDF file. If you'd like to edit an existing SRDF, you may also load
@@ -76,7 +76,7 @@ that in as well.
 Step 3: Generate/Edit Allowed Collison Matrix
 =============================================
 
-.. image:: ../_static/tesseract_setup_wizard_collision_matrix.png
+.. image:: /_static/tesseract_setup_wizard_collision_matrix.png
 
 The allowed collision matrix specifies which links don't need to be checked for collisions. Links that are adjacent
 to each other or are never in collision should be ignored by the Tesseract Collision Manager.
@@ -99,7 +99,7 @@ to each other or are never in collision should be ignored by the Tesseract Colli
 Step 4: Create/Edit Kinematics Groups
 =====================================
 
-.. image:: ../_static/tesseract_setup_wizard_kinematics_groups.png
+.. image:: /_static/tesseract_setup_wizard_kinematics_groups.png
 
 A kinematics group specifies a group of links that belong to a specific part of your robot. Usually, you'll want to specify
 the chain of links that represent the arm and will be used for motion planning.
@@ -180,7 +180,7 @@ To remove a group, select the group in the table and click **REMOVE** (at the bo
 Step 5: Create/Edit Joint States
 ================================
 
-.. image:: ../_static/tesseract_setup_wizard_joint_states.png
+.. image:: /_static/tesseract_setup_wizard_joint_states.png
 
 The *User Defined Joint States* page allows you to define different poses for your robot. For
 example, it is often useful to create a joint state called *Home* which contains the joint values
@@ -210,7 +210,7 @@ for the starting/ending state of your robot.
 Step 6: Create/Edit TCPs
 ========================
 
-.. image:: ../_static/tesseract_setup_wizard_user_defined_tcps.png
+.. image:: /_static/tesseract_setup_wizard_user_defined_tcps.png
 
 The User Defined TCPs page allows you to define Tool Center Points for your kinematic
 groups.
@@ -241,7 +241,7 @@ groups.
 Step 7: Setting OPW Parameters
 ==============================
 
-.. image:: ../_static/tesseract_setup_wizard_opw_kinematics.png
+.. image:: /_static/tesseract_setup_wizard_opw_kinematics.png
 
 OPW is an effecient inverse kinematics solver for robots with parallel bases and spherical wrists. This algorithm
 requires 7 measurements from the robot's specification sheet to be defined here. These values will be stored
@@ -251,7 +251,7 @@ in the SRDF and used by the OPW solver.
 
 1. Use the following diagram to determine each parameter
 
-.. image:: ../_static/tesseract_setup_wizard_opw_diagram.png
+.. image:: /_static/tesseract_setup_wizard_opw_diagram.png
 
 2. Enter each value in it's respective field.
 
@@ -263,7 +263,7 @@ in the SRDF and used by the OPW solver.
 Step 8: Saving the SRDF File
 ============================
 
-.. image:: ../_static/tesseract_setup_wizard_save_srdf.png
+.. image:: /_static/tesseract_setup_wizard_save_srdf.png
 
 Settings for the allowed collision matrix, kinematics groups, joint states, tcp values, and OPW
 parameters are all stored in a Semantic Robot Description Format file (SRDF).

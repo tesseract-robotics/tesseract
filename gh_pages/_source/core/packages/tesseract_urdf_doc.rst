@@ -4,7 +4,9 @@ Tesseract URDF Package
 
 Background
 ==========
-This package contains urdf parser used by Tesseract. It supports additional shape and features not supported by urdfdom. This wiki only contains additional items and for more information please refer to http://wiki.ros.org/urdf/XML.
+This package contains urdf parser used by Tesseract. It supports additional shape and features
+not supported by urdfdom. This wiki only contains additional items and for more information
+please refer to http://wiki.ros.org/urdf/XML.
 
 Features
 ========

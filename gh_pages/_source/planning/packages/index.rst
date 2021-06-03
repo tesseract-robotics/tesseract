@@ -1,7 +1,4 @@
-#################
-Planning Packages
-#################
-
-.. toctree::
-   :maxdepth: 1
+###########################
+Tesseract Planning Packages
+###########################
 

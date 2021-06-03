@@ -8,7 +8,7 @@ At the lowest level the command language is a set of instruction where on an ind
 This high level language allows a novice user to create complex programs without the knowledge of planner specifics which is designed to encode the the whole process including motion planning, motion execution, environment management, sensor signals and much more.
 
 Overview
-========
+--------
 
 The command language begins by defining your waypoints. The current supported waypoints are CartesianWaypoint, JointWaypoint and StateWaypoint.
 

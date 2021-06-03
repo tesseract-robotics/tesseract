@@ -1,6 +1,6 @@
-Tesseract Interface: ROSCPP
-===========================
-.. image:: ../_static/basic_cartesian_example_startup.png
+Tesseract ROSCPP Interface
+==========================
+.. image:: /_static/basic_cartesian_example_startup.png
    :width: 700px
 
 .. NOTE::
@@ -34,7 +34,7 @@ Expected Output
 ---------------
 In Rviz, the the robot should trace a trajectory in its environment on top of the cube object:
 
-.. image:: ../_static/basic_cartesian_example_process.png
+.. image:: /_static/basic_cartesian_example_process.png
    :width: 700px
 
 The Entire Code
