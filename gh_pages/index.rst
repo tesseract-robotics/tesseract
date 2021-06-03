@@ -37,28 +37,45 @@ Tesseract ROS Packages
 .. Warning:: These packages are under heavy development and are subject to change.
 
 
-Packages
-------------
+Sections
+--------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
+   :caption: Intro
 
-   Getting Started <_source/getting_started_doc.rst>
-   Tesseract Setup Wizard <_source/tesseract_setup_wizard_doc.rst>
-   Tesseract Interface: ROSCPP <_source/tesseract_interface_roscpp_doc.rst>
-   URDF and SRDF <_source/urdf_and_srdf_doc.rst>
-   Tesseract Scene Graph <_source/tesseract_scene_graph_doc.rst>
-   Tesseract Collision <_source/tesseract_collision_doc.rst>
-   Tesseract Motion Planning API <_source/tesseract_motion_planning_api_doc.rst>
-   tesseract_geometry <_source/tesseract_geometry_doc.rst>
-   tesseract_ros <_source/tesseract_ros_doc.rst>
-   tesseract_msgs <_source/tesseract_msgs_doc.rst>
-   tesseract_rviz <_source/tesseract_rviz_doc.rst>
-   tesseract_monitoring <_source/tesseract_monitoring_doc.rst>
-   tesseract_planning <_source/tesseract_planning_doc.rst>
-   tesseract_urdf <_source/tesseract_urdf_doc.rst>
-   tesseract_srdf <_source/tesseract_srdf_doc.rst>
-   Unit Tests <_source/tesseract_unit_tests_doc.rst>
+   Getting Started <_source/intro/getting_started_doc.rst>
+   URDF <_source/intro/urdf_doc.rst>
+   SRDF <_source/intro/srdf_doc.rst>
+   Tesseract Setup Wizard <_source/intro/tesseract_setup_wizard_doc.rst>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Core
+
+   Unit Tests <_source/core/unit_tests_doc.rst>
+   Packages <_source/core/packages/index.rst>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Planning
+
+   Tesseract Command Language <_source/planning/tesseract_command_language_doc.rst>
+   Tesseract Motion Planning API <_source/planning/tesseract_motion_planning_api_doc.rst>
+   Packages <_source/planning/package/index.rst>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: ROS
+
+   Tesseract ROSCPP Interface <_source/ros/tesseract_roscpp_interface_doc.rst>
+   Packages <_source/ros/packages/index.rst>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: ROS2
+
+   Packages <_source/ros2/packages/index.rst>
 
 FAQ
 ---

@@ -1,6 +1,6 @@
-********************
-Tesseract Unit Tests
-********************
+##########
+Unit Tests
+##########
 
 Building and Running Unit Tests
 ===============================
