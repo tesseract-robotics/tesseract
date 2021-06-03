@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_collision/vhacd/inc/vhacdVolume.h>
 #include <tesseract_collision/vhacd/inc/vhacdRaycastMesh.h>
 #include <vector>
+#include <array>
 
 #define USE_THREAD 1
 #define OCL_MIN_NUM_PRIMITIVES 4096
@@ -62,18 +63,16 @@ public:
 #endif  // USE_THREAD == 1 && _OPENMP
 #ifdef CL_VERSION_1_1
     m_oclWorkGroupSize = 0;
-    m_oclDevice = 0;
-    m_oclQueue = 0;
-    m_oclKernelComputePartialVolumes = 0;
-    m_oclKernelComputeSum = 0;
+    m_oclDevice = nullptr;
+    m_oclQueue = nullptr;
+    m_oclKernelComputePartialVolumes = nullptr;
+    m_oclKernelComputeSum = nullptr;
 #endif  // CL_VERSION_1_1
     Init();
   }
-  //! Destructor.
-  ~VHACD(void) {}
   uint32_t GetNConvexHulls() const override { return (uint32_t)m_convexHulls.Size(); }
   void Cancel() override { SetCancel(true); }
-  void GetConvexHull(const uint32_t index, ConvexHull& ch) const override
+  void GetConvexHull(uint32_t index, ConvexHull& ch) const override
   {
     Mesh* mesh = m_convexHulls[index];
     ch.m_nPoints = (uint32_t)mesh->GetNPoints();
@@ -86,7 +85,7 @@ public:
     ch.m_center[1] = center.Y();
     ch.m_center[2] = center.Z();
   }
-  void Clean(void) override
+  void Clean() override
   {
     if (mRaycastMesh)
     {
@@ -103,21 +102,21 @@ public:
     m_convexHulls.Clear();
     Init();
   }
-  void Release(void) override { delete this; }
-  bool Compute(const float* const points,
-               const uint32_t nPoints,
-               const uint32_t* const triangles,
-               const uint32_t nTriangles,
+  void Release() override { delete this; }
+  bool Compute(float const* points,
+               uint32_t nPoints,
+               uint32_t const* triangles,
+               uint32_t nTriangles,
                const Parameters& params) override;
-  bool Compute(const double* const points,
-               const uint32_t nPoints,
-               const uint32_t* const triangles,
-               const uint32_t nTriangles,
+  bool Compute(double const* points,
+               uint32_t nPoints,
+               uint32_t const* triangles,
+               uint32_t nTriangles,
                const Parameters& params) override;
-  bool OCLInit(void* const oclDevice, IUserLogger* const logger = 0) override;
-  bool OCLRelease(IUserLogger* const logger = 0) override;
+  bool OCLInit(void const* oclDevice, VHACD::IVHACD::IUserLogger const* logger = nullptr) override;
+  bool OCLRelease(IUserLogger const* logger = nullptr) override;
 
-  virtual bool ComputeCenterOfMass(double centerOfMass[3]) const override;
+  virtual bool ComputeCenterOfMass(std::array<double, 3>& centerOfMass) const override;
 
 private:
   void SetCancel(bool cancel)

@@ -238,6 +238,9 @@ target_include_directories(${PROJECT_NAME}_vhacd PUBLIC "$<BUILD_INTERFACE:${CMA
 target_include_directories(${PROJECT_NAME}_vhacd SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
 # Convex decomposition libraries
+find_library(CONVEX_DECOMPOSITION_LIBRARY ConvexDecomposition HINTS ${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS})
+find_library(HACD_LIBRARY HACD HINTS ${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS})
+
 add_library(${PROJECT_NAME}_convex_decomposition src/convex_decomposition/convex_decomposition_vhacd.cpp
                                                  src/convex_decomposition/convex_decomposition_hacd.cpp)
 target_link_libraries(
@@ -246,7 +249,8 @@ target_link_libraries(
          Eigen3::Eigen
          tesseract::tesseract_geometry
          console_bridge::console_bridge
-         ${BULLET_LIBRARIES})
+         ${BULLET_LIBRARIES}
+         ${HACD_LIBRARY})
 target_compile_options(${PROJECT_NAME}_convex_decomposition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_convex_decomposition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_convex_decomposition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS}

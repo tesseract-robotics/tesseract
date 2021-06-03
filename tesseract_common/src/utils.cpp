@@ -57,6 +57,21 @@ std::enable_if_t<std::is_polymorphic<E>::value> my_rethrow_if_nested(const E& e)
     p->rethrow_nested();
 }
 
+Eigen::Vector4d computeRandomColor()
+{
+  Eigen::Vector4d c;
+  c.setZero();
+  c[3] = 1;
+  while (almostEqualRelativeAndAbs(c[0], c[1]) || almostEqualRelativeAndAbs(c[2], c[1]) ||
+         almostEqualRelativeAndAbs(c[2], c[0]))
+  {
+    c[0] = (rand() % 100) / 100.0;
+    c[1] = (rand() % 100) / 100.0;
+    c[2] = (rand() % 100) / 100.0;
+  }
+  return c;
+}
+
 void printNestedException(const std::exception& e, int level)
 {
   std::cerr << std::string(static_cast<unsigned>(2 * level), ' ') << "exception: " << e.what() << std::endl;

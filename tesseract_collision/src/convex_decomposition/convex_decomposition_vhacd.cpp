@@ -19,11 +19,11 @@ public:
   ProgressCallback(ProgressCallback&&) = default;
   ProgressCallback& operator=(ProgressCallback&&) = default;
 
-  void Update(const double overallProgress,
-              const double stageProgress,
-              const double operationProgress,
-              const char* const stage,
-              const char* const operation) override
+  void Update(double overallProgress,
+              double stageProgress,
+              double operationProgress,
+              const std::string& stage,
+              const std::string& operation) override
   {
     std::cout << std::setfill(' ') << std::setw(3) << std::lround(overallProgress + 0.5) << "% "
               << "[ " << stage << " " << std::setfill(' ') << std::setw(3) << lround(stageProgress + 0.5) << "% ] "
@@ -106,15 +106,6 @@ ConvexDeompositionVHACD::compute(const tesseract_common::VectorVector3d& vertice
         vhacd_vertices->push_back(v);
       }
 
-      //      auto vhacd_triangles = std::make_shared<Eigen::VectorXi>();
-      //      vhacd_triangles->resize(ch.m_nTriangles * 3);
-      //      for (std::size_t i = 0; i < ch.m_nTriangles * 3; ++i)
-      //      {
-      //        (*vhacd_triangles)(i) = ch.m_triangles[i];
-      //      }
-      //      CONSOLE_BRIDGE_logError("Converted Vertices and triangles");
-      //      output.push_back(std::make_shared<tesseract_geometry::ConvexMesh>(vhacd_vertices, vhacd_triangles,
-      //      ch.m_nTriangles));
       auto ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
       auto ch_faces = std::make_shared<Eigen::VectorXi>();
       int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, *vhacd_vertices);

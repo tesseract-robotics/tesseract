@@ -7,8 +7,6 @@
 // a quaternion is a 'float *' to 4 floats representing a quaternion x,y,z,w
 //
 
-#pragma once
-
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 
@@ -1285,6 +1283,8 @@ REAL fm_distancePointLineSegment(const REAL *Point,const REAL *LineStart,const R
   return ret;
 }
 
+#ifndef BEST_FIT_PLANE_H
+#define BEST_FIT_PLANE_H
 template <class Type> class Eigen
 {
 public:
@@ -1479,6 +1479,7 @@ public:
   Type m_afSubd[3];
   bool m_bIsRotation;
 };
+#endif
 
 bool fm_computeBestFitPlane(uint32_t vcount,
 					 const REAL *points,
@@ -1823,6 +1824,9 @@ PlaneTriResult fm_getSidePlane(const REAL *p,const REAL *plane,REAL epsilon)
   return ret;
 }
 
+#ifndef PLANE_TRIANGLE_INTERSECTION_H
+#define PLANE_TRIANGLE_INTERSECTION_H
+
 #define MAXPTS 256
 
 template <class Type> class point
@@ -1942,6 +1946,7 @@ public:
   int32_t           mVcount;
   point<Type>   mVertices[MAXPTS];
 };
+#endif
 
 static inline void add(const REAL *p,REAL *dest,uint32_t tstride,uint32_t &pcount)
 {
@@ -2225,6 +2230,8 @@ void fm_eulerMatrix(REAL ax,REAL ay,REAL az,REAL *matrix) // convert euler (in r
 //**********************************************************
 //**********************************************************
 
+#ifndef VERTEX_INDEX_H
+#define VERTEX_INDEX_H
 namespace VERTEX_INDEX
 {
 
@@ -3174,6 +3181,7 @@ void          fm_releaseVertexIndex(fm_VertexIndex *vindex)
   MyVertexIndex *m = static_cast< MyVertexIndex *>(vindex);
   delete m;
 }
+#endif  // END OF VERTEX WELDING CODE
 
 REAL fm_computeBestFitAABB(uint32_t vcount,const REAL *points,uint32_t pstride,REAL *bmin,REAL *bmax) // returns the diagonal distance
 {
@@ -3449,6 +3457,9 @@ uint32_t fm_consolidatePolygon(uint32_t pcount,const REAL *points,uint32_t pstri
   return ret;
 }
 
+#ifndef RECT3D_TEMPLATE
+#define RECT3D_TEMPLATE
+
 template <class T> class Rect3d
 {
 public:
@@ -3498,6 +3509,7 @@ public:
   T mMin[3];
   T mMax[3];
 };
+#endif
 
 void splitRect(uint32_t axis,
 						   const Rect3d<REAL> &source,
@@ -3866,6 +3878,9 @@ void fm_inflateMinMax(REAL bmin[3], REAL bmax[3], REAL ratio)
 	bmax[2] += inflate;
 }
 
+#ifndef TESSELATE_H
+#define TESSELATE_H
+
 typedef std::vector< uint32_t > UintVector;
 
 class Myfm_Tesselate : public fm_Tesselate
@@ -4097,6 +4112,10 @@ void           fm_releaseTesselate(fm_Tesselate *t)
   Myfm_Tesselate *m = static_cast< Myfm_Tesselate *>(t);
   delete m;
 }
+#endif
+
+#ifndef RAY_ABB_INTERSECT
+#define RAY_ABB_INTERSECT
 
 //! Integer representation of a floating-point value.
 #define IR(x)	((uint32_t&)x)
@@ -4206,6 +4225,10 @@ bool fm_intersectLineSegmentAABB(const float bmin[3],const float bmax[3],const f
   }
   return ret;
 }
+#endif
+
+#ifndef OBB_TO_AABB
+#define OBB_TO_AABB
 
 void    fm_OBBtoAABB(const float /*obmin*/[3],const float /*obmax*/[3],const float /*matrix*/[16],float /*abmin*/[3],float /*abmax*/[3])
 {
@@ -4282,6 +4305,7 @@ void fm_computeMeanNormals(uint32_t vcount,       // the number of vertices
   }
 
 }
+#endif
 
 #define BIGNUMBER 100000000.0  		/* hundred million */
 
@@ -4532,6 +4556,9 @@ void fm_computeBestFitCapsule(uint32_t vcount,const REAL *points,uint32_t pstrid
 
 
 //************* Triangulation
+
+#ifndef TRIANGULATE_H
+#define TRIANGULATE_H
 
 typedef uint32_t TU32;
 
@@ -4987,6 +5014,7 @@ void             fm_releaseTriangulate(fm_Triangulate *t)
   Triangulate *tt = static_cast< Triangulate *>(t);
   delete tt;
 }
+#endif
 
 bool validDistance(const REAL *p1,const REAL *p2,REAL epsilon)
 {
@@ -5140,6 +5168,9 @@ bool  fm_computeCentroid(uint32_t vcount,     // number of input data points
 	return ret;
 }
 
+#ifndef TEMPLATE_VEC3
+#define TEMPLATE_VEC3
+
 template <class Type> class Vec3
 {
 public:
@@ -5157,6 +5188,7 @@ public:
 	Type y;
 	Type z;
 };
+#endif
 
 void fm_transformAABB(const REAL bmin[3],const REAL bmax[3],const REAL matrix[16],REAL tbmin[3],REAL tbmax[3])
 {

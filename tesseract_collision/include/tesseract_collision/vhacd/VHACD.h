@@ -50,7 +50,9 @@
 // and begin a new one.  To cancel a currently running approximation just call 'Cancel'.
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <stdint.h>
+#include <cstdint>
+#include <array>
+#include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
@@ -60,22 +62,41 @@ namespace VHACD
 class IVHACD
 {
 public:
+  IVHACD() = default;
+  virtual ~IVHACD() = default;
+  IVHACD(const IVHACD&) = default;
+  IVHACD& operator=(const IVHACD&) = default;
+  IVHACD(IVHACD&&) = default;
+  IVHACD& operator=(IVHACD&&) = default;
+
   class IUserCallback
   {
   public:
+    IUserCallback() = default;
     virtual ~IUserCallback() = default;
-    virtual void Update(const double overallProgress,
-                        const double stageProgress,
-                        const double operationProgress,
-                        const char* const stage,
-                        const char* const operation) = 0;
+    IUserCallback(const IUserCallback&) = default;
+    IUserCallback& operator=(const IUserCallback&) = default;
+    IUserCallback(IUserCallback&&) = default;
+    IUserCallback& operator=(IUserCallback&&) = default;
+
+    virtual void Update(double overallProgress,
+                        double stageProgress,
+                        double operationProgress,
+                        const std::string& stage,
+                        const std::string& operation) = 0;
   };
 
   class IUserLogger
   {
   public:
+    IUserLogger() = default;
     virtual ~IUserLogger() = default;
-    virtual void Log(const char* const msg) = 0;
+    IUserLogger(const IUserLogger&) = default;
+    IUserLogger& operator=(const IUserLogger&) = default;
+    IUserLogger(IUserLogger&&) = default;
+    IUserLogger& operator=(IUserLogger&&) = default;
+
+    virtual void Log(const std::string& msg) const = 0;
   };
 
   class ConvexHull
@@ -86,14 +107,14 @@ public:
     uint32_t m_nPoints;
     uint32_t m_nTriangles;
     double m_volume;
-    double m_center[3];
+    std::array<double, 3> m_center;
   };
 
   class Parameters
   {
   public:
-    Parameters(void) { Init(); }
-    void Init(void)
+    Parameters() { Init(); }
+    void Init()
     {
       m_resolution = 100000;
       m_concavity = 0.001;
@@ -132,37 +153,34 @@ public:
   };
 
   virtual void Cancel() = 0;
-  virtual bool Compute(const float* const points,
-                       const uint32_t countPoints,
-                       const uint32_t* const triangles,
-                       const uint32_t countTriangles,
+  virtual bool Compute(float const* points,
+                       uint32_t countPoints,
+                       uint32_t const* triangles,
+                       uint32_t countTriangles,
                        const Parameters& params) = 0;
-  virtual bool Compute(const double* const points,
-                       const uint32_t countPoints,
-                       const uint32_t* const triangles,
-                       const uint32_t countTriangles,
+  virtual bool Compute(double const* points,
+                       uint32_t countPoints,
+                       uint32_t const* triangles,
+                       uint32_t countTriangles,
                        const Parameters& params) = 0;
   virtual uint32_t GetNConvexHulls() const = 0;
-  virtual void GetConvexHull(const uint32_t index, ConvexHull& ch) const = 0;
-  virtual void Clean(void) = 0;    // release internally allocated memory
-  virtual void Release(void) = 0;  // release IVHACD
-  virtual bool OCLInit(void* const oclDevice, IUserLogger* const logger = nullptr) = 0;
-  virtual bool OCLRelease(IUserLogger* const logger = nullptr) = 0;
+  virtual void GetConvexHull(uint32_t index, ConvexHull& ch) const = 0;
+  virtual void Clean() = 0;    // release internally allocated memory
+  virtual void Release() = 0;  // release IVHACD
+  virtual bool OCLInit(void const* oclDevice, IUserLogger const* logger = nullptr) = 0;
+  virtual bool OCLRelease(IUserLogger const* logger = nullptr) = 0;
 
   // Will compute the center of mass of the convex hull decomposition results and return it
   // in 'centerOfMass'.  Returns false if the center of mass could not be computed.
-  virtual bool ComputeCenterOfMass(double centerOfMass[3]) const = 0;
+  virtual bool ComputeCenterOfMass(std::array<double, 3>& centerOfMass) const = 0;
 
   // In synchronous mode (non-multi-threaded) the state is always 'ready'
   // In asynchronous mode, this returns true if the background thread is not still actively computing
   // a new solution.  In an asynchronous config the 'IsReady' call will report any update or log
   // messages in the caller's current thread.
-  virtual bool IsReady(void) const { return true; }
-
-protected:
-  virtual ~IVHACD(void) = default;
+  virtual bool IsReady() const { return true; }
 };
-IVHACD* CreateVHACD(void);
-IVHACD* CreateVHACD_ASYNC(void);
+IVHACD* CreateVHACD();
+IVHACD* CreateVHACD_ASYNC();
 }  // namespace VHACD
 }  // namespace tesseract_collision

@@ -231,12 +231,12 @@ namespace tesseract_collision
 namespace VHACD
 {
 IVHACD* CreateVHACD(void) { return new VHACD(); }
-bool VHACD::OCLInit(void* const oclDevice, IUserLogger* const logger)
+bool VHACD::OCLInit(void const* oclDevice, IUserLogger const* logger)
 {
 #ifdef CL_VERSION_1_1
   m_oclDevice = (cl_device_id*)oclDevice;
   cl_int error;
-  m_oclContext = clCreateContext(NULL, 1, m_oclDevice, NULL, NULL, &error);
+  m_oclContext = clCreateContext(nullptr, 1, m_oclDevice, nullptr, nullptr, &error);
   if (error != CL_SUCCESS)
   {
     if (logger)
@@ -278,16 +278,16 @@ bool VHACD::OCLInit(void* const oclDevice, IUserLogger* const logger)
   }
 
   /* Build program */
-  error = clBuildProgram(m_oclProgram, 1, m_oclDevice, "-cl-denorms-are-zero", NULL, NULL);
+  error = clBuildProgram(m_oclProgram, 1, m_oclDevice, "-cl-denorms-are-zero", nullptr, nullptr);
   if (error != CL_SUCCESS)
   {
     size_t log_size;
     /* Find Size of log and print to std output */
-    clGetProgramBuildInfo(m_oclProgram, *m_oclDevice, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+    clGetProgramBuildInfo(m_oclProgram, *m_oclDevice, CL_PROGRAM_BUILD_LOG, 0, nullptr, &log_size);
     char* program_log = new char[log_size + 2];
     program_log[log_size] = '\n';
     program_log[log_size + 1] = '\0';
-    clGetProgramBuildInfo(m_oclProgram, *m_oclDevice, CL_PROGRAM_BUILD_LOG, log_size + 1, program_log, NULL);
+    clGetProgramBuildInfo(m_oclProgram, *m_oclDevice, CL_PROGRAM_BUILD_LOG, log_size + 1, program_log, nullptr);
     if (logger)
     {
       logger->Log("Couldn't build program\n");
@@ -333,10 +333,10 @@ bool VHACD::OCLInit(void* const oclDevice, IUserLogger* const logger)
                                    CL_KERNEL_WORK_GROUP_SIZE,
                                    sizeof(size_t),
                                    &m_oclWorkGroupSize,
-                                   NULL);
+                                   nullptr);
   size_t workGroupSize = 0;
   error = clGetKernelWorkGroupInfo(
-      m_oclKernelComputeSum[0], *m_oclDevice, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &workGroupSize, NULL);
+      m_oclKernelComputeSum[0], *m_oclDevice, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &workGroupSize, nullptr);
   if (error != CL_SUCCESS)
   {
     if (logger)
@@ -379,7 +379,7 @@ bool VHACD::OCLInit(void* const oclDevice, IUserLogger* const logger)
   return false;
 #endif  // CL_VERSION_1_1
 }
-bool VHACD::OCLRelease(IUserLogger* const logger)
+bool VHACD::OCLRelease(IUserLogger const* logger)
 {
 #ifdef CL_VERSION_1_1
   cl_int error;
@@ -471,7 +471,7 @@ void VHACD::ComputePrimitiveSet(const Parameters& params)
   if (params.m_logger)
   {
     msg << "+ " << m_stage << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 
   Update(0.0, 0.0, params);
@@ -497,7 +497,7 @@ void VHACD::ComputePrimitiveSet(const Parameters& params)
     msg << "\t # primitives               " << m_pset->GetNPrimitives() << std::endl;
     msg << "\t # inside surface           " << m_pset->GetNPrimitivesInsideSurf() << std::endl;
     msg << "\t # on surface               " << m_pset->GetNPrimitivesOnSurf() << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 
   m_overallProgress = 15.0;
@@ -507,21 +507,21 @@ void VHACD::ComputePrimitiveSet(const Parameters& params)
   {
     msg.str("");
     msg << "\t time " << m_timer.GetElapsedTime() / 1000.0 << "s" << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 }
-bool VHACD::Compute(const double* const points,
-                    const uint32_t nPoints,
-                    const uint32_t* const triangles,
-                    const uint32_t nTriangles,
+bool VHACD::Compute(double const* points,
+                    uint32_t nPoints,
+                    uint32_t const* triangles,
+                    uint32_t nTriangles,
                     const Parameters& params)
 {
   return ComputeACD(points, nPoints, triangles, nTriangles, params);
 }
-bool VHACD::Compute(const float* const points,
-                    const uint32_t nPoints,
-                    const uint32_t* const triangles,
-                    const uint32_t nTriangles,
+bool VHACD::Compute(const float* points,
+                    uint32_t nPoints,
+                    const uint32_t* triangles,
+                    uint32_t nTriangles,
                     const Parameters& params)
 {
   return ComputeACD(points, nPoints, triangles, nTriangles, params);
@@ -869,7 +869,7 @@ void VHACD::ComputeBestClippingPlane(const PrimitiveSet* inputPSet,
     for (int32_t i = 0; i < m_ompNumProcessors; ++i)
     {
       partialVolumes[i] =
-          clCreateBuffer(m_oclContext, CL_MEM_WRITE_ONLY, sizeof(uint32_t) * 4 * nWorkGroups, NULL, &error);
+          clCreateBuffer(m_oclContext, CL_MEM_WRITE_ONLY, sizeof(uint32_t) * 4 * nWorkGroups, nullptr, &error);
       if (error != CL_SUCCESS)
       {
         if (params.m_logger)
@@ -883,10 +883,11 @@ void VHACD::ComputeBestClippingPlane(const PrimitiveSet* inputPSet,
       error |= clSetKernelArg(m_oclKernelComputePartialVolumes[i], 1, sizeof(uint32_t), &nVoxels);
       error |= clSetKernelArg(m_oclKernelComputePartialVolumes[i], 3, sizeof(float) * 4, fMinBB);
       error |= clSetKernelArg(m_oclKernelComputePartialVolumes[i], 4, sizeof(float) * 4, &fSclae);
-      error |= clSetKernelArg(m_oclKernelComputePartialVolumes[i], 5, sizeof(uint32_t) * 4 * m_oclWorkGroupSize, NULL);
+      error |=
+          clSetKernelArg(m_oclKernelComputePartialVolumes[i], 5, sizeof(uint32_t) * 4 * m_oclWorkGroupSize, nullptr);
       error |= clSetKernelArg(m_oclKernelComputePartialVolumes[i], 6, sizeof(cl_mem), &(partialVolumes[i]));
       error |= clSetKernelArg(m_oclKernelComputeSum[i], 0, sizeof(cl_mem), &(partialVolumes[i]));
-      error |= clSetKernelArg(m_oclKernelComputeSum[i], 2, sizeof(uint32_t) * 4 * m_oclWorkGroupSize, NULL);
+      error |= clSetKernelArg(m_oclKernelComputeSum[i], 2, sizeof(uint32_t) * 4 * m_oclWorkGroupSize, nullptr);
       if (error != CL_SUCCESS)
       {
         if (params.m_logger)
@@ -945,12 +946,12 @@ void VHACD::ComputeBestClippingPlane(const PrimitiveSet* inputPSet,
         error = clEnqueueNDRangeKernel(m_oclQueue[threadID],
                                        m_oclKernelComputePartialVolumes[threadID],
                                        1,
-                                       NULL,
+                                       nullptr,
                                        &globalSize,
                                        &m_oclWorkGroupSize,
                                        0,
-                                       NULL,
-                                       NULL);
+                                       nullptr,
+                                       nullptr);
         if (error != CL_SUCCESS)
         {
           if (params.m_logger)
@@ -976,12 +977,12 @@ void VHACD::ComputeBestClippingPlane(const PrimitiveSet* inputPSet,
           error = clEnqueueNDRangeKernel(m_oclQueue[threadID],
                                          m_oclKernelComputeSum[threadID],
                                          1,
-                                         NULL,
+                                         nullptr,
                                          &globalSize,
                                          &m_oclWorkGroupSize,
                                          0,
-                                         NULL,
-                                         NULL);
+                                         nullptr,
+                                         nullptr);
           if (error != CL_SUCCESS)
           {
             if (params.m_logger)
@@ -1048,8 +1049,15 @@ void VHACD::ComputeBestClippingPlane(const PrimitiveSet* inputPSet,
       {
 #ifdef CL_VERSION_1_1
         uint32_t volumes[4];
-        cl_int error = clEnqueueReadBuffer(
-            m_oclQueue[threadID], partialVolumes[threadID], CL_TRUE, 0, sizeof(uint32_t) * 4, volumes, 0, NULL, NULL);
+        cl_int error = clEnqueueReadBuffer(m_oclQueue[threadID],
+                                           partialVolumes[threadID],
+                                           CL_TRUE,
+                                           0,
+                                           sizeof(uint32_t) * 4,
+                                           volumes,
+                                           0,
+                                           nullptr,
+                                           nullptr);
         size_t nPrimitivesRight = volumes[0] + volumes[1] + volumes[2] + volumes[3];
         size_t nPrimitivesLeft = nPrimitives - nPrimitivesRight;
         volumeRight = nPrimitivesRight * unitVolume;
@@ -1162,14 +1170,14 @@ void VHACD::ComputeACD(const Parameters& params)
   if (params.m_logger)
   {
     msg << "+ " << m_stage << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 
   SArray<PrimitiveSet*> parts;
   SArray<PrimitiveSet*> inputParts;
   SArray<PrimitiveSet*> temp;
   inputParts.PushBack(m_pset);
-  m_pset = 0;
+  m_pset = nullptr;
   SArray<Plane> planes;
   SArray<Plane> planesRef;
   uint32_t sub = 0;
@@ -1209,7 +1217,7 @@ void VHACD::ComputeACD(const Parameters& params)
     {
       msg.str("");
       msg << "\t Subdivision level " << sub << std::endl;
-      params.m_logger->Log(msg.str().c_str());
+      params.m_logger->Log(msg.str());
     }
 
     double maxConcavity = 0.0;
@@ -1224,7 +1232,7 @@ void VHACD::ComputeACD(const Parameters& params)
       Update(m_stageProgress, progress0, params);
 
       PrimitiveSet* pset = inputParts[p];
-      inputParts[p] = 0;
+      inputParts[p] = nullptr;
       double volume = pset->ComputeVolume();
       pset->ComputeBB();
       pset->ComputePrincipalAxes();
@@ -1253,7 +1261,7 @@ void VHACD::ComputeACD(const Parameters& params)
         msg.str("");
         msg << "\t -> Part[" << p << "] C  = " << concavity << ", E  = " << error
             << ", VS = " << pset->GetNPrimitivesOnSurf() << ", VI = " << pset->GetNPrimitivesInsideSurf() << std::endl;
-        params.m_logger->Log(msg.str().c_str());
+        params.m_logger->Log(msg.str());
       }
 
       if (concavity > params.m_concavity && concavity > error)
@@ -1276,7 +1284,7 @@ void VHACD::ComputeACD(const Parameters& params)
         {
           msg.str("");
           msg << "\t\t [Regular sampling] Number of clipping planes " << planes.Size() << std::endl;
-          params.m_logger->Log(msg.str().c_str());
+          params.m_logger->Log(msg.str());
         }
 
         Plane bestPlane;
@@ -1313,7 +1321,7 @@ void VHACD::ComputeACD(const Parameters& params)
           {
             msg.str("");
             msg << "\t\t [Refining] Number of clipping planes " << planesRef.Size() << std::endl;
-            params.m_logger->Log(msg.str().c_str());
+            params.m_logger->Log(msg.str());
           }
           ComputeBestClippingPlane(pset,
                                    volume,
@@ -1406,7 +1414,7 @@ void VHACD::ComputeACD(const Parameters& params)
   {
     msg.str("");
     msg << "+ Generate " << nConvexHulls << " convex-hulls " << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 
   Update(m_stageProgress, 0.0, params);
@@ -1434,7 +1442,7 @@ void VHACD::ComputeACD(const Parameters& params)
   for (size_t p = 0; p < nParts; ++p)
   {
     delete parts[p];
-    parts[p] = 0;
+    parts[p] = nullptr;
   }
   parts.Resize(0);
 
@@ -1456,7 +1464,7 @@ void VHACD::ComputeACD(const Parameters& params)
   {
     msg.str("");
     msg << "\t time " << m_timer.GetElapsedTime() / 1000.0 << "s" << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 }
 void AddPoints(const Mesh* const mesh, SArray<Vec3<double> >& pts)
@@ -1512,7 +1520,7 @@ void VHACD::MergeConvexHulls(const Parameters& params)
   if (params.m_logger)
   {
     msg << "+ " << m_stage << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 
   // Get the current number of convex hulls
@@ -1566,7 +1574,7 @@ void VHACD::MergeConvexHulls(const Parameters& params)
       {
         msg.str("");
         msg << "\t\t Merging (" << p1 << ", " << p2 << ") " << bestCost << std::endl << std::endl;
-        params.m_logger->Log(msg.str().c_str());
+        params.m_logger->Log(msg.str());
       }
 
       // Make the lowest cost row and column into a new hull
@@ -1634,7 +1642,7 @@ void VHACD::MergeConvexHulls(const Parameters& params)
   {
     msg.str("");
     msg << "\t time " << m_timer.GetElapsedTime() / 1000.0 << "s" << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 }
 void VHACD::SimplifyConvexHull(Mesh* const ch, const size_t nvertices, const double minVolume)
@@ -1749,7 +1757,7 @@ void VHACD::SimplifyConvexHulls(const Parameters& params)
   if (params.m_logger)
   {
     msg << "+ Simplify " << nConvexHulls << " convex-hulls " << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 
   Update(0.0, 0.0, params);
@@ -1760,7 +1768,7 @@ void VHACD::SimplifyConvexHulls(const Parameters& params)
       msg.str("");
       msg << "\t\t Simplify CH[" << std::setfill('0') << std::setw(5) << i << "] " << m_convexHulls[i]->GetNPoints()
           << " V, " << m_convexHulls[i]->GetNTriangles() << " T" << std::endl;
-      params.m_logger->Log(msg.str().c_str());
+      params.m_logger->Log(msg.str());
     }
     SimplifyConvexHull(m_convexHulls[i], params.m_maxNumVerticesPerCH, m_volumeCH0 * params.m_minVolumePerCH);
   }
@@ -1772,11 +1780,11 @@ void VHACD::SimplifyConvexHulls(const Parameters& params)
   {
     msg.str("");
     msg << "\t time " << m_timer.GetElapsedTime() / 1000.0 << "s" << std::endl;
-    params.m_logger->Log(msg.str().c_str());
+    params.m_logger->Log(msg.str());
   }
 }
 
-bool VHACD::ComputeCenterOfMass(double centerOfMass[3]) const
+bool VHACD::ComputeCenterOfMass(std::array<double, 3>& centerOfMass) const
 {
   bool ret = false;
 

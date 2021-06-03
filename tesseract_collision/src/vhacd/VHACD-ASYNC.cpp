@@ -18,21 +18,21 @@ namespace tesseract_collision
 {
 namespace VHACD
 {
-class MyHACD_API : public VHACD::IVHACD, public VHACD::IVHACD::IUserCallback, VHACD::IVHACD::IUserLogger
+class MyHACD_API : public VHACD::IVHACD, VHACD::IVHACD::IUserCallback, VHACD::IVHACD::IUserLogger
 {
 public:
-  MyHACD_API(void) { mVHACD = VHACD::CreateVHACD(); }
-  virtual ~MyHACD_API(void)
+  MyHACD_API() { mVHACD = VHACD::CreateVHACD(); }
+  virtual ~MyHACD_API() override
   {
     releaseHACD();
     Cancel();
     mVHACD->Release();
   }
 
-  bool Compute(const double* const _points,
-               const uint32_t countPoints,
-               const uint32_t* const _triangles,
-               const uint32_t countTriangles,
+  bool Compute(double const* _points,
+               uint32_t countPoints,
+               uint32_t const* _triangles,
+               uint32_t countTriangles,
                const Parameters& _desc) override final
   {
 #if ENABLE_ASYNC
@@ -57,10 +57,10 @@ public:
     return true;
   }
 
-  bool ComputeNow(const double* const points,
-                  const uint32_t countPoints,
-                  const uint32_t* const triangles,
-                  const uint32_t countTriangles,
+  bool ComputeNow(double* const points,
+                  uint32_t countPoints,
+                  uint32_t* const triangles,
+                  uint32_t countTriangles,
                   const Parameters& _desc)
   {
     uint32_t ret = 0;
@@ -118,7 +118,7 @@ public:
     h.m_points = nullptr;
   }
 
-  void GetConvexHull(const uint32_t index, VHACD::IVHACD::ConvexHull& ch) const override final
+  void GetConvexHull(uint32_t index, VHACD::IVHACD::ConvexHull& ch) const override final
   {
     if (index < mHullCount)
     {
@@ -126,7 +126,7 @@ public:
     }
   }
 
-  void releaseHACD(void)  // release memory associated with the last HACD request
+  void releaseHACD()  // release memory associated with the last HACD request
   {
     for (uint32_t i = 0; i < mHullCount; i++)
     {
@@ -141,12 +141,12 @@ public:
     mIndices = nullptr;
   }
 
-  virtual void release(void)  // release the HACD_API interface
+  virtual void release()  // release the HACD_API interface
   {
     delete this;
   }
 
-  virtual uint32_t getHullCount(void) { return mHullCount; }
+  virtual uint32_t getHullCount() { return mHullCount; }
   virtual void Cancel() override final
   {
     if (mRunning)
@@ -163,10 +163,10 @@ public:
     mCancel = false;  // clear the cancel semaphore
   }
 
-  bool Compute(const float* const points,
-               const uint32_t countPoints,
-               const uint32_t* const triangles,
-               const uint32_t countTriangles,
+  bool Compute(float const* points,
+               uint32_t countPoints,
+               uint32_t const* triangles,
+               uint32_t countTriangles,
                const Parameters& params) override final
   {
     double* vertices = (double*)HACD_ALLOC(sizeof(double) * countPoints * 3);
@@ -192,29 +192,29 @@ public:
     return mHullCount;
   }
 
-  void Clean(void) override final  // release internally allocated memory
+  void Clean() override final  // release internally allocated memory
   {
     Cancel();
     releaseHACD();
     mVHACD->Clean();
   }
 
-  void Release(void) override final  // release IVHACD
+  void Release() override final  // release IVHACD
   {
     delete this;
   }
 
-  bool OCLInit(void* const oclDevice, IVHACD::IUserLogger* const logger = nullptr) override final
+  bool OCLInit(void const* oclDevice, IVHACD::IUserLogger const* logger = nullptr) override final
   {
     return mVHACD->OCLInit(oclDevice, logger);
   }
 
-  bool OCLRelease(IVHACD::IUserLogger* const logger = nullptr) override final { return mVHACD->OCLRelease(logger); }
-  void Update(const double overallProgress,
-              const double stageProgress,
-              const double operationProgress,
-              const char* const stage,
-              const char* const operation) override final
+  bool OCLRelease(IVHACD::IUserLogger const* logger = nullptr) override final { return mVHACD->OCLRelease(logger); }
+  void Update(double overallProgress,
+              double stageProgress,
+              double operationProgress,
+              const std::string& stage,
+              const std::string& operation) override final
   {
     mMessageMutex.lock();
     mHaveUpdateMessage = true;
@@ -226,11 +226,11 @@ public:
     mMessageMutex.unlock();
   }
 
-  void Log(const char* const msg) override final
+  void Log(const std::string& msg) const override final
   {
     mMessageMutex.lock();
     mHaveLogMessage = true;
-    mMessage = std::string(msg);
+    mMessage = msg;
     mMessageMutex.unlock();
   }
 
@@ -243,13 +243,13 @@ public:
   // As a convenience for the calling application we only send it update and log messages from it's own main
   // thread.  This reduces the complexity burden on the caller by making sure it only has to deal with log
   // messages in it's main application thread.
-  void processPendingMessages(void) const
+  void processPendingMessages() const
   {
     // If we have a new update message and the user has specified a callback we send the message and clear the semaphore
     if (mHaveUpdateMessage && mCallback)
     {
       mMessageMutex.lock();
-      mCallback->Update(mOverallProgress, mStageProgress, mOperationProgress, mStage.c_str(), mOperation.c_str());
+      mCallback->Update(mOverallProgress, mStageProgress, mOperationProgress, mStage, mOperation);
       mHaveUpdateMessage = false;
       mMessageMutex.unlock();
     }
@@ -257,7 +257,7 @@ public:
     if (mHaveLogMessage && mLogger)
     {
       mMessageMutex.lock();
-      mLogger->Log(mMessage.c_str());
+      mLogger->Log(mMessage);
       mHaveLogMessage = false;
       mMessageMutex.unlock();
     }
@@ -265,7 +265,7 @@ public:
 
   // Will compute the center of mass of the convex hull decomposition results and return it
   // in 'centerOfMass'.  Returns false if the center of mass could not be computed.
-  bool ComputeCenterOfMass(double centerOfMass[3]) const override
+  bool ComputeCenterOfMass(std::array<double, 3>& centerOfMass) const override
   {
     bool ret = false;
 
