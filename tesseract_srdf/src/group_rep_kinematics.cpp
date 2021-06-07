@@ -102,8 +102,8 @@ GroupREPKinematics parseGroupREPKinematics(const tesseract_scene_graph::SceneGra
 
     // get the chains in the groups
     bool parse_joints_failed = false;
-    for (const tinyxml2::XMLElement* joint_xml = positioner_xml->FirstChildElement("joint"); positioner_xml;
-         positioner_xml = positioner_xml->NextSiblingElement("joint"))
+    for (const tinyxml2::XMLElement* joint_xml = positioner_xml->FirstChildElement("joint"); joint_xml != nullptr;
+         joint_xml = joint_xml->NextSiblingElement("joint"))
     {
       if (joint_xml == nullptr)
       {
