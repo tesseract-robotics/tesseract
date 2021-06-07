@@ -85,6 +85,7 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
   {
     g->addLink(Link("world"));
     g->addLink(Link("axis_1"));
+    g->addLink(Link("axis_2"));
 
     Joint joint_a("joint_axis_1");
     joint_a.axis = Eigen::Vector3d(0, 1, 0);
@@ -93,17 +94,25 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
     joint_a.type = JointType::PRISMATIC;
     g->addJoint(joint_a);
 
-    Joint joint_b("joint_base_link");
-    joint_b.axis = Eigen::Vector3d(0, 1, 0);
+    Joint joint_b("joint_axis_2");
+    joint_b.axis = Eigen::Vector3d(1, 0, 0);
     joint_b.parent_link_name = "axis_1";
-    joint_b.child_link_name = "base_link";
-    joint_b.type = JointType::FIXED;
+    joint_b.child_link_name = "axis_2";
+    joint_b.type = JointType::PRISMATIC;
     g->addJoint(joint_b);
+
+    Joint joint_c("joint_base_link");
+    joint_c.axis = Eigen::Vector3d(0, 1, 0);
+    joint_c.parent_link_name = "axis_1";
+    joint_c.child_link_name = "base_link";
+    joint_c.type = JointType::FIXED;
+    g->addJoint(joint_c);
   }
   else if (config == ABBConfig::ROBOT_WITH_POSITIONER)
   {
     g->addLink(Link("world"));
     g->addLink(Link("axis_1"));
+    g->addLink(Link("axis_2"));
 
     Joint joint_a("joint_axis_1");
     joint_a.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 0, 0);
@@ -113,11 +122,19 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
     joint_a.type = JointType::PRISMATIC;
     g->addJoint(joint_a);
 
-    Joint joint_b("joint_base_link");
-    joint_b.parent_link_name = "world";
-    joint_b.child_link_name = "base_link";
-    joint_b.type = JointType::FIXED;
+    Joint joint_b("joint_axis_2");
+    joint_b.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 0, 0);
+    joint_b.axis = Eigen::Vector3d(1, 0, 0);
+    joint_b.parent_link_name = "axis_1";
+    joint_b.child_link_name = "axis_2";
+    joint_b.type = JointType::PRISMATIC;
     g->addJoint(joint_b);
+
+    Joint joint_c("joint_base_link");
+    joint_c.parent_link_name = "world";
+    joint_c.child_link_name = "base_link";
+    joint_c.type = JointType::FIXED;
+    g->addJoint(joint_c);
   }
 
   Joint joint_1("joint_1");
@@ -537,6 +554,7 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
                <joint name="joint_axis_1" resolution="0.1"/>
+               <joint name="joint_axis_2" resolution="0.2"/>
              </positioner>
            </group_rop>
 
@@ -639,10 +657,11 @@ TEST(TesseractSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
              <chain base_link="base_link" tip_link="tool0" />
            </group>
            <group name="positioner">
-             <chain base_link="world" tip_link="axis_1" />
+             <chain base_link="world" tip_link="axis_2" />
            </group>
            <group name="gantry">
              <joint name="joint_axis_1"/>
+             <joint name="joint_axis_2"/>
              <joint name="joint_1"/>
              <joint name="joint_2"/>
              <joint name="joint_3"/>
@@ -665,6 +684,7 @@ TEST(TesseractSRDFUnit, LoadSRDFSave2Unit)  // NOLINT
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
                <joint name="joint_axis_1" resolution="0.1"/>
+               <joint name="joint_axis_2" resolution="0.2"/>
              </positioner>
            </group_rep>
 
@@ -814,6 +834,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPUnit)  // NOLINT
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
                <joint name="joint_axis_1" resolution="0.1"/>
+               <joint name="joint_axis_2" resolution="0.2"/>
              </positioner>
            </group_rop>
 
@@ -938,6 +959,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPUnit)  // NOLINT
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
                <joint name="joint_axis_1" resolution="0.1"/>
+               <joint name="joint_axis_2" resolution="0.2"/>
              </positioner>
            </group_rep>
 
@@ -1588,6 +1610,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
                <joint name="axis_1" resolution="0.1"/>
+               <joint name="axis_2" resolution="0.2"/>
              </positioner>
            </group_rep>
          </robot>)";
@@ -1607,9 +1630,11 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
   EXPECT_DOUBLE_EQ(params.manipulator_reach, 2.3);
   EXPECT_EQ(params.positioner_group, "positioner");
   EXPECT_EQ(params.positioner_fk_solver, "KDLFwdKin");
-  EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
+  EXPECT_EQ(params.positioner_sample_resolution.size(), 2);
   EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
   EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+  EXPECT_TRUE(params.positioner_sample_resolution.find("axis_2") != params.positioner_sample_resolution.end());
+  EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_2"], 0.2);
 
   {  // Test provided name
     std::string xml_string =
@@ -1618,6 +1643,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
@@ -1637,9 +1663,11 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
     EXPECT_DOUBLE_EQ(params.manipulator_reach, 2.3);
     EXPECT_EQ(params.positioner_group, "positioner");
     EXPECT_EQ(params.positioner_fk_solver, "KDLFwdKin");
-    EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
+    EXPECT_EQ(params.positioner_sample_resolution.size(), 2);
     EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
     EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+    EXPECT_TRUE(params.positioner_sample_resolution.find("axis_2") != params.positioner_sample_resolution.end());
+    EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_2"], 0.2);
   }
 
   // Now test failures
@@ -1669,6 +1697,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
@@ -1681,6 +1710,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
              <group_rep group="gantry">
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
@@ -1694,6 +1724,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
                <manipulator ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
@@ -1707,6 +1738,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
@@ -1720,6 +1752,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
@@ -1743,6 +1776,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
@@ -1756,6 +1790,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
@@ -1780,6 +1815,7 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
@@ -1793,11 +1829,25 @@ TEST(TesseractSRDFUnit, LoadSRDFREPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rep>
            </robot>)";
 
     EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner joint but will pass here, but gets caught at a later stage
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rep group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_1" resolution="0.1"/>
+               </positioner>
+             </group_rep>
+           </robot>)";
+
+    EXPECT_FALSE(is_failure(xml_string));
   }
 }
 
@@ -1814,6 +1864,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
              <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
              <positioner group="positioner" fk_solver="KDLFwdKin">
                <joint name="axis_1" resolution="0.1"/>
+               <joint name="axis_2" resolution="0.2"/>
              </positioner>
            </group_rop>
          </robot>)";
@@ -1833,9 +1884,11 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
   EXPECT_DOUBLE_EQ(params.manipulator_reach, 2.3);
   EXPECT_EQ(params.positioner_group, "positioner");
   EXPECT_EQ(params.positioner_fk_solver, "KDLFwdKin");
-  EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
+  EXPECT_EQ(params.positioner_sample_resolution.size(), 2);
   EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
   EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+  EXPECT_TRUE(params.positioner_sample_resolution.find("axis_2") != params.positioner_sample_resolution.end());
+  EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_2"], 0.2);
 
   {  // Now test with name provided
     std::string xml_string =
@@ -1844,6 +1897,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
@@ -1863,9 +1917,11 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
     EXPECT_DOUBLE_EQ(params.manipulator_reach, 2.3);
     EXPECT_EQ(params.positioner_group, "positioner");
     EXPECT_EQ(params.positioner_fk_solver, "KDLFwdKin");
-    EXPECT_EQ(params.positioner_sample_resolution.size(), 1);
+    EXPECT_EQ(params.positioner_sample_resolution.size(), 2);
     EXPECT_TRUE(params.positioner_sample_resolution.find("axis_1") != params.positioner_sample_resolution.end());
     EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_1"], 0.1);
+    EXPECT_TRUE(params.positioner_sample_resolution.find("axis_2") != params.positioner_sample_resolution.end());
+    EXPECT_DOUBLE_EQ(params.positioner_sample_resolution["axis_2"], 0.2);
   }
 
   // Now test failures
@@ -1895,6 +1951,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
@@ -1907,6 +1964,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
              <group_rop group="gantry">
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
@@ -1920,6 +1978,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
                <manipulator ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
@@ -1933,6 +1992,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
@@ -1946,6 +2006,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
@@ -1969,6 +2030,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner fk_solver="KDLFwdKin">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
@@ -1982,6 +2044,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner">
                  <joint name="axis_1" resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
@@ -2006,6 +2069,7 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint resolution="0.1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
@@ -2019,11 +2083,25 @@ TEST(TesseractSRDFUnit, LoadSRDFROPKinematicsUnit)  // NOLINT
                <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
                <positioner group="positioner" fk_solver="KDLFwdKin">
                  <joint name="axis_1"/>
+                 <joint name="axis_2" resolution="0.2"/>
                </positioner>
              </group_rop>
            </robot>)";
 
     EXPECT_TRUE(is_failure(xml_string));
+  }
+  {  // missing positioner joint but will pass here, but gets caught at a later stage
+    std::string xml_string =
+        R"(<robot name="abb_irb2400">
+             <group_rop group="gantry">
+               <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
+               <positioner group="positioner" fk_solver="KDLFwdKin">
+                 <joint name="axis_2" resolution="0.2"/>
+               </positioner>
+             </group_rop>
+           </robot>)";
+
+    EXPECT_FALSE(is_failure(xml_string));
   }
 }
 
