@@ -48,7 +48,7 @@ SceneGraph::Ptr getSceneGraph()
 }
 
 /** @brief Benchmark that checks the Tesseract clone method*/
-static void BM_TESSERACT_CLONE(benchmark::State& state, Environment::Ptr env)
+static void BM_ENVIRONMENT_CLONE(benchmark::State& state, Environment::Ptr env)
 {
   Environment::Ptr clone;
   for (auto _ : state)
@@ -60,7 +60,7 @@ static void BM_TESSERACT_CLONE(benchmark::State& state, Environment::Ptr env)
 int main(int argc, char** argv)
 {
   Environment::Ptr env = std::make_shared<Environment>();
-  env->init<OFKTStateSolver>(getSceneGraph());
+  env->init<OFKTStateSolver>(*getSceneGraph());
 
   //////////////////////////////////////
   // Clone
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
   {
     std::function<void(benchmark::State&, Environment::Ptr)> BM_CLONE_FUNC = BM_ENVIRONMENT_CLONE;
     std::string name = "BM_ENVIRONMENT_CLONE";
-    benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, tesseract)
+    benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, env)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }
