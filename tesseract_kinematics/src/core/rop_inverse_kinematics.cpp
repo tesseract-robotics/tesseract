@@ -263,7 +263,11 @@ bool RobotOnPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr s
     return false;
   }
 
-  /** @todo Check if the manipulator base link is the child of the positioner tip link. */
+  // Check if the manipulator base link is the child of the positioner tip link.
+  if (positioner->getTipLinkName() != manipulator->getBaseLinkName())
+  {
+    CONSOLE_BRIDGE_logWarn("Positioner tip link is not the base link of the manipulator.");
+  }
 
   for (long i = 0; i < positioner_sample_resolution.size(); ++i)
   {
