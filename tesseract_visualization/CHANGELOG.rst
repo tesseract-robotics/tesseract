@@ -2,8 +2,8 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.0 (2021-07-02)
+------------------
 * fix error so that initial state has dt=0 (`#604 <https://github.com/ros-industrial-consortium/tesseract/issues/604>`_)
 * Change tesseract_visualization cmake message type to STATUS
 * Contributors: Levi Armstrong, cbw36
