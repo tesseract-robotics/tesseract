@@ -2,6 +2,14 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add convex decomposition support (`#609 <https://github.com/ros-industrial-consortium/tesseract/issues/609>`_)
+* Fix environment clone benchmarks
+* Remove deprecated code in tesseract_environment
+* Store timestamp when environment state is set
+* Contributors: Levi Armstrong
+
 0.4.1 (2021-04-24)
 ------------------
 

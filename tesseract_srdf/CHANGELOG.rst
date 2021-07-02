@@ -2,6 +2,11 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix SRDF REP and ROP positioner joint parsing
+* Contributors: Levi Armstrong
+
 0.4.1 (2021-04-24)
 ------------------
 

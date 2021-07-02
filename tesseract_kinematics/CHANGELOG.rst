@@ -2,6 +2,12 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add convex decomposition support (`#609 <https://github.com/ros-industrial-consortium/tesseract/issues/609>`_)
+* IK Solver Redundant Solutions Update (`#601 <https://github.com/ros-industrial-consortium/tesseract/issues/601>`_)
+* Contributors: Levi Armstrong, Michael Ripperger
+
 0.4.1 (2021-04-24)
 ------------------
 
