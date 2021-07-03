@@ -27,7 +27,7 @@ Features
 Creating Geometry Shapes
 ========================
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
 
 
 Example Explanation
@@ -35,49 +35,49 @@ Example Explanation
 
 #. Create a box.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Shape Box
       :end-before: // Shape Cone
 
 #. Create a cone.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Shape Cone
       :end-before: // Shape Capsule
 
 #. Create a capsule.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Shape Capsule
       :end-before: // Shape Cylinder
 
 #. Create a cylinder.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Shape Cylinder
       :end-before: // Shape Plane
 
 #. Create a plane.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Shape Plane
       :end-before: // Shape Sphere
 
 #. Create a sphere.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Shape Sphere
       :end-before: // Manually create mesh
 
 #. Create a mesh.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Manually create mesh
       :end-before: // Manually create signed distance field mesh
@@ -92,7 +92,7 @@ Example Explanation
 
       This should be the same as a mesh, but when interpreted as the collision object it will be encoded as a signed distance field.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Manually create signed distance field mesh
       :end-before: // Manually create convex mesh
@@ -107,7 +107,7 @@ Example Explanation
 
       This expects the data to already represent a convex mesh. If yours does not load as a mesh and then use tesseract utility to convert to a convex mesh.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Manually create convex mesh
       :end-before: // Create an octree
@@ -118,7 +118,7 @@ Example Explanation
 
 #. Create an octree.
 
-   .. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_geometry/examples/create_geometries_example.cpp
+   .. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Create an octree
       :end-before: }
