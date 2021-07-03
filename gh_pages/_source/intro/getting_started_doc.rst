@@ -8,7 +8,7 @@ Before installing Tesseract and it's dependencies, make sure you have the most u
   sudo apt-get update
   sudo apt-get dist-upgrade
 
-Installing ROS Noetic (Optionl)
+Installing ROS Noetic (Optional)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Robot Operating System (ROS) is an open source set of software libraries and tools that help you

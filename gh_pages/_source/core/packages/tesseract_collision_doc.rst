@@ -28,7 +28,7 @@ Features
 Discrete Collision Checker Example
 ==================================
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/ros-industrial-consortium/tesseract/master/tesseract_collision/examples/box_box_example.cpp
    :language: c++
 
 You can find this example `here <https://github.com/ros-industrial-consortium/tesseract/blob/master/tesseract_collision/examples/box_box_example.cpp>`_.
@@ -39,7 +39,7 @@ Example Explanation
 Create Contact Checker
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: // documentation:start:1:
    :end-before: // documentation:end:1:
@@ -67,7 +67,7 @@ Add Collision Objects to Contact Checker
 Add a collision object in a enabled state
 """""""""""""""""""""""""""""""""""""""""
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: // documentation:start:2:
    :end-before: // documentation:end:2:
@@ -78,7 +78,7 @@ Add a collision object in a enabled state
 Add collision object in a disabled state
 """"""""""""""""""""""""""""""""""""""""
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: // documentation:start:3:
    :end-before: // documentation:end:3:
@@ -86,14 +86,14 @@ Add collision object in a disabled state
 Create convex hull from mesh file
 """""""""""""""""""""""""""""""""
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: documentation:start:4:
    :end-before: documentation:end:4:
 
 Add convex hull collision object
 """"""""""""""""""""""""""""""""
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: documentation:start:5:
    :end-before: documentation:end:5:
@@ -101,7 +101,7 @@ Add convex hull collision object
 Set the active collision objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: documentation:start:6:
    :end-before: documentation:end:6:
@@ -109,7 +109,7 @@ Set the active collision objects
 Set the contact distance threshold
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: documentation:start:7:
    :end-before: documentation:end:7:
@@ -117,7 +117,7 @@ Set the contact distance threshold
 Set the collision object's transform
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: documentation:start:8:
    :end-before: documentation:end:8:
@@ -129,7 +129,7 @@ Perform collision check
 
    One object is inside another object
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: documentation:start:9:
    :end-before: documentation:end:9:
@@ -137,7 +137,7 @@ Perform collision check
 Set the collision object's transform
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: documentation:start:10:
    :end-before: documentation:end:10:
@@ -149,7 +149,7 @@ Perform collision check
 
    The objects are outside the contact threshold
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: documentation:start:11:
    :end-before: documentation:end:11:
@@ -157,7 +157,7 @@ Perform collision check
 Change contact distance threshold
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: // documentation:start:12:
    :end-before: // documentation:end:12:
@@ -170,7 +170,7 @@ Perform collision check
 
    The objects are inside the contact threshold
 
-.. literalinclude:: /../tesseract_collision/examples/box_box_example.cpp
+.. rli:: https://raw.githubusercontent.com/steviedale/tesseract/update/tesseract_documentation/tesseract_collision/examples/box_box_example.cpp
    :language: c++
    :start-after: // documentation:start:13:
    :end-before: // documentation:end:13:
