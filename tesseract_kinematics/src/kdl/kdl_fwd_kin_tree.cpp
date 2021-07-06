@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
+#include <tesseract_kinematics/core/utils.h>
 #include <tesseract_common/utils.h>
 
 namespace tesseract_kinematics
@@ -200,6 +201,8 @@ void KDLFwdKinTree::setLimits(tesseract_common::KinematicLimits limits)
   limits_ = std::move(limits);
 }
 
+const std::vector<Eigen::Index>& KDLFwdKinTree::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
+
 unsigned int KDLFwdKinTree::numJoints() const { return static_cast<unsigned>(joint_list_.size()); }
 
 const std::string& KDLFwdKinTree::getBaseLinkName() const { return scene_graph_->getRoot(); }
@@ -320,6 +323,8 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph
 
   assert(joint_names.size() == joint_list_.size());
 
+  redundancy_indices_ = tesseract_kinematics::getRedundancyCapableJointIndices(*scene_graph, joint_list_);
+
   fk_solver_ = std::make_unique<KDL::TreeFkSolverPos_recursive>(kdl_tree_);
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(kdl_tree_);
 
@@ -342,6 +347,7 @@ bool KDLFwdKinTree::init(const KDLFwdKinTree& kin)
   joint_list_ = kin.joint_list_;
   link_list_ = kin.link_list_;
   active_link_list_ = kin.active_link_list_;
+  redundancy_indices_ = kin.redundancy_indices_;
   fk_solver_ = std::make_unique<KDL::TreeFkSolverPos_recursive>(kdl_tree_);
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(kdl_tree_);
   scene_graph_ = kin.scene_graph_;

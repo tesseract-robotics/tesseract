@@ -132,6 +132,12 @@ public:
   virtual void setLimits(tesseract_common::KinematicLimits limits) = 0;
 
   /**
+   * @brief Get vector indicating which joints are capable of producing redundant solutions
+   * @return A vector of joint indicies
+   */
+  virtual const std::vector<Eigen::Index>& getRedundancyCapableJointIndices() const = 0;
+
+  /**
    * @brief Number of joints in robot
    * @return Number of joints in robot
    */
@@ -151,6 +157,13 @@ public:
 
   /** @brief Clone the forward kinematics object */
   virtual std::shared_ptr<InverseKinematics> clone() const = 0;
+
+  /**
+   * @brief Given a solution calculate its redundant solutions
+   * @param sol The solution to calculate redundant solutions about
+   * @return A vector of redundant solutions
+   */
+  IKSolutions getRedundantSolutions(const Eigen::Ref<const Eigen::VectorXd>& sol) const;
 };
 
 }  // namespace tesseract_kinematics

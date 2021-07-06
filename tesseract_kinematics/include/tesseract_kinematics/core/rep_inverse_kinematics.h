@@ -87,6 +87,8 @@ public:
 
   void setLimits(tesseract_common::KinematicLimits limits) override;
 
+  const std::vector<Eigen::Index>& getRedundancyCapableJointIndices() const override;
+
   tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
   unsigned int numJoints() const override;
   const std::string& getBaseLinkName() const override;
@@ -173,6 +175,7 @@ private:
   std::vector<std::string> joint_names_;
   std::vector<std::string> link_names_;
   std::vector<std::string> active_link_names_;
+  std::vector<Eigen::Index> redundancy_indices_; /**< Joint indicies that have redundancy (ex. revolute) */
   std::vector<Eigen::VectorXd> dof_range_;
   std::string name_;                                               /**< Name of the kinematic chain */
   std::string solver_name_{ "RobotWithExternalPositionerInvKin" }; /**< Name of this solver */

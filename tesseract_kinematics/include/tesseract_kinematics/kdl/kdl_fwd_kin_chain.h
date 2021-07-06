@@ -99,6 +99,8 @@ public:
 
   void setLimits(tesseract_common::KinematicLimits limits) override;
 
+  const std::vector<Eigen::Index>& getRedundancyCapableJointIndices() const override;
+
   unsigned int numJoints() const override;
 
   const std::string& getBaseLinkName() const override;
