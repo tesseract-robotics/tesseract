@@ -196,7 +196,7 @@ void IKFastInvKin::setLimits(tesseract_common::KinematicLimits limits)
 
   limits_ = std::move(limits);
 }
-const std::vector<Eigen::Index>& IKFastInvKin::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
+std::vector<Eigen::Index> IKFastInvKin::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
 const std::string& IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
 const std::string& IKFastInvKin::getTipLinkName() const { return tip_link_name_; }
 const std::string& IKFastInvKin::getName() const { return name_; }

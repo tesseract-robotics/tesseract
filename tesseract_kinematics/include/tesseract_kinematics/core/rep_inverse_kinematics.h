@@ -87,7 +87,7 @@ public:
 
   void setLimits(tesseract_common::KinematicLimits limits) override;
 
-  const std::vector<Eigen::Index>& getRedundancyCapableJointIndices() const override;
+  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override;
 
   tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
   unsigned int numJoints() const override;

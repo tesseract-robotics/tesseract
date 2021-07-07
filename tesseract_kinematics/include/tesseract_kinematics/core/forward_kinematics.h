@@ -162,7 +162,7 @@ public:
    * @brief Get vector indicating which joints are capable of producing redundant solutions
    * @return A vector of joint indicies
    */
-  virtual const std::vector<Eigen::Index>& getRedundancyCapableJointIndices() const = 0;
+  virtual std::vector<Eigen::Index> getRedundancyCapableJointIndices() const = 0;
 
   /**
    * @brief Number of joints in robot

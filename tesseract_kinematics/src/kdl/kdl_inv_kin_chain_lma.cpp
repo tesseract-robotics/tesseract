@@ -167,7 +167,7 @@ void KDLInvKinChainLMA::setLimits(tesseract_common::KinematicLimits limits)
   kdl_data_.limits = std::move(limits);
 }
 
-const std::vector<Eigen::Index>& KDLInvKinChainLMA::getRedundancyCapableJointIndices() const
+std::vector<Eigen::Index> KDLInvKinChainLMA::getRedundancyCapableJointIndices() const
 {
   return kdl_data_.redundancy_indices;
 }

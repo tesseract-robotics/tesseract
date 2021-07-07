@@ -189,7 +189,7 @@ void RobotOnPositionerInvKin::setLimits(tesseract_common::KinematicLimits limits
   limits_ = std::move(limits);
 }
 
-const std::vector<Eigen::Index>& RobotOnPositionerInvKin::getRedundancyCapableJointIndices() const
+std::vector<Eigen::Index> RobotOnPositionerInvKin::getRedundancyCapableJointIndices() const
 {
   return redundancy_indices_;
 }

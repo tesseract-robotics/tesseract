@@ -233,7 +233,7 @@ void KDLFwdKinChain::setLimits(tesseract_common::KinematicLimits limits)
   kdl_data_.limits = std::move(limits);
 }
 
-const std::vector<Eigen::Index>& KDLFwdKinChain::getRedundancyCapableJointIndices() const
+std::vector<Eigen::Index> KDLFwdKinChain::getRedundancyCapableJointIndices() const
 {
   return kdl_data_.redundancy_indices;
 }

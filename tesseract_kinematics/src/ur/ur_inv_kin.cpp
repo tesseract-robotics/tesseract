@@ -309,7 +309,7 @@ void URInvKin::setLimits(tesseract_common::KinematicLimits limits)
   limits_ = std::move(limits);
 }
 
-const std::vector<Eigen::Index>& URInvKin::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
+std::vector<Eigen::Index> URInvKin::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
 
 const std::string& URInvKin::getBaseLinkName() const { return base_link_name_; }
 const std::string& URInvKin::getTipLinkName() const { return tip_link_name_; }

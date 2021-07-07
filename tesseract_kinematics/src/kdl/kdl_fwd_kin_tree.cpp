@@ -200,7 +200,7 @@ void KDLFwdKinTree::setLimits(tesseract_common::KinematicLimits limits)
   limits_ = std::move(limits);
 }
 
-const std::vector<Eigen::Index>& KDLFwdKinTree::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
+std::vector<Eigen::Index> KDLFwdKinTree::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
 
 unsigned int KDLFwdKinTree::numJoints() const { return static_cast<unsigned>(joint_list_.size()); }
 

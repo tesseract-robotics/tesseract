@@ -75,7 +75,7 @@ public:
   const std::vector<std::string>& getActiveLinkNames() const override;
   const tesseract_common::KinematicLimits& getLimits() const override;
   void setLimits(tesseract_common::KinematicLimits limits) override;
-  const std::vector<Eigen::Index>& getRedundancyCapableJointIndices() const override;
+  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override;
   const std::string& getBaseLinkName() const override;
   const std::string& getTipLinkName() const override;
   const std::string& getName() const override;
