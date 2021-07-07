@@ -117,6 +117,7 @@ public:
   const std::vector<std::string>& getActiveLinkNames() const;
   const tesseract_common::KinematicLimits& getLimits() const override;
   void setLimits(tesseract_common::KinematicLimits limits) override;
+  const std::vector<Eigen::Index>& getRedundancyCapableJointIndices() const override;
   const std::string& getBaseLinkName() const override;
   const std::string& getTipLinkName() const override;
   const std::string& getName() const override;
@@ -139,7 +140,8 @@ public:
             std::vector<std::string> joint_names,
             std::vector<std::string> link_names,
             std::vector<std::string> active_link_names,
-            tesseract_common::KinematicLimits limits);
+            tesseract_common::KinematicLimits limits,
+            std::vector<Eigen::Index> redundancy_indices);
 
   /**
    * @brief Checks if kinematics has been initialized
@@ -148,15 +150,16 @@ public:
   bool checkInitialized() const;
 
 protected:
-  bool initialized_ = false;                   /**< @brief Identifies if the object has been initialized */
-  std::string base_link_name_;                 /**< @brief Kinematic base link name */
-  std::string tip_link_name_;                  /**< @brief Kinematic tip link name */
-  tesseract_common::KinematicLimits limits_;   /**< @brief Limits */
-  std::vector<std::string> joint_names_;       /**< @brief joint names */
-  std::vector<std::string> link_names_;        /**< @brief link names */
-  std::vector<std::string> active_link_names_; /**< @brief active link names */
-  std::string name_;                           /**< @brief Name of the kinematic chain */
-  std::string solver_name_;                    /**< @brief Name of this solver */
+  bool initialized_ = false;                     /**< @brief Identifies if the object has been initialized */
+  std::string base_link_name_;                   /**< @brief Kinematic base link name */
+  std::string tip_link_name_;                    /**< @brief Kinematic tip link name */
+  tesseract_common::KinematicLimits limits_;     /**< @brief Limits */
+  std::vector<std::string> joint_names_;         /**< @brief joint names */
+  std::vector<std::string> link_names_;          /**< @brief link names */
+  std::vector<std::string> active_link_names_;   /**< @brief active link names */
+  std::vector<Eigen::Index> redundancy_indices_; /**< @brief Joint indicies that have redundancy (ex. revolute) */
+  std::string name_;                             /**< @brief Name of the kinematic chain */
+  std::string solver_name_;                      /**< @brief Name of this solver */
 
   /**
    * @brief This used by the clone method

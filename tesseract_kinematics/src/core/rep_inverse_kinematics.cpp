@@ -29,7 +29,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/rep_inverse_kinematics.h>
-#include <tesseract_kinematics/core/utils.h>
 
 namespace tesseract_kinematics
 {
@@ -404,8 +403,21 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
   std::sort(active_link_names_.begin(), active_link_names_.end());
   active_link_names_.erase(std::unique(active_link_names_.begin(), active_link_names_.end()), active_link_names_.end());
 
-  // Get redundancy indicies
-  redundancy_indices_ = tesseract_kinematics::getRedundancyCapableJointIndices(*scene_graph, joint_names_);
+  // Get redundancy indices
+  redundancy_indices_.clear();
+  for (std::size_t i = 0; i < joint_names_.size(); ++i)
+  {
+    const auto& joint = scene_graph_->getJoint(joint_names_[i]);
+    switch (joint->type)
+    {
+      case tesseract_scene_graph::JointType::REVOLUTE:
+      case tesseract_scene_graph::JointType::CONTINUOUS:
+        redundancy_indices_.push_back(static_cast<Eigen::Index>(i));
+        break;
+      default:
+        break;
+    }
+  }
 
   auto positioner_num_joints = static_cast<int>(positioner_fwd_kin_->numJoints());
   const Eigen::MatrixX2d& positioner_limits = positioner_fwd_kin_->getLimits().joint_limits;

@@ -44,8 +44,7 @@ set(COVERAGE_EXCLUDE
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 # Create interface for core
-add_library(${PROJECT_NAME}_core src/core/inverse_kinematics.cpp src/core/rop_inverse_kinematics.cpp
-                                 src/core/rep_inverse_kinematics.cpp)
+add_library(${PROJECT_NAME}_core src/core/rop_inverse_kinematics.cpp src/core/rep_inverse_kinematics.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen

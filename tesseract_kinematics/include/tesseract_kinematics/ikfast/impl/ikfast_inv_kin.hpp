@@ -52,7 +52,14 @@ InverseKinematics::Ptr IKFastInvKin::clone() const
 
 bool IKFastInvKin::update()
 {
-  return init(name_, base_link_name_, tip_link_name_, joint_names_, link_names_, active_link_names_, limits_);
+  return init(name_,
+              base_link_name_,
+              tip_link_name_,
+              joint_names_,
+              link_names_,
+              active_link_names_,
+              limits_,
+              redundancy_indices_);
 }
 
 IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const
@@ -143,7 +150,8 @@ bool IKFastInvKin::init(std::string name,
                         std::vector<std::string> joint_names,
                         std::vector<std::string> link_names,
                         std::vector<std::string> active_link_names,
-                        tesseract_common::KinematicLimits limits)
+                        tesseract_common::KinematicLimits limits,
+                        std::vector<Eigen::Index> redundancy_indices)
 {
   name_ = std::move(name);
   base_link_name_ = std::move(base_link_name);
@@ -152,6 +160,7 @@ bool IKFastInvKin::init(std::string name,
   link_names_ = std::move(link_names);
   active_link_names_ = std::move(active_link_names);
   limits_ = limits;
+  redundancy_indices_ = redundancy_indices;
   initialized_ = true;
 
   return initialized_;
@@ -168,6 +177,7 @@ bool IKFastInvKin::init(const IKFastInvKin& kin)
   link_names_ = kin.link_names_;
   active_link_names_ = kin.active_link_names_;
   limits_ = kin.limits_;
+  redundancy_indices_ = kin.redundancy_indices_;
 
   return initialized_;
 }
@@ -186,7 +196,7 @@ void IKFastInvKin::setLimits(tesseract_common::KinematicLimits limits)
 
   limits_ = std::move(limits);
 }
-
+const std::vector<Eigen::Index>& IKFastInvKin::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
 const std::string& IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
 const std::string& IKFastInvKin::getTipLinkName() const { return tip_link_name_; }
 const std::string& IKFastInvKin::getName() const { return name_; }

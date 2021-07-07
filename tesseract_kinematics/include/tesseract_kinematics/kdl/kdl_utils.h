@@ -238,7 +238,20 @@ inline bool parseSceneGraph(KDLChainData& results,
     ++j;
   }
 
-  results.redundancy_indices = tesseract_kinematics::getRedundancyCapableJointIndices(scene_graph, results.joint_list);
+  results.redundancy_indices.clear();
+  for (std::size_t i = 0; i < results.joint_list.size(); ++i)
+  {
+    const auto& joint = scene_graph.getJoint(results.joint_list[i]);
+    switch (joint->type)
+    {
+      case tesseract_scene_graph::JointType::REVOLUTE:
+      case tesseract_scene_graph::JointType::CONTINUOUS:
+        results.redundancy_indices.push_back(static_cast<Eigen::Index>(i));
+        break;
+      default:
+        break;
+    }
+  }
 
   return true;
 }

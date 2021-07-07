@@ -73,6 +73,7 @@ public:
 
   /**
    * @brief Calculates joint solutions given a pose.
+   * @details If redundant solutions are needed see utility funciton getRedundantSolutions.
    * @param solutions A vector of solutions, so check the size of the vector to determine the number of solutions
    * @param pose Transform of end-of-tip relative to root (base link)
    * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
@@ -83,6 +84,7 @@ public:
 
   /**
    * @brief Calculates joint solutions given a pose for a specific link.
+   * @details If redundant solutions are needed see utility funciton getRedundantSolutions.
    * @param pose Transform of end-of-tip relative to root (base link)
    * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
@@ -157,13 +159,6 @@ public:
 
   /** @brief Clone the forward kinematics object */
   virtual std::shared_ptr<InverseKinematics> clone() const = 0;
-
-  /**
-   * @brief Given a solution calculate its redundant solutions
-   * @param sol The solution to calculate redundant solutions about
-   * @return A vector of redundant solutions
-   */
-  IKSolutions getRedundantSolutions(const Eigen::Ref<const Eigen::VectorXd>& sol) const;
 };
 
 }  // namespace tesseract_kinematics
