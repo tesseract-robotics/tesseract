@@ -394,31 +394,6 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
 }
 
 /**
- * @brief Creates a vector indicating which joints in the input list of joint names are capable of producing redundant
- * solutions
- */
-inline std::vector<Eigen::Index>
-getRedundancyCapableJointIndices(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
-                                 const std::vector<std::string>& joint_names)
-{
-  std::vector<Eigen::Index> idx;
-  for (std::size_t i = 0; i < joint_names.size(); ++i)
-  {
-    const auto& joint = scene_graph->getJoint(joint_names[i]);
-    switch (joint->type)
-    {
-      case tesseract_scene_graph::JointType::REVOLUTE:
-      case tesseract_scene_graph::JointType::CONTINUOUS:
-        idx.push_back(static_cast<Eigen::Index>(i));
-        break;
-      default:
-        break;
-    }
-  }
-  return idx;
-}
-
-/**
  * @brief This a recursive function for caculating all permutations of the redundant solutions.
  * @details This should not be used directly, use getRedundantSolutions function.
  */
@@ -426,8 +401,8 @@ template <typename FloatType>
 inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redundant_sols,
                                         const Eigen::Ref<const Eigen::VectorXd>& sol,
                                         const Eigen::MatrixX2d& limits,
-                                        std::vector<Eigen::Index>::iterator current_index,
-                                        const std::vector<Eigen::Index>::iterator end_index)
+                                        std::vector<Eigen::Index>::const_iterator current_index,
+                                        std::vector<Eigen::Index>::const_iterator end_index)
 {
   double val;
   for (; current_index != end_index; ++current_index)
@@ -498,13 +473,15 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
 
 /**
  * @brief Kinematics only return solution between PI and -PI. Provided the limits it will append redundant solutions.
- * @param sol The current solution returned from OPW kinematics
+ * @details The list of redundant solutions does not include the provided solutions.
+ * @param sol The solution to calculate redundant solutions about
  * @param limits The joint limits of the robot
+ * @param redundancy_capable_joints The indices of the redundancy capable joints
  */
 template <typename FloatType>
 inline std::vector<VectorX<FloatType>> getRedundantSolutions(const Eigen::Ref<const VectorX<FloatType>>& sol,
                                                              const Eigen::MatrixX2d& limits,
-                                                             std::vector<Eigen::Index> redundancy_capable_joints)
+                                                             const std::vector<Eigen::Index>& redundancy_capable_joints)
 {
   if (redundancy_capable_joints.empty())
     return {};

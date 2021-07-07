@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
+#include <tesseract_kinematics/core/utils.h>
 
 namespace tesseract_kinematics
 {
@@ -140,15 +141,16 @@ inline void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> 
  */
 struct KDLChainData
 {
-  KDL::Chain robot_chain;                    /**< KDL Chain object */
-  KDL::Tree kdl_tree;                        /**< KDL tree object */
-  std::string base_name;                     /**< Link name of first link in the kinematic chain */
-  std::string tip_name;                      /**< Link name of last kink in the kinematic chain */
-  std::vector<std::string> joint_list;       /**< List of joint names */
-  std::vector<std::string> link_list;        /**< List of link names */
-  std::vector<std::string> active_link_list; /**< List of link names that move with changes in joint values */
-  tesseract_common::KinematicLimits limits;  /**< Joint limits, velocity limits, and acceleration limits */
-  std::map<std::string, int> segment_index;  /**< A map from chain link name to kdl chain segment number */
+  KDL::Chain robot_chain;                       /**< KDL Chain object */
+  KDL::Tree kdl_tree;                           /**< KDL tree object */
+  std::string base_name;                        /**< Link name of first link in the kinematic chain */
+  std::string tip_name;                         /**< Link name of last kink in the kinematic chain */
+  std::vector<std::string> joint_list;          /**< List of joint names */
+  std::vector<std::string> link_list;           /**< List of link names */
+  std::vector<std::string> active_link_list;    /**< List of link names that move with changes in joint values */
+  tesseract_common::KinematicLimits limits;     /**< Joint limits, velocity limits, and acceleration limits */
+  std::vector<Eigen::Index> redundancy_indices; /**< Joint indicies that have redundancy (ex. revolute) */
+  std::map<std::string, int> segment_index;     /**< A map from chain link name to kdl chain segment number */
   std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
 };
 
@@ -234,6 +236,21 @@ inline bool parseSceneGraph(KDLChainData& results,
       results.limits.joint_limits(j, 1) = +4 * M_PI;
     }
     ++j;
+  }
+
+  results.redundancy_indices.clear();
+  for (std::size_t i = 0; i < results.joint_list.size(); ++i)
+  {
+    const auto& joint = scene_graph.getJoint(results.joint_list[i]);
+    switch (joint->type)
+    {
+      case tesseract_scene_graph::JointType::REVOLUTE:
+      case tesseract_scene_graph::JointType::CONTINUOUS:
+        results.redundancy_indices.push_back(static_cast<Eigen::Index>(i));
+        break;
+      default:
+        break;
+    }
   }
 
   return true;
