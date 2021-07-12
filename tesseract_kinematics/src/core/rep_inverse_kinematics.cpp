@@ -307,7 +307,7 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
 
   if (solver_name.empty())
   {
-    CONSOLE_BRIDGE_logError("Solver name nust not be empty.");
+    CONSOLE_BRIDGE_logError("Solver name must not be empty.");
     return false;
   }
 
