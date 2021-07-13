@@ -13,10 +13,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
 {
-ConvexDeompositionHACD::ConvexDeompositionHACD(const HACDParameters& params) : params_(params) {}
+ConvexDecompositionHACD::ConvexDecompositionHACD(const HACDParameters& params) : params_(params) {}
 
 std::vector<tesseract_geometry::ConvexMesh::Ptr>
-ConvexDeompositionHACD::compute(const tesseract_common::VectorVector3d& vertices, const Eigen::VectorXi& faces) const
+ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertices, const Eigen::VectorXi& faces) const
 {
   params_.print();
 
