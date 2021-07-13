@@ -189,6 +189,11 @@ void RobotOnPositionerInvKin::setLimits(tesseract_common::KinematicLimits limits
   limits_ = std::move(limits);
 }
 
+std::vector<Eigen::Index> RobotOnPositionerInvKin::getRedundancyCapableJointIndices() const
+{
+  return redundancy_indices_;
+}
+
 unsigned int RobotOnPositionerInvKin::numJoints() const { return dof_; }
 
 const std::string& RobotOnPositionerInvKin::getBaseLinkName() const { return positioner_fwd_kin_->getBaseLinkName(); }
@@ -317,6 +322,22 @@ bool RobotOnPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr s
   std::sort(active_link_names_.begin(), active_link_names_.end());
   active_link_names_.erase(std::unique(active_link_names_.begin(), active_link_names_.end()), active_link_names_.end());
 
+  // Get redundancy indices
+  redundancy_indices_.clear();
+  for (std::size_t i = 0; i < joint_names_.size(); ++i)
+  {
+    const auto& joint = scene_graph_->getJoint(joint_names_[i]);
+    switch (joint->type)
+    {
+      case tesseract_scene_graph::JointType::REVOLUTE:
+      case tesseract_scene_graph::JointType::CONTINUOUS:
+        redundancy_indices_.push_back(static_cast<Eigen::Index>(i));
+        break;
+      default:
+        break;
+    }
+  }
+
   auto positioner_num_joints = static_cast<int>(positioner_fwd_kin_->numJoints());
   const Eigen::MatrixX2d& positioner_limits = positioner_fwd_kin_->getLimits().joint_limits;
 
@@ -351,6 +372,7 @@ bool RobotOnPositionerInvKin::init(const RobotOnPositionerInvKin& kin)
   joint_names_ = kin.joint_names_;
   link_names_ = kin.link_names_;
   active_link_names_ = kin.active_link_names_;
+  redundancy_indices_ = kin.redundancy_indices_;
   dof_range_ = kin.dof_range_;
 
   return initialized_;

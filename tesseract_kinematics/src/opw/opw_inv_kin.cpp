@@ -124,6 +124,8 @@ void OPWInvKin::setLimits(tesseract_common::KinematicLimits limits)
   limits_ = std::move(limits);
 }
 
+std::vector<Eigen::Index> OPWInvKin::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
+
 const std::string& OPWInvKin::getBaseLinkName() const { return base_link_name_; }
 const std::string& OPWInvKin::getTipLinkName() const { return tip_link_name_; }
 const std::string& OPWInvKin::getName() const { return name_; }

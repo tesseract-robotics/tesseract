@@ -233,6 +233,11 @@ void KDLFwdKinChain::setLimits(tesseract_common::KinematicLimits limits)
   kdl_data_.limits = std::move(limits);
 }
 
+std::vector<Eigen::Index> KDLFwdKinChain::getRedundancyCapableJointIndices() const
+{
+  return kdl_data_.redundancy_indices;
+}
+
 tesseract_scene_graph::SceneGraph::ConstPtr KDLFwdKinChain::getSceneGraph() const { return scene_graph_; }
 
 unsigned int KDLFwdKinChain::numJoints() const { return kdl_data_.robot_chain.getNrOfJoints(); }
