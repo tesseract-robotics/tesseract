@@ -44,14 +44,14 @@ struct HACDParameters
   void print() const;
 };
 
-class ConvexDeompositionHACD : public ConvexDecomposition
+class ConvexDecompositionHACD : public ConvexDecomposition
 {
 public:
-  using Ptr = std::shared_ptr<ConvexDeompositionHACD>;
-  using ConstPtr = std::shared_ptr<const ConvexDeompositionHACD>;
+  using Ptr = std::shared_ptr<ConvexDecompositionHACD>;
+  using ConstPtr = std::shared_ptr<const ConvexDecompositionHACD>;
 
-  ConvexDeompositionHACD() = default;
-  ConvexDeompositionHACD(const HACDParameters& params);
+  ConvexDecompositionHACD() = default;
+  ConvexDecompositionHACD(const HACDParameters& params);
 
   std::vector<tesseract_geometry::ConvexMesh::Ptr> compute(const tesseract_common::VectorVector3d& vertices,
                                                            const Eigen::VectorXi& faces) const override;

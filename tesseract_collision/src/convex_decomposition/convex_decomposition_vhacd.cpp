@@ -32,10 +32,10 @@ public:
   }
 };
 
-ConvexDeompositionVHACD::ConvexDeompositionVHACD(const VHACDParameters& params) : params_(params) {}
+ConvexDecompositionVHACD::ConvexDecompositionVHACD(const VHACDParameters& params) : params_(params) {}
 
 std::vector<tesseract_geometry::ConvexMesh::Ptr>
-ConvexDeompositionVHACD::compute(const tesseract_common::VectorVector3d& vertices, const Eigen::VectorXi& faces) const
+ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertices, const Eigen::VectorXi& faces) const
 {
   params_.print();
 
