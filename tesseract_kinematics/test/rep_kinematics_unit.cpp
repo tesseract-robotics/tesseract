@@ -161,11 +161,13 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   auto inv_kin = getFullInvKinematics(scene_graph);
   auto inv_kin2 = getFullInvKinematics(scene_graph, false);
 
+  inv_kin->synchronize(fwd_kin);
+  inv_kin2->synchronize(fwd_kin);
+
   const std::vector<std::string>& fwd_joint_names = fwd_kin->getJointNames();
   const std::vector<std::string>& inv_joint_names = inv_kin->getJointNames();
   const std::vector<std::string>& inv2_joint_names = inv_kin2->getJointNames();
 
-  // TODO: Need to add a way to synchronize two kinematics so joints are in the same order.
   EXPECT_TRUE(std::equal(fwd_joint_names.begin(), fwd_joint_names.end(), inv_joint_names.begin()));
   EXPECT_TRUE(std::equal(fwd_joint_names.begin(), fwd_joint_names.end(), inv2_joint_names.begin()));
 
