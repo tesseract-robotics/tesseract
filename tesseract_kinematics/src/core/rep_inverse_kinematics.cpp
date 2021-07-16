@@ -450,18 +450,13 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
   std::sort(data_.link_names.begin(), data_.link_names.end());
   data_.link_names.erase(std::unique(data_.link_names.begin(), data_.link_names.end()), data_.link_names.end());
 
-  data_.active_link_names = positioner_fwd_kin_->getActiveLinkNames();
-  const auto& manip_active_links = manip_inv_kin_->getActiveLinkNames();
-  data_.active_link_names.insert(data_.active_link_names.end(), manip_active_links.begin(), manip_active_links.end());
-
-  // Remove duplicates
-  std::sort(data_.active_link_names.begin(), data_.active_link_names.end());
-  data_.active_link_names.erase(std::unique(data_.active_link_names.begin(), data_.active_link_names.end()),
-                                data_.active_link_names.end());
-
   // Get redundancy indices
+  std::vector<std::string> full_active_link_names;
   for (std::size_t i = 0; i < data_.joint_names.size(); ++i)
   {
+    std::vector<std::string> children = scene_graph_->getJointChildrenNames(data_.joint_names[i]);
+    full_active_link_names.insert(full_active_link_names.end(), children.begin(), children.end());
+
     const auto& joint = scene_graph_->getJoint(data_.joint_names[i]);
     switch (joint->type)
     {
@@ -473,6 +468,17 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
         break;
     }
   }
+
+  data_.active_link_names = data_.link_names;
+  // Clean up link names which are not affected by the active joints
+  data_.active_link_names.erase(std::remove_if(data_.active_link_names.begin(),
+                                               data_.active_link_names.end(),
+                                               [&full_active_link_names](const std::string& ln) {
+                                                 return (std::find(full_active_link_names.begin(),
+                                                                   full_active_link_names.end(),
+                                                                   ln) == full_active_link_names.end());
+                                               }),
+                                data_.active_link_names.end());
 
   auto positioner_num_joints = static_cast<int>(positioner_fwd_kin_->numJoints());
   const Eigen::MatrixX2d& positioner_limits = positioner_fwd_kin_->getLimits().joint_limits;
