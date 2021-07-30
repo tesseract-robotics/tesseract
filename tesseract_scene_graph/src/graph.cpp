@@ -551,6 +551,18 @@ std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& na
   return getLinkChildrenHelper(v);  // NOLINT
 }
 
+std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std::string>& names) const
+{
+  std::set<std::string> link_names;
+  for (const auto& name : names)
+  {
+    std::vector<std::string> joint_children = getJointChildrenNames(name);
+    link_names.insert(joint_children.begin(), joint_children.end());
+  }
+
+  return std::vector<std::string>(link_names.begin(), link_names.end());
+}
+
 void SceneGraph::saveDOT(const std::string& path) const
 {
   std::ofstream dot_file(path);

@@ -59,6 +59,49 @@ inline ObjectPairKey getObjectPairKey(const std::string& obj1, const std::string
 }
 
 /**
+ * @brief Get a vector of possible collision object pairs
+ * @todo Should this also filter out links without geometry?
+ * @param active_links The active link names
+ * @param static_links The static link names
+ * @param acm The is contact allowed function
+ * @return A vector of collision object pairs
+ */
+inline std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string>& active_links,
+                                                          const std::vector<std::string>& static_links,
+                                                          const IsContactAllowedFn& acm)
+{
+  std::size_t num_pairs = active_links.size() * (active_links.size() - 1) / 2;
+  num_pairs += (active_links.size() * static_links.size());
+
+  std::vector<ObjectPairKey> clp;
+  clp.reserve(num_pairs);
+
+  // Create active to active pairs
+  for (std::size_t i = 0; i < active_links.size() - 1; ++i)
+  {
+    const std::string& l1 = active_links[i];
+    for (std::size_t j = i + 1; j < active_links.size(); ++j)
+    {
+      const std::string& l2 = active_links[j];
+      if (!acm(l1, l2))
+        clp.push_back(tesseract_collision::getObjectPairKey(l1, l2));
+    }
+  }
+
+  // Create active to static pairs
+  for (const auto& l1 : active_links)
+  {
+    for (const auto& l2 : static_links)
+    {
+      if (!acm(l1, l2))
+        clp.push_back(tesseract_collision::getObjectPairKey(l1, l2));
+    }
+  }
+
+  return clp;
+}
+
+/**
  * @brief This will check if a link is active provided a list. If the list is empty the link is considered active.
  * @param active List of active link names
  * @param name The name of link to check if it is active.

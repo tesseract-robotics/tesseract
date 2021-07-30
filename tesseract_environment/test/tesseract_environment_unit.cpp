@@ -2128,12 +2128,48 @@ void runEnvCloneTest()
     EXPECT_EQ(history[i]->getType(), clone_history[i]->getType());
   }
 
-  // Check active links
-  std::vector<std::string> active_link_names = env->getActiveLinkNames();
-  std::vector<std::string> clone_active_link_names = clone->getActiveLinkNames();
-  for (const auto& name : active_link_names)
-    EXPECT_TRUE(std::find(clone_active_link_names.begin(), clone_active_link_names.end(), name) !=
-                clone_active_link_names.end());
+  {
+    // Check active links
+    std::vector<std::string> active_link_names = env->getActiveLinkNames();
+    std::vector<std::string> clone_active_link_names = clone->getActiveLinkNames();
+    EXPECT_EQ(active_link_names.size(), clone_active_link_names.size());
+    for (const auto& name : active_link_names)
+      EXPECT_TRUE(std::find(clone_active_link_names.begin(), clone_active_link_names.end(), name) !=
+                  clone_active_link_names.end());
+
+    // Check static links
+    std::vector<std::string> static_link_names = env->getStaticLinkNames();
+    std::vector<std::string> clone_static_link_names = clone->getStaticLinkNames();
+    EXPECT_EQ(static_link_names.size(), clone_static_link_names.size());
+    for (const auto& name : static_link_names)
+      EXPECT_TRUE(std::find(clone_static_link_names.begin(), clone_static_link_names.end(), name) !=
+                  clone_static_link_names.end());
+  }
+  {
+    // Check active links with joint names
+    std::vector<std::string> active_link_names = env->getActiveLinkNames(env->getActiveJointNames());
+    EXPECT_TRUE(tesseract_common::isIdentical(active_link_names, env->getActiveLinkNames(), false));
+
+    std::vector<std::string> clone_active_link_names = clone->getActiveLinkNames(env->getActiveJointNames());
+    EXPECT_TRUE(tesseract_common::isIdentical(clone_active_link_names, clone->getActiveLinkNames(), false));
+
+    EXPECT_EQ(active_link_names.size(), clone_active_link_names.size());
+    for (const auto& name : active_link_names)
+      EXPECT_TRUE(std::find(clone_active_link_names.begin(), clone_active_link_names.end(), name) !=
+                  clone_active_link_names.end());
+
+    // Check static links with joint names
+    std::vector<std::string> static_link_names = env->getStaticLinkNames(env->getActiveJointNames());
+    EXPECT_TRUE(tesseract_common::isIdentical(static_link_names, env->getStaticLinkNames(), false));
+
+    std::vector<std::string> clone_static_link_names = clone->getStaticLinkNames(env->getActiveJointNames());
+    EXPECT_TRUE(tesseract_common::isIdentical(clone_static_link_names, clone->getStaticLinkNames(), false));
+
+    EXPECT_EQ(static_link_names.size(), clone_static_link_names.size());
+    for (const auto& name : static_link_names)
+      EXPECT_TRUE(std::find(clone_static_link_names.begin(), clone_static_link_names.end(), name) !=
+                  clone_static_link_names.end());
+  }
 
   // Check active joints
   std::vector<std::string> active_joint_names = env->getActiveJointNames();

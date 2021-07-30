@@ -473,6 +473,26 @@ public:
   virtual std::vector<std::string> getActiveLinkNames() const;
 
   /**
+   * @brief Get a vector of active link names affected by the provided joints in the environment
+   * @param joint_names A list of joint names
+   * @return A vector of active link names
+   */
+  virtual std::vector<std::string> getActiveLinkNames(const std::vector<std::string>& joint_names) const;
+
+  /**
+   * @brief Get a vector of static link names in the environment
+   * @return A vector of static link names
+   */
+  virtual std::vector<std::string> getStaticLinkNames() const;
+
+  /**
+   * @brief Get a vector of static link names not affected by the provided joints in the environment
+   * @param joint_names A list of joint names
+   * @return A vector of static link names
+   */
+  virtual std::vector<std::string> getStaticLinkNames(const std::vector<std::string>& joint_names) const;
+
+  /**
    * @brief Get all of the links transforms
    *
    * Order should be the same as getLinkNames()
