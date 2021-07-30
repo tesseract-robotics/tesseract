@@ -47,7 +47,7 @@ set(COVERAGE_EXCLUDE
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 # Create interface for core
-add_library(${PROJECT_NAME}_core src/core/environment.cpp src/core/manipulator_manager.cpp)
+add_library(${PROJECT_NAME}_core src/core/environment.cpp src/core/manipulator_manager.cpp src/core/utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen

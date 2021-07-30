@@ -422,11 +422,19 @@ public:
   std::vector<std::string> getLinkChildrenNames(const std::string& name) const;
 
   /**
-   * @brief Get all children for a given link name
-   * @param name Name of Link
+   * @brief Get all children link names for a given joint name
+   * @param name Name of joint
    * @return A vector of child link names
    */
   std::vector<std::string> getJointChildrenNames(const std::string& name) const;
+
+  /**
+   * @brief Get all children link names for the given joint names
+   * @todo Need to create custom vistor so already process joint_names do not get processed again.
+   * @param names Name of joints
+   * @return A vector of child link names
+   */
+  std::vector<std::string> getJointChildrenNames(const std::vector<std::string>& names) const;
 
   /**
    * @brief Saves Graph as Graph Description Language (DOT)
