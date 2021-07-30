@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.0 (2021-07-02)
+------------------
+* Add convex decomposition support (`#609 <https://github.com/ros-industrial-consortium/tesseract/issues/609>`_)
+* Contributors: Levi Armstrong
+
 0.4.1 (2021-04-24)
 ------------------
 

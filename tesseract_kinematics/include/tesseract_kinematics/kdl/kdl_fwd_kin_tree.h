@@ -97,6 +97,8 @@ public:
 
   void setLimits(tesseract_common::KinematicLimits limits) override;
 
+  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override;
+
   unsigned int numJoints() const override;
 
   const std::string& getBaseLinkName() const override;
@@ -142,8 +144,9 @@ private:
   std::vector<int> joint_qnr_; /**< The kdl segment number corrisponding to joint in joint_lists_ */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< The tree joint name to qnr */
   std::vector<std::string> link_list_;                         /**< List of link names */
-  std::vector<std::string> active_link_list_; /**< List of link names that move with changes in joint values */
-  tesseract_common::KinematicLimits limits_;  /**< Joint limits, velocity limits and acceleration limits */
+  std::vector<std::string> active_link_list_;    /**< List of link names that move with changes in joint values */
+  tesseract_common::KinematicLimits limits_;     /**< Joint limits, velocity limits and acceleration limits */
+  std::vector<Eigen::Index> redundancy_indices_; /**< Joint indicies that have redundancy (ex. revolute) */
   std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
 

@@ -52,6 +52,12 @@ inline std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(n
 #endif
 
 /**
+ * @brief This computes a random color with alpha set to 1
+ * @return A random color
+ */
+Eigen::Vector4d computeRandomColor();
+
+/**
  * @brief Print a nested exception
  * @param e The exception to print
  * @param level The exception level which controls the indentation

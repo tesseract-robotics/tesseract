@@ -75,6 +75,7 @@ public:
   const std::vector<std::string>& getActiveLinkNames() const override;
   const tesseract_common::KinematicLimits& getLimits() const override;
   void setLimits(tesseract_common::KinematicLimits limits) override;
+  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override;
   const std::string& getBaseLinkName() const override;
   const std::string& getTipLinkName() const override;
   const std::string& getName() const override;
@@ -118,6 +119,8 @@ protected:
   std::vector<std::string> active_link_names_; /**< @brief active link names */
   std::string name_;                           /**< @brief Name of the kinematic chain */
   std::string solver_name_{ "OPWInvKin" };     /**< @brief Name of this solver */
+  std::vector<Eigen::Index> redundancy_indices_{ 0, 1, 2, 3, 4, 5 }; /**< Joint indicies that have redundancy (ex.
+                                                                        revolute) */
 
   /**
    * @brief This used by the clone method

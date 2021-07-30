@@ -166,7 +166,7 @@ else()
   if(NOT ignition-math6-eigen3_FOUND)
     list(APPEND IGNITION_MISSING "ignition-math6-eigen3")
   endif()
-  message(WARNING "Ignition Visualization Library will not be built! Missing: ${IGNITION_MISSING}")
+  message(STATUS "Ignition Visualization Library will not be built! Missing: ${IGNITION_MISSING}")
 endif()
 
 configure_package(NAMESPACE tesseract TARGETS ${PACKAGE_LIBRARIES})

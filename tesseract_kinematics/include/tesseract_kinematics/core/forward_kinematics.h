@@ -159,6 +159,12 @@ public:
   virtual void setLimits(tesseract_common::KinematicLimits limits) = 0;
 
   /**
+   * @brief Get vector indicating which joints are capable of producing redundant solutions
+   * @return A vector of joint indicies
+   */
+  virtual std::vector<Eigen::Index> getRedundancyCapableJointIndices() const = 0;
+
+  /**
    * @brief Number of joints in robot
    * @return Number of joints in robot
    */

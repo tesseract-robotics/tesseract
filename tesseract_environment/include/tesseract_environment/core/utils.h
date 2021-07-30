@@ -180,8 +180,12 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
       config.type != tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
     throw std::runtime_error("checkTrajectory was given an CollisionEvaluatorType that is inconsistent with the "
                              "ContactManager type");
-  bool found = false;
 
+  if (traj.rows() == 1)
+    throw std::runtime_error("checkTrajectory was given continuous contact manager with a trajectory that only has one "
+                             "state.");
+
+  bool found = false;
   if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
   {
     contacts.reserve(static_cast<size_t>(traj.rows() - 1));
@@ -313,8 +317,14 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
       config.type != tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE)
     throw std::runtime_error("checkTrajectory was given an CollisionEvaluatorType that is inconsistent with the "
                              "ContactManager type");
-  bool found = false;
 
+  if (traj.rows() == 1)
+  {
+    tesseract_environment::EnvState::Ptr state = state_solver.getState(joint_names, traj.row(0));
+    return checkTrajectoryState(contacts, manager, state, config);
+  }
+
+  bool found = false;
   if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE)
   {
     contacts.reserve(static_cast<size_t>(traj.rows()));

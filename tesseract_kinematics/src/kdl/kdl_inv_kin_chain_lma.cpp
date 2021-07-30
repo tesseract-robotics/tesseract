@@ -92,15 +92,6 @@ IKSolutions KDLInvKinChainLMA::calcInvKinHelper(const Eigen::Isometry3d& pose,
   if (tesseract_common::satisfiesPositionLimits(solution, kdl_data_.limits.joint_limits))
     solution_set.push_back(solution);
 
-  // Add redundant solutions
-  IKSolutions redundant_sols = getRedundantSolutions<double>(solution, kdl_data_.limits.joint_limits);
-  if (!redundant_sols.empty())
-  {
-    solution_set.insert(end(solution_set),
-                        std::make_move_iterator(redundant_sols.begin()),
-                        std::make_move_iterator(redundant_sols.end()));
-  }
-
   return solution_set;
 }
 
@@ -174,6 +165,11 @@ void KDLInvKinChainLMA::setLimits(tesseract_common::KinematicLimits limits)
     throw std::runtime_error("Kinematics limits assigned are invalid!");
 
   kdl_data_.limits = std::move(limits);
+}
+
+std::vector<Eigen::Index> KDLInvKinChainLMA::getRedundancyCapableJointIndices() const
+{
+  return kdl_data_.redundancy_indices;
 }
 
 unsigned int KDLInvKinChainLMA::numJoints() const { return kdl_data_.robot_chain.getNrOfJoints(); }

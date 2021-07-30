@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>tesseract_collision</name>
-  <version>0.4.1</version>
+  <version>0.5.0</version>
   <description>The tesseract_collision package</description>
   <maintainer email="Levi.Armstrong@swri.org">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
@@ -21,6 +21,7 @@
   <depend>fcl</depend>
   <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_support</depend>
+  <depend>libomp-dev</depend>
 
   <build_depend>libboost-system-dev</build_depend>
   <build_export_depend>libboost-system-dev</build_export_depend>

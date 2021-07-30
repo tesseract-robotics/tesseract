@@ -32,7 +32,6 @@
 #include <tesseract_environment/core/commands/add_link_command.h>
 #include <tesseract_environment/core/commands/add_kinematics_information_command.h>
 #include <tesseract_environment/core/commands/add_scene_graph_command.h>
-#include <tesseract_environment/core/commands/change_default_contact_margin_command.h>
 #include <tesseract_environment/core/commands/change_joint_acceleration_limits_command.h>
 #include <tesseract_environment/core/commands/change_joint_origin_command.h>
 #include <tesseract_environment/core/commands/change_joint_position_limits_command.h>
@@ -40,7 +39,6 @@
 #include <tesseract_environment/core/commands/change_link_collision_enabled_command.h>
 #include <tesseract_environment/core/commands/change_link_origin_command.h>
 #include <tesseract_environment/core/commands/change_link_visibility_command.h>
-#include <tesseract_environment/core/commands/change_pair_contact_margin_command.h>
 #include <tesseract_environment/core/commands/move_joint_command.h>
 #include <tesseract_environment/core/commands/move_link_command.h>
 #include <tesseract_environment/core/commands/remove_allowed_collision_command.h>
@@ -72,8 +70,6 @@
 %shared_ptr(tesseract_environment::ChangeJointPositionLimitsCommand)
 %shared_ptr(tesseract_environment::ChangeJointVelocityLimitsCommand)
 %shared_ptr(tesseract_environment::ChangeJointAccelerationLimitsCommand)
-%shared_ptr(tesseract_environment::ChangeDefaultContactMarginCommand)
-%shared_ptr(tesseract_environment::ChangePairContactMarginCommand)
 %shared_ptr(tesseract_environment::ChangeCollisionMarginsCommand)
 
 %shared_factory(
@@ -96,8 +92,6 @@
   tesseract_environment::ChangeJointPositionLimitsCommand,
   tesseract_environment::ChangeJointVelocityLimitsCommand,
   tesseract_environment::ChangeJointAccelerationLimitsCommand,
-  tesseract_environment::ChangeDefaultContactMarginCommand,
-  tesseract_environment::ChangePairContactMarginCommand,
   tesseract_environment::ChangeCollisionMarginsCommand
 )
 

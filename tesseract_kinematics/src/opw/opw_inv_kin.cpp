@@ -68,15 +68,6 @@ IKSolutions OPWInvKin::calcInvKin(const Eigen::Isometry3d& pose,
       // Add solution
       if (tesseract_common::satisfiesPositionLimits(eigen_sol, limits_.joint_limits))
         solution_set.push_back(eigen_sol);
-
-      // Add redundant solutions
-      IKSolutions redundant_sols = getRedundantSolutions<double>(eigen_sol, limits_.joint_limits);
-      if (!redundant_sols.empty())
-      {
-        solution_set.insert(end(solution_set),
-                            std::make_move_iterator(redundant_sols.begin()),
-                            std::make_move_iterator(redundant_sols.end()));
-      }
     }
   }
 
@@ -132,6 +123,8 @@ void OPWInvKin::setLimits(tesseract_common::KinematicLimits limits)
 
   limits_ = std::move(limits);
 }
+
+std::vector<Eigen::Index> OPWInvKin::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
 
 const std::string& OPWInvKin::getBaseLinkName() const { return base_link_name_; }
 const std::string& OPWInvKin::getTipLinkName() const { return tip_link_name_; }
