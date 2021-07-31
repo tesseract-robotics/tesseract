@@ -34,6 +34,7 @@
       <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
       <positioner group="positioner" fk_solver="KDLFwdKinChain">
         <joint name="positioner_joint_1" resolution="0.1"/>
+        <joint name="positioner_joint_2" resolution="0.1"/>
       </positioner>
     </group_rep>
 

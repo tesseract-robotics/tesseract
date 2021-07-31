@@ -37,10 +37,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+/**
+ * @brief The data that is synchronized between inverse kinematics and forward kinematics
+ * @note The base and tip link name are not synchronized so must make sure tranform cartesian data into base frame
+ */
 struct SynchronizableData
 {
-  std::string base_link_name;                   /**< Link name of first link in the kinematic chain */
-  std::string tip_link_name;                    /**< Link name of last kink in the kinematic chain */
   std::vector<std::string> joint_names;         /**< List of joint names */
   std::vector<std::string> link_names;          /**< List of link names */
   std::vector<std::string> active_link_names;   /**< List of link names that move with changes in joint values */
@@ -49,8 +51,6 @@ struct SynchronizableData
 
   void clear()
   {
-    base_link_name = "";
-    tip_link_name = "";
     joint_names.clear();
     link_names.clear();
     active_link_names.clear();
@@ -61,8 +61,6 @@ struct SynchronizableData
   bool operator==(const SynchronizableData& rhs) const
   {
     bool equal = true;
-    equal &= (base_link_name == rhs.base_link_name);
-    equal &= (tip_link_name == rhs.tip_link_name);
     equal &= tesseract_common::isIdentical(joint_names, rhs.joint_names);
     equal &= tesseract_common::isIdentical(link_names, rhs.link_names);
     equal &= tesseract_common::isIdentical(active_link_names, rhs.active_link_names);

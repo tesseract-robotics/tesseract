@@ -354,6 +354,8 @@ bool KDLFwdKinTree::init(const KDLFwdKinTree& kin)
 {
   initialized_ = kin.initialized_;
   name_ = kin.name_;
+  base_link_name_ = kin.base_link_name_;
+  tip_link_name_ = kin.tip_link_name_;
   solver_name_ = kin.solver_name_;
   kdl_tree_ = kin.kdl_tree_;
   limits_ = kin.limits_;

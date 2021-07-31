@@ -145,6 +145,8 @@ struct KDLChainData
   KDL::Chain robot_chain;                   /**< KDL Chain object */
   KDL::Tree kdl_tree;                       /**< KDL tree object */
   SynchronizableData data;                  /**< Synchronizable data */
+  std::string base_link_name;               /**< @brief Link name of first link in the kinematic object */
+  std::string tip_link_name;                /**< @brief Link name of last kink in the kinematic object */
   std::map<std::string, int> segment_index; /**< A map from chain link name to kdl chain segment number */
   std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
 };
@@ -168,7 +170,7 @@ inline bool parseSceneGraph(KDLChainData& results,
   }
 
   results.chains = chains;
-  results.data.base_link_name = chains.front().first;
+  results.base_link_name = chains.front().first;
   for (const auto& chain : chains)
   {
     KDL::Chain sub_chain;
@@ -180,18 +182,18 @@ inline bool parseSceneGraph(KDLChainData& results,
     }
     results.robot_chain.addChain(sub_chain);
   }
-  results.data.tip_link_name = chains.back().second;
+  results.tip_link_name = chains.back().second;
 
   results.data.joint_names.resize(results.robot_chain.getNrOfJoints());
   results.data.limits.joint_limits.resize(results.robot_chain.getNrOfJoints(), 2);
   results.data.limits.velocity_limits.resize(results.robot_chain.getNrOfJoints());
   results.data.limits.acceleration_limits.resize(results.robot_chain.getNrOfJoints());
 
-  results.segment_index[results.data.base_link_name] = 0;
+  results.segment_index[results.base_link_name] = 0;
   results.data.link_names.clear();
   results.data.active_link_names.clear();
-  results.data.link_names.push_back(results.data.base_link_name);
-  results.data.active_link_names.push_back(results.data.base_link_name);
+  results.data.link_names.push_back(results.base_link_name);
+  results.data.active_link_names.push_back(results.base_link_name);
 
   std::vector<std::string> full_active_link_names;
   bool found{ false };
