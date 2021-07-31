@@ -44,10 +44,7 @@ ForwardKinematics::Ptr KDLFwdKinChain::clone() const
   return cloned_fwdkin;
 }
 
-bool KDLFwdKinChain::update()
-{
-  return init(scene_graph_, kdl_data_.data.base_link_name, kdl_data_.data.tip_link_name, name_);
-}
+bool KDLFwdKinChain::update() { return init(scene_graph_, kdl_data_.base_link_name, kdl_data_.tip_link_name, name_); }
 
 Eigen::Isometry3d KDLFwdKinChain::calcFwdKinHelper(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                                    int segment_num) const
@@ -245,9 +242,9 @@ tesseract_scene_graph::SceneGraph::ConstPtr KDLFwdKinChain::getSceneGraph() cons
 
 unsigned int KDLFwdKinChain::numJoints() const { return kdl_data_.robot_chain.getNrOfJoints(); }
 
-const std::string& KDLFwdKinChain::getBaseLinkName() const { return kdl_data_.data.base_link_name; }
+const std::string& KDLFwdKinChain::getBaseLinkName() const { return kdl_data_.base_link_name; }
 
-const std::string& KDLFwdKinChain::getTipLinkName() const { return kdl_data_.data.tip_link_name; }
+const std::string& KDLFwdKinChain::getTipLinkName() const { return kdl_data_.tip_link_name; }
 
 const std::string& KDLFwdKinChain::getName() const { return name_; }
 

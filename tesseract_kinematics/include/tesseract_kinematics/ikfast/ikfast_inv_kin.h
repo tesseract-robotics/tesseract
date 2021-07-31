@@ -158,6 +158,8 @@ protected:
   bool initialized_ = false;                  /**< @brief Identifies if the object has been initialized */
   ForwardKinematics::ConstPtr sync_fwd_kin_;  /**< @brief Synchronized forward kinematics object */
   std::vector<Eigen::Index> sync_joint_map_;  /**< @brief Synchronized joint solution remapping */
+  std::string base_link_name_;                /**< @brief Link name of first link in the kinematic object */
+  std::string tip_link_name_;                 /**< @brief Link name of last kink in the kinematic object */
   SynchronizableData data_;                   /**< @brief The current data that may be synchronized */
   SynchronizableData orig_data_;              /**< @brief The data prior to synchronization */
   std::string name_;                          /**< @brief Name of the kinematic chain */

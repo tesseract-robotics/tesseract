@@ -48,7 +48,7 @@ InverseKinematics::Ptr KDLInvKinChainNR::clone() const
 
 bool KDLInvKinChainNR::update()
 {
-  if (!init(scene_graph_, orig_data_.base_link_name, orig_data_.tip_link_name, name_))
+  if (!init(scene_graph_, kdl_data_.base_link_name, kdl_data_.tip_link_name, name_))
     return false;
 
   if (sync_fwd_kin_ != nullptr)
@@ -72,8 +72,6 @@ void KDLInvKinChainNR::synchronize(ForwardKinematics::ConstPtr fwd_kin)
     throw std::runtime_error("Tried to synchronize kinematics objects with different active link names!");
 
   SynchronizableData local_data;
-  local_data.base_link_name = fwd_kin->getBaseLinkName();
-  local_data.tip_link_name = fwd_kin->getTipLinkName();
   local_data.joint_names = fwd_kin->getJointNames();
   local_data.link_names = fwd_kin->getLinkNames();
   local_data.active_link_names = fwd_kin->getActiveLinkNames();
@@ -232,9 +230,9 @@ std::vector<Eigen::Index> KDLInvKinChainNR::getRedundancyCapableJointIndices() c
 
 unsigned int KDLInvKinChainNR::numJoints() const { return kdl_data_.robot_chain.getNrOfJoints(); }
 
-const std::string& KDLInvKinChainNR::getBaseLinkName() const { return kdl_data_.data.base_link_name; }
+const std::string& KDLInvKinChainNR::getBaseLinkName() const { return kdl_data_.base_link_name; }
 
-const std::string& KDLInvKinChainNR::getTipLinkName() const { return kdl_data_.data.tip_link_name; }
+const std::string& KDLInvKinChainNR::getTipLinkName() const { return kdl_data_.tip_link_name; }
 
 const std::string& KDLInvKinChainNR::getName() const { return name_; }
 

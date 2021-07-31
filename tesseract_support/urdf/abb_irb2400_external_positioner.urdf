@@ -26,6 +26,7 @@
   <!-- link list -->
   <link name="world"/>
   <link name="positioner_base_link"/>
+  <link name="positioner_link_1"/>
   <link name="positioner_tool0"/>
 
   <link name="base_link">
@@ -160,8 +161,15 @@
   <joint name="positioner_joint_1" type="prismatic">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="positioner_base_link"/>
-    <child link="positioner_tool0"/>
+    <child link="positioner_link_1"/>
     <axis xyz="0 1 0"/>
+    <limit effort="0" lower="-1.0" upper="1.0" velocity="2.618"/>
+  </joint>
+  <joint name="positioner_joint_2" type="prismatic">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="positioner_link_1"/>
+    <child link="positioner_tool0"/>
+    <axis xyz="1 0 0"/>
     <limit effort="0" lower="-1.0" upper="1.0" velocity="2.618"/>
   </joint>
   <joint name="world_robot_joint" type="fixed">

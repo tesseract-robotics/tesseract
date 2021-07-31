@@ -51,8 +51,8 @@ inline InverseKinematics::Ptr IKFastInvKin::clone() const
 inline bool IKFastInvKin::update()
 {
   if (!init(name_,
-            orig_data_.base_link_name,
-            orig_data_.tip_link_name,
+            base_link_name_,
+            tip_link_name_,
             orig_data_.joint_names,
             orig_data_.link_names,
             orig_data_.active_link_names,
@@ -81,8 +81,6 @@ inline void IKFastInvKin::synchronize(ForwardKinematics::ConstPtr fwd_kin)
     throw std::runtime_error("Tried to synchronize kinematics objects with different active link names!");
 
   SynchronizableData local_data;
-  local_data.base_link_name = fwd_kin->getBaseLinkName();
-  local_data.tip_link_name = fwd_kin->getTipLinkName();
   local_data.joint_names = fwd_kin->getJointNames();
   local_data.link_names = fwd_kin->getLinkNames();
   local_data.active_link_names = fwd_kin->getActiveLinkNames();
@@ -172,7 +170,7 @@ inline IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose,
                                             const Eigen::Ref<const Eigen::VectorXd>& seed,
                                             const std::string& link_name) const
 {
-  if (link_name == data_.tip_link_name)
+  if (link_name == tip_link_name_)
     return calcInvKin(pose, seed);
 
   throw std::runtime_error("IKFastInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const "
@@ -204,8 +202,8 @@ inline bool IKFastInvKin::init(std::string name,
 {
   name_ = std::move(name);
   data_.clear();
-  data_.base_link_name = std::move(base_link_name);
-  data_.tip_link_name = std::move(tip_link_name);
+  base_link_name_ = std::move(base_link_name);
+  tip_link_name_ = std::move(tip_link_name);
   data_.joint_names = std::move(joint_names);
   data_.link_names = std::move(link_names);
   data_.active_link_names = std::move(active_link_names);
@@ -223,6 +221,8 @@ inline bool IKFastInvKin::init(const IKFastInvKin& kin)
   sync_fwd_kin_ = kin.sync_fwd_kin_;
   sync_joint_map_ = kin.sync_joint_map_;
   name_ = kin.name_;
+  base_link_name_ = kin.base_link_name_;
+  tip_link_name_ = kin.tip_link_name_;
   solver_name_ = kin.solver_name_;
   data_ = kin.data_;
   orig_data_ = kin.orig_data_;
@@ -248,8 +248,8 @@ inline std::vector<Eigen::Index> IKFastInvKin::getRedundancyCapableJointIndices(
 {
   return data_.redundancy_indices;
 }
-inline const std::string& IKFastInvKin::getBaseLinkName() const { return data_.base_link_name; }
-inline const std::string& IKFastInvKin::getTipLinkName() const { return data_.tip_link_name; }
+inline const std::string& IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
+inline const std::string& IKFastInvKin::getTipLinkName() const { return tip_link_name_; }
 inline const std::string& IKFastInvKin::getName() const { return name_; }
 inline const std::string& IKFastInvKin::getSolverName() const { return solver_name_; }
 

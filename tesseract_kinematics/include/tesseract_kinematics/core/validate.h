@@ -55,6 +55,7 @@ namespace tesseract_kinematics
  */
 inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr& fwd_kin,
                             const tesseract_kinematics::InverseKinematics::ConstPtr& inv_kin,
+                            const tesseract_common::TransformMap& link_transforms,
                             double tol = 1e-3)
 {
   // Check name
@@ -132,6 +133,8 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
   Eigen::Isometry3d test2;
   Eigen::VectorXd seed_angles(fwd_kin->numJoints());
   Eigen::VectorXd joint_angles2(fwd_kin->numJoints());
+  Eigen::Isometry3d fwd_to_inv =
+      link_transforms.at(fwd_kin->getBaseLinkName()).inverse() * link_transforms.at(inv_kin->getBaseLinkName());
   seed_angles.setZero();
   joint_angles2.setZero();
 
@@ -141,7 +144,7 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
     joint_angles2[t] = M_PI / 2;
 
     test1 = fwd_kin->calcFwdKin(joint_angles2);
-    IKSolutions sols = inv_kin->calcInvKin(test1, seed_angles);
+    IKSolutions sols = inv_kin->calcInvKin(fwd_to_inv * test1, seed_angles);
     for (const auto& sol : sols)
     {
       test2 = fwd_kin->calcFwdKin(sol);
