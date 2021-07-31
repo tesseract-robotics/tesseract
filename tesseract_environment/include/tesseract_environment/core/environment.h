@@ -64,7 +64,7 @@ namespace tesseract_environment
  */
 using FindTCPCallbackFn = std::function<Eigen::Isometry3d(const tesseract_common::ManipulatorInfo&)>;
 
-class Environment
+class Environment : public std::enable_shared_from_this<Environment>
 {
 public:
   // LCOV_EXCL_START
@@ -287,7 +287,7 @@ public:
    * @brief Get the Scene Graph
    * @return SceneGraphConstPtr
    */
-  virtual const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const;
+  virtual tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
 
   /**
    * @brief Get the manipulator manager

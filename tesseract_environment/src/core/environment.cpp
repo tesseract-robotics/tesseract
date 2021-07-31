@@ -61,8 +61,11 @@ bool Environment::initHelper(const Commands& commands)
       std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0))->getSceneGraph()->getName());
   scene_graph_const_ = scene_graph_;
 
+  if (!state_solver_->init(scene_graph_, revision_))
+    throw std::runtime_error("The environment state solver failed to initialize");
+
   manipulator_manager_ = std::make_shared<ManipulatorManager>();
-  manipulator_manager_->init(scene_graph_, tesseract_srdf::KinematicsInformation());
+  manipulator_manager_->init(shared_from_this(), tesseract_srdf::KinematicsInformation());
 
   if (!applyCommandsHelper(commands))
   {
@@ -76,12 +79,6 @@ bool Environment::initHelper(const Commands& commands)
                                      std::placeholders::_2);
 
   manipulator_manager_->revision_ = revision_;
-
-  if (!state_solver_->init(scene_graph_, revision_))
-  {
-    CONSOLE_BRIDGE_logError("The environment state solver failed to initialize");
-    return false;
-  }
 
   initialized_ = true;
   init_revision_ = revision_;
@@ -187,7 +184,7 @@ bool Environment::applyCommands(const Commands& commands)
 
 bool Environment::applyCommand(const Command::ConstPtr& command) { return applyCommands({ command }); }
 
-const tesseract_scene_graph::SceneGraph::ConstPtr& Environment::getSceneGraph() const { return scene_graph_const_; }
+tesseract_scene_graph::SceneGraph::ConstPtr Environment::getSceneGraph() const { return scene_graph_const_; }
 
 ManipulatorManager::Ptr Environment::getManipulatorManager() { return manipulator_manager_; }
 
@@ -834,7 +831,6 @@ Environment::Ptr Environment::clone() const
   cloned_env->commands_ = commands_;
   cloned_env->scene_graph_ = scene_graph_->clone();
   cloned_env->scene_graph_const_ = cloned_env->scene_graph_;
-  cloned_env->manipulator_manager_ = manipulator_manager_->clone(cloned_env->getSceneGraph());
   cloned_env->current_state_ = std::make_shared<EnvState>(*current_state_);
   cloned_env->state_solver_ = state_solver_->clone();
   cloned_env->link_names_ = link_names_;
@@ -863,6 +859,7 @@ Environment::Ptr Environment::clone() const
   cloned_env->continuous_manager_name_ = continuous_manager_name_;
   cloned_env->discrete_factory_ = discrete_factory_;
   cloned_env->continuous_factory_ = continuous_factory_;
+  cloned_env->manipulator_manager_ = manipulator_manager_->clone(cloned_env);
 
   return cloned_env;
 }
@@ -984,6 +981,9 @@ bool Environment::applyCommandsHelper(const Commands& commands)
       }
       case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
       {
+        // This will update environment state because manipulator manager access the environment
+        environmentChanged();
+
         auto cmd = std::static_pointer_cast<const AddKinematicsInformationCommand>(command);
         success &= applyAddKinematicsInformationCommand(cmd);
         break;

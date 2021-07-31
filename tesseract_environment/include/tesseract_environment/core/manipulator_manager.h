@@ -43,6 +43,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+class Environment;
+
 class ManipulatorManager
 {
 public:
@@ -62,12 +64,11 @@ public:
 
   /**
    * @brief Initialize the manipulator manager
-   * @param scene_graph The scene graph associated with the manipulator manager
+   * @param env The environment associated with the manipulator manager
    * @param kinematics_information The kinematic information used to initialize the manager
    * @return True if successful, otherwise false.
    */
-  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-            tesseract_srdf::KinematicsInformation kinematics_information);
+  bool init(std::shared_ptr<const Environment> env, tesseract_srdf::KinematicsInformation kinematics_information);
 
   /**
    * @brief Check if manipulator manager has been initialized
@@ -77,9 +78,9 @@ public:
 
   /**
    * @brief This will clone the manager and assign the new environment object
-   * @param environment The SceneGraph the clone is associated with.
+   * @param environment The environment the clone is associated with.
    */
-  ManipulatorManager::Ptr clone(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) const;
+  ManipulatorManager::Ptr clone(std::shared_ptr<const Environment> env) const;
 
   /** @brief Kinematics Information */
   bool addKinematicsInformation(const tesseract_srdf::KinematicsInformation& kinematics_information);
@@ -319,7 +320,7 @@ public:
 private:
   bool initialized_{ false };
   tesseract_srdf::KinematicsInformation kinematics_information_;
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;
+  std::shared_ptr<const Environment> env_;
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_chain_default_factory_;
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_tree_default_factory_;
   tesseract_kinematics::InverseKinematicsFactory::ConstPtr inv_kin_chain_default_factory_;

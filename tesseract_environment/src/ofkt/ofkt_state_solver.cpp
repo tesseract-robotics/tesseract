@@ -159,18 +159,27 @@ void OFKTStateSolver::clear()
 
 bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph, int revision)
 {
-  assert(scene_graph->isTree());
+  revision_ = revision;
+  return initHelper(*scene_graph);
+}
 
+bool OFKTStateSolver::initHelper(const tesseract_scene_graph::SceneGraph& scene_graph)
+{
   clear();
 
-  const std::string& root_name = scene_graph->getRoot();
+  if (scene_graph.isEmpty())
+    return true;
+
+  assert(scene_graph.isTree());
+
+  const std::string& root_name = scene_graph.getRoot();
 
   root_ = std::make_unique<OFKTRootNode>(root_name);
   link_map_[root_name] = root_.get();
   current_state_->link_transforms[root_name] = root_->getWorldTransformation();
 
   std::vector<tesseract_scene_graph::Joint::ConstPtr> kinematic_joints;
-  kinematic_joints.reserve(scene_graph->getJoints().size());
+  kinematic_joints.reserve(scene_graph.getJoints().size());
   ofkt_builder builder(*this, kinematic_joints);
 
   std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t> index_map;
@@ -179,12 +188,12 @@ bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_gra
 
   int c = 0;
   tesseract_scene_graph::Graph::vertex_iterator i, iend;
-  for (boost::tie(i, iend) = boost::vertices(*scene_graph); i != iend; ++i, ++c)
+  for (boost::tie(i, iend) = boost::vertices(scene_graph); i != iend; ++i, ++c)
     boost::put(prop_index_map, *i, c);
 
   boost::depth_first_search(
-      static_cast<const tesseract_scene_graph::Graph&>(*scene_graph),
-      boost::visitor(builder).root_vertex(scene_graph->getVertex(root_name)).vertex_index_map(prop_index_map));
+      static_cast<const tesseract_scene_graph::Graph&>(scene_graph),
+      boost::visitor(builder).root_vertex(scene_graph.getVertex(root_name)).vertex_index_map(prop_index_map));
 
   // Populate Joint Limits
   limits_.joint_limits.resize(static_cast<long int>(kinematic_joints.size()), 2);
@@ -197,8 +206,6 @@ bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_gra
     limits_.velocity_limits(static_cast<long>(i)) = kinematic_joints[i]->limits->velocity;
     limits_.acceleration_limits(static_cast<long>(i)) = kinematic_joints[i]->limits->acceleration;
   }
-
-  revision_ = revision;
 
   update(root_.get(), false);
 
@@ -412,27 +419,37 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
       case tesseract_environment::CommandType::ADD_SCENE_GRAPH:
       {
         const auto& cmd = static_cast<const tesseract_environment::AddSceneGraphCommand&>(*command);
-        assert(cmd.getJoint() != nullptr);
 
-        const tesseract_scene_graph::Joint::ConstPtr& joint = cmd.getJoint();
+        if (root_ == nullptr && cmd.getJoint())
+          throw std::runtime_error("OFKT State Solver is empty and tried to add scene graph with joint");
 
-        addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_kinematic_joints);
+        if (root_ == nullptr)
+        {
+          if (!initHelper(*cmd.getSceneGraph()))
+            throw std::runtime_error("OFKT State Solver is empty and failed to add scene graph");
+        }
+        else
+        {
+          const tesseract_scene_graph::Joint::ConstPtr& joint = cmd.getJoint();
 
-        ofkt_builder builder(*this, new_kinematic_joints, cmd.getPrefix());
+          addNode(joint, joint->getName(), joint->parent_link_name, joint->child_link_name, new_kinematic_joints);
 
-        std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t> index_map;
-        boost::associative_property_map<std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t>> prop_index_map(
-            index_map);
+          ofkt_builder builder(*this, new_kinematic_joints, cmd.getPrefix());
 
-        int c = 0;
-        tesseract_scene_graph::Graph::vertex_iterator i, iend;
-        for (boost::tie(i, iend) = boost::vertices(*cmd.getSceneGraph()); i != iend; ++i, ++c)
-          boost::put(prop_index_map, *i, c);
+          std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t> index_map;
+          boost::associative_property_map<std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t>> prop_index_map(
+              index_map);
 
-        boost::depth_first_search(static_cast<const tesseract_scene_graph::Graph&>(*cmd.getSceneGraph()),
-                                  boost::visitor(builder)
-                                      .root_vertex(cmd.getSceneGraph()->getVertex(cmd.getSceneGraph()->getRoot()))
-                                      .vertex_index_map(prop_index_map));
+          int c = 0;
+          tesseract_scene_graph::Graph::vertex_iterator i, iend;
+          for (boost::tie(i, iend) = boost::vertices(*cmd.getSceneGraph()); i != iend; ++i, ++c)
+            boost::put(prop_index_map, *i, c);
+
+          boost::depth_first_search(static_cast<const tesseract_scene_graph::Graph&>(*cmd.getSceneGraph()),
+                                    boost::visitor(builder)
+                                        .root_vertex(cmd.getSceneGraph()->getVertex(cmd.getSceneGraph()->getRoot()))
+                                        .vertex_index_map(prop_index_map));
+        }
 
         break;
       }
