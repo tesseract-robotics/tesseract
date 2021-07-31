@@ -849,13 +849,14 @@ inline void runActiveLinkNamesABBOnPositionerTest(const tesseract_kinematics::In
 
 inline void runActiveLinkNamesABBExternalPositionerTest(const tesseract_kinematics::InverseKinematics& kin)
 {
-  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(8)));
-  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, std::numeric_limits<double>::max())));
-  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, -std::numeric_limits<double>::max())));
-  EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(7)));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(9)));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(8, std::numeric_limits<double>::max())));
+  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(8, -std::numeric_limits<double>::max())));
+  EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(8)));
 
-  std::vector<std::string> target_active_link_names = { "positioner_tool0", "link_1", "link_2", "link_3",
-                                                        "link_4",           "link_5", "link_6", "tool0" };
+  std::vector<std::string> target_active_link_names = {
+    "positioner_tool0", "positioner_link_1", "link_1", "link_2", "link_3", "link_4", "link_5", "link_6", "tool0"
+  };
   std::vector<std::string> target_link_names = target_active_link_names;
   target_link_names.emplace_back("world");
   target_link_names.emplace_back("base_link");

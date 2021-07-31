@@ -136,9 +136,11 @@ private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_; /**< Tesseract Scene Graph */
   KDL::Tree kdl_tree_;                                      /**< KDL tree object */
   std::string name_;                                        /**< Name of the kinematic chain */
-  std::string solver_name_{ "KDLFwdKinTree" };              /**< Name of this solver */
-  std::vector<std::string> joint_list_;                     /**< List of joint names */
-  KDL::JntArray start_state_; /**< Intial state of the tree. Should include all joints in the model. */
+  std::string base_link_name_;                 /**< @brief Link name of first link in the kinematic object */
+  std::string tip_link_name_;                  /**< @brief Link name of last kink in the kinematic object */
+  std::string solver_name_{ "KDLFwdKinTree" }; /**< Name of this solver */
+  std::vector<std::string> joint_list_;        /**< List of joint names */
+  KDL::JntArray start_state_;                  /**< Intial state of the tree. Should include all joints in the model. */
   std::unordered_map<std::string, double> input_start_state_; /**< Input start state before it has been translated into
                                                                  KDL types */
   std::vector<int> joint_qnr_; /**< The kdl segment number corrisponding to joint in joint_lists_ */

@@ -47,8 +47,8 @@ bool OPWInvKin::update()
 {
   if (!init(name_,
             params_,
-            orig_data_.base_link_name,
-            orig_data_.tip_link_name,
+            base_link_name_,
+            tip_link_name_,
             orig_data_.joint_names,
             orig_data_.link_names,
             orig_data_.active_link_names,
@@ -76,8 +76,6 @@ void OPWInvKin::synchronize(ForwardKinematics::ConstPtr fwd_kin)
     throw std::runtime_error("Tried to synchronize kinematics objects with different active link names!");
 
   SynchronizableData local_data;
-  local_data.base_link_name = fwd_kin->getBaseLinkName();
-  local_data.tip_link_name = fwd_kin->getTipLinkName();
   local_data.joint_names = fwd_kin->getJointNames();
   local_data.link_names = fwd_kin->getLinkNames();
   local_data.active_link_names = fwd_kin->getActiveLinkNames();
@@ -186,8 +184,8 @@ void OPWInvKin::setLimits(tesseract_common::KinematicLimits limits)
 
 std::vector<Eigen::Index> OPWInvKin::getRedundancyCapableJointIndices() const { return data_.redundancy_indices; }
 
-const std::string& OPWInvKin::getBaseLinkName() const { return data_.base_link_name; }
-const std::string& OPWInvKin::getTipLinkName() const { return data_.tip_link_name; }
+const std::string& OPWInvKin::getBaseLinkName() const { return base_link_name_; }
+const std::string& OPWInvKin::getTipLinkName() const { return tip_link_name_; }
 const std::string& OPWInvKin::getName() const { return name_; }
 const std::string& OPWInvKin::getSolverName() const { return solver_name_; }
 
@@ -205,8 +203,8 @@ bool OPWInvKin::init(std::string name,
   name_ = std::move(name);
   params_ = params;
   data_.clear();
-  data_.base_link_name = std::move(base_link_name);
-  data_.tip_link_name = std::move(tip_link_name);
+  base_link_name_ = std::move(base_link_name);
+  tip_link_name_ = std::move(tip_link_name);
   data_.joint_names = std::move(joint_names);
   data_.link_names = std::move(link_names);
   data_.active_link_names = std::move(active_link_names);
@@ -224,6 +222,8 @@ bool OPWInvKin::init(const OPWInvKin& kin)
   sync_fwd_kin_ = kin.sync_fwd_kin_;
   sync_joint_map_ = kin.sync_joint_map_;
   name_ = kin.name_;
+  base_link_name_ = kin.base_link_name_;
+  tip_link_name_ = kin.tip_link_name_;
   params_ = kin.params_;
   solver_name_ = kin.solver_name_;
   data_ = kin.data_;

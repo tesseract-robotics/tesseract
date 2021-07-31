@@ -229,8 +229,8 @@ bool URInvKin::update()
 {
   if (!init(name_,
             params_,
-            orig_data_.base_link_name,
-            orig_data_.tip_link_name,
+            base_link_name_,
+            tip_link_name_,
             orig_data_.joint_names,
             orig_data_.link_names,
             orig_data_.active_link_names,
@@ -258,8 +258,6 @@ void URInvKin::synchronize(ForwardKinematics::ConstPtr fwd_kin)
     throw std::runtime_error("Tried to synchronize kinematics objects with different active link names!");
 
   SynchronizableData local_data;
-  local_data.base_link_name = fwd_kin->getBaseLinkName();
-  local_data.tip_link_name = fwd_kin->getTipLinkName();
   local_data.joint_names = fwd_kin->getJointNames();
   local_data.link_names = fwd_kin->getLinkNames();
   local_data.active_link_names = fwd_kin->getActiveLinkNames();
@@ -320,7 +318,7 @@ IKSolutions URInvKin::calcInvKin(const Eigen::Isometry3d& pose,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed,
                                  const std::string& link_name) const
 {
-  if (link_name == data_.tip_link_name)
+  if (link_name == tip_link_name_)
     return calcInvKin(pose, seed);
 
   throw std::runtime_error("UR5InvKin::calcInvKin(const Eigen::Isometry3d&, const Eigen::Ref<const Eigen::VectorXd>&, "
@@ -371,8 +369,8 @@ void URInvKin::setLimits(tesseract_common::KinematicLimits limits)
 
 std::vector<Eigen::Index> URInvKin::getRedundancyCapableJointIndices() const { return data_.redundancy_indices; }
 
-const std::string& URInvKin::getBaseLinkName() const { return data_.base_link_name; }
-const std::string& URInvKin::getTipLinkName() const { return data_.tip_link_name; }
+const std::string& URInvKin::getBaseLinkName() const { return base_link_name_; }
+const std::string& URInvKin::getTipLinkName() const { return tip_link_name_; }
 const std::string& URInvKin::getName() const { return name_; }
 const std::string& URInvKin::getSolverName() const { return solver_name_; }
 
@@ -390,8 +388,8 @@ bool URInvKin::init(std::string name,
   name_ = std::move(name);
   params_ = std::move(params);
   data_.clear();
-  data_.base_link_name = std::move(base_link_name);
-  data_.tip_link_name = std::move(tip_link_name);
+  base_link_name_ = std::move(base_link_name);
+  tip_link_name_ = std::move(tip_link_name);
   data_.joint_names = std::move(joint_names);
   data_.link_names = std::move(link_names);
   data_.active_link_names = std::move(active_link_names);
@@ -409,6 +407,8 @@ bool URInvKin::init(const URInvKin& kin)
   sync_fwd_kin_ = kin.sync_fwd_kin_;
   sync_joint_map_ = kin.sync_joint_map_;
   name_ = kin.name_;
+  base_link_name_ = kin.base_link_name_;
+  tip_link_name_ = kin.tip_link_name_;
   solver_name_ = kin.solver_name_;
   params_ = kin.params_;
   data_ = kin.data_;

@@ -120,6 +120,8 @@ protected:
   SynchronizableData data_;                   /**< @brief The current data that may be synchronized */
   SynchronizableData orig_data_;              /**< @brief The data prior to synchronization */
   std::string name_;                          /**< @brief Name of the kinematic chain */
+  std::string base_link_name_;                /**< @brief Link name of first link in the kinematic object */
+  std::string tip_link_name_;                 /**< @brief Link name of last kink in the kinematic object */
   std::string solver_name_{ "OPWInvKin" };    /**< @brief Name of this solver */
 
   /**

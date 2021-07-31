@@ -76,7 +76,7 @@ getFullInvKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph, 
                 robot_fwd_kin->getLimits());
 
   auto positioner_kin = getPositionerFwdKinematics(scene_graph);
-  Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(1, 1, 0.1);
+  Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(2, 1, 0.1);
   auto rep_inv_kin = std::make_shared<tesseract_kinematics::RobotWithExternalPositionerInvKin>();
   EXPECT_FALSE(rep_inv_kin->checkInitialized());
   if (common_base)
@@ -143,7 +143,7 @@ getFullInvKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph, 
         scene_graph, opw_kin, 2.5, positioner_kin, positioner_resolution, "robot_on_positioner"));
     EXPECT_FALSE(rep_inv_kin_failure->checkInitialized());
 
-    positioner_resolution = Eigen::VectorXd::Constant(1, -0.1);
+    positioner_resolution = Eigen::VectorXd::Constant(2, -0.1);
     rep_inv_kin_failure = std::make_shared<tesseract_kinematics::RobotWithExternalPositionerInvKin>();
     EXPECT_FALSE(rep_inv_kin_failure->init(
         scene_graph, opw_kin, 2.5, positioner_kin, positioner_resolution, "robot_on_positioner"));
@@ -182,7 +182,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_TRUE(inv_kin != nullptr);
   EXPECT_EQ(inv_kin->getName(), "robot_external_positioner");
   EXPECT_EQ(inv_kin->getSolverName(), "RobotWithExternalPositionerInvKin");
-  EXPECT_EQ(inv_kin->numJoints(), 7);
+  EXPECT_EQ(inv_kin->numJoints(), 8);
   EXPECT_EQ(inv_kin->getBaseLinkName(), "positioner_tool0");
   EXPECT_EQ(inv_kin->getTipLinkName(), "tool0");
   tesseract_common::KinematicLimits target_limits = getTargetLimits(scene_graph, inv_kin->getJointNames());
@@ -195,7 +195,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_TRUE(inv_kin2 != nullptr);
   EXPECT_EQ(inv_kin2->getName(), "robot_external_positioner");
   EXPECT_EQ(inv_kin2->getSolverName(), "RobotWithExternalPositionerInvKin");
-  EXPECT_EQ(inv_kin2->numJoints(), 7);
+  EXPECT_EQ(inv_kin2->numJoints(), 8);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), "positioner_tool0");
   EXPECT_EQ(inv_kin2->getTipLinkName(), "tool0");
 
@@ -208,7 +208,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_TRUE(inv_kin3 != nullptr);
   EXPECT_EQ(inv_kin3->getName(), "robot_external_positioner");
   EXPECT_EQ(inv_kin3->getSolverName(), "RobotWithExternalPositionerInvKin");
-  EXPECT_EQ(inv_kin3->numJoints(), 7);
+  EXPECT_EQ(inv_kin3->numJoints(), 8);
   EXPECT_EQ(inv_kin3->getBaseLinkName(), "positioner_tool0");
   EXPECT_EQ(inv_kin3->getTipLinkName(), "tool0");
 
@@ -221,7 +221,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_TRUE(inv_kin3 != nullptr);
   EXPECT_EQ(inv_kin3->getName(), "robot_external_positioner");
   EXPECT_EQ(inv_kin3->getSolverName(), "RobotWithExternalPositionerInvKin");
-  EXPECT_EQ(inv_kin3->numJoints(), 7);
+  EXPECT_EQ(inv_kin3->numJoints(), 8);
   EXPECT_EQ(inv_kin3->getBaseLinkName(), "positioner_tool0");
   EXPECT_EQ(inv_kin3->getTipLinkName(), "tool0");
 

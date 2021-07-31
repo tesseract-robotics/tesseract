@@ -70,8 +70,6 @@ void RobotWithExternalPositionerInvKin::synchronize(ForwardKinematics::ConstPtr 
     throw std::runtime_error("Tried to synchronize kinematics objects with different active link names!");
 
   SynchronizableData local_data;
-  local_data.base_link_name = fwd_kin->getBaseLinkName();
-  local_data.tip_link_name = fwd_kin->getTipLinkName();
   local_data.joint_names = fwd_kin->getJointNames();
   local_data.link_names = fwd_kin->getLinkNames();
   local_data.active_link_names = fwd_kin->getActiveLinkNames();
