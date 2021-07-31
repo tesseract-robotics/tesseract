@@ -24,6 +24,7 @@
  * limitations under the License.
  */
 
+#include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/manipulator_manager.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree_factory.h>
@@ -35,13 +36,13 @@
 
 namespace tesseract_environment
 {
-bool ManipulatorManager::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+bool ManipulatorManager::init(std::shared_ptr<const Environment> env,
                               tesseract_srdf::KinematicsInformation kinematics_information)
 {
-  if (scene_graph == nullptr)
+  if (env == nullptr)
     return false;
 
-  scene_graph_ = std::move(scene_graph);
+  env_ = std::move(env);
   kinematics_information_.clear();
 
   fwd_kin_chain_default_factory_ = std::make_shared<tesseract_kinematics::KDLFwdKinChainFactory>();
@@ -223,10 +224,10 @@ void ManipulatorManager::onEnvironmentChanged(const Commands& commands)
   revision_ = static_cast<int>(commands.size());
 }
 
-ManipulatorManager::Ptr ManipulatorManager::clone(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) const
+ManipulatorManager::Ptr ManipulatorManager::clone(std::shared_ptr<const Environment> env) const
 {
   auto cloned_manager = std::make_shared<ManipulatorManager>(*this);
-  cloned_manager->scene_graph_ = std::move(scene_graph);
+  cloned_manager->env_ = std::move(env);
   return cloned_manager;
 }
 
@@ -921,7 +922,7 @@ bool ManipulatorManager::registerDefaultChainSolver(const std::string& group_nam
   if (chain_group.empty())
     return false;
 
-  auto fwd_solver = fwd_kin_chain_default_factory_->create(scene_graph_, chain_group, group_name);
+  auto fwd_solver = fwd_kin_chain_default_factory_->create(env_->getSceneGraph(), chain_group, group_name);
   if (fwd_solver == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to create forward kinematic chain solver for manipulator %s!", group_name.c_str());
@@ -936,7 +937,7 @@ bool ManipulatorManager::registerDefaultChainSolver(const std::string& group_nam
     return false;
   }
 
-  auto inv_solver = inv_kin_chain_default_factory_->create(scene_graph_, chain_group, group_name);
+  auto inv_solver = inv_kin_chain_default_factory_->create(env_->getSceneGraph(), chain_group, group_name);
   if (inv_solver == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to create inverse kinematic chain solver for manipulator %s!", group_name.c_str());
@@ -960,7 +961,7 @@ bool ManipulatorManager::registerDefaultJointSolver(const std::string& group_nam
   if (joint_group.empty())
     return false;
 
-  auto solver = fwd_kin_tree_default_factory_->create(scene_graph_, joint_group, group_name);
+  auto solver = fwd_kin_tree_default_factory_->create(env_->getSceneGraph(), joint_group, group_name);
   if (solver == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to create inverse kinematic tree solver %s for manipulator %s!",
@@ -1094,7 +1095,7 @@ bool ManipulatorManager::registerROPSolver(const std::string& group_name,
   auto solver = std::make_shared<tesseract_kinematics::RobotOnPositionerInvKin>();
   if (rop_group.solver_name.empty())
   {
-    if (!solver->init(scene_graph_,
+    if (!solver->init(env_->getSceneGraph(),
                       manip_ik_solver,
                       rop_group.manipulator_reach,
                       positioner_fk_solver,
@@ -1104,7 +1105,7 @@ bool ManipulatorManager::registerROPSolver(const std::string& group_name,
   }
   else
   {
-    if (!solver->init(scene_graph_,
+    if (!solver->init(env_->getSceneGraph(),
                       manip_ik_solver,
                       rop_group.manipulator_reach,
                       positioner_fk_solver,
@@ -1176,24 +1177,34 @@ bool ManipulatorManager::registerREPSolver(const std::string& group_name,
     positioner_sample_resolution(static_cast<long>(i)) = it->second;
   }
 
+  Eigen::Isometry3d robot_to_positioner{ Eigen::Isometry3d::Identity() };
+  if (positioner_fk_solver->getBaseLinkName() != manip_ik_solver->getBaseLinkName())
+  {
+    tesseract_common::TransformMap tf = env_->getCurrentState()->link_transforms;
+    robot_to_positioner =
+        tf.at(positioner_fk_solver->getBaseLinkName()).inverse() * tf.at(manip_ik_solver->getBaseLinkName());
+  }
+
   auto solver = std::make_shared<tesseract_kinematics::RobotWithExternalPositionerInvKin>();
   if (rep_group.solver_name.empty())
   {
-    if (!solver->init(scene_graph_,
+    if (!solver->init(env_->getSceneGraph(),
                       manip_ik_solver,
                       rep_group.manipulator_reach,
                       positioner_fk_solver,
                       positioner_sample_resolution,
+                      robot_to_positioner,
                       group_name))
       return false;
   }
   else
   {
-    if (!solver->init(scene_graph_,
+    if (!solver->init(env_->getSceneGraph(),
                       manip_ik_solver,
                       rep_group.manipulator_reach,
                       positioner_fk_solver,
                       positioner_sample_resolution,
+                      robot_to_positioner,
                       group_name,
                       rep_group.solver_name))
       return false;

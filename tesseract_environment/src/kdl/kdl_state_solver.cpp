@@ -46,6 +46,9 @@ StateSolver::Ptr KDLStateSolver::clone() const
 bool KDLStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph, int /*revision*/)
 {
   scene_graph_ = std::move(scene_graph);
+  if (scene_graph_->isEmpty())
+    return true;
+
   return createKDETree();
 }
 
@@ -267,6 +270,12 @@ void KDLStateSolver::calculateTransforms(EnvState& state,
 
 void KDLStateSolver::onEnvironmentChanged(const Commands& /*commands*/)
 {
+  if (current_state_ == nullptr)
+  {
+    createKDETree();
+    return;
+  }
+
   // Cache current joint values
   std::unordered_map<std::string, double> joints = current_state_->joints;
 

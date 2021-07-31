@@ -92,6 +92,7 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}_core
+          ${PROJECT_NAME}_ofkt
           tesseract::tesseract_support)
 target_compile_options(${PROJECT_NAME}_manipulator_manager_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                         ${TESSERACT_COMPILE_OPTIONS_PUBLIC})

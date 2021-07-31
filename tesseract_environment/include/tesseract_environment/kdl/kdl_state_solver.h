@@ -28,26 +28,11 @@ public:
 
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph, int revision = 1) override;
 
-  /**
-   * @brief Set the current state of the solver
-   *
-   * After updating the current state these function must call currentStateChanged() which
-   * will update the contact managers transforms
-   *
-   */
   void setState(const std::unordered_map<std::string, double>& joints) override;
   void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) override;
   void setState(const std::vector<std::string>& joint_names,
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
 
-  /**
-   * @brief Get the state of the environment for a given set or subset of joint values.
-   *
-   * This does not change the internal state of the environment.
-   *
-   * @param joints A map of joint names to joint values to change.
-   * @return A the state of the environment
-   */
   EnvState::Ptr getState(const std::unordered_map<std::string, double>& joints) const override;
   EnvState::Ptr getState(const std::vector<std::string>& joint_names,
                          const std::vector<double>& joint_values) const override;
