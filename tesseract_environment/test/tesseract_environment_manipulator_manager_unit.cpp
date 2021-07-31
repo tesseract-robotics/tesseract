@@ -6,6 +6,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/manipulator_manager.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
@@ -206,10 +208,13 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotOnPositionerUnit)  // NOLI
 
   KinematicsInformation& kin_info = srdf->kinematics_information;
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g, srdf);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
   EXPECT_FALSE(manager.init(nullptr, kin_info));
-  EXPECT_TRUE(manager.init(g, kin_info));
+  EXPECT_TRUE(manager.init(env, kin_info));
   runCheckAvailableSolvers(manager);
 
   // Check group names
@@ -273,10 +278,13 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, RobotWithExternalPositionerUnit
 
   KinematicsInformation& kin_info = srdf->kinematics_information;
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g, srdf);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
   EXPECT_FALSE(manager.init(nullptr, kin_info));
-  EXPECT_TRUE(manager.init(g, kin_info));
+  EXPECT_TRUE(manager.init(env, kin_info));
   runCheckAvailableSolvers(manager);
 
   // Check group names
@@ -336,9 +344,12 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveChainGroupUnit)  // NO
   using namespace tesseract_scene_graph;
   SceneGraph::Ptr g = getSceneGraph(ABBConfig::ROBOT_WITH_POSITIONER);
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
-  EXPECT_TRUE(manager.init(g, KinematicsInformation()));
+  EXPECT_TRUE(manager.init(env, KinematicsInformation()));
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
@@ -367,9 +378,12 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveJointGroupUnit)  // NO
   using namespace tesseract_scene_graph;
   SceneGraph::Ptr g = getSceneGraph(ABBConfig::ROBOT_WITH_POSITIONER);
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
-  EXPECT_TRUE(manager.init(g, KinematicsInformation()));
+  EXPECT_TRUE(manager.init(env, KinematicsInformation()));
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
@@ -397,9 +411,12 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveLinkGroupUnit)  // NOL
   using namespace tesseract_scene_graph;
   SceneGraph::Ptr g = getSceneGraph(ABBConfig::ROBOT_WITH_POSITIONER);
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
-  EXPECT_TRUE(manager.init(g, KinematicsInformation()));
+  EXPECT_TRUE(manager.init(env, KinematicsInformation()));
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
@@ -426,9 +443,12 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveROPKinematicsSolverUni
   using namespace tesseract_scene_graph;
   SceneGraph::Ptr g = getSceneGraph(ABBConfig::ROBOT_ON_RAIL);
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
-  EXPECT_TRUE(manager.init(g, KinematicsInformation()));
+  EXPECT_TRUE(manager.init(env, KinematicsInformation()));
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
@@ -490,9 +510,12 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveREPKinematicsSolverUni
   using namespace tesseract_scene_graph;
   SceneGraph::Ptr g = getSceneGraph(ABBConfig::ROBOT_WITH_POSITIONER);
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
-  EXPECT_TRUE(manager.init(g, KinematicsInformation()));
+  EXPECT_TRUE(manager.init(env, KinematicsInformation()));
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
@@ -502,6 +525,7 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveREPKinematicsSolverUni
   rep_group.manipulator_reach = 2.3;
   rep_group.positioner_group = "positioner";
   rep_group.positioner_sample_resolution["positioner_joint_1"] = 0.1;
+  rep_group.positioner_sample_resolution["positioner_joint_2"] = 0.1;
 
   // ADD full manipulator, manipulator and positioner does not exist
   EXPECT_FALSE(manager.addREPKinematicsSolver("full_manipulator", rep_group));
@@ -554,9 +578,12 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveOPWKinematicsSolverUni
   using namespace tesseract_scene_graph;
   SceneGraph::Ptr g = getSceneGraph(ABBConfig::ROBOT_ONLY);
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
-  EXPECT_TRUE(manager.init(g, KinematicsInformation()));
+  EXPECT_TRUE(manager.init(env, KinematicsInformation()));
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
@@ -602,9 +629,12 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveGroupJointStateUnit)  
   using namespace tesseract_scene_graph;
   SceneGraph::Ptr g = getSceneGraph(ABBConfig::ROBOT_ONLY);
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
-  EXPECT_TRUE(manager.init(g, KinematicsInformation()));
+  EXPECT_TRUE(manager.init(env, KinematicsInformation()));
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
@@ -643,9 +673,12 @@ TEST(TesseractEnvironmentManipulatorManagerUnit, AddRemoveGroupTCPUnit)  // NOLI
   using namespace tesseract_scene_graph;
   SceneGraph::Ptr g = getSceneGraph(ABBConfig::ROBOT_ONLY);
 
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init<tesseract_environment::OFKTStateSolver>(*g);
+
   ManipulatorManager manager;
   EXPECT_FALSE(manager.isInitialized());
-  EXPECT_TRUE(manager.init(g, KinematicsInformation()));
+  EXPECT_TRUE(manager.init(env, KinematicsInformation()));
   EXPECT_TRUE(manager.isInitialized());
   runCheckAvailableSolvers(manager);
 
