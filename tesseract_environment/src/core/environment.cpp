@@ -431,6 +431,51 @@ std::vector<std::string> Environment::getActiveLinkNames() const
   return active_link_names_;
 }
 
+std::vector<std::string> Environment::getActiveLinkNames(const std::vector<std::string>& joint_names) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return scene_graph_const_->getJointChildrenNames(joint_names);
+}
+
+std::vector<std::string> Environment::getStaticLinkNames() const
+{
+  std::vector<std::string> active_link_names = active_link_names_;
+  std::vector<std::string> full_link_names = link_names_;
+  std::vector<std::string> static_link_names;
+  static_link_names.reserve(full_link_names.size());
+
+  std::sort(active_link_names.begin(), active_link_names.end());
+  std::sort(full_link_names.begin(), full_link_names.end());
+
+  std::set_difference(full_link_names.begin(),
+                      full_link_names.end(),
+                      active_link_names.begin(),
+                      active_link_names.end(),
+                      std::inserter(static_link_names, static_link_names.begin()));
+
+  return static_link_names;
+}
+
+std::vector<std::string> Environment::getStaticLinkNames(const std::vector<std::string>& joint_names) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::vector<std::string> active_link_names = getActiveLinkNames(joint_names);
+  std::vector<std::string> full_link_names = link_names_;
+  std::vector<std::string> static_link_names;
+  static_link_names.reserve(full_link_names.size());
+
+  std::sort(active_link_names.begin(), active_link_names.end());
+  std::sort(full_link_names.begin(), full_link_names.end());
+
+  std::set_difference(full_link_names.begin(),
+                      full_link_names.end(),
+                      active_link_names.begin(),
+                      active_link_names.end(),
+                      std::inserter(static_link_names, static_link_names.begin()));
+
+  return static_link_names;
+}
+
 tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -1018,7 +1063,7 @@ bool Environment::changeJointPositionLimits(const std::string& joint_name, doubl
   return applyCommand(std::make_shared<ChangeJointPositionLimitsCommand>(joint_name, lower, upper));
 }
 
-bool Environment::changeJointPositionLimits(const std::unordered_map<std::string, std::pair<double, double> >& limits)
+bool Environment::changeJointPositionLimits(const std::unordered_map<std::string, std::pair<double, double>>& limits)
 {
   return applyCommand(std::make_shared<ChangeJointPositionLimitsCommand>(limits));
 }
