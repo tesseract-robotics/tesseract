@@ -26,8 +26,10 @@
 #ifndef TESSERACT_KINEMATICS_IMPL_IKFAST_INV_KIN_HPP
 #define TESSERACT_KINEMATICS_IMPL_IKFAST_INV_KIN_HPP
 
+#ifndef IKFAST_HAS_LIBRARY
 #define IKFAST_HAS_LIBRARY
 #define IKFAST_NO_MAIN
+#endif
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -125,17 +127,17 @@ inline IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose,
   ComputeIk(translation.data(), rotation.data(), nullptr, ikfast_solution_set);
 
   // Unpack the solutions into the output vector
-  const auto n_sols = ikfast_solution_set.GetNumSolutions();
-  int ikfast_dof = static_cast<int>(numJoints());
+  const std::size_t n_sols = ikfast_solution_set.GetNumSolutions();
+  const std::size_t ikfast_dof = numJoints();
 
   std::vector<IkReal> ikfast_output;
-  ikfast_output.resize(n_sols * static_cast<std::size_t>(ikfast_dof));
+  ikfast_output.resize(n_sols * ikfast_dof);
 
   for (std::size_t i = 0; i < n_sols; ++i)
   {
     // This actually walks the list EVERY time from the start of i.
     const auto& sol = ikfast_solution_set.GetSolution(i);
-    auto* out = ikfast_output.data() + i * static_cast<std::size_t>(ikfast_dof);
+    auto* out = ikfast_output.data() + i * ikfast_dof;
     sol.GetSolution(out, nullptr);
   }
 
@@ -143,12 +145,13 @@ inline IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose,
   sols.insert(end(sols), std::make_move_iterator(ikfast_output.begin()), std::make_move_iterator(ikfast_output.end()));
 
   // Check the output
-  int num_sol = static_cast<int>(sols.size()) / ikfast_dof;
+  int num_sol = static_cast<int>(sols.size() / ikfast_dof);
   IKSolutions solution_set;
   solution_set.reserve(sols.size());
   for (int i = 0; i < num_sol; i++)
   {
-    Eigen::Map<Eigen::VectorXd> eigen_sol(sols.data() + ikfast_dof * i, static_cast<Eigen::Index>(ikfast_dof));
+    Eigen::Map<Eigen::VectorXd> eigen_sol(sols.data() + static_cast<Eigen::Index>(ikfast_dof) * i,
+                                          static_cast<Eigen::Index>(ikfast_dof));
     if (eigen_sol.array().allFinite())
     {
       harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
