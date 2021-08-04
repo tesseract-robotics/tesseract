@@ -329,12 +329,6 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
     return false;
   }
 
-  if (manipulator == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Provided manipulator is a nullptr");
-    return false;
-  }
-
   if (!(manipulator_reach > 0))
   {
     CONSOLE_BRIDGE_logError("Manipulator reach is not greather than zero");
