@@ -92,7 +92,6 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
   if (res)
   {
     unsigned int num_convex_hulls = interfaceVHACD->GetNConvexHulls();
-    CONSOLE_BRIDGE_logError("Convex decomposition generated %lu convex hulls!", num_convex_hulls);
     VHACD::IVHACD::ConvexHull ch;
     for (unsigned int p = 0; p < num_convex_hulls; ++p)
     {
