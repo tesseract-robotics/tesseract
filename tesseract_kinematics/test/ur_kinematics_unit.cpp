@@ -40,63 +40,59 @@ void runURKinematicsTests(const tesseract_kinematics::URParameters& params, cons
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(6);
 
   // Setup test
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraphUR(params);
+  auto scene_graph = getSceneGraphUR(params);
+
+  std::string manip_name = "manip";
+  std::string base_link_name = "base_link";
+  std::string tip_link_name = "tool0";
+  std::vector<std::string> joint_names{ "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
+                                        "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
 
   tesseract_kinematics::KDLFwdKinChain fwd_kin;
-  fwd_kin.init(scene_graph, "base_link", "tool0", "manip");
+  fwd_kin.init(*scene_graph, base_link_name, tip_link_name, manip_name);
 
-  auto inv_kin = std::make_shared<tesseract_kinematics::URInvKin>();
+  auto inv_kin = std::make_unique<tesseract_kinematics::URInvKin>();
   EXPECT_FALSE(inv_kin->checkInitialized());
-  bool status = inv_kin->init("manip",
-                              params,
-                              fwd_kin.getBaseLinkName(),
-                              fwd_kin.getTipLinkName(),
-                              fwd_kin.getJointNames(),
-                              fwd_kin.getLinkNames(),
-                              fwd_kin.getActiveLinkNames(),
-                              fwd_kin.getLimits());
+  bool status = inv_kin->init(manip_name, params, base_link_name, tip_link_name, joint_names);
 
   EXPECT_TRUE(status);
   EXPECT_TRUE(inv_kin->checkInitialized());
-  EXPECT_EQ(inv_kin->getName(), "manip");
+  EXPECT_EQ(inv_kin->getName(), manip_name);
   EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
   EXPECT_EQ(inv_kin->numJoints(), 6);
-  EXPECT_EQ(inv_kin->getBaseLinkName(), "base_link");
-  EXPECT_EQ(inv_kin->getTipLinkName(), "tool0");
-  tesseract_common::KinematicLimits target_limits = getTargetLimits(scene_graph, inv_kin->getJointNames());
+  EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
+  EXPECT_EQ(inv_kin->getTipLinkNames().size(), 1);
+  EXPECT_EQ(inv_kin->getTipLinkNames()[0], tip_link_name);
+  EXPECT_EQ(inv_kin->getJointNames(), joint_names);
 
-  runInvKinTest(*inv_kin, fwd_kin, pose, seed);
-  runActiveLinkNamesURTest(*inv_kin);
-  runKinJointLimitsTest(inv_kin->getLimits(), target_limits);
+  runInvKinTest(*inv_kin, fwd_kin, pose, base_link_name, tip_link_name, seed);
 
   // Check cloned
   tesseract_kinematics::InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
   EXPECT_TRUE(inv_kin2 != nullptr);
-  EXPECT_EQ(inv_kin2->getName(), "manip");
+  EXPECT_EQ(inv_kin2->getName(), manip_name);
   EXPECT_EQ(inv_kin2->getSolverName(), "URInvKin");
   EXPECT_EQ(inv_kin2->numJoints(), 6);
-  EXPECT_EQ(inv_kin2->getBaseLinkName(), "base_link");
-  EXPECT_EQ(inv_kin2->getTipLinkName(), "tool0");
+  EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
+  EXPECT_EQ(inv_kin2->getTipLinkNames().size(), 1);
+  EXPECT_EQ(inv_kin2->getTipLinkNames()[0], tip_link_name);
+  EXPECT_EQ(inv_kin2->getJointNames(), joint_names);
 
-  runInvKinTest(*inv_kin2, fwd_kin, pose, seed);
-  runActiveLinkNamesURTest(*inv_kin2);
-  runKinJointLimitsTest(inv_kin2->getLimits(), target_limits);
+  runInvKinTest(*inv_kin2, fwd_kin, pose, base_link_name, tip_link_name, seed);
 
-  // Check update
-  inv_kin2->update();
-  EXPECT_TRUE(inv_kin2 != nullptr);
-  EXPECT_EQ(inv_kin2->getName(), "manip");
-  EXPECT_EQ(inv_kin2->getSolverName(), "URInvKin");
-  EXPECT_EQ(inv_kin2->numJoints(), 6);
-  EXPECT_EQ(inv_kin2->getBaseLinkName(), "base_link");
-  EXPECT_EQ(inv_kin2->getTipLinkName(), "tool0");
+  //  // Check update
+  //  inv_kin2->update();
+  //  EXPECT_TRUE(inv_kin2 != nullptr);
+  //  EXPECT_EQ(inv_kin2->getName(), manip_name);
+  //  EXPECT_EQ(inv_kin2->getSolverName(), "URInvKin");
+  //  EXPECT_EQ(inv_kin2->numJoints(), 6);
+  //  EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
+  //  EXPECT_EQ(inv_kin2->getTipLinkName(), tip_link_name);
+  //  EXPECT_EQ(inv_kin2->getJointNames(), joint_names);
 
-  runInvKinTest(*inv_kin2, fwd_kin, pose, seed);
-  runActiveLinkNamesURTest(*inv_kin2);
-  runKinJointLimitsTest(inv_kin2->getLimits(), target_limits);
-
-  // Test setJointLimits
-  runKinSetJointLimitsTest(*inv_kin);
+  //  runInvKinTest(*inv_kin2, fwd_kin, pose, seed);
+  //  runActiveLinkNamesURTest(*inv_kin2);
+  //  runKinJointLimitsTest(inv_kin2->getLimits(), target_limits);
 }
 
 TEST(TesseractKinematicsUnit, UR10InvKinUnit)  // NOLINT

@@ -59,52 +59,30 @@ public:
 
   using Ptr = std::shared_ptr<KDLInvKinChainNR>;
   using ConstPtr = std::shared_ptr<const KDLInvKinChainNR>;
+  using UPtr = std::unique_ptr<KDLInvKinChainNR>;
+  using ConstUPtr = std::unique_ptr<const KDLInvKinChainNR>;
 
   KDLInvKinChainNR() = default;
-  ~KDLInvKinChainNR() override = default;
-  KDLInvKinChainNR(const KDLInvKinChainNR&) = delete;
-  KDLInvKinChainNR& operator=(const KDLInvKinChainNR&) = delete;
-  KDLInvKinChainNR(KDLInvKinChainNR&&) = delete;
-  KDLInvKinChainNR& operator=(KDLInvKinChainNR&&) = delete;
+  ~KDLInvKinChainNR() final = default;
+  KDLInvKinChainNR(const KDLInvKinChainNR& other);
+  KDLInvKinChainNR& operator=(const KDLInvKinChainNR& other);
+  KDLInvKinChainNR(KDLInvKinChainNR&&) = default;
+  KDLInvKinChainNR& operator=(KDLInvKinChainNR&&) = default;
 
-  InverseKinematics::Ptr clone() const override;
-
-  bool update() override;
-
-  void synchronize(ForwardKinematics::ConstPtr fwd_kin) override;
-  bool isSynchronized() const override;
-
-  IKSolutions calcInvKin(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
+  //  bool update() override
 
   IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
-                         const Eigen::Ref<const Eigen::VectorXd>& seed,
-                         const std::string& link_name) const override;
+                         const std::string& working_frame,
+                         const std::string& tip_link_name,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed) const final;
 
-  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
-
-  const std::vector<std::string>& getJointNames() const override;
-
-  const std::vector<std::string>& getLinkNames() const override;
-
-  const std::vector<std::string>& getActiveLinkNames() const override;
-
-  const tesseract_common::KinematicLimits& getLimits() const override;
-
-  void setLimits(tesseract_common::KinematicLimits limits) override;
-
-  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override;
-
-  unsigned int numJoints() const override;
-
-  const std::string& getBaseLinkName() const override;
-
-  const std::string& getTipLinkName() const override;
-
-  const std::string& getName() const override;
-
-  const std::string& getSolverName() const override;
-
-  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
+  std::vector<std::string> getJointNames() const final;
+  Eigen::Index numJoints() const final;
+  std::string getBaseLinkName() const final;
+  std::vector<std::string> getTipLinkNames() const final;
+  std::string getName() const final;
+  std::string getSolverName() const final;
+  InverseKinematics::UPtr clone() const final;
 
   /**
    * @brief Initializes KDL Forward Kinematics
@@ -115,7 +93,7 @@ public:
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  bool init(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
+  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
             const std::string& base_link,
             const std::string& tip_link,
             const std::string& name);
@@ -128,7 +106,7 @@ public:
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
             const std::vector<std::pair<std::string, std::string> >& chains,
             std::string name);
 
@@ -139,23 +117,13 @@ public:
   bool checkInitialized() const;
 
 private:
-  bool initialized_{ false };                               /**< @brief Identifies if the object has been initialized */
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_; /**< @brief Tesseract Scene Graph */
-  ForwardKinematics::ConstPtr sync_fwd_kin_;                /**< @brief Synchronized forward kinematics object */
-  std::vector<Eigen::Index> sync_joint_map_;                /**< @brief Synchronized joint solution remapping */
-  KDLChainData kdl_data_;                                   /**< @brief KDL data parsed from Scene Graph */
-  SynchronizableData orig_data_;                            /**< @brief The data prior to synchronization */
-  std::string name_;                                        /**< @brief Name of the kinematic chain */
-  std::string solver_name_{ "KDLInvKinChainNR" };           /**< @brief Name of this solver */
+  bool initialized_{ false };                     /**< @brief Identifies if the object has been initialized */
+  KDLChainData kdl_data_;                         /**< @brief KDL data parsed from Scene Graph */
+  std::string name_;                              /**< @brief Name of the kinematic chain */
+  std::string solver_name_{ "KDLInvKinChainNR" }; /**< @brief Name of this solver */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< @brief KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;  /**< @brief KDL Inverse kinematic velocity solver */
   std::unique_ptr<KDL::ChainIkSolverPos_NR> ik_solver_;        /**< @brief KDL Inverse kinematic solver */
-
-  /**
-   * @brief This used by the clone method
-   * @return True if init() completes successfully
-   */
-  bool init(const KDLInvKinChainNR& kin);
 
   /** @brief calcFwdKin helper function */
   IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose,

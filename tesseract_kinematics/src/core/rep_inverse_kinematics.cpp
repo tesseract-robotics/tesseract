@@ -35,25 +35,25 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-InverseKinematics::Ptr RobotWithExternalPositionerInvKin::clone() const
+InverseKinematics::UPtr RobotWithExternalPositionerInvKin::clone() const
 {
-  auto cloned_invkin = std::make_shared<RobotWithExternalPositionerInvKin>();
+  auto cloned_invkin = std::make_unique<RobotWithExternalPositionerInvKin>();
   cloned_invkin->init(*this);
   return cloned_invkin;
 }
 
-bool RobotWithExternalPositionerInvKin::update()
-{
-  manip_inv_kin_->update();
-  positioner_fwd_kin_->update();
-  if (!init(scene_graph_, manip_inv_kin_, manip_reach_, positioner_fwd_kin_, positioner_sample_resolution_, name_))
-    return false;
+// bool RobotWithExternalPositionerInvKin::update()
+//{
+//  manip_inv_kin_->update();
+//  positioner_fwd_kin_->update();
+//  if (!init(scene_graph_, manip_inv_kin_, manip_reach_, positioner_fwd_kin_, positioner_sample_resolution_, name_))
+//    return false;
 
-  if (sync_fwd_kin_ != nullptr)
-    synchronize(sync_fwd_kin_);
+//  if (sync_fwd_kin_ != nullptr)
+//    synchronize(sync_fwd_kin_);
 
-  return true;
-}
+//  return true;
+//}
 
 void RobotWithExternalPositionerInvKin::synchronize(ForwardKinematics::ConstPtr fwd_kin)
 {
@@ -63,18 +63,18 @@ void RobotWithExternalPositionerInvKin::synchronize(ForwardKinematics::ConstPtr 
   if (!tesseract_common::isIdentical(orig_data_.joint_names, fwd_kin->getJointNames(), false))
     throw std::runtime_error("Tried to synchronize kinematics objects with different joint names!");
 
-  if (!tesseract_common::isIdentical(orig_data_.link_names, fwd_kin->getLinkNames(), false))
-    throw std::runtime_error("Tried to synchronize kinematics objects with different link names!");
+  //  if (!tesseract_common::isIdentical(orig_data_.link_names, fwd_kin->getLinkNames(), false))
+  //    throw std::runtime_error("Tried to synchronize kinematics objects with different link names!");
 
-  if (!tesseract_common::isIdentical(orig_data_.active_link_names, fwd_kin->getActiveLinkNames(), false))
-    throw std::runtime_error("Tried to synchronize kinematics objects with different active link names!");
+  //  if (!tesseract_common::isIdentical(orig_data_.active_link_names, fwd_kin->getActiveLinkNames(), false))
+  //    throw std::runtime_error("Tried to synchronize kinematics objects with different active link names!");
 
   SynchronizableData local_data;
   local_data.joint_names = fwd_kin->getJointNames();
-  local_data.link_names = fwd_kin->getLinkNames();
-  local_data.active_link_names = fwd_kin->getActiveLinkNames();
-  local_data.redundancy_indices = fwd_kin->getRedundancyCapableJointIndices();
-  local_data.limits = fwd_kin->getLimits();
+  //  local_data.link_names = fwd_kin->getLinkNames();
+  //  local_data.active_link_names = fwd_kin->getActiveLinkNames();
+  //  local_data.redundancy_indices = fwd_kin->getRedundancyCapableJointIndices();
+  //  local_data.limits = fwd_kin->getLimits();
   if (data_ == local_data)
     return;
 

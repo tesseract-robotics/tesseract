@@ -35,6 +35,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+void KinematicLimits::resize(Eigen::Index size)
+{
+  joint_limits.resize(size, 2);
+  velocity_limits.resize(size);
+  acceleration_limits.resize(size);
+}
+
 bool KinematicLimits::operator==(const KinematicLimits& rhs) const
 {
   bool ret_val = true;

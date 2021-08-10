@@ -50,6 +50,8 @@ struct KinematicLimits
   /** @brief The acceleration limits */
   Eigen::VectorXd acceleration_limits;
 
+  void resize(Eigen::Index size);
+
   bool operator==(const KinematicLimits& rhs) const;
   bool operator!=(const KinematicLimits& rhs) const;
 

@@ -27,6 +27,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ctime>
+#include <string>
 #include <type_traits>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -35,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-// Implicit Instantiation
+// explicit Instantiation
 template bool toNumeric<double>(const std::string&, double&);
 template bool toNumeric<float>(const std::string&, float&);
 template bool toNumeric<int>(const std::string&, int&);

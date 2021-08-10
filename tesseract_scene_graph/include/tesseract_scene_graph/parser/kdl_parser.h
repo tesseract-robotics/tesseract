@@ -159,7 +159,7 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
   kdl_tree_builder(KDL::Tree& tree) : tree_(tree) {}
 
   template <class u, class g>
-  void discover_vertex(u vertex, g graph)
+  void discover_vertex(u vertex, const g& graph)
   {
     const Link::ConstPtr& link = boost::get(boost::vertex_link, graph)[vertex];
 

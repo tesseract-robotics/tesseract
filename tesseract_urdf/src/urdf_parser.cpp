@@ -42,8 +42,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_xml_string,
-                                                       const tesseract_scene_graph::ResourceLocator::Ptr& locator)
+tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_xml_string,
+                                                        const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   tinyxml2::XMLDocument xml_doc;
   if (xml_doc.Parse(urdf_xml_string.c_str()) != tinyxml2::XML_SUCCESS)
@@ -63,7 +63,7 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_x
     std::throw_with_nested(
         std::runtime_error("URDF: Failed parsing attribute 'version' for robot '" + robot_name + "'!"));
 
-  auto sg = std::make_shared<tesseract_scene_graph::SceneGraph>();
+  auto sg = std::make_unique<tesseract_scene_graph::SceneGraph>();
   sg->setName(robot_name);
 
   std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
@@ -155,15 +155,15 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_x
   return sg;
 }
 
-tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,
-                                                     const tesseract_scene_graph::ResourceLocator::Ptr& locator)
+tesseract_scene_graph::SceneGraph::UPtr parseURDFFile(const std::string& path,
+                                                      const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   std::ifstream ifs(path);
   if (!ifs)
     std::throw_with_nested(std::runtime_error("URDF: Error opening file '" + path + "'!"));
 
   std::string urdf_xml_string((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-  tesseract_scene_graph::SceneGraph::Ptr sg;
+  tesseract_scene_graph::SceneGraph::UPtr sg;
   try
   {
     sg = parseURDFString(urdf_xml_string, locator);

@@ -37,40 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-/**
- * @brief The data that is synchronized between inverse kinematics and forward kinematics
- * @note The base and tip link name are not synchronized so must make sure tranform cartesian data into base frame
- */
-struct SynchronizableData
-{
-  std::vector<std::string> joint_names;         /**< List of joint names */
-  std::vector<std::string> link_names;          /**< List of link names */
-  std::vector<std::string> active_link_names;   /**< List of link names that move with changes in joint values */
-  tesseract_common::KinematicLimits limits;     /**< Joint limits, velocity limits, and acceleration limits */
-  std::vector<Eigen::Index> redundancy_indices; /**< Joint indicies that have redundancy (ex. revolute) */
-
-  void clear()
-  {
-    joint_names.clear();
-    link_names.clear();
-    active_link_names.clear();
-    limits = tesseract_common::KinematicLimits();
-    redundancy_indices.clear();
-  }
-
-  bool operator==(const SynchronizableData& rhs) const
-  {
-    bool equal = true;
-    equal &= tesseract_common::isIdentical(joint_names, rhs.joint_names);
-    equal &= tesseract_common::isIdentical(link_names, rhs.link_names);
-    equal &= tesseract_common::isIdentical(active_link_names, rhs.active_link_names);
-    equal &= (limits == rhs.limits);
-    equal &= tesseract_common::isIdentical(redundancy_indices, rhs.redundancy_indices);
-    return equal;
-  }
-  bool operator!=(const SynchronizableData& rhs) const { return !operator==(rhs); }
-};
-
 /** @brief The Universal Robot kinematic parameters */
 struct URParameters
 {

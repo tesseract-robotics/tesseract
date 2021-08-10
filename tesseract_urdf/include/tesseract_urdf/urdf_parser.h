@@ -39,8 +39,8 @@ namespace tesseract_urdf
  * the nested exception.
  * @return Tesseract Scene Graph, nullptr if failed to parse URDF
  */
-tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_xml_string,
-                                                       const tesseract_scene_graph::ResourceLocator::Ptr& locator);
+tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_xml_string,
+                                                        const tesseract_scene_graph::ResourceLocator::Ptr& locator);
 
 /**
  * @brief Parse a URDF file into a Tesseract Scene Graph
@@ -50,8 +50,8 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_x
  * the nested exception.
  * @return Tesseract Scene Graph, nullptr if failed to parse URDF
  */
-tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,
-                                                     const tesseract_scene_graph::ResourceLocator::Ptr& locator);
+tesseract_scene_graph::SceneGraph::UPtr parseURDFFile(const std::string& path,
+                                                      const tesseract_scene_graph::ResourceLocator::Ptr& locator);
 
 void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
                    const std::string& directory,

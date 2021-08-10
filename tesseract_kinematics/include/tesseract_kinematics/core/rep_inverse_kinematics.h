@@ -58,6 +58,8 @@ public:
 
   using Ptr = std::shared_ptr<RobotWithExternalPositionerInvKin>;
   using ConstPtr = std::shared_ptr<const RobotWithExternalPositionerInvKin>;
+  using UPtr = std::unique_ptr<RobotWithExternalPositionerInvKin>;
+  using ConstUPtr = std::unique_ptr<const RobotWithExternalPositionerInvKin>;
 
   RobotWithExternalPositionerInvKin() = default;
   ~RobotWithExternalPositionerInvKin() override = default;
@@ -66,39 +68,21 @@ public:
   RobotWithExternalPositionerInvKin(RobotWithExternalPositionerInvKin&&) = delete;
   RobotWithExternalPositionerInvKin& operator=(RobotWithExternalPositionerInvKin&&) = delete;
 
-  InverseKinematics::Ptr clone() const override;
+  //  bool update() override;
 
-  bool update() override;
-
-  void synchronize(ForwardKinematics::ConstPtr fwd_kin) override;
-  bool isSynchronized() const override;
-
-  IKSolutions calcInvKin(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
+  void synchronize(const std::vector<std::string>& joint_names) override;
 
   IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
-                         const Eigen::Ref<const Eigen::VectorXd>& seed,
-                         const std::string& link_name) const override;
+                         const std::string& link_name,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
-  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
-
-  const std::vector<std::string>& getJointNames() const override;
-
-  const std::vector<std::string>& getLinkNames() const override;
-
-  const std::vector<std::string>& getActiveLinkNames() const override;
-
-  const tesseract_common::KinematicLimits& getLimits() const override;
-
-  void setLimits(tesseract_common::KinematicLimits limits) override;
-
-  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override;
-
-  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
-  unsigned int numJoints() const override;
-  const std::string& getBaseLinkName() const override;
-  const std::string& getTipLinkName() const override;
-  const std::string& getName() const override;
-  const std::string& getSolverName() const override;
+  std::vector<std::string> getJointNames() const override;
+  Eigen::Index numJoints() const override;
+  std::string getBaseLinkName() const override;
+  std::vector<std::string> getTipLinkName() const override;
+  std::string getName() const override;
+  std::string getSolverName() const override;
+  InverseKinematics::UPtr clone() const override;
 
   /**
    * @brief Initializes Inverse Kinematics for a robot on a positioner
