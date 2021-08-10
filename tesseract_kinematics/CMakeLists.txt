@@ -44,10 +44,14 @@ set(COVERAGE_EXCLUDE
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 # Create interface for core
-add_library(${PROJECT_NAME}_core src/core/rop_inverse_kinematics.cpp src/core/rep_inverse_kinematics.cpp)
+add_library(${PROJECT_NAME}_core
+  src/core/rop_inverse_kinematics.cpp
+#  src/core/rep_inverse_kinematics.cpp
+  src/core/kinematic_group.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen
+         tesseract::tesseract_common
          tesseract::tesseract_scene_graph
          tesseract::tesseract_srdf
          console_bridge::console_bridge)
@@ -88,12 +92,14 @@ add_library(
   src/kdl/kdl_fwd_kin_chain.cpp
   src/kdl/kdl_fwd_kin_tree.cpp
   src/kdl/kdl_inv_kin_chain_lma.cpp
-  src/kdl/kdl_inv_kin_chain_nr.cpp)
+  src/kdl/kdl_inv_kin_chain_nr.cpp
+  src/kdl/kdl_utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_kdl
   PUBLIC ${PROJECT_NAME}_core
          Eigen3::Eigen
          tesseract::tesseract_scene_graph
+         tesseract::tesseract_common
          orocos-kdl
          console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
@@ -106,7 +112,7 @@ target_code_coverage(
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-if(KDL_VERSION VERSION_LESS "1.4.0")
+if(orocos_kdl_VERSION VERSION_LESS "1.4.0")
   target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC KDL_LESS_1_4_0=ON)
 endif()
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -160,8 +166,9 @@ configure_package(
   TARGETS ${PROJECT_NAME}_core
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_ikfast
-          ${PROJECT_NAME}_opw
-          ${PROJECT_NAME}_ur)
+#          ${PROJECT_NAME}_opw
+          ${PROJECT_NAME}_ur
+          )
 
 # Mark cpp header files for installation
 install(
@@ -172,11 +179,11 @@ install(
   PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE)
 
-if(TESSERACT_ENABLE_TESTING)
+#if(TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
-endif()
+#endif()
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(

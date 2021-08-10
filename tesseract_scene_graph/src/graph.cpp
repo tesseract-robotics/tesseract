@@ -41,9 +41,9 @@ SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<AllowedC
   boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);
 }
 
-SceneGraph::Ptr SceneGraph::clone() const
+SceneGraph::UPtr SceneGraph::clone() const
 {
-  SceneGraph::Ptr cloned_graph = std::make_shared<SceneGraph>();
+  auto cloned_graph = std::make_unique<SceneGraph>();
 
   for (auto& link : getLinks())
   {

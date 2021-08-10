@@ -43,75 +43,48 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-inline InverseKinematics::Ptr IKFastInvKin::clone() const
+inline InverseKinematics::UPtr IKFastInvKin::clone() const { return std::make_unique<IKFastInvKin>(*this); }
+
+inline IKFastInvKin::IKFastInvKin(const IKFastInvKin& other) { *this = other; }
+
+inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
 {
-  auto cloned_invkin = std::make_shared<IKFastInvKin>();
-  cloned_invkin->init(*this);
-  return cloned_invkin;
+  initialized_ = other.initialized_;
+  name_ = other.name_;
+  base_link_name_ = other.base_link_name_;
+  tip_link_name_ = other.tip_link_name_;
+  joint_names_ = other.joint_names_;
+  solver_name_ = other.solver_name_;
+
+  return *this;
 }
 
-inline bool IKFastInvKin::update()
-{
-  if (!init(name_,
-            base_link_name_,
-            tip_link_name_,
-            orig_data_.joint_names,
-            orig_data_.link_names,
-            orig_data_.active_link_names,
-            orig_data_.limits,
-            orig_data_.redundancy_indices))
-    return false;
+// inline bool IKFastInvKin::update()
+//{
+//  if (!init(name_,
+//            base_link_name_,
+//            tip_link_name_,
+//            orig_data_.joint_names,
+//            orig_data_.link_names,
+//            orig_data_.active_link_names,
+//            orig_data_.limits,
+//            orig_data_.redundancy_indices))
+//    return false;
 
-  if (sync_fwd_kin_ != nullptr)
-    synchronize(sync_fwd_kin_);
+//  if (sync_fwd_kin_ != nullptr)
+//    synchronize(sync_fwd_kin_);
 
-  return true;
-}
-
-inline void IKFastInvKin::synchronize(ForwardKinematics::ConstPtr fwd_kin)
-{
-  if (numJoints() != fwd_kin->numJoints())
-    throw std::runtime_error("Tried to synchronize kinematics objects with different number of joints!");
-
-  if (!tesseract_common::isIdentical(orig_data_.joint_names, fwd_kin->getJointNames(), false))
-    throw std::runtime_error("Tried to synchronize kinematics objects with different joint names!");
-
-  if (!tesseract_common::isIdentical(orig_data_.link_names, fwd_kin->getLinkNames(), false))
-    throw std::runtime_error("Tried to synchronize kinematics objects with different link names!");
-
-  if (!tesseract_common::isIdentical(orig_data_.active_link_names, fwd_kin->getActiveLinkNames(), false))
-    throw std::runtime_error("Tried to synchronize kinematics objects with different active link names!");
-
-  SynchronizableData local_data;
-  local_data.joint_names = fwd_kin->getJointNames();
-  local_data.link_names = fwd_kin->getLinkNames();
-  local_data.active_link_names = fwd_kin->getActiveLinkNames();
-  local_data.redundancy_indices = fwd_kin->getRedundancyCapableJointIndices();
-  local_data.limits = fwd_kin->getLimits();
-  if (data_ == local_data)
-    return;
-
-  sync_joint_map_.clear();
-  const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
-  if (orig_data_.joint_names != joint_names)
-  {
-    for (const auto& joint_name : joint_names)
-    {
-      auto it = std::find(orig_data_.joint_names.begin(), orig_data_.joint_names.end(), joint_name);
-      Eigen::Index idx = std::distance(orig_data_.joint_names.begin(), it);
-      sync_joint_map_.push_back(idx);
-    }
-  }
-
-  sync_fwd_kin_ = std::move(fwd_kin);
-  data_ = local_data;
-}
-
-inline bool IKFastInvKin::isSynchronized() const { return (sync_fwd_kin_ != nullptr); }
+//  return true;
+//}
 
 inline IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose,
+                                            const std::string& working_frame,
+                                            const std::string& link_name,
                                             const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
+  assert(working_frame == base_link_name_);
+  assert(link_name == tip_link_name_);
+
   // Convert to ikfast data type
   Eigen::Transform<IkReal, 3, Eigen::Isometry> ikfast_tcp = pose.cast<IkReal>();
 
@@ -155,106 +128,34 @@ inline IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose,
     if (eigen_sol.array().allFinite())
     {
       harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
-
-      // Reorder if needed
-      if (!sync_joint_map_.empty())
-        tesseract_common::reorder(eigen_sol, sync_joint_map_);
-
-      // Add solution
-      if (tesseract_common::satisfiesPositionLimits(eigen_sol, data_.limits.joint_limits))
-        solution_set.push_back(eigen_sol);
+      solution_set.push_back(eigen_sol);
     }
   }
 
   return solution_set;
 }
 
-inline IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose,
-                                            const Eigen::Ref<const Eigen::VectorXd>& seed,
-                                            const std::string& link_name) const
-{
-  if (link_name == tip_link_name_)
-    return calcInvKin(pose, seed);
-
-  throw std::runtime_error("IKFastInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const "
-                           "Eigen::Ref<const Eigen::VectorXd>&, const std::string&) Not Supported!");
-}
-
-inline bool IKFastInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
-{
-  if (vec.size() != numJoints())
-  {
-    CONSOLE_BRIDGE_logError(
-        "Number of joint angles (%d) don't match robot_model (%d)", static_cast<int>(vec.size()), numJoints());
-    return false;
-  }
-
-  return (tesseract_common::satisfiesPositionLimits(vec, data_.limits.joint_limits));
-}
-
-inline unsigned int IKFastInvKin::numJoints() const { return static_cast<unsigned int>(GetNumJoints()); }
+inline Eigen::Index IKFastInvKin::numJoints() const { return static_cast<Eigen::Index>(GetNumJoints()); }
 
 inline bool IKFastInvKin::init(std::string name,
                                std::string base_link_name,
                                std::string tip_link_name,
-                               std::vector<std::string> joint_names,
-                               std::vector<std::string> link_names,
-                               std::vector<std::string> active_link_names,
-                               tesseract_common::KinematicLimits limits,
-                               std::vector<Eigen::Index> redundancy_indices)
+                               std::vector<std::string> joint_names)
 {
   name_ = std::move(name);
-  data_.clear();
   base_link_name_ = std::move(base_link_name);
   tip_link_name_ = std::move(tip_link_name);
-  data_.joint_names = std::move(joint_names);
-  data_.link_names = std::move(link_names);
-  data_.active_link_names = std::move(active_link_names);
-  data_.limits = std::move(limits);
-  data_.redundancy_indices = std::move(redundancy_indices);
-  orig_data_ = data_;
+  joint_names_ = std::move(joint_names);
   initialized_ = true;
 
   return initialized_;
 }
 
-inline bool IKFastInvKin::init(const IKFastInvKin& kin)
-{
-  initialized_ = kin.initialized_;
-  sync_fwd_kin_ = kin.sync_fwd_kin_;
-  sync_joint_map_ = kin.sync_joint_map_;
-  name_ = kin.name_;
-  base_link_name_ = kin.base_link_name_;
-  tip_link_name_ = kin.tip_link_name_;
-  solver_name_ = kin.solver_name_;
-  data_ = kin.data_;
-  orig_data_ = kin.orig_data_;
-
-  return initialized_;
-}
-
-inline const std::vector<std::string>& IKFastInvKin::getJointNames() const { return data_.joint_names; }
-inline const std::vector<std::string>& IKFastInvKin::getLinkNames() const { return data_.link_names; }
-inline const std::vector<std::string>& IKFastInvKin::getActiveLinkNames() const { return data_.active_link_names; }
-inline const tesseract_common::KinematicLimits& IKFastInvKin::getLimits() const { return data_.limits; }
-
-inline void IKFastInvKin::setLimits(tesseract_common::KinematicLimits limits)
-{
-  unsigned int nj = numJoints();
-  if (limits.joint_limits.rows() != nj || limits.velocity_limits.size() != nj ||
-      limits.acceleration_limits.size() != nj)
-    throw std::runtime_error("Kinematics limits assigned are invalid!");
-
-  data_.limits = std::move(limits);
-}
-inline std::vector<Eigen::Index> IKFastInvKin::getRedundancyCapableJointIndices() const
-{
-  return data_.redundancy_indices;
-}
-inline const std::string& IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
-inline const std::string& IKFastInvKin::getTipLinkName() const { return tip_link_name_; }
-inline const std::string& IKFastInvKin::getName() const { return name_; }
-inline const std::string& IKFastInvKin::getSolverName() const { return solver_name_; }
+inline std::vector<std::string> IKFastInvKin::getJointNames() const { return joint_names_; }
+inline std::string IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
+inline std::vector<std::string> IKFastInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
+inline std::string IKFastInvKin::getName() const { return name_; }
+inline std::string IKFastInvKin::getSolverName() const { return solver_name_; }
 
 inline bool IKFastInvKin::checkInitialized() const
 {

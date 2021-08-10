@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/jntarray.hpp>
 #include <Eigen/Eigen>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_common/types.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/graph.h>
@@ -46,63 +47,28 @@ namespace tesseract_kinematics
  * @param frame Input KDL Frame
  * @param transform Output Eigen transform (Isometry3d)
  */
-inline void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
-{
-  transform.setIdentity();
-
-  // translation
-  for (int i = 0; i < 3; ++i)
-    transform(i, 3) = frame.p[i];
-
-  // rotation matrix
-  for (int i = 0; i < 9; ++i)
-    transform(i / 3, i % 3) = frame.M.data[i];
-}
+void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform);
 
 /**
  * @brief Convert vector of KDL::Frame to vector Eigen::Isometry3d
  * @param frames Input KDL Frames
  * @param transforms Output Eigen transforms (Isometry3d)
  */
-inline void KDLToEigen(const std::vector<KDL::Frame>& frames, tesseract_common::VectorIsometry3d& transforms)
-{
-  transforms.resize(frames.size());
-  for (size_t i = 0; i < frames.size(); ++i)
-  {
-    KDLToEigen(frames[i], transforms[i]);
-  }
-}
+void KDLToEigen(const std::vector<KDL::Frame>& frames, tesseract_common::VectorIsometry3d& transforms);
 
 /**
  * @brief Convert Eigen::Isometry3d to KDL::Frame
  * @param transform Input Eigen transform (Isometry3d)
  * @param frame Output KDL Frame
  */
-inline void EigenToKDL(const Eigen::Isometry3d& transform, KDL::Frame& frame)
-{
-  frame.Identity();
-
-  for (int i = 0; i < 3; ++i)
-    frame.p[i] = transform(i, 3);
-
-  for (int i = 0; i < 9; ++i)
-    frame.M.data[i] = transform(i / 3, i % 3);
-}
+void EigenToKDL(const Eigen::Isometry3d& transform, KDL::Frame& frame);
 
 /**
  * @brief Convert KDL::Jacobian to Eigen::Matrix
  * @param jacobian Input KDL Jacobian
  * @param matrix Output Eigen MatrixXd
  */
-inline void KDLToEigen(const KDL::Jacobian& jacobian, Eigen::Ref<Eigen::MatrixXd> matrix)
-{
-  assert(matrix.rows() == jacobian.rows());
-  assert(matrix.cols() == jacobian.columns());
-
-  for (unsigned i = 0; i < jacobian.rows(); ++i)
-    for (unsigned j = 0; j < jacobian.columns(); ++j)
-      matrix(i, j) = jacobian(i, j);
-}
+void KDLToEigen(const KDL::Jacobian& jacobian, Eigen::Ref<Eigen::MatrixXd> matrix);
 
 /**
  * @brief Convert a subset of KDL::Jacobian to Eigen::Matrix
@@ -110,29 +76,21 @@ inline void KDLToEigen(const KDL::Jacobian& jacobian, Eigen::Ref<Eigen::MatrixXd
  * @param q_nrs Input the columns to use
  * @param matrix Output Eigen MatrixXd
  */
-inline void KDLToEigen(const KDL::Jacobian& jacobian, const std::vector<int>& q_nrs, Eigen::Ref<Eigen::MatrixXd> matrix)
-{
-  assert(matrix.rows() == jacobian.rows());
-  assert(static_cast<unsigned>(matrix.cols()) == q_nrs.size());
-
-  for (int i = 0; i < static_cast<int>(jacobian.rows()); ++i)
-    for (int j = 0; j < static_cast<int>(q_nrs.size()); ++j)
-      matrix(i, j) = jacobian(static_cast<unsigned>(i), static_cast<unsigned>(q_nrs[static_cast<size_t>(j)]));
-}
+void KDLToEigen(const KDL::Jacobian& jacobian, const std::vector<int>& q_nrs, Eigen::Ref<Eigen::MatrixXd> matrix);
 
 /**
  * @brief Convert Eigen::Vector to KDL::JntArray
  * @param vec Input Eigen vector
  * @param joints Output KDL joint array
  */
-inline void EigenToKDL(const Eigen::Ref<const Eigen::VectorXd>& vec, KDL::JntArray& joints) { joints.data = vec; }
+void EigenToKDL(const Eigen::Ref<const Eigen::VectorXd>& vec, KDL::JntArray& joints);
 
 /**
  * @brief Convert KDL::JntArray to Eigen::Vector
  * @param joints Input KDL joint array
  * @param vec Output Eigen vector
  */
-inline void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> vec) { vec = joints.data; }
+void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> vec);
 
 /**
  * @brief The KDLChainData struct
@@ -142,12 +100,13 @@ inline void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> 
  */
 struct KDLChainData
 {
-  KDL::Chain robot_chain;                   /**< KDL Chain object */
-  KDL::Tree kdl_tree;                       /**< KDL tree object */
-  SynchronizableData data;                  /**< Synchronizable data */
-  std::string base_link_name;               /**< @brief Link name of first link in the kinematic object */
-  std::string tip_link_name;                /**< @brief Link name of last kink in the kinematic object */
-  std::map<std::string, int> segment_index; /**< A map from chain link name to kdl chain segment number */
+  KDL::Chain robot_chain;                    /**< @brief KDL Chain object */
+  KDL::Tree kdl_tree;                        /**< @brief KDL tree object */
+  std::vector<std::string> joint_names;      /**< @brief List of joint names */
+  std::vector<std::string> joint_link_names; /**< @brief List of joint child link names */
+  std::string base_link_name;                /**< @brief Link name of first link in the kinematic object */
+  std::string tip_link_name;                 /**< @brief Link name of last kink in the kinematic object */
+  std::map<std::string, int> segment_index;  /**< @brief A map from chain link name to kdl chain segment number */
   std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
 };
 
@@ -159,119 +118,9 @@ struct KDLChainData
  *        should be the base link and the second link should the tip link of the chain.
  * @return True if successful otherwise false
  */
-inline bool parseSceneGraph(KDLChainData& results,
-                            const tesseract_scene_graph::SceneGraph& scene_graph,
-                            const std::vector<std::pair<std::string, std::string>>& chains)
-{
-  if (!tesseract_scene_graph::parseSceneGraph(scene_graph, results.kdl_tree))
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
-    return false;
-  }
-
-  results.chains = chains;
-  results.base_link_name = chains.front().first;
-  for (const auto& chain : chains)
-  {
-    KDL::Chain sub_chain;
-    if (!results.kdl_tree.getChain(chain.first, chain.second, sub_chain))
-    {
-      CONSOLE_BRIDGE_logError(
-          "Failed to initialize KDL between links: '%s' and '%s'", chain.first.c_str(), chain.second.c_str());
-      return false;
-    }
-    results.robot_chain.addChain(sub_chain);
-  }
-  results.tip_link_name = chains.back().second;
-
-  results.data.joint_names.resize(results.robot_chain.getNrOfJoints());
-  results.data.limits.joint_limits.resize(results.robot_chain.getNrOfJoints(), 2);
-  results.data.limits.velocity_limits.resize(results.robot_chain.getNrOfJoints());
-  results.data.limits.acceleration_limits.resize(results.robot_chain.getNrOfJoints());
-
-  results.segment_index[results.base_link_name] = 0;
-  results.data.link_names.clear();
-  results.data.active_link_names.clear();
-  results.data.link_names.push_back(results.base_link_name);
-  results.data.active_link_names.push_back(results.base_link_name);
-
-  std::vector<std::string> full_active_link_names;
-  bool found{ false };
-  for (unsigned i = 0, j = 0; i < results.robot_chain.getNrOfSegments(); ++i)
-  {
-    const KDL::Segment& seg = results.robot_chain.getSegment(i);
-    const KDL::Joint& jnt = seg.getJoint();
-    results.data.link_names.push_back(seg.getName());
-
-    // KDL segments does not contain the the base link in this list. When calling function that take segmentNr, like
-    // JntToCart to get the base link transform you would pass an index of zero and for subsequent links it is
-    // index + 1. This was determined through testing which is captured in this packages unit tests.
-    results.segment_index[seg.getName()] = static_cast<int>(i + 1);
-
-    if (found)
-      results.data.active_link_names.push_back(seg.getName());
-
-    if (jnt.getType() == KDL::Joint::None)
-      continue;
-
-    if (!found)
-    {
-      found = true;
-      results.data.active_link_names.push_back(seg.getName());
-    }
-
-    std::vector<std::string> children = scene_graph.getJointChildrenNames(jnt.getName());
-    full_active_link_names.insert(full_active_link_names.end(), children.begin(), children.end());
-
-    results.data.joint_names[j] = jnt.getName();
-    const tesseract_scene_graph::Joint::ConstPtr& joint = scene_graph.getJoint(jnt.getName());
-    results.data.limits.joint_limits(j, 0) = joint->limits->lower;
-    results.data.limits.joint_limits(j, 1) = joint->limits->upper;
-    results.data.limits.velocity_limits(j) = joint->limits->velocity;
-    results.data.limits.acceleration_limits(j) = joint->limits->acceleration;
-
-    // Need to set limits for continuous joints. TODO: This may not be required
-    // by the optimization library but may be nice to have
-    if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS &&
-        tesseract_common::almostEqualRelativeAndAbs(
-            results.data.limits.joint_limits(j, 0), results.data.limits.joint_limits(j, 1), 1e-5))
-    {
-      results.data.limits.joint_limits(j, 0) = -4 * M_PI;
-      results.data.limits.joint_limits(j, 1) = +4 * M_PI;
-    }
-    ++j;
-  }
-
-  // Clean up link names which are not affected by the active joints
-  results.data.active_link_names.erase(std::remove_if(results.data.active_link_names.begin(),
-                                                      results.data.active_link_names.end(),
-                                                      [&full_active_link_names](const std::string& ln) {
-                                                        return (std::find(full_active_link_names.begin(),
-                                                                          full_active_link_names.end(),
-                                                                          ln) == full_active_link_names.end());
-                                                      }),
-                                       results.data.active_link_names.end());
-
-  std::cout << "active_link_names (after)" << std::endl;
-  for (const auto& ln : results.data.active_link_names)
-    std::cout << ln << std::endl;
-  results.data.redundancy_indices.clear();
-  for (std::size_t i = 0; i < results.data.joint_names.size(); ++i)
-  {
-    const auto& joint = scene_graph.getJoint(results.data.joint_names[i]);
-    switch (joint->type)
-    {
-      case tesseract_scene_graph::JointType::REVOLUTE:
-      case tesseract_scene_graph::JointType::CONTINUOUS:
-        results.data.redundancy_indices.push_back(static_cast<Eigen::Index>(i));
-        break;
-      default:
-        break;
-    }
-  }
-
-  return true;
-}
+bool parseSceneGraph(KDLChainData& results,
+                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const std::vector<std::pair<std::string, std::string>>& chains);
 
 /**
  * @brief Parse KDL chain data from the scene graph
@@ -281,14 +130,9 @@ inline bool parseSceneGraph(KDLChainData& results,
  * @param tip_name The tip link name of chain
  * @return True if successful otherwise false
  */
-inline bool parseSceneGraph(KDLChainData& results,
-                            const tesseract_scene_graph::SceneGraph& scene_graph,
-                            const std::string& base_name,
-                            const std::string& tip_name)
-{
-  std::vector<std::pair<std::string, std::string>> chains;
-  chains.emplace_back(base_name, tip_name);
-  return parseSceneGraph(results, scene_graph, chains);
-}
+bool parseSceneGraph(KDLChainData& results,
+                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const std::string& base_name,
+                     const std::string& tip_name);
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_KDL_UTILS_H

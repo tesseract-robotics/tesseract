@@ -29,23 +29,15 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <Eigen/StdVector>
 #include <unordered_map>
 #include <vector>
 #include <memory>
-#include <functional>
-#include <map>
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/types.h>
+
 #ifdef SWIG
-
 %shared_ptr(tesseract_environment::EnvState)
-%shared_ptr(tesseract_environment::AdjacencyMapPair)
-%shared_ptr(tesseract_environment::AdjacencyMap)
-
 #endif  // SWIG
 
 namespace tesseract_environment
@@ -75,116 +67,7 @@ struct EnvState
   /** @brief The joint transforms in world coordinate system */
   tesseract_common::TransformMap joint_transforms;
 
-  Eigen::VectorXd getJointValues(const std::vector<std::string>& joint_names) const
-  {
-    Eigen::VectorXd jv;
-    jv.resize(static_cast<long int>(joint_names.size()));
-    for (auto j = 0u; j < joint_names.size(); ++j)
-      jv(j) = joints.at(joint_names[j]);
-
-    return jv;
-  }
-};
-
-/** @brief The AdjacencyMapPair struct */
-struct AdjacencyMapPair
-{
-  using Ptr = std::shared_ptr<AdjacencyMapPair>;
-  using ConstPtr = std::shared_ptr<const AdjacencyMapPair>;
-
-  /** @brief The kinematic link associated with the adjacent link */
-  std::string link_name;
-
-  /** @brief A transform from the kinematic link (link_name) to the adjacent link */
-  Eigen::Isometry3d transform;
-};
-
-class AdjacencyMap
-{
-public:
-  using Ptr = std::shared_ptr<AdjacencyMap>;
-  using ConstPtr = std::shared_ptr<const AdjacencyMap>;
-
-  /**
-   * @brief Create a adjacency map provided state(map_links) and nearst parent in the active_links.
-   *
-   *        If a map_link does not have a parent in the list of active links it is not added the map
-   *        Note: This currently only support tree structures.
-   *        TODO: Need to update to use graph->getLinkChildren
-   *
-   * @param scene_graph
-   * @param active_links
-   * @param state
-   */
-  AdjacencyMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
-               const std::vector<std::string>& active_links,
-               const tesseract_common::TransformMap& state)
-  {
-    assert(scene_graph->isTree());
-
-    for (const auto& ml : state)
-    {
-      if (std::find(active_links.begin(), active_links.end(), ml.first) != active_links.end())
-      {
-        AdjacencyMapPair::Ptr pair = std::make_shared<AdjacencyMapPair>();
-        pair->link_name = ml.first;
-        pair->transform.setIdentity();
-        adjacency_map_[ml.first] = pair;
-        active_link_names_.push_back(ml.first);
-        continue;
-      }
-
-      std::vector<std::string> inv_adj_links = scene_graph->getInvAdjacentLinkNames(ml.first);
-      while (!inv_adj_links.empty())
-      {
-        assert(inv_adj_links.size() == 1);
-
-        const std::string& ial = inv_adj_links[0];
-        auto it = std::find(active_links.begin(), active_links.end(), ial);
-        if (it != active_links.end())
-        {
-          AdjacencyMapPair::Ptr pair = std::make_shared<AdjacencyMapPair>();
-          pair->link_name = ial;
-          pair->transform = state.at(ial).inverse() * ml.second;
-          adjacency_map_[ml.first] = pair;
-          active_link_names_.push_back(ml.first);
-          break;
-        }
-
-        inv_adj_links = scene_graph->getInvAdjacentLinkNames(ial);
-      }
-    }
-  }
-
-  virtual ~AdjacencyMap() = default;
-  AdjacencyMap(const AdjacencyMap&) = default;
-  AdjacencyMap& operator=(const AdjacencyMap&) = default;
-  AdjacencyMap(AdjacencyMap&&) = default;
-  AdjacencyMap& operator=(AdjacencyMap&&) = default;
-
-  /**
-   * @brief This is a list of all active links associated with the constructor data.
-   * @return vector of link names
-   */
-  const std::vector<std::string>& getActiveLinkNames() const { return active_link_names_; }
-
-  /**
-   * @brief A link mapping to the associated kinematics link name if it exists
-   * @param link_name Name of link
-   * @return If the link does not have a associated kinematics link it return nullptr, otherwise return the pair.
-   */
-  AdjacencyMapPair::ConstPtr getLinkMapping(const std::string& link_name) const
-  {
-    const auto& it = adjacency_map_.find(link_name);
-    if (it == adjacency_map_.end())
-      return nullptr;
-
-    return it->second;
-  }
-
-private:
-  std::vector<std::string> active_link_names_;
-  std::unordered_map<std::string, AdjacencyMapPair::ConstPtr> adjacency_map_;
+  Eigen::VectorXd getJointValues(const std::vector<std::string>& joint_names) const;
 };
 
 }  // namespace tesseract_environment

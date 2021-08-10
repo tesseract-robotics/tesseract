@@ -62,56 +62,29 @@ public:
 
   using Ptr = std::shared_ptr<KDLFwdKinChain>;
   using ConstPtr = std::shared_ptr<const KDLFwdKinChain>;
+  using UPtr = std::unique_ptr<KDLFwdKinChain>;
+  using ConstUPtr = std::unique_ptr<const KDLFwdKinChain>;
 
   KDLFwdKinChain() = default;
-  ~KDLFwdKinChain() override = default;
-  KDLFwdKinChain(const KDLFwdKinChain&) = delete;
-  KDLFwdKinChain& operator=(const KDLFwdKinChain&) = delete;
-  KDLFwdKinChain(KDLFwdKinChain&&) = delete;
-  KDLFwdKinChain& operator=(KDLFwdKinChain&&) = delete;
+  ~KDLFwdKinChain() final = default;
+  KDLFwdKinChain(const KDLFwdKinChain& other);
+  KDLFwdKinChain& operator=(const KDLFwdKinChain& other);
+  KDLFwdKinChain(KDLFwdKinChain&&) = default;
+  KDLFwdKinChain& operator=(KDLFwdKinChain&&) = default;
 
-  ForwardKinematics::Ptr clone() const override;
-
-  bool update() override;
-
-  Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
-
-  tesseract_common::VectorIsometry3d
-  calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
-
-  Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name) const override;
-
-  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const final;
 
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name) const override;
+                               const std::string& joint_link_name) const final;
 
-  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
-
-  const std::vector<std::string>& getJointNames() const override;
-
-  const std::vector<std::string>& getLinkNames() const override;
-
-  const std::vector<std::string>& getActiveLinkNames() const override;
-
-  const tesseract_common::KinematicLimits& getLimits() const override;
-
-  void setLimits(tesseract_common::KinematicLimits limits) override;
-
-  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override;
-
-  unsigned int numJoints() const override;
-
-  const std::string& getBaseLinkName() const override;
-
-  const std::string& getTipLinkName() const override;
-
-  const std::string& getName() const override;
-
-  const std::string& getSolverName() const override;
-
-  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
+  std::string getBaseLinkName() const final;
+  std::vector<std::string> getJointNames() const final;
+  std::vector<std::string> getJointLinkNames() const final;
+  std::vector<std::string> getTipLinkNames() const final;
+  Eigen::Index numJoints() const final;
+  std::string getName() const final;
+  std::string getSolverName() const final;
+  ForwardKinematics::UPtr clone() const final;
 
   /**
    * @brief Initializes Forward Kinematics as chain
@@ -122,7 +95,7 @@ public:
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
             const std::string& base_link,
             const std::string& tip_link,
             std::string name);
@@ -135,7 +108,7 @@ public:
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
             const std::vector<std::pair<std::string, std::string> >& chains,
             std::string name);
 
@@ -147,25 +120,14 @@ public:
 
 private:
   bool initialized_{ false };                                  /**< Identifies if the object has been initialized */
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
   std::string solver_name_{ "KDLFwdKinChain" };                /**< Name of this solver */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
 
-  /**
-   * @brief This used by the clone method
-   * @return True if init() completes successfully
-   */
-  bool init(const KDLFwdKinChain& kin);
-
   /** @brief calcFwdKin helper function */
-  Eigen::Isometry3d calcFwdKinHelper(const Eigen::Ref<const Eigen::VectorXd>& joint_angles, int segment_num = -1) const;
-
-  /** @brief calcFwdKin helper function */
-  tesseract_common::VectorIsometry3d calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                                         int segment_num = -1) const;
+  tesseract_common::TransformMap calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /** @brief calcJacobian helper function */
   bool calcJacobianHelper(KDL::Jacobian& jacobian,

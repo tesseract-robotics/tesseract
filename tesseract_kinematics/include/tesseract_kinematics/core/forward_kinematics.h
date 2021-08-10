@@ -42,6 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
 %shared_ptr(tesseract_kinematics::ForwardKinematics)
+%unique_ptr(tesseract_kinematics::ForwardKinematics)
 %template(ForwardKinematicsPtrMap) std::unordered_map<std::string, tesseract_kinematics::ForwardKinematics::Ptr>;
 %template(ForwardKinematicsConstPtrMap) std::unordered_map<std::string, tesseract_kinematics::ForwardKinematics::ConstPtr>;
 #endif  // SWIG
@@ -58,136 +59,80 @@ public:
 
   using Ptr = std::shared_ptr<ForwardKinematics>;
   using ConstPtr = std::shared_ptr<const ForwardKinematics>;
+  using UPtr = std::unique_ptr<ForwardKinematics>;
+  using ConstUPtr = std::unique_ptr<const ForwardKinematics>;
 
   ForwardKinematics() = default;
   virtual ~ForwardKinematics() = default;
-  ForwardKinematics(const ForwardKinematics&) = delete;
-  ForwardKinematics& operator=(const ForwardKinematics&) = delete;
-  ForwardKinematics(ForwardKinematics&&) = delete;
-  ForwardKinematics& operator=(ForwardKinematics&&) = delete;
+  ForwardKinematics(const ForwardKinematics&) = default;
+  ForwardKinematics& operator=(const ForwardKinematics&) = default;
+  ForwardKinematics(ForwardKinematics&&) = default;
+  ForwardKinematics& operator=(ForwardKinematics&&) = default;
+
+  //  /**
+  //   * @brief Updates kinematics if kinematic parameters have changed
+  //   * @return True if successful
+  //   */
+  //  virtual bool update() = 0;
 
   /**
-   * @brief Updates kinematics if kinematic parameters have changed
-   * @return True if successful
-   */
-  virtual bool update() = 0;
-
-  /**
-   * @brief Calculates tool pose of robot chain
-   * @details Throws an exception on failures (including uninitialized)
-   * @param pose Transform of end-of-tip relative to root
+   * @brief Calculates the link poses for the kinematics object
+   * @details
+   * This should return a transform for every link listed in getJointLinkNames() and getTipLinkNames()
+   * Throws an exception on failures (including uninitialized)
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
+   * @return A transform map of link name to pose
    */
-  virtual Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
-
-  /**
-   * @brief Calculates pose for all links of robot chain
-   * @details Throws an exception on failures (including uninitialized)
-   * @param poses Transform of each link relative to root. Same order as getLinkNames()
-   * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   */
-  virtual tesseract_common::VectorIsometry3d
-  calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
-
-  /**
-   * @brief Calculates pose for a given link
-   * @details Throws an exception on failures (including uninitialized)
-   * @param pose Transform of link relative to root
-   * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   * @param link_name Name of link to calculate pose which is part of the kinematics
-   */
-  virtual Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                       const std::string& link_name) const = 0;
-
-  /**
-   * @brief Calculated jacobian of robot given joint angles
-   * @details Throws an exception on failures (including uninitialized)
-   * @param jacobian Output jacobian
-   * @param joint_angles Input vector of joint angles
-   */
-  virtual Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
+  virtual tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
    * @brief Calculated jacobian at a link given joint angles
-   * @details Throws an exception on failures (including uninitialized)
-   * @param jacobian Output jacobian for a given link
+   * @details
+   * This should be able to return a jacobian given any link listed in getJointLinkNames() and getTipLinkNames()
+   * Throws an exception on failures (including uninitialized)
    * @param joint_angles Input vector of joint angles
-   * @param link_name Name of link to calculate jacobian
-   * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
+   * @param joint_link_name The joint link name to calculate jacobian
+   * @return The jacobian at the provided link
    */
   virtual Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                       const std::string& link_name) const = 0;
+                                       const std::string& joint_link_name) const = 0;
 
-  /**
-   * @brief Check for consistency in # and limits of joints
-   * @param vec Vector of joint values
-   * @return True if size of vec matches # of robot joints and all joints are within limits
-   */
-  virtual bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const = 0;
+  /** @brief getter for the robot base link name */
+  virtual std::string getBaseLinkName() const = 0;
 
   /**
    * @brief Get list of joint names for kinematic object
-   * @return A vector of joint names, joint_list_
+   * @return A vector of joint names
    */
-  virtual const std::vector<std::string>& getJointNames() const = 0;
+  virtual std::vector<std::string> getJointNames() const = 0;
 
   /**
-   * @brief Get list of all link names (with and without geometry) for kinematic object
-   * @return A vector of names, link_list_
+   * @brief Get list of each joint child names for kinematic object
+   * @return A vector of link names
    */
-  virtual const std::vector<std::string>& getLinkNames() const = 0;
+  virtual std::vector<std::string> getJointLinkNames() const = 0;
 
   /**
-   * @brief Get list of active link names (with and without geometry) for kinematic object
-   *
-   * Note: This only includes links that are children of the active joints
-   *
-   * @return A vector of names, active_link_list_
+   * @brief Get list of tip link names for kinematic object
+   * @return A vector of link names
    */
-  virtual const std::vector<std::string>& getActiveLinkNames() const = 0;
-
-  /**
-   * @brief Getter for kinematic limits (joint, velocity, acceleration, etc.)
-   * @return Kinematic Limits
-   */
-  virtual const tesseract_common::KinematicLimits& getLimits() const = 0;
-
-  /**
-   * @brief Setter for kinematic limits (joint, velocity, acceleration, etc.)
-   * @param Kinematic Limits
-   */
-  virtual void setLimits(tesseract_common::KinematicLimits limits) = 0;
-
-  /**
-   * @brief Get vector indicating which joints are capable of producing redundant solutions
-   * @return A vector of joint indicies
-   */
-  virtual std::vector<Eigen::Index> getRedundancyCapableJointIndices() const = 0;
+  virtual std::vector<std::string> getTipLinkNames() const = 0;
 
   /**
    * @brief Number of joints in robot
    * @return Number of joints in robot
    */
-  virtual unsigned int numJoints() const = 0;
-
-  /** @brief getter for the robot base link name */
-  virtual const std::string& getBaseLinkName() const = 0;
-
-  /** @brief Get the tip link name */
-  virtual const std::string& getTipLinkName() const = 0;
+  virtual Eigen::Index numJoints() const = 0;
 
   /** @brief Name of the maniputlator */
-  virtual const std::string& getName() const = 0;
+  virtual std::string getName() const = 0;
 
   /** @brief Get the name of the solver. Recommned using the name of the class. */
-  virtual const std::string& getSolverName() const = 0;
+  virtual std::string getSolverName() const = 0;
 
   /** @brief Clone the forward kinematics object */
-  virtual std::shared_ptr<ForwardKinematics> clone() const = 0;
+  virtual std::unique_ptr<ForwardKinematics> clone() const = 0;
 };
-
-using ForwardKinematicsPtrMap = std::unordered_map<std::string, ForwardKinematics::Ptr>;
-using ForwardKinematicsConstPtrMap = std::unordered_map<std::string, ForwardKinematics::ConstPtr>;
 }  // namespace tesseract_kinematics
 
 #endif  // TESSERACT_KINEMATICS_FORWARD_KINEMATICS_H

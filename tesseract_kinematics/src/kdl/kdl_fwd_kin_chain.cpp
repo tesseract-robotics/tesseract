@@ -37,91 +37,86 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-ForwardKinematics::Ptr KDLFwdKinChain::clone() const
+ForwardKinematics::UPtr KDLFwdKinChain::clone() const { return std::make_unique<KDLFwdKinChain>(*this); }
+
+KDLFwdKinChain::KDLFwdKinChain(const KDLFwdKinChain& other) { *this = other; }
+KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& other)
 {
-  auto cloned_fwdkin = std::make_shared<KDLFwdKinChain>();
-  cloned_fwdkin->init(*this);
-  return cloned_fwdkin;
+  initialized_ = other.initialized_;
+  name_ = other.name_;
+  solver_name_ = other.solver_name_;
+  kdl_data_ = other.kdl_data_;
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
+
+  return *this;
 }
 
-bool KDLFwdKinChain::update() { return init(scene_graph_, kdl_data_.base_link_name, kdl_data_.tip_link_name, name_); }
+// bool KDLFwdKinChain::update() { return init(scene_graph_, kdl_data_.base_link_name, kdl_data_.tip_link_name, name_);
+// }
 
-Eigen::Isometry3d KDLFwdKinChain::calcFwdKinHelper(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                                   int segment_num) const
+tesseract_common::TransformMap
+KDLFwdKinChain::calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
+  if (joint_angles.rows() != kdl_data_.robot_chain.getNrOfJoints())
+    throw std::runtime_error("kdl_joints size is not correct!");
+
   KDL::JntArray kdl_joints;
   EigenToKDL(joint_angles, kdl_joints);
 
-  // run FK solver
+  unsigned int j = 0;
+  tesseract_common::TransformMap all_poses;
+  const KDL::Segment& segment = kdl_data_.robot_chain.getSegment(j);
   KDL::Frame kdl_pose;
-  if (fk_solver_->JntToCart(kdl_joints, kdl_pose, segment_num) < 0)
+  if (segment.getJoint().getType() != KDL::Joint::None)
   {
-    CONSOLE_BRIDGE_logError("Failed to calculate FK");
-    throw std::runtime_error("KDLFwdKinChain: Failed to calculate forward kinematics.");
+    kdl_pose = segment.pose(kdl_joints(j));
+    j++;
+  }
+  else
+  {
+    kdl_pose = segment.pose(0.0);
   }
 
   Eigen::Isometry3d pose;
   KDLToEigen(kdl_pose, pose);
+  all_poses[segment.getName()] = pose;
 
-  return pose;
-}
-
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-
-tesseract_common::VectorIsometry3d
-KDLFwdKinChain::calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles, int segment_num) const
-{
-#ifndef KDL_LESS_1_4_0
-  KDL::JntArray kdl_joints;
-  EigenToKDL(joint_angles, kdl_joints);
-
-  // run FK solver
-  std::vector<KDL::Frame> kdl_pose;
-  if (fk_solver_->JntToCart(kdl_joints, kdl_pose, segment_num) < 0)
+  for (unsigned int i = 1; i < kdl_data_.robot_chain.getNrOfSegments(); i++)
   {
-    CONSOLE_BRIDGE_logError("Failed to calculate FK");
-    throw std::runtime_error("KDLFwdKinChain: Failed to calculate forward kinematics.");
+    const KDL::Segment& segment = kdl_data_.robot_chain.getSegment(i);
+    if (segment.getJoint().getType() != KDL::Joint::None)
+    {
+      kdl_pose = kdl_pose * segment.pose(kdl_joints(j));
+      j++;
+    }
+    else
+    {
+      kdl_pose = kdl_pose * segment.pose(0.0);
+    }
+
+    Eigen::Isometry3d pose;
+    KDLToEigen(kdl_pose, pose);
+    all_poses[segment.getName()] = pose;
   }
 
-  tesseract_common::VectorIsometry3d poses;
-  KDLToEigen(kdl_pose, poses);
+  tesseract_common::TransformMap poses;
+  poses[kdl_data_.base_link_name] = Eigen::Isometry3d::Identity();
+
+  for (const auto& link_name : kdl_data_.joint_link_names)
+    poses[link_name] = all_poses[link_name];
+
+  poses[kdl_data_.tip_link_name] = all_poses[kdl_data_.tip_link_name];
 
   return poses;
-#else
-  throw std::runtime_error("KDLFwdKinChain: Failed to calculate forward kinematics.");
-#endif
-  UNUSED(joint_angles);
-  UNUSED(segment_num);
 }
 
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-tesseract_common::VectorIsometry3d
-KDLFwdKinChain::calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+tesseract_common::TransformMap KDLFwdKinChain::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
   assert(joint_angles.size() == numJoints());
 
   return calcFwdKinHelperAll(joint_angles);
-}
-
-Eigen::Isometry3d KDLFwdKinChain::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
-{
-  assert(checkInitialized());
-  assert(joint_angles.size() == numJoints());
-
-  return calcFwdKinHelper(joint_angles);
-}
-
-Eigen::Isometry3d KDLFwdKinChain::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                             const std::string& link_name) const
-{
-  assert(checkInitialized());
-  assert(joint_angles.size() == numJoints());
-  assert(kdl_data_.segment_index.find(link_name) != kdl_data_.segment_index.end());
-
-  int segment_nr = kdl_data_.segment_index.at(link_name);
-  return calcFwdKinHelper(joint_angles, segment_nr);
 }
 
 bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
@@ -140,22 +135,6 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
   }
 
   return true;
-}
-
-Eigen::MatrixXd KDLFwdKinChain::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
-{
-  assert(checkInitialized());
-  assert(joint_angles.size() == numJoints());
-
-  KDL::Jacobian kdl_jacobian;
-  if (calcJacobianHelper(kdl_jacobian, joint_angles))
-  {
-    Eigen::MatrixXd jacobian(6, numJoints());
-    KDLToEigen(kdl_jacobian, jacobian);
-    return jacobian;
-  }
-
-  throw std::runtime_error("KDLFwdKinChain: Failed to calculate jacobian.");
 }
 
 Eigen::MatrixXd KDLFwdKinChain::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
@@ -177,102 +156,39 @@ Eigen::MatrixXd KDLFwdKinChain::calcJacobian(const Eigen::Ref<const Eigen::Vecto
   throw std::runtime_error("KDLFwdKinChain: Failed to calculate jacobian.");
 }
 
-bool KDLFwdKinChain::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
-{
-  if (vec.size() != kdl_data_.robot_chain.getNrOfJoints())
-  {
-    CONSOLE_BRIDGE_logError("Number of joint angles (%d) don't match robot_model (%d)",
-                            static_cast<int>(vec.size()),
-                            kdl_data_.robot_chain.getNrOfJoints());
-    return false;
-  }
-
-  for (int i = 0; i < vec.size(); ++i)
-  {
-    if ((vec[i] < kdl_data_.data.limits.joint_limits(i, 0)) || (vec(i) > kdl_data_.data.limits.joint_limits(i, 1)))
-    {
-      CONSOLE_BRIDGE_logDebug("Joint %s is out-of-range (%g < %g < %g)",
-                              kdl_data_.data.joint_names[static_cast<size_t>(i)].c_str(),
-                              kdl_data_.data.limits.joint_limits(i, 0),
-                              vec(i),
-                              kdl_data_.data.limits.joint_limits(i, 1));
-      return false;
-    }
-  }
-
-  return true;
-}
-
-const std::vector<std::string>& KDLFwdKinChain::getJointNames() const
+std::vector<std::string> KDLFwdKinChain::getJointNames() const
 {
   assert(checkInitialized());
-  return kdl_data_.data.joint_names;
+  return kdl_data_.joint_names;
 }
 
-const std::vector<std::string>& KDLFwdKinChain::getLinkNames() const
-{
-  assert(checkInitialized());
-  return kdl_data_.data.link_names;
-}
+Eigen::Index KDLFwdKinChain::numJoints() const { return static_cast<Eigen::Index>(kdl_data_.joint_names.size()); }
 
-const std::vector<std::string>& KDLFwdKinChain::getActiveLinkNames() const
-{
-  assert(checkInitialized());
-  return kdl_data_.data.active_link_names;
-}
+std::string KDLFwdKinChain::getBaseLinkName() const { return kdl_data_.base_link_name; }
 
-const tesseract_common::KinematicLimits& KDLFwdKinChain::getLimits() const { return kdl_data_.data.limits; }
+std::vector<std::string> KDLFwdKinChain::getJointLinkNames() const { return kdl_data_.joint_link_names; }
+std::vector<std::string> KDLFwdKinChain::getTipLinkNames() const { return { kdl_data_.tip_link_name }; }
 
-void KDLFwdKinChain::setLimits(tesseract_common::KinematicLimits limits)
-{
-  unsigned int nj = numJoints();
-  if (limits.joint_limits.rows() != nj || limits.velocity_limits.size() != nj ||
-      limits.acceleration_limits.size() != nj)
-    throw std::runtime_error("Kinematics limits assigned are invalid!");
+std::string KDLFwdKinChain::getName() const { return name_; }
 
-  kdl_data_.data.limits = std::move(limits);
-}
+std::string KDLFwdKinChain::getSolverName() const { return solver_name_; }
 
-std::vector<Eigen::Index> KDLFwdKinChain::getRedundancyCapableJointIndices() const
-{
-  return kdl_data_.data.redundancy_indices;
-}
-
-tesseract_scene_graph::SceneGraph::ConstPtr KDLFwdKinChain::getSceneGraph() const { return scene_graph_; }
-
-unsigned int KDLFwdKinChain::numJoints() const { return kdl_data_.robot_chain.getNrOfJoints(); }
-
-const std::string& KDLFwdKinChain::getBaseLinkName() const { return kdl_data_.base_link_name; }
-
-const std::string& KDLFwdKinChain::getTipLinkName() const { return kdl_data_.tip_link_name; }
-
-const std::string& KDLFwdKinChain::getName() const { return name_; }
-
-const std::string& KDLFwdKinChain::getSolverName() const { return solver_name_; }
-
-bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+bool KDLFwdKinChain::init(const tesseract_scene_graph::SceneGraph& scene_graph,
                           const std::vector<std::pair<std::string, std::string>>& chains,
                           std::string name)
 {
   initialized_ = false;
   kdl_data_ = KDLChainData();
 
-  if (scene_graph == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
-    return false;
-  }
-
-  scene_graph_ = std::move(scene_graph);
   name_ = std::move(name);
 
-  if (!scene_graph_->getLink(scene_graph_->getRoot()))
+  if (!scene_graph.getLink(scene_graph.getRoot()))
   {
     CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
     return false;
   }
 
-  if (!parseSceneGraph(kdl_data_, *scene_graph_, chains))
+  if (!parseSceneGraph(kdl_data_, scene_graph, chains))
   {
     CONSOLE_BRIDGE_logError("Failed to parse KDL data from Scene Graph");
     return false;
@@ -285,7 +201,7 @@ bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_grap
   return initialized_;
 }
 
-bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+bool KDLFwdKinChain::init(const tesseract_scene_graph::SceneGraph& scene_graph,
                           const std::string& base_link,
                           const std::string& tip_link,
                           std::string name)
@@ -293,19 +209,6 @@ bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_grap
   std::vector<std::pair<std::string, std::string>> chains;
   chains.push_back(std::make_pair(base_link, tip_link));
   return init(scene_graph, chains, name);
-}
-
-bool KDLFwdKinChain::init(const KDLFwdKinChain& kin)
-{
-  initialized_ = kin.initialized_;
-  name_ = kin.name_;
-  solver_name_ = kin.solver_name_;
-  kdl_data_ = kin.kdl_data_;
-  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
-  jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
-  scene_graph_ = kin.scene_graph_;
-
-  return initialized_;
 }
 
 bool KDLFwdKinChain::checkInitialized() const

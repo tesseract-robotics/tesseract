@@ -234,4 +234,4 @@ protected:
 };
 
 }  // namespace tesseract_common
-#endif  // TESSERACT_COMMON_UTILS_H
+#endif

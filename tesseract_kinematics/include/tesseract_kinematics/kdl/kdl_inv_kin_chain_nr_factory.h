@@ -44,23 +44,23 @@ public:
 
   InverseKinematicsFactoryType getType() const override { return InverseKinematicsFactoryType::CHAIN; }
 
-  InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                                const std::string& base_link,
-                                const std::string& tip_link,
-                                const std::string& name) const override
+  InverseKinematics::UPtr create(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                 const std::string& base_link,
+                                 const std::string& tip_link,
+                                 const std::string& name) const override
   {
-    auto kin = std::make_shared<KDLInvKinChainNR>();
+    auto kin = std::make_unique<KDLInvKinChainNR>();
     if (!kin->init(scene_graph, base_link, tip_link, name))
       return nullptr;
 
     return kin;
   }
 
-  InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                                const std::vector<std::pair<std::string, std::string>>& chains,  // NOLINT
-                                const std::string& name) const override
+  InverseKinematics::UPtr create(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                 const std::vector<std::pair<std::string, std::string>>& chains,  // NOLINT
+                                 const std::string& name) const override
   {
-    auto kin = std::make_shared<KDLInvKinChainNR>();
+    auto kin = std::make_unique<KDLInvKinChainNR>();
     if (!kin->init(scene_graph, chains, name))
       return nullptr;
 

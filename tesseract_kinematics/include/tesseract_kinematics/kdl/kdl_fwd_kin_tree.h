@@ -60,56 +60,29 @@ public:
 
   using Ptr = std::shared_ptr<KDLFwdKinTree>;
   using ConstPtr = std::shared_ptr<const KDLFwdKinTree>;
+  using UPtr = std::unique_ptr<KDLFwdKinTree>;
+  using ConstUPtr = std::unique_ptr<const KDLFwdKinTree>;
 
   KDLFwdKinTree() = default;
-  ~KDLFwdKinTree() override = default;
-  KDLFwdKinTree(const KDLFwdKinTree&) = delete;
-  KDLFwdKinTree& operator=(const KDLFwdKinTree&) = delete;
-  KDLFwdKinTree(KDLFwdKinTree&&) = delete;
-  KDLFwdKinTree& operator=(KDLFwdKinTree&&) = delete;
+  ~KDLFwdKinTree() final = default;
+  KDLFwdKinTree(const KDLFwdKinTree& other);
+  KDLFwdKinTree& operator=(const KDLFwdKinTree& other);
+  KDLFwdKinTree(KDLFwdKinTree&&) = default;
+  KDLFwdKinTree& operator=(KDLFwdKinTree&&) = default;
 
-  ForwardKinematics::Ptr clone() const override;
-
-  bool update() override;
-
-  Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
-
-  tesseract_common::VectorIsometry3d
-  calcFwdKinAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
-
-  Eigen::Isometry3d calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name) const override;
-
-  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const final;
 
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name) const override;
+                               const std::string& joint_link_name) const final;
 
-  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
-
-  const std::vector<std::string>& getJointNames() const override;
-
-  const std::vector<std::string>& getLinkNames() const override;
-
-  const std::vector<std::string>& getActiveLinkNames() const override;
-
-  const tesseract_common::KinematicLimits& getLimits() const override;
-
-  void setLimits(tesseract_common::KinematicLimits limits) override;
-
-  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override;
-
-  unsigned int numJoints() const override;
-
-  const std::string& getBaseLinkName() const override;
-
-  const std::string& getTipLinkName() const override;  // TODO: Should make this be provided
-
-  const std::string& getName() const override;
-
-  const std::string& getSolverName() const override;
-
-  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
+  std::string getBaseLinkName() const final;
+  std::vector<std::string> getJointNames() const final;
+  std::vector<std::string> getJointLinkNames() const final;
+  std::vector<std::string> getTipLinkNames() const final;
+  Eigen::Index numJoints() const final;
+  std::string getName() const final;
+  std::string getSolverName() const final;
+  ForwardKinematics::UPtr clone() const final;
 
   /**
    * @brief Initializes Forward Kinematics as tree
@@ -120,7 +93,7 @@ public:
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return True if init() completes successfully
    */
-  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
             const std::vector<std::string>& joint_names,
             std::string name,
             const std::unordered_map<std::string, double>& start_state = std::unordered_map<std::string, double>());
@@ -132,31 +105,22 @@ public:
   bool checkInitialized() const;
 
 private:
-  bool initialized_{ false };                               /**< Identifies if the object has been initialized */
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_; /**< Tesseract Scene Graph */
-  KDL::Tree kdl_tree_;                                      /**< KDL tree object */
-  std::string name_;                                        /**< Name of the kinematic chain */
+  bool initialized_{ false };                  /**< Identifies if the object has been initialized */
+  KDL::Tree kdl_tree_;                         /**< KDL tree object */
+  std::string name_;                           /**< Name of the kinematic chain */
   std::string base_link_name_;                 /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name_;                  /**< @brief Link name of last kink in the kinematic object */
   std::string solver_name_{ "KDLFwdKinTree" }; /**< Name of this solver */
-  std::vector<std::string> joint_list_;        /**< List of joint names */
+  std::vector<std::string> joint_names_;       /**< List of joint names */
+  std::vector<std::string> joint_link_names_;  /**< List of joint child link names */
   KDL::JntArray start_state_;                  /**< Intial state of the tree. Should include all joints in the model. */
   std::unordered_map<std::string, double> input_start_state_; /**< Input start state before it has been translated into
                                                                  KDL types */
   std::vector<int> joint_qnr_; /**< The kdl segment number corrisponding to joint in joint_lists_ */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< The tree joint name to qnr */
-  std::vector<std::string> link_list_;                         /**< List of link names */
-  std::vector<std::string> active_link_list_;    /**< List of link names that move with changes in joint values */
-  tesseract_common::KinematicLimits limits_;     /**< Joint limits, velocity limits and acceleration limits */
-  std::vector<Eigen::Index> redundancy_indices_; /**< Joint indicies that have redundancy (ex. revolute) */
+
   std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
-
-  /**
-   * @brief This used by the clone method
-   * @return True if init() completes successfully
-   */
-  bool init(const KDLFwdKinTree& kin);
 
   /** @brief Set the start state for all joints in the tree. */
   void setStartState(std::unordered_map<std::string, double> start_state);
@@ -166,7 +130,7 @@ private:
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /** @brief calcFwdKin helper function */
-  Eigen::Isometry3d calcFwdKinHelper(const KDL::JntArray& kdl_joints, const std::string& link_name) const;
+  tesseract_common::TransformMap calcFwdKinHelper(const KDL::JntArray& kdl_joints) const;
 
   /** @brief calcJacobian helper function */
   bool calcJacobianHelper(KDL::Jacobian& jacobian, const KDL::JntArray& kdl_joints, const std::string& link_name) const;

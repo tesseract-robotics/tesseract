@@ -94,14 +94,16 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 {
   Eigen::VectorXd njvals;
   double delta = 0.001;
-  Eigen::Isometry3d pose = kin.calcFwdKin(joint_values, link_name);
+  tesseract_common::TransformMap poses = kin.calcFwdKin(joint_values);
+  Eigen::Isometry3d pose = poses[link_name];
   pose = change_base * pose;
 
   for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
   {
     njvals = joint_values;
     njvals[i] += delta;
-    Eigen::Isometry3d updated_pose = kin.calcFwdKin(njvals, link_name);
+    tesseract_common::TransformMap updated_poses = kin.calcFwdKin(njvals);
+    Eigen::Isometry3d updated_pose = updated_poses[link_name];
     updated_pose = change_base * updated_pose;
 
     Eigen::Vector3d temp = pose * link_point;
@@ -332,66 +334,66 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
   return manip;
 }
 
-/**
- * @brief Create a kinematics map from the srdf model
- * @param scene_graph Tesseract Scene Graph
- * @param kinematics_information Tesseract Kinematics Information
- * @return Kinematics map between group name and kinematics object
- */
-template <class Chain_T, class Tree_T>
-ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
-                                                 const tesseract_srdf::KinematicsInformation& kinematics_information)
-{
-  ForwardKinematicsConstPtrMap manipulators;
-  for (const auto& group : kinematics_information.chain_groups)
-  {
-    if (!group.second.empty())
-    {
-      if (manipulators.find(group.first) == manipulators.end())
-      {
-        std::shared_ptr<Chain_T> manip{ std::make_shared<Chain_T>() };
-        if (!manip->init(scene_graph, group.second, group.first))
-        {
-          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
-        }
-        else
-        {
-          manipulators.insert(std::make_pair(group.first, manip));
-        }
-      }
-    }
-  }
+///**
+// * @brief Create a kinematics map from the srdf model
+// * @param scene_graph Tesseract Scene Graph
+// * @param kinematics_information Tesseract Kinematics Information
+// * @return Kinematics map between group name and kinematics object
+// */
+// template <class Chain_T, class Tree_T>
+// ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
+//                                                 const tesseract_srdf::KinematicsInformation& kinematics_information)
+//{
+//  ForwardKinematicsConstPtrMap manipulators;
+//  for (const auto& group : kinematics_information.chain_groups)
+//  {
+//    if (!group.second.empty())
+//    {
+//      if (manipulators.find(group.first) == manipulators.end())
+//      {
+//        std::shared_ptr<Chain_T> manip{ std::make_shared<Chain_T>() };
+//        if (!manip->init(scene_graph, group.second, group.first))
+//        {
+//          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
+//        }
+//        else
+//        {
+//          manipulators.insert(std::make_pair(group.first, manip));
+//        }
+//      }
+//    }
+//  }
 
-  for (const auto& group : kinematics_information.joint_groups)
-  {
-    if (!group.second.empty())
-    {
-      if (manipulators.find(group.first) == manipulators.end())
-      {
-        std::shared_ptr<Tree_T> manip{ std::make_shared<Tree_T>() };
-        if (!manip->init(scene_graph, group.second, group.first))
-        {
-          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
-        }
-        else
-        {
-          manipulators.insert(std::make_pair(group.first, manip));
-        }
-      }
-    }
-  }
+//  for (const auto& group : kinematics_information.joint_groups)
+//  {
+//    if (!group.second.empty())
+//    {
+//      if (manipulators.find(group.first) == manipulators.end())
+//      {
+//        std::shared_ptr<Tree_T> manip{ std::make_shared<Tree_T>() };
+//        if (!manip->init(scene_graph, group.second, group.first))
+//        {
+//          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
+//        }
+//        else
+//        {
+//          manipulators.insert(std::make_pair(group.first, manip));
+//        }
+//      }
+//    }
+//  }
 
-  for (const auto& group : kinematics_information.link_groups)
-  {
-    // TODO: Need to add other options
-    if (!group.second.empty())
-    {
-      CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
-    }
-  }
+//  for (const auto& group : kinematics_information.link_groups)
+//  {
+//    // TODO: Need to add other options
+//    if (!group.second.empty())
+//    {
+//      CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
+//    }
+//  }
 
-  return manipulators;
-}
+//  return manipulators;
+//}
 
 /**
  * @brief This a recursive function for caculating all permutations of the redundant solutions.

@@ -57,10 +57,7 @@ namespace tesseract_kinematics
  *   FanucP50iBInvKinematics(const std::string name,
  *                           const std::string base_link_name,
  *                           const std::string tip_link_name,
- *                           const std::vector<std::string> joint_names,
- *                           const std::vector<std::string> link_names,
- *                           const std::vector<std::string> active_link_names,
- *                           const Eigen::MatrixX2d joint_limits)
+ *                           const std::vector<std::string> joint_names)
  * };
  *
  * Cpp File:
@@ -74,12 +71,8 @@ namespace tesseract_kinematics
  *   FanucP50iBInvKinematics::FanucP50iBInvKinematics(const std::string name,
  *                                                    const std::string base_link_name,
  *                                                    const std::string tip_link_name,
- *                                                    const std::vector<std::string> joint_names,
- *                                                    const std::vector<std::string> link_names,
- *                                                    const std::vector<std::string> active_link_names,
- *                                                    const Eigen::MatrixX2d& joint_limits)
- *   : FanucP50iBInvKinematics(name, base_link_name, tip_link_name, joint_names, link_names, active_link_names,
- joint_limits)
+ *                                                    const std::vector<std::string> joint_names)
+ *   : FanucP50iBInvKinematics(name, base_link_name, tip_link_name, joint_names, joint_limits)
  *   {}
  * }
  *
@@ -93,40 +86,28 @@ public:
 
   using Ptr = std::shared_ptr<IKFastInvKin>;
   using ConstPtr = std::shared_ptr<const IKFastInvKin>;
+  using UPtr = std::unique_ptr<IKFastInvKin>;
+  using ConstUPtr = std::unique_ptr<const IKFastInvKin>;
 
   IKFastInvKin() = default;
   ~IKFastInvKin() override = default;
-  IKFastInvKin(const IKFastInvKin&) = delete;
-  IKFastInvKin& operator=(const IKFastInvKin&) = delete;
-  IKFastInvKin(IKFastInvKin&&) = delete;
-  IKFastInvKin& operator=(IKFastInvKin&&) = delete;
-
-  InverseKinematics::Ptr clone() const override;
-
-  bool update() override;
-
-  void synchronize(ForwardKinematics::ConstPtr fwd_kin) override;
-  bool isSynchronized() const override;
-
-  IKSolutions calcInvKin(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
+  IKFastInvKin(const IKFastInvKin& other);
+  IKFastInvKin& operator=(const IKFastInvKin& other);
+  IKFastInvKin(IKFastInvKin&&) = default;
+  IKFastInvKin& operator=(IKFastInvKin&&) = default;
 
   IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
-                         const Eigen::Ref<const Eigen::VectorXd>& seed,
-                         const std::string& link_name) const override;
+                         const std::string& working_frame,
+                         const std::string& link_name,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
-  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
-  unsigned int numJoints() const override;
-
-  const std::vector<std::string>& getJointNames() const override;
-  const std::vector<std::string>& getLinkNames() const override;
-  const std::vector<std::string>& getActiveLinkNames() const override;
-  const tesseract_common::KinematicLimits& getLimits() const override;
-  void setLimits(tesseract_common::KinematicLimits limits) override;
-  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override;
-  const std::string& getBaseLinkName() const override;
-  const std::string& getTipLinkName() const override;
-  const std::string& getName() const override;
-  const std::string& getSolverName() const override;
+  Eigen::Index numJoints() const override;
+  std::vector<std::string> getJointNames() const override;
+  std::string getBaseLinkName() const override;
+  std::vector<std::string> getTipLinkNames() const override;
+  std::string getName() const override;
+  std::string getSolverName() const override;
+  InverseKinematics::UPtr clone() const override;
 
   /**
    * @brief Initialize IKFast Inverse Kinematics
@@ -134,19 +115,10 @@ public:
    * @param base_link_name The name of the base link for the kinematic chain
    * @param tip_link_name The name of the tip link for the kinematic chain
    * @param joint_names The joint names for the kinematic chain
-   * @param link_names The link names for the kinematic chain
-   * @param active_link_names The active links names for the kinematic chain
-   * @param joint_limits The joint limits for the kinematic chain
    * @return True if successful
    */
-  bool init(std::string name,
-            std::string base_link_name,
-            std::string tip_link_name,
-            std::vector<std::string> joint_names,
-            std::vector<std::string> link_names,
-            std::vector<std::string> active_link_names,
-            tesseract_common::KinematicLimits limits,
-            std::vector<Eigen::Index> redundancy_indices);
+  bool
+  init(std::string name, std::string base_link_name, std::string tip_link_name, std::vector<std::string> joint_names);
 
   /**
    * @brief Checks if kinematics has been initialized
@@ -156,20 +128,11 @@ public:
 
 protected:
   bool initialized_ = false;                  /**< @brief Identifies if the object has been initialized */
-  ForwardKinematics::ConstPtr sync_fwd_kin_;  /**< @brief Synchronized forward kinematics object */
-  std::vector<Eigen::Index> sync_joint_map_;  /**< @brief Synchronized joint solution remapping */
   std::string base_link_name_;                /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name_;                 /**< @brief Link name of last kink in the kinematic object */
-  SynchronizableData data_;                   /**< @brief The current data that may be synchronized */
-  SynchronizableData orig_data_;              /**< @brief The data prior to synchronization */
+  std::vector<std::string> joint_names_;      /**< @brief Joint names for the kinematic object */
   std::string name_;                          /**< @brief Name of the kinematic chain */
   std::string solver_name_{ "IKFastInvKin" }; /**< @brief Name of this solver */
-
-  /**
-   * @brief This used by the clone method
-   * @return True if init() completes successfully
-   */
-  bool init(const IKFastInvKin& kin);
 };
 
 }  // namespace tesseract_kinematics

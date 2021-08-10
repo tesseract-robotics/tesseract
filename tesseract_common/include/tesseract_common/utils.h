@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 #include <random>
 #include <iomanip>
-#include <Eigen/Geometry>
+#include <Eigen/Core>
 #include <iostream>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -269,7 +269,7 @@ bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
  * @return True if successful, otherwise false
  */
 template <typename FloatType>
-inline bool toNumeric(const std::string& s, FloatType& value)
+bool toNumeric(const std::string& s, FloatType& value)
 {
   if (s.empty())
     return false;
