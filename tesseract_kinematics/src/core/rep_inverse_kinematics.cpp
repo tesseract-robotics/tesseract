@@ -331,7 +331,7 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
 
   if (!(manipulator_reach > 0))
   {
-    CONSOLE_BRIDGE_logError("Manipulator reach is not greather than zero");
+    CONSOLE_BRIDGE_logError("Manipulator reach is not greater than zero");
     return false;
   }
 
@@ -351,7 +351,7 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
   {
     if (!(positioner_sample_resolution(i) > 0))
     {
-      CONSOLE_BRIDGE_logError("Positioner sample resolution is not greather than zero");
+      CONSOLE_BRIDGE_logError("Positioner sample resolution is not greater than zero");
       return false;
     }
   }
