@@ -26,7 +26,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/segment.hpp>
-#include <tesseract_scene_graph/parser/kdl_parser.h>
+#include <tesseract_scene_graph/kdl_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
@@ -203,7 +203,12 @@ bool KDLFwdKinTree::init(const tesseract_scene_graph::SceneGraph& scene_graph,
     return false;
   }
 
-  if (!tesseract_scene_graph::parseSceneGraph(scene_graph, kdl_tree_))
+  try
+  {
+    tesseract_scene_graph::KDLTreeData data = tesseract_scene_graph::parseSceneGraph(scene_graph);
+    kdl_tree_ = data.tree;
+  }
+  catch (...)
   {
     CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
     return false;

@@ -26,7 +26,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/segment.hpp>
-#include <tesseract_scene_graph/parser/kdl_parser.h>
+#include <tesseract_scene_graph/kdl_parser.h>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

@@ -89,7 +89,12 @@ bool parseSceneGraph(KDLChainData& results,
                      const tesseract_scene_graph::SceneGraph& scene_graph,
                      const std::vector<std::pair<std::string, std::string>>& chains)
 {
-  if (!tesseract_scene_graph::parseSceneGraph(scene_graph, results.kdl_tree))
+  try
+  {
+    tesseract_scene_graph::KDLTreeData data = tesseract_scene_graph::parseSceneGraph(scene_graph);
+    results.kdl_tree = data.tree;
+  }
+  catch (...)
   {
     CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
     return false;
