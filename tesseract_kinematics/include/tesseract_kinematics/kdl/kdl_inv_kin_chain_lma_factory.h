@@ -44,10 +44,11 @@ public:
 
   InverseKinematicsFactoryType getType() const override { return InverseKinematicsFactoryType::CHAIN; }
 
-  InverseKinematics::UPtr create(const tesseract_scene_graph::SceneGraph& scene_graph,
+  InverseKinematics::UPtr create(const std::string& name,
+                                 const tesseract_scene_graph::SceneGraph& scene_graph,
+                                 const tesseract_scene_graph::SceneState& scene_state,
                                  const std::string& base_link,
-                                 const std::string& tip_link,
-                                 const std::string& name) const override
+                                 const std::string& tip_link) const override
   {
     auto kin = std::make_unique<KDLInvKinChainLMA>();
     if (!kin->init(scene_graph, base_link, tip_link, name))
@@ -56,9 +57,10 @@ public:
     return kin;
   }
 
-  InverseKinematics::UPtr create(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                 const std::vector<std::pair<std::string, std::string>>& chains,  // NOLINT
-                                 const std::string& name) const override
+  InverseKinematics::UPtr create(const std::string& name,
+                                 const tesseract_scene_graph::SceneGraph& scene_graph,
+                                 const tesseract_scene_graph::SceneState& scene_state,
+                                 const std::vector<std::pair<std::string, std::string>>& chains) const override
   {
     auto kin = std::make_unique<KDLInvKinChainLMA>();
     if (!kin->init(scene_graph, chains, name))
