@@ -44,7 +44,9 @@ add_library(${PROJECT_NAME}
   src/graph.cpp
   src/resource_locator.cpp
   src/utils.cpp
-  src/adjacency_map.cpp)
+  src/adjacency_map.cpp
+  src/kdl_parser.cpp
+  src/scene_state.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Boost::boost
@@ -85,11 +87,11 @@ install(
 # ADD Examples
 add_subdirectory(examples)
 
-if(TESSERACT_ENABLE_TESTING)
+#if(TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
-endif()
+#endif()
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(

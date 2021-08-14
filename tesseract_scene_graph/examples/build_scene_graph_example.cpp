@@ -9,7 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_scene_graph;
 
-std::string toString(const SceneGraph::Path& path)
+std::string toString(const ShortestPath& path)
 {
   std::stringstream ss;
   ss << path;
@@ -150,7 +150,7 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:18: Test again if the graph is Tree
 
   // documentation:start:19: Get Shortest Path
-  SceneGraph::Path path = g.getShortestPath("link_1", "link_4");
+  ShortestPath path = g.getShortestPath("link_1", "link_4");
   CONSOLE_BRIDGE_logInform(toString(path).c_str());
   // documentation:end:19: Get Shortest Path
 }

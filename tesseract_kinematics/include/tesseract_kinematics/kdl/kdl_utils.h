@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/parser/kdl_parser.h>
+#include <tesseract_scene_graph/kdl_parser.h>
 #include <tesseract_kinematics/core/utils.h>
 #include <tesseract_kinematics/core/types.h>
 

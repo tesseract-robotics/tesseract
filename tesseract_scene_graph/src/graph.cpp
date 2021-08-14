@@ -179,6 +179,19 @@ std::vector<Link::ConstPtr> SceneGraph::getLinks() const
   return links;
 }
 
+std::vector<Link::ConstPtr> SceneGraph::getLeafLinks() const
+{
+  std::vector<Link::ConstPtr> links;
+  links.reserve(link_map_.size());
+  for (const auto& link : link_map_)
+  {
+    if (boost::out_degree(link.second.second, *this) == 0)
+      links.push_back(link.second.first);
+  }
+
+  return links;
+}
+
 bool SceneGraph::removeLink(const std::string& name)
 {
   auto found = link_map_.find(name);
@@ -326,6 +339,19 @@ std::vector<Joint::ConstPtr> SceneGraph::getJoints() const
   joints.reserve(joint_map_.size());
   for (const auto& joint : joint_map_)
     joints.push_back(joint.second.first);
+
+  return joints;
+}
+
+std::vector<Joint::ConstPtr> SceneGraph::getActiveJoints() const
+{
+  std::vector<Joint::ConstPtr> joints;
+  joints.reserve(joint_map_.size());
+  for (const auto& joint : joint_map_)
+  {
+    if ((joint.second.first->type != JointType::FIXED) && (joint.second.first->type != JointType::FLOATING))
+      joints.push_back(joint.second.first);
+  }
 
   return joints;
 }
@@ -563,6 +589,35 @@ std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std
   return std::vector<std::string>(link_names.begin(), link_names.end());
 }
 
+std::unordered_map<std::string, std::string> SceneGraph::getAdjacencyMap(std::vector<std::string> link_names) const
+{
+  std::map<Vertex, size_t> index_map;
+  boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
+
+  std::map<Vertex, boost::default_color_type> color_map;
+  boost::associative_property_map<std::map<Vertex, boost::default_color_type>> prop_color_map(color_map);
+
+  int c = 0;
+  Graph::vertex_iterator i, iend;
+  for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i, ++c)
+    boost::put(prop_index_map, *i, c);
+
+  std::unordered_map<std::string, std::string> adjacency_map;
+  for (const auto& link_name : link_names)
+  {
+    Vertex start_vertex = getVertex(link_name);
+    adjacency_detector vis(adjacency_map, color_map, link_name, link_names);
+
+    // NOLINTNEXTLINE
+    boost::breadth_first_search(
+        *this,
+        start_vertex,
+        boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map).color_map(prop_color_map));
+  }
+
+  return adjacency_map;
+}
+
 void SceneGraph::saveDOT(const std::string& path) const
 {
   std::ofstream dot_file(path);
@@ -594,7 +649,7 @@ void SceneGraph::saveDOT(const std::string& path) const
   dot_file << "}";
 }
 
-SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std::string& tip) const
+ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::string& tip) const
 {
   const Graph& graph = *this;
   Vertex s = getVertex(root);
@@ -631,20 +686,27 @@ SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std:
                           0,
                           boost::default_dijkstra_visitor());
 
-  std::vector<std::string> links;
-  std::vector<std::string> joints;
+  ShortestPath path;
+  path.links.reserve(predicessor_map.size());
+  path.joints.reserve(predicessor_map.size());
+  path.active_joints.reserve(predicessor_map.size());
   Vertex v = getVertex(tip);           // We want to start at the destination and work our way back to the source
   for (Vertex u = predicessor_map[v];  // Start by setting 'u' to the destintaion node's predecessor
        u != v;                         // Keep tracking the path until we get to the source
        v = u, u = predicessor_map[v])  // Set the current vertex to the current predecessor, and the predecessor to one
                                        // level up
   {
-    links.push_back(boost::get(boost::vertex_link, graph)[v]->getName());
-    joints.push_back(boost::get(boost::edge_joint, graph)[boost::edge(u, v, graph).first]->getName());
+    path.links.push_back(boost::get(boost::vertex_link, graph)[v]->getName());
+    const Joint::ConstPtr& joint = boost::get(boost::edge_joint, graph)[boost::edge(u, v, graph).first];
+
+    path.joints.push_back(joint->getName());
+    if (joint->type != JointType::FIXED && joint->type != JointType::FLOATING)
+      path.active_joints.push_back(joint->getName());
   }
-  links.push_back(root);
-  std::reverse(links.begin(), links.end());
-  std::reverse(joints.begin(), joints.end());
+  path.links.push_back(root);
+  std::reverse(path.links.begin(), path.links.end());
+  std::reverse(path.joints.begin(), path.joints.end());
+  std::reverse(path.active_joints.begin(), path.active_joints.end());
 
 #ifndef NDEBUG
   CONSOLE_BRIDGE_logDebug("distances and parents:");
@@ -658,14 +720,14 @@ SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std:
                             boost::get(boost::vertex_link, graph)[predicessor_map[*vi]]->getName().c_str());
   }
 #endif
-  return Path(links, joints);
+  return path;
 }
 
 SceneGraph::Vertex SceneGraph::getVertex(const std::string& name) const
 {
   auto found = link_map_.find(name);
   if (found == link_map_.end())
-    return Vertex();
+    throw std::runtime_error("SceneGraph, vertex with name '" + name + "' does not exist!");
 
   return found->second.second;
 }
@@ -674,7 +736,7 @@ SceneGraph::Edge SceneGraph::getEdge(const std::string& name) const
 {
   auto found = joint_map_.find(name);
   if (found == joint_map_.end())
-    return Edge{};
+    throw std::runtime_error("SceneGraph, edge with name '" + name + "' does not exist!");
 
   return found->second.second;
 }

@@ -9,7 +9,7 @@
 using namespace tesseract_scene_graph;
 using namespace tesseract_srdf;
 
-std::string toString(const SceneGraph::Path& path)
+std::string toString(const ShortestPath& path)
 {
   std::stringstream ss;
   ss << path;

@@ -67,6 +67,7 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
   joint_names_ = other.joint_names_;
   params_ = other.params_;
   solver_name_ = other.solver_name_;
+  return *this;
 }
 
 IKSolutions OPWInvKin::calcInvKin(const Eigen::Isometry3d& pose,

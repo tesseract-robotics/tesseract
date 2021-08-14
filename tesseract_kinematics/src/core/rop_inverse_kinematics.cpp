@@ -54,6 +54,8 @@ RobotOnPositionerInvKin& RobotOnPositionerInvKin::operator=(const RobotOnPositio
   joint_names_ = other.joint_names_;
   dof_ = other.dof_;
   dof_range_ = other.dof_range_;
+
+  return *this;
 }
 
 // bool RobotOnPositionerInvKin::update()

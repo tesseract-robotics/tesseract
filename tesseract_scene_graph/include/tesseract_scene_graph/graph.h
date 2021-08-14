@@ -113,19 +113,25 @@ using Graph = boost::
 
 #endif  // SWIG
 
+/** @brief Holds the shortest path information.*/
+struct ShortestPath
+{
+  /** @brief a list of links along the shortest path */
+  std::vector<std::string> links;
+
+  /** @brief A list of joints along the shortest path */
+  std::vector<std::string> joints;
+
+  /** @brief A list of active joints along the shortest path */
+  std::vector<std::string> active_joints;
+};
+
 class SceneGraph
 #ifndef SWIG
   : public Graph
 #endif  // SWIG
 {
 public:
-  /**
-   * @brief Holds the shortest path information.
-   *
-   * The first vector is a list of links along the shortest path
-   * The second vector is a list of joints along the shortest path
-   */
-  using Path = std::pair<std::vector<std::string>, std::vector<std::string>>;
   using Vertex = SceneGraph::vertex_descriptor;
   using Edge = SceneGraph::edge_descriptor;
 
@@ -213,6 +219,12 @@ public:
   std::vector<Link::ConstPtr> getLinks() const;
 
   /**
+   * @brief Get a vector leaf links in the scene graph
+   * @return A vector of links
+   */
+  std::vector<Link::ConstPtr> getLeafLinks() const;
+
+  /**
    * @brief Removes a link from the graph
    *
    * Note: this will remove all inbound and outbound edges
@@ -277,10 +289,16 @@ public:
   bool moveJoint(const std::string& name, const std::string& parent_link);
 
   /**
-   * @brief Get a vector joints in the scene graph
+   * @brief Get a vector of joints in the scene graph
    * @return A vector of joints
    */
   std::vector<Joint::ConstPtr> getJoints() const;
+
+  /**
+   * @brief Get a vector of active joints in the scene graph
+   * @return A vector of active joints
+   */
+  std::vector<Joint::ConstPtr> getActiveJoints() const;
 
   /** @brief Changes the "origin" transform of the joint and recomputes the associated edge
    * @param name Name of the joint to be changed
@@ -431,6 +449,14 @@ public:
   std::vector<std::string> getJointChildrenNames(const std::string& name) const;
 
   /**
+   * @brief Create mapping between links in the scene to the provided links if they are directly affected if the link
+   * moves
+   * @param link_names The links to map other links to
+   * @return A map of affected links to on of the provided link names.
+   */
+  std::unordered_map<std::string, std::string> getAdjacencyMap(std::vector<std::string> link_names) const;
+
+  /**
    * @brief Get all children link names for the given joint names
    * @todo Need to create custom vistor so already process joint_names do not get processed again.
    * @param names Name of joints
@@ -450,7 +476,7 @@ public:
    * @param tip The tip link
    * @return The shortest path between the two links
    */
-  Path getShortestPath(const std::string& root, const std::string& tip) const;
+  ShortestPath getShortestPath(const std::string& root, const std::string& tip) const;
 
 #ifndef SWIG
   /**
@@ -590,6 +616,44 @@ private:
     std::vector<std::string>& children_;
   };
 
+  struct adjacency_detector : public boost::default_bfs_visitor
+  {
+    adjacency_detector(std::unordered_map<std::string, std::string>& adjacency_map,
+                       std::map<Vertex, boost::default_color_type>& color_map,
+                       const std::string& base_link_name,
+                       const std::vector<std::string>& terminate_on_links)
+      : adjacency_map_(adjacency_map)
+      , color_map_(color_map)
+      , base_link_name_(base_link_name)
+      , terminate_on_links_(terminate_on_links)
+    {
+    }
+
+    template <class u, class g>
+    void examine_vertex(u vertex, const g& graph)
+    {
+      for (auto vd : boost::make_iterator_range(adjacent_vertices(vertex, graph)))
+      {
+        std::string adj_link = boost::get(boost::vertex_link, graph)[vd]->getName();
+        if (std::find(terminate_on_links_.begin(), terminate_on_links_.end(), adj_link) != terminate_on_links_.end())
+          color_map_[vd] = boost::default_color_type::black_color;
+      }
+    }
+
+    template <class u, class g>
+    void discover_vertex(u vertex, const g& graph)
+    {
+      std::string adj_link = boost::get(boost::vertex_link, graph)[vertex]->getName();
+      adjacency_map_[adj_link] = base_link_name_;
+    }
+
+  protected:
+    std::unordered_map<std::string, std::string>& adjacency_map_;
+    std::map<Vertex, boost::default_color_type>& color_map_;
+    const std::string& base_link_name_;
+    const std::vector<std::string>& terminate_on_links_;
+  };
+
   /**
    * @brief Get the children of a vertex starting with start_vertex
    *
@@ -625,16 +689,19 @@ private:
   }
 };
 
-inline std::ostream& operator<<(std::ostream& os, const SceneGraph::Path& path)
+inline std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 {
   os << "Links:" << std::endl;
-  for (const auto& l : path.first)
+  for (const auto& l : path.links)
     os << "  " << l << std::endl;
 
   os << "Joints:" << std::endl;
-  for (const auto& j : path.second)
+  for (const auto& j : path.joints)
     os << "  " << j << std::endl;
 
+  os << "Active Joints:" << std::endl;
+  for (const auto& j : path.active_joints)
+    os << "  " << j << std::endl;
   return os;
 }
 
