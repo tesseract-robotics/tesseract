@@ -28,6 +28,7 @@
 
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/scene_state.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_kinematics::ForwardKinematicsFactory)
@@ -71,30 +72,35 @@ public:
    * @brief Create Forward Kinematics Chain Object
    * This only need to be implemented if of type chain
    * @param scene_graph The Tesseract Scene Graph
+   * @param scene_state The state of the scene graph
+   * @param name The name of the kinematic chain
    * @param base_link The name of the base link for the kinematic chain
    * @param tip_link The name of the tip link for the kinematic chain
-   * @param name The name of the kinematic chain
    * @return If failed to create, nullptr is returned.
    */
-  virtual ForwardKinematics::UPtr create(const tesseract_scene_graph::SceneGraph& /*scene_graph*/,  // NOLINT
+  virtual ForwardKinematics::UPtr create(const std::string& /*name*/,
+                                         const tesseract_scene_graph::SceneGraph& /*scene_graph*/,  // NOLINT
+                                         const tesseract_scene_graph::SceneState& /*scene_state*/,  // NOLINT
                                          const std::string& /*base_link*/,                          // NOLINT
-                                         const std::string& /*tip_link*/,                           // NOLINT
-                                         const std::string& /*name*/) const                         // NOLINT
+                                         const std::string& /*tip_link*/) const                     // NOLINT
   {
     return nullptr;
   }
 
   /**
    * @brief Create Forward Kinematics Chain Object
-   * This only need to be implemented if of type chain
-   * @param scene_graph The Tesseract Scene Graph
-   * @param chains The chains that make up the kinematic chain
+   * This only need to be implemented if of type tree
    * @param name The name of the kinematic chain
+   * @param scene_graph The Tesseract Scene Graph
+   * @param scene_state The state of the scene graph
+   * @param chains The chains that make up the kinematic chain
    * @return If failed to create, nullptr is returned.
    */
-  virtual ForwardKinematics::UPtr create(const tesseract_scene_graph::SceneGraph& /*scene_graph*/,            // NOLINT
-                                         const std::vector<std::pair<std::string, std::string>>& /*chains*/,  // NOLINT
-                                         const std::string& /*name*/) const                                   // NOLINT
+  virtual ForwardKinematics::UPtr
+  create(const std::string& /*name*/,
+         const tesseract_scene_graph::SceneGraph& /*scene_graph*/,                  // NOLINT
+         const tesseract_scene_graph::SceneState& /*scene_state*/,                  // NOLINT
+         const std::vector<std::pair<std::string, std::string>>& /*chains*/) const  // NOLINT
   {
     return nullptr;
   }
@@ -102,17 +108,17 @@ public:
   /**
    * @brief Create Forward Kinematics Tree Object
    * This only need to be implemented if of type chain
-   * @param scene_graph The tesseract scene graph
-   * @param joint_names The list of active joints to be considered
    * @param name The name of the kinematic chain
+   * @param scene_graph The tesseract scene graph
+   * @param scene_state The state of the scene graph
+   * @param joint_names The list of active joints to be considered
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return If failed to create, nullptr is returned.
    */
-  virtual ForwardKinematics::UPtr create(const tesseract_scene_graph::SceneGraph& /*scene_graph*/,  // NOLINT
-                                         const std::vector<std::string>& /*joint_names*/,           // NOLINT
-                                         const std::string& /*name*/,                               // NOLINT
-                                         const std::unordered_map<std::string, double>& /*start_state*/ =
-                                             std::unordered_map<std::string, double>()) const  // NOLINT
+  virtual ForwardKinematics::UPtr create(const std::string& /*name*/,                               // NOLINT
+                                         const tesseract_scene_graph::SceneGraph& /*scene_graph*/,  // NOLINT
+                                         const tesseract_scene_graph::SceneState& /*scene_state*/,  // NOLINT
+                                         const std::vector<std::string>& /*joint_names*/) const     // NOLINT
   {
     return nullptr;
   }
