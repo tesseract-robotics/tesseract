@@ -722,6 +722,10 @@ inline void runInvKinIIWATest(const tesseract_kinematics::InverseKinematicsFacto
   std::vector<std::string> joint_link_names{ "link_1", "link_2", "link_3", "link_4", "link_5", "link_6", "link_7" };
   tesseract_common::KinematicLimits target_limits = getTargetLimits(*scene_graph, joint_names);
 
+  tesseract_scene_graph::SceneState scene_state;
+  for (const auto& joint_name : joint_names)
+    scene_state.joints[joint_name] = 0;
+
   // Inverse target pose and seed
   Eigen::Isometry3d pose;
   pose.setIdentity();
@@ -751,7 +755,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::InverseKinematicsFacto
   EXPECT_EQ(inv_kin_factory.getType(), inv_factory_type);
 
   {  // Check create method using base_link and tool0
-    auto fwd_kin = fwd_kin_factory.create(*scene_graph, base_link_name, tip_link_name, manip_name);
+    auto fwd_kin = fwd_kin_factory.create(manip_name, *scene_graph, scene_state, base_link_name, tip_link_name);
     EXPECT_TRUE(fwd_kin != nullptr);
     EXPECT_EQ(fwd_kin->getName(), manip_name);
     EXPECT_EQ(fwd_kin->getSolverName(), fwd_solver_name);
@@ -786,7 +790,8 @@ inline void runInvKinIIWATest(const tesseract_kinematics::InverseKinematicsFacto
   }
 
   {  // Check create method using chain pairs
-    auto fwd_kin = fwd_kin_factory.create(*scene_graph, { std::make_pair(base_link_name, tip_link_name) }, manip_name);
+    auto fwd_kin = fwd_kin_factory.create(
+        manip_name, *scene_graph, scene_state, { std::make_pair(base_link_name, tip_link_name) });
     EXPECT_TRUE(fwd_kin != nullptr);
     EXPECT_EQ(fwd_kin->getName(), manip_name);
     EXPECT_EQ(fwd_kin->getSolverName(), fwd_solver_name);
@@ -821,7 +826,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::InverseKinematicsFacto
   }
 
   {  // Check cloned
-    auto fwd_kin = fwd_kin_factory.create(*scene_graph, base_link_name, tip_link_name, manip_name);
+    auto fwd_kin = fwd_kin_factory.create(manip_name, *scene_graph, scene_state, base_link_name, tip_link_name);
     EXPECT_TRUE(fwd_kin != nullptr);
     auto fwd_kin3 = fwd_kin->clone();
     EXPECT_EQ(fwd_kin3->getName(), manip_name);
@@ -881,10 +886,11 @@ inline void runInvKinIIWATest(const tesseract_kinematics::InverseKinematicsFacto
   //  }
 
   {  // Test forward kinematics failure
-    auto fwd_kin = fwd_kin_factory.create(*scene_graph, "missing_link", "tool0", "manip");
+    auto fwd_kin = fwd_kin_factory.create("manip", *scene_graph, scene_state, "missing_link", "tool0");
     EXPECT_TRUE(fwd_kin == nullptr);
 
-    auto fwd_kin2 = fwd_kin_factory.create(*scene_graph, { std::make_pair("missing_link", "tool0") }, "manip");
+    auto fwd_kin2 =
+        fwd_kin_factory.create("manip", *scene_graph, scene_state, { std::make_pair("missing_link", "tool0") });
     EXPECT_TRUE(fwd_kin2 == nullptr);
   }
 

@@ -43,10 +43,11 @@ public:
 
   ForwardKinematicsFactoryType getType() const override { return ForwardKinematicsFactoryType::CHAIN; }
 
-  ForwardKinematics::UPtr create(const tesseract_scene_graph::SceneGraph& scene_graph,
+  ForwardKinematics::UPtr create(const std::string& name,
+                                 const tesseract_scene_graph::SceneGraph& scene_graph,
+                                 const tesseract_scene_graph::SceneState& scene_state,
                                  const std::string& base_link,
-                                 const std::string& tip_link,
-                                 const std::string& name) const override
+                                 const std::string& tip_link) const override
   {
     auto kin = std::make_unique<KDLFwdKinChain>();
     if (!kin->init(scene_graph, base_link, tip_link, name))
@@ -55,9 +56,10 @@ public:
     return kin;
   }
 
-  ForwardKinematics::UPtr create(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                 const std::vector<std::pair<std::string, std::string>>& chains,  // NOLINT
-                                 const std::string& name) const override
+  ForwardKinematics::UPtr create(const std::string& name,
+                                 const tesseract_scene_graph::SceneGraph& scene_graph,
+                                 const tesseract_scene_graph::SceneState& scene_state,
+                                 const std::vector<std::pair<std::string, std::string>>& chains) const override
   {
     auto kin = std::make_unique<KDLFwdKinChain>();
     if (!kin->init(scene_graph, chains, name))
