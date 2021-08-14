@@ -42,10 +42,11 @@ TEST(TesseractKinematicsUnit, CoreFactoryUnit)  // NOLINT
   EXPECT_TRUE(test_fwd_factory.create("", scene_graph_empty, scene_state_empty, std::vector<std::string>()) == nullptr);
 
   TestInverseKinematicsFactory test_inv_factory;
-  EXPECT_TRUE(test_inv_factory.create(scene_graph_empty, "", "", "") == nullptr);
-  EXPECT_TRUE(test_inv_factory.create(scene_graph_empty, std::vector<std::pair<std::string, std::string>>(), "") ==
+  EXPECT_TRUE(test_inv_factory.create("", scene_graph_empty, scene_state_empty, "", "") == nullptr);
+  EXPECT_TRUE(test_inv_factory.create(
+                  "", scene_graph_empty, scene_state_empty, std::vector<std::pair<std::string, std::string>>()) ==
               nullptr);
-  EXPECT_TRUE(test_inv_factory.create(scene_graph_empty, std::vector<std::string>(), "") == nullptr);
+  EXPECT_TRUE(test_inv_factory.create("", scene_graph_empty, scene_state_empty, std::vector<std::string>()) == nullptr);
 }
 
 TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT

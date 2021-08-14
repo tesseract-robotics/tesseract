@@ -112,7 +112,6 @@ public:
    * @param scene_graph The tesseract scene graph
    * @param scene_state The state of the scene graph
    * @param joint_names The list of active joints to be considered
-   * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return If failed to create, nullptr is returned.
    */
   virtual ForwardKinematics::UPtr create(const std::string& /*name*/,                               // NOLINT
