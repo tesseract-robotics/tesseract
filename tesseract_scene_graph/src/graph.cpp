@@ -192,7 +192,7 @@ std::vector<Link::ConstPtr> SceneGraph::getLeafLinks() const
   return links;
 }
 
-bool SceneGraph::removeLink(const std::string& name)
+bool SceneGraph::removeLink(const std::string& name, bool recursive)
 {
   auto found = link_map_.find(name);
   if (found == link_map_.end())
@@ -201,7 +201,9 @@ bool SceneGraph::removeLink(const std::string& name)
     return false;
   }
 
-  // Needt to remove all inbound and outbound edges first
+  std::vector<std::string> adjacent_link_names = getAdjacentLinkNames(name);
+
+  // Need to remove all inbound and outbound edges first
   Vertex vertex = getVertex(name);
   boost::clear_vertex(vertex, *this);
 
@@ -222,7 +224,40 @@ bool SceneGraph::removeLink(const std::string& name)
   // Need to remove any reference to link in allowed collision matrix
   removeAllowedCollision(name);
 
+  if (recursive)
+  {
+    for (const auto& link_name : adjacent_link_names)
+    {
+      if (getInboundJoints(link_name).size() == 0)
+        removeLink(link_name, true);
+    }
+  }
+
   return true;
+}
+
+bool SceneGraph::moveLink(const Joint& joint)
+{
+  if (link_map_.find(joint.child_link_name) == link_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to move link (%s) in scene graph that does not exist.",
+                           joint.child_link_name.c_str());
+    return false;
+  }
+
+  if (link_map_.find(joint.parent_link_name) == link_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to move link (%s) in scene graph that parent link (%s) which does not exist.",
+                           joint.child_link_name.c_str(),
+                           joint.parent_link_name.c_str());
+    return false;
+  }
+
+  std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = getInboundJoints(joint.child_link_name);
+  for (const auto& joint : joints)
+    removeJoint(joint->getName());
+
+  return addJoint(joint);
 }
 
 void SceneGraph::setLinkVisibility(const std::string& name, bool visibility)
@@ -303,14 +338,22 @@ Joint::ConstPtr SceneGraph::getJoint(const std::string& name) const
   return found->second.first;
 }
 
-bool SceneGraph::removeJoint(const std::string& name)
+bool SceneGraph::removeJoint(const std::string& name, bool recursive)
 {
   auto found = joint_map_.find(name);
   if (found == joint_map_.end())
     return false;
 
-  boost::remove_edge(found->second.second, static_cast<Graph&>(*this));
-  joint_map_.erase(name);
+  if (!recursive)
+  {
+    boost::remove_edge(found->second.second, static_cast<Graph&>(*this));
+    joint_map_.erase(name);
+  }
+  else
+  {
+    if (getInboundJoints(found->second.first->child_link_name).size() == 1)
+      removeLink(found->second.first->child_link_name, true);
+  }
 
   return true;
 }
@@ -404,6 +447,76 @@ bool SceneGraph::changeJointLimits(const std::string& name, const JointLimits& l
   found->second.first->limits->effort = limits.effort;
   found->second.first->limits->velocity = limits.velocity;
   found->second.first->limits->acceleration = limits.acceleration;
+
+  return true;
+}
+
+bool SceneGraph::changeJointPositionLimits(const std::string& name, double lower, double upper)
+{
+  auto found = joint_map_.find(name);
+
+  if (found == joint_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Position limits with name (%s) which does not exist in scene graph.",
+                           name.c_str());
+    return false;
+  }
+
+  if (found->second.first->type == JointType::FIXED)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Position limits for a fixed joint type.", name.c_str());
+    return false;
+  }
+
+  found->second.first->limits->lower = lower;
+  found->second.first->limits->upper = upper;
+
+  return true;
+}
+
+bool SceneGraph::changeJointVelocityLimits(const std::string& name, double limit)
+{
+  auto found = joint_map_.find(name);
+
+  if (found == joint_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Velocity limit with name (%s) which does not exist in scene graph.",
+                           name.c_str());
+    return false;
+  }
+
+  if (found->second.first->type == JointType::FIXED)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Velocity limit for a fixed joint type.", name.c_str());
+    return false;
+  }
+
+  found->second.first->limits->velocity = limit;
+  return true;
+}
+
+bool SceneGraph::changeJointAccelerationLimits(const std::string& name, double limit)
+{
+  auto found = joint_map_.find(name);
+
+  if (found == joint_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Acceleration limit with name (%s) which does not exist in scene "
+                           "graph.",
+                           name.c_str());
+    return false;
+  }
+
+  if (found->second.first->type == JointType::FIXED)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Acceleration limit for a fixed joint type.", name.c_str());
+    return false;
+  }
+
+  if (found->second.first->limits == nullptr)
+    found->second.first->limits = std::make_shared<JointLimits>();
+
+  found->second.first->limits->acceleration = limit;
 
   return true;
 }

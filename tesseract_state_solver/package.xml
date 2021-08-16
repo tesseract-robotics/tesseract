@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>tesseract_state_solver</name>
+  <version>0.5.0</version>
+  <description>The state solver for tesseract_scene_graph</description>
+  <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+  <author >Levi Armstrong</author>
+
+  <!-- Following recommendations of REP 136 -->
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <build_depend>ros_industrial_cmake_boilerplate</build_depend>
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
+
+  <depend>libconsole-bridge-dev</depend>
+  <depend>tesseract_scene_graph</depend>
+  <depend>tesseract_common</depend>
+  <depend condition="$ROS_DISTRO != noetic">orocos_kdl</depend>
+  <depend condition="$ROS_DISTRO == noetic">liborocos-kdl-dev</depend>
+
+  <test_depend>gtest</test_depend>
+  <test_depend>tesseract_support</test_depend>
+  <test_depend>tesseract_urdf</test_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
