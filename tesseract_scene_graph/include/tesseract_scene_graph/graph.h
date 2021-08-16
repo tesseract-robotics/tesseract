@@ -364,7 +364,7 @@ public:
    * @brief Get inbound joints for a link
    *
    * The inbound joints are all joints that have the
-   * link identified as the parent link
+   * link identified as the child link
    *
    * @param link_name The name of the link
    * @return Vector of joints
@@ -375,7 +375,7 @@ public:
    * @brief Get outbound joints for a link
    *
    * The outbound joints are all joins that have the
-   * link identified as the child link
+   * link identified as the parent link
    *
    * @param link_name The name of the link
    * @return Vector of joints
