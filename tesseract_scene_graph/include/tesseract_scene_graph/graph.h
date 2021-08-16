@@ -230,9 +230,18 @@ public:
    * Note: this will remove all inbound and outbound edges
    *
    * @param name Name of the link to be removed
+   * @param recursive If true all children are removed if it only has a single joint
    * @return Return False if a link does not exists, otherwise true
    */
-  bool removeLink(const std::string& name);
+  bool removeLink(const std::string& name, bool recursive = false);
+
+  /**
+   * @brief Move link defined by provided joint
+   * This deletes all inbound joints on the parent link defined by the joint
+   * @param joint The joint defining the link move
+   * @return Returns true if successful, otherwise false.
+   */
+  bool moveLink(const Joint& joint);
 
   /**
    * @brief Set a links visibility
@@ -276,9 +285,10 @@ public:
   /**
    * @brief Removes a joint from the graph
    * @param name Name of the joint to be removed
+   * @param recursive If true all children are removed if this this is the only joint of the child link
    * @return Return False if a joint does not exists, otherwise true
    */
-  bool removeJoint(const std::string& name);
+  bool removeJoint(const std::string& name, bool recursive = false);
 
   /**
    * @brief Move joint to new parent link
@@ -314,6 +324,30 @@ public:
    * @return True if successful.
    */
   bool changeJointLimits(const std::string& name, const JointLimits& limits);
+
+  /**
+   * @brief Changes the position limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @param limits New position limits to be set as the joint limits
+   * @returnTrue if successful.
+   */
+  bool changeJointPositionLimits(const std::string& name, double lower, double upper);
+
+  /**
+   * @brief Changes the velocity limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @param limits New velocity limits to be set as the joint limits
+   * @return
+   */
+  bool changeJointVelocityLimits(const std::string& name, double limit);
+
+  /**
+   * @brief Changes the acceleration limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @param limits New acceleration limits to be set as the joint limits
+   * @return
+   */
+  bool changeJointAccelerationLimits(const std::string& name, double limit);
 
   /**
    * @brief Gets the limits of the joint specified by name
