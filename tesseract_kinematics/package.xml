@@ -13,6 +13,7 @@
 
   <depend>tesseract_common</depend>
   <depend>tesseract_scene_graph</depend>
+  <depend>tesseract_state_solver</depend>
   <depend>tesseract_srdf</depend>
 
   <build_depend>eigen</build_depend>

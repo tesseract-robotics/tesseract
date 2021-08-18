@@ -69,16 +69,10 @@ public:
   ForwardKinematics(ForwardKinematics&&) = default;
   ForwardKinematics& operator=(ForwardKinematics&&) = default;
 
-  //  /**
-  //   * @brief Updates kinematics if kinematic parameters have changed
-  //   * @return True if successful
-  //   */
-  //  virtual bool update() = 0;
-
   /**
    * @brief Calculates the link poses for the kinematics object
    * @details
-   * This should return a transform for every link listed in getJointLinkNames() and getTipLinkNames()
+   * This should return a transform for every link listed in getTipLinkNames()
    * Throws an exception on failures (including uninitialized)
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    * @return A transform map of link name to pose
@@ -88,7 +82,7 @@ public:
   /**
    * @brief Calculated jacobian at a link given joint angles
    * @details
-   * This should be able to return a jacobian given any link listed in getJointLinkNames() and getTipLinkNames()
+   * This should be able to return a jacobian given any link listed in getTipLinkNames()
    * Throws an exception on failures (including uninitialized)
    * @param joint_angles Input vector of joint angles
    * @param joint_link_name The joint link name to calculate jacobian
@@ -105,12 +99,6 @@ public:
    * @return A vector of joint names
    */
   virtual std::vector<std::string> getJointNames() const = 0;
-
-  /**
-   * @brief Get list of each joint child names for kinematic object
-   * @return A vector of link names
-   */
-  virtual std::vector<std::string> getJointLinkNames() const = 0;
 
   /**
    * @brief Get list of tip link names for kinematic object

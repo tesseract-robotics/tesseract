@@ -116,9 +116,7 @@ bool parseSceneGraph(KDLChainData& results,
   results.tip_link_name = chains.back().second;
 
   results.joint_names.clear();
-  results.joint_link_names.clear();
   results.joint_names.resize(results.robot_chain.getNrOfJoints());
-  results.joint_link_names.resize(results.robot_chain.getNrOfJoints());
 
   results.segment_index.clear();
   results.segment_index[results.base_link_name] = 0;
@@ -138,8 +136,6 @@ bool parseSceneGraph(KDLChainData& results,
     results.segment_index[seg.getName()] = static_cast<int>(i + 1);
 
     results.joint_names[j] = jnt.getName();
-    results.joint_link_names[j] = seg.getName();
-    //    const tesseract_scene_graph::Joint::ConstPtr& joint = scene_graph.getJoint(jnt.getName());
 
     ++j;
   }

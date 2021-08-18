@@ -51,7 +51,6 @@ KDLFwdKinTree& KDLFwdKinTree::operator=(const KDLFwdKinTree& other)
   solver_name_ = other.solver_name_;
   kdl_tree_ = other.kdl_tree_;
   joint_names_ = other.joint_names_;
-  joint_link_names_ = other.joint_link_names_;
   fk_solver_ = std::make_unique<KDL::TreeFkSolverPos_recursive>(kdl_tree_);
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(kdl_tree_);
   start_state_ = other.start_state_;
@@ -115,14 +114,7 @@ tesseract_common::TransformMap KDLFwdKinTree::calcFwdKinHelper(const KDL::JntArr
   kdlRecursiveFk(all_poses, kdl_pose, kdl_joints, rootIterator);
 
   tesseract_common::TransformMap poses;
-
-  poses[base_link_name_] = Eigen::Isometry3d::Identity();
-
-  for (const auto& link_name : joint_link_names_)
-    poses[link_name] = all_poses[link_name];
-
   poses[tip_link_name_] = all_poses[tip_link_name_];
-
   return poses;
 }
 
@@ -178,7 +170,6 @@ Eigen::Index KDLFwdKinTree::numJoints() const { return static_cast<Eigen::Index>
 
 std::string KDLFwdKinTree::getBaseLinkName() const { return base_link_name_; }
 
-std::vector<std::string> KDLFwdKinTree::getJointLinkNames() const { return joint_link_names_; }
 std::vector<std::string> KDLFwdKinTree::getTipLinkNames() const { return { tip_link_name_ }; }
 
 std::string KDLFwdKinTree::getName() const { return name_; }

@@ -104,6 +104,7 @@ public:
   Eigen::Index numJoints() const override;
   std::vector<std::string> getJointNames() const override;
   std::string getBaseLinkName() const override;
+  std::vector<std::string> getWorkingFrames() const override;
   std::vector<std::string> getTipLinkNames() const override;
   std::string getName() const override;
   std::string getSolverName() const override;

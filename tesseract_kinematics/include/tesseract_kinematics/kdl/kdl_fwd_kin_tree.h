@@ -77,7 +77,6 @@ public:
 
   std::string getBaseLinkName() const final;
   std::vector<std::string> getJointNames() const final;
-  std::vector<std::string> getJointLinkNames() const final;
   std::vector<std::string> getTipLinkNames() const final;
   Eigen::Index numJoints() const final;
   std::string getName() const final;
@@ -112,7 +111,6 @@ private:
   std::string tip_link_name_;                  /**< @brief Link name of last kink in the kinematic object */
   std::string solver_name_{ "KDLFwdKinTree" }; /**< Name of this solver */
   std::vector<std::string> joint_names_;       /**< List of joint names */
-  std::vector<std::string> joint_link_names_;  /**< List of joint child link names */
   KDL::JntArray start_state_;                  /**< Intial state of the tree. Should include all joints in the model. */
   std::unordered_map<std::string, double> input_start_state_; /**< Input start state before it has been translated into
                                                                  KDL types */

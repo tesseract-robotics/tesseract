@@ -100,13 +100,12 @@ void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> vec);
  */
 struct KDLChainData
 {
-  KDL::Chain robot_chain;                    /**< @brief KDL Chain object */
-  KDL::Tree kdl_tree;                        /**< @brief KDL tree object */
-  std::vector<std::string> joint_names;      /**< @brief List of joint names */
-  std::vector<std::string> joint_link_names; /**< @brief List of joint child link names */
-  std::string base_link_name;                /**< @brief Link name of first link in the kinematic object */
-  std::string tip_link_name;                 /**< @brief Link name of last kink in the kinematic object */
-  std::map<std::string, int> segment_index;  /**< @brief A map from chain link name to kdl chain segment number */
+  KDL::Chain robot_chain;                   /**< @brief KDL Chain object */
+  KDL::Tree kdl_tree;                       /**< @brief KDL tree object */
+  std::vector<std::string> joint_names;     /**< @brief List of joint names */
+  std::string base_link_name;               /**< @brief Link name of first link in the kinematic object */
+  std::string tip_link_name;                /**< @brief Link name of last kink in the kinematic object */
+  std::map<std::string, int> segment_index; /**< @brief A map from chain link name to kdl chain segment number */
   std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
 };
 

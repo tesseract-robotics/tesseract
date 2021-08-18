@@ -79,7 +79,6 @@ public:
 
   std::string getBaseLinkName() const final;
   std::vector<std::string> getJointNames() const final;
-  std::vector<std::string> getJointLinkNames() const final;
   std::vector<std::string> getTipLinkNames() const final;
   Eigen::Index numJoints() const final;
   std::string getName() const final;

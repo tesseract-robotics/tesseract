@@ -73,6 +73,7 @@ public:
   Eigen::Index numJoints() const final;
   std::vector<std::string> getJointNames() const final;
   std::string getBaseLinkName() const final;
+  std::vector<std::string> getWorkingFrames() const final;
   std::vector<std::string> getTipLinkNames() const final;
   std::string getName() const final;
   std::string getSolverName() const final;
