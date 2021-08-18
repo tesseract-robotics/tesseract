@@ -43,6 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 
 #include <kdl/tree.hpp>
+#include <kdl/jacobian.hpp>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -70,6 +71,21 @@ Eigen::Isometry3d convert(const KDL::Frame& frame);
  * @return frame Output KDL Frame
  */
 KDL::Vector convert(const Eigen::Vector3d& vector);
+
+/**
+ * @brief Convert KDL::Jacobian to Eigen::Matrix
+ * @param jacobian Input KDL Jacobian
+ * @return Eigen MatrixXd
+ */
+Eigen::MatrixXd convert(const KDL::Jacobian& jacobian);
+
+/**
+ * @brief Convert a subset of KDL::Jacobian to Eigen::Matrix
+ * @param jacobian Input KDL Jacobian
+ * @param q_nrs Input the columns to use
+ * @return Eigen MatrixXd
+ */
+Eigen::MatrixXd convert(const KDL::Jacobian& jacobian, const std::vector<int>& q_nrs);
 
 /**
  * @brief Convert Tesseract Joint to KDL Joint
@@ -108,8 +124,8 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph);
  * @brief Convert a portion of a Tesseract SceneGraph into a KDL Tree
  * @details This will create a new tree from multple sub tree defined by the provided joint names
  * The values are used to convert non fixed joints that are not listed in joint_names to a
- * fixed joint. The first tree found defines the base link and all other trees are attached to this
- * link by a fixed joint.
+ * fixed joint. The first tree found a link is defined attaching world to the base link and all
+ * other trees are attached to this link by a fixed joint.
  * @throws If graph is not a tree it will return false.
  * @param scene_graph The Tesseract Scene Graph
  * @param tree The KDL Tree to populate.
