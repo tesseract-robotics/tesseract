@@ -9,6 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_state_solver/state_solver.h>
+#include <tesseract_scene_graph/kdl_parser.h>
 
 namespace tesseract_scene_graph
 {
@@ -19,6 +20,7 @@ public:
   using ConstPtr = std::shared_ptr<const KDLStateSolver>;
 
   KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph);
+  KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, KDLTreeData data);
   ~KDLStateSolver() override = default;
   KDLStateSolver(const KDLStateSolver& other);
   KDLStateSolver& operator=(const KDLStateSolver& other);
@@ -41,17 +43,33 @@ public:
 
   SceneState getRandomState() const override;
 
+  Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                              const std::string& link_name) const override;
+
+  Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints,
+                              const std::string& link_name) const override;
+  Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
+                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                              const std::string& link_name) const override;
+
   const std::vector<std::string>& getJointNames() const override;
+
+  const std::string& getBaseLinkName() const override;
+
+  const std::vector<std::string>& getLinkNames() const override;
+
+  const std::vector<std::string>& getActiveLinkNames() const override;
 
   const tesseract_common::KinematicLimits& getLimits() const override;
 
 private:
   SceneState current_state_;                                   /**< Current state of the environment */
-  KDL::Tree kdl_tree_;                                         /**< KDL tree object */
+  KDLTreeData data_;                                           /**< KDL tree data */
+  std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;        /**< KDL Jacobian Solver */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
-  KDL::JntArray kdl_jnt_array_;                                /**< The kdl joint array */
-  tesseract_common::KinematicLimits limits_;                   /**< The kinematic limits */
-  std::vector<std::string> joint_names_;                       /**< The active joint names */
+  std::vector<int> joint_qnr_;               /**< The kdl segment number corrisponding to joint in joint names */
+  KDL::JntArray kdl_jnt_array_;              /**< The kdl joint array */
+  tesseract_common::KinematicLimits limits_; /**< The kinematic limits */
 
   void calculateTransforms(SceneState& state,
                            const KDL::JntArray& q_in,
@@ -65,7 +83,14 @@ private:
 
   bool setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const;
 
-  bool createKDETree(const tesseract_scene_graph::SceneGraph& scene_graph);
+  bool calcJacobianHelper(KDL::Jacobian& jacobian, const KDL::JntArray& kdl_joints, const std::string& link_name) const;
+
+  /** @brief Get an updated kdl joint array */
+  KDL::JntArray getKDLJntArray(const std::vector<std::string>& joint_names,
+                               const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
+  KDL::JntArray getKDLJntArray(const std::unordered_map<std::string, double>& joints) const;
+
+  bool processKDLData(const tesseract_scene_graph::SceneGraph& scene_graph);
 };
 
 }  // namespace tesseract_scene_graph

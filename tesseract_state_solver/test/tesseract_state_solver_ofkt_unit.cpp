@@ -75,6 +75,11 @@ TEST(TesseractStateSolverUnit, OFKTChangeJointLimitsUnit)  // NOLINT
   test_suite::runChangeJointLimitsTest<OFKTStateSolver>();
 }
 
+TEST(TesseractStateSolverUnit, KDLGetJacobianUnit)  // NOLINT
+{
+  test_suite::runJacobianTest<KDLStateSolver>();
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
