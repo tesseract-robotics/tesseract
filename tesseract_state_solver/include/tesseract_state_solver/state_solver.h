@@ -111,32 +111,29 @@ public:
    */
   virtual const SceneState& getState() const = 0;
 
-  //  /**
-  //   * @brief Get the jacobian of the scene for a given set or subset of joint values.
-  //   *
-  //   * This does not change the internal state of the scene.
-  //   *
-  //   * @param joints A map of joint names to joint values to change.
-  //   * @param link_name The link name to calculate the jacobian
-  //   * @return A the state of the environment
-  //   */
-  //  virtual Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints,
-  //                                      const std::string& link_name) const = 0;
-  //  virtual Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
-  //                                      const std::vector<double>& joint_values,
-  //                                      const std::string& link_name) const = 0;
-  //  virtual Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
-  //                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-  //                                      const std::string& link_name) const = 0;
+  /**
+   * @brief Get the jacobian of the solver given the joint values
+   * @details This must be the same size and order as what is returned by getJointNames
+   * @param joint_values The joint values
+   * @param link_name The link name to calculate the jacobian
+   */
+  virtual Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                      const std::string& link_name) const = 0;
 
-  //  /**
-  //   * @brief Get the jacobian of the solver given the joint values
-  //   * @details This must be the same size and order as what is returned by getJointNames
-  //   * @param joint_values The joint values
-  //   * @param link_name The link name to calculate the jacobian
-  //   */
-  //  virtual Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-  //                                      const std::string& link_name) const = 0;
+  /**
+   * @brief Get the jacobian of the scene for a given set or subset of joint values.
+   *
+   * This does not change the internal state of the scene.
+   *
+   * @param joints A map of joint names to joint values to change.
+   * @param link_name The link name to calculate the jacobian
+   * @return A the state of the environment
+   */
+  virtual Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints,
+                                      const std::string& link_name) const = 0;
+  virtual Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
+                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                      const std::string& link_name) const = 0;
 
   /**
    * @brief Get the random state of the environment
@@ -149,6 +146,24 @@ public:
    * @return A vector of joint names
    */
   virtual const std::vector<std::string>& getJointNames() const = 0;
+
+  /**
+   * @brief Get the base link name
+   * @return The base link name
+   */
+  virtual const std::string& getBaseLinkName() const = 0;
+
+  /**
+   * @brief Get the vector of link names
+   * @return A vector of link names
+   */
+  virtual const std::vector<std::string>& getLinkNames() const = 0;
+
+  /**
+   * @brief Get the vector of active link names
+   * @return A vector of active link names
+   */
+  virtual const std::vector<std::string>& getActiveLinkNames() const = 0;
 
   /**
    * @brief Getter for kinematic limits

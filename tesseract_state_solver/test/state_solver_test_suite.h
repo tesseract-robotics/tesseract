@@ -112,8 +112,10 @@ void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_sol
 {
   std::vector<std::string> base_joint_names = base_solver.getJointNames();
   std::vector<std::string> comp_joint_names = comp_solver.getJointNames();
+  EXPECT_EQ(base_solver.getBaseLinkName(), comp_solver.getBaseLinkName());
   EXPECT_TRUE(tesseract_common::isIdentical(base_joint_names, comp_joint_names, false));
-  // @todo compare joint limits
+  EXPECT_TRUE(tesseract_common::isIdentical(base_solver.getLinkNames(), comp_solver.getLinkNames(), false));
+  EXPECT_TRUE(tesseract_common::isIdentical(base_solver.getActiveLinkNames(), comp_solver.getActiveLinkNames(), false));
 
   for (int i = 0; i < 10; ++i)
   {
@@ -139,6 +141,378 @@ void runCompareStateSolverLimits(const SceneGraph& scene_graph, const StateSolve
     EXPECT_NEAR(limits.joint_limits(i, 1), scene_joint->limits->upper, 1e-5);
     EXPECT_NEAR(limits.velocity_limits(i), scene_joint->limits->velocity, 1e-5);
     EXPECT_NEAR(limits.acceleration_limits(i), scene_joint->limits->acceleration, 1e-5);
+  }
+}
+
+/**
+ * @brief Numerically calculate a jacobian. This is mainly used for testing
+ * @param jacobian (Return) The jacobian which gets filled out.
+ * @param state_solver          The state solver object
+ * @param joint_values The joint values for which to calculate the jacobian
+ * @param link_name    The link_name for which the jacobian should be calculated
+ * @param link_point   The point on the link for which to calculate the jacobian
+ */
+inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                                     const Eigen::Isometry3d& change_base,
+                                     const StateSolver& state_solver,
+                                     const std::vector<std::string>& joint_names,
+                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                     const std::string& link_name,
+                                     const Eigen::Ref<const Eigen::Vector3d>& link_point)
+{
+  Eigen::VectorXd njvals;
+  double delta = 0.001;
+  tesseract_common::TransformMap poses;
+  if (joint_names.empty())
+    poses = state_solver.getState(joint_values).link_transforms;
+  else
+    poses = state_solver.getState(joint_names, joint_values).link_transforms;
+
+  Eigen::Isometry3d pose = poses[link_name];
+  pose = change_base * pose;
+
+  for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
+  {
+    njvals = joint_values;
+    njvals[i] += delta;
+    tesseract_common::TransformMap updated_poses;
+    if (joint_names.empty())
+      updated_poses = state_solver.getState(njvals).link_transforms;
+    else
+      updated_poses = state_solver.getState(joint_names, njvals).link_transforms;
+
+    Eigen::Isometry3d updated_pose = updated_poses[link_name];
+    updated_pose = change_base * updated_pose;
+
+    Eigen::Vector3d temp = pose * link_point;
+    Eigen::Vector3d temp2 = updated_pose * link_point;
+    jacobian(0, i) = (temp2.x() - temp.x()) / delta;
+    jacobian(1, i) = (temp2.y() - temp.y()) / delta;
+    jacobian(2, i) = (temp2.z() - temp.z()) / delta;
+
+    Eigen::AngleAxisd r12(pose.rotation().transpose() * updated_pose.rotation());  // rotation from p1 -> p2
+    double theta = r12.angle();
+    theta = copysign(fmod(fabs(theta), 2.0 * M_PI), theta);
+    if (theta < -M_PI)
+      theta = theta + 2. * M_PI;
+    if (theta > M_PI)
+      theta = theta - 2. * M_PI;
+    Eigen::VectorXd omega = (pose.rotation() * r12.axis() * theta) / delta;
+    jacobian(3, i) = omega(0);
+    jacobian(4, i) = omega(1);
+    jacobian(5, i) = omega(2);
+  }
+}
+
+/**
+ * @brief Run a kinematic jacobian test
+ * @param state_solver The state solver object
+ * @param jvals The joint values to calculate the jacobian about
+ * @param link_name Name of link to calculate jacobian. If empty it will use the function that does not require link
+ * name
+ * @param link_point Is expressed in the same base frame of the jacobian and is a vector from the old point to the new
+ * point.
+ * @param change_base The transform from the desired frame to the current base frame of the jacobian
+ */
+inline void runCompareJacobian(StateSolver& state_solver,
+                               const std::vector<std::string>& joint_names,
+                               const Eigen::VectorXd& jvals,
+                               const std::string& link_name,
+                               const Eigen::Vector3d& link_point,
+                               const Eigen::Isometry3d& change_base)
+{
+  Eigen::MatrixXd jacobian, numerical_jacobian;
+  jacobian.resize(6, jvals.size());
+
+  tesseract_common::TransformMap poses;
+
+  // The numerical jacobian orders things base on the provided joint list
+  // The order needs to be calculated to compare
+  std::vector<std::string> solver_jn = state_solver.getJointNames();
+  std::vector<long> order;
+  if (joint_names.empty())
+  {
+    int i = 0;
+    for (const auto& joint_name : solver_jn)
+      order.push_back(i++);
+
+    poses = state_solver.getState(jvals).link_transforms;
+    jacobian = state_solver.getJacobian(jvals, link_name);
+  }
+  else
+  {
+    for (const auto& joint_name : solver_jn)
+      order.push_back(
+          std::distance(joint_names.begin(), std::find(joint_names.begin(), joint_names.end(), joint_name)));
+
+    poses = state_solver.getState(joint_names, jvals).link_transforms;
+    jacobian = state_solver.getJacobian(joint_names, jvals, link_name);
+  }
+
+  tesseract_common::jacobianChangeBase(jacobian, change_base);
+  tesseract_common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_name]).linear() * link_point);
+
+  numerical_jacobian.resize(6, jvals.size());
+  numericalJacobian(numerical_jacobian, change_base, state_solver, joint_names, jvals, link_name, link_point);
+
+  for (int i = 0; i < 6; ++i)
+    for (int j = 0; j < static_cast<int>(jvals.size()); ++j)
+      EXPECT_NEAR(numerical_jacobian(i, order[j]), jacobian(i, j), 1e-3);
+}
+
+template <typename S>
+inline void runJacobianTest()
+{
+  // Get the scene graph
+  auto scene_graph = getSceneGraph();
+  auto state_solver = S(*scene_graph);
+
+  std::vector<std::string> joint_names_empty;
+  std::vector<std::string> link_names = { "base_link", "link_1", "link_2", "link_3", "link_4",
+                                          "link_5",    "link_6", "link_7", "tool0" };
+
+  //////////////////////////////////////////////////////////////////
+  // Test forward kinematics when tip link is the base of the chain
+  //////////////////////////////////////////////////////////////////
+  Eigen::MatrixXd jacobian, numerical_jacobian;
+  Eigen::VectorXd jvals;
+  jvals.resize(7);
+
+  //  jvals(0) = -0.785398;
+  //  jvals(1) = 0.785398;
+  //  jvals(2) = -0.785398;
+  //  jvals(3) = 0.785398;
+  //  jvals(4) = -0.785398;
+  //  jvals(5) = 0.785398;
+  //  jvals(6) = -0.785398;
+  jvals(0) = -0.1;
+  jvals(1) = 0.2;
+  jvals(2) = -0.3;
+  jvals(3) = 0.4;
+  jvals(4) = -0.5;
+  jvals(5) = 0.6;
+  jvals(6) = -0.7;
+
+  ///////////////////////////
+  // Test Jacobian
+  ///////////////////////////
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+    EXPECT_ANY_THROW(runCompareJacobian(
+        state_solver, joint_names_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+  }
+
+  ///////////////////////////
+  // Test Jacobian at Point
+  ///////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+    EXPECT_ANY_THROW(runCompareJacobian(
+        state_solver, joint_names_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = Eigen::Vector3d(0, 0, 0);
+    change_base.translation()[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(
+        runCompareJacobian(state_solver, joint_names_empty, jvals, "", link_point, change_base));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian at point with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = link_point;
+
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(
+        runCompareJacobian(state_solver, joint_names_empty, jvals, "", link_point, change_base));  // NOLINT
+  }
+
+  /////////////////////////////////
+  // Test Jacobian with joint names
+  /////////////////////////////////
+  std::vector<std::string> joint_names = state_solver.getJointNames();
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+    EXPECT_ANY_THROW(
+        runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+  }
+
+  ///////////////////////////
+  // Test Jacobian at Point
+  ///////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+    EXPECT_ANY_THROW(
+        runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = Eigen::Vector3d(0, 0, 0);
+    change_base.translation()[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian at point with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = link_point;
+
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
+  }
+
+  ////////////////////////////////////////////////////
+  // Test Jacobian with joint names in different order
+  ///////////////////////////////////////////////////
+  std::reverse(joint_names.begin(), joint_names.end());
+  jvals(0) = -0.7;
+  jvals(1) = 0.6;
+  jvals(2) = -0.5;
+  jvals(3) = 0.4;
+  jvals(4) = -0.3;
+  jvals(5) = 0.2;
+  jvals(6) = -0.1;
+
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+    EXPECT_ANY_THROW(
+        runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+  }
+
+  ///////////////////////////
+  // Test Jacobian at Point
+  ///////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+    EXPECT_ANY_THROW(
+        runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = Eigen::Vector3d(0, 0, 0);
+    change_base.translation()[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian at point with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = link_point;
+
+    for (const auto& link_name : link_names)
+      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
   }
 }
 

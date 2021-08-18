@@ -87,7 +87,22 @@ public:
 
   SceneState getRandomState() const override;
 
+  Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                              const std::string& link_name) const override;
+
+  Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints,
+                              const std::string& link_name) const override;
+  Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
+                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                              const std::string& link_name) const override;
+
   const std::vector<std::string>& getJointNames() const override;
+
+  const std::string& getBaseLinkName() const override;
+
+  const std::vector<std::string>& getLinkNames() const override;
+
+  const std::vector<std::string>& getActiveLinkNames() const override;
 
   const tesseract_common::KinematicLimits& getLimits() const override;
 
@@ -118,6 +133,8 @@ public:
 private:
   SceneState current_state_;                              /**< Current state of the scene */
   std::vector<std::string> joint_names_;                  /**< The active joint names */
+  std::vector<std::string> link_names_;                   /**< The link names */
+  std::vector<std::string> active_link_names_;            /**< The active link names */
   std::unordered_map<std::string, OFKTNode::UPtr> nodes_; /**< The joint name map to node */
   std::unordered_map<std::string, OFKTNode*> link_map_;   /**< The link name map to node */
   tesseract_common::KinematicLimits limits_;              /**< The kinematic limits */
@@ -174,10 +191,14 @@ private:
   /**
    * @brief Remove a node and all of its children
    * @param node The node to remove
+   * @param removed_links The removed link names container
    * @param removed_joints The removed joint names container
    * @param removed_joints_indices The removed joint names indices container
    */
-  void removeNode(OFKTNode* node, std::vector<std::string>& removed_joints, std::vector<long>& removed_joints_indices);
+  void removeNode(OFKTNode* node,
+                  std::vector<std::string>& removed_links,
+                  std::vector<std::string>& removed_joints,
+                  std::vector<long>& removed_joints_indices);
 
   /**
    * @brief This a helper function for moving a link
@@ -195,10 +216,12 @@ private:
 
   /**
    * @brief This will clean up member variables joint_names_ and limits_
+   * @param removed_links The removed link names container
    * @param removed_joints The removed joint names container
    * @param removed_joints_indices The removed joint names indices container
    */
-  void removeJointHelper(const std::vector<std::string>& removed_joints,
+  void removeJointHelper(const std::vector<std::string>& removed_links,
+                         const std::vector<std::string>& removed_joints,
                          const std::vector<long>& removed_joints_indices);
 
   /**
