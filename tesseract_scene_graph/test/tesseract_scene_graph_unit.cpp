@@ -628,14 +628,7 @@ void testSubSceneGraphKDLTree(KDL::Tree& tree)
   for (unsigned int i = 0; i < 6; ++i)
     joints(i) = 0;
 
-  EXPECT_TRUE((tree.getRootSegment()->first == prefix[0] + "link_2") ||
-              (tree.getRootSegment()->first == prefix[1] + "link_2"));
-
-  std::array<double, 2> offset{ 0, 0 };
-  if (tree.getRootSegment()->first == prefix[0] + "link_2")
-    offset[1] = -2;
-  else
-    offset[0] = 2;
+  EXPECT_EQ(tree.getRootSegment()->first, "world");
 
   for (const auto& p : prefix)
   {
@@ -645,9 +638,9 @@ void testSubSceneGraphKDLTree(KDL::Tree& tree)
       Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
       Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
       if (p == "left_")
-        c_frame.translation()(0) = offset[0];
+        c_frame.translation()(0) = 1;
       else
-        c_frame.translation()(0) = offset[1];
+        c_frame.translation()(0) = -1;
       EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
     }
 
@@ -657,9 +650,9 @@ void testSubSceneGraphKDLTree(KDL::Tree& tree)
       Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
       Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
       if (p == "left_")
-        c_frame.translation()(0) = offset[0] + 1.25;
+        c_frame.translation()(0) = 1 + 1.25;
       else
-        c_frame.translation()(0) = offset[1] + 1.25;
+        c_frame.translation()(0) = -1 + 1.25;
       EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
     }
 
@@ -669,9 +662,9 @@ void testSubSceneGraphKDLTree(KDL::Tree& tree)
       Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
       Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
       if (p == "left_")
-        c_frame.translation()(0) = offset[0] + 2 * 1.25;
+        c_frame.translation()(0) = 1 + 2 * 1.25;
       else
-        c_frame.translation()(0) = offset[1] + 2 * 1.25;
+        c_frame.translation()(0) = -1 + 2 * 1.25;
       EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
     }
 
@@ -681,9 +674,9 @@ void testSubSceneGraphKDLTree(KDL::Tree& tree)
       Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
       Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
       if (p == "left_")
-        c_frame.translation()(0) = offset[0];
+        c_frame.translation()(0) = 1;
       else
-        c_frame.translation()(0) = offset[1];
+        c_frame.translation()(0) = -1;
 
       c_frame.translation()(1) = 1.25;
       EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
@@ -848,7 +841,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
                                         "right_joint_1", "right_joint_2", "right_joint_3", "right_joint_4" };
   std::vector<std::string> sub_joint_names{ "left_joint_2",  "left_joint_3",  "left_joint_4",
                                             "right_joint_2", "right_joint_3", "right_joint_4" };
-  std::vector<std::string> link_names{ "left_link_2",  "left_link_3",  "left_link_4",  "left_link_5",
+  std::vector<std::string> link_names{ "world",        "left_link_2",  "left_link_3",  "left_link_4", "left_link_5",
                                        "right_link_2", "right_link_3", "right_link_4", "right_link_5" };
   std::vector<std::string> active_link_names{ "left_link_3",  "left_link_4",  "left_link_5",
                                               "right_link_3", "right_link_4", "right_link_5" };
@@ -874,7 +867,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
     printKDLTree(root, "");
 
     EXPECT_EQ(data.tree.getNrOfJoints(), 6);
-    EXPECT_EQ(data.tree.getNrOfSegments(), 7);
+    EXPECT_EQ(data.tree.getNrOfSegments(), 8);
   }
 
   SceneGraph::Ptr g_clone = g.clone();
@@ -903,7 +896,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
     printKDLTree(root, "");
 
     EXPECT_EQ(data.tree.getNrOfJoints(), 6);
-    EXPECT_EQ(data.tree.getNrOfSegments(), 7);
+    EXPECT_EQ(data.tree.getNrOfSegments(), 8);
   }
 }
 

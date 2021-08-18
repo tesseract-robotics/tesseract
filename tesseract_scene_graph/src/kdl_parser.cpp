@@ -69,6 +69,27 @@ Eigen::Isometry3d convert(const KDL::Frame& frame)
 
 KDL::Vector convert(const Eigen::Vector3d& vector) { return KDL::Vector(vector(0), vector(1), vector(2)); }
 
+Eigen::MatrixXd convert(const KDL::Jacobian& jacobian)
+{
+  Eigen::MatrixXd matrix(jacobian.rows(), jacobian.columns());
+  for (unsigned i = 0; i < jacobian.rows(); ++i)
+    for (unsigned j = 0; j < jacobian.columns(); ++j)
+      matrix(i, j) = jacobian(i, j);
+
+  return matrix;
+}
+
+Eigen::MatrixXd convert(const KDL::Jacobian& jacobian, const std::vector<int>& q_nrs)
+{
+  Eigen::MatrixXd matrix(jacobian.rows(), q_nrs.size());
+
+  for (int i = 0; i < static_cast<int>(jacobian.rows()); ++i)
+    for (int j = 0; j < static_cast<int>(q_nrs.size()); ++j)
+      matrix(i, j) = jacobian(static_cast<unsigned>(i), static_cast<unsigned>(q_nrs[static_cast<size_t>(j)]));
+
+  return matrix;
+}
+
 KDL::Joint convert(const Joint::ConstPtr& joint)
 {
   KDL::Frame parent_joint = convert(joint->parent_to_joint_origin_transform);
@@ -222,6 +243,8 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     auto num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
     if (num_in_edges == 0)  // The root of the tree will have not incoming edges
     {
+      data_.base_link_name = link->getName();
+      data_.tree = KDL::Tree(link->getName());
       segment_transforms_[link->getName()] = KDL::Frame::Identity();
 
       std::size_t num_v = boost::num_vertices(graph);
@@ -251,9 +274,20 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     if (!started_ && found)
     {
       started_ = found;
-      data_.tree = KDL::Tree(parent_link_name);
-      data_.base_link_name = parent_link_name;
 
+      // construct the kdl segment to root if needed
+      if (parent_link_name != data_.base_link_name)
+      {
+        std::string world_joint_name = data_.base_link_name + "_" + parent_link_name;
+        KDL::Segment world_sgm = KDL::Segment(parent_link_name,
+                                              KDL::Joint(world_joint_name, KDL::Joint::None),
+                                              segment_transforms_[parent_link_name],
+                                              KDL::RigidBodyInertia(0));
+        data_.tree.addSegment(world_sgm, data_.base_link_name);
+        data_.link_names.push_back(data_.base_link_name);
+      }
+      link_names_.push_back(parent_link_name);
+      link_names_.push_back(link->getName());
       data_.link_names.push_back(parent_link_name);
       data_.link_names.push_back(link->getName());
       data_.active_link_names.push_back(link->getName());
@@ -267,14 +301,15 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     }
     else if (started_)
     {
-      auto it = std::find(data_.link_names.begin(), data_.link_names.end(), parent_link_name);
+      auto it = std::find(link_names_.begin(), link_names_.end(), parent_link_name);
 
-      if (it == data_.link_names.end() && !found)
+      if (it == link_names_.end() && !found)
         return;
 
-      if (it == data_.link_names.end() && found)
+      if (it == link_names_.end() && found)
       {
         data_.link_names.push_back(parent_link_name);
+        link_names_.push_back(parent_link_name);
 
         KDL::Frame new_tree_parent_to_joint =
             segment_transforms_[data_.base_link_name].Inverse() * segment_transforms_[parent_joint->parent_link_name];
@@ -289,7 +324,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
         // add segment to tree
         data_.tree.addSegment(sgm, data_.base_link_name);
       }
-      else if (it != data_.link_names.end() && !found)
+      else if (it != link_names_.end() && !found)
       {
         if (parent_joint->type != JointType::FIXED)
           parent_to_joint = parent_to_joint * kdl_jnt.pose(joint_values_.at(parent_joint->getName()));
@@ -300,6 +335,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
       }
 
       data_.link_names.push_back(link->getName());
+      link_names_.push_back(link->getName());
 
       auto active_it = std::find(data_.active_link_names.begin(), data_.active_link_names.end(), parent_link_name);
       if (active_it != data_.active_link_names.end() || kdl_jnt.getType() != KDL::Joint::None)
@@ -321,6 +357,7 @@ protected:
   int search_cnt_{ -1 };
   bool started_{ false };
   std::map<std::string, KDL::Frame> segment_transforms_;
+  std::vector<std::string> link_names_;
 
   const std::vector<std::string>& joint_names_;
   const std::unordered_map<std::string, double>& joint_values_;
