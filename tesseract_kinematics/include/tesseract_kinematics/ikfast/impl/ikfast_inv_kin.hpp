@@ -153,6 +153,7 @@ inline bool IKFastInvKin::init(std::string name,
 
 inline std::vector<std::string> IKFastInvKin::getJointNames() const { return joint_names_; }
 inline std::string IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
+inline std::vector<std::string> IKFastInvKin::getWorkingFrames() const { return { base_link_name_ }; }
 inline std::vector<std::string> IKFastInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 inline std::string IKFastInvKin::getName() const { return name_; }
 inline std::string IKFastInvKin::getSolverName() const { return solver_name_; }

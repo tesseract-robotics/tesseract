@@ -104,6 +104,7 @@ Eigen::Index OPWInvKin::numJoints() const { return 6; }
 
 std::vector<std::string> OPWInvKin::getJointNames() const { return joint_names_; }
 std::string OPWInvKin::getBaseLinkName() const { return base_link_name_; }
+std::vector<std::string> OPWInvKin::getWorkingFrames() const { return { base_link_name_ }; }
 std::vector<std::string> OPWInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 std::string OPWInvKin::getName() const { return name_; }
 std::string OPWInvKin::getSolverName() const { return solver_name_; }

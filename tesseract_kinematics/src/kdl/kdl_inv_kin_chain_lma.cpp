@@ -126,6 +126,8 @@ Eigen::Index KDLInvKinChainLMA::numJoints() const { return kdl_data_.robot_chain
 
 std::string KDLInvKinChainLMA::getBaseLinkName() const { return kdl_data_.base_link_name; }
 
+std::vector<std::string> KDLInvKinChainLMA::getWorkingFrames() const { return { kdl_data_.base_link_name }; }
+
 std::vector<std::string> KDLInvKinChainLMA::getTipLinkNames() const { return { kdl_data_.tip_link_name }; }
 
 std::string KDLInvKinChainLMA::getName() const { return name_; }

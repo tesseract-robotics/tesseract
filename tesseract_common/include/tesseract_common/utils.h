@@ -52,6 +52,21 @@ inline std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(n
 #endif
 
 /**
+ * @brief Change the base coordinate system of the jacobian
+ * @param jacobian The current Jacobian which gets modified in place
+ * @param change_base The transform from the desired frame to the current base frame of the jacobian
+ */
+void jacobianChangeBase(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Isometry3d& change_base);
+
+/**
+ * @brief Change the reference point of the jacobian
+ * @param jacobian The current Jacobian which gets modified in place
+ * @param ref_point Is expressed in the same base frame of the jacobian
+ *                  and is a vector from the old point to the new point.
+ */
+void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Ref<const Eigen::Vector3d>& ref_point);
+
+/**
  * @brief This computes a random color with alpha set to 1
  * @return A random color
  */

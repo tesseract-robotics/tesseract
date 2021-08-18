@@ -152,6 +152,11 @@ Eigen::Index RobotOnPositionerInvKin::numJoints() const { return dof_; }
 
 std::string RobotOnPositionerInvKin::getBaseLinkName() const { return positioner_fwd_kin_->getBaseLinkName(); }
 
+std::vector<std::string> RobotOnPositionerInvKin::getWorkingFrames() const
+{
+  return { positioner_fwd_kin_->getBaseLinkName() };
+}
+
 std::vector<std::string> RobotOnPositionerInvKin::getTipLinkNames() const { return manip_inv_kin_->getTipLinkNames(); }
 
 std::string RobotOnPositionerInvKin::getName() const { return name_; }

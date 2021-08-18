@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
+#include <tesseract_kinematics/core/types.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_kinematics::InverseKinematics)
@@ -46,8 +47,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-using IKSolutions = std::vector<Eigen::VectorXd>;
-
 /** @brief Inverse kinematics functions. */
 class InverseKinematics
 {
@@ -67,12 +66,6 @@ public:
   InverseKinematics& operator=(const InverseKinematics&) = default;
   InverseKinematics(InverseKinematics&&) = default;
   InverseKinematics& operator=(InverseKinematics&&) = default;
-
-  //  /**
-  //   * @brief Updates kinematics if kinematic parameters have changed
-  //   * @return True if successful
-  //   */
-  //  virtual bool update() = 0;
 
   /**
    * @brief Calculates joint solutions given a pose for a specific link.
@@ -104,6 +97,9 @@ public:
 
   /** @brief getter for the robot base link name */
   virtual std::string getBaseLinkName() const = 0;
+
+  /** @brief getter for robot working frames */
+  virtual std::vector<std::string> getWorkingFrames() const = 0;
 
   /** @brief Get the tip link name */
   virtual std::vector<std::string> getTipLinkNames() const = 0;

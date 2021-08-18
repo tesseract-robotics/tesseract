@@ -79,6 +79,7 @@ public:
   std::vector<std::string> getJointNames() const override;
   Eigen::Index numJoints() const override;
   std::string getBaseLinkName() const override;
+  std::vector<std::string> getWorkingFrames() const final;
   std::vector<std::string> getTipLinkName() const override;
   std::string getName() const override;
   std::string getSolverName() const override;

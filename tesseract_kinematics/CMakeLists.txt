@@ -14,6 +14,7 @@ find_package(Eigen3 REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
+find_package(tesseract_state_solver REQUIRED)
 find_package(tesseract_srdf REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(opw_kinematics REQUIRED)
@@ -47,12 +48,14 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 add_library(${PROJECT_NAME}_core
   src/core/rop_inverse_kinematics.cpp
 #  src/core/rep_inverse_kinematics.cpp
-  src/core/kinematic_group.cpp)
+  src/core/static_kinematic_group.cpp
+  )
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen
          tesseract::tesseract_common
          tesseract::tesseract_scene_graph
+         tesseract::tesseract_state_solver_kdl
          tesseract::tesseract_srdf
          console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
@@ -166,7 +169,7 @@ configure_package(
   TARGETS ${PROJECT_NAME}_core
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_ikfast
-#          ${PROJECT_NAME}_opw
+          ${PROJECT_NAME}_opw
           ${PROJECT_NAME}_ur
           )
 
@@ -194,7 +197,8 @@ if(TESSERACT_PACKAGE)
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph" tesseract_state_solver
+      "${TESSERACT_PACKAGE_PREFIX}tesseract_state_solver"
       "${TESSERACT_PACKAGE_PREFIX}opw-kinematics"
       "libconsole-bridge-dev"
       "liborocos-kdl-dev"
@@ -202,6 +206,7 @@ if(TESSERACT_PACKAGE)
     WINDOWS_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
       "${TESSERACT_PACKAGE_PREFIX}opw-kinematics"
       "Eigen3")
 endif()

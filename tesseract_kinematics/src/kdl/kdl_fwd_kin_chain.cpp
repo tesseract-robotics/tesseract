@@ -101,11 +101,6 @@ KDLFwdKinChain::calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joi
   }
 
   tesseract_common::TransformMap poses;
-  poses[kdl_data_.base_link_name] = Eigen::Isometry3d::Identity();
-
-  for (const auto& link_name : kdl_data_.joint_link_names)
-    poses[link_name] = all_poses[link_name];
-
   poses[kdl_data_.tip_link_name] = all_poses[kdl_data_.tip_link_name];
 
   return poses;
@@ -166,7 +161,6 @@ Eigen::Index KDLFwdKinChain::numJoints() const { return static_cast<Eigen::Index
 
 std::string KDLFwdKinChain::getBaseLinkName() const { return kdl_data_.base_link_name; }
 
-std::vector<std::string> KDLFwdKinChain::getJointLinkNames() const { return kdl_data_.joint_link_names; }
 std::vector<std::string> KDLFwdKinChain::getTipLinkNames() const { return { kdl_data_.tip_link_name }; }
 
 std::string KDLFwdKinChain::getName() const { return name_; }

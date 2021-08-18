@@ -37,6 +37,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+/** @brief The inverse kinematics solutions container */
+using IKSolutions = std::vector<Eigen::VectorXd>;
+
 /** @brief The Universal Robot kinematic parameters */
 struct URParameters
 {

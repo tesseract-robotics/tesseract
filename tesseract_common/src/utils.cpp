@@ -60,6 +60,27 @@ std::enable_if_t<std::is_polymorphic<E>::value> my_rethrow_if_nested(const E& e)
     p->rethrow_nested();
 }
 
+void jacobianChangeBase(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Isometry3d& change_base)
+{
+  assert(jacobian.rows() == 6);
+  for (int i = 0; i < jacobian.cols(); i++)
+  {
+    jacobian.col(i).head(3) = change_base.linear() * jacobian.col(i).head(3);
+    jacobian.col(i).tail(3) = change_base.linear() * jacobian.col(i).tail(3);
+  }
+}
+
+void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Ref<const Eigen::Vector3d>& ref_point)
+{
+  assert(jacobian.rows() == 6);
+  for (int i = 0; i < jacobian.cols(); i++)
+  {
+    jacobian(0, i) += jacobian(4, i) * ref_point(2) - jacobian(5, i) * ref_point(1);
+    jacobian(1, i) += jacobian(5, i) * ref_point(0) - jacobian(3, i) * ref_point(2);
+    jacobian(2, i) += jacobian(3, i) * ref_point(1) - jacobian(4, i) * ref_point(0);
+  }
+}
+
 Eigen::Vector4d computeRandomColor()
 {
   Eigen::Vector4d c;
