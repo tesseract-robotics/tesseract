@@ -96,7 +96,7 @@ public:
   /**
    * @brief Get the state of the scene for a given set or subset of joint values.
    *
-   * This does not change the internal state of the environment.
+   * This does not change the internal state of the solver.
    *
    * @param joints A map of joint names to joint values to change.
    * @return A the state of the environment
@@ -106,10 +106,10 @@ public:
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
 
   /**
-   * @brief Get the current state of the environment
-   * @return
+   * @brief Get the current state of the scene
+   * @return The current state
    */
-  virtual const SceneState& getState() const = 0;
+  virtual SceneState getState() const = 0;
 
   /**
    * @brief Get the jacobian of the solver given the joint values
@@ -123,7 +123,10 @@ public:
   /**
    * @brief Get the jacobian of the scene for a given set or subset of joint values.
    *
-   * This does not change the internal state of the scene.
+   *    * This does not return the jocoabian based on the provided joint names. It is order based
+   * on the order returned from getJointNames
+   *
+   * This does not change the internal state of the solver.
    *
    * @param joints A map of joint names to joint values to change.
    * @param link_name The link name to calculate the jacobian
@@ -145,31 +148,31 @@ public:
    * @brief Get the vector of joint names which align with the limits
    * @return A vector of joint names
    */
-  virtual const std::vector<std::string>& getJointNames() const = 0;
+  virtual std::vector<std::string> getJointNames() const = 0;
 
   /**
    * @brief Get the base link name
    * @return The base link name
    */
-  virtual const std::string& getBaseLinkName() const = 0;
+  virtual std::string getBaseLinkName() const = 0;
 
   /**
    * @brief Get the vector of link names
    * @return A vector of link names
    */
-  virtual const std::vector<std::string>& getLinkNames() const = 0;
+  virtual std::vector<std::string> getLinkNames() const = 0;
 
   /**
    * @brief Get the vector of active link names
    * @return A vector of active link names
    */
-  virtual const std::vector<std::string>& getActiveLinkNames() const = 0;
+  virtual std::vector<std::string> getActiveLinkNames() const = 0;
 
   /**
    * @brief Getter for kinematic limits
    * @return The kinematic limits
    */
-  virtual const tesseract_common::KinematicLimits& getLimits() const = 0;
+  virtual tesseract_common::KinematicLimits getLimits() const = 0;
 };
 }  // namespace tesseract_scene_graph
 

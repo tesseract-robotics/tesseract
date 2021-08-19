@@ -39,7 +39,7 @@ public:
   SceneState getState(const std::vector<std::string>& joint_names,
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
 
-  const SceneState& getState() const override;
+  SceneState getState() const override;
 
   SceneState getRandomState() const override;
 
@@ -52,15 +52,15 @@ public:
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                               const std::string& link_name) const override;
 
-  const std::vector<std::string>& getJointNames() const override;
+  std::vector<std::string> getJointNames() const override;
 
-  const std::string& getBaseLinkName() const override;
+  std::string getBaseLinkName() const override;
 
-  const std::vector<std::string>& getLinkNames() const override;
+  std::vector<std::string> getLinkNames() const override;
 
-  const std::vector<std::string>& getActiveLinkNames() const override;
+  std::vector<std::string> getActiveLinkNames() const override;
 
-  const tesseract_common::KinematicLimits& getLimits() const override;
+  tesseract_common::KinematicLimits getLimits() const override;
 
 private:
   SceneState current_state_;                                   /**< Current state of the environment */
