@@ -83,7 +83,7 @@ public:
   SceneState getState(const std::vector<std::string>& joint_names,
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
 
-  const SceneState& getState() const override;
+  SceneState getState() const override;
 
   SceneState getRandomState() const override;
 
@@ -96,15 +96,15 @@ public:
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                               const std::string& link_name) const override;
 
-  const std::vector<std::string>& getJointNames() const override;
+  std::vector<std::string> getJointNames() const override;
 
-  const std::string& getBaseLinkName() const override;
+  std::string getBaseLinkName() const override;
 
-  const std::vector<std::string>& getLinkNames() const override;
+  std::vector<std::string> getLinkNames() const override;
 
-  const std::vector<std::string>& getActiveLinkNames() const override;
+  std::vector<std::string> getActiveLinkNames() const override;
 
-  const tesseract_common::KinematicLimits& getLimits() const override;
+  tesseract_common::KinematicLimits getLimits() const override;
 
   bool addLink(const Link& link, const Joint& joint) override;
 
@@ -134,7 +134,6 @@ private:
   SceneState current_state_;                              /**< Current state of the scene */
   std::vector<std::string> joint_names_;                  /**< The active joint names */
   std::vector<std::string> link_names_;                   /**< The link names */
-  std::vector<std::string> active_link_names_;            /**< The active link names */
   std::unordered_map<std::string, OFKTNode::UPtr> nodes_; /**< The joint name map to node */
   std::unordered_map<std::string, OFKTNode*> link_map_;   /**< The link name map to node */
   tesseract_common::KinematicLimits limits_;              /**< The kinematic limits */
@@ -147,6 +146,11 @@ private:
   bool initHelper(const tesseract_scene_graph::SceneGraph& scene_graph);
 
   void clear();
+
+  /** @brief load the active link names */
+  void loadActiveLinkNamesRecursive(std::vector<std::string>& active_link_names,
+                                    const OFKTNode* node,
+                                    bool active) const;
 
   /**
    * @brief This update the local and world transforms

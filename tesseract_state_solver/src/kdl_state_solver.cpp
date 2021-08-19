@@ -153,7 +153,7 @@ SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
   return state;
 }
 
-const SceneState& KDLStateSolver::getState() const { return current_state_; }
+SceneState KDLStateSolver::getState() const { return current_state_; }
 
 SceneState KDLStateSolver::getRandomState() const
 {
@@ -195,15 +195,15 @@ Eigen::MatrixXd KDLStateSolver::getJacobian(const std::vector<std::string>& join
   throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
 }
 
-const std::vector<std::string>& KDLStateSolver::getJointNames() const { return data_.active_joint_names; }
+std::vector<std::string> KDLStateSolver::getJointNames() const { return data_.active_joint_names; }
 
-const std::string& KDLStateSolver::getBaseLinkName() const { return data_.base_link_name; }
+std::string KDLStateSolver::getBaseLinkName() const { return data_.base_link_name; }
 
-const std::vector<std::string>& KDLStateSolver::getLinkNames() const { return data_.link_names; }
+std::vector<std::string> KDLStateSolver::getLinkNames() const { return data_.link_names; }
 
-const std::vector<std::string>& KDLStateSolver::getActiveLinkNames() const { return data_.active_link_names; }
+std::vector<std::string> KDLStateSolver::getActiveLinkNames() const { return data_.active_link_names; }
 
-const tesseract_common::KinematicLimits& KDLStateSolver::getLimits() const { return limits_; }
+tesseract_common::KinematicLimits KDLStateSolver::getLimits() const { return limits_; }
 
 bool KDLStateSolver::processKDLData(const tesseract_scene_graph::SceneGraph& scene_graph)
 {
