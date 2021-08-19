@@ -47,7 +47,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 # Create interface for core
 add_library(${PROJECT_NAME}_core
   src/core/rop_inverse_kinematics.cpp
-#  src/core/rep_inverse_kinematics.cpp
+  src/core/rep_inverse_kinematics.cpp
   src/core/static_kinematic_group.cpp
   )
 target_link_libraries(

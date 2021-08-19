@@ -85,6 +85,8 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
   EXPECT_EQ(inv_kin->getSolverName(), "OPWInvKin");
   EXPECT_EQ(inv_kin->numJoints(), 6);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
+  EXPECT_EQ(inv_kin->getWorkingFrames().size(), 1);
+  EXPECT_EQ(inv_kin->getWorkingFrames()[0], base_link_name);
   EXPECT_EQ(inv_kin->getTipLinkNames().size(), 1);
   EXPECT_EQ(inv_kin->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin->getJointNames(), joint_names);
@@ -98,24 +100,13 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
   EXPECT_EQ(inv_kin2->getSolverName(), "OPWInvKin");
   EXPECT_EQ(inv_kin2->numJoints(), 6);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
+  EXPECT_EQ(inv_kin2->getWorkingFrames().size(), 1);
+  EXPECT_EQ(inv_kin2->getWorkingFrames()[0], base_link_name);
   EXPECT_EQ(inv_kin2->getTipLinkNames().size(), 1);
   EXPECT_EQ(inv_kin2->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin2->getJointNames(), joint_names);
 
   runInvKinTest(*inv_kin2, fwd_kin, pose, base_link_name, tip_link_name, seed);
-
-  //  // Check update
-  //  inv_kin2->update();
-  //  EXPECT_TRUE(inv_kin2 != nullptr);
-  //  EXPECT_EQ(inv_kin2->getName(), manip_name);
-  //  EXPECT_EQ(inv_kin2->getSolverName(), "OPWInvKin");
-  //  EXPECT_EQ(inv_kin2->numJoints(), 6);
-  //  EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
-  //  EXPECT_EQ(inv_kin2->getTipLinkNames().size(), 1);
-  //  EXPECT_EQ(inv_kin2->getTipLinkNames()[0], tip_link_name);
-  //  EXPECT_EQ(inv_kin2->getJointNames(), joint_names);
-
-  //  runInvKinTest(*inv_kin2, fwd_kin, pose, seed);
 }
 
 int main(int argc, char** argv)

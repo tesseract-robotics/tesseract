@@ -58,25 +58,13 @@ RobotOnPositionerInvKin& RobotOnPositionerInvKin::operator=(const RobotOnPositio
   return *this;
 }
 
-// bool RobotOnPositionerInvKin::update()
-//{
-//  manip_inv_kin_->update();
-//  positioner_fwd_kin_->update();
-//  if (!init(scene_graph_, manip_inv_kin_, manip_reach_, positioner_fwd_kin_, positioner_sample_resolution_, name_))
-//    return false;
-
-//  if (sync_fwd_kin_ != nullptr)
-//    synchronize(sync_fwd_kin_);
-
-//  return true;
-//}
-
 IKSolutions RobotOnPositionerInvKin::calcInvKinHelper(const Eigen::Isometry3d& pose,
+                                                      const std::string& link_name,
                                                       const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
   IKSolutions solutions;
-  nested_ik(solutions, 0, dof_range_, pose, positioner_pose, seed);
+  nested_ik(solutions, 0, dof_range_, pose, link_name, positioner_pose, seed);
   return solutions;
 }
 
@@ -84,29 +72,31 @@ void RobotOnPositionerInvKin::nested_ik(IKSolutions& solutions,
                                         int loop_level,
                                         const std::vector<Eigen::VectorXd>& dof_range,
                                         const Eigen::Isometry3d& target_pose,
+                                        const std::string& link_name,
                                         Eigen::VectorXd& positioner_pose,
                                         const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   if (loop_level >= positioner_fwd_kin_->numJoints())
   {
-    ikAt(solutions, target_pose, positioner_pose, seed);
+    ikAt(solutions, target_pose, link_name, positioner_pose, seed);
     return;
   }
 
   for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
   {
     positioner_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
-    nested_ik(solutions, loop_level + 1, dof_range, target_pose, positioner_pose, seed);
+    nested_ik(solutions, loop_level + 1, dof_range, target_pose, link_name, positioner_pose, seed);
   }
 }
 
 void RobotOnPositionerInvKin::ikAt(IKSolutions& solutions,
                                    const Eigen::Isometry3d& target_pose,
+                                   const std::string& link_name,
                                    Eigen::VectorXd& positioner_pose,
                                    const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   tesseract_common::TransformMap positioner_poses = positioner_fwd_kin_->calcFwdKin(positioner_pose);
-  Eigen::Isometry3d positioner_tf = positioner_poses[positioner_tip_link_];
+  Eigen::Isometry3d positioner_tf = positioner_poses[positioner_tip_link_] * positioner_to_robot_;
   Eigen::Isometry3d robot_target_pose = positioner_tf.inverse() * target_pose;
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
@@ -114,8 +104,8 @@ void RobotOnPositionerInvKin::ikAt(IKSolutions& solutions,
   auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
   auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
 
-  IKSolutions robot_solution_set = manip_inv_kin_->calcInvKin(
-      robot_target_pose, manip_inv_kin_->getBaseLinkName(), manip_tip_link_, seed.tail(robot_dof));
+  IKSolutions robot_solution_set =
+      manip_inv_kin_->calcInvKin(robot_target_pose, manip_inv_kin_->getBaseLinkName(), link_name, seed.tail(robot_dof));
   if (robot_solution_set.empty())
     return;
 
@@ -139,7 +129,7 @@ IKSolutions RobotOnPositionerInvKin::calcInvKin(const Eigen::Isometry3d& pose,
   assert(working_frame == positioner_fwd_kin_->getBaseLinkName());
   assert(link_name == manip_tip_link_);
 
-  return calcInvKinHelper(pose, seed);
+  return calcInvKinHelper(pose, link_name, seed);
 }
 
 std::vector<std::string> RobotOnPositionerInvKin::getJointNames() const
@@ -174,6 +164,7 @@ bool RobotOnPositionerInvKin::checkInitialized() const
 }
 
 bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                   const tesseract_scene_graph::SceneState& scene_state,
                                    InverseKinematics::UPtr manipulator,
                                    double manipulator_reach,
                                    ForwardKinematics::UPtr positioner,
@@ -205,6 +196,7 @@ bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scen
   }
 
   return init(scene_graph,
+              scene_state,
               std::move(manipulator),
               manipulator_reach,
               std::move(positioner),
@@ -215,6 +207,7 @@ bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scen
 }
 
 bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                   const tesseract_scene_graph::SceneState& scene_state,
                                    InverseKinematics::UPtr manipulator,
                                    double manipulator_reach,
                                    ForwardKinematics::UPtr positioner,
@@ -261,12 +254,6 @@ bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scen
     return false;
   }
 
-  // Check if the manipulator base link is the child of the positioner tip link.
-  if (positioner->getTipLinkNames()[0] != manipulator->getBaseLinkName())
-  {
-    CONSOLE_BRIDGE_logWarn("Positioner tip link is not the base link of the manipulator.");
-  }
-
   for (long i = 0; i < positioner_sample_resolution.size(); ++i)
   {
     if (!(positioner_sample_resolution(i) > 0))
@@ -274,6 +261,13 @@ bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scen
       CONSOLE_BRIDGE_logError("Positioner sample resolution is not greather than zero");
       return false;
     }
+  }
+
+  // Check if the manipulator base link is the child of the positioner tip link.
+  if (positioner->getTipLinkNames()[0] != manipulator->getBaseLinkName())
+  {
+    positioner_to_robot_ = scene_state.link_transforms.at(positioner->getTipLinkNames()[0]).inverse() *
+                           scene_state.link_transforms.at(manipulator->getBaseLinkName());
   }
 
   name_ = std::move(name);

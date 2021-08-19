@@ -24,6 +24,11 @@ StaticKinematicGroup::StaticKinematicGroup(InverseKinematics::UPtr inv_kin,
   tesseract_scene_graph::KDLTreeData data =
       tesseract_scene_graph::parseSceneGraph(scene_graph, joint_names_, scene_state.joints);
   state_solver_ = std::make_unique<tesseract_scene_graph::KDLStateSolver>(scene_graph, data);
+  jacobian_map_.reserve(joint_names_.size());
+  std::vector<std::string> solver_jn = state_solver_->getJointNames();
+  for (const auto& joint_name : joint_names_)
+    jacobian_map_.push_back(
+        std::distance(solver_jn.begin(), std::find(solver_jn.begin(), solver_jn.end(), joint_name)));
 
   std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
   for (const auto& link : scene_graph.getLinks())
@@ -99,6 +104,7 @@ StaticKinematicGroup& StaticKinematicGroup::operator=(const StaticKinematicGroup
   limits_ = other.limits_;
   redundancy_indices_ = other.redundancy_indices_;
   inv_working_frames_map_ = other.inv_working_frames_map_;
+  jacobian_map_ = other.jacobian_map_;
   return *this;
 }
 
@@ -135,7 +141,13 @@ IKSolutions StaticKinematicGroup::calcInvKin(const Eigen::Isometry3d& pose,
 Eigen::MatrixXd StaticKinematicGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                                    const std::string& link_name) const
 {
-  return state_solver_->getJacobian(joint_names_, joint_angles, link_name);
+  Eigen::MatrixXd solver_jac = state_solver_->getJacobian(joint_names_, joint_angles, link_name);
+
+  Eigen::MatrixXd kin_jac(6, inv_kin_->numJoints());
+  for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
+    kin_jac.col(i) = solver_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
+
+  return kin_jac;
 }
 
 bool StaticKinematicGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
@@ -163,16 +175,16 @@ bool StaticKinematicGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& 
   return true;
 }
 
-const std::vector<std::string>& StaticKinematicGroup::getJointNames() const { return joint_names_; }
+std::vector<std::string> StaticKinematicGroup::getJointNames() const { return joint_names_; }
 
-const std::vector<std::string>& StaticKinematicGroup::getLinkNames() const { return state_solver_->getLinkNames(); }
+std::vector<std::string> StaticKinematicGroup::getLinkNames() const { return state_solver_->getLinkNames(); }
 
-const std::vector<std::string>& StaticKinematicGroup::getActiveLinkNames() const
+std::vector<std::string> StaticKinematicGroup::getActiveLinkNames() const
 {
   return state_solver_->getActiveLinkNames();
 }
 
-const tesseract_common::KinematicLimits& StaticKinematicGroup::getLimits() const { return limits_; }
+tesseract_common::KinematicLimits StaticKinematicGroup::getLimits() const { return limits_; }
 
 void StaticKinematicGroup::setLimits(tesseract_common::KinematicLimits limits)
 {
@@ -184,20 +196,17 @@ void StaticKinematicGroup::setLimits(tesseract_common::KinematicLimits limits)
   limits_ = limits;
 }
 
-const std::vector<Eigen::Index>& StaticKinematicGroup::getRedundancyCapableJointIndices() const
-{
-  return redundancy_indices_;
-}
+std::vector<Eigen::Index> StaticKinematicGroup::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
 
 Eigen::Index StaticKinematicGroup::numJoints() const { return inv_kin_->numJoints(); }
 
-const std::string& StaticKinematicGroup::getBaseLinkName() const { return state_solver_->getBaseLinkName(); }
+std::string StaticKinematicGroup::getBaseLinkName() const { return state_solver_->getBaseLinkName(); }
 
-const std::vector<std::string>& StaticKinematicGroup::getWorkingFrames() const { return working_frames_; }
+std::vector<std::string> StaticKinematicGroup::getWorkingFrames() const { return working_frames_; }
 
-const std::vector<std::string>& StaticKinematicGroup::getTipLinkNames() const { return tip_link_names_; }
+std::vector<std::string> StaticKinematicGroup::getTipLinkNames() const { return tip_link_names_; }
 
-const std::string& StaticKinematicGroup::getName() const { return name_; }
+std::string StaticKinematicGroup::getName() const { return name_; }
 
 std::unique_ptr<KinematicGroup> StaticKinematicGroup::clone() const
 {

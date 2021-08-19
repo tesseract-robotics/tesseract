@@ -83,9 +83,12 @@ Eigen::MatrixXd convert(const KDL::Jacobian& jacobian, const std::vector<int>& q
 {
   Eigen::MatrixXd matrix(jacobian.rows(), q_nrs.size());
 
-  for (int i = 0; i < static_cast<int>(jacobian.rows()); ++i)
-    for (int j = 0; j < static_cast<int>(q_nrs.size()); ++j)
-      matrix(i, j) = jacobian(static_cast<unsigned>(i), static_cast<unsigned>(q_nrs[static_cast<size_t>(j)]));
+  for (int j = 0; j < static_cast<int>(q_nrs.size()); ++j)
+  {
+    unsigned c = static_cast<unsigned>(q_nrs[static_cast<size_t>(j)]);
+    for (int i = 0; i < static_cast<int>(jacobian.rows()); ++i)
+      matrix(i, j) = jacobian(static_cast<unsigned>(i), c);
+  }
 
   return matrix;
 }

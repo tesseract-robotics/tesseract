@@ -325,8 +325,17 @@ inline void runJacobianTest(tesseract_kinematics::KinematicGroup& kin_group,
 
   jacobian.resize(6, kin_group.numJoints());
 
+  //  // The numerical jacobian orders things base on the provided joint list
+  //  // The order needs to be calculated to compare
+  //  std::vector<std::string> solver_jn = kin_group.getJointNames();
+  //  std::vector<long> order;
+  //  for (const auto& joint_name : solver_jn)
+  //    order.push_back(
+  //        std::distance(joint_names.begin(), std::find(joint_names.begin(), joint_names.end(), joint_name)));
+
   poses = kin_group.calcFwdKin(jvals);
   jacobian = kin_group.calcJacobian(jvals, link_name);
+
   tesseract_common::jacobianChangeBase(jacobian, change_base);
   tesseract_common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_name]).linear() * link_point);
 
@@ -334,8 +343,12 @@ inline void runJacobianTest(tesseract_kinematics::KinematicGroup& kin_group,
   tesseract_kinematics::numericalJacobian(numerical_jacobian, change_base, kin_group, jvals, link_name, link_point);
 
   for (int i = 0; i < 6; ++i)
+  {
     for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
+    {
       EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+    }
+  }
 }
 
 /**
@@ -431,6 +444,7 @@ inline void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin
   ///////////////////////////
   // Test Inverse kinematics
   ///////////////////////////
+  EXPECT_TRUE(inv_kin.getBaseLinkName() == fwd_kin.getBaseLinkName());  // This only works if they are equal
   IKSolutions solutions = inv_kin.calcInvKin(target_pose, working_frame, tip_link_name, seed);
   EXPECT_TRUE(!solutions.empty());
 
@@ -446,16 +460,41 @@ inline void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin
   }
 }
 
+/**
+ * @brief Run inverse kinematics test comparing the inverse solution to the forward solution
+ * @param kin_group The kinematic group
+ * @param target_pose The target pose to solve inverse kinematics for
+ * @param seed The seed used for solving inverse kinematics
+ */
+inline void runInvKinTest(const tesseract_kinematics::KinematicGroup& kin_group,
+                          const Eigen::Isometry3d& target_pose,
+                          const std::string& working_frame,
+                          const std::string& tip_link_name,
+                          const Eigen::VectorXd& seed)
+{
+  ///////////////////////////
+  // Test Inverse kinematics
+  ///////////////////////////
+  IKSolutions solutions = kin_group.calcInvKin(target_pose, working_frame, tip_link_name, seed);
+  EXPECT_TRUE(!solutions.empty());
+
+  for (const auto& sol : solutions)
+  {
+    tesseract_common::TransformMap result_poses = kin_group.calcFwdKin(sol);
+    Eigen::Isometry3d result = result_poses.at(working_frame).inverse() * result_poses[tip_link_name];
+    EXPECT_TRUE(target_pose.translation().isApprox(result.translation(), 1e-4));
+
+    Eigen::Quaterniond rot_pose(target_pose.rotation());
+    Eigen::Quaterniond rot_result(result.rotation());
+    EXPECT_TRUE(rot_pose.isApprox(rot_result, 1e-3));
+  }
+}
+
 inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
 {
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
   //////////////////////////////////////////////////////////////////
-
-  //  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Zero(8)));
-  //  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, std::numeric_limits<double>::max())));
-  //  EXPECT_FALSE(kin.checkJoints(Eigen::VectorXd::Constant(7, -std::numeric_limits<double>::max())));
-  //  EXPECT_TRUE(kin.checkJoints(Eigen::VectorXd::Zero(7)));
 
   Eigen::VectorXd jvals;
   jvals.resize(7);
@@ -480,7 +519,6 @@ inline void runJacobianIIWATest(tesseract_kinematics::ForwardKinematics& kin, bo
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
   //////////////////////////////////////////////////////////////////
-  Eigen::MatrixXd jacobian, numerical_jacobian;
   Eigen::VectorXd jvals;
   jvals.resize(7);
 
@@ -563,7 +601,6 @@ inline void runKinGroupJacobianIIWATest(tesseract_kinematics::KinematicGroup& ki
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
   //////////////////////////////////////////////////////////////////
-  Eigen::MatrixXd jacobian, numerical_jacobian;
   Eigen::VectorXd jvals;
   jvals.resize(7);
 
@@ -702,6 +739,102 @@ inline void runActiveLinkNamesURTest(const tesseract_kinematics::KinematicGroup&
   runStringVectorEqualTest(link_names, target_link_names);
 }
 
+inline void runKinGroupJacobianABBOnPositionerTest(tesseract_kinematics::KinematicGroup& kin_group)
+{
+  std::vector<std::string> link_names{ "positioner_base_link",
+                                       "positioner_tool0",
+                                       "base",
+                                       "base_link",
+                                       "link_1",
+                                       "link_2",
+                                       "link_3",
+                                       "link_4",
+                                       "link_5",
+                                       "link_6",
+                                       "tool0" };
+
+  //////////////////////////////////////////////////////////////////
+  // Test forward kinematics when tip link is the base of the chain
+  //////////////////////////////////////////////////////////////////
+  Eigen::MatrixXd jacobian, numerical_jacobian;
+  Eigen::VectorXd jvals;
+  jvals.resize(7);
+
+  jvals(0) = -0.785398;
+  jvals(1) = 0.785398;
+  jvals(2) = -0.785398;
+  jvals(3) = 0.785398;
+  jvals(4) = -0.785398;
+  jvals(5) = 0.785398;
+  jvals(6) = -0.785398;
+
+  ///////////////////////////
+  // Test Jacobian
+  ///////////////////////////
+  Eigen::Vector3d link_point(0, 0, 0);
+  for (const auto& link_name : link_names)
+    runJacobianTest(kin_group, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+  EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+
+  ///////////////////////////
+  // Test Jacobian at Point
+  ///////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runJacobianTest(kin_group, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    link_point = Eigen::Vector3d(0, 0, 0);
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = Eigen::Vector3d(0, 0, 0);
+    change_base.translation()[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runJacobianTest(kin_group, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, change_base));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian at point with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = link_point;
+
+    for (const auto& link_name : link_names)
+      runJacobianTest(kin_group, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, change_base));  // NOLINT
+  }
+}
+
 inline void runActiveLinkNamesABBOnPositionerTest(const tesseract_kinematics::KinematicGroup& kin_group)
 {
   EXPECT_FALSE(kin_group.checkJoints(Eigen::VectorXd::Zero(8)));
@@ -709,8 +842,8 @@ inline void runActiveLinkNamesABBOnPositionerTest(const tesseract_kinematics::Ki
   EXPECT_FALSE(kin_group.checkJoints(Eigen::VectorXd::Constant(7, -std::numeric_limits<double>::max())));
   EXPECT_TRUE(kin_group.checkJoints(Eigen::VectorXd::Zero(7)));
 
-  std::vector<std::string> target_active_link_names = { "positioner_tool0", "base_link", "link_1", "link_2", "link_3",
-                                                        "link_4",           "link_5",    "link_6", "tool0" };
+  std::vector<std::string> target_active_link_names = { "positioner_tool0", "base_link", "base",   "link_1", "link_2",
+                                                        "link_3",           "link_4",    "link_5", "link_6", "tool0" };
   std::vector<std::string> target_link_names = target_active_link_names;
   target_link_names.emplace_back("positioner_base_link");
 
@@ -719,6 +852,103 @@ inline void runActiveLinkNamesABBOnPositionerTest(const tesseract_kinematics::Ki
 
   link_names = kin_group.getLinkNames();
   runStringVectorEqualTest(link_names, target_link_names);
+}
+
+inline void runKinGroupJacobianABBExternalPositionerTest(tesseract_kinematics::KinematicGroup& kin_group)
+{
+  std::vector<std::string> link_names{ "positioner_base_link",
+                                       "positioner_tool0",
+                                       "positioner_link_1",
+                                       "base_link",
+                                       "link_1",
+                                       "link_2",
+                                       "link_3",
+                                       "link_4",
+                                       "link_5",
+                                       "link_6",
+                                       "tool0" };
+
+  //////////////////////////////////////////////////////////////////
+  // Test forward kinematics when tip link is the base of the chain
+  //////////////////////////////////////////////////////////////////
+  Eigen::MatrixXd jacobian, numerical_jacobian;
+  Eigen::VectorXd jvals;
+  jvals.resize(8);
+
+  jvals(0) = -0.785398;
+  jvals(1) = 0.785398;
+  jvals(2) = -0.785398;
+  jvals(3) = 0.785398;
+  jvals(4) = -0.785398;
+  jvals(5) = 0.785398;
+  jvals(6) = -0.785398;
+  jvals(7) = 0.785398;
+
+  ///////////////////////////
+  // Test Jacobian
+  ///////////////////////////
+  Eigen::Vector3d link_point(0, 0, 0);
+  for (const auto& link_name : link_names)
+    runJacobianTest(kin_group, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+  EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+
+  ///////////////////////////
+  // Test Jacobian at Point
+  ///////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runJacobianTest(kin_group, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    link_point = Eigen::Vector3d(0, 0, 0);
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = Eigen::Vector3d(0, 0, 0);
+    change_base.translation()[k] = 1;
+
+    for (const auto& link_name : link_names)
+      runJacobianTest(kin_group, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, change_base));  // NOLINT
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian at point with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point(0, 0, 0);
+    link_point[k] = 1;
+
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = link_point;
+
+    for (const auto& link_name : link_names)
+      runJacobianTest(kin_group, jvals, link_name, link_point, change_base);
+
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, change_base));  // NOLINT
+  }
 }
 
 inline void runActiveLinkNamesABBExternalPositionerTest(const tesseract_kinematics::KinematicGroup& kin_group)
@@ -734,6 +964,7 @@ inline void runActiveLinkNamesABBExternalPositionerTest(const tesseract_kinemati
   std::vector<std::string> target_link_names = target_active_link_names;
   target_link_names.emplace_back("world");
   target_link_names.emplace_back("base_link");
+  target_link_names.emplace_back("base");
   target_link_names.emplace_back("positioner_base_link");
 
   std::vector<std::string> link_names = kin_group.getActiveLinkNames();
@@ -820,6 +1051,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::InverseKinematicsFacto
 
     StaticKinematicGroup kin_group(std::move(inv_kin), *scene_graph, scene_state);
     EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
+    runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
     runKinGroupJacobianIIWATest(kin_group);
     runActiveLinkNamesIIWATest(kin_group);
     runKinJointLimitsTest(kin_group.getLimits(), target_limits);
@@ -858,6 +1090,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::InverseKinematicsFacto
 
     StaticKinematicGroup kin_group(std::move(inv_kin2), *scene_graph, scene_state);
     EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
+    runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
     runKinGroupJacobianIIWATest(kin_group);
     runActiveLinkNamesIIWATest(kin_group);
     runKinJointLimitsTest(kin_group.getLimits(), target_limits);
@@ -896,33 +1129,12 @@ inline void runInvKinIIWATest(const tesseract_kinematics::InverseKinematicsFacto
 
     StaticKinematicGroup kin_group(std::move(inv_kin3), *scene_graph, scene_state);
     EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
+    runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
     runKinGroupJacobianIIWATest(kin_group);
     runActiveLinkNamesIIWATest(kin_group);
     runKinJointLimitsTest(kin_group.getLimits(), target_limits);
     runKinSetJointLimitsTest(kin_group);
   }
-
-  //  {// Check update
-  //    auto inv_kin = inv_kin_factory.create(scene_graph, "base_link", "tool0", "manip");
-  //    tesseract_kinematics::InverseKinematics::Ptr inv_kin3 = inv_kin->clone();
-  //    inv_kin3->update();
-  //    EXPECT_TRUE(inv_kin3 != nullptr);
-  //    EXPECT_EQ(inv_kin3->getName(), "manip");
-  //    EXPECT_EQ(inv_kin3->getSolverName(), inv_solver_name);
-  //    EXPECT_EQ(inv_kin3->numJoints(), 7);
-  //    EXPECT_EQ(inv_kin3->getBaseLinkName(), "base_link");
-  //    EXPECT_EQ(inv_kin->getTipLinkNames().size(), 1);
-  //    EXPECT_EQ(inv_kin->getTipLinkNames()[0], "tool0");
-
-  //    runInvKinTest(*inv_kin3, *fwd_kin, pose, fwd_kin->getBaseLinkName(), "tool0", seed);
-
-  //    tesseract_common::KinematicLimits target_limits = getTargetLimits(scene_graph, fwd_kin->getJointNames());
-
-  //    KinematicGroup kin_group(scene_graph, std::move(fwd_kin), std::move(inv_kin3));
-  //    runActiveLinkNamesIIWATest(kin_group);
-  //    runKinJointLimitsTest(kin_group.getLimits(), target_limits);
-  //    runKinSetJointLimitsTest(kin_group);
-  //  }
 
   {  // Test forward kinematics failure
     auto fwd_kin = fwd_kin_factory.create("manip", *scene_graph, scene_state, "missing_link", "tool0");
