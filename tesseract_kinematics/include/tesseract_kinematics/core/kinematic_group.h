@@ -66,13 +66,13 @@ public:
    * @brief Get list of joint names for kinematic object
    * @return A vector of joint names
    */
-  virtual const std::vector<std::string>& getJointNames() const = 0;
+  virtual std::vector<std::string> getJointNames() const = 0;
 
   /**
    * @brief Get list of all link names (with and without geometry) for kinematic object
    * @return A vector of link names
    */
-  virtual const std::vector<std::string>& getLinkNames() const = 0;
+  virtual std::vector<std::string> getLinkNames() const = 0;
 
   /**
    * @brief Get list of active link names (with and without geometry) for kinematic object
@@ -81,13 +81,13 @@ public:
    *
    * @return A vector of active link names
    */
-  virtual const std::vector<std::string>& getActiveLinkNames() const = 0;
+  virtual std::vector<std::string> getActiveLinkNames() const = 0;
 
   /**
    * @brief Getter for kinematic limits (joint, velocity, acceleration, etc.)
    * @return Kinematic Limits
    */
-  virtual const tesseract_common::KinematicLimits& getLimits() const = 0;
+  virtual tesseract_common::KinematicLimits getLimits() const = 0;
 
   /**
    * @brief Setter for kinematic limits (joint, velocity, acceleration, etc.)
@@ -99,7 +99,7 @@ public:
    * @brief Get vector indicating which joints are capable of producing redundant solutions
    * @return A vector of joint indicies
    */
-  virtual const std::vector<Eigen::Index>& getRedundancyCapableJointIndices() const = 0;
+  virtual std::vector<Eigen::Index> getRedundancyCapableJointIndices() const = 0;
 
   /**
    * @brief Number of joints in robot
@@ -108,16 +108,16 @@ public:
   virtual Eigen::Index numJoints() const = 0;
 
   /** @brief getter for the robot base link name */
-  virtual const std::string& getBaseLinkName() const = 0;
+  virtual std::string getBaseLinkName() const = 0;
 
   /** @brief Get the working frames */
-  virtual const std::vector<std::string>& getWorkingFrames() const = 0;
+  virtual std::vector<std::string> getWorkingFrames() const = 0;
 
   /** @brief Get the tip link name */
-  virtual const std::vector<std::string>& getTipLinkNames() const = 0;
+  virtual std::vector<std::string> getTipLinkNames() const = 0;
 
   /** @brief Name of the maniputlator */
-  virtual const std::string& getName() const = 0;
+  virtual std::string getName() const = 0;
 
   /** @brief Clone of the motion group */
   virtual std::unique_ptr<KinematicGroup> clone() const = 0;

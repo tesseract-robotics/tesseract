@@ -53,27 +53,27 @@ public:
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const std::string& link_name = "") const final;
 
-  const std::vector<std::string>& getJointNames() const final;
+  std::vector<std::string> getJointNames() const final;
 
-  const std::vector<std::string>& getLinkNames() const final;
+  std::vector<std::string> getLinkNames() const final;
 
-  const std::vector<std::string>& getActiveLinkNames() const final;
+  std::vector<std::string> getActiveLinkNames() const final;
 
-  const tesseract_common::KinematicLimits& getLimits() const final;
+  tesseract_common::KinematicLimits getLimits() const final;
 
   void setLimits(tesseract_common::KinematicLimits limits) final;
 
-  const std::vector<Eigen::Index>& getRedundancyCapableJointIndices() const final;
+  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const final;
 
   Eigen::Index numJoints() const final;
 
-  const std::string& getBaseLinkName() const final;
+  std::string getBaseLinkName() const final;
 
-  const std::vector<std::string>& getWorkingFrames() const final;
+  std::vector<std::string> getWorkingFrames() const final;
 
-  const std::vector<std::string>& getTipLinkNames() const final;
+  std::vector<std::string> getTipLinkNames() const final;
 
-  const std::string& getName() const final;
+  std::string getName() const final;
 
   std::unique_ptr<KinematicGroup> clone() const final;
 
@@ -92,6 +92,7 @@ private:
   tesseract_common::KinematicLimits limits_;
   std::vector<Eigen::Index> redundancy_indices_;
   std::unordered_map<std::string, std::string> inv_working_frames_map_;
+  std::vector<Eigen::Index> jacobian_map_;
 };
 
 }  // namespace tesseract_kinematics

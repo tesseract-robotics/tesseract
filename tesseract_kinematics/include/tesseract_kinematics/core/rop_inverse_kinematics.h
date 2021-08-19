@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/scene_state.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
@@ -83,6 +84,7 @@ public:
   /**
    * @brief Initializes Inverse Kinematics for a robot on a positioner
    * @param scene_graph The Tesseract Scene Graph
+   * @param scene_state The Tesseract Scene State
    * @param manipulator
    * @param manipulator_reach
    * @param positioner
@@ -93,6 +95,7 @@ public:
    * @return True if init() completes successfully
    */
   bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
+            const tesseract_scene_graph::SceneState& scene_state,
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
             ForwardKinematics::UPtr positioner,
@@ -103,6 +106,7 @@ public:
   /**
    * @brief Initializes Inverse Kinematics for a robot on a positioner
    * @param scene_graph The Tesseract Scene Graph
+   * @param scene_state The Tesseract Scene State
    * @param manipulator
    * @param manipulator_reach
    * @param positioner
@@ -114,6 +118,7 @@ public:
    * @return True if init() completes successfully
    */
   bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
+            const tesseract_scene_graph::SceneState& scene_state,
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
             ForwardKinematics::UPtr positioner,
@@ -137,22 +142,27 @@ private:
   std::string positioner_tip_link_;
   double manip_reach_{ 0 };
   Eigen::Index dof_;
+  Eigen::Isometry3d positioner_to_robot_{ Eigen::Isometry3d::Identity() };
   std::vector<Eigen::VectorXd> dof_range_;
   std::string name_;                                     /**< @brief Name of the kinematic chain */
   std::string solver_name_{ "RobotOnPositionerInvKin" }; /**< @brief Name of this solver */
 
   /** @brief calcFwdKin helper function */
-  IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const;
+  IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose,
+                               const std::string& link_name,
+                               const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void nested_ik(IKSolutions& solutions,
                  int loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
                  const Eigen::Isometry3d& target_pose,
+                 const std::string& link_name,
                  Eigen::VectorXd& positioner_pose,
                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void ikAt(IKSolutions& solutions,
             const Eigen::Isometry3d& target_pose,
+            const std::string& link_name,
             Eigen::VectorXd& positioner_pose,
             const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 };
