@@ -52,6 +52,21 @@ inline std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(n
 #endif
 
 /**
+ * @brief Change the reference point of the provided Twist
+ * @param twist The current Twist which gets modified in place
+ * @param ref_point Is expressed in the same base frame of the Twist
+ *                  and is a vector from the old point to the new point.
+ */
+void twistChangeRefPoint(Eigen::Ref<Eigen::VectorXd> twist, const Eigen::Ref<const Eigen::Vector3d>& ref_point);
+
+/**
+ * @brief Change the base coordinate system of the Twist
+ * @param twist The current Twist which gets modified in place
+ * @param change_base The transform from the desired frame to the current base frame of the Twist
+ */
+void twistChangeBase(Eigen::Ref<Eigen::VectorXd> twist, const Eigen::Isometry3d& change_base);
+
+/**
  * @brief Change the base coordinate system of the jacobian
  * @param jacobian The current Jacobian which gets modified in place
  * @param change_base The transform from the desired frame to the current base frame of the jacobian

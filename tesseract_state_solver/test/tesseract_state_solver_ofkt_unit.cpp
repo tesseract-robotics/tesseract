@@ -80,6 +80,11 @@ TEST(TesseractStateSolverUnit, KDLGetJacobianUnit)  // NOLINT
   test_suite::runJacobianTest<KDLStateSolver>();
 }
 
+TEST(TesseractStateSolverUnit, OFKTGetJacobianUnit)  // NOLINT
+{
+  test_suite::runJacobianTest<OFKTStateSolver>();
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

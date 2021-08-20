@@ -104,6 +104,8 @@ void OFKTBaseNode::computeAndStoreWorldTransformation()
 const Eigen::Isometry3d& OFKTBaseNode::getWorldTransformation() const { return world_tf_; }
 bool OFKTBaseNode::updateWorldTransformationRequired() const { return update_world_required_; }
 
+Eigen::Matrix<double, 6, 1> OFKTBaseNode::getLocalTwist() const { return local_twist_; }
+
 void OFKTBaseNode::addChild(OFKTNode* node)
 {
   children_.push_back(node);
@@ -199,6 +201,7 @@ OFKTRevoluteNode::OFKTRevoluteNode(OFKTNode* parent,
                  static_tf)
   , axis_(axis.normalized())
 {
+  local_twist_.tail(3) = axis_;
   computeAndStoreLocalTransformationImpl();
   OFKTBaseNode::computeAndStoreWorldTransformation();
 }
@@ -236,6 +239,7 @@ OFKTContinuousNode::OFKTContinuousNode(OFKTNode* parent,
                  static_tf)
   , axis_(axis.normalized())
 {
+  local_twist_.tail(3) = axis_;
   computeAndStoreLocalTransformationImpl();
   OFKTBaseNode::computeAndStoreWorldTransformation();
 }
@@ -271,6 +275,7 @@ OFKTPrismaticNode::OFKTPrismaticNode(OFKTNode* parent,
                  static_tf)
   , axis_(axis.normalized())
 {
+  local_twist_.head(3) = axis_;
   computeAndStoreLocalTransformationImpl();
   OFKTBaseNode::computeAndStoreWorldTransformation();
 }

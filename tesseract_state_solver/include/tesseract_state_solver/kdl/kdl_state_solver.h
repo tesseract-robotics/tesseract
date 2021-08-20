@@ -1,3 +1,28 @@
+/**
+ * @file kdl_state_solver.h
+ * @brief Tesseract Scene Graph State Solver KDL Implementation.
+ *
+ * @author Levi Armstrong
+ * @date Dec 18, 2017
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2017, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #ifndef TESSERACT_STATE_SOLVER_KDL_STATE_SOLVER_H
 #define TESSERACT_STATE_SOLVER_KDL_STATE_SOLVER_H
 
@@ -30,12 +55,12 @@ public:
   StateSolver::UPtr clone() const override;
 
   void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
-  void setState(const std::unordered_map<std::string, double>& joints) override;
+  void setState(const std::unordered_map<std::string, double>& joint_values) override;
   void setState(const std::vector<std::string>& joint_names,
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
 
   SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
-  SceneState getState(const std::unordered_map<std::string, double>& joints) const override;
+  SceneState getState(const std::unordered_map<std::string, double>& joint_values) const override;
   SceneState getState(const std::vector<std::string>& joint_names,
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
 
@@ -46,7 +71,7 @@ public:
   Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                               const std::string& link_name) const override;
 
-  Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints,
+  Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joint_values,
                               const std::string& link_name) const override;
   Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
@@ -88,7 +113,7 @@ private:
   /** @brief Get an updated kdl joint array */
   KDL::JntArray getKDLJntArray(const std::vector<std::string>& joint_names,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
-  KDL::JntArray getKDLJntArray(const std::unordered_map<std::string, double>& joints) const;
+  KDL::JntArray getKDLJntArray(const std::unordered_map<std::string, double>& joints_values) const;
 
   bool processKDLData(const tesseract_scene_graph::SceneGraph& scene_graph);
 };

@@ -78,6 +78,8 @@ public:
   const Eigen::Isometry3d& getWorldTransformation() const override;
   bool updateWorldTransformationRequired() const override;
 
+  Eigen::Matrix<double, 6, 1> getLocalTwist() const override;
+
   void addChild(OFKTNode* node) override;
   void removeChild(const OFKTNode* node) override;
   std::vector<OFKTNode*>& getChildren() override;
@@ -92,6 +94,7 @@ protected:
   Eigen::Isometry3d joint_tf_{ Eigen::Isometry3d::Identity() };
   Eigen::Isometry3d local_tf_{ Eigen::Isometry3d::Identity() };
   Eigen::Isometry3d world_tf_{ Eigen::Isometry3d::Identity() };
+  Eigen::Matrix<double, 6, 1> local_twist_{ Eigen::VectorXd::Zero(6) };
 
   double joint_value_{ 0 };
   bool joint_value_changed_{ false };
