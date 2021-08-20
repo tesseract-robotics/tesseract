@@ -60,25 +60,31 @@ std::enable_if_t<std::is_polymorphic<E>::value> my_rethrow_if_nested(const E& e)
     p->rethrow_nested();
 }
 
+void twistChangeRefPoint(Eigen::Ref<Eigen::VectorXd> twist, const Eigen::Ref<const Eigen::Vector3d>& ref_point)
+{
+  twist(0) += twist(4) * ref_point(2) - twist(5) * ref_point(1);
+  twist(1) += twist(5) * ref_point(0) - twist(3) * ref_point(2);
+  twist(2) += twist(3) * ref_point(1) - twist(4) * ref_point(0);
+}
+
+void twistChangeBase(Eigen::Ref<Eigen::VectorXd> twist, const Eigen::Isometry3d& change_base)
+{
+  twist.head(3) = change_base.linear() * twist.head(3);
+  twist.tail(3) = change_base.linear() * twist.tail(3);
+}
+
 void jacobianChangeBase(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Isometry3d& change_base)
 {
   assert(jacobian.rows() == 6);
   for (int i = 0; i < jacobian.cols(); i++)
-  {
-    jacobian.col(i).head(3) = change_base.linear() * jacobian.col(i).head(3);
-    jacobian.col(i).tail(3) = change_base.linear() * jacobian.col(i).tail(3);
-  }
+    twistChangeBase(jacobian.col(i), change_base);
 }
 
 void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Ref<const Eigen::Vector3d>& ref_point)
 {
   assert(jacobian.rows() == 6);
   for (int i = 0; i < jacobian.cols(); i++)
-  {
-    jacobian(0, i) += jacobian(4, i) * ref_point(2) - jacobian(5, i) * ref_point(1);
-    jacobian(1, i) += jacobian(5, i) * ref_point(0) - jacobian(3, i) * ref_point(2);
-    jacobian(2, i) += jacobian(3, i) * ref_point(1) - jacobian(4, i) * ref_point(0);
-  }
+    twistChangeRefPoint(jacobian.col(i), ref_point);
 }
 
 Eigen::Vector4d computeRandomColor()

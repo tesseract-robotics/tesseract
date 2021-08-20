@@ -206,11 +206,11 @@ void OFKTStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_va
   update(root_.get(), false);
 }
 
-void OFKTStateSolver::setState(const std::unordered_map<std::string, double>& joints)
+void OFKTStateSolver::setState(const std::unordered_map<std::string, double>& joint_values)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
 
-  for (const auto& joint : joints)
+  for (const auto& joint : joint_values)
   {
     nodes_[joint.first]->storeJointValue(joint.second);
     current_state_.joints[joint.first] = joint.second;
@@ -246,10 +246,10 @@ SceneState OFKTStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& jo
   return state;
 }
 
-SceneState OFKTStateSolver::getState(const std::unordered_map<std::string, double>& joints) const
+SceneState OFKTStateSolver::getState(const std::unordered_map<std::string, double>& joint_values) const
 {
   auto state = SceneState(current_state_);
-  for (const auto& joint : joints)
+  for (const auto& joint : joint_values)
     state.joints[joint.first] = joint.second;
 
   update(state, root_.get(), Eigen::Isometry3d::Identity(), false);
@@ -284,20 +284,68 @@ SceneState OFKTStateSolver::getRandomState() const
 Eigen::MatrixXd OFKTStateSolver::getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                              const std::string& link_name) const
 {
-  throw std::runtime_error("Need to implement!");
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::unordered_map<std::string, double> joints = current_state_.joints;
+  for (Eigen::Index i = 0; i < joint_values.rows(); ++i)
+    joints[joint_names_[static_cast<std::size_t>(i)]] = joint_values[i];
+
+  return calcJacobianHelper(joints, link_name);
 }
 
-Eigen::MatrixXd OFKTStateSolver::getJacobian(const std::unordered_map<std::string, double>& joints,
+Eigen::MatrixXd OFKTStateSolver::getJacobian(const std::unordered_map<std::string, double>& joints_values,
                                              const std::string& link_name) const
 {
-  throw std::runtime_error("Need to implement!");
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::unordered_map<std::string, double> joints = current_state_.joints;
+  for (const auto& joint : joints_values)
+    joints[joint.first] = joint.second;
+
+  return calcJacobianHelper(joints, link_name);
 }
 
 Eigen::MatrixXd OFKTStateSolver::getJacobian(const std::vector<std::string>& joint_names,
                                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                              const std::string& link_name) const
 {
-  throw std::runtime_error("Need to implement!");
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::unordered_map<std::string, double> joints = current_state_.joints;
+  for (Eigen::Index i = 0; i < joint_values.rows(); ++i)
+    joints[joint_names[static_cast<std::size_t>(i)]] = joint_values[i];
+
+  return calcJacobianHelper(joints, link_name);
+}
+
+Eigen::MatrixXd OFKTStateSolver::calcJacobianHelper(const std::unordered_map<std::string, double>& joints,
+                                                    const std::string& link_name) const
+{
+  OFKTNode* node = link_map_.at(link_name);
+  Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(6, static_cast<Eigen::Index>(joint_names_.size()));
+
+  Eigen::Isometry3d total_tf = Eigen::Isometry3d::Identity();
+  while (node != root_.get())
+  {
+    if (node->getType() == JointType::FIXED || node->getType() == JointType::FLOATING)
+    {
+      total_tf = node->getLocalTransformation() * total_tf;
+    }
+    else
+    {
+      Eigen::Isometry3d local_tf = node->computeLocalTransformation(joints.at(node->getJointName()));
+      total_tf = local_tf * total_tf;
+
+      Eigen::Index idx = std::distance(joint_names_.begin(),
+                                       std::find(joint_names_.begin(), joint_names_.end(), node->getJointName()));
+      Eigen::VectorXd twist = node->getLocalTwist();
+      tesseract_common::twistChangeRefPoint(twist, total_tf.translation() - local_tf.translation());
+      tesseract_common::twistChangeBase(twist, total_tf.inverse());
+      jacobian.col(idx) = twist;
+    }
+
+    node = node->getParent();
+  }
+
+  tesseract_common::jacobianChangeBase(jacobian, total_tf);
+  return jacobian;
 }
 
 std::vector<std::string> OFKTStateSolver::getJointNames() const

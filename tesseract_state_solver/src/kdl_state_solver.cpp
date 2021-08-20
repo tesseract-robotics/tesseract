@@ -79,9 +79,9 @@ void KDLStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_val
   calculateTransforms(current_state_, kdl_jnt_array_, data_.tree.getRootSegment(), Eigen::Isometry3d::Identity());
 }
 
-void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joints)
+void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joint_values)
 {
-  for (auto& joint : joints)
+  for (auto& joint : joint_values)
   {
     if (setJointValuesHelper(kdl_jnt_array_, joint.first, joint.second))
       current_state_.joints[joint.first] = joint.second;
@@ -120,12 +120,12 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
   return state;
 }
 
-SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double>& joints) const
+SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double>& joint_values) const
 {
   SceneState state{ current_state_ };
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
-  for (auto& joint : joints)
+  for (auto& joint : joint_values)
   {
     if (setJointValuesHelper(jnt_array, joint.first, joint.second))
       state.joints[joint.first] = joint.second;
@@ -172,10 +172,10 @@ Eigen::MatrixXd KDLStateSolver::getJacobian(const Eigen::Ref<const Eigen::Vector
   throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
 }
 
-Eigen::MatrixXd KDLStateSolver::getJacobian(const std::unordered_map<std::string, double>& joints,
+Eigen::MatrixXd KDLStateSolver::getJacobian(const std::unordered_map<std::string, double>& joint_values,
                                             const std::string& link_name) const
 {
-  KDL::JntArray kdl_joint_vals = getKDLJntArray(joints);
+  KDL::JntArray kdl_joint_vals = getKDLJntArray(joint_values);
   KDL::Jacobian kdl_jacobian;
   if (calcJacobianHelper(kdl_jacobian, kdl_joint_vals, link_name))
     return convert(kdl_jacobian, joint_qnr_);
@@ -320,12 +320,12 @@ KDL::JntArray KDLStateSolver::getKDLJntArray(const std::vector<std::string>& joi
   return kdl_joints;
 }
 
-KDL::JntArray KDLStateSolver::getKDLJntArray(const std::unordered_map<std::string, double>& joints) const
+KDL::JntArray KDLStateSolver::getKDLJntArray(const std::unordered_map<std::string, double>& joint_values) const
 {
-  assert(data_.active_joint_names.size() == static_cast<unsigned>(joints.size()));
+  assert(data_.active_joint_names.size() == static_cast<unsigned>(joint_values.size()));
 
   KDL::JntArray kdl_joints(kdl_jnt_array_);
-  for (const auto& joint : joints)
+  for (const auto& joint : joint_values)
     kdl_joints.data(joint_to_qnr_.at(joint.first)) = joint.second;
 
   return kdl_joints;

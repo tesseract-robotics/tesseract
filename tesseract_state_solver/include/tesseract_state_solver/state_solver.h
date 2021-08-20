@@ -82,7 +82,7 @@ public:
    * will update the contact managers transforms
    *
    */
-  virtual void setState(const std::unordered_map<std::string, double>& joints) = 0;
+  virtual void setState(const std::unordered_map<std::string, double>& joint_values) = 0;
   virtual void setState(const std::vector<std::string>& joint_names,
                         const Eigen::Ref<const Eigen::VectorXd>& joint_values) = 0;
 
@@ -101,7 +101,7 @@ public:
    * @param joints A map of joint names to joint values to change.
    * @return A the state of the environment
    */
-  virtual SceneState getState(const std::unordered_map<std::string, double>& joints) const = 0;
+  virtual SceneState getState(const std::unordered_map<std::string, double>& joint_values) const = 0;
   virtual SceneState getState(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
 
@@ -132,7 +132,7 @@ public:
    * @param link_name The link name to calculate the jacobian
    * @return A the state of the environment
    */
-  virtual Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints,
+  virtual Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joint_values,
                                       const std::string& link_name) const = 0;
   virtual Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,

@@ -194,6 +194,12 @@ public:
   virtual bool updateWorldTransformationRequired() const = 0;
 
   /**
+   * @brief Return the twist of the node in its local frame
+   * @return The node twist
+   */
+  virtual Eigen::Matrix<double, 6, 1> getLocalTwist() const = 0;
+
+  /**
    * @brief Add a child node
    * @param node The node which is a child of this node
    */

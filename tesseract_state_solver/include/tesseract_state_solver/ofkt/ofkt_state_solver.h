@@ -74,12 +74,12 @@ public:
   int getRevision() const override;
 
   void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
-  void setState(const std::unordered_map<std::string, double>& joints) override;
+  void setState(const std::unordered_map<std::string, double>& joint_values) override;
   void setState(const std::vector<std::string>& joint_names,
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
 
   SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
-  SceneState getState(const std::unordered_map<std::string, double>& joints) const override;
+  SceneState getState(const std::unordered_map<std::string, double>& joint_values) const override;
   SceneState getState(const std::vector<std::string>& joint_names,
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
 
@@ -90,7 +90,7 @@ public:
   Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                               const std::string& link_name) const override;
 
-  Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints,
+  Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints_values,
                               const std::string& link_name) const override;
   Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
@@ -166,6 +166,15 @@ private:
    * @param update_required Indicates if work transform update is required
    */
   void update(SceneState& state, const OFKTNode* node, Eigen::Isometry3d parent_world_tf, bool update_required) const;
+
+  /**
+   * @brief Given a set of joint values calculate the jacobian for the provided link_name
+   * @param joints The joint values to calculate the jacobian for
+   * @param link_name The link name to calculate the jacobian for
+   * @return The calculated geometric jacobian
+   */
+  Eigen::MatrixXd calcJacobianHelper(const std::unordered_map<std::string, double>& joints,
+                                     const std::string& link_name) const;
 
   /**
    * @brief A helper function used for cloning the OFKTStateSolver
