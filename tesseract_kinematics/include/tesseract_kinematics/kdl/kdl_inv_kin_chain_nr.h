@@ -63,27 +63,23 @@ public:
   using ConstUPtr = std::unique_ptr<const KDLInvKinChainNR>;
 
   KDLInvKinChainNR() = default;
-  ~KDLInvKinChainNR() final = default;
+  ~KDLInvKinChainNR() override final = default;
   KDLInvKinChainNR(const KDLInvKinChainNR& other);
   KDLInvKinChainNR& operator=(const KDLInvKinChainNR& other);
   KDLInvKinChainNR(KDLInvKinChainNR&&) = default;
   KDLInvKinChainNR& operator=(KDLInvKinChainNR&&) = default;
 
-  //  bool update() override
+  IKSolutions calcInvKin(const IKInput& tip_link_poses,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
-  IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
-                         const std::string& working_frame,
-                         const std::string& tip_link_name,
-                         const Eigen::Ref<const Eigen::VectorXd>& seed) const final;
-
-  std::vector<std::string> getJointNames() const final;
-  Eigen::Index numJoints() const final;
-  std::string getBaseLinkName() const final;
-  std::vector<std::string> getWorkingFrames() const final;
-  std::vector<std::string> getTipLinkNames() const final;
-  std::string getName() const final;
-  std::string getSolverName() const final;
-  InverseKinematics::UPtr clone() const final;
+  std::vector<std::string> getJointNames() const override final;
+  Eigen::Index numJoints() const override final;
+  std::string getBaseLinkName() const override final;
+  std::string getWorkingFrame() const override final;
+  std::vector<std::string> getTipLinkNames() const override final;
+  std::string getName() const override final;
+  std::string getSolverName() const override final;
+  InverseKinematics::UPtr clone() const override final;
 
   /**
    * @brief Initializes KDL Forward Kinematics

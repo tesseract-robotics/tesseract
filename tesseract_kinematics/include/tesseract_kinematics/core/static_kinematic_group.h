@@ -33,7 +33,7 @@ public:
   using UPtr = std::unique_ptr<StaticKinematicGroup>;
   using ConstUPtr = std::unique_ptr<const StaticKinematicGroup>;
 
-  virtual ~StaticKinematicGroup() final = default;
+  virtual ~StaticKinematicGroup() override final = default;
   StaticKinematicGroup(const StaticKinematicGroup& other);
   StaticKinematicGroup& operator=(const StaticKinematicGroup& other);
   StaticKinematicGroup(StaticKinematicGroup&&) = default;
@@ -43,41 +43,40 @@ public:
                        const tesseract_scene_graph::SceneGraph& scene_graph,
                        const tesseract_scene_graph::SceneState& scene_state);
 
-  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const final;
+  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
-  IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
-                         const std::string& working_frame,
-                         const std::string& tip_link_name,
-                         const Eigen::Ref<const Eigen::VectorXd>& seed) const final;
+  IKSolutions calcInvKin(const KinGroupIKInputs& tip_link_poses,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name = "") const final;
+                               const std::string& link_name,
+                               const std::string& base_link_name) const override final;
 
-  std::vector<std::string> getJointNames() const final;
+  std::vector<std::string> getJointNames() const override final;
 
-  std::vector<std::string> getLinkNames() const final;
+  std::vector<std::string> getLinkNames() const override final;
 
-  std::vector<std::string> getActiveLinkNames() const final;
+  std::vector<std::string> getActiveLinkNames() const override final;
 
-  tesseract_common::KinematicLimits getLimits() const final;
+  tesseract_common::KinematicLimits getLimits() const override final;
 
-  void setLimits(tesseract_common::KinematicLimits limits) final;
+  void setLimits(tesseract_common::KinematicLimits limits) override final;
 
-  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const final;
+  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const override final;
 
-  Eigen::Index numJoints() const final;
+  Eigen::Index numJoints() const override final;
 
-  std::string getBaseLinkName() const final;
+  std::string getBaseLinkName() const override final;
 
-  std::vector<std::string> getWorkingFrames() const final;
+  std::vector<std::string> getWorkingFrames() const override final;
 
-  std::vector<std::string> getTipLinkNames() const final;
+  std::vector<std::string> getTipLinkNames() const override final;
 
-  std::string getName() const final;
+  std::string getName() const override final;
 
-  std::unique_ptr<KinematicGroup> clone() const final;
+  std::unique_ptr<KinematicGroup> clone() const override final;
 
-  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const final;
+  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override final;
 
 private:
   std::string name_;
@@ -92,6 +91,7 @@ private:
   tesseract_common::KinematicLimits limits_;
   std::vector<Eigen::Index> redundancy_indices_;
   std::unordered_map<std::string, std::string> inv_working_frames_map_;
+  std::unordered_map<std::string, std::string> inv_tip_links_map_;
   std::vector<Eigen::Index> jacobian_map_;
 };
 

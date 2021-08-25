@@ -179,13 +179,12 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   EXPECT_EQ(inv_kin->getSolverName(), "RobotOnPositionerInvKin");
   EXPECT_EQ(inv_kin->numJoints(), 7);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
-  EXPECT_EQ(inv_kin->getWorkingFrames().size(), 1);
-  EXPECT_EQ(inv_kin->getWorkingFrames()[0], base_link_name);
+  EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_name);
   EXPECT_EQ(inv_kin->getTipLinkNames().size(), 1);
   EXPECT_EQ(inv_kin->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin->getJointNames(), joint_names);
 
-  runInvKinTest(*inv_kin, *fwd_kin, pose, base_link_name, tip_link_name, seed);
+  runInvKinTest(*inv_kin, *fwd_kin, pose, tip_link_name, seed);
 
   tesseract_kinematics::StaticKinematicGroup kin_group(std::move(inv_kin), *scene_graph, scene_state);
   EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
@@ -201,13 +200,12 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   EXPECT_EQ(inv_kin2->getSolverName(), "RobotOnPositionerInvKin");
   EXPECT_EQ(inv_kin2->numJoints(), 7);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
-  EXPECT_EQ(inv_kin2->getWorkingFrames().size(), 1);
-  EXPECT_EQ(inv_kin2->getWorkingFrames()[0], base_link_name);
+  EXPECT_EQ(inv_kin2->getWorkingFrame(), base_link_name);
   EXPECT_EQ(inv_kin2->getTipLinkNames().size(), 1);
   EXPECT_EQ(inv_kin2->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin2->getJointNames(), joint_names);
 
-  runInvKinTest(*inv_kin2, *fwd_kin, pose, base_link_name, tip_link_name, seed);
+  runInvKinTest(*inv_kin2, *fwd_kin, pose, tip_link_name, seed);
 
   tesseract_kinematics::StaticKinematicGroup kin_group2(std::move(inv_kin2), *scene_graph, scene_state);
   EXPECT_EQ(kin_group2.getBaseLinkName(), scene_graph->getRoot());

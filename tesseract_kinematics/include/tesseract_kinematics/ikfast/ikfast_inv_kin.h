@@ -96,15 +96,12 @@ public:
   IKFastInvKin(IKFastInvKin&&) = default;
   IKFastInvKin& operator=(IKFastInvKin&&) = default;
 
-  IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
-                         const std::string& working_frame,
-                         const std::string& link_name,
-                         const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
+  IKSolutions calcInvKin(const IKInput& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
   Eigen::Index numJoints() const override;
   std::vector<std::string> getJointNames() const override;
   std::string getBaseLinkName() const override;
-  std::vector<std::string> getWorkingFrames() const override;
+  std::string getWorkingFrame() const override;
   std::vector<std::string> getTipLinkNames() const override;
   std::string getName() const override;
   std::string getSolverName() const override;

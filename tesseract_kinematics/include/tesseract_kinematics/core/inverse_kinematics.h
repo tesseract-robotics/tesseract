@@ -47,6 +47,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+/**
+ * @brief The Inverse Kinematics Input Data
+ * @details For simple case your inverse kinetics object only requires a single input to solve,
+ * but imagine the case where you have two robots and a positioner. Now each robot requires an
+ * input to solve IK for. This structure is to support the ability to provide multiple inputs for
+ * kinematic arragements involving multiple robots.
+ */
+using IKInput = tesseract_common::TransformMap;
+
 /** @brief Inverse kinematics functions. */
 class InverseKinematics
 {
@@ -68,19 +77,16 @@ public:
   InverseKinematics& operator=(InverseKinematics&&) = default;
 
   /**
-   * @brief Calculates joint solutions given a pose for a specific link.
+   * @brief Calculates joint solutions given an input for each tip link.
    * @details This is to support a pose relative to a active link. For example a robot
    * with an external positioner where the pose is relative to the tip link of the positioner.
    * @note If redundant solutions are needed see utility funciton getRedundantSolutions.
-   * @param pose Transform of end-of-tip relative to working_frame
-   * @param working_frame The link name the pose is relative to. It must be listed in getTipLinkNames().
-   * @param tip_link_name The tip link to use for solving inverse kinematics. It must be listed in getTipLinkNames().
-   * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
+   * @param tip_link_poses The input information to solve inverse kinematics for. There must be an input for each link
+   * provided in getTipLinkNames
+   * @param seed Vector of seed joint angles (size must match number of joints in kinemtic object)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
-  virtual IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
-                                 const std::string& working_frame,
-                                 const std::string& tip_link_name,
+  virtual IKSolutions calcInvKin(const IKInput& tip_link_poses,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
 
   /**
@@ -98,10 +104,17 @@ public:
   /** @brief getter for the robot base link name */
   virtual std::string getBaseLinkName() const = 0;
 
-  /** @brief getter for robot working frames */
-  virtual std::vector<std::string> getWorkingFrames() const = 0;
+  /**
+   * @brief Get the inverse kinematics working frame
+   * @details This is the frame that the IK solvers expects the provided pose in calcInvKin to be relative to.
+   */
+  virtual std::string getWorkingFrame() const = 0;
 
-  /** @brief Get the tip link name */
+  /**
+   * @brief Get the tip link names
+   * @details This is usually only returns one tip link but for the case of a IK solver containing multiple
+   * manipulators this could return the tip link for each manipulator.
+   */
   virtual std::vector<std::string> getTipLinkNames() const = 0;
 
   /** @brief Name of the maniputlator */

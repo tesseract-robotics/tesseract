@@ -77,13 +77,13 @@ inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
 //  return true;
 //}
 
-inline IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose,
-                                            const std::string& working_frame,
-                                            const std::string& link_name,
+inline IKSolutions IKFastInvKin::calcInvKin(const IKInput& tip_link_poses,
                                             const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  assert(working_frame == base_link_name_);
-  assert(link_name == tip_link_name_);
+  assert(tip_link_poses.size() == 1);
+  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
+
+  const Eigen::Isometry3d& pose = tip_link_poses.at(tip_link_name_);
 
   // Convert to ikfast data type
   Eigen::Transform<IkReal, 3, Eigen::Isometry> ikfast_tcp = pose.cast<IkReal>();
@@ -153,7 +153,7 @@ inline bool IKFastInvKin::init(std::string name,
 
 inline std::vector<std::string> IKFastInvKin::getJointNames() const { return joint_names_; }
 inline std::string IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
-inline std::vector<std::string> IKFastInvKin::getWorkingFrames() const { return { base_link_name_ }; }
+inline std::string IKFastInvKin::getWorkingFrame() const { return base_link_name_; }
 inline std::vector<std::string> IKFastInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 inline std::string IKFastInvKin::getName() const { return name_; }
 inline std::string IKFastInvKin::getSolverName() const { return solver_name_; }

@@ -63,25 +63,23 @@ public:
   using ConstUPtr = std::unique_ptr<const RobotWithExternalPositionerInvKin>;
 
   RobotWithExternalPositionerInvKin() = default;
-  ~RobotWithExternalPositionerInvKin() final = default;
+  ~RobotWithExternalPositionerInvKin() override final = default;
   RobotWithExternalPositionerInvKin(const RobotWithExternalPositionerInvKin& other);
   RobotWithExternalPositionerInvKin& operator=(const RobotWithExternalPositionerInvKin& other);
   RobotWithExternalPositionerInvKin(RobotWithExternalPositionerInvKin&&) = default;
   RobotWithExternalPositionerInvKin& operator=(RobotWithExternalPositionerInvKin&&) = default;
 
-  IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
-                         const std::string& working_frame,
-                         const std::string& link_name,
-                         const Eigen::Ref<const Eigen::VectorXd>& seed) const final;
+  IKSolutions calcInvKin(const IKInput& tip_link_poses,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
-  std::vector<std::string> getJointNames() const final;
-  Eigen::Index numJoints() const final;
-  std::string getBaseLinkName() const final;
-  std::vector<std::string> getWorkingFrames() const final;
-  std::vector<std::string> getTipLinkNames() const final;
-  std::string getName() const final;
-  std::string getSolverName() const final;
-  InverseKinematics::UPtr clone() const final;
+  std::vector<std::string> getJointNames() const override final;
+  Eigen::Index numJoints() const override final;
+  std::string getBaseLinkName() const override final;
+  std::string getWorkingFrame() const override final;
+  std::vector<std::string> getTipLinkNames() const override final;
+  std::string getName() const override final;
+  std::string getSolverName() const override final;
+  InverseKinematics::UPtr clone() const override final;
 
   /**
    * @brief Initializes Inverse Kinematics for a robot on a positioner
@@ -137,8 +135,8 @@ private:
   std::vector<std::string> joint_names_;
   InverseKinematics::UPtr manip_inv_kin_;
   ForwardKinematics::UPtr positioner_fwd_kin_;
-  std::vector<std::string> working_frames_;
-  std::vector<std::string> tip_link_names_;
+  std::string working_frame_;
+  std::string manip_tip_link_;
   double manip_reach_{ 0 };
   Eigen::Isometry3d manip_base_to_positioner_base_;
   Eigen::Index dof_;
@@ -147,24 +145,17 @@ private:
   std::string solver_name_{ "RobotWithExternalPositionerInvKin" }; /**< @brief Name of this solver */
 
   /** @brief calcFwdKin helper function */
-  IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose,
-                               const std::string& working_frame,
-                               const std::string& link_name,
-                               const Eigen::Ref<const Eigen::VectorXd>& seed) const;
+  IKSolutions calcInvKinHelper(const IKInput& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void nested_ik(IKSolutions& solutions,
                  int loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
-                 const Eigen::Isometry3d& target_pose,
-                 const std::string& working_frame,
-                 const std::string& link_name,
+                 const IKInput& tip_link_poses,
                  Eigen::VectorXd& positioner_pose,
                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void ikAt(IKSolutions& solutions,
-            const Eigen::Isometry3d& target_pose,
-            const std::string& working_frame,
-            const std::string& link_name,
+            const IKInput& tip_link_poses,
             Eigen::VectorXd& positioner_pose,
             const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 };

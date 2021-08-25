@@ -116,13 +116,12 @@ IKSolutions KDLInvKinChainNR::calcInvKinHelper(const Eigen::Isometry3d& pose,
   return { solution };
 }
 
-IKSolutions KDLInvKinChainNR::calcInvKin(const Eigen::Isometry3d& pose,
-                                         const std::string& /*link_name*/,
-                                         const std::string& /*tip_link_name*/,
+IKSolutions KDLInvKinChainNR::calcInvKin(const IKInput& tip_link_poses,
                                          const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(checkInitialized());
-  return calcInvKinHelper(pose, seed);
+  assert(tip_link_poses.find(kdl_data_.tip_link_name) != tip_link_poses.end());
+  return calcInvKinHelper(tip_link_poses.at(kdl_data_.tip_link_name), seed);
 }
 
 std::vector<std::string> KDLInvKinChainNR::getJointNames() const
@@ -135,7 +134,7 @@ Eigen::Index KDLInvKinChainNR::numJoints() const { return kdl_data_.robot_chain.
 
 std::string KDLInvKinChainNR::getBaseLinkName() const { return kdl_data_.base_link_name; }
 
-std::vector<std::string> KDLInvKinChainNR::getWorkingFrames() const { return { kdl_data_.base_link_name }; }
+std::string KDLInvKinChainNR::getWorkingFrame() const { return kdl_data_.base_link_name; }
 
 std::vector<std::string> KDLInvKinChainNR::getTipLinkNames() const { return { kdl_data_.tip_link_name }; }
 
