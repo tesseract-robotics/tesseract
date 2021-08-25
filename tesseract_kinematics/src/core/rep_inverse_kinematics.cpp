@@ -55,65 +55,61 @@ operator=(const RobotWithExternalPositionerInvKin& other)
   manip_reach_ = other.manip_reach_;
   joint_names_ = other.joint_names_;
   manip_base_to_positioner_base_ = other.manip_base_to_positioner_base_;
-  working_frames_ = other.working_frames_;
-  tip_link_names_ = other.tip_link_names_;
+  working_frame_ = other.working_frame_;
+  manip_tip_link_ = other.manip_tip_link_;
   dof_ = other.dof_;
   dof_range_ = other.dof_range_;
 
   return *this;
 }
 
-IKSolutions RobotWithExternalPositionerInvKin::calcInvKinHelper(const Eigen::Isometry3d& pose,
-                                                                const std::string& working_frame,
-                                                                const std::string& link_name,
+IKSolutions RobotWithExternalPositionerInvKin::calcInvKinHelper(const IKInput& tip_link_poses,
                                                                 const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
   IKSolutions solutions;
-  nested_ik(solutions, 0, dof_range_, pose, working_frame, link_name, positioner_pose, seed);
+  nested_ik(solutions, 0, dof_range_, tip_link_poses, positioner_pose, seed);
   return solutions;
 }
 
 void RobotWithExternalPositionerInvKin::nested_ik(IKSolutions& solutions,
                                                   int loop_level,
                                                   const std::vector<Eigen::VectorXd>& dof_range,
-                                                  const Eigen::Isometry3d& target_pose,
-                                                  const std::string& working_frame,
-                                                  const std::string& link_name,
+                                                  const IKInput& tip_link_poses,
                                                   Eigen::VectorXd& positioner_pose,
                                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   if (loop_level >= static_cast<int>(positioner_fwd_kin_->numJoints()))
   {
-    ikAt(solutions, target_pose, working_frame, link_name, positioner_pose, seed);
+    ikAt(solutions, tip_link_poses, positioner_pose, seed);
     return;
   }
 
   for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
   {
     positioner_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
-    nested_ik(solutions, loop_level + 1, dof_range, target_pose, working_frame, link_name, positioner_pose, seed);
+    nested_ik(solutions, loop_level + 1, dof_range, tip_link_poses, positioner_pose, seed);
   }
 }
 
 void RobotWithExternalPositionerInvKin::ikAt(IKSolutions& solutions,
-                                             const Eigen::Isometry3d& target_pose,
-                                             const std::string& working_frame,
-                                             const std::string& link_name,
+                                             const IKInput& tip_link_poses,
                                              Eigen::VectorXd& positioner_pose,
                                              const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   tesseract_common::TransformMap positioner_poses = positioner_fwd_kin_->calcFwdKin(positioner_pose);
-  Eigen::Isometry3d positioner_tf = positioner_poses[working_frame];
-  Eigen::Isometry3d robot_target_pose = manip_base_to_positioner_base_ * positioner_tf * target_pose;
+  Eigen::Isometry3d positioner_tf = positioner_poses[working_frame_];
+
+  Eigen::Isometry3d robot_target_pose =
+      manip_base_to_positioner_base_ * positioner_tf * tip_link_poses.at(manip_tip_link_);
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
 
+  IKInput robot_target_poses{ std::make_pair(manip_tip_link_, robot_target_pose) };
   auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
   auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
 
-  IKSolutions robot_solution_set =
-      manip_inv_kin_->calcInvKin(robot_target_pose, manip_inv_kin_->getBaseLinkName(), link_name, seed.tail(robot_dof));
+  IKSolutions robot_solution_set = manip_inv_kin_->calcInvKin(robot_target_poses, seed.tail(robot_dof));
   if (robot_solution_set.empty())
     return;
 
@@ -127,16 +123,13 @@ void RobotWithExternalPositionerInvKin::ikAt(IKSolutions& solutions,
   }
 }
 
-IKSolutions RobotWithExternalPositionerInvKin::calcInvKin(const Eigen::Isometry3d& pose,
-                                                          const std::string& working_frame,
-                                                          const std::string& link_name,
+IKSolutions RobotWithExternalPositionerInvKin::calcInvKin(const IKInput& tip_link_poses,
                                                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(checkInitialized());
-  assert(std::find(working_frames_.begin(), working_frames_.end(), working_frame) != working_frames_.end());
-  assert(std::find(tip_link_names_.begin(), tip_link_names_.end(), link_name) != tip_link_names_.end());
+  assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());
 
-  return calcInvKinHelper(pose, working_frame, link_name, seed);
+  return calcInvKinHelper(tip_link_poses, seed);
 }
 
 std::vector<std::string> RobotWithExternalPositionerInvKin::getJointNames() const
@@ -149,15 +142,9 @@ Eigen::Index RobotWithExternalPositionerInvKin::numJoints() const { return dof_;
 
 std::string RobotWithExternalPositionerInvKin::getBaseLinkName() const { return manip_inv_kin_->getBaseLinkName(); }
 
-std::vector<std::string> RobotWithExternalPositionerInvKin::getWorkingFrames() const
-{
-  return { positioner_fwd_kin_->getTipLinkNames() };
-}
+std::string RobotWithExternalPositionerInvKin::getWorkingFrame() const { return working_frame_; }
 
-std::vector<std::string> RobotWithExternalPositionerInvKin::getTipLinkNames() const
-{
-  return manip_inv_kin_->getTipLinkNames();
-}
+std::vector<std::string> RobotWithExternalPositionerInvKin::getTipLinkNames() const { return { manip_tip_link_ }; }
 
 std::string RobotWithExternalPositionerInvKin::getName() const { return name_; }
 
@@ -280,8 +267,8 @@ bool RobotWithExternalPositionerInvKin::init(const tesseract_scene_graph::SceneG
   manip_inv_kin_ = manipulator->clone();
   manip_reach_ = manipulator_reach;
   positioner_fwd_kin_ = positioner->clone();
-  working_frames_ = positioner_fwd_kin_->getTipLinkNames();
-  tip_link_names_ = manip_inv_kin_->getTipLinkNames();
+  working_frame_ = positioner_fwd_kin_->getTipLinkNames()[0];
+  manip_tip_link_ = manip_inv_kin_->getTipLinkNames()[0];
   dof_ = positioner_fwd_kin_->numJoints() + manip_inv_kin_->numJoints();
 
   joint_names_ = positioner_fwd_kin_->getJointNames();

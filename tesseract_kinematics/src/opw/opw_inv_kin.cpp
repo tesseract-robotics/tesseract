@@ -70,15 +70,13 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
   return *this;
 }
 
-IKSolutions OPWInvKin::calcInvKin(const Eigen::Isometry3d& pose,
-                                  const std::string& working_frame,
-                                  const std::string& link_name,
+IKSolutions OPWInvKin::calcInvKin(const IKInput& tip_link_poses,
                                   const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  assert(working_frame == base_link_name_);
-  assert(link_name == tip_link_name_);
+  assert(tip_link_poses.size() == 1);
+  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
 
-  opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, pose);
+  opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, tip_link_poses.at(tip_link_name_));
 
   // Check the output
   IKSolutions solution_set;
@@ -104,7 +102,7 @@ Eigen::Index OPWInvKin::numJoints() const { return 6; }
 
 std::vector<std::string> OPWInvKin::getJointNames() const { return joint_names_; }
 std::string OPWInvKin::getBaseLinkName() const { return base_link_name_; }
-std::vector<std::string> OPWInvKin::getWorkingFrames() const { return { base_link_name_ }; }
+std::string OPWInvKin::getWorkingFrame() const { return base_link_name_; }
 std::vector<std::string> OPWInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 std::string OPWInvKin::getName() const { return name_; }
 std::string OPWInvKin::getSolverName() const { return solver_name_; }

@@ -253,16 +253,13 @@ URInvKin& URInvKin::operator=(const URInvKin& other)
   return *this;
 }
 
-IKSolutions URInvKin::calcInvKin(const Eigen::Isometry3d& pose,
-                                 const std::string& working_frame,
-                                 const std::string& link_name,
-                                 const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
+IKSolutions URInvKin::calcInvKin(const IKInput& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  assert(working_frame == base_link_name_);
-  assert(link_name == tip_link_name_);
+  assert(tip_link_poses.size() == 1);
+  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
 
   Eigen::Isometry3d base_offset = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitZ());
-  Eigen::Isometry3d corrected_pose = base_offset.inverse() * pose;
+  Eigen::Isometry3d corrected_pose = base_offset.inverse() * tip_link_poses.at(tip_link_name_);
 
   // Do the analytic IK
   std::array<std::array<double, 6>, 8> sols;  // maximum of 8 IK solutions
@@ -288,7 +285,7 @@ IKSolutions URInvKin::calcInvKin(const Eigen::Isometry3d& pose,
 Eigen::Index URInvKin::numJoints() const { return 6; }
 std::vector<std::string> URInvKin::getJointNames() const { return joint_names_; }
 std::string URInvKin::getBaseLinkName() const { return base_link_name_; }
-std::vector<std::string> URInvKin::getWorkingFrames() const { return { base_link_name_ }; }
+std::string URInvKin::getWorkingFrame() const { return base_link_name_; }
 std::vector<std::string> URInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 std::string URInvKin::getName() const { return name_; }
 std::string URInvKin::getSolverName() const { return solver_name_; }

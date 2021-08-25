@@ -66,13 +66,12 @@ TEST(TesseractKinematicsUnit, IKFastInvKin)  // NOLINT
   EXPECT_EQ(inv_kin->getSolverName(), "IKFastInvKin");
   EXPECT_EQ(inv_kin->numJoints(), 6);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
-  EXPECT_EQ(inv_kin->getWorkingFrames().size(), 1);
-  EXPECT_EQ(inv_kin->getWorkingFrames()[0], base_link_name);
+  EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_name);
   EXPECT_EQ(inv_kin->getTipLinkNames().size(), 1);
   EXPECT_EQ(inv_kin->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin->getJointNames(), joint_names);
 
-  runInvKinTest(*inv_kin, fwd_kin, pose, base_link_name, tip_link_name, seed);
+  runInvKinTest(*inv_kin, fwd_kin, pose, tip_link_name, seed);
 
   // Check cloned
   tesseract_kinematics::InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
@@ -81,13 +80,12 @@ TEST(TesseractKinematicsUnit, IKFastInvKin)  // NOLINT
   EXPECT_EQ(inv_kin2->getSolverName(), "IKFastInvKin");
   EXPECT_EQ(inv_kin2->numJoints(), 6);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
-  EXPECT_EQ(inv_kin2->getWorkingFrames().size(), 1);
-  EXPECT_EQ(inv_kin2->getWorkingFrames()[0], base_link_name);
+  EXPECT_EQ(inv_kin2->getWorkingFrame(), base_link_name);
   EXPECT_EQ(inv_kin2->getTipLinkNames().size(), 1);
   EXPECT_EQ(inv_kin2->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin2->getJointNames(), joint_names);
 
-  runInvKinTest(*inv_kin2, fwd_kin, pose, base_link_name, tip_link_name, seed);
+  runInvKinTest(*inv_kin2, fwd_kin, pose, tip_link_name, seed);
 }
 
 int main(int argc, char** argv)

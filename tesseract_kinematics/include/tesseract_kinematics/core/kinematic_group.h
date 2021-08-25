@@ -12,6 +12,42 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+/**
+ * @brief The Kinematic Group Inverse Kinematics Input Data
+ * @details For simple case your inverse kinetics object only requires a single input to solve for
+ * but imagine the case where you have two robots and a positioner. Now each robot requires an
+ * input to solve IK for. This structure is to support the ability to provide multiple inputs for
+ * kinematic arragements involving multiple robots.
+ */
+struct KinGroupIKInput
+{
+  // LCOV_EXCL_START
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
+
+  KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std::string tl)
+    : pose(p), working_frame(std::move(wf)), tip_link_name(std::move(tl))
+  {
+  }
+
+  /** @brief The desired inverse kinematic pose */
+  Eigen::Isometry3d pose;
+
+  /**
+   * @brief The link name the pose is relative to
+   * @details The provided working frame must be listed in InverseKinematics::getWorkingFrames()
+   */
+  std::string working_frame;
+
+  /**
+   * @brief The tip link of the kinematic object to solve IK
+   * @details The provided tip link name must be listed in InverseKinematics::getTipLinkNames()
+   */
+  std::string tip_link_name;  // This defines the internal kinematic group the information belongs to
+};
+
+using KinGroupIKInputs = tesseract_common::AlignedVector<KinGroupIKInput>;
+
 class KinematicGroup
 {
 public:
@@ -43,15 +79,12 @@ public:
    * @brief Calculates joint solutions given a pose.
    * @details If redundant solutions are needed see utility funciton getRedundantSolutions.
    * @param solutions A vector of solutions, so check the size of the vector to determine the number of solutions
-   * @param pose Transform of end-of-tip relative to working_frame
-   * @param working_frame The link name the pose is relative to. It must be listed in getTipLinkNames().
-   * @param tip_link_name The tip link to use for solving inverse kinematics. It must be listed in getTipLinkNames().
+   * @param tip_link_poses The input information to solve inverse kinematics for. There must be an input for each link
+   * provided in getTipLinkNames
    * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
-  virtual IKSolutions calcInvKin(const Eigen::Isometry3d& pose,
-                                 const std::string& working_frame,
-                                 const std::string& tip_link_name,
+  virtual IKSolutions calcInvKin(const KinGroupIKInputs& tip_link_poses,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
 
   /**
@@ -60,7 +93,8 @@ public:
    * @param joint_angles Input vector of joint angles
    */
   virtual Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                       const std::string& link_name) const = 0;
+                                       const std::string& link_name,
+                                       const std::string& base_link_name) const = 0;
 
   /**
    * @brief Get list of joint names for kinematic object

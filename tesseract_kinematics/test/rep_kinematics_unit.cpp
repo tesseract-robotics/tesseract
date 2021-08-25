@@ -186,8 +186,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_EQ(inv_kin->getSolverName(), "RobotWithExternalPositionerInvKin");
   EXPECT_EQ(inv_kin->numJoints(), 8);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
-  EXPECT_EQ(inv_kin->getWorkingFrames().size(), 1);
-  EXPECT_EQ(inv_kin->getWorkingFrames()[0], working_frame);
+  EXPECT_EQ(inv_kin->getWorkingFrame(), working_frame);
   EXPECT_EQ(inv_kin->getTipLinkNames().size(), 1);
   EXPECT_EQ(inv_kin->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin->getJointNames(), joint_names);
@@ -206,8 +205,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_EQ(inv_kin2->getSolverName(), "RobotWithExternalPositionerInvKin");
   EXPECT_EQ(inv_kin2->numJoints(), 8);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
-  EXPECT_EQ(inv_kin2->getWorkingFrames().size(), 1);
-  EXPECT_EQ(inv_kin2->getWorkingFrames()[0], working_frame);
+  EXPECT_EQ(inv_kin2->getWorkingFrame(), working_frame);
   EXPECT_EQ(inv_kin2->getTipLinkNames().size(), 1);
   EXPECT_EQ(inv_kin2->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin2->getJointNames(), joint_names);

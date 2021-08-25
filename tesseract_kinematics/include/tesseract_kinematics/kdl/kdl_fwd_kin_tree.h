@@ -64,24 +64,24 @@ public:
   using ConstUPtr = std::unique_ptr<const KDLFwdKinTree>;
 
   KDLFwdKinTree() = default;
-  ~KDLFwdKinTree() final = default;
+  ~KDLFwdKinTree() override final = default;
   KDLFwdKinTree(const KDLFwdKinTree& other);
   KDLFwdKinTree& operator=(const KDLFwdKinTree& other);
   KDLFwdKinTree(KDLFwdKinTree&&) = default;
   KDLFwdKinTree& operator=(KDLFwdKinTree&&) = default;
 
-  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const final;
+  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& joint_link_name) const final;
+                               const std::string& joint_link_name) const override final;
 
-  std::string getBaseLinkName() const final;
-  std::vector<std::string> getJointNames() const final;
-  std::vector<std::string> getTipLinkNames() const final;
-  Eigen::Index numJoints() const final;
-  std::string getName() const final;
-  std::string getSolverName() const final;
-  ForwardKinematics::UPtr clone() const final;
+  std::string getBaseLinkName() const override final;
+  std::vector<std::string> getJointNames() const override final;
+  std::vector<std::string> getTipLinkNames() const override final;
+  Eigen::Index numJoints() const override final;
+  std::string getName() const override final;
+  std::string getSolverName() const override final;
+  ForwardKinematics::UPtr clone() const override final;
 
   /**
    * @brief Initializes Forward Kinematics as tree

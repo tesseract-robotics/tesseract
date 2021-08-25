@@ -58,54 +58,51 @@ RobotOnPositionerInvKin& RobotOnPositionerInvKin::operator=(const RobotOnPositio
   return *this;
 }
 
-IKSolutions RobotOnPositionerInvKin::calcInvKinHelper(const Eigen::Isometry3d& pose,
-                                                      const std::string& link_name,
+IKSolutions RobotOnPositionerInvKin::calcInvKinHelper(const IKInput& tip_link_poses,
                                                       const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
   IKSolutions solutions;
-  nested_ik(solutions, 0, dof_range_, pose, link_name, positioner_pose, seed);
+  nested_ik(solutions, 0, dof_range_, tip_link_poses, positioner_pose, seed);
   return solutions;
 }
 
 void RobotOnPositionerInvKin::nested_ik(IKSolutions& solutions,
                                         int loop_level,
                                         const std::vector<Eigen::VectorXd>& dof_range,
-                                        const Eigen::Isometry3d& target_pose,
-                                        const std::string& link_name,
+                                        const IKInput& tip_link_poses,
                                         Eigen::VectorXd& positioner_pose,
                                         const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   if (loop_level >= positioner_fwd_kin_->numJoints())
   {
-    ikAt(solutions, target_pose, link_name, positioner_pose, seed);
+    ikAt(solutions, tip_link_poses, positioner_pose, seed);
     return;
   }
 
   for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
   {
     positioner_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
-    nested_ik(solutions, loop_level + 1, dof_range, target_pose, link_name, positioner_pose, seed);
+    nested_ik(solutions, loop_level + 1, dof_range, tip_link_poses, positioner_pose, seed);
   }
 }
 
 void RobotOnPositionerInvKin::ikAt(IKSolutions& solutions,
-                                   const Eigen::Isometry3d& target_pose,
-                                   const std::string& link_name,
+                                   const IKInput& tip_link_poses,
                                    Eigen::VectorXd& positioner_pose,
                                    const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   tesseract_common::TransformMap positioner_poses = positioner_fwd_kin_->calcFwdKin(positioner_pose);
   Eigen::Isometry3d positioner_tf = positioner_poses[positioner_tip_link_] * positioner_to_robot_;
-  Eigen::Isometry3d robot_target_pose = positioner_tf.inverse() * target_pose;
+  Eigen::Isometry3d robot_target_pose = positioner_tf.inverse() * tip_link_poses.at(manip_tip_link_);
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
 
+  IKInput robot_target_poses{ std::make_pair(manip_tip_link_, robot_target_pose) };
   auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
   auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
 
-  IKSolutions robot_solution_set =
-      manip_inv_kin_->calcInvKin(robot_target_pose, manip_inv_kin_->getBaseLinkName(), link_name, seed.tail(robot_dof));
+  IKSolutions robot_solution_set = manip_inv_kin_->calcInvKin(robot_target_poses, seed.tail(robot_dof));
   if (robot_solution_set.empty())
     return;
 
@@ -120,16 +117,13 @@ void RobotOnPositionerInvKin::ikAt(IKSolutions& solutions,
   }
 }
 
-IKSolutions RobotOnPositionerInvKin::calcInvKin(const Eigen::Isometry3d& pose,
-                                                const std::string& working_frame,
-                                                const std::string& link_name,
+IKSolutions RobotOnPositionerInvKin::calcInvKin(const IKInput& tip_link_poses,
                                                 const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(checkInitialized());
-  assert(working_frame == positioner_fwd_kin_->getBaseLinkName());
-  assert(link_name == manip_tip_link_);
+  assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());
 
-  return calcInvKinHelper(pose, link_name, seed);
+  return calcInvKinHelper(tip_link_poses, seed);
 }
 
 std::vector<std::string> RobotOnPositionerInvKin::getJointNames() const
@@ -142,10 +136,7 @@ Eigen::Index RobotOnPositionerInvKin::numJoints() const { return dof_; }
 
 std::string RobotOnPositionerInvKin::getBaseLinkName() const { return positioner_fwd_kin_->getBaseLinkName(); }
 
-std::vector<std::string> RobotOnPositionerInvKin::getWorkingFrames() const
-{
-  return { positioner_fwd_kin_->getBaseLinkName() };
-}
+std::string RobotOnPositionerInvKin::getWorkingFrame() const { return positioner_fwd_kin_->getBaseLinkName(); }
 
 std::vector<std::string> RobotOnPositionerInvKin::getTipLinkNames() const { return manip_inv_kin_->getTipLinkNames(); }
 
