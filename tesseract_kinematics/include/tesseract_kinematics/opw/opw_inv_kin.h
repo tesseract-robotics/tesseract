@@ -40,6 +40,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+static const std::string OPW_INV_KIN_CHAIN_SOLVER_NAME = "OPWInvKin";
+
 /**@brief OPW Inverse Kinematics Implmentation. */
 class OPWInvKin : public InverseKinematics
 {
@@ -53,12 +55,25 @@ public:
   using UPtr = std::unique_ptr<OPWInvKin>;
   using ConstUPtr = std::unique_ptr<const OPWInvKin>;
 
-  OPWInvKin() = default;
   ~OPWInvKin() override final = default;
   OPWInvKin(const OPWInvKin& other);
   OPWInvKin& operator=(const OPWInvKin& other);
   OPWInvKin(OPWInvKin&&) = default;
   OPWInvKin& operator=(OPWInvKin&&) = default;
+
+  /**
+   * @brief Construct OPW Inverse Kinematics
+   * @param name The name of the kinematic chain
+   * @param params OPW kinematics parameters
+   * @param base_link_name The name of the base link for the kinematic chain
+   * @param tip_link_name The name of the tip link for the kinematic chain
+   * @param joint_names The joint names for the kinematic chain
+   */
+  OPWInvKin(std::string name,
+            opw_kinematics::Parameters<double> params,
+            std::string base_link_name,
+            std::string tip_link_name,
+            std::vector<std::string> joint_names);
 
   IKSolutions calcInvKin(const IKInput& tip_link_poses,
                          const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
@@ -72,35 +87,12 @@ public:
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
 
-  /**
-   * @brief init Initialize OPW Inverse Kinematics
-   * @param name The name of the kinematic chain
-   * @param params OPW kinematics parameters
-   * @param base_link_name The name of the base link for the kinematic chain
-   * @param tip_link_name The name of the tip link for the kinematic chain
-   * @param joint_names The joint names for the kinematic chain
-   * @return True if successful
-   */
-  bool init(std::string name,
-            opw_kinematics::Parameters<double> params,
-            std::string base_link_name,
-            std::string tip_link_name,
-            std::vector<std::string> joint_names);
-
-  /**
-   * @brief Checks if kinematics has been initialized
-   * @return True if init() has completed successfully
-   */
-  bool checkInitialized() const;
-
 protected:
-  bool initialized_{ false };                 /**< @brief Identifies if the object has been initialized */
-  opw_kinematics::Parameters<double> params_; /**< @brief The opw kinematics parameters */
   std::string name_;                          /**< @brief Name of the kinematic chain */
+  opw_kinematics::Parameters<double> params_; /**< @brief The opw kinematics parameters */
   std::string base_link_name_;                /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name_;                 /**< @brief Link name of last kink in the kinematic object */
   std::vector<std::string> joint_names_;      /**< @brief Joint names for the kinematic object */
-  std::string solver_name_{ "OPWInvKin" };    /**< @brief Name of this solver */
 };
 
 }  // namespace tesseract_kinematics

@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 
 using namespace tesseract_kinematics::test_suite;
+using namespace tesseract_kinematics;
 
 TEST(TesseractKinematicsUnit, IKFastInvKin)  // NOLINT
 {
@@ -53,17 +54,12 @@ TEST(TesseractKinematicsUnit, IKFastInvKin)  // NOLINT
   std::string tip_link_name = "tool0";
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
 
-  tesseract_kinematics::KDLFwdKinChain fwd_kin;
-  fwd_kin.init(*scene_graph, base_link_name, tip_link_name, manip_name);
+  KDLFwdKinChain fwd_kin(manip_name, *scene_graph, base_link_name, tip_link_name);
 
-  auto inv_kin = std::make_shared<tesseract_kinematics::AbbIRB2400Kinematics>();
-  EXPECT_FALSE(inv_kin->checkInitialized());
-  bool status = inv_kin->init(manip_name, base_link_name, tip_link_name, joint_names);
+  auto inv_kin = std::make_shared<AbbIRB2400Kinematics>(manip_name, base_link_name, tip_link_name, joint_names);
 
-  EXPECT_TRUE(status);
-  EXPECT_TRUE(inv_kin->checkInitialized());
   EXPECT_EQ(inv_kin->getName(), manip_name);
-  EXPECT_EQ(inv_kin->getSolverName(), "IKFastInvKin");
+  EXPECT_EQ(inv_kin->getSolverName(), IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 6);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
   EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_name);
@@ -74,10 +70,10 @@ TEST(TesseractKinematicsUnit, IKFastInvKin)  // NOLINT
   runInvKinTest(*inv_kin, fwd_kin, pose, tip_link_name, seed);
 
   // Check cloned
-  tesseract_kinematics::InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
+  InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
   EXPECT_TRUE(inv_kin2 != nullptr);
   EXPECT_EQ(inv_kin2->getName(), manip_name);
-  EXPECT_EQ(inv_kin2->getSolverName(), "IKFastInvKin");
+  EXPECT_EQ(inv_kin2->getSolverName(), IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin2->numJoints(), 6);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
   EXPECT_EQ(inv_kin2->getWorkingFrame(), base_link_name);

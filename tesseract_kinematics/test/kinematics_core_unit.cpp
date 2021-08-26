@@ -3,51 +3,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_kinematics/core/forward_kinematics_factory.h>
-#include <tesseract_kinematics/core/inverse_kinematics_factory.h>
+#include <tesseract_kinematics/core/forward_kinematics_chain_factory.h>
+#include <tesseract_kinematics/core/inverse_kinematics_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract_kinematics/core/utils.h>
 #include "kinematics_test_utils.h"
 
 const static std::string FACTORY_NAME = "TestFactory";
-
-class TestForwardKinematicsFactory : public tesseract_kinematics::ForwardKinematicsFactory
-{
-  const std::string& getName() const override { return FACTORY_NAME; }
-  tesseract_kinematics::ForwardKinematicsFactoryType getType() const override
-  {
-    return tesseract_kinematics::ForwardKinematicsFactoryType::CHAIN;
-  }
-};
-
-class TestInverseKinematicsFactory : public tesseract_kinematics::InverseKinematicsFactory
-{
-  const std::string& getName() const override { return FACTORY_NAME; }
-  tesseract_kinematics::InverseKinematicsFactoryType getType() const override
-  {
-    return tesseract_kinematics::InverseKinematicsFactoryType::CHAIN;
-  }
-};
-
-TEST(TesseractKinematicsUnit, CoreFactoryUnit)  // NOLINT
-{
-  using namespace tesseract_kinematics;
-  TestForwardKinematicsFactory test_fwd_factory;
-  tesseract_scene_graph::SceneGraph scene_graph_empty;
-  tesseract_scene_graph::SceneState scene_state_empty;
-  EXPECT_TRUE(test_fwd_factory.create("", scene_graph_empty, scene_state_empty, "", "") == nullptr);
-  EXPECT_TRUE(test_fwd_factory.create(
-                  "", scene_graph_empty, scene_state_empty, std::vector<std::pair<std::string, std::string>>()) ==
-              nullptr);
-  EXPECT_TRUE(test_fwd_factory.create("", scene_graph_empty, scene_state_empty, std::vector<std::string>()) == nullptr);
-
-  TestInverseKinematicsFactory test_inv_factory;
-  EXPECT_TRUE(test_inv_factory.create("", scene_graph_empty, scene_state_empty, "", "") == nullptr);
-  EXPECT_TRUE(test_inv_factory.create(
-                  "", scene_graph_empty, scene_state_empty, std::vector<std::pair<std::string, std::string>>()) ==
-              nullptr);
-  EXPECT_TRUE(test_inv_factory.create("", scene_graph_empty, scene_state_empty, std::vector<std::string>()) == nullptr);
-}
 
 TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT
 {
@@ -184,8 +146,7 @@ TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB();
 
-  tesseract_kinematics::KDLFwdKinChain fwd_kin;
-  fwd_kin.init(*scene_graph, "base_link", "tool0", "manip");
+  tesseract_kinematics::KDLFwdKinChain fwd_kin("manip", *scene_graph, "base_link", "tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
@@ -210,8 +171,7 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB();
 
-  tesseract_kinematics::KDLFwdKinChain fwd_kin;
-  fwd_kin.init(*scene_graph, "base_link", "tool0", "manip");
+  tesseract_kinematics::KDLFwdKinChain fwd_kin("manip", *scene_graph, "base_link", "tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);

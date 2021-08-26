@@ -26,7 +26,7 @@
 #ifndef TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_NR_FACTORY_H
 #define TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_NR_FACTORY_H
 
-#include <tesseract_kinematics/core/inverse_kinematics_factory.h>
+#include <tesseract_kinematics/core/inverse_kinematics_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
 
 #ifdef SWIG
@@ -35,14 +35,10 @@
 
 namespace tesseract_kinematics
 {
-class KDLInvKinChainNRFactory : public InverseKinematicsFactory
+class KDLInvKinChainNRFactory : public InvKinChainFactory
 {
 public:
-  KDLInvKinChainNRFactory() : name_(KDLInvKinChainNR().getSolverName()) {}
-
-  const std::string& getName() const override { return name_; }
-
-  InverseKinematicsFactoryType getType() const override { return InverseKinematicsFactoryType::CHAIN; }
+  const std::string& getName() const override { return KDL_INV_KIN_CHAIN_NR_SOLVER_NAME; }
 
   InverseKinematics::UPtr create(const std::string& name,
                                  const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -50,27 +46,15 @@ public:
                                  const std::string& base_link,
                                  const std::string& tip_link) const override
   {
-    auto kin = std::make_unique<KDLInvKinChainNR>();
-    if (!kin->init(scene_graph, base_link, tip_link, name))
+    try
+    {
+      return std::make_unique<KDLInvKinChainNR>(name, scene_graph, base_link, tip_link);
+    }
+    catch (...)
+    {
       return nullptr;
-
-    return kin;
+    }
   }
-
-  InverseKinematics::UPtr create(const std::string& name,
-                                 const tesseract_scene_graph::SceneGraph& scene_graph,
-                                 const tesseract_scene_graph::SceneState& scene_state,
-                                 const std::vector<std::pair<std::string, std::string>>& chains) const override
-  {
-    auto kin = std::make_unique<KDLInvKinChainNR>();
-    if (!kin->init(scene_graph, chains, name))
-      return nullptr;
-
-    return kin;
-  }
-
-private:
-  std::string name_;
 };
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_NR_FACTORY_H

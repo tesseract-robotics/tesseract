@@ -35,6 +35,8 @@
 
 namespace tesseract_kinematics
 {
+static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
+
 /**
  * @brief IKFast Inverse Kinematics Implmentation.
  *
@@ -89,12 +91,23 @@ public:
   using UPtr = std::unique_ptr<IKFastInvKin>;
   using ConstUPtr = std::unique_ptr<const IKFastInvKin>;
 
-  IKFastInvKin() = default;
   ~IKFastInvKin() override = default;
   IKFastInvKin(const IKFastInvKin& other);
   IKFastInvKin& operator=(const IKFastInvKin& other);
   IKFastInvKin(IKFastInvKin&&) = default;
   IKFastInvKin& operator=(IKFastInvKin&&) = default;
+
+  /**
+   * @brief Construct IKFast Inverse Kinematics
+   * @param name The name of the kinematic chain
+   * @param base_link_name The name of the base link for the kinematic chain
+   * @param tip_link_name The name of the tip link for the kinematic chain
+   * @param joint_names The joint names for the kinematic chain
+   */
+  IKFastInvKin(std::string name,
+               std::string base_link_name,
+               std::string tip_link_name,
+               std::vector<std::string> joint_names);
 
   IKSolutions calcInvKin(const IKInput& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
@@ -107,30 +120,11 @@ public:
   std::string getSolverName() const override;
   InverseKinematics::UPtr clone() const override;
 
-  /**
-   * @brief Initialize IKFast Inverse Kinematics
-   * @param name The name of the kinematic chain
-   * @param base_link_name The name of the base link for the kinematic chain
-   * @param tip_link_name The name of the tip link for the kinematic chain
-   * @param joint_names The joint names for the kinematic chain
-   * @return True if successful
-   */
-  bool
-  init(std::string name, std::string base_link_name, std::string tip_link_name, std::vector<std::string> joint_names);
-
-  /**
-   * @brief Checks if kinematics has been initialized
-   * @return True if init() has completed successfully
-   */
-  bool checkInitialized() const;
-
 protected:
-  bool initialized_ = false;                  /**< @brief Identifies if the object has been initialized */
-  std::string base_link_name_;                /**< @brief Link name of first link in the kinematic object */
-  std::string tip_link_name_;                 /**< @brief Link name of last kink in the kinematic object */
-  std::vector<std::string> joint_names_;      /**< @brief Joint names for the kinematic object */
-  std::string name_;                          /**< @brief Name of the kinematic chain */
-  std::string solver_name_{ "IKFastInvKin" }; /**< @brief Name of this solver */
+  std::string name_;                     /**< @brief Name of the kinematic chain */
+  std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */
+  std::string tip_link_name_;            /**< @brief Link name of last kink in the kinematic object */
+  std::vector<std::string> joint_names_; /**< @brief Joint names for the kinematic object */
 };
 
 }  // namespace tesseract_kinematics

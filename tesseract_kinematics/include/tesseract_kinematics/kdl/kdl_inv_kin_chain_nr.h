@@ -47,6 +47,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+static const std::string KDL_INV_KIN_CHAIN_NR_SOLVER_NAME = "KDLInvKinChainNR";
+
 /**
  * @brief KDL Inverse kinematic chain implementation.
  */
@@ -62,12 +64,35 @@ public:
   using UPtr = std::unique_ptr<KDLInvKinChainNR>;
   using ConstUPtr = std::unique_ptr<const KDLInvKinChainNR>;
 
-  KDLInvKinChainNR() = default;
   ~KDLInvKinChainNR() override final = default;
   KDLInvKinChainNR(const KDLInvKinChainNR& other);
   KDLInvKinChainNR& operator=(const KDLInvKinChainNR& other);
   KDLInvKinChainNR(KDLInvKinChainNR&&) = default;
   KDLInvKinChainNR& operator=(KDLInvKinChainNR&&) = default;
+
+  /**
+   * @brief Construct KDL Forward Kinematics
+   * Creates KDL::Chain from tesseract scene graph
+   * @param name The name of the kinematic chain
+   * @param scene_graph The Tesseract Scene Graph
+   * @param base_link The name of the base link for the kinematic chain
+   * @param tip_link The name of the tip link for the kinematic chain
+   */
+  KDLInvKinChainNR(const std::string& name,
+                   const tesseract_scene_graph::SceneGraph& scene_graph,
+                   const std::string& base_link,
+                   const std::string& tip_link);
+
+  /**
+   * @brief Construct Inverse Kinematics as chain
+   * Creates a inverse kinematic chain object from sequential chains
+   * @param scene_graph The Tesseract Scene Graph
+   * @param chains A vector of kinematics chains <base_link, tip_link> that get concatenated
+   * @param name The name of the kinematic chain
+   */
+  KDLInvKinChainNR(std::string name,
+                   const tesseract_scene_graph::SceneGraph& scene_graph,
+                   const std::vector<std::pair<std::string, std::string> >& chains);
 
   IKSolutions calcInvKin(const IKInput& tip_link_poses,
                          const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
@@ -81,43 +106,9 @@ public:
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
 
-  /**
-   * @brief Initializes KDL Forward Kinematics
-   * Creates KDL::Chain from tesseract scene graph
-   * @param scene_graph The Tesseract Scene Graph
-   * @param base_link The name of the base link for the kinematic chain
-   * @param tip_link The name of the tip link for the kinematic chain
-   * @param name The name of the kinematic chain
-   * @return True if init() completes successfully
-   */
-  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const std::string& base_link,
-            const std::string& tip_link,
-            const std::string& name);
-
-  /**
-   * @brief Initializes Inverse Kinematics as chain
-   * Creates a inverse kinematic chain object from sequential chains
-   * @param scene_graph The Tesseract Scene Graph
-   * @param chains A vector of kinematics chains <base_link, tip_link> that get concatenated
-   * @param name The name of the kinematic chain
-   * @return True if init() completes successfully
-   */
-  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const std::vector<std::pair<std::string, std::string> >& chains,
-            std::string name);
-
-  /**
-   * @brief Checks if kinematics has been initialized
-   * @return True if init() has completed successfully
-   */
-  bool checkInitialized() const;
-
 private:
-  bool initialized_{ false };                     /**< @brief Identifies if the object has been initialized */
-  KDLChainData kdl_data_;                         /**< @brief KDL data parsed from Scene Graph */
-  std::string name_;                              /**< @brief Name of the kinematic chain */
-  std::string solver_name_{ "KDLInvKinChainNR" }; /**< @brief Name of this solver */
+  KDLChainData kdl_data_;                                      /**< @brief KDL data parsed from Scene Graph */
+  std::string name_;                                           /**< @brief Name of the kinematic chain */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< @brief KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;  /**< @brief KDL Inverse kinematic velocity solver */
   std::unique_ptr<KDL::ChainIkSolverPos_NR> ik_solver_;        /**< @brief KDL Inverse kinematic solver */

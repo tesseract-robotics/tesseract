@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/scene_state.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/forward_kinematics.h>
@@ -45,6 +46,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+static const std::string KDL_FWD_KIN_TREE_SOLVER_NAME = "KDLFwdKinTree";
+
 /**
  * @brief ROS kinematics functions.
  *
@@ -63,12 +66,24 @@ public:
   using UPtr = std::unique_ptr<KDLFwdKinTree>;
   using ConstUPtr = std::unique_ptr<const KDLFwdKinTree>;
 
-  KDLFwdKinTree() = default;
   ~KDLFwdKinTree() override final = default;
   KDLFwdKinTree(const KDLFwdKinTree& other);
   KDLFwdKinTree& operator=(const KDLFwdKinTree& other);
   KDLFwdKinTree(KDLFwdKinTree&&) = default;
   KDLFwdKinTree& operator=(KDLFwdKinTree&&) = default;
+
+  /**
+   * @brief Construct Forward Kinematics as tree
+   * Creates a forward kinematics tree object
+   * @param name The name of the kinematic chain
+   * @param scene_graph The tesseract scene graph
+   * @param joint_names The list of active joints to be considered
+   * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
+   */
+  KDLFwdKinTree(std::string name,
+                const tesseract_scene_graph::SceneGraph& scene_graph,
+                const tesseract_scene_graph::SceneState& scene_state,
+                const std::vector<std::string>& joint_names);
 
   tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
@@ -83,35 +98,13 @@ public:
   std::string getSolverName() const override final;
   ForwardKinematics::UPtr clone() const override final;
 
-  /**
-   * @brief Initializes Forward Kinematics as tree
-   * Creates a forward kinematics tree object
-   * @param scene_graph The tesseract scene graph
-   * @param joint_names The list of active joints to be considered
-   * @param name The name of the kinematic chain
-   * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
-   * @return True if init() completes successfully
-   */
-  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const std::vector<std::string>& joint_names,
-            std::string name,
-            const std::unordered_map<std::string, double>& start_state = std::unordered_map<std::string, double>());
-
-  /**
-   * @brief Checks if kinematics has been initialized
-   * @return True if init() has completed successfully
-   */
-  bool checkInitialized() const;
-
 private:
-  bool initialized_{ false };                  /**< Identifies if the object has been initialized */
-  KDL::Tree kdl_tree_;                         /**< KDL tree object */
-  std::string name_;                           /**< Name of the kinematic chain */
-  std::string base_link_name_;                 /**< @brief Link name of first link in the kinematic object */
-  std::string tip_link_name_;                  /**< @brief Link name of last kink in the kinematic object */
-  std::string solver_name_{ "KDLFwdKinTree" }; /**< Name of this solver */
-  std::vector<std::string> joint_names_;       /**< List of joint names */
-  KDL::JntArray start_state_;                  /**< Intial state of the tree. Should include all joints in the model. */
+  KDL::Tree kdl_tree_;                   /**< KDL tree object */
+  std::string name_;                     /**< Name of the kinematic chain */
+  std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */
+  std::string tip_link_name_;            /**< @brief Link name of last kink in the kinematic object */
+  std::vector<std::string> joint_names_; /**< List of joint names */
+  KDL::JntArray start_state_;            /**< Intial state of the tree. Should include all joints in the model. */
   std::unordered_map<std::string, double> input_start_state_; /**< Input start state before it has been translated into
                                                                  KDL types */
   std::vector<int> joint_qnr_; /**< The kdl segment number corrisponding to joint in joint_lists_ */

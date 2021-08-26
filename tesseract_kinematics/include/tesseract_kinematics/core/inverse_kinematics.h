@@ -42,7 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
 %shared_ptr(tesseract_kinematics::InverseKinematics)
-%unique_ptr(tesseract_kinematics::InverseKinematics)
 #endif  // SWIG
 
 namespace tesseract_kinematics

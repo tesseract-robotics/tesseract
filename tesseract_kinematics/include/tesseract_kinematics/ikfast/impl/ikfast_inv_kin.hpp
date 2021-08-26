@@ -43,39 +43,32 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+inline IKFastInvKin::IKFastInvKin(std::string name,
+                                  std::string base_link_name,
+                                  std::string tip_link_name,
+                                  std::vector<std::string> joint_names)
+  : name_(std::move(name))
+  , base_link_name_(std::move(base_link_name))
+  , tip_link_name_(std::move(tip_link_name))
+  , joint_names_(std::move(joint_names))
+{
+  if (joint_names_.size() != 6)
+    throw std::runtime_error("OPWInvKin, only support six joints!");
+}
+
 inline InverseKinematics::UPtr IKFastInvKin::clone() const { return std::make_unique<IKFastInvKin>(*this); }
 
 inline IKFastInvKin::IKFastInvKin(const IKFastInvKin& other) { *this = other; }
 
 inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
 {
-  initialized_ = other.initialized_;
   name_ = other.name_;
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
   joint_names_ = other.joint_names_;
-  solver_name_ = other.solver_name_;
 
   return *this;
 }
-
-// inline bool IKFastInvKin::update()
-//{
-//  if (!init(name_,
-//            base_link_name_,
-//            tip_link_name_,
-//            orig_data_.joint_names,
-//            orig_data_.link_names,
-//            orig_data_.active_link_names,
-//            orig_data_.limits,
-//            orig_data_.redundancy_indices))
-//    return false;
-
-//  if (sync_fwd_kin_ != nullptr)
-//    synchronize(sync_fwd_kin_);
-
-//  return true;
-//}
 
 inline IKSolutions IKFastInvKin::calcInvKin(const IKInput& tip_link_poses,
                                             const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
@@ -136,37 +129,12 @@ inline IKSolutions IKFastInvKin::calcInvKin(const IKInput& tip_link_poses,
 }
 
 inline Eigen::Index IKFastInvKin::numJoints() const { return static_cast<Eigen::Index>(GetNumJoints()); }
-
-inline bool IKFastInvKin::init(std::string name,
-                               std::string base_link_name,
-                               std::string tip_link_name,
-                               std::vector<std::string> joint_names)
-{
-  name_ = std::move(name);
-  base_link_name_ = std::move(base_link_name);
-  tip_link_name_ = std::move(tip_link_name);
-  joint_names_ = std::move(joint_names);
-  initialized_ = true;
-
-  return initialized_;
-}
-
 inline std::vector<std::string> IKFastInvKin::getJointNames() const { return joint_names_; }
 inline std::string IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
 inline std::string IKFastInvKin::getWorkingFrame() const { return base_link_name_; }
 inline std::vector<std::string> IKFastInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 inline std::string IKFastInvKin::getName() const { return name_; }
-inline std::string IKFastInvKin::getSolverName() const { return solver_name_; }
-
-inline bool IKFastInvKin::checkInitialized() const
-{
-  if (!initialized_)
-  {
-    CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
-  }
-
-  return initialized_;
-}
+inline std::string IKFastInvKin::getSolverName() const { return IKFAST_INV_KIN_CHAIN_SOLVER_NAME; }
 
 }  // namespace tesseract_kinematics
 

@@ -26,7 +26,7 @@
 #ifndef TESSERACT_KINEMATICS_KDL_FWD_KIN_TREE_FACTORY_H
 #define TESSERACT_KINEMATICS_KDL_FWD_KIN_TREE_FACTORY_H
 
-#include <tesseract_kinematics/core/forward_kinematics_factory.h>
+#include <tesseract_kinematics/core/forward_kinematics_tree_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
 
 #ifdef SWIG
@@ -35,29 +35,25 @@
 
 namespace tesseract_kinematics
 {
-class KDLFwdKinTreeFactory : public ForwardKinematicsFactory
+class KDLFwdKinTreeFactory : public FwdKinTreeFactory
 {
 public:
-  KDLFwdKinTreeFactory() : name_(KDLFwdKinTree().getSolverName()) {}
-
-  const std::string& getName() const override { return name_; }
-
-  ForwardKinematicsFactoryType getType() const override { return ForwardKinematicsFactoryType::TREE; }
+  const std::string& getName() const override { return KDL_FWD_KIN_TREE_SOLVER_NAME; }
 
   ForwardKinematics::UPtr create(const std::string& name,
                                  const tesseract_scene_graph::SceneGraph& scene_graph,
                                  const tesseract_scene_graph::SceneState& scene_state,
                                  const std::vector<std::string>& joint_names) const override
   {
-    auto kin = std::make_unique<KDLFwdKinTree>();
-    if (!kin->init(scene_graph, joint_names, name, scene_state.joints))
+    try
+    {
+      return std::make_unique<KDLFwdKinTree>(name, scene_graph, scene_state, joint_names);
+    }
+    catch (...)
+    {
       return nullptr;
-
-    return kin;
+    }
   }
-
-private:
-  std::string name_;
 };
 
 }  // namespace tesseract_kinematics

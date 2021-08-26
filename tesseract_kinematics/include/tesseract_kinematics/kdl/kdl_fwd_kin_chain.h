@@ -47,6 +47,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+static const std::string KDL_FWD_KIN_CHAIN_SOLVER_NAME = "KDLFwdKinChain";
+
 /**
  * @brief KDL kinematic chain implementation.
  *
@@ -65,12 +67,35 @@ public:
   using UPtr = std::unique_ptr<KDLFwdKinChain>;
   using ConstUPtr = std::unique_ptr<const KDLFwdKinChain>;
 
-  KDLFwdKinChain() = default;
   ~KDLFwdKinChain() override final = default;
   KDLFwdKinChain(const KDLFwdKinChain& other);
   KDLFwdKinChain& operator=(const KDLFwdKinChain& other);
   KDLFwdKinChain(KDLFwdKinChain&&) = default;
   KDLFwdKinChain& operator=(KDLFwdKinChain&&) = default;
+
+  /**
+   * @brief Initializes Forward Kinematics as chain
+   * Creates a forward kinematic chain object
+   * @param scene_graph The Tesseract Scene Graph
+   * @param base_link The name of the base link for the kinematic chain
+   * @param tip_link The name of the tip link for the kinematic chain
+   * @param name The name of the kinematic chain
+   */
+  KDLFwdKinChain(std::string name,
+                 const tesseract_scene_graph::SceneGraph& scene_graph,
+                 const std::string& base_link,
+                 const std::string& tip_link);
+
+  /**
+   * @brief Construct Forward Kinematics as chain
+   * Creates a forward kinematic chain object from sequential chains
+   * @param scene_graph The Tesseract Scene Graph
+   * @param chains A vector of kinematics chains <base_link, tip_link> that get concatenated
+   * @param name The name of the kinematic chain
+   */
+  KDLFwdKinChain(std::string name,
+                 const tesseract_scene_graph::SceneGraph& scene_graph,
+                 const std::vector<std::pair<std::string, std::string> >& chains);
 
   tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
@@ -85,43 +110,9 @@ public:
   std::string getSolverName() const override final;
   ForwardKinematics::UPtr clone() const override final;
 
-  /**
-   * @brief Initializes Forward Kinematics as chain
-   * Creates a forward kinematic chain object
-   * @param scene_graph The Tesseract Scene Graph
-   * @param base_link The name of the base link for the kinematic chain
-   * @param tip_link The name of the tip link for the kinematic chain
-   * @param name The name of the kinematic chain
-   * @return True if init() completes successfully
-   */
-  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const std::string& base_link,
-            const std::string& tip_link,
-            std::string name);
-
-  /**
-   * @brief Initializes Forward Kinematics as chain
-   * Creates a forward kinematic chain object from sequential chains
-   * @param scene_graph The Tesseract Scene Graph
-   * @param chains A vector of kinematics chains <base_link, tip_link> that get concatenated
-   * @param name The name of the kinematic chain
-   * @return True if init() completes successfully
-   */
-  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const std::vector<std::pair<std::string, std::string> >& chains,
-            std::string name);
-
-  /**
-   * @brief Checks if kinematics has been initialized
-   * @return True if init() has completed successfully
-   */
-  bool checkInitialized() const;
-
 private:
-  bool initialized_{ false };                                  /**< Identifies if the object has been initialized */
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
-  std::string solver_name_{ "KDLFwdKinChain" };                /**< Name of this solver */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
 

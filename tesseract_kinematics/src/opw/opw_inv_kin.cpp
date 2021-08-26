@@ -36,37 +36,32 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+OPWInvKin::OPWInvKin(std::string name,
+                     opw_kinematics::Parameters<double> params,
+                     std::string base_link_name,
+                     std::string tip_link_name,
+                     std::vector<std::string> joint_names)
+  : name_(std::move(name))
+  , params_(params)
+  , base_link_name_(std::move(base_link_name))
+  , tip_link_name_(std::move(tip_link_name))
+  , joint_names_(std::move(joint_names))
+{
+  if (joint_names_.size() != 6)
+    throw std::runtime_error("OPWInvKin, only support six joints!");
+}
+
 InverseKinematics::UPtr OPWInvKin::clone() const { return std::make_unique<OPWInvKin>(*this); }
-
-// bool OPWInvKin::update()
-//{
-//  if (!init(name_,
-//            params_,
-//            base_link_name_,
-//            tip_link_name_,
-//            orig_data_.joint_names,
-//            orig_data_.link_names,
-//            orig_data_.active_link_names,
-//            orig_data_.limits))
-//    return false;
-
-//  if (sync_fwd_kin_ != nullptr)
-//    synchronize(sync_fwd_kin_);
-
-//  return true;
-//}
 
 OPWInvKin::OPWInvKin(const OPWInvKin& other) { *this = other; }
 
 OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
 {
-  initialized_ = other.initialized_;
   name_ = other.name_;
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
   joint_names_ = other.joint_names_;
   params_ = other.params_;
-  solver_name_ = other.solver_name_;
   return *this;
 }
 
@@ -105,34 +100,6 @@ std::string OPWInvKin::getBaseLinkName() const { return base_link_name_; }
 std::string OPWInvKin::getWorkingFrame() const { return base_link_name_; }
 std::vector<std::string> OPWInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 std::string OPWInvKin::getName() const { return name_; }
-std::string OPWInvKin::getSolverName() const { return solver_name_; }
-
-bool OPWInvKin::init(std::string name,
-                     opw_kinematics::Parameters<double> params,
-                     std::string base_link_name,
-                     std::string tip_link_name,
-                     std::vector<std::string> joint_names)
-{
-  assert(joint_names.size() == 6);
-
-  name_ = std::move(name);
-  params_ = params;
-  base_link_name_ = std::move(base_link_name);
-  tip_link_name_ = std::move(tip_link_name);
-  joint_names_ = std::move(joint_names);
-  initialized_ = true;
-
-  return initialized_;
-}
-
-bool OPWInvKin::checkInitialized() const
-{
-  if (!initialized_)
-  {
-    CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
-  }
-
-  return initialized_;
-}
+std::string OPWInvKin::getSolverName() const { return OPW_INV_KIN_CHAIN_SOLVER_NAME; }
 
 }  // namespace tesseract_kinematics

@@ -25,7 +25,7 @@
  */
 #ifndef TESSERACT_KINEMATICS_KDL_FWD_KIN_CHAIN_FACTORY_H
 #define TESSERACT_KINEMATICS_KDL_FWD_KIN_CHAIN_FACTORY_H
-#include <tesseract_kinematics/core/forward_kinematics_factory.h>
+#include <tesseract_kinematics/core/forward_kinematics_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 
 #ifdef SWIG
@@ -34,14 +34,10 @@
 
 namespace tesseract_kinematics
 {
-class KDLFwdKinChainFactory : public ForwardKinematicsFactory
+class KDLFwdKinChainFactory : public FwdKinChainFactory
 {
 public:
-  KDLFwdKinChainFactory() : name_(KDLFwdKinChain().getSolverName()) {}
-
-  const std::string& getName() const override { return name_; }
-
-  ForwardKinematicsFactoryType getType() const override { return ForwardKinematicsFactoryType::CHAIN; }
+  const std::string& getName() const override { return KDL_FWD_KIN_CHAIN_SOLVER_NAME; }
 
   ForwardKinematics::UPtr create(const std::string& name,
                                  const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -49,27 +45,15 @@ public:
                                  const std::string& base_link,
                                  const std::string& tip_link) const override
   {
-    auto kin = std::make_unique<KDLFwdKinChain>();
-    if (!kin->init(scene_graph, base_link, tip_link, name))
+    try
+    {
+      return std::make_unique<KDLFwdKinChain>(name, scene_graph, base_link, tip_link);
+    }
+    catch (...)
+    {
       return nullptr;
-
-    return kin;
+    }
   }
-
-  ForwardKinematics::UPtr create(const std::string& name,
-                                 const tesseract_scene_graph::SceneGraph& scene_graph,
-                                 const tesseract_scene_graph::SceneState& scene_state,
-                                 const std::vector<std::pair<std::string, std::string>>& chains) const override
-  {
-    auto kin = std::make_unique<KDLFwdKinChain>();
-    if (!kin->init(scene_graph, chains, name))
-      return nullptr;
-
-    return kin;
-  }
-
-private:
-  std::string name_;
 };
 
 }  // namespace tesseract_kinematics

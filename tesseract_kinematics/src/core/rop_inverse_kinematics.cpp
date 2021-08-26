@@ -35,145 +35,20 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-InverseKinematics::UPtr RobotOnPositionerInvKin::clone() const
-{
-  return std::make_unique<RobotOnPositionerInvKin>(*this);
-}
-
-RobotOnPositionerInvKin::RobotOnPositionerInvKin(const RobotOnPositionerInvKin& other) { *this = other; }
-
-RobotOnPositionerInvKin& RobotOnPositionerInvKin::operator=(const RobotOnPositionerInvKin& other)
-{
-  initialized_ = other.initialized_;
-  name_ = other.name_;
-  manip_inv_kin_ = other.manip_inv_kin_->clone();
-  positioner_fwd_kin_ = other.positioner_fwd_kin_->clone();
-  manip_tip_link_ = other.manip_tip_link_;
-  positioner_tip_link_ = other.positioner_tip_link_;
-  manip_reach_ = other.manip_reach_;
-  joint_names_ = other.joint_names_;
-  dof_ = other.dof_;
-  dof_range_ = other.dof_range_;
-
-  return *this;
-}
-
-IKSolutions RobotOnPositionerInvKin::calcInvKinHelper(const IKInput& tip_link_poses,
-                                                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
-{
-  Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
-  IKSolutions solutions;
-  nested_ik(solutions, 0, dof_range_, tip_link_poses, positioner_pose, seed);
-  return solutions;
-}
-
-void RobotOnPositionerInvKin::nested_ik(IKSolutions& solutions,
-                                        int loop_level,
-                                        const std::vector<Eigen::VectorXd>& dof_range,
-                                        const IKInput& tip_link_poses,
-                                        Eigen::VectorXd& positioner_pose,
-                                        const Eigen::Ref<const Eigen::VectorXd>& seed) const
-{
-  if (loop_level >= positioner_fwd_kin_->numJoints())
-  {
-    ikAt(solutions, tip_link_poses, positioner_pose, seed);
-    return;
-  }
-
-  for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
-  {
-    positioner_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
-    nested_ik(solutions, loop_level + 1, dof_range, tip_link_poses, positioner_pose, seed);
-  }
-}
-
-void RobotOnPositionerInvKin::ikAt(IKSolutions& solutions,
-                                   const IKInput& tip_link_poses,
-                                   Eigen::VectorXd& positioner_pose,
-                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
-{
-  tesseract_common::TransformMap positioner_poses = positioner_fwd_kin_->calcFwdKin(positioner_pose);
-  Eigen::Isometry3d positioner_tf = positioner_poses[positioner_tip_link_] * positioner_to_robot_;
-  Eigen::Isometry3d robot_target_pose = positioner_tf.inverse() * tip_link_poses.at(manip_tip_link_);
-  if (robot_target_pose.translation().norm() > manip_reach_)
-    return;
-
-  IKInput robot_target_poses{ std::make_pair(manip_tip_link_, robot_target_pose) };
-  auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
-  auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
-
-  IKSolutions robot_solution_set = manip_inv_kin_->calcInvKin(robot_target_poses, seed.tail(robot_dof));
-  if (robot_solution_set.empty())
-    return;
-
-  for (const auto& robot_solution : robot_solution_set)
-  {
-    Eigen::VectorXd full_sol;
-    full_sol.resize(positioner_dof + robot_dof);
-    full_sol.head(positioner_dof) = positioner_pose;
-    full_sol.tail(robot_dof) = robot_solution;
-
-    solutions.push_back(full_sol);
-  }
-}
-
-IKSolutions RobotOnPositionerInvKin::calcInvKin(const IKInput& tip_link_poses,
-                                                const Eigen::Ref<const Eigen::VectorXd>& seed) const
-{
-  assert(checkInitialized());
-  assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());
-
-  return calcInvKinHelper(tip_link_poses, seed);
-}
-
-std::vector<std::string> RobotOnPositionerInvKin::getJointNames() const
-{
-  assert(checkInitialized());
-  return joint_names_;
-}
-
-Eigen::Index RobotOnPositionerInvKin::numJoints() const { return dof_; }
-
-std::string RobotOnPositionerInvKin::getBaseLinkName() const { return positioner_fwd_kin_->getBaseLinkName(); }
-
-std::string RobotOnPositionerInvKin::getWorkingFrame() const { return positioner_fwd_kin_->getBaseLinkName(); }
-
-std::vector<std::string> RobotOnPositionerInvKin::getTipLinkNames() const { return manip_inv_kin_->getTipLinkNames(); }
-
-std::string RobotOnPositionerInvKin::getName() const { return name_; }
-
-std::string RobotOnPositionerInvKin::getSolverName() const { return solver_name_; }
-
-bool RobotOnPositionerInvKin::checkInitialized() const
-{
-  if (!initialized_)
-  {
-    CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
-  }
-
-  return initialized_;
-}
-
-bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                   const tesseract_scene_graph::SceneState& scene_state,
-                                   InverseKinematics::UPtr manipulator,
-                                   double manipulator_reach,
-                                   ForwardKinematics::UPtr positioner,
-                                   Eigen::VectorXd positioner_sample_resolution,
-                                   std::string name,
-                                   std::string solver_name)
+ROPInvKin::ROPInvKin(std::string name,
+                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const tesseract_scene_graph::SceneState& scene_state,
+                     InverseKinematics::UPtr manipulator,
+                     double manipulator_reach,
+                     ForwardKinematics::UPtr positioner,
+                     Eigen::VectorXd positioner_sample_resolution,
+                     std::string solver_name)
 {
   if (positioner == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Provided positioner is a nullptr");
-    return false;
-  }
+    throw std::runtime_error("Provided positioner is a nullptr");
 
   if (!scene_graph.getLink(scene_graph.getRoot()))
-  {
-    CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
-    return false;
-  }
+    throw std::runtime_error("The scene graph has an invalid root.");
 
   std::vector<std::string> joint_names = positioner->getJointNames();
   auto s = static_cast<Eigen::Index>(joint_names.size());
@@ -186,72 +61,70 @@ bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scen
     positioner_limits(i, 1) = joint->limits->upper;
   }
 
-  return init(scene_graph,
-              scene_state,
-              std::move(manipulator),
-              manipulator_reach,
-              std::move(positioner),
-              positioner_limits,
-              positioner_sample_resolution,
-              name,
-              solver_name);
+  init(name,
+       scene_graph,
+       scene_state,
+       std::move(manipulator),
+       manipulator_reach,
+       std::move(positioner),
+       positioner_limits,
+       positioner_sample_resolution,
+       solver_name);
 }
 
-bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                   const tesseract_scene_graph::SceneState& scene_state,
-                                   InverseKinematics::UPtr manipulator,
-                                   double manipulator_reach,
-                                   ForwardKinematics::UPtr positioner,
-                                   Eigen::MatrixX2d poitioner_sample_range,
-                                   Eigen::VectorXd positioner_sample_resolution,
-                                   std::string name,
-                                   std::string solver_name)
+ROPInvKin::ROPInvKin(std::string name,
+                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const tesseract_scene_graph::SceneState& scene_state,
+                     InverseKinematics::UPtr manipulator,
+                     double manipulator_reach,
+                     ForwardKinematics::UPtr positioner,
+                     Eigen::MatrixX2d poitioner_sample_range,
+                     Eigen::VectorXd positioner_sample_resolution,
+                     std::string solver_name)
 {
-  initialized_ = false;
+  init(name,
+       scene_graph,
+       scene_state,
+       std::move(manipulator),
+       manipulator_reach,
+       std::move(positioner),
+       poitioner_sample_range,
+       positioner_sample_resolution,
+       solver_name);
+}
 
+void ROPInvKin::init(std::string name,
+                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const tesseract_scene_graph::SceneState& scene_state,
+                     InverseKinematics::UPtr manipulator,
+                     double manipulator_reach,
+                     ForwardKinematics::UPtr positioner,
+                     Eigen::MatrixX2d poitioner_sample_range,
+                     Eigen::VectorXd positioner_sample_resolution,
+                     std::string solver_name)
+{
   if (solver_name.empty())
-  {
-    CONSOLE_BRIDGE_logError("Solver name nust not be empty.");
-    return false;
-  }
+    throw std::runtime_error("Solver name nust not be empty.");
 
   if (!scene_graph.getLink(scene_graph.getRoot()))
-  {
-    CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
-    return false;
-  }
+    throw std::runtime_error("The scene graph has an invalid root.");
 
   if (manipulator == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Provided manipulator is a nullptr");
-    return false;
-  }
+    throw std::runtime_error("Provided manipulator is a nullptr");
 
   if (!(manipulator_reach > 0))
-  {
-    CONSOLE_BRIDGE_logError("Manipulator reach is not greather than zero");
-    return false;
-  }
+    throw std::runtime_error("Manipulator reach is not greather than zero");
 
   if (positioner == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Provided positioner is a nullptr");
-    return false;
-  }
+    throw std::runtime_error("Provided positioner is a nullptr");
 
   if (positioner_sample_resolution.size() != positioner->numJoints())
-  {
-    CONSOLE_BRIDGE_logError("Positioner sample resolution must be same size as positioner number of joints");
-    return false;
-  }
+    throw std::runtime_error("Positioner sample resolution must be same size as positioner number of joints");
 
   for (long i = 0; i < positioner_sample_resolution.size(); ++i)
   {
     if (!(positioner_sample_resolution(i) > 0))
-    {
-      CONSOLE_BRIDGE_logError("Positioner sample resolution is not greather than zero");
-      return false;
-    }
+      throw std::runtime_error("Positioner sample resolution is not greather than zero");
   }
 
   // Check if the manipulator base link is the child of the positioner tip link.
@@ -287,9 +160,105 @@ bool RobotOnPositionerInvKin::init(const tesseract_scene_graph::SceneGraph& scen
               1;
     dof_range_.push_back(Eigen::VectorXd::LinSpaced(cnt, poitioner_sample_range(d, 0), poitioner_sample_range(d, 1)));
   }
-
-  initialized_ = true;
-  return initialized_;
 }
+
+InverseKinematics::UPtr ROPInvKin::clone() const { return std::make_unique<ROPInvKin>(*this); }
+
+ROPInvKin::ROPInvKin(const ROPInvKin& other) { *this = other; }
+
+ROPInvKin& ROPInvKin::operator=(const ROPInvKin& other)
+{
+  name_ = other.name_;
+  manip_inv_kin_ = other.manip_inv_kin_->clone();
+  positioner_fwd_kin_ = other.positioner_fwd_kin_->clone();
+  manip_tip_link_ = other.manip_tip_link_;
+  positioner_tip_link_ = other.positioner_tip_link_;
+  manip_reach_ = other.manip_reach_;
+  joint_names_ = other.joint_names_;
+  dof_ = other.dof_;
+  dof_range_ = other.dof_range_;
+
+  return *this;
+}
+
+IKSolutions ROPInvKin::calcInvKinHelper(const IKInput& tip_link_poses,
+                                        const Eigen::Ref<const Eigen::VectorXd>& seed) const
+{
+  Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
+  IKSolutions solutions;
+  nested_ik(solutions, 0, dof_range_, tip_link_poses, positioner_pose, seed);
+  return solutions;
+}
+
+void ROPInvKin::nested_ik(IKSolutions& solutions,
+                          int loop_level,
+                          const std::vector<Eigen::VectorXd>& dof_range,
+                          const IKInput& tip_link_poses,
+                          Eigen::VectorXd& positioner_pose,
+                          const Eigen::Ref<const Eigen::VectorXd>& seed) const
+{
+  if (loop_level >= positioner_fwd_kin_->numJoints())
+  {
+    ikAt(solutions, tip_link_poses, positioner_pose, seed);
+    return;
+  }
+
+  for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
+  {
+    positioner_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
+    nested_ik(solutions, loop_level + 1, dof_range, tip_link_poses, positioner_pose, seed);
+  }
+}
+
+void ROPInvKin::ikAt(IKSolutions& solutions,
+                     const IKInput& tip_link_poses,
+                     Eigen::VectorXd& positioner_pose,
+                     const Eigen::Ref<const Eigen::VectorXd>& seed) const
+{
+  tesseract_common::TransformMap positioner_poses = positioner_fwd_kin_->calcFwdKin(positioner_pose);
+  Eigen::Isometry3d positioner_tf = positioner_poses[positioner_tip_link_] * positioner_to_robot_;
+  Eigen::Isometry3d robot_target_pose = positioner_tf.inverse() * tip_link_poses.at(manip_tip_link_);
+  if (robot_target_pose.translation().norm() > manip_reach_)
+    return;
+
+  IKInput robot_target_poses{ std::make_pair(manip_tip_link_, robot_target_pose) };
+  auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
+  auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
+
+  IKSolutions robot_solution_set = manip_inv_kin_->calcInvKin(robot_target_poses, seed.tail(robot_dof));
+  if (robot_solution_set.empty())
+    return;
+
+  for (const auto& robot_solution : robot_solution_set)
+  {
+    Eigen::VectorXd full_sol;
+    full_sol.resize(positioner_dof + robot_dof);
+    full_sol.head(positioner_dof) = positioner_pose;
+    full_sol.tail(robot_dof) = robot_solution;
+
+    solutions.push_back(full_sol);
+  }
+}
+
+IKSolutions ROPInvKin::calcInvKin(const IKInput& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& seed) const
+{
+  assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());
+
+  return calcInvKinHelper(tip_link_poses, seed);
+}
+
+std::vector<std::string> ROPInvKin::getJointNames() const { return joint_names_; }
+
+Eigen::Index ROPInvKin::numJoints() const { return dof_; }
+
+std::string ROPInvKin::getBaseLinkName() const { return positioner_fwd_kin_->getBaseLinkName(); }
+
+std::string ROPInvKin::getWorkingFrame() const { return positioner_fwd_kin_->getBaseLinkName(); }
+
+std::vector<std::string> ROPInvKin::getTipLinkNames() const { return manip_inv_kin_->getTipLinkNames(); }
+
+std::string ROPInvKin::getName() const { return name_; }
+
+std::string ROPInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract_kinematics

@@ -44,30 +44,73 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+static const std::string DEFAULT_REP_INV_KIN_SOLVER_NAME = "REPInvKin";
+
 /**
  * @brief Robot With External Positioner Inverse kinematic implementation.
  *
  * In this kinematic arrangement the base link is the tip link of the external positioner and the tip link is the
  * tip link of the manipulator. Therefore all provided target poses are expected to the tip link of the positioner.
  */
-class RobotWithExternalPositionerInvKin : public InverseKinematics
+class REPInvKin : public InverseKinematics
 {
 public:
   // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  using Ptr = std::shared_ptr<RobotWithExternalPositionerInvKin>;
-  using ConstPtr = std::shared_ptr<const RobotWithExternalPositionerInvKin>;
-  using UPtr = std::unique_ptr<RobotWithExternalPositionerInvKin>;
-  using ConstUPtr = std::unique_ptr<const RobotWithExternalPositionerInvKin>;
+  using Ptr = std::shared_ptr<REPInvKin>;
+  using ConstPtr = std::shared_ptr<const REPInvKin>;
+  using UPtr = std::unique_ptr<REPInvKin>;
+  using ConstUPtr = std::unique_ptr<const REPInvKin>;
 
-  RobotWithExternalPositionerInvKin() = default;
-  ~RobotWithExternalPositionerInvKin() override final = default;
-  RobotWithExternalPositionerInvKin(const RobotWithExternalPositionerInvKin& other);
-  RobotWithExternalPositionerInvKin& operator=(const RobotWithExternalPositionerInvKin& other);
-  RobotWithExternalPositionerInvKin(RobotWithExternalPositionerInvKin&&) = default;
-  RobotWithExternalPositionerInvKin& operator=(RobotWithExternalPositionerInvKin&&) = default;
+  ~REPInvKin() override final = default;
+  REPInvKin(const REPInvKin& other);
+  REPInvKin& operator=(const REPInvKin& other);
+  REPInvKin(REPInvKin&&) = default;
+  REPInvKin& operator=(REPInvKin&&) = default;
+
+  /**
+   * @brief Construct Inverse Kinematics for a robot on a positioner
+   * @param name The name of the kinematic object
+   * @param scene_graph The Tesseract Scene Graph
+   * @param scene_state The Tesseract Scene State
+   * @param manipulator
+   * @param manipulator_reach
+   * @param positioner
+   * @param positioner_sample_resolution
+   * @param solver_name The name given to the solver. This is exposed so you may have same solver with different
+   */
+  REPInvKin(std::string name,
+            const tesseract_scene_graph::SceneGraph& scene_graph,
+            const tesseract_scene_graph::SceneState& scene_state,
+            InverseKinematics::UPtr manipulator,
+            double manipulator_reach,
+            ForwardKinematics::UPtr positioner,
+            Eigen::VectorXd positioner_sample_resolution,
+            std::string solver_name = DEFAULT_REP_INV_KIN_SOLVER_NAME);
+
+  /**
+   * @brief Construct Inverse Kinematics for a robot on a positioner
+   * @param name The name of the kinematic object
+   * @param scene_graph The Tesseract Scene Graph
+   * @param manipulator
+   * @param manipulator_reach
+   * @param positioner
+   * @param poitioner_sample_range
+   * @param positioner_sample_resolution
+   * @param solver_name The name given to the solver. This is exposed so you may have same solver with different
+   * sampling resolutions
+   */
+  REPInvKin(std::string name,
+            const tesseract_scene_graph::SceneGraph& scene_graph,
+            const tesseract_scene_graph::SceneState& scene_state,
+            InverseKinematics::UPtr manipulator,
+            double manipulator_reach,
+            ForwardKinematics::UPtr positioner,
+            Eigen::MatrixX2d poitioner_sample_range,
+            Eigen::VectorXd positioner_sample_resolution,
+            std::string solver_name = DEFAULT_REP_INV_KIN_SOLVER_NAME);
 
   IKSolutions calcInvKin(const IKInput& tip_link_poses,
                          const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
@@ -81,57 +124,7 @@ public:
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
 
-  /**
-   * @brief Initializes Inverse Kinematics for a robot on a positioner
-   * @param scene_graph The Tesseract Scene Graph
-   * @param scene_state The Tesseract Scene State
-   * @param manipulator
-   * @param manipulator_reach
-   * @param positioner
-   * @param positioner_sample_resolution
-   * @param name The name of the kinematic object
-   * @return True if init() completes successfully
-   */
-  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const tesseract_scene_graph::SceneState& scene_state,
-            InverseKinematics::UPtr manipulator,
-            double manipulator_reach,
-            ForwardKinematics::UPtr positioner,
-            Eigen::VectorXd positioner_sample_resolution,
-            std::string name,
-            std::string solver_name = "RobotWithExternalPositionerInvKin");
-
-  /**
-   * @brief Initializes Inverse Kinematics for a robot on a positioner
-   * @param scene_graph The Tesseract Scene Graph
-   * @param manipulator
-   * @param manipulator_reach
-   * @param positioner
-   * @param poitioner_sample_range
-   * @param positioner_sample_resolution
-   * @param name The name of the kinematic object
-   * @param solver_name The name given to the solver. This is exposed so you may have same solver with different
-   * sampling resolutions
-   * @return True if init() completes successfully
-   */
-  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const tesseract_scene_graph::SceneState& scene_state,
-            InverseKinematics::UPtr manipulator,
-            double manipulator_reach,
-            ForwardKinematics::UPtr positioner,
-            Eigen::MatrixX2d poitioner_sample_range,
-            Eigen::VectorXd positioner_sample_resolution,
-            std::string name,
-            std::string solver_name = "RobotWithExternalPositionerInvKin");
-
-  /**
-   * @brief Checks if kinematics has been initialized
-   * @return True if init() has completed successfully
-   */
-  bool checkInitialized() const;
-
 private:
-  bool initialized_{ false }; /**< @brief Identifies if the object has been initialized */
   std::vector<std::string> joint_names_;
   InverseKinematics::UPtr manip_inv_kin_;
   ForwardKinematics::UPtr positioner_fwd_kin_;
@@ -141,8 +134,18 @@ private:
   Eigen::Isometry3d manip_base_to_positioner_base_;
   Eigen::Index dof_;
   std::vector<Eigen::VectorXd> dof_range_;
-  std::string name_;                                               /**< @brief Name of the kinematic chain */
-  std::string solver_name_{ "RobotWithExternalPositionerInvKin" }; /**< @brief Name of this solver */
+  std::string name_;                                           /**< @brief Name of the kinematic chain */
+  std::string solver_name_{ DEFAULT_REP_INV_KIN_SOLVER_NAME }; /**< @brief Name of this solver */
+
+  void init(std::string name,
+            const tesseract_scene_graph::SceneGraph& scene_graph,
+            const tesseract_scene_graph::SceneState& scene_state,
+            InverseKinematics::UPtr manipulator,
+            double manipulator_reach,
+            ForwardKinematics::UPtr positioner,
+            Eigen::MatrixX2d poitioner_sample_range,
+            Eigen::VectorXd positioner_sample_resolution,
+            std::string solver_name = DEFAULT_REP_INV_KIN_SOLVER_NAME);
 
   /** @brief calcFwdKin helper function */
   IKSolutions calcInvKinHelper(const IKInput& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& seed) const;

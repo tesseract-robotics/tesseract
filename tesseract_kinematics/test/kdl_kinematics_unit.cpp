@@ -220,40 +220,24 @@ using namespace tesseract_kinematics::test_suite;
 
 TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)  // NOLINT
 {
-  tesseract_kinematics::KDLInvKinChainLMA derived_kin;
-  EXPECT_FALSE(derived_kin.checkInitialized());
-
   auto scene_graph = getSceneGraphIIWA();
 
-  EXPECT_TRUE(derived_kin.init(*scene_graph, "base_link", "tool0", "manip"));
+  tesseract_kinematics::KDLInvKinChainLMA derived_kin("manip", *scene_graph, "base_link", "tool0");
 
   tesseract_kinematics::KDLFwdKinChainFactory fwd_kin_factory;
   tesseract_kinematics::KDLInvKinChainLMAFactory inv_kin_factory;
-  runInvKinIIWATest(inv_kin_factory,
-                    fwd_kin_factory,
-                    "KDLInvKinChainLMA",
-                    "KDLFwdKinChain",
-                    tesseract_kinematics::InverseKinematicsFactoryType::CHAIN,
-                    tesseract_kinematics::ForwardKinematicsFactoryType::CHAIN);
+  runInvKinIIWATest(inv_kin_factory, fwd_kin_factory, "KDLInvKinChainLMA", "KDLFwdKinChain");
 }
 
 TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)  // NOLINT
 {
-  tesseract_kinematics::KDLInvKinChainNR derived_kin;
-  EXPECT_FALSE(derived_kin.checkInitialized());
-
   auto scene_graph = getSceneGraphIIWA();
 
-  EXPECT_TRUE(derived_kin.init(*scene_graph, "base_link", "tool0", "manip"));
+  tesseract_kinematics::KDLInvKinChainNR derived_kin("manip", *scene_graph, "base_link", "tool0");
 
   tesseract_kinematics::KDLFwdKinChainFactory fwd_kin_factory;
   tesseract_kinematics::KDLInvKinChainNRFactory inv_kin_factory;
-  runInvKinIIWATest(inv_kin_factory,
-                    fwd_kin_factory,
-                    "KDLInvKinChainNR",
-                    "KDLFwdKinChain",
-                    tesseract_kinematics::InverseKinematicsFactoryType::CHAIN,
-                    tesseract_kinematics::ForwardKinematicsFactoryType::CHAIN);
+  runInvKinIIWATest(inv_kin_factory, fwd_kin_factory, "KDLInvKinChainNR", "KDLFwdKinChain");
 }
 
 int main(int argc, char** argv)
