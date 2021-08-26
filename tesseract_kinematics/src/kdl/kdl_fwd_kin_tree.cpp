@@ -38,17 +38,76 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+KDLFwdKinTree::KDLFwdKinTree(std::string name,
+                             const tesseract_scene_graph::SceneGraph& scene_graph,
+                             const tesseract_scene_graph::SceneState& scene_state,
+                             const std::vector<std::string>& joint_names)
+  : name_(std::move(name))
+{
+  std::unordered_map<std::string, double> start_state_zeros;
+
+  if (!scene_graph.getLink(scene_graph.getRoot()))
+    throw std::runtime_error("The scene graph has an invalid root.");
+
+  tesseract_scene_graph::KDLTreeData data = tesseract_scene_graph::parseSceneGraph(scene_graph);
+  kdl_tree_ = data.tree;
+
+  if (joint_names.empty())
+    throw std::runtime_error("Joint names must not be empty!");
+
+  for (const auto& joint_name : joint_names)
+  {
+    if (scene_graph.getJoint(joint_name) == nullptr)
+      throw std::runtime_error("The parameter joint_names contains a joint name '" + joint_name +
+                               "' which does not exist in the scene graph!");
+  }
+
+  joint_names_.resize(joint_names.size());
+  joint_qnr_.resize(joint_names.size());
+
+  unsigned j = 0;
+  joint_to_qnr_.clear();
+  for (const auto& tree_element : kdl_tree_.getSegments())
+  {
+    const KDL::Segment& seg = tree_element.second.segment;
+    const KDL::Joint& jnt = seg.getJoint();
+
+    auto joint_it = std::find(joint_names.begin(), joint_names.end(), jnt.getName());
+
+    if (jnt.getType() != KDL::Joint::None)
+    {
+      joint_to_qnr_[jnt.getName()] = tree_element.second.q_nr;
+      start_state_zeros[jnt.getName()] = 0;
+    }
+
+    if (joint_it == joint_names.end())
+      continue;
+
+    assert(jnt.getType() != KDL::Joint::None);
+
+    joint_names_[j] = jnt.getName();
+    joint_qnr_[j] = static_cast<int>(tree_element.second.q_nr);
+    ++j;
+  }
+  assert(joint_names.size() == joint_names_.size());
+
+  fk_solver_ = std::make_unique<KDL::TreeFkSolverPos_recursive>(kdl_tree_);
+  jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(kdl_tree_);
+
+  if (scene_state.joints.empty())
+    setStartState(start_state_zeros);
+  else
+    setStartState(scene_state.joints);
+}
 ForwardKinematics::UPtr KDLFwdKinTree::clone() const { return std::make_unique<KDLFwdKinTree>(*this); }
 
 KDLFwdKinTree::KDLFwdKinTree(const KDLFwdKinTree& other) { *this = other; }
 
 KDLFwdKinTree& KDLFwdKinTree::operator=(const KDLFwdKinTree& other)
 {
-  initialized_ = other.initialized_;
   name_ = other.name_;
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
-  solver_name_ = other.solver_name_;
   kdl_tree_ = other.kdl_tree_;
   joint_names_ = other.joint_names_;
   fk_solver_ = std::make_unique<KDL::TreeFkSolverPos_recursive>(kdl_tree_);
@@ -120,7 +179,6 @@ tesseract_common::TransformMap KDLFwdKinTree::calcFwdKinHelper(const KDL::JntArr
 
 tesseract_common::TransformMap KDLFwdKinTree::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
-  assert(checkInitialized());
   assert(joint_angles.size() == numJoints());
 
   KDL::JntArray kdl_joint_vals = getKDLJntArray(joint_names_, joint_angles);
@@ -145,7 +203,6 @@ bool KDLFwdKinTree::calcJacobianHelper(KDL::Jacobian& jacobian,
 Eigen::MatrixXd KDLFwdKinTree::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                             const std::string& link_name) const
 {
-  assert(checkInitialized());
   assert(joint_angles.size() == numJoints());
 
   KDL::JntArray kdl_joint_vals = getKDLJntArray(joint_names_, joint_angles);
@@ -160,11 +217,7 @@ Eigen::MatrixXd KDLFwdKinTree::calcJacobian(const Eigen::Ref<const Eigen::Vector
   throw std::runtime_error("KDLFwdKinTree: Failed to calculate jacobian.");
 }
 
-std::vector<std::string> KDLFwdKinTree::getJointNames() const
-{
-  assert(checkInitialized());
-  return joint_names_;
-}
+std::vector<std::string> KDLFwdKinTree::getJointNames() const { return joint_names_; }
 
 Eigen::Index KDLFwdKinTree::numJoints() const { return static_cast<Eigen::Index>(joint_names_.size()); }
 
@@ -174,103 +227,6 @@ std::vector<std::string> KDLFwdKinTree::getTipLinkNames() const { return { tip_l
 
 std::string KDLFwdKinTree::getName() const { return name_; }
 
-std::string KDLFwdKinTree::getSolverName() const { return solver_name_; }
-
-bool KDLFwdKinTree::init(const tesseract_scene_graph::SceneGraph& scene_graph,
-                         const std::vector<std::string>& joint_names,
-                         std::string name,
-                         const std::unordered_map<std::string, double>& start_state)
-{
-  initialized_ = false;
-  kdl_tree_ = KDL::Tree();
-
-  name_ = std::move(name);
-
-  std::unordered_map<std::string, double> start_state_zeros;
-
-  if (!scene_graph.getLink(scene_graph.getRoot()))
-  {
-    CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
-    return false;
-  }
-
-  try
-  {
-    tesseract_scene_graph::KDLTreeData data = tesseract_scene_graph::parseSceneGraph(scene_graph);
-    kdl_tree_ = data.tree;
-  }
-  catch (...)
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
-    return false;
-  }
-
-  if (joint_names.empty())
-  {
-    CONSOLE_BRIDGE_logError("Joint names must not be empty!");
-    return false;
-  }
-
-  for (const auto& joint_name : joint_names)
-  {
-    if (scene_graph.getJoint(joint_name) == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("The parameter joint_names contains a joint name '%s' which does not exist in the scene "
-                              "graph!",
-                              joint_name.c_str());
-      return false;
-    }
-  }
-
-  joint_names_.resize(joint_names.size());
-  joint_qnr_.resize(joint_names.size());
-
-  unsigned j = 0;
-  joint_to_qnr_.clear();
-  for (const auto& tree_element : kdl_tree_.getSegments())
-  {
-    const KDL::Segment& seg = tree_element.second.segment;
-    const KDL::Joint& jnt = seg.getJoint();
-
-    auto joint_it = std::find(joint_names.begin(), joint_names.end(), jnt.getName());
-
-    if (jnt.getType() != KDL::Joint::None)
-    {
-      joint_to_qnr_[jnt.getName()] = tree_element.second.q_nr;
-      start_state_zeros[jnt.getName()] = 0;
-    }
-
-    if (joint_it == joint_names.end())
-      continue;
-
-    assert(jnt.getType() != KDL::Joint::None);
-
-    joint_names_[j] = jnt.getName();
-    joint_qnr_[j] = static_cast<int>(tree_element.second.q_nr);
-    ++j;
-  }
-  assert(joint_names.size() == joint_names_.size());
-
-  fk_solver_ = std::make_unique<KDL::TreeFkSolverPos_recursive>(kdl_tree_);
-  jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(kdl_tree_);
-
-  if (start_state.empty())
-    setStartState(start_state_zeros);
-  else
-    setStartState(start_state);
-
-  initialized_ = true;
-  return initialized_;
-}
-
-bool KDLFwdKinTree::checkInitialized() const
-{
-  if (!initialized_)
-  {
-    CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
-  }
-
-  return initialized_;
-}
+std::string KDLFwdKinTree::getSolverName() const { return KDL_FWD_KIN_TREE_SOLVER_NAME; }
 
 }  // namespace tesseract_kinematics

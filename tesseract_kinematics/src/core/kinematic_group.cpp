@@ -1,13 +1,43 @@
-#include <tesseract_kinematics/core/static_kinematic_group.h>
-#include <tesseract_common/utils.h>
+/**
+ * @file kinematic_group.cpp
+ * @brief A kinematic group with forward and inverse kinematics methods.
+ *
+ * @author Levi Armstrong
+ * @date Aug 20, 2021
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2021, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_kinematics/core/kinematic_group.h>
+#include <tesseract_common/utils.h>
+
 #include <tesseract_scene_graph/kdl_parser.h>
 
 namespace tesseract_kinematics
 {
-StaticKinematicGroup::StaticKinematicGroup(InverseKinematics::UPtr inv_kin,
-                                           const tesseract_scene_graph::SceneGraph& scene_graph,
-                                           const tesseract_scene_graph::SceneState& scene_state)
+KinematicGroup::KinematicGroup(InverseKinematics::UPtr inv_kin,
+                               const tesseract_scene_graph::SceneGraph& scene_graph,
+                               const tesseract_scene_graph::SceneState& scene_state)
   : state_(scene_state), inv_kin_(std::move(inv_kin))
 {
   for (const auto& joint_name : inv_kin_->getJointNames())
@@ -97,9 +127,9 @@ StaticKinematicGroup::StaticKinematicGroup(InverseKinematics::UPtr inv_kin,
   }
 }
 
-StaticKinematicGroup::StaticKinematicGroup(const StaticKinematicGroup& other) { *this = other; }
+KinematicGroup::KinematicGroup(const KinematicGroup& other) { *this = other; }
 
-StaticKinematicGroup& StaticKinematicGroup::operator=(const StaticKinematicGroup& other)
+KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
 {
   name_ = other.name_;
   state_ = other.state_;
@@ -116,14 +146,13 @@ StaticKinematicGroup& StaticKinematicGroup::operator=(const StaticKinematicGroup
   return *this;
 }
 
-tesseract_common::TransformMap
-StaticKinematicGroup::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+tesseract_common::TransformMap KinematicGroup::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   return state_solver_->getState(joint_names_, joint_angles).link_transforms;
 }
 
-IKSolutions StaticKinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
-                                             const Eigen::Ref<const Eigen::VectorXd>& seed) const
+IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
+                                       const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   // Convert to IK Inputs
   IKInput ik_inputs;
@@ -159,9 +188,9 @@ IKSolutions StaticKinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_po
   return solutions_filtered;
 }
 
-Eigen::MatrixXd StaticKinematicGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                                   const std::string& link_name,
-                                                   const std::string& base_link_name) const
+Eigen::MatrixXd KinematicGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                             const std::string& link_name,
+                                             const std::string& base_link_name) const
 {
   Eigen::MatrixXd solver_jac = state_solver_->getJacobian(joint_names_, joint_angles, link_name);
 
@@ -196,7 +225,7 @@ Eigen::MatrixXd StaticKinematicGroup::calcJacobian(const Eigen::Ref<const Eigen:
   return kin_jac;
 }
 
-bool StaticKinematicGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
+bool KinematicGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
 {
   if (vec.size() != static_cast<Eigen::Index>(joint_names_.size()))
   {
@@ -221,18 +250,15 @@ bool StaticKinematicGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& 
   return true;
 }
 
-std::vector<std::string> StaticKinematicGroup::getJointNames() const { return joint_names_; }
+std::vector<std::string> KinematicGroup::getJointNames() const { return joint_names_; }
 
-std::vector<std::string> StaticKinematicGroup::getLinkNames() const { return state_solver_->getLinkNames(); }
+std::vector<std::string> KinematicGroup::getLinkNames() const { return state_solver_->getLinkNames(); }
 
-std::vector<std::string> StaticKinematicGroup::getActiveLinkNames() const
-{
-  return state_solver_->getActiveLinkNames();
-}
+std::vector<std::string> KinematicGroup::getActiveLinkNames() const { return state_solver_->getActiveLinkNames(); }
 
-tesseract_common::KinematicLimits StaticKinematicGroup::getLimits() const { return limits_; }
+tesseract_common::KinematicLimits KinematicGroup::getLimits() const { return limits_; }
 
-void StaticKinematicGroup::setLimits(tesseract_common::KinematicLimits limits)
+void KinematicGroup::setLimits(tesseract_common::KinematicLimits limits)
 {
   Eigen::Index nj = numJoints();
   if (limits.joint_limits.rows() != nj || limits.velocity_limits.size() != nj ||
@@ -242,20 +268,17 @@ void StaticKinematicGroup::setLimits(tesseract_common::KinematicLimits limits)
   limits_ = limits;
 }
 
-std::vector<Eigen::Index> StaticKinematicGroup::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
+std::vector<Eigen::Index> KinematicGroup::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
 
-Eigen::Index StaticKinematicGroup::numJoints() const { return inv_kin_->numJoints(); }
+Eigen::Index KinematicGroup::numJoints() const { return inv_kin_->numJoints(); }
 
-std::string StaticKinematicGroup::getBaseLinkName() const { return state_solver_->getBaseLinkName(); }
+std::string KinematicGroup::getBaseLinkName() const { return state_solver_->getBaseLinkName(); }
 
-std::vector<std::string> StaticKinematicGroup::getWorkingFrames() const { return working_frames_; }
+std::vector<std::string> KinematicGroup::getWorkingFrames() const { return working_frames_; }
 
-std::vector<std::string> StaticKinematicGroup::getTipLinkNames() const { return tip_link_names_; }
+std::vector<std::string> KinematicGroup::getTipLinkNames() const { return tip_link_names_; }
 
-std::string StaticKinematicGroup::getName() const { return name_; }
+std::string KinematicGroup::getName() const { return name_; }
 
-std::unique_ptr<KinematicGroup> StaticKinematicGroup::clone() const
-{
-  return std::make_unique<StaticKinematicGroup>(*this);
-}
+std::unique_ptr<KinematicGroup> KinematicGroup::clone() const { return std::make_unique<KinematicGroup>(*this); }
 }  // namespace tesseract_kinematics

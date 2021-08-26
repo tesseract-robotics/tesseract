@@ -34,8 +34,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 
 using namespace tesseract_kinematics::test_suite;
+using namespace tesseract_kinematics;
 
-void runURKinematicsTests(const tesseract_kinematics::URParameters& params, const Eigen::Isometry3d& pose)
+void runURKinematicsTests(const URParameters& params, const Eigen::Isometry3d& pose)
 {
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(6);
 
@@ -48,17 +49,11 @@ void runURKinematicsTests(const tesseract_kinematics::URParameters& params, cons
   std::vector<std::string> joint_names{ "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
                                         "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
 
-  tesseract_kinematics::KDLFwdKinChain fwd_kin;
-  fwd_kin.init(*scene_graph, base_link_name, tip_link_name, manip_name);
+  KDLFwdKinChain fwd_kin(manip_name, *scene_graph, base_link_name, tip_link_name);
+  auto inv_kin = std::make_unique<URInvKin>(manip_name, params, base_link_name, tip_link_name, joint_names);
 
-  auto inv_kin = std::make_unique<tesseract_kinematics::URInvKin>();
-  EXPECT_FALSE(inv_kin->checkInitialized());
-  bool status = inv_kin->init(manip_name, params, base_link_name, tip_link_name, joint_names);
-
-  EXPECT_TRUE(status);
-  EXPECT_TRUE(inv_kin->checkInitialized());
   EXPECT_EQ(inv_kin->getName(), manip_name);
-  EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
+  EXPECT_EQ(inv_kin->getSolverName(), UR_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 6);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
   EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_name);
@@ -69,10 +64,10 @@ void runURKinematicsTests(const tesseract_kinematics::URParameters& params, cons
   runInvKinTest(*inv_kin, fwd_kin, pose, tip_link_name, seed);
 
   // Check cloned
-  tesseract_kinematics::InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
+  InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
   EXPECT_TRUE(inv_kin2 != nullptr);
   EXPECT_EQ(inv_kin2->getName(), manip_name);
-  EXPECT_EQ(inv_kin2->getSolverName(), "URInvKin");
+  EXPECT_EQ(inv_kin2->getSolverName(), UR_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin2->numJoints(), 6);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
   EXPECT_EQ(inv_kin2->getWorkingFrame(), base_link_name);
@@ -92,7 +87,7 @@ TEST(TesseractKinematicsUnit, UR10InvKinUnit)  // NOLINT
   pose.translation()[1] = 0;
   pose.translation()[2] = 0.75;
 
-  runURKinematicsTests(tesseract_kinematics::UR10Parameters, pose);
+  runURKinematicsTests(UR10Parameters, pose);
 }
 
 TEST(TesseractKinematicsUnit, UR5InvKinUnit)  // NOLINT
@@ -104,7 +99,7 @@ TEST(TesseractKinematicsUnit, UR5InvKinUnit)  // NOLINT
   pose.translation()[1] = 0;
   pose.translation()[2] = 0.5;
 
-  runURKinematicsTests(tesseract_kinematics::UR5Parameters, pose);
+  runURKinematicsTests(UR5Parameters, pose);
 }
 
 TEST(TesseractKinematicsUnit, UR3InvKinUnit)  // NOLINT
@@ -116,7 +111,7 @@ TEST(TesseractKinematicsUnit, UR3InvKinUnit)  // NOLINT
   pose.translation()[1] = 0;
   pose.translation()[2] = 0.25;
 
-  runURKinematicsTests(tesseract_kinematics::UR3Parameters, pose);
+  runURKinematicsTests(UR3Parameters, pose);
 }
 
 int main(int argc, char** argv)

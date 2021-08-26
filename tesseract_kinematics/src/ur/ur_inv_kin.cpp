@@ -218,36 +218,31 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
   return num_sols;
 }
 
+URInvKin::URInvKin(std::string name,
+                   URParameters params,
+                   std::string base_link_name,
+                   std::string tip_link_name,
+                   std::vector<std::string> joint_names)
+  : name_(std::move(name))
+  , params_(params)
+  , base_link_name_(std::move(base_link_name))
+  , tip_link_name_(std::move(tip_link_name))
+  , joint_names_(std::move(joint_names))
+{
+  if (joint_names_.size() != 6)
+    throw std::runtime_error("OPWInvKin, only support six joints!");
+}
+
 InverseKinematics::UPtr URInvKin::clone() const { return std::make_unique<URInvKin>(*this); }
-
-// bool URInvKin::update()
-//{
-//  if (!init(name_,
-//            params_,
-//            base_link_name_,
-//            tip_link_name_,
-//            orig_data_.joint_names,
-//            orig_data_.link_names,
-//            orig_data_.active_link_names,
-//            orig_data_.limits))
-//    return false;
-
-//  if (sync_fwd_kin_ != nullptr)
-//    synchronize(sync_fwd_kin_);
-
-//  return true;
-//}
 
 URInvKin::URInvKin(const URInvKin& other) { *this = other; }
 
 URInvKin& URInvKin::operator=(const URInvKin& other)
 {
-  initialized_ = other.initialized_;
   name_ = other.name_;
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
   joint_names_ = other.joint_names_;
-  solver_name_ = other.solver_name_;
   params_ = other.params_;
 
   return *this;
@@ -288,34 +283,6 @@ std::string URInvKin::getBaseLinkName() const { return base_link_name_; }
 std::string URInvKin::getWorkingFrame() const { return base_link_name_; }
 std::vector<std::string> URInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 std::string URInvKin::getName() const { return name_; }
-std::string URInvKin::getSolverName() const { return solver_name_; }
-
-bool URInvKin::init(std::string name,
-                    URParameters params,
-                    std::string base_link_name,
-                    std::string tip_link_name,
-                    std::vector<std::string> joint_names)
-{
-  assert(joint_names.size() == 6);
-
-  name_ = std::move(name);
-  params_ = std::move(params);
-  base_link_name_ = std::move(base_link_name);
-  tip_link_name_ = std::move(tip_link_name);
-  joint_names_ = std::move(joint_names);
-  initialized_ = true;
-
-  return initialized_;
-}
-
-bool URInvKin::checkInitialized() const
-{
-  if (!initialized_)
-  {
-    CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
-  }
-
-  return initialized_;
-}
+std::string URInvKin::getSolverName() const { return UR_INV_KIN_CHAIN_SOLVER_NAME; }
 
 }  // namespace tesseract_kinematics

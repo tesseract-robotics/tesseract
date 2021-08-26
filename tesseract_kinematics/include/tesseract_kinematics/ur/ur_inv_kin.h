@@ -43,6 +43,8 @@
 
 namespace tesseract_kinematics
 {
+static const std::string UR_INV_KIN_CHAIN_SOLVER_NAME = "URInvKin";
+
 /**@brief Universal Robot Inverse Kinematics Implmentation. */
 class URInvKin : public tesseract_kinematics::InverseKinematics
 {
@@ -56,14 +58,25 @@ public:
   using UPtr = std::unique_ptr<URInvKin>;
   using ConstUPtr = std::unique_ptr<const URInvKin>;
 
-  URInvKin() = default;
   ~URInvKin() override final = default;
   URInvKin(const URInvKin& other);
   URInvKin& operator=(const URInvKin& other);
   URInvKin(URInvKin&&) = default;
   URInvKin& operator=(URInvKin&&) = default;
 
-  //  bool update() override;
+  /**
+   * @brief init Initialize UR Inverse Kinematics
+   * @param name The name of the kinematic chain
+   * @param params UR kinematics parameters
+   * @param base_link_name The name of the base link for the kinematic chain
+   * @param tip_link_name The name of the tip link for the kinematic chain
+   * @param joint_names The joint names for the kinematic chain
+   */
+  URInvKin(std::string name,
+           URParameters params,
+           std::string base_link_name,
+           std::string tip_link_name,
+           std::vector<std::string> joint_names);
 
   tesseract_kinematics::IKSolutions calcInvKin(const IKInput& tip_link_poses,
                                                const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
@@ -77,35 +90,12 @@ public:
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
 
-  /**
-   * @brief init Initialize UR Inverse Kinematics
-   * @param name The name of the kinematic chain
-   * @param params UR kinematics parameters
-   * @param base_link_name The name of the base link for the kinematic chain
-   * @param tip_link_name The name of the tip link for the kinematic chain
-   * @param joint_names The joint names for the kinematic chain
-   * @return True if successful
-   */
-  bool init(std::string name,
-            URParameters params,
-            std::string base_link_name,
-            std::string tip_link_name,
-            std::vector<std::string> joint_names);
-
-  /**
-   * @brief Checks if kinematics has been initialized
-   * @return True if init() has completed successfully
-   */
-  bool checkInitialized() const;
-
 protected:
-  bool initialized_{ false };             /**< @brief Identifies if the object has been initialized */
-  URParameters params_;                   /**< @brief The UR Inverse kinematics parameters */
-  std::string name_;                      /**< @brief Name of the kinematic chain */
-  std::string base_link_name_;            /**< @brief Link name of first link in the kinematic object */
-  std::string tip_link_name_;             /**< @brief Link name of last kink in the kinematic object */
-  std::vector<std::string> joint_names_;  /**< @brief Joint names for the kinematic object */
-  std::string solver_name_{ "URInvKin" }; /**< @brief Name of this solver */
+  std::string name_;                     /**< @brief Name of the kinematic chain */
+  URParameters params_;                  /**< @brief The UR Inverse kinematics parameters */
+  std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */
+  std::string tip_link_name_;            /**< @brief Link name of last kink in the kinematic object */
+  std::vector<std::string> joint_names_; /**< @brief Joint names for the kinematic object */
 };
 }  // namespace tesseract_kinematics
 
