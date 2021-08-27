@@ -60,5 +60,10 @@ parseOctomap(const tinyxml2::XMLElement* xml_element,
              bool visual,
              int version);
 
+tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
+                                   tinyxml2::XMLDocument& doc,
+                                   const std::string& directory,
+                                   const std::string& filename);
+
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_OCTOMAP_H

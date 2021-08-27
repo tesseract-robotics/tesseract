@@ -50,6 +50,8 @@ namespace tesseract_urdf
 std::shared_ptr<tesseract_scene_graph::JointCalibration> parseCalibration(const tinyxml2::XMLElement* xml_element,
                                                                           int version);
 
+tinyxml2::XMLElement* writeCalibration(const std::shared_ptr<const tesseract_scene_graph::JointCalibration>& calibration, tinyxml2::XMLDocument& doc);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_CALIBRATION_H

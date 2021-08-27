@@ -59,5 +59,9 @@ parseLink(const tinyxml2::XMLElement* xml_element,
           std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
           int version);
 
+tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_graph::Link>& link,
+                                tinyxml2::XMLDocument& doc,
+                                const std::string& directory);
+
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_LINK_H

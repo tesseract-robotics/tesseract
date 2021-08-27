@@ -50,6 +50,8 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_scene_graph::JointLimits> parseLimits(const tinyxml2::XMLElement* xml_element, int version);
 
+tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract_scene_graph::JointLimits>& limits, tinyxml2::XMLDocument& doc);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_LIMITS_H

@@ -59,6 +59,9 @@ parsePointCloud(const tinyxml2::XMLElement* xml_element,
                 tesseract_geometry::Octree::SubType shape_type,
                 bool prune,
                 int version);
+
+tinyxml2::XMLElement* writePointCloud(const std::shared_ptr<const tesseract_geometry::Octree>& point_cloud, tinyxml2::XMLDocument& doc);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_POINT_CLOUD_H

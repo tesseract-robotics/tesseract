@@ -50,6 +50,8 @@ namespace tesseract_urdf
 std::shared_ptr<tesseract_scene_graph::JointDynamics> parseDynamics(const tinyxml2::XMLElement* xml_element,
                                                                     int version);
 
+tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract_scene_graph::JointDynamics>& dynamics, tinyxml2::XMLDocument& doc);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_DYNAMICS_H

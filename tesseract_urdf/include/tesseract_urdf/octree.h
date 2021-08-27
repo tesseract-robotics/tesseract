@@ -59,6 +59,19 @@ parseOctree(const tinyxml2::XMLElement* xml_element,
             bool prune,
             int version);
 
+/**
+ * @brief writeOctree Write octree out to file, and generate appropriate xml
+ * @param octree The geometry element containing octree data
+ * @param doc The XML document to which to add the xml data
+ * @param directory Working directory, with trailing `/` (e.g. "/tmp/")
+ * @param filename Desired filename relative to the working directory ("octree.ot" or "collision/octree.ot")
+ * @return An XML element containing information on the saved file.
+ */
+tinyxml2::XMLElement* writeOctree(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
+                                  tinyxml2::XMLDocument& doc,
+                                  const std::string& directory,
+                                  const std::string& filename);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_OCTREE_H

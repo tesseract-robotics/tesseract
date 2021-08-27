@@ -45,3 +45,13 @@ tesseract_geometry::Cylinder::Ptr tesseract_urdf::parseCylinder(const tinyxml2::
 
   return std::make_shared<tesseract_geometry::Cylinder>(r, l);
 }
+
+tinyxml2::XMLElement* tesseract_urdf::writeCylinder(const std::shared_ptr<const tesseract_geometry::Cylinder>& cylinder, tinyxml2::XMLDocument& doc)
+{
+  if (cylinder == nullptr)
+    std::throw_with_nested(std::runtime_error("Cylinder is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("cylinder");
+  xml_element->SetAttribute("length", cylinder->getLength());
+  xml_element->SetAttribute("radius", cylinder->getRadius());
+  return xml_element;
+}

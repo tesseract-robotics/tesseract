@@ -41,3 +41,14 @@ tesseract_geometry::Sphere::Ptr tesseract_urdf::parseSphere(const tinyxml2::XMLE
 
   return std::make_shared<tesseract_geometry::Sphere>(radius);
 }
+
+tinyxml2::XMLElement* tesseract_urdf::writeSphere(const std::shared_ptr<const tesseract_geometry::Sphere>& sphere, tinyxml2::XMLDocument& doc)
+{
+  if (sphere == nullptr)
+    std::throw_with_nested(std::runtime_error("Sphere is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("sphere");
+
+  xml_element->SetAttribute("radius", sphere->getRadius());
+
+  return xml_element;
+}

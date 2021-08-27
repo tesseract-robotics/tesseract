@@ -59,6 +59,18 @@ parseVisual(const tinyxml2::XMLElement* xml_element,
             std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
             int version);
 
+/**
+ * @brief writeVisual - call once per visual geometry
+ * @param visuals
+ * @param doc
+ * @return
+ */
+tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract_scene_graph::Visual>& visual,
+                                  tinyxml2::XMLDocument& doc,
+                                  const std::string& directory,
+                                  const std::string& link_name,
+                                  const int id = -1);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_VISUAL_H

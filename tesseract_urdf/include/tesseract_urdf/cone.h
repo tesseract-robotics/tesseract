@@ -49,6 +49,8 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_geometry::Cone> parseCone(const tinyxml2::XMLElement* xml_element, int version);
 
+tinyxml2::XMLElement* writeCone(const std::shared_ptr<const tesseract_geometry::Cone>& cone, tinyxml2::XMLDocument& doc);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_CONE_H

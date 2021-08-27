@@ -76,3 +76,18 @@ tesseract_urdf::parsePointCloud(const tinyxml2::XMLElement* xml_element,
 
   return geom;
 }
+
+tinyxml2::XMLElement* tesseract_urdf::writePointCloud(const std::shared_ptr<const tesseract_geometry::Octree>& point_cloud, tinyxml2::XMLDocument& doc)
+{
+  if (point_cloud == nullptr)
+    std::throw_with_nested(std::runtime_error("Point_cloud is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("point_cloud");
+
+  // Convert to point cloud
+
+  // TODO: Save to file
+  std::string working_dir = "/tmp";                         // should include /visual or /collision
+  std::string filename = working_dir + "/point_cloud.pcd";  // Should have timestamp appended
+
+  return xml_element;
+}

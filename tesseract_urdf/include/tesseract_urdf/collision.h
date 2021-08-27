@@ -56,6 +56,12 @@ parseCollision(const tinyxml2::XMLElement* xml_element,
                const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
                int version);
 
+tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract_scene_graph::Collision>& collision,
+                                     tinyxml2::XMLDocument& doc,
+                                     const std::string& directory,
+                                     const std::string& link_name,
+                                     const int id = -1);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_COLLISION_H

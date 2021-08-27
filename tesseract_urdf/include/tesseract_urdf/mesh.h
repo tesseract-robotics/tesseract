@@ -47,6 +47,7 @@ class Mesh;
 
 namespace tesseract_urdf
 {
+
 /**
  * @brief Parse xml element mesh
  * @param xml_element The xml element
@@ -60,6 +61,11 @@ parseMesh(const tinyxml2::XMLElement* xml_element,
           const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
           bool visual,
           int version);
+
+tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
+                                tinyxml2::XMLDocument& doc,
+                                const std::string& directory,
+                                const std::string& filename);
 
 }  // namespace tesseract_urdf
 

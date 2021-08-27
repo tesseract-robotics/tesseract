@@ -49,6 +49,8 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_geometry::Sphere> parseSphere(const tinyxml2::XMLElement* xml_element, int version);
 
+tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract_geometry::Sphere>& sphere, tinyxml2::XMLDocument& doc);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_SPHERE_H

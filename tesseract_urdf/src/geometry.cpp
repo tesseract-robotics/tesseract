@@ -209,3 +209,134 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
 
   return geometries;
 }
+
+tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const tesseract_geometry::Geometry>& geometry,
+                                                    tinyxml2::XMLDocument& doc,
+                                                    const std::string& directory,
+                                                    const std::string& filename)
+{
+  if (geometry == nullptr)
+    std::throw_with_nested(std::runtime_error("Geometry is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("geometry");
+
+  tesseract_geometry::GeometryType type = geometry->getType();
+
+  if (type == tesseract_geometry::GeometryType::SPHERE)
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_sphere = writeSphere(std::static_pointer_cast<const tesseract_geometry::Sphere>(geometry), doc);
+      xml_element->InsertEndChild(xml_sphere);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as sphere!"));
+    }
+  }
+  else if (type == tesseract_geometry::GeometryType::CYLINDER)
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_cylinder = writeCylinder(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geometry), doc);
+      xml_element->InsertEndChild(xml_cylinder);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as cylinder!"));
+    }
+  }
+  else if (type == tesseract_geometry::GeometryType::CAPSULE)
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_capsule = writeCapsule(std::static_pointer_cast<const tesseract_geometry::Capsule>(geometry), doc);
+      xml_element->InsertEndChild(xml_capsule);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as capsule!"));
+    }
+  }
+  else if (type == tesseract_geometry::GeometryType::CONE)
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_cone = writeCone(std::static_pointer_cast<const tesseract_geometry::Cone>(geometry), doc);
+      xml_element->InsertEndChild(xml_cone);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as cone!"));
+    }
+  }
+  else if (type == tesseract_geometry::GeometryType::BOX)
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_box = writeBox(std::static_pointer_cast<const tesseract_geometry::Box>(geometry), doc);
+      xml_element->InsertEndChild(xml_box);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as box!"));
+    }
+  }
+  else if (type == tesseract_geometry::GeometryType::PLANE)
+  {
+    std::throw_with_nested(std::runtime_error("Cannot write geometry of type PLANE to XML!  Consider using box."));
+  }
+  else if (type == tesseract_geometry::GeometryType::MESH)
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_mesh = writeMesh(std::static_pointer_cast<const tesseract_geometry::Mesh>(geometry), doc, directory, filename + ".ply");
+      xml_element->InsertEndChild(xml_mesh);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as mesh!"));
+    }
+  }
+  else if (type == tesseract_geometry::GeometryType::CONVEX_MESH)
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_convex_mesh = writeConvexMesh(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geometry), doc, directory, filename + ".ply");
+      xml_element->InsertEndChild(xml_convex_mesh);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as convex mesh!"));
+    }
+  }
+  else if (type == tesseract_geometry::GeometryType::SDF_MESH)
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_sdf_mesh = writeSDFMesh(std::static_pointer_cast<const tesseract_geometry::SDFMesh>(geometry), doc, directory, filename + ".ply");
+      xml_element->InsertEndChild(xml_sdf_mesh);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as SDF mesh!"));
+    }
+  }
+  else if (type == tesseract_geometry::GeometryType::OCTREE)
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_octree = writeOctomap(std::static_pointer_cast<const tesseract_geometry::Octree>(geometry), doc, directory, filename + ".bt");
+      xml_element->InsertEndChild(xml_octree);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as octree!"));
+    }
+  }
+  else
+  {
+    std::throw_with_nested(std::runtime_error("Unknown geometry type, cannot write to XML!"));
+  }
+
+  return xml_element;
+}

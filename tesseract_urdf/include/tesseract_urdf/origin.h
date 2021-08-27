@@ -47,6 +47,8 @@ namespace tesseract_urdf
  */
 Eigen::Isometry3d parseOrigin(const tinyxml2::XMLElement* xml_element, int version);
 
+tinyxml2::XMLElement* writeOrigin(const Eigen::Isometry3d& origin, tinyxml2::XMLDocument& doc);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_ORIGIN_H

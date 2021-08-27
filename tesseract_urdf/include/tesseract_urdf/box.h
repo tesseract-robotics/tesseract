@@ -49,6 +49,8 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_geometry::Box> parseBox(const tinyxml2::XMLElement* xml_element, int version);
 
+tinyxml2::XMLElement* writeBox(const std::shared_ptr<const tesseract_geometry::Box>& box, tinyxml2::XMLDocument& doc);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_BOX_H
