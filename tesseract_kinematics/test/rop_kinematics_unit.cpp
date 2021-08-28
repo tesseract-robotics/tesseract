@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include "kinematics_test_utils.h"
 
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
-#include <tesseract_kinematics/core/rop_inverse_kinematics.h>
+#include <tesseract_kinematics/core/rop_inv_kin.h>
 #include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 #include <opw_kinematics/opw_parameters.h>

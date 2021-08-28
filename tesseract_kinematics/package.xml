@@ -15,6 +15,7 @@
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_state_solver</depend>
   <depend>tesseract_srdf</depend>
+  <depend>yaml-cpp</depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>

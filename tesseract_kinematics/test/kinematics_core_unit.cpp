@@ -3,8 +3,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_kinematics/core/forward_kinematics_chain_factory.h>
-#include <tesseract_kinematics/core/inverse_kinematics_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract_kinematics/core/utils.h>
 #include "kinematics_test_utils.h"

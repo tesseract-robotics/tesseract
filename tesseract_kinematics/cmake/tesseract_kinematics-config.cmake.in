@@ -13,6 +13,7 @@ find_dependency(tesseract_state_solver)
 find_dependency(tesseract_srdf)
 find_dependency(tesseract_common)
 find_dependency(opw_kinematics)
+find_dependency(yaml-cpp)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
