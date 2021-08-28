@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 #include <console_bridge/console.h>
+#include <ostream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/plugin_loader.h>
@@ -37,61 +38,79 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-inline std::list<std::string> parseEnvironmentVariableList(const std::string& env_variable)
+inline std::set<std::string> parseEnvironmentVariableList(const std::string& env_variable)
 {
-  std::list<std::string> list;
-  std::string evn_str = std::string(std::getenv(env_variable.c_str()));
+  std::set<std::string> list;
+  char* env_var = std::getenv(env_variable.c_str());
+  if (env_var == nullptr)  // Environment variable not found
+    return list;
+
+  std::string evn_str = std::string(env_var);
   boost::split(list, evn_str, boost::is_any_of(":"), boost::token_compress_on);
   return list;
 }
 
-inline std::list<std::string> getAllSearchPaths(const std::string& search_paths_env,
-                                                const std::list<std::string>& existing_search_paths)
+inline std::set<std::string> getAllSearchPaths(const std::string& search_paths_env,
+                                               const std::set<std::string>& existing_search_paths)
 {
   // Check for environment variable to override default library
   if (!search_paths_env.empty())
   {
-    std::list<std::string> search_paths = parseEnvironmentVariableList(search_paths_env);
-    search_paths.insert(search_paths.end(), existing_search_paths.begin(), existing_search_paths.end());
+    std::set<std::string> search_paths = parseEnvironmentVariableList(search_paths_env);
+    search_paths.insert(existing_search_paths.begin(), existing_search_paths.end());
     return search_paths;
   }
 
   return existing_search_paths;
 }
 
-inline std::unordered_map<std::string, std::string> parseEnvironmentVariableMap(const std::string& env_variable)
-{
-  std::unordered_map<std::string, std::string> plugins;
+// inline std::unordered_map<std::string, std::string> parseEnvironmentVariableMap(const std::string& env_variable)
+//{
+//  std::unordered_map<std::string, std::string> plugins;
 
-  // Parse list first
-  std::list<std::string> list;
-  std::string evn_str = std::string(std::getenv(env_variable.c_str()));
-  boost::split(list, evn_str, boost::is_any_of(":"), boost::token_compress_on);
+//  // Parse list first
+//  std::list<std::string> list;
+//  std::string evn_str = std::string(std::getenv(env_variable.c_str()));
+//  boost::split(list, evn_str, boost::is_any_of(":"), boost::token_compress_on);
 
-  // Parse pairs
-  for (const auto& pair : list)
-  {
-    std::vector<std::string> plugin_pair;
-    boost::split(plugin_pair, pair, boost::is_any_of(","), boost::token_compress_on);
-    if (plugin_pair.size() == 2)
-    {
-      plugins[plugin_pair[0]] = plugin_pair[1];
-    }
-    else
-    {
-      CONSOLE_BRIDGE_logWarn("Failed to parse information for plugin from environment variable: %s", pair.c_str());
-    }
-  }
-  return plugins;
-}
+//  // Parse pairs
+//  for (const auto& pair : list)
+//  {
+//    std::vector<std::string> plugin_pair;
+//    boost::split(plugin_pair, pair, boost::is_any_of(","), boost::token_compress_on);
+//    if (plugin_pair.size() == 2)
+//    {
+//      plugins[plugin_pair[0]] = plugin_pair[1];
+//    }
+//    else
+//    {
+//      CONSOLE_BRIDGE_logWarn("Failed to parse information for plugin from environment variable: %s", pair.c_str());
+//    }
+//  }
+//  return plugins;
+//}
 
-inline std::unordered_map<std::string, std::string>
-getAllPlugins(const std::string& plugins_env, const std::unordered_map<std::string, std::string>& existing_plugins)
+// inline std::unordered_map<std::string, std::string>
+// getAllPlugins(const std::string& plugins_env, const std::unordered_map<std::string, std::string>& existing_plugins)
+//{
+//  // Check for environment variable to override default library
+//  if (!plugins_env.empty())
+//  {
+//    std::unordered_map<std::string, std::string> plugins = parseEnvironmentVariableMap(plugins_env);
+//    plugins.insert(existing_plugins.begin(), existing_plugins.end());
+//    return plugins;
+//  }
+
+//  return existing_plugins;
+//}
+
+inline std::set<std::string> getAllPlugins(const std::string& plugins_env,
+                                           const std::set<std::string>& existing_plugins)
 {
   // Check for environment variable to override default library
   if (!plugins_env.empty())
   {
-    std::unordered_map<std::string, std::string> plugins = parseEnvironmentVariableMap(plugins_env);
+    std::set<std::string> plugins = parseEnvironmentVariableList(plugins_env);
     plugins.insert(existing_plugins.begin(), existing_plugins.end());
     return plugins;
   }
@@ -103,54 +122,82 @@ template <class PluginBase>
 std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_name) const
 {
   // Check for environment variable for plugin definitions
-  std::unordered_map<std::string, std::string> plugins_local = getAllPlugins(plugins_env, plugins);
-  auto it = plugins_local.find(plugin_name);
-  if (it == plugins_local.end())
+  std::set<std::string> plugins_local = getAllPlugins(plugins_env, plugins);
+  if (plugins_local.empty())
   {
-    CONSOLE_BRIDGE_logError("Failed to find information for plugin: %s", plugin_name.c_str());
+    CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
     return nullptr;
   }
 
   // Check for environment variable for search paths
-  std::list<std::string> search_paths_local = getAllSearchPaths(search_paths_env, search_paths);
+  std::set<std::string> search_paths_local = getAllSearchPaths(search_paths_env, search_paths);
   for (const auto& path : search_paths_local)
   {
-    if (ClassLoader::isClassAvailable(plugin_name, it->second, path))
-      return ClassLoader::createSharedInstance<PluginBase>(plugin_name, it->second, path);
+    for (const auto& library : plugins)
+    {
+      if (ClassLoader::isClassAvailable(plugin_name, library, path))
+        return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library, path);
+    }
   }
 
   // If not found in any of the provided search paths then search system folders if allowed
   if (search_system_folders)
   {
-    if (ClassLoader::isClassAvailable(plugin_name, it->second))
-      return ClassLoader::createSharedInstance<PluginBase>(plugin_name, it->second);
+    for (const auto& library : plugins)
+    {
+      if (ClassLoader::isClassAvailable(plugin_name, library))
+        return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library);
+    }
   }
 
-  CONSOLE_BRIDGE_logError("Failed to instantiate plugin '%s' from library: %s",
-                          plugin_name.c_str(),
-                          ClassLoader::decorate(it->second).c_str());
+  std::stringstream msg;
+  if (search_system_folders)
+    msg << std::endl << "Search Paths (Search System Folders: True):" << std::endl;
+  else
+    msg << std::endl << "Search Paths (Search System Folders: False):" << std::endl;
+
+  for (const auto& path : search_paths_local)
+    msg << "    - " + path << std::endl;
+
+  msg << "Search Libraries:" << std::endl;
+  for (const auto& library : plugins)
+    msg << "    - " + ClassLoader::decorate(library) << std::endl;
+
+  CONSOLE_BRIDGE_logError("Failed to instantiate plugin '%s', Details: %s", plugin_name.c_str(), msg.str().c_str());
+
   return nullptr;
 }
 
 bool PluginLoader::isPluginAvailable(const std::string& plugin_name) const
 {
   // Check for environment variable for plugin definitions
-  std::unordered_map<std::string, std::string> plugins_local = getAllPlugins(plugins_env, plugins);
-  auto it = plugins_local.find(plugin_name);
-  if (it == plugins_local.end())
+  std::set<std::string> plugins_local = getAllPlugins(plugins_env, plugins);
+  if (plugins_local.empty())
+  {
+    CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
     return false;
+  }
 
   // Check for environment variable to override default library
-  std::list<std::string> search_paths_local = getAllSearchPaths(search_paths_env, search_paths);
+  std::set<std::string> search_paths_local = getAllSearchPaths(search_paths_env, search_paths);
   for (const auto& path : search_paths_local)
   {
-    if (ClassLoader::isClassAvailable(plugin_name, it->second, path))
-      return true;
+    for (const auto& library : plugins)
+    {
+      if (ClassLoader::isClassAvailable(plugin_name, library, path))
+        return true;
+    }
   }
 
   // If not found in any of the provided search paths then search system folders if allowed
   if (search_system_folders)
-    return ClassLoader::isClassAvailable(plugin_name, it->second);
+  {
+    for (const auto& library : plugins)
+    {
+      if (ClassLoader::isClassAvailable(plugin_name, library))
+        return true;
+    }
+  }
 
   return false;
 }
