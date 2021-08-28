@@ -7,13 +7,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include "kinematics_test_utils.h"
 
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
-#include <tesseract_kinematics/kdl/kdl_fwd_kin_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
-#include <tesseract_kinematics/kdl/kdl_fwd_kin_tree_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma.h>
-#include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
-#include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr_factory.h>
 
 using namespace tesseract_kinematics::test_suite;
 
@@ -224,9 +220,8 @@ TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)  // NOLINT
 
   tesseract_kinematics::KDLInvKinChainLMA derived_kin("manip", *scene_graph, "base_link", "tool0");
 
-  tesseract_kinematics::KDLFwdKinChainFactory fwd_kin_factory;
-  tesseract_kinematics::KDLInvKinChainLMAFactory inv_kin_factory;
-  runInvKinIIWATest(inv_kin_factory, fwd_kin_factory, "KDLInvKinChainLMA", "KDLFwdKinChain");
+  tesseract_kinematics::KinematicsPluginFactory factory;
+  runInvKinIIWATest(factory, "KDLInvKinChainLMAFactory", "KDLFwdKinChainFactory");
 }
 
 TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)  // NOLINT
@@ -235,9 +230,8 @@ TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)  // NOLINT
 
   tesseract_kinematics::KDLInvKinChainNR derived_kin("manip", *scene_graph, "base_link", "tool0");
 
-  tesseract_kinematics::KDLFwdKinChainFactory fwd_kin_factory;
-  tesseract_kinematics::KDLInvKinChainNRFactory inv_kin_factory;
-  runInvKinIIWATest(inv_kin_factory, fwd_kin_factory, "KDLInvKinChainNR", "KDLFwdKinChain");
+  tesseract_kinematics::KinematicsPluginFactory factory;
+  runInvKinIIWATest(factory, "KDLInvKinChainNRFactory", "KDLFwdKinChainFactory");
 }
 
 int main(int argc, char** argv)

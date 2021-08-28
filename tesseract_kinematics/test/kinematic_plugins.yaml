@@ -1,0 +1,106 @@
+kinematic_plugins:
+  search_paths:
+    - /home/larmstrong/catkin_ws/tesseract_kin_group_ws/devel/lib
+  search_libraries:
+    - tesseract_kinematics_kdl_factories
+  fwd_kin_plugins:
+    - name: KDLFwdKinChain
+      class: KDLFwdKinChainFactory
+      group: iiwa_manipulator
+      config:
+        base_link: base_link
+        tip_link: tool0
+  inv_kin_plugins:
+    - name: KDLInvKinChainLMA
+      class: KDLInvKinChainLMAFactory
+      group: iiwa_manipulator
+      config:
+        base_link: base_link
+        tip_link: tool0
+    - name: KDLInvKinChainNR
+      class: KDLInvKinChainNRFactory
+      group: iiwa_manipulator
+      config:
+        base_link: base_link
+        tip_link: tool0
+    - name: OPWInvKin
+      class: OPWInvKinFactory
+      group: abb_manipulator
+      config:
+        base_link: base_link
+        tip_link: tool0
+        params:
+          a1: 0.100
+          a2: -0.135
+          b: 0.00
+          c1: 0.615
+          c2: 0.705
+          c3: 0.755
+          c4: 0.086
+          offsets: [0, 0, -1.57079632679, 0, 0, 0]
+          sign_corrections: [1, 1, 1, 1, 1, 1]
+    - name: URInvKin
+      class: URInvKinFactory
+      group: ur_manipulator
+      config:
+        base_link: base_link
+        tip_link: tool0
+        model: 10
+    - name: ROPInvKin
+      class: ROPInvKinFactory
+      group: rop_manipulator
+      config:
+        manipulator_reach: 2.0
+        positioner_sample_resolution:
+          - name: positioner_joint_1
+            value: 0.1
+        positioner:
+          class: KDLFwdKinChainFactory
+          config:
+            base_link: positioner_base_link
+            tip_link: positioner_tool0
+        manipulator:
+          class: OPWInvKinFactory
+          config:
+            base_link: base_link
+            tip_link: tool0
+            params:
+              a1: 0.100
+              a2: -0.135
+              b: 0.00
+              c1: 0.615
+              c2: 0.705
+              c3: 0.755
+              c4: 0.086
+              offsets: [0, 0, -1.57079632679, 0, 0, 0]
+              sign_corrections: [1, 1, 1, 1, 1, 1]
+    - name: REPInvKin
+      class: REPInvKinFactory
+      group: rep_manipulator
+      config:
+        manipulator_reach: 2.0
+        positioner_sample_resolution:
+          - name: positioner_joint_1
+            value: 0.1
+          - name: positioner_joint_2
+            value: 0.1
+        positioner:
+          class: KDLFwdKinChainFactory
+          config:
+            base_link: positioner_base_link
+            tip_link: positioner_tool0
+        manipulator:
+          class: OPWInvKinFactory
+          config:
+            base_link: base_link
+            tip_link: tool0
+            params:
+              a1: 0.100
+              a2: -0.135
+              b: 0.00
+              c1: 0.615
+              c2: 0.705
+              c3: 0.755
+              c4: 0.086
+              offsets: [0, 0, -1.57079632679, 0, 0, 0]
+              sign_corrections: [1, 1, 1, 1, 1, 1]

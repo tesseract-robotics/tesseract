@@ -28,7 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_kinematics/core/rep_inverse_kinematics.h>
+#include <tesseract_kinematics/core/rep_inv_kin.h>
 
 namespace tesseract_kinematics
 {
