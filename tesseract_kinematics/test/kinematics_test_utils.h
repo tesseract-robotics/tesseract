@@ -1021,9 +1021,18 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
   tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract_scene_graph::SceneState scene_state = state_solver.getState();
 
-  YAML::Node config;
-  config["base_link"] = base_link_name;
-  config["tip_link"] = tip_link_name;
+  tesseract_kinematics::KinematicsPluginInfo fwd_plugin_info;
+  fwd_plugin_info.name = fwd_factory_name;
+  fwd_plugin_info.class_name = fwd_factory_name;
+  fwd_plugin_info.group = manip_name;
+  fwd_plugin_info.config["base_link"] = base_link_name;
+  fwd_plugin_info.config["tip_link"] = tip_link_name;
+
+  tesseract_kinematics::KinematicsPluginInfo inv_plugin_info;
+  inv_plugin_info.name = inv_factory_name;
+  inv_plugin_info.class_name = inv_factory_name;
+  inv_plugin_info.group = manip_name;
+  inv_plugin_info.config = fwd_plugin_info.config;
 
   // Inverse target pose and seed
   Eigen::Isometry3d pose;
@@ -1044,11 +1053,11 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
 
   // Check create method with empty scene graph
   tesseract_scene_graph::SceneGraph scene_graph_empty;
-  auto kin_empty = factory.createInvKin(inv_factory_name, manip_name, scene_graph_empty, scene_state, config);
+  auto kin_empty = factory.getInvKin(inv_plugin_info, scene_graph_empty, scene_state);
   EXPECT_TRUE(kin_empty == nullptr);
 
   {  // Check create method using base_link and tool0
-    auto fwd_kin = factory.createFwdKin(fwd_factory_name, manip_name, *scene_graph, scene_state, config);
+    auto fwd_kin = factory.getFwdKin(fwd_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(fwd_kin != nullptr);
     EXPECT_EQ(fwd_kin->getName(), manip_name);
     //    EXPECT_EQ(fwd_kin->getSolverName(), fwd_solver_name);
@@ -1061,7 +1070,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
     runJacobianIIWATest(*fwd_kin);
     runFwdKinIIWATest(*fwd_kin);
 
-    auto inv_kin = factory.createInvKin(inv_factory_name, manip_name, *scene_graph, scene_state, config);
+    auto inv_kin = factory.getInvKin(inv_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getName(), manip_name);
     //    EXPECT_EQ(inv_kin->getSolverName(), inv_solver_name);
@@ -1084,7 +1093,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
   }
 
   {  // Check cloned
-    auto fwd_kin = factory.createFwdKin(fwd_factory_name, manip_name, *scene_graph, scene_state, config);
+    auto fwd_kin = factory.getFwdKin(fwd_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(fwd_kin != nullptr);
     auto fwd_kin3 = fwd_kin->clone();
     EXPECT_EQ(fwd_kin3->getName(), manip_name);
@@ -1098,7 +1107,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
     runJacobianIIWATest(*fwd_kin3);
     runFwdKinIIWATest(*fwd_kin3);
 
-    auto inv_kin = factory.createInvKin(inv_factory_name, manip_name, *scene_graph, scene_state, config);
+    auto inv_kin = factory.getInvKin(inv_plugin_info, *scene_graph, scene_state);
     auto inv_kin3 = inv_kin->clone();
     EXPECT_TRUE(inv_kin3 != nullptr);
     EXPECT_EQ(inv_kin3->getName(), manip_name);
@@ -1121,16 +1130,18 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
     runKinSetJointLimitsTest(kin_group);
   }
 
-  config["base_link"] = "missing_link";
-  config["tip_link"] = tip_link_name;
+  fwd_plugin_info.config["base_link"] = "missing_link";
+  fwd_plugin_info.config["tip_link"] = tip_link_name;
+  inv_plugin_info.config = fwd_plugin_info.config;
 
   {  // Test forward kinematics failure
-    auto fwd_kin = factory.createFwdKin(fwd_factory_name, manip_name, *scene_graph, scene_state, config);
+
+    auto fwd_kin = factory.getFwdKin(fwd_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(fwd_kin == nullptr);
   }
 
   {  // Inverse Kinematics Test failure
-    auto inv_kin = factory.createInvKin(inv_factory_name, manip_name, *scene_graph, scene_state, config);
+    auto inv_kin = factory.getInvKin(inv_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
 }

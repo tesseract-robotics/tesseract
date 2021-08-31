@@ -38,35 +38,11 @@ namespace tesseract_kinematics
 KinematicGroup::KinematicGroup(InverseKinematics::UPtr inv_kin,
                                const tesseract_scene_graph::SceneGraph& scene_graph,
                                const tesseract_scene_graph::SceneState& scene_state)
-  : state_(scene_state), inv_kin_(std::move(inv_kin))
+  : JointGroup(inv_kin->getName(), inv_kin->getJointNames(), scene_graph, scene_state)
 {
-  for (const auto& joint_name : inv_kin_->getJointNames())
-  {
-    if (scene_graph.getJoint(joint_name) == nullptr)
-      throw std::runtime_error("Inverse kinematic joint name '" + joint_name +
-                               "' does not exist in the provided scene graph!");
-  }
-
-  name_ = inv_kin_->getName();
-  joint_names_ = inv_kin_->getJointNames();
-
-  tesseract_scene_graph::KDLTreeData data =
-      tesseract_scene_graph::parseSceneGraph(scene_graph, joint_names_, scene_state.joints);
-  state_solver_ = std::make_unique<tesseract_scene_graph::KDLStateSolver>(scene_graph, data);
-  jacobian_map_.reserve(joint_names_.size());
-  std::vector<std::string> solver_jn = state_solver_->getJointNames();
-  for (const auto& joint_name : joint_names_)
-    jacobian_map_.push_back(
-        std::distance(solver_jn.begin(), std::find(solver_jn.begin(), solver_jn.end(), joint_name)));
+  inv_kin_ = std::move(inv_kin);
 
   std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
-  for (const auto& link : scene_graph.getLinks())
-  {
-    auto it = std::find(active_link_names.begin(), active_link_names.end(), link->getName());
-    if (it == active_link_names.end())
-      static_link_names_.push_back(link->getName());
-  }
-
   bool static_added{ false };
   std::string working_frame = inv_kin_->getWorkingFrame();
   auto it = std::find(active_link_names.begin(), active_link_names.end(), working_frame);
@@ -102,53 +78,19 @@ KinematicGroup::KinematicGroup(InverseKinematics::UPtr inv_kin,
 
   inv_to_fwd_base_ = state_.link_transforms.at(inv_kin_->getBaseLinkName()).inverse() *
                      state_.link_transforms.at(state_solver_->getBaseLinkName());
-
-  limits_.resize(static_cast<Eigen::Index>(joint_names_.size()));
-  for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(joint_names_.size()); ++i)
-  {
-    auto joint = scene_graph.getJoint(joint_names_[static_cast<std::size_t>(i)]);
-
-    // Set limits
-    limits_.joint_limits(i, 0) = joint->limits->lower;
-    limits_.joint_limits(i, 1) = joint->limits->upper;
-    limits_.velocity_limits(i) = joint->limits->velocity;
-    limits_.acceleration_limits(i) = joint->limits->acceleration;
-
-    // Set redundancy indices
-    switch (joint->type)
-    {
-      case tesseract_scene_graph::JointType::REVOLUTE:
-      case tesseract_scene_graph::JointType::CONTINUOUS:
-        redundancy_indices_.push_back(static_cast<Eigen::Index>(i));
-        break;
-      default:
-        break;
-    }
-  }
 }
 
-KinematicGroup::KinematicGroup(const KinematicGroup& other) { *this = other; }
+KinematicGroup::KinematicGroup(const KinematicGroup& other) : JointGroup(other) { *this = other; }
 
 KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
 {
-  name_ = other.name_;
-  state_ = other.state_;
+  JointGroup::operator=(other);
   inv_kin_ = other.inv_kin_->clone();
   inv_to_fwd_base_ = other.inv_to_fwd_base_;
-  joint_names_ = other.joint_names_;
-  static_link_names_ = other.static_link_names_;
   working_frames_ = other.working_frames_;
   tip_link_names_ = other.tip_link_names_;
-  limits_ = other.limits_;
-  redundancy_indices_ = other.redundancy_indices_;
   inv_working_frames_map_ = other.inv_working_frames_map_;
-  jacobian_map_ = other.jacobian_map_;
   return *this;
-}
-
-tesseract_common::TransformMap KinematicGroup::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
-{
-  return state_solver_->getState(joint_names_, joint_angles).link_transforms;
 }
 
 IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
@@ -188,97 +130,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   return solutions_filtered;
 }
 
-Eigen::MatrixXd KinematicGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                             const std::string& link_name,
-                                             const std::string& base_link_name) const
-{
-  Eigen::MatrixXd solver_jac = state_solver_->getJacobian(joint_names_, joint_angles, link_name);
-
-  Eigen::MatrixXd kin_jac(6, inv_kin_->numJoints());
-  for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
-    kin_jac.col(i) = solver_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
-
-  if (base_link_name != getBaseLinkName())
-  {
-    std::vector<std::string> active_links = getActiveLinkNames();
-    if (std::find(active_links.begin(), active_links.end(), base_link_name) != active_links.end())
-    {
-      tesseract_scene_graph::SceneState state = state_solver_->getState(joint_angles);
-      const Eigen::Isometry3d& base_link_tf = state.link_transforms.at(base_link_name);
-
-      Eigen::MatrixXd base_link_jac = state_solver_->getJacobian(joint_names_, joint_angles, base_link_name);
-      Eigen::MatrixXd base_kin_jac(6, inv_kin_->numJoints());
-      for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
-        base_link_jac.col(i) = base_link_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
-
-      tesseract_common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
-      tesseract_common::jacobianChangeBase(base_link_jac, base_link_tf.inverse());
-
-      kin_jac = kin_jac + base_link_jac;
-    }
-    else
-    {
-      tesseract_common::jacobianChangeBase(kin_jac, state_.link_transforms.at(base_link_name).inverse());
-    }
-  }
-
-  return kin_jac;
-}
-
-bool KinematicGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
-{
-  if (vec.size() != static_cast<Eigen::Index>(joint_names_.size()))
-  {
-    CONSOLE_BRIDGE_logError(
-        "Number of joint angles (%d) don't match robot_model (%d)", static_cast<int>(vec.size()), numJoints());
-    return false;
-  }
-
-  for (int i = 0; i < vec.size(); ++i)
-  {
-    if ((vec[i] < limits_.joint_limits(i, 0)) || (vec(i) > limits_.joint_limits(i, 1)))
-    {
-      CONSOLE_BRIDGE_logDebug("Joint %s is out-of-range (%g < %g < %g)",
-                              joint_names_[static_cast<size_t>(i)].c_str(),
-                              limits_.joint_limits(i, 0),
-                              vec(i),
-                              limits_.joint_limits(i, 1));
-      return false;
-    }
-  }
-
-  return true;
-}
-
-std::vector<std::string> KinematicGroup::getJointNames() const { return joint_names_; }
-
-std::vector<std::string> KinematicGroup::getLinkNames() const { return state_solver_->getLinkNames(); }
-
-std::vector<std::string> KinematicGroup::getActiveLinkNames() const { return state_solver_->getActiveLinkNames(); }
-
-tesseract_common::KinematicLimits KinematicGroup::getLimits() const { return limits_; }
-
-void KinematicGroup::setLimits(tesseract_common::KinematicLimits limits)
-{
-  Eigen::Index nj = numJoints();
-  if (limits.joint_limits.rows() != nj || limits.velocity_limits.size() != nj ||
-      limits.acceleration_limits.size() != nj)
-    throw std::runtime_error("Kinematics Group limits assigned are invalid!");
-
-  limits_ = limits;
-}
-
-std::vector<Eigen::Index> KinematicGroup::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
-
-Eigen::Index KinematicGroup::numJoints() const { return inv_kin_->numJoints(); }
-
-std::string KinematicGroup::getBaseLinkName() const { return state_solver_->getBaseLinkName(); }
-
 std::vector<std::string> KinematicGroup::getWorkingFrames() const { return working_frames_; }
 
 std::vector<std::string> KinematicGroup::getTipLinkNames() const { return tip_link_names_; }
-
-std::string KinematicGroup::getName() const { return name_; }
-
-std::unique_ptr<KinematicGroup> KinematicGroup::clone() const { return std::make_unique<KinematicGroup>(*this); }
 }  // namespace tesseract_kinematics

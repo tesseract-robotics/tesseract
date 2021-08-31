@@ -38,8 +38,6 @@ using namespace tesseract_kinematics;
 
 TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
 {
-  KinematicsPluginFactory factory;
-
   tesseract_scene_graph::SceneGraph::UPtr iiwa_scene_graph = getSceneGraphIIWA();
   tesseract_scene_graph::KDLStateSolver iiwa_state_solver(*iiwa_scene_graph);
   tesseract_scene_graph::SceneState iiwa_scene_state = iiwa_state_solver.getState();
@@ -62,6 +60,7 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
 
   tesseract_common::fs::path file_path(__FILE__);
   tesseract_common::fs::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
+  KinematicsPluginFactory factory(config_path);
   YAML::Node plugin_config = YAML::LoadFile(config_path.string());
 
   const YAML::Node& plugin_info = plugin_config["kinematic_plugins"];
@@ -70,30 +69,44 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
   const YAML::Node& fwd_kin_plugins = plugin_info["fwd_kin_plugins"];
   const YAML::Node& inv_kin_plugins = plugin_info["inv_kin_plugins"];
 
-  EXPECT_EQ(search_paths.size(), 1);
-  for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
-    factory.addSearchPath(it->as<std::string>());
+  {
+    const std::set<std::string>& sp = factory.getSearchPaths();
+    EXPECT_EQ(sp.size(), 1);
 
-  EXPECT_EQ(search_libraries.size(), 1);
-  for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
-    factory.addLibrary(it->as<std::string>());
+    for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
+    {
+      EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
+    }
+  }
+
+  {
+    const std::set<std::string>& sl = factory.getSearchLibraries();
+    EXPECT_EQ(sl.size(), 4);
+
+    for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
+    {
+      EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
+    }
+  }
 
   EXPECT_EQ(fwd_kin_plugins.size(), 1);
   for (auto it = fwd_kin_plugins.begin(); it != fwd_kin_plugins.end(); ++it)
   {
     const YAML::Node& plugin = *it;
-    std::string name = plugin["name"].as<std::string>();
-    std::string symbol_name = plugin["class"].as<std::string>();
-    std::string group = plugin["group"].as<std::string>();
-    const YAML::Node& config = plugin["config"];
+
+    KinematicsPluginInfo info;
+    info.name = plugin["name"].as<std::string>();
+    info.class_name = plugin["class"].as<std::string>();
+    info.group = plugin["group"].as<std::string>();
+    info.config = plugin["config"];
 
     ForwardKinematics::UPtr kin;
-    if (group == "iiwa_manipulator")
-      kin = factory.createFwdKin(symbol_name, group, *iiwa_scene_graph, iiwa_scene_state, config);
-    else if (group == "abb_manipulator")
-      kin = factory.createFwdKin(symbol_name, group, *abb_scene_graph, abb_scene_state, config);
-    else if (group == "ur_manipulator")
-      kin = factory.createFwdKin(symbol_name, group, *ur_scene_graph, ur_scene_state, config);
+    if (info.group == "iiwa_manipulator")
+      kin = factory.getFwdKin(info.group, info.name, *iiwa_scene_graph, iiwa_scene_state);
+    else if (info.group == "abb_manipulator")
+      kin = factory.getFwdKin(info.group, info.name, *abb_scene_graph, abb_scene_state);
+    else if (info.group == "ur_manipulator")
+      kin = factory.getFwdKin(info.group, info.name, *ur_scene_graph, ur_scene_state);
 
     EXPECT_TRUE(kin != nullptr);
   }
@@ -102,22 +115,24 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
   for (auto it = inv_kin_plugins.begin(); it != inv_kin_plugins.end(); ++it)
   {
     const YAML::Node& plugin = *it;
-    std::string name = plugin["name"].as<std::string>();
-    std::string symbol_name = plugin["class"].as<std::string>();
-    std::string group = plugin["group"].as<std::string>();
-    const YAML::Node& config = plugin["config"];
+
+    KinematicsPluginInfo info;
+    info.name = plugin["name"].as<std::string>();
+    info.class_name = plugin["class"].as<std::string>();
+    info.group = plugin["group"].as<std::string>();
+    info.config = plugin["config"];
 
     InverseKinematics::UPtr kin;
-    if (group == "iiwa_manipulator")
-      kin = factory.createInvKin(symbol_name, group, *iiwa_scene_graph, iiwa_scene_state, config);
-    else if (group == "abb_manipulator")
-      kin = factory.createInvKin(symbol_name, group, *abb_scene_graph, abb_scene_state, config);
-    else if (group == "ur_manipulator")
-      kin = factory.createInvKin(symbol_name, group, *ur_scene_graph, ur_scene_state, config);
-    else if (group == "rop_manipulator")
-      kin = factory.createInvKin(symbol_name, group, *rop_scene_graph, rop_scene_state, config);
-    else if (group == "rep_manipulator")
-      kin = factory.createInvKin(symbol_name, group, *rep_scene_graph, rep_scene_state, config);
+    if (info.group == "iiwa_manipulator")
+      kin = factory.getInvKin(info.group, info.name, *iiwa_scene_graph, iiwa_scene_state);
+    else if (info.group == "abb_manipulator")
+      kin = factory.getInvKin(info.group, info.name, *abb_scene_graph, abb_scene_state);
+    else if (info.group == "ur_manipulator")
+      kin = factory.getInvKin(info.group, info.name, *ur_scene_graph, ur_scene_state);
+    else if (info.group == "rop_manipulator")
+      kin = factory.getInvKin(info.group, info.name, *rop_scene_graph, rop_scene_state);
+    else if (info.group == "rep_manipulator")
+      kin = factory.getInvKin(info.group, info.name, *rep_scene_graph, rep_scene_state);
 
     EXPECT_TRUE(kin != nullptr);
   }

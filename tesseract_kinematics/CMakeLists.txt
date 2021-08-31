@@ -58,6 +58,7 @@ set(KINEMATICS_PLUGINS "")
 add_library(${PROJECT_NAME}_core
   src/core/rop_inv_kin.cpp
   src/core/rep_inv_kin.cpp
+  src/core/joint_group.cpp
   src/core/kinematic_group.cpp
   src/core/kinematics_plugin_factory.cpp
   )
