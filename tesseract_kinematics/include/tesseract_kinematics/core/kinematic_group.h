@@ -32,12 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/types.h>
-#include <tesseract_scene_graph/adjacency_map.h>
-#include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_state_solver/kdl/kdl_state_solver.h>
-#include <tesseract_kinematics/core/kinematic_group.h>
-#include <tesseract_kinematics/core/forward_kinematics.h>
+#include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 
 namespace tesseract_kinematics
@@ -78,7 +73,7 @@ struct KinGroupIKInput
 
 using KinGroupIKInputs = tesseract_common::AlignedVector<KinGroupIKInput>;
 
-class KinematicGroup
+class KinematicGroup : public JointGroup
 {
 public:
   // LCOV_EXCL_START
@@ -96,17 +91,15 @@ public:
   KinematicGroup(KinematicGroup&&) = default;
   KinematicGroup& operator=(KinematicGroup&&) = default;
 
+  /**
+   * @brief Create a kinematics group with inverse kinematics
+   * @param inv_kin The inverse kinematics object to create kinematic group from
+   * @param scene_graph The scene graph
+   * @param scene_state The scene state
+   */
   KinematicGroup(InverseKinematics::UPtr inv_kin,
                  const tesseract_scene_graph::SceneGraph& scene_graph,
                  const tesseract_scene_graph::SceneState& scene_state);
-
-  /**
-   * @brief Calculates tool pose of robot chain
-   * @details Throws an exception on failures (including uninitialized)
-   * @param pose Transform of end-of-tip relative to root
-   * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   */
-  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
    * @brief Calculates joint solutions given a pose.
@@ -119,97 +112,19 @@ public:
    */
   IKSolutions calcInvKin(const KinGroupIKInputs& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
-  /**
-   * @brief Calculated jacobian of robot given joint angles
-   * @param jacobian Output jacobian
-   * @param joint_angles Input vector of joint angles
-   */
-  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name,
-                               const std::string& base_link_name) const;
-
-  /**
-   * @brief Get list of joint names for kinematic object
-   * @return A vector of joint names
-   */
-  std::vector<std::string> getJointNames() const;
-
-  /**
-   * @brief Get list of all link names (with and without geometry) for kinematic object
-   * @return A vector of link names
-   */
-  std::vector<std::string> getLinkNames() const;
-
-  /**
-   * @brief Get list of active link names (with and without geometry) for kinematic object
-   *
-   * Note: This only includes links that are children of the active joints
-   *
-   * @return A vector of active link names
-   */
-  std::vector<std::string> getActiveLinkNames() const;
-
-  /**
-   * @brief Getter for kinematic limits (joint, velocity, acceleration, etc.)
-   * @return Kinematic Limits
-   */
-  tesseract_common::KinematicLimits getLimits() const;
-
-  /**
-   * @brief Setter for kinematic limits (joint, velocity, acceleration, etc.)
-   * @param Kinematic Limits
-   */
-  void setLimits(tesseract_common::KinematicLimits limits);
-
-  /**
-   * @brief Get vector indicating which joints are capable of producing redundant solutions
-   * @return A vector of joint indicies
-   */
-  std::vector<Eigen::Index> getRedundancyCapableJointIndices() const;
-
-  /**
-   * @brief Number of joints in robot
-   * @return Number of joints in robot
-   */
-  Eigen::Index numJoints() const;
-
-  /** @brief getter for the robot base link name */
-  std::string getBaseLinkName() const;
-
   /** @brief Get the working frames */
   std::vector<std::string> getWorkingFrames() const;
 
   /** @brief Get the tip link name */
   std::vector<std::string> getTipLinkNames() const;
 
-  /** @brief Name of the maniputlator */
-  std::string getName() const;
-
-  /** @brief Clone of the motion group */
-  std::unique_ptr<KinematicGroup> clone() const;
-
-  /**
-   * @brief Check for consistency in # and limits of joints
-   * @param vec Vector of joint values
-   * @return True if size of vec matches # of robot joints and all joints are within limits
-   */
-  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const;
-
 private:
-  std::string name_;
-  tesseract_scene_graph::SceneState state_;
-  tesseract_scene_graph::KDLStateSolver::UPtr state_solver_;
   InverseKinematics::UPtr inv_kin_;
   Eigen::Isometry3d inv_to_fwd_base_{ Eigen::Isometry3d::Identity() };
-  std::vector<std::string> joint_names_;
   std::vector<std::string> working_frames_;
   std::vector<std::string> tip_link_names_;
-  std::vector<std::string> static_link_names_;
-  tesseract_common::KinematicLimits limits_;
-  std::vector<Eigen::Index> redundancy_indices_;
   std::unordered_map<std::string, std::string> inv_working_frames_map_;
   std::unordered_map<std::string, std::string> inv_tip_links_map_;
-  std::vector<Eigen::Index> jacobian_map_;
 };
 
 }  // namespace tesseract_kinematics
