@@ -7,6 +7,7 @@ kinematic_plugins:
     - name: KDLFwdKinChain
       class: KDLFwdKinChainFactory
       group: iiwa_manipulator
+      default: true
       config:
         base_link: base_link
         tip_link: tool0
@@ -14,6 +15,7 @@ kinematic_plugins:
     - name: KDLInvKinChainLMA
       class: KDLInvKinChainLMAFactory
       group: iiwa_manipulator
+      default: true
       config:
         base_link: base_link
         tip_link: tool0
@@ -26,6 +28,7 @@ kinematic_plugins:
     - name: OPWInvKin
       class: OPWInvKinFactory
       group: abb_manipulator
+      default: true
       config:
         base_link: base_link
         tip_link: tool0
@@ -42,6 +45,7 @@ kinematic_plugins:
     - name: URInvKin
       class: URInvKinFactory
       group: ur_manipulator
+      default: true
       config:
         base_link: base_link
         tip_link: tool0
@@ -49,6 +53,7 @@ kinematic_plugins:
     - name: ROPInvKin
       class: ROPInvKinFactory
       group: rop_manipulator
+      default: true
       config:
         manipulator_reach: 2.0
         positioner_sample_resolution:
@@ -77,6 +82,7 @@ kinematic_plugins:
     - name: REPInvKin
       class: REPInvKinFactory
       group: rep_manipulator
+      default: true
       config:
         manipulator_reach: 2.0
         positioner_sample_resolution:
