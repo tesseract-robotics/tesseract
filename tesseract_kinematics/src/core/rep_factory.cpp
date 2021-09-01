@@ -95,7 +95,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& name,
     p_info.name = p_info.class_name;
     p_info.config = positioner["config"];
 
-    fwd_kin = plugin_factory.getFwdKin(p_info, scene_graph, scene_state);
+    fwd_kin = plugin_factory.createFwdKin(p_info, scene_graph, scene_state);
     if (fwd_kin == nullptr)
       throw std::runtime_error("REPInvKinFactory, failed to create positioner forward kinematics!");
 
@@ -130,7 +130,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& name,
     m_info.name = p_info.class_name;
     m_info.config = manipulator["config"];
 
-    inv_kin = plugin_factory.getInvKin(m_info, scene_graph, scene_state);
+    inv_kin = plugin_factory.createInvKin(m_info, scene_graph, scene_state);
     if (inv_kin == nullptr)
       throw std::runtime_error("REPInvKinFactory, failed to create positioner forward kinematics!");
   }

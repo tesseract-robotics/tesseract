@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 using namespace tesseract_kinematics::test_suite;
 using namespace tesseract_kinematics;
 
-TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
+void runKinematicsFactoryTest(tesseract_common::fs::path config_path)
 {
   tesseract_scene_graph::SceneGraph::UPtr iiwa_scene_graph = getSceneGraphIIWA();
   tesseract_scene_graph::KDLStateSolver iiwa_state_solver(*iiwa_scene_graph);
@@ -58,8 +58,6 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
   tesseract_scene_graph::KDLStateSolver rep_state_solver(*rep_scene_graph);
   tesseract_scene_graph::SceneState rep_scene_state = rep_state_solver.getState();
 
-  tesseract_common::fs::path file_path(__FILE__);
-  tesseract_common::fs::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
   KinematicsPluginFactory factory(config_path);
   YAML::Node plugin_config = YAML::LoadFile(config_path.string());
 
@@ -102,11 +100,11 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
 
     ForwardKinematics::UPtr kin;
     if (info.group == "iiwa_manipulator")
-      kin = factory.getFwdKin(info.group, info.name, *iiwa_scene_graph, iiwa_scene_state);
+      kin = factory.createFwdKin(info.group, info.name, *iiwa_scene_graph, iiwa_scene_state);
     else if (info.group == "abb_manipulator")
-      kin = factory.getFwdKin(info.group, info.name, *abb_scene_graph, abb_scene_state);
+      kin = factory.createFwdKin(info.group, info.name, *abb_scene_graph, abb_scene_state);
     else if (info.group == "ur_manipulator")
-      kin = factory.getFwdKin(info.group, info.name, *ur_scene_graph, ur_scene_state);
+      kin = factory.createFwdKin(info.group, info.name, *ur_scene_graph, ur_scene_state);
 
     EXPECT_TRUE(kin != nullptr);
   }
@@ -124,18 +122,35 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
 
     InverseKinematics::UPtr kin;
     if (info.group == "iiwa_manipulator")
-      kin = factory.getInvKin(info.group, info.name, *iiwa_scene_graph, iiwa_scene_state);
+      kin = factory.createInvKin(info.group, info.name, *iiwa_scene_graph, iiwa_scene_state);
     else if (info.group == "abb_manipulator")
-      kin = factory.getInvKin(info.group, info.name, *abb_scene_graph, abb_scene_state);
+      kin = factory.createInvKin(info.group, info.name, *abb_scene_graph, abb_scene_state);
     else if (info.group == "ur_manipulator")
-      kin = factory.getInvKin(info.group, info.name, *ur_scene_graph, ur_scene_state);
+      kin = factory.createInvKin(info.group, info.name, *ur_scene_graph, ur_scene_state);
     else if (info.group == "rop_manipulator")
-      kin = factory.getInvKin(info.group, info.name, *rop_scene_graph, rop_scene_state);
+      kin = factory.createInvKin(info.group, info.name, *rop_scene_graph, rop_scene_state);
     else if (info.group == "rep_manipulator")
-      kin = factory.getInvKin(info.group, info.name, *rep_scene_graph, rep_scene_state);
+      kin = factory.createInvKin(info.group, info.name, *rep_scene_graph, rep_scene_state);
 
     EXPECT_TRUE(kin != nullptr);
   }
+
+  factory.saveConfig(tesseract_common::fs::path(tesseract_common::getTempPath()) / "kinematic_plugins_export.yaml");
+}
+
+TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
+{
+  tesseract_common::fs::path file_path(__FILE__);
+  tesseract_common::fs::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
+  runKinematicsFactoryTest(config_path);
+
+  tesseract_common::fs::path export_config_path = tesseract_common::fs::path(tesseract_common::getTempPath()) / "kinema"
+                                                                                                                "tic_"
+                                                                                                                "plugin"
+                                                                                                                "s_"
+                                                                                                                "export"
+                                                                                                                ".yaml";
+  runKinematicsFactoryTest(export_config_path);
 }
 
 int main(int argc, char** argv)

@@ -1053,11 +1053,11 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
 
   // Check create method with empty scene graph
   tesseract_scene_graph::SceneGraph scene_graph_empty;
-  auto kin_empty = factory.getInvKin(inv_plugin_info, scene_graph_empty, scene_state);
+  auto kin_empty = factory.createInvKin(inv_plugin_info, scene_graph_empty, scene_state);
   EXPECT_TRUE(kin_empty == nullptr);
 
   {  // Check create method using base_link and tool0
-    auto fwd_kin = factory.getFwdKin(fwd_plugin_info, *scene_graph, scene_state);
+    auto fwd_kin = factory.createFwdKin(fwd_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(fwd_kin != nullptr);
     EXPECT_EQ(fwd_kin->getName(), manip_name);
     //    EXPECT_EQ(fwd_kin->getSolverName(), fwd_solver_name);
@@ -1070,7 +1070,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
     runJacobianIIWATest(*fwd_kin);
     runFwdKinIIWATest(*fwd_kin);
 
-    auto inv_kin = factory.getInvKin(inv_plugin_info, *scene_graph, scene_state);
+    auto inv_kin = factory.createInvKin(inv_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getName(), manip_name);
     //    EXPECT_EQ(inv_kin->getSolverName(), inv_solver_name);
@@ -1093,7 +1093,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
   }
 
   {  // Check cloned
-    auto fwd_kin = factory.getFwdKin(fwd_plugin_info, *scene_graph, scene_state);
+    auto fwd_kin = factory.createFwdKin(fwd_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(fwd_kin != nullptr);
     auto fwd_kin3 = fwd_kin->clone();
     EXPECT_EQ(fwd_kin3->getName(), manip_name);
@@ -1107,7 +1107,7 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
     runJacobianIIWATest(*fwd_kin3);
     runFwdKinIIWATest(*fwd_kin3);
 
-    auto inv_kin = factory.getInvKin(inv_plugin_info, *scene_graph, scene_state);
+    auto inv_kin = factory.createInvKin(inv_plugin_info, *scene_graph, scene_state);
     auto inv_kin3 = inv_kin->clone();
     EXPECT_TRUE(inv_kin3 != nullptr);
     EXPECT_EQ(inv_kin3->getName(), manip_name);
@@ -1136,12 +1136,12 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
 
   {  // Test forward kinematics failure
 
-    auto fwd_kin = factory.getFwdKin(fwd_plugin_info, *scene_graph, scene_state);
+    auto fwd_kin = factory.createFwdKin(fwd_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(fwd_kin == nullptr);
   }
 
   {  // Inverse Kinematics Test failure
-    auto inv_kin = factory.getInvKin(inv_plugin_info, *scene_graph, scene_state);
+    auto inv_kin = factory.createInvKin(inv_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
 }
