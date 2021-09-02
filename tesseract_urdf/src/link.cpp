@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/link.h>
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/link.h>
 #include <tesseract_urdf/inertial.h>
 #include <tesseract_urdf/visual.h>
@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 tesseract_scene_graph::Link::Ptr
 tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
-                          const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                          const tesseract_common::ResourceLocator::Ptr& locator,
                           std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
                           int version)
 {

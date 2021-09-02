@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 #include <tesseract_common/sfinae_utils.h>
-#include <tesseract_common/resource.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_common/serialization.h>
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/joint_state.h>
@@ -230,7 +230,7 @@ TEST(TesseractCommonUnit, bytesResource)
   EXPECT_EQ(bytes_resource->getUrl(), "package://test_package/data.bin");
   EXPECT_EQ(bytes_resource->isFile(), false);
   EXPECT_EQ(bytes_resource->getFilePath(), "");
-  EXPECT_EQ(bytes_resource->locateSubResource("test"), nullptr);
+  EXPECT_EQ(bytes_resource->locateResource("test"), nullptr);
   auto data2 = bytes_resource->getResourceContents();
   ASSERT_EQ(data.size(), data2.size());
   for (size_t i = 0; i < data.size(); i++)

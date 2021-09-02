@@ -56,8 +56,7 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:2: Get the urdf file path
 
   // documentation:start:3: Create scene graph
-  tesseract_scene_graph::ResourceLocator::Ptr locator =
-      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  auto locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
   SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
   // documentation:end:3: Create scene graph
 

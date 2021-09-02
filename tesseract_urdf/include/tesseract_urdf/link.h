@@ -40,9 +40,13 @@ class XMLDocument;
 namespace tesseract_scene_graph
 {
 class Link;
-class ResourceLocator;
 class Material;
 }  // namespace tesseract_scene_graph
+
+namespace tesseract_common
+{
+class ResourceLocator;
+}  // namespace tesseract_common
 
 namespace tesseract_urdf
 {
@@ -56,7 +60,7 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_scene_graph::Link>
 parseLink(const tinyxml2::XMLElement* xml_element,
-          const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
+          const std::shared_ptr<tesseract_common::ResourceLocator>& locator,
           std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
           int version);
 

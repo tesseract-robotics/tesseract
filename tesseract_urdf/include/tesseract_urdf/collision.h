@@ -40,8 +40,11 @@ class XMLDocument;
 namespace tesseract_scene_graph
 {
 class Collision;
+}
+namespace tesseract_common
+{
 class ResourceLocator;
-}  // namespace tesseract_scene_graph
+}
 
 namespace tesseract_urdf
 {
@@ -54,7 +57,7 @@ namespace tesseract_urdf
  */
 std::vector<std::shared_ptr<tesseract_scene_graph::Collision>>
 parseCollision(const tinyxml2::XMLElement* xml_element,
-               const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
+               const std::shared_ptr<tesseract_common::ResourceLocator>& locator,
                int version);
 
 tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract_scene_graph::Collision>& collision,

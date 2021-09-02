@@ -37,13 +37,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/mesh.h>
 #include <tesseract_urdf/mesh_writer.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_geometry/impl/mesh.h>
 
 std::vector<tesseract_geometry::Mesh::Ptr>
 tesseract_urdf::parseMesh(const tinyxml2::XMLElement* xml_element,
-                          const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                          const tesseract_common::ResourceLocator::Ptr& locator,
                           bool visual,
                           int /*version*/)
 {

@@ -35,14 +35,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/point_cloud.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_common/resource_locator.h>
 
-tesseract_geometry::Octree::Ptr
-tesseract_urdf::parsePointCloud(const tinyxml2::XMLElement* xml_element,
-                                const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                tesseract_geometry::Octree::SubType shape_type,
-                                bool prune,
-                                int /*version*/)
+tesseract_geometry::Octree::Ptr tesseract_urdf::parsePointCloud(const tinyxml2::XMLElement* xml_element,
+                                                                const tesseract_common::ResourceLocator::Ptr& locator,
+                                                                tesseract_geometry::Octree::SubType shape_type,
+                                                                bool prune,
+                                                                int /*version*/)
 {
   std::string filename;
   if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)

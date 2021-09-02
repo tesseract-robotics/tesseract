@@ -55,7 +55,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 
 #include <tesseract_common/types.h>
-#include <tesseract_common/resource.h>
+#include <tesseract_common/resource_locator.h>
 
 #include <regex>
 #include <boost/filesystem/path.hpp>
@@ -239,7 +239,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                   continue;
                 }
                 std::string texName_str(texName.C_Str());
-                auto tex_resource = resource->locateSubResource(texName_str);
+                auto tex_resource = resource->locateResource(texName_str);
                 if (!tex_resource)
                 {
                   continue;

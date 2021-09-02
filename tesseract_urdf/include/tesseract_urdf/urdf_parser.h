@@ -27,7 +27,7 @@
 #define TESSERACT_URDF_URDF_PARSER_H
 
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_common/resource_locator.h>
 
 namespace tesseract_urdf
 {
@@ -40,7 +40,7 @@ namespace tesseract_urdf
  * @return Tesseract Scene Graph, nullptr if failed to parse URDF
  */
 tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_xml_string,
-                                                        const tesseract_scene_graph::ResourceLocator::Ptr& locator);
+                                                        const tesseract_common::ResourceLocator::Ptr& locator);
 
 /**
  * @brief Parse a URDF file into a Tesseract Scene Graph
@@ -51,7 +51,7 @@ tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_
  * @return Tesseract Scene Graph, nullptr if failed to parse URDF
  */
 tesseract_scene_graph::SceneGraph::UPtr parseURDFFile(const std::string& path,
-                                                      const tesseract_scene_graph::ResourceLocator::Ptr& locator);
+                                                      const tesseract_common::ResourceLocator::Ptr& locator);
 
 void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
                    const std::string& directory,

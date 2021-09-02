@@ -42,7 +42,6 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 
 add_library(${PROJECT_NAME}
   src/graph.cpp
-  src/resource_locator.cpp
   src/utils.cpp
   src/adjacency_map.cpp
   src/kdl_parser.cpp

@@ -38,7 +38,8 @@ namespace tinyxml2
 class XMLElement;
 class XMLDocument;
 }  // namespace tinyxml2
-namespace tesseract_scene_graph
+
+namespace tesseract_common
 {
 class ResourceLocator;
 }
@@ -55,7 +56,7 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_geometry::Octree>
 parseOctree(const tinyxml2::XMLElement* xml_element,
-            const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
+            const std::shared_ptr<tesseract_common::ResourceLocator>& locator,
             tesseract_geometry::Octree::SubType shape_type,
             bool prune,
             int version);
