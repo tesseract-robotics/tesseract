@@ -14,6 +14,7 @@ find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
@@ -44,16 +45,13 @@ add_library(
   ${PROJECT_NAME}
   src/collision_margins.cpp
   src/disabled_collisions.cpp
-  src/group_opw_kinematics.cpp
-  src/group_rep_kinematics.cpp
-  src/group_rop_kinematics.cpp
   src/group_states.cpp
   src/group_tool_center_points.cpp
   src/groups.cpp
   src/kinematics_information.cpp
   src/srdf_model.cpp
   src/utils.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_scene_graph)
+target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_scene_graph yaml-cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -78,11 +76,11 @@ install(FILES include/${PROJECT_NAME}/srdf_model.h include/${PROJECT_NAME}/kinem
 # ADD Examples
 add_subdirectory(examples)
 
-if(TESSERACT_ENABLE_TESTING)
+#if(TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
-endif()
+#endif()
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(

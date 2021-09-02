@@ -33,61 +33,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <array>
 #include <Eigen/Geometry>
+#include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 #include <tesseract_common/utils.h>
-
-namespace tesseract_srdf
-{
-/** @brief A structure to hold opw kinematics data */
-struct OPWKinematicParameters
-{
-  double a1 = 0, a2 = 0, b = 0, c1 = 0, c2 = 0, c3 = 0, c4 = 0;
-  std::array<double, 6> offsets = { 0, 0, 0, 0, 0, 0 };
-  std::array<signed char, 6> sign_corrections = { 1, 1, 1, 1, 1, 1 };
-
-  bool operator==(const OPWKinematicParameters& rhs) const;
-  bool operator!=(const OPWKinematicParameters& rhs) const;
-};
-
-struct ROPKinematicParameters
-{
-  /** @brief The name of the solver. If empty it will use the default solver name */
-  std::string solver_name;
-  std::string manipulator_group;
-  std::string manipulator_ik_solver;
-  double manipulator_reach;
-  std::string positioner_group;
-  std::string positioner_fk_solver;
-  std::unordered_map<std::string, double> positioner_sample_resolution;
-
-  bool operator==(const ROPKinematicParameters& rhs) const;
-  bool operator!=(const ROPKinematicParameters& rhs) const;
-};
-
-struct REPKinematicParameters
-{
-  /** @brief The name of the solver. If empty it will use the default solver name */
-  std::string solver_name;
-  std::string manipulator_group;
-  std::string manipulator_ik_solver;
-  double manipulator_reach;
-  std::string positioner_group;
-  std::string positioner_fk_solver;
-  std::unordered_map<std::string, double> positioner_sample_resolution;
-
-  bool operator==(const REPKinematicParameters& rhs) const;
-  bool operator!=(const REPKinematicParameters& rhs) const;
-};
-
-}  // namespace tesseract_srdf
-
-#ifdef SWIG
-%template(GroupOPWKinematics) std::unordered_map<std::string, tesseract_srdf::OPWKinematicParameters>;
-%template(GroupROPKinematics) std::unordered_map<std::string, tesseract_srdf::ROPKinematicParameters>;
-%template(GroupREPKinematics) std::unordered_map<std::string, tesseract_srdf::REPKinematicParameters>;
-#endif  // SWIG
 
 namespace tesseract_srdf
 {
@@ -103,10 +53,6 @@ using JointGroups = std::unordered_map<std::string, JointGroup>;
 using LinkGroup = std::vector<std::string>;
 using LinkGroups = std::unordered_map<std::string, LinkGroup>;
 using GroupNames = std::vector<std::string>;
-using GroupROPKinematics = std::unordered_map<std::string, ROPKinematicParameters>;
-using GroupREPKinematics = std::unordered_map<std::string, REPKinematicParameters>;
-using GroupOPWKinematics = std::unordered_map<std::string, OPWKinematicParameters>;
-using GroupDefaultKinematicsSolver = std::unordered_map<std::string, std::string>;
 
 /**
  * @brief This hold the kinematics information used to create the SRDF and is the data
@@ -134,20 +80,8 @@ struct KinematicsInformation
   /** @brief A map of group tool center points */
   GroupTCPs group_tcps;
 
-  /** @brief A map of group opw kinematics data */
-  GroupOPWKinematics group_opw_kinematics;
-
-  /** @brief A map of robot on positioner groups */
-  GroupROPKinematics group_rop_kinematics;
-
-  /** @brief A map of robot with external positioner groups */
-  GroupREPKinematics group_rep_kinematics;
-
-  /** @brief A map of group default forward kinematics solvers */
-  GroupDefaultKinematicsSolver group_default_fwd_kin;
-
-  /** @brief A map of group default forward kinematics solvers */
-  GroupDefaultKinematicsSolver group_default_inv_kin;
+  /** @brief The kinematics plugin config file */
+  YAML::Node kinematics_plugin_config;
 
   /** @brief Clear the kinematics information */
   void clear();
