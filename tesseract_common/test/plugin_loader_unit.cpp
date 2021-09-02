@@ -87,8 +87,8 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
 
   {
     PluginLoader plugin_loader;
-    plugin_loader.search_paths.push_back(std::string(TEST_PLUGIN_DIR));
-    plugin_loader.plugins["plugin"] = "tesseract_common_test_plugin_multiply";
+    plugin_loader.search_paths.insert(std::string(TEST_PLUGIN_DIR));
+    plugin_loader.plugins.insert("tesseract_common_test_plugin_multiply");
 
     EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
     auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
@@ -100,7 +100,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
 #if BOOST_VERSION > 106800
   {
     PluginLoader plugin_loader;
-    plugin_loader.plugins["plugin"] = "tesseract_common_test_plugin_multiply";
+    plugin_loader.plugins.insert("tesseract_common_test_plugin_multiply");
 
     EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
     auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
@@ -112,8 +112,8 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
   {
     PluginLoader plugin_loader;
     plugin_loader.search_system_folders = false;
-    plugin_loader.search_paths.push_back("does_not_exist");
-    plugin_loader.plugins["plugin"] = "tesseract_common_test_plugin_multiply";
+    plugin_loader.search_paths.insert("does_not_exist");
+    plugin_loader.plugins.insert("tesseract_common_test_plugin_multiply");
 
     EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
     auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
@@ -123,17 +123,17 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
   {
     PluginLoader plugin_loader;
     plugin_loader.search_system_folders = false;
-    plugin_loader.plugins["does_not_exist"] = "tesseract_common_test_plugin_multiply";
+    plugin_loader.plugins.insert("tesseract_common_test_plugin_multiply");
 
-    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
-    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+    EXPECT_FALSE(plugin_loader.isPluginAvailable("does_not_exist"));
+    auto plugin = plugin_loader.instantiate<TestPluginBase>("does_not_exist");
     EXPECT_TRUE(plugin == nullptr);
   }
 
   {
     PluginLoader plugin_loader;
     plugin_loader.search_system_folders = false;
-    plugin_loader.plugins["plugin"] = "does_not_exist";
+    plugin_loader.plugins.insert("does_not_exist");
 
     EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
     auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");

@@ -47,7 +47,8 @@ add_library(
   src/manipulator_info.cpp
   src/kinematic_limits.cpp
   src/serialization.cpp
-  src/utils.cpp)
+  src/utils.cpp
+  src/resource_locator.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
@@ -87,11 +88,11 @@ install(FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"
               "${CMAKE_CURRENT_LIST_DIR}/cmake/FindTinyXML2.cmake" "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc.cmake"
         DESTINATION lib/cmake/${PROJECT_NAME})
 
-if(TESSERACT_ENABLE_TESTING)
+#if(TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
-endif()
+#endif()
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(

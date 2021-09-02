@@ -32,15 +32,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/collision.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_scene_graph/link.h>
+#include <tesseract_common/resource_locator.h>
+#include <tesseract_urdf/collision.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/geometry.h>
 
 std::vector<tesseract_scene_graph::Collision::Ptr>
 tesseract_urdf::parseCollision(const tinyxml2::XMLElement* xml_element,
-                               const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+                               const tesseract_common::ResourceLocator::Ptr& locator,
                                int version)
 {
   std::vector<tesseract_scene_graph::Collision::Ptr> collisions;

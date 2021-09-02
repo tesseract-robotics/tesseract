@@ -10,8 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
 {
-  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
-      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  auto resource_locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
   {
     std::string str =
         R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>)";

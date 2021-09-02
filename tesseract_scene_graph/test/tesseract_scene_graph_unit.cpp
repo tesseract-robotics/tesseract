@@ -12,7 +12,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/kdl_parser.h>
 
 // getLinks and getJoint use an internal map so need to check against graph

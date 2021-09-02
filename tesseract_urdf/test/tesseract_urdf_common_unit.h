@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 #include <console_bridge/console.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -70,11 +70,10 @@ template <typename ElementType>
 bool runTest(
     ElementType& type,
     std::function<
-        ElementType(const tinyxml2::XMLElement*, const tesseract_scene_graph::ResourceLocator::Ptr&, bool, const int)>
-        func,
+        ElementType(const tinyxml2::XMLElement*, const tesseract_common::ResourceLocator::Ptr&, bool, const int)> func,
     const std::string& xml_string,
     const std::string& element_name,
-    const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+    const tesseract_common::ResourceLocator::Ptr& locator,
     int version,
     bool visual)
 {
@@ -100,11 +99,11 @@ bool runTest(
 template <typename ElementType>
 bool runTest(
     ElementType& type,
-    std::function<
-        ElementType(const tinyxml2::XMLElement*, const tesseract_scene_graph::ResourceLocator::Ptr&, const int)> func,
+    std::function<ElementType(const tinyxml2::XMLElement*, const tesseract_common::ResourceLocator::Ptr&, const int)>
+        func,
     const std::string& xml_string,
     const std::string& element_name,
-    const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+    const tesseract_common::ResourceLocator::Ptr& locator,
     int version)
 {
   tinyxml2::XMLDocument xml_doc;
@@ -129,12 +128,12 @@ bool runTest(
 template <typename ElementType>
 bool runTest(ElementType& type,
              std::function<ElementType(const tinyxml2::XMLElement*,
-                                       const tesseract_scene_graph::ResourceLocator::Ptr&,
+                                       const tesseract_common::ResourceLocator::Ptr&,
                                        std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>&,
                                        const int)> func,
              const std::string& xml_string,
              const std::string& element_name,
-             const tesseract_scene_graph::ResourceLocator::Ptr& locator,
+             const tesseract_common::ResourceLocator::Ptr& locator,
              std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
              int version)
 {

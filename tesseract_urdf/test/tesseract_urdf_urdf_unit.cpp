@@ -10,8 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 {
-  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
-      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  auto resource_locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
   {
     std::string str =
         R"(<robot name="test" extra="0 0 0">
@@ -247,8 +246,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
 TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
 {
-  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
-      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  auto resource_locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
   {
     std::string str =
         R"(<robot name="test" extra="0 0 0">
@@ -414,8 +412,7 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
 
   std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  tesseract_scene_graph::ResourceLocator::Ptr locator =
-      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  auto locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
   SceneGraph::Ptr g = tesseract_urdf::parseURDFFile(urdf_file, locator);
 
   EXPECT_TRUE(g->getJoints().size() == 9);
@@ -427,18 +424,18 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
   g->saveDOT(tesseract_common::getTempPath() + "tesseract_urdf_import.dot");
 
   // Get Shortest Path
-  SceneGraph::Path path = g->getShortestPath("link_1", "link_4");
+  auto path = g->getShortestPath("link_1", "link_4");
 
   std::cout << path << std::endl;
-  EXPECT_TRUE(path.first.size() == 4);
-  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_1") != path.first.end());
-  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_2") != path.first.end());
-  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_3") != path.first.end());
-  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_4") != path.first.end());
-  EXPECT_TRUE(path.second.size() == 3);
-  EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a2") != path.second.end());
-  EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a3") != path.second.end());
-  EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a4") != path.second.end());
+  EXPECT_TRUE(path.links.size() == 4);
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_2") != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_3") != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
+  EXPECT_TRUE(path.joints.size() == 3);
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_a2") != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_a3") != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_a4") != path.joints.end());
 }
 
 TEST(TesseractURDFUnit, write_urdf)  // NOLINT

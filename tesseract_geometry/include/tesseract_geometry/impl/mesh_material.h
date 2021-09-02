@@ -27,7 +27,7 @@
 #define TESSERACT_GEOMETRY_MESH_MATERIAL_H
 
 #include <tesseract_common/macros.h>
-#include <tesseract_common/resource.h>
+#include <tesseract_common/resource_locator.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <memory>

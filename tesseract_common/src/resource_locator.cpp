@@ -28,11 +28,14 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <console_bridge/console.h>
+#include <assert.h>
+#include <iostream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_common/resource_locator.h>
+#include <tesseract_common/types.h>
 
-namespace tesseract_scene_graph
+namespace tesseract_common
 {
 SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocatorFn locator_function)
   : ResourceLocator(), locator_function_(std::move(locator_function))
@@ -40,17 +43,17 @@ SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocatorFn locator_fun
   assert(locator_function_);
 }
 
-tesseract_common::Resource::Ptr SimpleResourceLocator::locateResource(const std::string& url)
+tesseract_common::Resource::Ptr SimpleResourceLocator::locateResource(const std::string& url) const
 {
   std::string filename = locator_function_(url);
-  if (filename.empty())
+  if (!tesseract_common::fs::path(filename).is_complete())
     return nullptr;
   return std::make_shared<SimpleLocatedResource>(url, filename, shared_from_this());
 }
 
 SimpleLocatedResource::SimpleLocatedResource(const std::string& url,
                                              const std::string& filename,
-                                             const SimpleResourceLocator::Ptr& parent)
+                                             const SimpleResourceLocator::ConstPtr& parent)
   : tesseract_common::Resource()
 {
   url_ = url;
@@ -58,13 +61,13 @@ SimpleLocatedResource::SimpleLocatedResource(const std::string& url,
   parent_ = parent;
 }
 
-bool SimpleLocatedResource::isFile() { return true; }
+bool SimpleLocatedResource::isFile() const { return true; }
 
-std::string SimpleLocatedResource::getUrl() { return url_; }
+std::string SimpleLocatedResource::getUrl() const { return url_; }
 
-std::string SimpleLocatedResource::getFilePath() { return filename_; }
+std::string SimpleLocatedResource::getFilePath() const { return filename_; }
 
-std::vector<uint8_t> SimpleLocatedResource::getResourceContents()
+std::vector<uint8_t> SimpleLocatedResource::getResourceContents() const
 {
   // https://codereview.stackexchange.com/questions/22901/reading-all-bytes-from-a-file
 
@@ -84,7 +87,7 @@ std::vector<uint8_t> SimpleLocatedResource::getResourceContents()
   return file_contents;
 }
 
-std::shared_ptr<std::istream> SimpleLocatedResource::getResourceContentStream()
+std::shared_ptr<std::istream> SimpleLocatedResource::getResourceContentStream() const
 {
   std::shared_ptr<std::ifstream> ifs = std::make_shared<std::ifstream>(filename_, std::ios::binary);
   if (ifs->fail())
@@ -95,22 +98,52 @@ std::shared_ptr<std::istream> SimpleLocatedResource::getResourceContentStream()
   return ifs;
 }
 
-tesseract_common::Resource::Ptr SimpleLocatedResource::locateSubResource(const std::string& relative_path)
+tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std::string& url) const
 {
-  auto parent = parent_.lock();
-  if (!parent)
-  {
+  if (parent_ == nullptr)
     return nullptr;
-  }
+
+  tesseract_common::Resource::Ptr resource = parent_->locateResource(url);
+  if (resource != nullptr)
+    return resource;
+
+  tesseract_common::fs::path path(url);
+  if (!path.is_relative())
+    return nullptr;
+
   auto last_slash = url_.find_last_of('/');
   if (last_slash == url_.npos)
-  {
     return nullptr;
-  }
 
   std::string url_base_path = url_.substr(0, last_slash);
-  std::string new_url = url_base_path + "/" + relative_path;
-  return parent->locateResource(new_url);
+  std::string new_url = url_base_path + "/" + path.filename().string();
+  return parent_->locateResource(new_url);
 }
 
-}  // namespace tesseract_scene_graph
+BytesResource::BytesResource(std::string url, std::vector<uint8_t> bytes)
+{
+  url_ = std::move(url);
+  bytes_ = std::move(bytes);
+}
+
+BytesResource::BytesResource(std::string url, const uint8_t* bytes, size_t bytes_len)
+{
+  url_ = std::move(url);
+  bytes_ = std::vector<uint8_t>(bytes, bytes + bytes_len);
+}
+
+bool BytesResource::isFile() const { return false; }
+std::string BytesResource::getUrl() const { return url_; }
+std::string BytesResource::getFilePath() const { return ""; }
+std::vector<uint8_t> BytesResource::getResourceContents() const { return bytes_; }
+std::shared_ptr<std::istream> BytesResource::getResourceContentStream() const
+{
+  std::shared_ptr<std::stringstream> o = std::make_shared<std::stringstream>();
+  o->write((const char*)&bytes_.at(0), static_cast<std::streamsize>(bytes_.size()));
+  o->seekg(0, o->beg);
+  return o;
+}
+
+Resource::Ptr BytesResource::locateResource(const std::string& url) const { return nullptr; }
+
+}  // namespace tesseract_common
