@@ -68,13 +68,41 @@ KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : Kinematics
     if (const YAML::Node& fwd_kin_plugins = plugin_info[FWD_KIN_PLUGINS_KEY])
     {
       for (auto it = fwd_kin_plugins.begin(); it != fwd_kin_plugins.end(); ++it)
-        addFwdKinPlugin(it->as<KinematicsPluginInfo>());
+      {
+        KinematicsPluginInfo info;
+        try
+        {
+          info = it->as<KinematicsPluginInfo>();
+        }
+        catch (const std::exception& e)
+        {
+          CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast fwd kin plugin to "
+                                  "KinematicsPluginInfo! Details: %s",
+                                  e.what());
+          continue;
+        }
+        addFwdKinPlugin(info);
+      }
     }
 
     if (const YAML::Node& inv_kin_plugins = plugin_info[INV_KIN_PLUGINS_KEY])
     {
       for (auto it = inv_kin_plugins.begin(); it != inv_kin_plugins.end(); ++it)
+      {
+        KinematicsPluginInfo info;
+        try
+        {
+          info = it->as<KinematicsPluginInfo>();
+        }
+        catch (const std::exception& e)
+        {
+          CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast inv kin plugin to "
+                                  "KinematicsPluginInfo! Details: %s",
+                                  e.what());
+          continue;
+        }
         addInvKinPlugin(it->as<KinematicsPluginInfo>());
+      }
     }
   }
 }

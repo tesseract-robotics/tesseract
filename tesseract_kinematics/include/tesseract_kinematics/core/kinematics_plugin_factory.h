@@ -308,6 +308,16 @@ struct convert<tesseract_kinematics::KinematicsPluginInfo>
 
   static bool decode(const Node& node, tesseract_kinematics::KinematicsPluginInfo& rhs)
   {
+    // Check for required entries
+    if (!node["name"])
+      throw std::runtime_error("KinematicsPluginInfo, missing 'name' entry!");
+
+    if (!node["group"])
+      throw std::runtime_error("KinematicsPluginInfo, missing 'group' entry!");
+
+    if (!node["class"])
+      throw std::runtime_error("KinematicsPluginInfo, missing 'class' entry!");
+
     rhs.name = node["name"].as<std::string>();
     rhs.group = node["group"].as<std::string>();
     rhs.class_name = node["class"].as<std::string>();
