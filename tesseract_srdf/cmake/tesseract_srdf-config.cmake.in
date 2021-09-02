@@ -14,6 +14,7 @@ find_dependency(Eigen3)
 find_dependency(console_bridge)
 find_dependency(tesseract_common)
 find_dependency(tesseract_scene_graph)
+find_dependency(yaml-cpp)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)

@@ -1,7 +1,7 @@
 #include <console_bridge/console.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_srdf/utils.h>
 #include <iostream>
@@ -17,6 +17,33 @@ std::string toString(const ShortestPath& path)
 }
 
 std::string toString(bool b) { return b ? "true" : "false"; }
+
+std::string locateResource(const std::string& url)
+{
+  std::string mod_url = url;
+  if (url.find("package://tesseract_support") == 0)
+  {
+    mod_url.erase(0, strlen("package://tesseract_support"));
+    size_t pos = mod_url.find('/');
+    if (pos == std::string::npos)
+    {
+      return std::string();
+    }
+
+    std::string package = mod_url.substr(0, pos);
+    mod_url.erase(0, pos);
+    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
+
+    if (package_path.empty())
+    {
+      return std::string();
+    }
+
+    mod_url = package_path + mod_url;
+  }
+
+  return mod_url;
+}
 
 int main(int /*argc*/, char** /*argv*/)
 {
@@ -100,14 +127,17 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:1: Create scene graph
 
   // documentation:start:2: Get the srdf file path
-  std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
+  tesseract_common::ResourceLocator::Ptr locator =
+      std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  std::string srdf_file =
+      locator->locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf")->getFilePath();
   // documentation:end:2: Get the srdf file path
 
   // documentation:start:3: Parse the srdf
   SRDFModel srdf;
   try
   {
-    srdf.initFile(g, srdf_file);
+    srdf.initFile(g, srdf_file, locator);
   }
   catch (const std::exception& e)
   {

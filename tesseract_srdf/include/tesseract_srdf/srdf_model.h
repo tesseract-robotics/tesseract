@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/kinematics_information.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/allowed_collision_matrix.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_common/collision_margin_data.h>
 
 #ifdef SWIG
@@ -72,13 +73,17 @@ public:
    * @brief Load Model given a filename
    * @throws std::nested_exception if an error occurs during parsing srdf
    */
-  void initFile(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& filename);
+  void initFile(const tesseract_scene_graph::SceneGraph& scene_graph,
+                const std::string& filename,
+                const tesseract_common::ResourceLocator::Ptr& locator);
 
   /**
    * @brief Load Model from a XML-string
    * @throws std::nested_exception if an error occurs during parsing srdf
    */
-  void initString(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& xmlstring);
+  void initString(const tesseract_scene_graph::SceneGraph& scene_graph,
+                  const std::string& xmlstring,
+                  const tesseract_common::ResourceLocator::Ptr& locator);
 
   /** @brief Save the model to a file */
   bool saveToFile(const std::string& file_path) const;
