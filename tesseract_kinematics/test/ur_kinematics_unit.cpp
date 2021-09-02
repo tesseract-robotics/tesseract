@@ -114,6 +114,42 @@ TEST(TesseractKinematicsUnit, UR3InvKinUnit)  // NOLINT
   runURKinematicsTests(UR3Parameters, pose);
 }
 
+TEST(TesseractKinematicsUnit, UR10eInvKinUnit)  // NOLINT
+{
+  // Inverse target pose and seed
+  Eigen::Isometry3d pose;
+  pose.setIdentity();
+  pose.translation()[0] = 0.75;
+  pose.translation()[1] = 0;
+  pose.translation()[2] = 0.75;
+
+  runURKinematicsTests(UR10eParameters, pose);
+}
+
+TEST(TesseractKinematicsUnit, UR5eInvKinUnit)  // NOLINT
+{
+  // Inverse target pose and seed
+  Eigen::Isometry3d pose;
+  pose.setIdentity();
+  pose.translation()[0] = 0.5;
+  pose.translation()[1] = 0;
+  pose.translation()[2] = 0.5;
+
+  runURKinematicsTests(UR5eParameters, pose);
+}
+
+TEST(TesseractKinematicsUnit, UR3eInvKinUnit)  // NOLINT
+{
+  // Inverse target pose and seed
+  Eigen::Isometry3d pose;
+  pose.setIdentity();
+  pose.translation()[0] = 0.25;
+  pose.translation()[1] = 0;
+  pose.translation()[2] = 0.25;
+
+  runURKinematicsTests(UR3eParameters, pose);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

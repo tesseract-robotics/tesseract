@@ -49,7 +49,7 @@ kinematic_plugins:
       config:
         base_link: base_link
         tip_link: tool0
-        model: 10
+        model: UR10 #Current Options: UR3, UR5, UR10, UR3e, UR5e, UR10e
     - name: ROPInvKin
       class: ROPInvKinFactory
       group: rop_manipulator
