@@ -43,12 +43,19 @@ ForwardKinematics::UPtr KDLFwdKinChainFactory::create(const std::string& name,
 
   try
   {
-    base_link = config["base_link"].as<std::string>();
-    tip_link = config["tip_link"].as<std::string>();
+    if (YAML::Node n = config["base_link"])
+      base_link = n.as<std::string>();
+    else
+      throw std::runtime_error("KDLFwdKinChainFactory, missing 'base_link' entry");
+
+    if (YAML::Node n = config["tip_link"])
+      tip_link = n.as<std::string>();
+    else
+      throw std::runtime_error("KDLFwdKinChainFactory, missing 'tip_link' entry");
   }
-  catch (...)
+  catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("KDLFwdKinChainFactory: Failed to parse yaml config data!");
+    CONSOLE_BRIDGE_logError("KDLFwdKinChainFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
 
@@ -74,12 +81,19 @@ InverseKinematics::UPtr KDLInvKinChainLMAFactory::create(const std::string& name
 
   try
   {
-    base_link = config["base_link"].as<std::string>();
-    tip_link = config["tip_link"].as<std::string>();
+    if (YAML::Node n = config["base_link"])
+      base_link = n.as<std::string>();
+    else
+      throw std::runtime_error("KDLInvKinChainLMAFactory, missing 'base_link' entry");
+
+    if (YAML::Node n = config["tip_link"])
+      tip_link = n.as<std::string>();
+    else
+      throw std::runtime_error("KDLInvKinChainLMAFactory, missing 'tip_link' entry");
   }
-  catch (...)
+  catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("KDLInvKinChainLMAFactory: Failed to parse yaml config data!");
+    CONSOLE_BRIDGE_logError("KDLInvKinChainLMAFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
 
@@ -97,12 +111,19 @@ InverseKinematics::UPtr KDLInvKinChainNRFactory::create(const std::string& name,
 
   try
   {
-    base_link = config["base_link"].as<std::string>();
-    tip_link = config["tip_link"].as<std::string>();
+    if (YAML::Node n = config["base_link"])
+      base_link = n.as<std::string>();
+    else
+      throw std::runtime_error("KDLInvKinChainNRFactory, missing 'base_link' entry");
+
+    if (YAML::Node n = config["tip_link"])
+      tip_link = n.as<std::string>();
+    else
+      throw std::runtime_error("KDLInvKinChainNRFactory, missing 'tip_link' entry");
   }
-  catch (...)
+  catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("KDLInvKinChainNRFactory: Failed to parse yaml config data!");
+    CONSOLE_BRIDGE_logError("KDLInvKinChainNRFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
 

@@ -44,65 +44,89 @@ InverseKinematics::UPtr ROPInvKinFactory::create(const std::string& name,
   try
   {
     // Get Reach
-    if (!config["manipulator_reach"])
-      throw std::runtime_error("ROPInvKinFactory, manipulator_reach node is missing!");
-
-    m_reach = config["manipulator_reach"].as<double>();
+    if (YAML::Node n = config["manipulator_reach"])
+      m_reach = n.as<double>();
+    else
+      throw std::runtime_error("ROPInvKinFactory, missing 'manipulator_reach' entry!");
 
     // Get positioner sample resolution
-    if (!config["positioner_sample_resolution"])
-      throw std::runtime_error("ROPInvKinFactory, positioner_sample_resolution node is missing!");
-
-    const YAML::Node& sample_res_node = config["positioner_sample_resolution"];
     std::map<std::string, std::array<double, 3>> sample_res_map;
-    for (auto it = sample_res_node.begin(); it != sample_res_node.end(); ++it)
+    if (YAML::Node sample_res_node = config["positioner_sample_resolution"])
     {
-      const YAML::Node& joint = *it;
-      std::array<double, 3> values;
-      std::string joint_name = joint["name"].as<std::string>();
-      values[0] = joint["value"].as<double>();
+      for (auto it = sample_res_node.begin(); it != sample_res_node.end(); ++it)
+      {
+        const YAML::Node& joint = *it;
+        std::array<double, 3> values;
 
-      auto jnt = scene_graph.getJoint(joint_name);
-      values[1] = jnt->limits->lower;
-      values[2] = jnt->limits->upper;
+        std::string joint_name;
+        if (YAML::Node n = joint["name"])
+          joint_name = n.as<std::string>();
+        else
+          throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' missing 'name' entry!");
 
-      if (YAML::Node min = joint["min"])
-        values[1] = min.as<double>();
+        if (YAML::Node n = joint["value"])
+          values[0] = n.as<double>();
+        else
+          throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' missing 'value' entry!");
 
-      if (YAML::Node max = joint["max"])
-        values[2] = max.as<double>();
+        auto jnt = scene_graph.getJoint(joint_name);
+        if (jnt == nullptr)
+          throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' failed to find joint in scene "
+                                   "graph!");
 
-      if (values[1] < jnt->limits->lower)
-        throw std::runtime_error("ROPInvKinFactory, sample range minimum is less than joint minimum!");
+        values[1] = jnt->limits->lower;
+        values[2] = jnt->limits->upper;
 
-      if (values[2] > jnt->limits->upper)
-        throw std::runtime_error("ROPInvKinFactory, sample range maximum is greater than joint maximum!");
+        if (YAML::Node min = joint["min"])
+          values[1] = min.as<double>();
 
-      if (values[1] > values[2])
-        throw std::runtime_error("ROPInvKinFactory, sample range is not valid!");
+        if (YAML::Node max = joint["max"])
+          values[2] = max.as<double>();
 
-      sample_res_map[joint_name] = values;
+        if (values[1] < jnt->limits->lower)
+          throw std::runtime_error("ROPInvKinFactory, sample range minimum is less than joint minimum!");
+
+        if (values[2] > jnt->limits->upper)
+          throw std::runtime_error("ROPInvKinFactory, sample range maximum is greater than joint maximum!");
+
+        if (values[1] > values[2])
+          throw std::runtime_error("ROPInvKinFactory, sample range is not valid!");
+
+        sample_res_map[joint_name] = values;
+      }
+    }
+    else
+    {
+      throw std::runtime_error("ROPInvKinFactory, missing 'positioner_sample_resolution' entry!");
     }
 
     // Get Positioner
-    if (!config["positioner"])
-      throw std::runtime_error("ROPInvKinFactory, positioner node is missing!");
+    if (YAML::Node positioner = config["positioner"])
+    {
+      KinematicsPluginInfo p_info;
+      p_info.group = name + "_positioner";
 
-    const YAML::Node& positioner = config["positioner"];
+      if (YAML::Node n = positioner["class"])
+        p_info.class_name = n.as<std::string>();
+      else
+        throw std::runtime_error("ROPInvKinFactory, 'positioner' missing 'class' entry!");
 
-    KinematicsPluginInfo p_info;
-    p_info.group = name + "_positioner";
-    p_info.class_name = positioner["class"].as<std::string>();
-    p_info.name = p_info.class_name;
-    p_info.config = positioner["config"];
+      p_info.name = p_info.class_name;
 
-    fwd_kin = plugin_factory.createFwdKin(p_info, scene_graph, scene_state);
-    if (fwd_kin == nullptr)
-      throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
+      if (YAML::Node n = positioner["config"])
+        p_info.config = n;
 
-    // Check size of sample resolution to make sure it matches the number of joints
-    if (sample_res_map.size() != static_cast<std::size_t>(fwd_kin->numJoints()))
-      throw std::runtime_error("ROPInvKinFactory, positioner sample resolution has incorrect number of joints!");
+      fwd_kin = plugin_factory.createFwdKin(p_info, scene_graph, scene_state);
+      if (fwd_kin == nullptr)
+        throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
+
+      if (sample_res_map.size() != static_cast<std::size_t>(fwd_kin->numJoints()))
+        throw std::runtime_error("ROPInvKinFactory, positioner sample resolution has incorrect number of joints!");
+    }
+    else
+    {
+      throw std::runtime_error("ROPInvKinFactory, missing 'positioner' entry!");
+    }
 
     // Load Positioner Resolution and Range
     sample_range.resize(fwd_kin->numJoints(), 2);
@@ -121,20 +145,29 @@ InverseKinematics::UPtr ROPInvKinFactory::create(const std::string& name,
     }
 
     // Get Manipulator
-    if (!config["manipulator"])
-      throw std::runtime_error("ROPInvKinFactory, manipulator node is missing!");
+    if (YAML::Node manipulator = config["manipulator"])
+    {
+      KinematicsPluginInfo m_info;
+      m_info.group = name + "_manipulator";
 
-    const YAML::Node& manipulator = config["manipulator"];
+      if (YAML::Node n = manipulator["class"])
+        m_info.class_name = n.as<std::string>();
+      else
+        throw std::runtime_error("ROPInvKinFactory, 'manipulator' missing 'class' entry!");
 
-    KinematicsPluginInfo m_info;
-    m_info.group = name + "_manipulator";
-    m_info.class_name = manipulator["class"].as<std::string>();
-    m_info.name = p_info.class_name;
-    m_info.config = manipulator["config"];
+      m_info.name = m_info.class_name;
 
-    inv_kin = plugin_factory.createInvKin(m_info, scene_graph, scene_state);
-    if (inv_kin == nullptr)
-      throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
+      if (YAML::Node n = manipulator["config"])
+        m_info.config = n;
+
+      inv_kin = plugin_factory.createInvKin(m_info, scene_graph, scene_state);
+      if (inv_kin == nullptr)
+        throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
+    }
+    else
+    {
+      throw std::runtime_error("ROPInvKinFactory, missing 'manipulator' entry!");
+    }
   }
   catch (const std::exception& e)
   {

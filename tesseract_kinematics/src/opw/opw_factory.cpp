@@ -42,29 +42,80 @@ InverseKinematics::UPtr OPWInvKinFactory::create(const std::string& name,
 
   try
   {
-    base_link = config["base_link"].as<std::string>();
-    tip_link = config["tip_link"].as<std::string>();
+    if (YAML::Node n = config["base_link"])
+      base_link = n.as<std::string>();
+    else
+      throw std::runtime_error("OPWInvKinFactory, missing 'base_link' entry");
 
-    const YAML::Node& opw_params = config["params"];
-    params.a1 = opw_params["a1"].as<double>();
-    params.a2 = opw_params["a2"].as<double>();
-    params.b = opw_params["b"].as<double>();
-    params.c1 = opw_params["c1"].as<double>();
-    params.c2 = opw_params["c2"].as<double>();
-    params.c3 = opw_params["c3"].as<double>();
-    params.c4 = opw_params["c4"].as<double>();
+    if (YAML::Node n = config["tip_link"])
+      tip_link = n.as<std::string>();
+    else
+      throw std::runtime_error("OPWInvKinFactory, missing 'tip_link' entry");
 
-    if (YAML::Node offsets = opw_params["offsets"])
-      params.offsets = offsets.as<std::array<double, 6>>();
+    if (YAML::Node opw_params = config["params"])
+    {
+      if (YAML::Node n = opw_params["a1"])
+        params.a1 = n.as<double>();
+      else
+        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'a1' entry");
 
-    if (YAML::Node sign_corrections = opw_params["sign_corrections"])
-      params.sign_corrections = sign_corrections.as<std::array<signed char, 6>>();
+      if (YAML::Node n = opw_params["a2"])
+        params.a2 = n.as<double>();
+      else
+        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'a2' entry");
+
+      if (YAML::Node n = opw_params["b"])
+        params.b = n.as<double>();
+      else
+        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'b' entry");
+
+      if (YAML::Node n = opw_params["c1"])
+        params.c1 = n.as<double>();
+      else
+        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'c1' entry");
+
+      if (YAML::Node n = opw_params["c2"])
+        params.c2 = n.as<double>();
+      else
+        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'c2' entry");
+
+      if (YAML::Node n = opw_params["c3"])
+        params.c3 = n.as<double>();
+      else
+        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'c3' entry");
+
+      if (YAML::Node n = opw_params["c4"])
+        params.c4 = n.as<double>();
+      else
+        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'c4' entry");
+
+      if (YAML::Node offsets = opw_params["offsets"])
+        params.offsets = offsets.as<std::array<double, 6>>();
+
+      if (YAML::Node sign_corrections = opw_params["sign_corrections"])
+      {
+        std::array<int, 6> sc = sign_corrections.as<std::array<int, 6>>();
+        for (std::size_t i = 0; i < sc.size(); ++i)
+        {
+          if (sc[i] == 1)
+            params.sign_corrections[i] = 1;
+          else if (sc[i] == -1)
+            params.sign_corrections[i] = -1;
+          else
+            throw std::runtime_error("OPWInvKinFactory, sign_corrections can only contain 1 or -1");
+        }
+      }
+    }
+    else
+    {
+      throw std::runtime_error("OPWInvKinFactory, missing 'params' entry");
+    }
 
     path = scene_graph.getShortestPath(base_link, tip_link);
   }
-  catch (...)
+  catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("OPWInvKinFactory: Failed to parse yaml config data!");
+    CONSOLE_BRIDGE_logError("OPWInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
 

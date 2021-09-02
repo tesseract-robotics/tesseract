@@ -43,8 +43,16 @@ InverseKinematics::UPtr URInvKinFactory::create(const std::string& name,
 
   try
   {
-    base_link = config["base_link"].as<std::string>();
-    tip_link = config["tip_link"].as<std::string>();
+    if (YAML::Node n = config["base_link"])
+      base_link = n.as<std::string>();
+    else
+      throw std::runtime_error("URInvKinFactory, missing 'base_link' entry");
+
+    if (YAML::Node n = config["tip_link"])
+      tip_link = n.as<std::string>();
+    else
+      throw std::runtime_error("URInvKinFactory, missing 'tip_link' entry");
+
     if (YAML::Node model = config["model"])
     {
       int model_num = model.as<int>();
@@ -62,20 +70,49 @@ InverseKinematics::UPtr URInvKinFactory::create(const std::string& name,
     }
     else
     {
-      const YAML::Node& ur_params = config["params"];
-      params.d1 = ur_params["d1"].as<double>();
-      params.a2 = ur_params["a2"].as<double>();
-      params.a3 = ur_params["a3"].as<double>();
-      params.d4 = ur_params["d4"].as<double>();
-      params.d5 = ur_params["d5"].as<double>();
-      params.d6 = ur_params["d6"].as<double>();
+      if (YAML::Node ur_params = config["params"])
+      {
+        if (YAML::Node n = ur_params["d1"])
+          params.d1 = n.as<double>();
+        else
+          throw std::runtime_error("URInvKinFactory, 'params' missing 'd1' entry");
+
+        if (YAML::Node n = ur_params["a2"])
+          params.a2 = n.as<double>();
+        else
+          throw std::runtime_error("URInvKinFactory, 'params' missing 'a2' entry");
+
+        if (YAML::Node n = ur_params["a3"])
+          params.a3 = n.as<double>();
+        else
+          throw std::runtime_error("URInvKinFactory, 'params' missing 'a3' entry");
+
+        if (YAML::Node n = ur_params["d4"])
+          params.d4 = n.as<double>();
+        else
+          throw std::runtime_error("URInvKinFactory, 'params' missing 'd4' entry");
+
+        if (YAML::Node n = ur_params["d5"])
+          params.d5 = n.as<double>();
+        else
+          throw std::runtime_error("URInvKinFactory, 'params' missing 'd5' entry");
+
+        if (YAML::Node n = ur_params["d6"])
+          params.d6 = n.as<double>();
+        else
+          throw std::runtime_error("URInvKinFactory, 'params' missing 'd6' entry");
+      }
+      else
+      {
+        throw std::runtime_error("URInvKinFactory, missing 'params' or 'model' entry");
+      }
     }
 
     path = scene_graph.getShortestPath(base_link, tip_link);
   }
-  catch (...)
+  catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("URInvKinFactory: Failed to parse yaml config data!");
+    CONSOLE_BRIDGE_logError("URInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
 
