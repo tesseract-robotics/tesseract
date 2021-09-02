@@ -24,6 +24,11 @@
  * limitations under the License.
  */
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <string>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_kinematics/ur/ur_factory.h>
 #include <tesseract_kinematics/ur/ur_inv_kin.h>
 #include <tesseract_kinematics/core/types.h>
@@ -55,16 +60,22 @@ InverseKinematics::UPtr URInvKinFactory::create(const std::string& name,
 
     if (YAML::Node model = config["model"])
     {
-      int model_num = model.as<int>();
-      if (model_num == 3)
+      std::string model_str = model.as<std::string>();
+      if (model_str == "UR3")
         params = UR3Parameters;
-      else if (model_num == 5)
+      else if (model_str == "UR5")
         params = UR5Parameters;
-      else if (model_num == 10)
+      else if (model_str == "UR10")
         params = UR10Parameters;
+      else if (model_str == "UR3e")
+        params = UR3eParameters;
+      else if (model_str == "UR5e")
+        params = UR5eParameters;
+      else if (model_str == "UR10e")
+        params = UR10eParameters;
       else
       {
-        CONSOLE_BRIDGE_logError("URInvKinFactory: Invalid model number!");
+        CONSOLE_BRIDGE_logError("URInvKinFactory: Invalid model!");
         return nullptr;
       }
     }

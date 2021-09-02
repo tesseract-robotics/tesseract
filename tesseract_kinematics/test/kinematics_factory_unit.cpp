@@ -481,7 +481,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
                config:
                  base_link: base_link
                  tip_link: tool0
-                 model: 10)";
+                 model: UR10)";
 
   std::string yaml_params_string =
       R"(kinematic_plugins:
