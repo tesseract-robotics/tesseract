@@ -107,7 +107,8 @@ public:
   IKFastInvKin(std::string name,
                std::string base_link_name,
                std::string tip_link_name,
-               std::vector<std::string> joint_names);
+               std::vector<std::string> joint_names,
+               std::string solver_name = IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
 
   IKSolutions calcInvKin(const IKInput& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
@@ -125,6 +126,7 @@ protected:
   std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name_;            /**< @brief Link name of last kink in the kinematic object */
   std::vector<std::string> joint_names_; /**< @brief Joint names for the kinematic object */
+  std::string solver_name_{ IKFAST_INV_KIN_CHAIN_SOLVER_NAME }; /**< @brief Name of this solver */
 };
 
 }  // namespace tesseract_kinematics

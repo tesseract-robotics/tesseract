@@ -39,8 +39,9 @@ using Eigen::VectorXd;
 
 KDLFwdKinChain::KDLFwdKinChain(std::string name,
                                const tesseract_scene_graph::SceneGraph& scene_graph,
-                               const std::vector<std::pair<std::string, std::string>>& chains)
-  : name_(std::move(name))
+                               const std::vector<std::pair<std::string, std::string>>& chains,
+                               std::string solver_name)
+  : name_(std::move(name)), solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
@@ -55,8 +56,9 @@ KDLFwdKinChain::KDLFwdKinChain(std::string name,
 KDLFwdKinChain::KDLFwdKinChain(std::string name,
                                const tesseract_scene_graph::SceneGraph& scene_graph,
                                const std::string& base_link,
-                               const std::string& tip_link)
-  : KDLFwdKinChain(name, scene_graph, { std::make_pair(base_link, tip_link) })
+                               const std::string& tip_link,
+                               std::string solver_name)
+  : KDLFwdKinChain(name, scene_graph, { std::make_pair(base_link, tip_link) }, solver_name)
 {
 }
 
@@ -69,7 +71,7 @@ KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& other)
   kdl_data_ = other.kdl_data_;
   fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
   jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
-
+  solver_name_ = other.solver_name_;
   return *this;
 }
 
@@ -177,6 +179,6 @@ std::vector<std::string> KDLFwdKinChain::getTipLinkNames() const { return { kdl_
 
 std::string KDLFwdKinChain::getName() const { return name_; }
 
-std::string KDLFwdKinChain::getSolverName() const { return KDL_FWD_KIN_CHAIN_SOLVER_NAME; }
+std::string KDLFwdKinChain::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract_kinematics

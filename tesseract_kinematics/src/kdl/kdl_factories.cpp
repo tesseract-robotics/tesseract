@@ -32,7 +32,8 @@
 
 namespace tesseract_kinematics
 {
-ForwardKinematics::UPtr KDLFwdKinChainFactory::create(const std::string& name,
+ForwardKinematics::UPtr KDLFwdKinChainFactory::create(const std::string& group_name,
+                                                      const std::string& solver_name,
                                                       const tesseract_scene_graph::SceneGraph& scene_graph,
                                                       const tesseract_scene_graph::SceneState& /*scene_state*/,
                                                       const KinematicsPluginFactory& /*plugin_factory*/,
@@ -59,7 +60,7 @@ ForwardKinematics::UPtr KDLFwdKinChainFactory::create(const std::string& name,
     return nullptr;
   }
 
-  return std::make_unique<KDLFwdKinChain>(name, scene_graph, base_link, tip_link);
+  return std::make_unique<KDLFwdKinChain>(group_name, scene_graph, base_link, tip_link, solver_name);
 }
 
 // ForwardKinematics::UPtr KDLFwdKinTreePlugin::create(const std::string& name,
@@ -70,7 +71,8 @@ ForwardKinematics::UPtr KDLFwdKinChainFactory::create(const std::string& name,
 
 //}
 
-InverseKinematics::UPtr KDLInvKinChainLMAFactory::create(const std::string& name,
+InverseKinematics::UPtr KDLInvKinChainLMAFactory::create(const std::string& group_name,
+                                                         const std::string& solver_name,
                                                          const tesseract_scene_graph::SceneGraph& scene_graph,
                                                          const tesseract_scene_graph::SceneState& /*scene_state*/,
                                                          const KinematicsPluginFactory& /*plugin_factory*/,
@@ -97,10 +99,11 @@ InverseKinematics::UPtr KDLInvKinChainLMAFactory::create(const std::string& name
     return nullptr;
   }
 
-  return std::make_unique<KDLInvKinChainLMA>(name, scene_graph, base_link, tip_link);
+  return std::make_unique<KDLInvKinChainLMA>(group_name, scene_graph, base_link, tip_link, solver_name);
 }
 
-InverseKinematics::UPtr KDLInvKinChainNRFactory::create(const std::string& name,
+InverseKinematics::UPtr KDLInvKinChainNRFactory::create(const std::string& group_name,
+                                                        const std::string& solver_name,
                                                         const tesseract_scene_graph::SceneGraph& scene_graph,
                                                         const tesseract_scene_graph::SceneState& /*scene_state*/,
                                                         const KinematicsPluginFactory& /*plugin_factory*/,
@@ -127,7 +130,7 @@ InverseKinematics::UPtr KDLInvKinChainNRFactory::create(const std::string& name,
     return nullptr;
   }
 
-  return std::make_unique<KDLInvKinChainNR>(name, scene_graph, base_link, tip_link);
+  return std::make_unique<KDLInvKinChainNR>(group_name, scene_graph, base_link, tip_link, solver_name);
 }
 
 }  // namespace tesseract_kinematics

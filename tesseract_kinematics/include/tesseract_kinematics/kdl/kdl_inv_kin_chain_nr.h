@@ -81,7 +81,8 @@ public:
   KDLInvKinChainNR(const std::string& name,
                    const tesseract_scene_graph::SceneGraph& scene_graph,
                    const std::string& base_link,
-                   const std::string& tip_link);
+                   const std::string& tip_link,
+                   std::string solver_name = KDL_INV_KIN_CHAIN_NR_SOLVER_NAME);
 
   /**
    * @brief Construct Inverse Kinematics as chain
@@ -92,7 +93,8 @@ public:
    */
   KDLInvKinChainNR(std::string name,
                    const tesseract_scene_graph::SceneGraph& scene_graph,
-                   const std::vector<std::pair<std::string, std::string> >& chains);
+                   const std::vector<std::pair<std::string, std::string> >& chains,
+                   std::string solver_name = KDL_INV_KIN_CHAIN_NR_SOLVER_NAME);
 
   IKSolutions calcInvKin(const IKInput& tip_link_poses,
                          const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
@@ -107,11 +109,12 @@ public:
   InverseKinematics::UPtr clone() const override final;
 
 private:
-  KDLChainData kdl_data_;                                      /**< @brief KDL data parsed from Scene Graph */
-  std::string name_;                                           /**< @brief Name of the kinematic chain */
-  std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< @brief KDL Forward Kinematic Solver */
-  std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;  /**< @brief KDL Inverse kinematic velocity solver */
-  std::unique_ptr<KDL::ChainIkSolverPos_NR> ik_solver_;        /**< @brief KDL Inverse kinematic solver */
+  KDLChainData kdl_data_;                                       /**< @brief KDL data parsed from Scene Graph */
+  std::string name_;                                            /**< @brief Name of the kinematic chain */
+  std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_;  /**< @brief KDL Forward Kinematic Solver */
+  std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;   /**< @brief KDL Inverse kinematic velocity solver */
+  std::unique_ptr<KDL::ChainIkSolverPos_NR> ik_solver_;         /**< @brief KDL Inverse kinematic solver */
+  std::string solver_name_{ KDL_INV_KIN_CHAIN_NR_SOLVER_NAME }; /**< @brief Name of this solver */
 
   /** @brief calcFwdKin helper function */
   IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose,

@@ -222,12 +222,14 @@ URInvKin::URInvKin(std::string name,
                    URParameters params,
                    std::string base_link_name,
                    std::string tip_link_name,
-                   std::vector<std::string> joint_names)
+                   std::vector<std::string> joint_names,
+                   std::string solver_name)
   : name_(std::move(name))
   , params_(params)
   , base_link_name_(std::move(base_link_name))
   , tip_link_name_(std::move(tip_link_name))
   , joint_names_(std::move(joint_names))
+  , solver_name_(std::move(solver_name))
 {
   if (joint_names_.size() != 6)
     throw std::runtime_error("OPWInvKin, only support six joints!");
@@ -244,6 +246,7 @@ URInvKin& URInvKin::operator=(const URInvKin& other)
   tip_link_name_ = other.tip_link_name_;
   joint_names_ = other.joint_names_;
   params_ = other.params_;
+  solver_name_ = other.solver_name_;
 
   return *this;
 }
@@ -283,6 +286,6 @@ std::string URInvKin::getBaseLinkName() const { return base_link_name_; }
 std::string URInvKin::getWorkingFrame() const { return base_link_name_; }
 std::vector<std::string> URInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 std::string URInvKin::getName() const { return name_; }
-std::string URInvKin::getSolverName() const { return UR_INV_KIN_CHAIN_SOLVER_NAME; }
+std::string URInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract_kinematics
