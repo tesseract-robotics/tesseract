@@ -31,7 +31,8 @@ namespace tesseract_kinematics
 {
 class URInvKinFactory : public InvKinFactory
 {
-  InverseKinematics::UPtr create(const std::string& name,
+  InverseKinematics::UPtr create(const std::string& group_name,
+                                 const std::string& solver_name,
                                  const tesseract_scene_graph::SceneGraph& scene_graph,
                                  const tesseract_scene_graph::SceneState& scene_state,
                                  const KinematicsPluginFactory& plugin_factory,

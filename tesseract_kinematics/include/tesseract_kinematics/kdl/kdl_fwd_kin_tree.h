@@ -83,7 +83,8 @@ public:
   KDLFwdKinTree(std::string name,
                 const tesseract_scene_graph::SceneGraph& scene_graph,
                 const tesseract_scene_graph::SceneState& scene_state,
-                const std::vector<std::string>& joint_names);
+                const std::vector<std::string>& joint_names,
+                std::string solver_name = KDL_FWD_KIN_TREE_SOLVER_NAME);
 
   tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
@@ -112,6 +113,8 @@ private:
 
   std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
+
+  std::string solver_name_{ KDL_FWD_KIN_TREE_SOLVER_NAME }; /**< @brief Name of this solver */
 
   /** @brief Set the start state for all joints in the tree. */
   void setStartState(std::unordered_map<std::string, double> start_state);

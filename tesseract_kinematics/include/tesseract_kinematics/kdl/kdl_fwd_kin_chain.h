@@ -84,7 +84,8 @@ public:
   KDLFwdKinChain(std::string name,
                  const tesseract_scene_graph::SceneGraph& scene_graph,
                  const std::string& base_link,
-                 const std::string& tip_link);
+                 const std::string& tip_link,
+                 std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
 
   /**
    * @brief Construct Forward Kinematics as chain
@@ -95,7 +96,8 @@ public:
    */
   KDLFwdKinChain(std::string name,
                  const tesseract_scene_graph::SceneGraph& scene_graph,
-                 const std::vector<std::pair<std::string, std::string> >& chains);
+                 const std::vector<std::pair<std::string, std::string> >& chains,
+                 std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
 
   tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
@@ -115,6 +117,7 @@ private:
   std::string name_;                                           /**< Name of the kinematic chain */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
+  std::string solver_name_{ KDL_FWD_KIN_CHAIN_SOLVER_NAME };   /**< @brief Name of this solver */
 
   /** @brief calcFwdKin helper function */
   tesseract_common::TransformMap calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;

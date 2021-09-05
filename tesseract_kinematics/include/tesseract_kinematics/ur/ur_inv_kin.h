@@ -76,7 +76,8 @@ public:
            URParameters params,
            std::string base_link_name,
            std::string tip_link_name,
-           std::vector<std::string> joint_names);
+           std::vector<std::string> joint_names,
+           std::string solver_name = UR_INV_KIN_CHAIN_SOLVER_NAME);
 
   tesseract_kinematics::IKSolutions calcInvKin(const IKInput& tip_link_poses,
                                                const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
@@ -96,6 +97,7 @@ protected:
   std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name_;            /**< @brief Link name of last kink in the kinematic object */
   std::vector<std::string> joint_names_; /**< @brief Joint names for the kinematic object */
+  std::string solver_name_{ UR_INV_KIN_CHAIN_SOLVER_NAME }; /**< @brief Name of this solver */
 };
 }  // namespace tesseract_kinematics
 

@@ -28,7 +28,8 @@
 
 namespace tesseract_kinematics
 {
-InverseKinematics::UPtr REPInvKinFactory::create(const std::string& name,
+InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
+                                                 const std::string& solver_name,
                                                  const tesseract_scene_graph::SceneGraph& scene_graph,
                                                  const tesseract_scene_graph::SceneState& scene_state,
                                                  const KinematicsPluginFactory& plugin_factory,
@@ -102,7 +103,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& name,
     // Get Positioner
     if (YAML::Node positioner = config["positioner"])
     {
-      std::string group_name = name + "_positioner";
+      std::string group_name = group_name + "_positioner";
 
       tesseract_common::PluginInfo p_info;
       if (YAML::Node n = positioner["class"])
@@ -144,7 +145,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& name,
     // Get Manipulator
     if (YAML::Node manipulator = config["manipulator"])
     {
-      std::string group_name = name + "_manipulator";
+      std::string group_name = group_name + "_manipulator";
 
       tesseract_common::PluginInfo m_info;
       if (YAML::Node n = manipulator["class"])
@@ -170,11 +171,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& name,
     return nullptr;
   }
 
-  std::string solver_name = DEFAULT_REP_INV_KIN_SOLVER_NAME;
-  if (YAML::Node solver_name_node = config["solver_name"])
-    solver_name = solver_name_node.as<std::string>();
-
-  return std::make_unique<REPInvKin>(name,
+  return std::make_unique<REPInvKin>(group_name,
                                      scene_graph,
                                      scene_state,
                                      std::move(inv_kin),

@@ -41,8 +41,9 @@ using Eigen::VectorXd;
 KDLFwdKinTree::KDLFwdKinTree(std::string name,
                              const tesseract_scene_graph::SceneGraph& scene_graph,
                              const tesseract_scene_graph::SceneState& scene_state,
-                             const std::vector<std::string>& joint_names)
-  : name_(std::move(name))
+                             const std::vector<std::string>& joint_names,
+                             std::string solver_name)
+  : name_(std::move(name)), solver_name_(std::move(solver_name))
 {
   std::unordered_map<std::string, double> start_state_zeros;
 
@@ -115,6 +116,7 @@ KDLFwdKinTree& KDLFwdKinTree::operator=(const KDLFwdKinTree& other)
   start_state_ = other.start_state_;
   joint_qnr_ = other.joint_qnr_;
   joint_to_qnr_ = other.joint_to_qnr_;
+  solver_name_ = other.solver_name_;
   return *this;
 }
 
@@ -227,6 +229,6 @@ std::vector<std::string> KDLFwdKinTree::getTipLinkNames() const { return { tip_l
 
 std::string KDLFwdKinTree::getName() const { return name_; }
 
-std::string KDLFwdKinTree::getSolverName() const { return KDL_FWD_KIN_TREE_SOLVER_NAME; }
+std::string KDLFwdKinTree::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract_kinematics
