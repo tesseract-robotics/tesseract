@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/scene_state.h>
 #include <tesseract_common/plugin_loader.h>
+#include <tesseract_common/types.h>
 
 namespace tesseract_common
 {
@@ -98,25 +99,6 @@ public:
                                          const YAML::Node& config) const = 0;
 };
 
-/** @brief The KinematicsPluginInfo struct */
-struct KinematicsPluginInfo
-{
-  /** @brief The plugin solver name */
-  std::string name;
-
-  /** @brief The plugin class name */
-  std::string class_name;
-
-  /** @brief Then kinematic group name the plugin is related to */
-  std::string group;
-
-  /** @brief Indicate if this is the defautl solver for the kinematic group */
-  bool is_default{ false };
-
-  /** @brief The kinematic plugin config data */
-  YAML::Node config;
-};
-
 class KinematicsPluginFactory
 {
 public:
@@ -169,7 +151,7 @@ public:
    * @brief Add a forward kinematics plugin to the manager
    * @param plugin_info The plugin information
    */
-  void addFwdKinPlugin(KinematicsPluginInfo plugin_info);
+  void addFwdKinPlugin(const std::string& group_name, tesseract_common::PluginInfo plugin_info);
 
   /**
    * @brief remove forward kinematics plugin from the manager
@@ -197,7 +179,7 @@ public:
    * @brief Add a inverse kinematics plugin to the manager
    * @param plugin_info The plugin information
    */
-  void addInvKinPlugin(KinematicsPluginInfo plugin_info);
+  void addInvKinPlugin(const std::string& group_name, tesseract_common::PluginInfo plugin_info);
 
   /**
    * @brief remove inverse kinematics plugin from the manager
@@ -253,7 +235,8 @@ public:
    * @param scene_graph The scene graph
    * @param scene_state The scene state
    */
-  ForwardKinematics::UPtr createFwdKin(const KinematicsPluginInfo& plugin_info,
+  ForwardKinematics::UPtr createFwdKin(const std::string& group_name,
+                                       const tesseract_common::PluginInfo& plugin_info,
                                        const tesseract_scene_graph::SceneGraph& scene_graph,
                                        const tesseract_scene_graph::SceneState& scene_state) const;
 
@@ -263,7 +246,8 @@ public:
    * @param scene_graph The scene graph
    * @param scene_state The scene state
    */
-  InverseKinematics::UPtr createInvKin(const KinematicsPluginInfo& plugin_info,
+  InverseKinematics::UPtr createInvKin(const std::string& group_name,
+                                       const tesseract_common::PluginInfo& plugin_info,
                                        const tesseract_scene_graph::SceneGraph& scene_graph,
                                        const tesseract_scene_graph::SceneState& scene_state) const;
 
@@ -282,54 +266,10 @@ public:
 private:
   mutable std::map<std::string, FwdKinFactory::Ptr> fwd_kin_factories_;
   mutable std::map<std::string, InvKinFactory::Ptr> inv_kin_factories_;
-  std::map<std::string, std::map<std::string, KinematicsPluginInfo>> fwd_plugin_info_;
-  std::map<std::string, std::map<std::string, KinematicsPluginInfo>> inv_plugin_info_;
+  std::map<std::string, std::map<std::string, tesseract_common::PluginInfo>> fwd_plugin_info_;
+  std::map<std::string, std::map<std::string, tesseract_common::PluginInfo>> inv_plugin_info_;
   std::unique_ptr<tesseract_common::PluginLoader> plugin_loader_;
 };
 
 }  // namespace tesseract_kinematics
-
-namespace YAML
-{
-template <>
-struct convert<tesseract_kinematics::KinematicsPluginInfo>
-{
-  static Node encode(const tesseract_kinematics::KinematicsPluginInfo& rhs)
-  {
-    Node node;
-    node["name"] = rhs.name;
-    node["group"] = rhs.group;
-    node["class"] = rhs.class_name;
-    node["default"] = rhs.is_default;
-    if (!rhs.config.IsNull())
-      node["config"] = rhs.config;
-    return node;
-  }
-
-  static bool decode(const Node& node, tesseract_kinematics::KinematicsPluginInfo& rhs)
-  {
-    // Check for required entries
-    if (!node["name"])
-      throw std::runtime_error("KinematicsPluginInfo, missing 'name' entry!");
-
-    if (!node["group"])
-      throw std::runtime_error("KinematicsPluginInfo, missing 'group' entry!");
-
-    if (!node["class"])
-      throw std::runtime_error("KinematicsPluginInfo, missing 'class' entry!");
-
-    rhs.name = node["name"].as<std::string>();
-    rhs.group = node["group"].as<std::string>();
-    rhs.class_name = node["class"].as<std::string>();
-
-    if (node["default"])
-      rhs.is_default = node["default"].as<bool>();
-
-    if (node["config"])
-      rhs.config = node["config"];
-
-    return true;
-  }
-};
-}  // namespace YAML
 #endif  // TESSERACT_KINEMATICS_KINEMATICS_PLUGIN_FACTORY_H

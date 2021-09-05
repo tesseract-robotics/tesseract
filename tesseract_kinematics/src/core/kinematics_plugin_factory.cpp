@@ -67,41 +67,52 @@ KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : Kinematics
 
     if (const YAML::Node& fwd_kin_plugins = plugin_info[FWD_KIN_PLUGINS_KEY])
     {
-      for (auto it = fwd_kin_plugins.begin(); it != fwd_kin_plugins.end(); ++it)
+      if (!fwd_kin_plugins.IsMap())
+        throw std::runtime_error(FWD_KIN_PLUGINS_KEY + ", should contain a map of group names to solver plugins!");
+
+      for (auto group_it = fwd_kin_plugins.begin(); group_it != fwd_kin_plugins.end(); ++group_it)
       {
-        KinematicsPluginInfo info;
-        try
+        std::string group_name = group_it->first.as<std::string>();
+        for (auto solver_it = group_it->second.begin(); solver_it != group_it->second.end(); ++solver_it)
         {
-          info = it->as<KinematicsPluginInfo>();
+          tesseract_common::PluginInfo info;
+          try
+          {
+            info = solver_it->as<tesseract_common::PluginInfo>();
+          }
+          catch (const std::exception& e)
+          {
+            CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast fwd kin plugin to "
+                                    "tesseract_common::PluginInfo! Details: %s",
+                                    e.what());
+            continue;
+          }
+          addFwdKinPlugin(group_name, info);
         }
-        catch (const std::exception& e)
-        {
-          CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast fwd kin plugin to "
-                                  "KinematicsPluginInfo! Details: %s",
-                                  e.what());
-          continue;
-        }
-        addFwdKinPlugin(info);
       }
     }
 
     if (const YAML::Node& inv_kin_plugins = plugin_info[INV_KIN_PLUGINS_KEY])
     {
-      for (auto it = inv_kin_plugins.begin(); it != inv_kin_plugins.end(); ++it)
+      for (auto group_it = inv_kin_plugins.begin(); group_it != inv_kin_plugins.end(); ++group_it)
       {
-        KinematicsPluginInfo info;
-        try
+        std::string group_name = group_it->first.as<std::string>();
+        for (auto solver_it = group_it->second.begin(); solver_it != group_it->second.end(); ++solver_it)
         {
-          info = it->as<KinematicsPluginInfo>();
+          tesseract_common::PluginInfo info;
+          try
+          {
+            info = solver_it->as<tesseract_common::PluginInfo>();
+          }
+          catch (const std::exception& e)
+          {
+            CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast inv kin plugin to "
+                                    "KinematicsPluginInfo! Details: %s",
+                                    e.what());
+            continue;
+          }
+          addInvKinPlugin(group_name, info);
         }
-        catch (const std::exception& e)
-        {
-          CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast inv kin plugin to "
-                                  "KinematicsPluginInfo! Details: %s",
-                                  e.what());
-          continue;
-        }
-        addInvKinPlugin(it->as<KinematicsPluginInfo>());
       }
     }
   }
@@ -129,9 +140,9 @@ void KinematicsPluginFactory::addSearchLibrary(const std::string& library_name)
 
 const std::set<std::string>& KinematicsPluginFactory::getSearchLibraries() const { return plugin_loader_->plugins; }
 
-void KinematicsPluginFactory::addFwdKinPlugin(KinematicsPluginInfo plugin_info)
+void KinematicsPluginFactory::addFwdKinPlugin(const std::string& group_name, tesseract_common::PluginInfo plugin_info)
 {
-  fwd_plugin_info_[plugin_info.group][plugin_info.name] = plugin_info;
+  fwd_plugin_info_[group_name][plugin_info.name] = plugin_info;
 }
 
 void KinematicsPluginFactory::removeFwdKinPlugin(const std::string& group_name, const std::string& solver_name)
@@ -186,9 +197,9 @@ std::string KinematicsPluginFactory::getDefaultFwdKinPlugin(const std::string& g
   return group_it->second.begin()->first;
 }
 
-void KinematicsPluginFactory::addInvKinPlugin(KinematicsPluginInfo plugin_info)
+void KinematicsPluginFactory::addInvKinPlugin(const std::string& group_name, tesseract_common::PluginInfo plugin_info)
 {
-  inv_plugin_info_[plugin_info.group][plugin_info.name] = plugin_info;
+  inv_plugin_info_[group_name][plugin_info.name] = plugin_info;
 }
 
 void KinematicsPluginFactory::removeInvKinPlugin(const std::string& group_name, const std::string& solver_name)
@@ -269,11 +280,12 @@ KinematicsPluginFactory::createFwdKin(const std::string& group_name,
     return nullptr;
   }
 
-  return createFwdKin(solver_it->second, scene_graph, scene_state);
+  return createFwdKin(group_name, solver_it->second, scene_graph, scene_state);
 }
 
 ForwardKinematics::UPtr
-KinematicsPluginFactory::createFwdKin(const KinematicsPluginInfo& plugin_info,
+KinematicsPluginFactory::createFwdKin(const std::string& group_name,
+                                      const tesseract_common::PluginInfo& plugin_info,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
                                       const tesseract_scene_graph::SceneState& scene_state) const
 {
@@ -281,7 +293,7 @@ KinematicsPluginFactory::createFwdKin(const KinematicsPluginInfo& plugin_info,
   {
     auto it = fwd_kin_factories_.find(plugin_info.class_name);
     if (it != fwd_kin_factories_.end())
-      return it->second->create(plugin_info.group, scene_graph, scene_state, *this, plugin_info.config);
+      return it->second->create(group_name, scene_graph, scene_state, *this, plugin_info.config);
 
     auto plugin = plugin_loader_->instantiate<FwdKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
@@ -290,7 +302,7 @@ KinematicsPluginFactory::createFwdKin(const KinematicsPluginInfo& plugin_info,
       return nullptr;
     }
     fwd_kin_factories_[plugin_info.class_name] = plugin;
-    return plugin->create(plugin_info.group, scene_graph, scene_state, *this, plugin_info.config);
+    return plugin->create(group_name, scene_graph, scene_state, *this, plugin_info.config);
   }
   catch (const std::exception&)
   {
@@ -325,11 +337,12 @@ KinematicsPluginFactory::createInvKin(const std::string& group_name,
     return nullptr;
   }
 
-  return createInvKin(solver_it->second, scene_graph, scene_state);
+  return createInvKin(group_name, solver_it->second, scene_graph, scene_state);
 }
 
 InverseKinematics::UPtr
-KinematicsPluginFactory::createInvKin(const KinematicsPluginInfo& plugin_info,
+KinematicsPluginFactory::createInvKin(const std::string& group_name,
+                                      const tesseract_common::PluginInfo& plugin_info,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
                                       const tesseract_scene_graph::SceneState& scene_state) const
 {
@@ -337,7 +350,7 @@ KinematicsPluginFactory::createInvKin(const KinematicsPluginInfo& plugin_info,
   {
     auto it = inv_kin_factories_.find(plugin_info.class_name);
     if (it != inv_kin_factories_.end())
-      return it->second->create(plugin_info.group, scene_graph, scene_state, *this, plugin_info.config);
+      return it->second->create(group_name, scene_graph, scene_state, *this, plugin_info.config);
 
     auto plugin = plugin_loader_->instantiate<InvKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
@@ -346,7 +359,7 @@ KinematicsPluginFactory::createInvKin(const KinematicsPluginInfo& plugin_info,
       return nullptr;
     }
     inv_kin_factories_[plugin_info.class_name] = plugin;
-    return plugin->create(plugin_info.group, scene_graph, scene_state, *this, plugin_info.config);
+    return plugin->create(group_name, scene_graph, scene_state, *this, plugin_info.config);
   }
   catch (const std::exception&)
   {
@@ -387,8 +400,13 @@ YAML::Node KinematicsPluginFactory::getConfig() const
   {
     YAML::Node fwd_plugin_info;
     for (const auto& group : fwd_plugin_info_)
+    {
+      YAML::Node group_plugin_info;
       for (const auto& solver : group.second)
-        fwd_plugin_info.push_back(solver.second);
+        group_plugin_info.push_back(solver.second);
+
+      fwd_plugin_info[group.first] = group_plugin_info;
+    }
 
     kinematic_plugins[FWD_KIN_PLUGINS_KEY] = fwd_plugin_info;
   }
@@ -397,8 +415,13 @@ YAML::Node KinematicsPluginFactory::getConfig() const
   {
     YAML::Node inv_plugin_info;
     for (const auto& group : inv_plugin_info_)
+    {
+      YAML::Node group_plugin_info;
       for (const auto& solver : group.second)
-        inv_plugin_info.push_back(solver.second);
+        group_plugin_info.push_back(solver.second);
+
+      inv_plugin_info[group.first] = group_plugin_info;
+    }
 
     kinematic_plugins[INV_KIN_PLUGINS_KEY] = inv_plugin_info;
   }

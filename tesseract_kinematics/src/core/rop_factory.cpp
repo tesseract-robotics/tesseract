@@ -103,9 +103,9 @@ InverseKinematics::UPtr ROPInvKinFactory::create(const std::string& name,
     // Get Positioner
     if (YAML::Node positioner = config["positioner"])
     {
-      KinematicsPluginInfo p_info;
-      p_info.group = name + "_positioner";
+      std::string group_name = name + "_positioner";
 
+      tesseract_common::PluginInfo p_info;
       if (YAML::Node n = positioner["class"])
         p_info.class_name = n.as<std::string>();
       else
@@ -116,7 +116,7 @@ InverseKinematics::UPtr ROPInvKinFactory::create(const std::string& name,
       if (YAML::Node n = positioner["config"])
         p_info.config = n;
 
-      fwd_kin = plugin_factory.createFwdKin(p_info, scene_graph, scene_state);
+      fwd_kin = plugin_factory.createFwdKin(group_name, p_info, scene_graph, scene_state);
       if (fwd_kin == nullptr)
         throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
 
@@ -147,9 +147,9 @@ InverseKinematics::UPtr ROPInvKinFactory::create(const std::string& name,
     // Get Manipulator
     if (YAML::Node manipulator = config["manipulator"])
     {
-      KinematicsPluginInfo m_info;
-      m_info.group = name + "_manipulator";
+      std::string group_name = name + "_manipulator";
 
+      tesseract_common::PluginInfo m_info;
       if (YAML::Node n = manipulator["class"])
         m_info.class_name = n.as<std::string>();
       else
@@ -160,7 +160,7 @@ InverseKinematics::UPtr ROPInvKinFactory::create(const std::string& name,
       if (YAML::Node n = manipulator["config"])
         m_info.config = n;
 
-      inv_kin = plugin_factory.createInvKin(m_info, scene_graph, scene_state);
+      inv_kin = plugin_factory.createInvKin(group_name, m_info, scene_graph, scene_state);
       if (inv_kin == nullptr)
         throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
     }
