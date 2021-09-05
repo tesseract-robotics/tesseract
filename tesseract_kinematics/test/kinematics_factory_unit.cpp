@@ -88,51 +88,57 @@ void runKinematicsFactoryTest(tesseract_common::fs::path config_path)
   }
 
   EXPECT_EQ(fwd_kin_plugins.size(), 1);
-  for (auto it = fwd_kin_plugins.begin(); it != fwd_kin_plugins.end(); ++it)
+  for (auto group_it = fwd_kin_plugins.begin(); group_it != fwd_kin_plugins.end(); ++group_it)
   {
-    const YAML::Node& plugin = *it;
+    std::string group_name = group_it->first.as<std::string>();
+    for (auto solver_it = group_it->second.begin(); solver_it != group_it->second.end(); ++solver_it)
+    {
+      const YAML::Node& plugin = *solver_it;
 
-    KinematicsPluginInfo info;
-    info.name = plugin["name"].as<std::string>();
-    info.class_name = plugin["class"].as<std::string>();
-    info.group = plugin["group"].as<std::string>();
-    info.config = plugin["config"];
+      tesseract_common::PluginInfo info;
+      info.name = plugin["name"].as<std::string>();
+      info.class_name = plugin["class"].as<std::string>();
+      info.config = plugin["config"];
 
-    ForwardKinematics::UPtr kin;
-    if (info.group == "iiwa_manipulator")
-      kin = factory.createFwdKin(info.group, info.name, *iiwa_scene_graph, iiwa_scene_state);
-    else if (info.group == "abb_manipulator")
-      kin = factory.createFwdKin(info.group, info.name, *abb_scene_graph, abb_scene_state);
-    else if (info.group == "ur_manipulator")
-      kin = factory.createFwdKin(info.group, info.name, *ur_scene_graph, ur_scene_state);
+      ForwardKinematics::UPtr kin;
+      if (group_name == "iiwa_manipulator")
+        kin = factory.createFwdKin(group_name, info.name, *iiwa_scene_graph, iiwa_scene_state);
+      else if (group_name == "abb_manipulator")
+        kin = factory.createFwdKin(group_name, info.name, *abb_scene_graph, abb_scene_state);
+      else if (group_name == "ur_manipulator")
+        kin = factory.createFwdKin(group_name, info.name, *ur_scene_graph, ur_scene_state);
 
-    EXPECT_TRUE(kin != nullptr);
+      EXPECT_TRUE(kin != nullptr);
+    }
   }
 
-  EXPECT_EQ(inv_kin_plugins.size(), 6);
-  for (auto it = inv_kin_plugins.begin(); it != inv_kin_plugins.end(); ++it)
+  EXPECT_EQ(inv_kin_plugins.size(), 5);
+  for (auto group_it = inv_kin_plugins.begin(); group_it != inv_kin_plugins.end(); ++group_it)
   {
-    const YAML::Node& plugin = *it;
+    std::string group_name = group_it->first.as<std::string>();
+    for (auto solver_it = group_it->second.begin(); solver_it != group_it->second.end(); ++solver_it)
+    {
+      const YAML::Node& plugin = *solver_it;
 
-    KinematicsPluginInfo info;
-    info.name = plugin["name"].as<std::string>();
-    info.class_name = plugin["class"].as<std::string>();
-    info.group = plugin["group"].as<std::string>();
-    info.config = plugin["config"];
+      tesseract_common::PluginInfo info;
+      info.name = plugin["name"].as<std::string>();
+      info.class_name = plugin["class"].as<std::string>();
+      info.config = plugin["config"];
 
-    InverseKinematics::UPtr kin;
-    if (info.group == "iiwa_manipulator")
-      kin = factory.createInvKin(info.group, info.name, *iiwa_scene_graph, iiwa_scene_state);
-    else if (info.group == "abb_manipulator")
-      kin = factory.createInvKin(info.group, info.name, *abb_scene_graph, abb_scene_state);
-    else if (info.group == "ur_manipulator")
-      kin = factory.createInvKin(info.group, info.name, *ur_scene_graph, ur_scene_state);
-    else if (info.group == "rop_manipulator")
-      kin = factory.createInvKin(info.group, info.name, *rop_scene_graph, rop_scene_state);
-    else if (info.group == "rep_manipulator")
-      kin = factory.createInvKin(info.group, info.name, *rep_scene_graph, rep_scene_state);
+      InverseKinematics::UPtr kin;
+      if (group_name == "iiwa_manipulator")
+        kin = factory.createInvKin(group_name, info.name, *iiwa_scene_graph, iiwa_scene_state);
+      else if (group_name == "abb_manipulator")
+        kin = factory.createInvKin(group_name, info.name, *abb_scene_graph, abb_scene_state);
+      else if (group_name == "ur_manipulator")
+        kin = factory.createInvKin(group_name, info.name, *ur_scene_graph, ur_scene_state);
+      else if (group_name == "rop_manipulator")
+        kin = factory.createInvKin(group_name, info.name, *rop_scene_graph, rop_scene_state);
+      else if (group_name == "rep_manipulator")
+        kin = factory.createInvKin(group_name, info.name, *rep_scene_graph, rep_scene_state);
 
-    EXPECT_TRUE(kin != nullptr);
+      EXPECT_TRUE(kin != nullptr);
+    }
   }
 
   factory.saveConfig(tesseract_common::fs::path(tesseract_common::getTempPath()) / "kinematic_plugins_export.yaml");
@@ -164,27 +170,27 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
   std::string yaml_string =
       R"(kinematic_plugins:
            inv_kin_plugins:
-             - name: OPWInvKin
-               class: OPWInvKinFactory
-               group: manipulator
-               default: true
-               config:
-                 base_link: base_link
-                 tip_link: tool0
-                 params:
-                   a1: 0.100
-                   a2: -0.135
-                   b: 0.00
-                   c1: 0.615
-                   c2: 0.705
-                   c3: 0.755
-                   c4: 0.086
-                   offsets: [0, 0, -1.57079632679, 0, 0, 0]
-                   sign_corrections: [1, 1, 1, -1, 1, 1])";
+             manipulator:
+               - name: OPWInvKin
+                 class: OPWInvKinFactory
+                 default: true
+                 config:
+                   base_link: base_link
+                   tip_link: tool0
+                   params:
+                     a1: 0.100
+                     a2: -0.135
+                     b: 0.00
+                     c1: 0.615
+                     c2: 0.705
+                     c3: 0.755
+                     c4: 0.086
+                     offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                     sign_corrections: [1, 1, 1, -1, 1, 1])";
 
   {  // missing name
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin.remove("name");
 
     KinematicsPluginFactory factory(config);
@@ -193,17 +199,8 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
   }
   {  // missing class
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin.remove("class");
-
-    KinematicsPluginFactory factory(config);
-    auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
-    EXPECT_TRUE(inv_kin == nullptr);
-  }
-  {  // missing group
-    YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
-    plugin.remove("group");
 
     KinematicsPluginFactory factory(config);
     auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
@@ -211,7 +208,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
   }
   {  // missing default (which is allowed)
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin.remove("default");
 
     KinematicsPluginFactory factory(config);
@@ -231,23 +228,23 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   std::string yaml_string =
       R"(kinematic_plugins:
            inv_kin_plugins:
-             - name: OPWInvKin
-               class: OPWInvKinFactory
-               group: manipulator
-               default: true
-               config:
-                 base_link: base_link
-                 tip_link: tool0
-                 params:
-                   a1: 0.100
-                   a2: -0.135
-                   b: 0.00
-                   c1: 0.615
-                   c2: 0.705
-                   c3: 0.755
-                   c4: 0.086
-                   offsets: [0, 0, -1.57079632679, 0, 0, 0]
-                   sign_corrections: [1, 1, 1, -1, 1, 1])";
+             manipulator:
+               - name: OPWInvKin
+                 class: OPWInvKinFactory
+                 default: true
+                 config:
+                   base_link: base_link
+                   tip_link: tool0
+                   params:
+                     a1: 0.100
+                     a2: -0.135
+                     b: 0.00
+                     c1: 0.615
+                     c2: 0.705
+                     c3: 0.755
+                     c4: 0.086
+                     offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                     sign_corrections: [1, 1, 1, -1, 1, 1])";
 
   KinematicsPluginFactory factory(YAML::Load(yaml_string));
   auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
@@ -255,7 +252,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin.remove("config");
 
     KinematicsPluginFactory factory(config);
@@ -264,7 +261,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing base_link
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("base_link");
 
     KinematicsPluginFactory factory(config);
@@ -273,7 +270,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing tip_link
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("tip_link");
 
     KinematicsPluginFactory factory(config);
@@ -282,7 +279,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing params
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("params");
 
     KinematicsPluginFactory factory(config);
@@ -291,7 +288,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing a1
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("a1");
 
     KinematicsPluginFactory factory(config);
@@ -300,7 +297,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing a2
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("a2");
 
     KinematicsPluginFactory factory(config);
@@ -309,7 +306,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing b
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("b");
 
     KinematicsPluginFactory factory(config);
@@ -318,7 +315,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing c1
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("c1");
 
     KinematicsPluginFactory factory(config);
@@ -327,7 +324,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing c2
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("c2");
 
     KinematicsPluginFactory factory(config);
@@ -336,7 +333,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing c3
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("c3");
 
     KinematicsPluginFactory factory(config);
@@ -345,7 +342,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing c4
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("c4");
 
     KinematicsPluginFactory factory(config);
@@ -354,7 +351,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing offset is allowed
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("offset");
 
     KinematicsPluginFactory factory(config);
@@ -363,7 +360,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // missing sign_corrections is allowed
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("sign_corrections");
 
     KinematicsPluginFactory factory(config);
@@ -373,7 +370,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
 
   {  // invalid a1
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["a1"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -382,7 +379,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // invalid a2
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["a2"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -391,7 +388,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // invalid b
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["b"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -400,7 +397,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // invalid c1
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["c1"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -409,7 +406,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // invalid c2
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["c2"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -418,7 +415,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // invalide c3
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["c3"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -427,7 +424,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // invalid c4
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["c4"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -436,7 +433,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // invalid offset
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["offsets"][0] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -445,7 +442,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // invalid sign_corrections
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["sign_corrections"][0] = "a";
 
     KinematicsPluginFactory factory(config);
@@ -454,7 +451,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
   {  // invalid sign_corrections
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["sign_corrections"][0] = 5;
 
     KinematicsPluginFactory factory(config);
@@ -474,32 +471,32 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   std::string yaml_model_string =
       R"(kinematic_plugins:
            inv_kin_plugins:
-             - name: URInvKin
-               class: URInvKinFactory
-               group: manipulator
-               default: true
-               config:
-                 base_link: base_link
-                 tip_link: tool0
-                 model: UR10)";
+             manipulator:
+               - name: URInvKin
+                 class: URInvKinFactory
+                 default: true
+                 config:
+                   base_link: base_link
+                   tip_link: tool0
+                   model: UR10)";
 
   std::string yaml_params_string =
       R"(kinematic_plugins:
            inv_kin_plugins:
-             - name: URInvKin
-               class: URInvKinFactory
-               group: manipulator
-               default: true
-               config:
-                 base_link: base_link
-                 tip_link: tool0
-                 params:
-                   d1: 0.1273
-                   a2: -0.612
-                   a3: -0.5723
-                   d4: 0.163941
-                   d5: 0.1157
-                   d6: 0.0922)";
+             manipulator:
+               - name: URInvKin
+                 class: URInvKinFactory
+                 default: true
+                 config:
+                   base_link: base_link
+                   tip_link: tool0
+                   params:
+                     d1: 0.1273
+                     a2: -0.612
+                     a3: -0.5723
+                     d4: 0.163941
+                     d5: 0.1157
+                     d6: 0.0922)";
 
   {
     KinematicsPluginFactory factory(YAML::Load(yaml_model_string));
@@ -515,7 +512,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_model_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin.remove("config");
 
     KinematicsPluginFactory factory(config);
@@ -524,7 +521,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing base_link
     YAML::Node config = YAML::Load(yaml_model_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("base_link");
 
     KinematicsPluginFactory factory(config);
@@ -533,7 +530,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing tip_link
     YAML::Node config = YAML::Load(yaml_model_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("tip_link");
 
     KinematicsPluginFactory factory(config);
@@ -542,7 +539,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing model and params
     YAML::Node config = YAML::Load(yaml_model_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("model");
 
     KinematicsPluginFactory factory(config);
@@ -551,7 +548,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing model and params
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("params");
 
     KinematicsPluginFactory factory(config);
@@ -560,7 +557,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing d1
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("d1");
 
     KinematicsPluginFactory factory(config);
@@ -569,7 +566,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing a2
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("a2");
 
     KinematicsPluginFactory factory(config);
@@ -578,7 +575,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing a3
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("a3");
 
     KinematicsPluginFactory factory(config);
@@ -587,7 +584,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing d4
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("d4");
 
     KinematicsPluginFactory factory(config);
@@ -596,7 +593,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing d5
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("d5");
 
     KinematicsPluginFactory factory(config);
@@ -605,7 +602,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // missing d6
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"].remove("d6");
 
     KinematicsPluginFactory factory(config);
@@ -614,7 +611,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // invalid d1
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["d1"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -623,7 +620,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // invalid a2
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["a2"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -632,7 +629,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // invalid a3
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["a3"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -641,7 +638,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // invalid d4
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["d4"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -650,7 +647,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // invalid d5
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["d5"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -659,7 +656,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
   }
   {  // invalide d6
     YAML::Node config = YAML::Load(yaml_params_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"]["params"]["d6"] = "abcd";
 
     KinematicsPluginFactory factory(config);
@@ -678,37 +675,37 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
   std::string yaml_string =
       R"(kinematic_plugins:
            inv_kin_plugins:
-             - name: REPInvKin
-               class: REPInvKinFactory
-               group: manipulator
-               default: true
-               config:
-                 manipulator_reach: 2.0
-                 positioner_sample_resolution:
-                   - name: positioner_joint_1
-                     value: 0.1
-                   - name: positioner_joint_2
-                     value: 0.1
-                 positioner:
-                   class: KDLFwdKinChainFactory
-                   config:
-                     base_link: positioner_base_link
-                     tip_link: positioner_tool0
-                 manipulator:
-                   class: OPWInvKinFactory
-                   config:
-                     base_link: base_link
-                     tip_link: tool0
-                     params:
-                       a1: 0.100
-                       a2: -0.135
-                       b: 0.00
-                       c1: 0.615
-                       c2: 0.705
-                       c3: 0.755
-                       c4: 0.086
-                       offsets: [0, 0, -1.57079632679, 0, 0, 0]
-                       sign_corrections: [1, 1, 1, 1, 1, 1])";
+             manipulator:
+               - name: REPInvKin
+                 class: REPInvKinFactory
+                 default: true
+                 config:
+                   manipulator_reach: 2.0
+                   positioner_sample_resolution:
+                     - name: positioner_joint_1
+                       value: 0.1
+                     - name: positioner_joint_2
+                       value: 0.1
+                   positioner:
+                     class: KDLFwdKinChainFactory
+                     config:
+                       base_link: positioner_base_link
+                       tip_link: positioner_tool0
+                   manipulator:
+                     class: OPWInvKinFactory
+                     config:
+                       base_link: base_link
+                       tip_link: tool0
+                       params:
+                         a1: 0.100
+                         a2: -0.135
+                         b: 0.00
+                         c1: 0.615
+                         c2: 0.705
+                         c3: 0.755
+                         c4: 0.086
+                         offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                         sign_corrections: [1, 1, 1, 1, 1, 1])";
 
   KinematicsPluginFactory factory(YAML::Load(yaml_string));
   auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
@@ -716,7 +713,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin.remove("config");
 
     KinematicsPluginFactory factory(config);
@@ -725,7 +722,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
   }
   {  // missing manipulator_reach
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("manipulator_reach");
 
     KinematicsPluginFactory factory(config);
@@ -734,7 +731,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
   }
   {  // missing positioner_sample_resolution
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("positioner_sample_resolution");
 
     KinematicsPluginFactory factory(config);
@@ -743,7 +740,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
   }
   {  // missing positioner
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("positioner");
 
     KinematicsPluginFactory factory(config);
@@ -752,7 +749,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
   }
   {  // missing manipulator
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("manipulator");
 
     KinematicsPluginFactory factory(config);
@@ -771,35 +768,35 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
   std::string yaml_string =
       R"(kinematic_plugins:
            inv_kin_plugins:
-             - name: ROPInvKin
-               class: ROPInvKinFactory
-               group: manipulator
-               default: true
-               config:
-                 manipulator_reach: 2.0
-                 positioner_sample_resolution:
-                   - name: positioner_joint_1
-                     value: 0.1
-                 positioner:
-                   class: KDLFwdKinChainFactory
-                   config:
-                     base_link: positioner_base_link
-                     tip_link: positioner_tool0
-                 manipulator:
-                   class: OPWInvKinFactory
-                   config:
-                     base_link: base_link
-                     tip_link: tool0
-                     params:
-                       a1: 0.100
-                       a2: -0.135
-                       b: 0.00
-                       c1: 0.615
-                       c2: 0.705
-                       c3: 0.755
-                       c4: 0.086
-                       offsets: [0, 0, -1.57079632679, 0, 0, 0]
-                       sign_corrections: [1, 1, 1, 1, 1, 1])";
+             manipulator:
+               - name: ROPInvKin
+                 class: ROPInvKinFactory
+                 default: true
+                 config:
+                   manipulator_reach: 2.0
+                   positioner_sample_resolution:
+                     - name: positioner_joint_1
+                       value: 0.1
+                   positioner:
+                     class: KDLFwdKinChainFactory
+                     config:
+                       base_link: positioner_base_link
+                       tip_link: positioner_tool0
+                   manipulator:
+                     class: OPWInvKinFactory
+                     config:
+                       base_link: base_link
+                       tip_link: tool0
+                       params:
+                         a1: 0.100
+                         a2: -0.135
+                         b: 0.00
+                         c1: 0.615
+                         c2: 0.705
+                         c3: 0.755
+                         c4: 0.086
+                         offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                         sign_corrections: [1, 1, 1, 1, 1, 1])";
 
   KinematicsPluginFactory factory(YAML::Load(yaml_string));
   auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
@@ -807,7 +804,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin.remove("config");
 
     KinematicsPluginFactory factory(config);
@@ -816,7 +813,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
   }
   {  // missing manipulator_reach
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("manipulator_reach");
 
     KinematicsPluginFactory factory(config);
@@ -825,7 +822,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
   }
   {  // missing positioner_sample_resolution
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("positioner_sample_resolution");
 
     KinematicsPluginFactory factory(config);
@@ -834,7 +831,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
   }
   {  // missing positioner
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("positioner");
 
     KinematicsPluginFactory factory(config);
@@ -843,7 +840,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
   }
   {  // missing manipulator
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("manipulator");
 
     KinematicsPluginFactory factory(config);
@@ -863,27 +860,26 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   std::string yaml_string =
       R"(kinematic_plugins:
            fwd_kin_plugins:
-             - name: KDLFwdKinChain
-               class: KDLFwdKinChainFactory
-               group: manipulator
-               default: true
-               config:
-                 base_link: base_link
-                 tip_link: tool0
+             manipulator:
+               - name: KDLFwdKinChain
+                 class: KDLFwdKinChainFactory
+                 default: true
+                 config:
+                   base_link: base_link
+                   tip_link: tool0
            inv_kin_plugins:
-             - name: KDLInvKinChainLMA
-               class: KDLInvKinChainLMAFactory
-               group: manipulator
-               default: true
-               config:
-                 base_link: base_link
-                 tip_link: tool0
-             - name: KDLInvKinChainNR
-               class: KDLInvKinChainNRFactory
-               group: manipulator
-               config:
-                 base_link: base_link
-                 tip_link: tool0)";
+             manipulator:
+               - name: KDLInvKinChainLMA
+                 class: KDLInvKinChainLMAFactory
+                 default: true
+                 config:
+                   base_link: base_link
+                   tip_link: tool0
+               - name: KDLInvKinChainNR
+                 class: KDLInvKinChainNRFactory
+                 config:
+                   base_link: base_link
+                   tip_link: tool0)";
 
   {
     KinematicsPluginFactory factory(YAML::Load(yaml_string));
@@ -914,7 +910,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   }
   {  // KDLInvKinChainLMA missing config
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin.remove("config");
 
     KinematicsPluginFactory factory(config);
@@ -923,7 +919,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   }
   {  // KDLInvKinChainNR missing config
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][1];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][1];
     plugin.remove("config");
 
     KinematicsPluginFactory factory(config);
@@ -932,7 +928,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   }
   {  // KDLFwdKinChain missing base_link
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["fwd_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["fwd_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("base_link");
 
     KinematicsPluginFactory factory(config);
@@ -941,7 +937,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   }
   {  // KDLInvKinChainLMA missing base_link
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("base_link");
 
     KinematicsPluginFactory factory(config);
@@ -950,7 +946,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   }
   {  // KDLInvKinChainNR missing base_link
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][1];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][1];
     plugin["config"].remove("base_link");
 
     KinematicsPluginFactory factory(config);
@@ -959,7 +955,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   }
   {  // KDLFwdKinChain missing tip_link
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["fwd_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["fwd_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("tip_link");
 
     KinematicsPluginFactory factory(config);
@@ -968,7 +964,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   }
   {  // KDLInvKinChainLMA missing tip_link
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][0];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][0];
     plugin["config"].remove("tip_link");
 
     KinematicsPluginFactory factory(config);
@@ -977,7 +973,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   }
   {  // KDLInvKinChainNR missing tip_link
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"][1];
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"][1];
     plugin["config"].remove("tip_link");
 
     KinematicsPluginFactory factory(config);
