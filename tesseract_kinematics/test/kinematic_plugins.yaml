@@ -5,7 +5,7 @@ kinematic_plugins:
     - tesseract_kinematics_kdl_factories
   fwd_kin_plugins:
     iiwa_manipulator:
-      - name: KDLFwdKinChain
+      KDLFwdKinChain:
         class: KDLFwdKinChainFactory
         default: true
         config:
@@ -13,19 +13,19 @@ kinematic_plugins:
           tip_link: tool0
   inv_kin_plugins:
     iiwa_manipulator:
-      - name: KDLInvKinChainLMA
+      KDLInvKinChainLMA:
         class: KDLInvKinChainLMAFactory
         default: true
         config:
           base_link: base_link
           tip_link: tool0
-      - name: KDLInvKinChainNR
+      KDLInvKinChainNR:
         class: KDLInvKinChainNRFactory
         config:
           base_link: base_link
           tip_link: tool0
     abb_manipulator:
-      - name: OPWInvKin
+      OPWInvKin:
         class: OPWInvKinFactory
         default: true
         config:
@@ -42,7 +42,7 @@ kinematic_plugins:
             offsets: [0, 0, -1.57079632679, 0, 0, 0]
             sign_corrections: [1, 1, 1, 1, 1, 1]
     ur_manipulator:
-      - name: URInvKin
+      URInvKin:
         class: URInvKinFactory
         default: true
         config:
@@ -50,7 +50,7 @@ kinematic_plugins:
           tip_link: tool0
           model: UR10 #Current Options: UR3, UR5, UR10, UR3e, UR5e, UR10e
     rop_manipulator:
-      - name: ROPInvKin
+      ROPInvKin:
         class: ROPInvKinFactory
         default: true
         config:
@@ -79,7 +79,7 @@ kinematic_plugins:
                 offsets: [0, 0, -1.57079632679, 0, 0, 0]
                 sign_corrections: [1, 1, 1, 1, 1, 1]
     rep_manipulator:
-      - name: REPInvKin
+      REPInvKin:
         class: REPInvKinFactory
         default: true
         config:

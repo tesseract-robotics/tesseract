@@ -15,7 +15,6 @@ find_package(orocos_kdl REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_state_solver REQUIRED)
-find_package(tesseract_srdf REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(opw_kinematics REQUIRED)
 find_package(yaml-cpp REQUIRED)
@@ -68,7 +67,6 @@ target_link_libraries(
          tesseract::tesseract_common
          tesseract::tesseract_scene_graph
          tesseract::tesseract_state_solver_kdl
-         tesseract::tesseract_srdf
          console_bridge::console_bridge
          yaml-cpp)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
