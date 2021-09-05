@@ -91,9 +91,6 @@ static inline LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, c
 /** @brief The Plugin Information struct */
 struct PluginInfo
 {
-  /** @brief The plugin name */
-  std::string name;
-
   /** @brief The plugin class name */
   std::string class_name;
 
@@ -103,6 +100,9 @@ struct PluginInfo
   /** @brief The plugin config data */
   YAML::Node config;
 };
+
+/** @brief A map of PluginInfo to user defined name */
+using PluginInfoMap = std::map<std::string, PluginInfo>;
 
 }  // namespace tesseract_common
 
@@ -114,7 +114,6 @@ struct convert<tesseract_common::PluginInfo>
   static Node encode(const tesseract_common::PluginInfo& rhs)
   {
     Node node;
-    node["name"] = rhs.name;
     node["class"] = rhs.class_name;
     node["default"] = rhs.is_default;
     if (!rhs.config.IsNull())
@@ -125,13 +124,9 @@ struct convert<tesseract_common::PluginInfo>
   static bool decode(const Node& node, tesseract_common::PluginInfo& rhs)
   {
     // Check for required entries
-    if (!node["name"])
-      throw std::runtime_error("PluginInfo, missing 'name' entry!");
-
     if (!node["class"])
       throw std::runtime_error("PluginInfo, missing 'class' entry!");
 
-    rhs.name = node["name"].as<std::string>();
     rhs.class_name = node["class"].as<std::string>();
 
     if (node["default"])
@@ -139,6 +134,30 @@ struct convert<tesseract_common::PluginInfo>
 
     if (node["config"])
       rhs.config = node["config"];
+
+    return true;
+  }
+};
+
+template <>
+struct convert<std::set<std::string>>
+{
+  static Node encode(const std::set<std::string>& rhs)
+  {
+    Node node(NodeType::Sequence);
+    for (const auto& element : rhs)
+      node.push_back(element);
+    return node;
+  }
+
+  static bool decode(const Node& node, std::set<std::string>& rhs)
+  {
+    if (!node.IsSequence())
+      return false;
+
+    rhs.clear();
+    for (const auto& element : node)
+      rhs.insert(element.as<std::string>());
 
     return true;
   }

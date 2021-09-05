@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 #include <console_bridge/console.h>
-#include <tesseract_srdf/kinematics_information.h>
 #include <tesseract_scene_graph/graph.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

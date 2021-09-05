@@ -111,12 +111,10 @@ InverseKinematics::UPtr ROPInvKinFactory::create(const std::string& name,
       else
         throw std::runtime_error("ROPInvKinFactory, 'positioner' missing 'class' entry!");
 
-      p_info.name = p_info.class_name;
-
       if (YAML::Node n = positioner["config"])
         p_info.config = n;
 
-      fwd_kin = plugin_factory.createFwdKin(group_name, p_info, scene_graph, scene_state);
+      fwd_kin = plugin_factory.createFwdKin(group_name, p_info.class_name, p_info, scene_graph, scene_state);
       if (fwd_kin == nullptr)
         throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
 
@@ -155,12 +153,10 @@ InverseKinematics::UPtr ROPInvKinFactory::create(const std::string& name,
       else
         throw std::runtime_error("ROPInvKinFactory, 'manipulator' missing 'class' entry!");
 
-      m_info.name = m_info.class_name;
-
       if (YAML::Node n = manipulator["config"])
         m_info.config = n;
 
-      inv_kin = plugin_factory.createInvKin(group_name, m_info, scene_graph, scene_state);
+      inv_kin = plugin_factory.createInvKin(group_name, m_info.class_name, m_info, scene_graph, scene_state);
       if (inv_kin == nullptr)
         throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
     }

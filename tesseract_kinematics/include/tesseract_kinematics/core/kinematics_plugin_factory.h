@@ -149,9 +149,13 @@ public:
 
   /**
    * @brief Add a forward kinematics plugin to the manager
+   * @param group_name The group name
+   * @param solver_name The solver name
    * @param plugin_info The plugin information
    */
-  void addFwdKinPlugin(const std::string& group_name, tesseract_common::PluginInfo plugin_info);
+  void addFwdKinPlugin(const std::string& group_name,
+                       const std::string& solver_name,
+                       tesseract_common::PluginInfo plugin_info);
 
   /**
    * @brief remove forward kinematics plugin from the manager
@@ -177,9 +181,13 @@ public:
 
   /**
    * @brief Add a inverse kinematics plugin to the manager
+   * @param group_name The group name
+   * @param solver_name The solver name
    * @param plugin_info The plugin information
    */
-  void addInvKinPlugin(const std::string& group_name, tesseract_common::PluginInfo plugin_info);
+  void addInvKinPlugin(const std::string& group_name,
+                       const std::string& solver_name,
+                       tesseract_common::PluginInfo plugin_info);
 
   /**
    * @brief remove inverse kinematics plugin from the manager
@@ -236,6 +244,7 @@ public:
    * @param scene_state The scene state
    */
   ForwardKinematics::UPtr createFwdKin(const std::string& group_name,
+                                       const std::string& solver_name,
                                        const tesseract_common::PluginInfo& plugin_info,
                                        const tesseract_scene_graph::SceneGraph& scene_graph,
                                        const tesseract_scene_graph::SceneState& scene_state) const;
@@ -247,6 +256,7 @@ public:
    * @param scene_state The scene state
    */
   InverseKinematics::UPtr createInvKin(const std::string& group_name,
+                                       const std::string& solver_name,
                                        const tesseract_common::PluginInfo& plugin_info,
                                        const tesseract_scene_graph::SceneGraph& scene_graph,
                                        const tesseract_scene_graph::SceneState& scene_state) const;
@@ -266,8 +276,8 @@ public:
 private:
   mutable std::map<std::string, FwdKinFactory::Ptr> fwd_kin_factories_;
   mutable std::map<std::string, InvKinFactory::Ptr> inv_kin_factories_;
-  std::map<std::string, std::map<std::string, tesseract_common::PluginInfo>> fwd_plugin_info_;
-  std::map<std::string, std::map<std::string, tesseract_common::PluginInfo>> inv_plugin_info_;
+  std::map<std::string, tesseract_common::PluginInfoMap> fwd_plugin_info_;
+  std::map<std::string, tesseract_common::PluginInfoMap> inv_plugin_info_;
   std::unique_ptr<tesseract_common::PluginLoader> plugin_loader_;
 };
 
