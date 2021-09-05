@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 #include <unordered_map>
 #include <boost/filesystem.hpp>
+#include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/kinematic_limits.h>
@@ -87,5 +88,60 @@ static inline LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, c
   return std::make_pair(link_name2, link_name1);
 }
 
+/** @brief The Plugin Information struct */
+struct PluginInfo
+{
+  /** @brief The plugin name */
+  std::string name;
+
+  /** @brief The plugin class name */
+  std::string class_name;
+
+  /** @brief Indicate if this is the default plugin */
+  bool is_default{ false };
+
+  /** @brief The plugin config data */
+  YAML::Node config;
+};
+
 }  // namespace tesseract_common
+
+namespace YAML
+{
+template <>
+struct convert<tesseract_common::PluginInfo>
+{
+  static Node encode(const tesseract_common::PluginInfo& rhs)
+  {
+    Node node;
+    node["name"] = rhs.name;
+    node["class"] = rhs.class_name;
+    node["default"] = rhs.is_default;
+    if (!rhs.config.IsNull())
+      node["config"] = rhs.config;
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_common::PluginInfo& rhs)
+  {
+    // Check for required entries
+    if (!node["name"])
+      throw std::runtime_error("PluginInfo, missing 'name' entry!");
+
+    if (!node["class"])
+      throw std::runtime_error("PluginInfo, missing 'class' entry!");
+
+    rhs.name = node["name"].as<std::string>();
+    rhs.class_name = node["class"].as<std::string>();
+
+    if (node["default"])
+      rhs.is_default = node["default"].as<bool>();
+
+    if (node["config"])
+      rhs.config = node["config"];
+
+    return true;
+  }
+};
+}  // namespace YAML
 #endif  // TESSERACT_COMMON_TYPES_H

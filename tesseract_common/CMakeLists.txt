@@ -15,6 +15,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 find_package(Boost REQUIRED COMPONENTS system filesystem serialization)
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 find_package(console_bridge REQUIRED)
 if(NOT TARGET console_bridge::console_bridge)
@@ -58,7 +59,8 @@ target_link_libraries(
          Boost::system
          Boost::filesystem
          Boost::serialization
-         console_bridge::console_bridge)
+         console_bridge::console_bridge
+         yaml-cpp)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
