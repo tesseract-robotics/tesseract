@@ -15,6 +15,7 @@
   <build_export_depend>eigen</build_export_depend>
   <depend>libconsole-bridge-dev</depend>
   <depend>tinyxml2</depend>
+  <depend>yaml-cpp</depend>
 
   <build_depend>libboost-system-dev</build_depend>
   <build_export_depend>libboost-system-dev</build_export_depend>
