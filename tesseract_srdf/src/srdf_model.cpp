@@ -43,54 +43,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/collision_margins.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_common/utils.h>
+#include <tesseract_common/yaml_utils.h>
 
 namespace tesseract_srdf
 {
-YAML::Node mergeYamlNodes(const YAML::Node& default_node, const YAML::Node& override_node)
-{
-  if (default_node.IsNull() || default_node.size() == 0)
-    return override_node;
-
-  if (!default_node.IsMap())
-    std::throw_with_nested(std::runtime_error("SRDF: default yaml node is not a map!"));
-
-  if (!override_node.IsMap())
-    std::throw_with_nested(std::runtime_error("SRDF: override yaml node is not a map!"));
-
-  // Create a new map 'newNode' with the same mappings as default_node, merged with override_node
-  auto output_node = YAML::Node(YAML::NodeType::Map);
-  for (auto node : default_node)
-  {
-    if (node.first.IsScalar())
-    {
-      const std::string& key = node.first.Scalar();
-      if (override_node[key])
-      {
-        output_node[node.first] = mergeYamlNodes(node.second, override_node[key]);
-        continue;
-      }
-    }
-    output_node[node.first] = node.second;
-  }
-
-  // Add the mappings from 'override_node' not already in 'newNode'
-  for (auto node : override_node)
-  {
-    if (!node.first.IsScalar())
-    {
-      const std::string& key = node.first.Scalar();
-      if (default_node[key])
-      {
-        output_node[node.first] = mergeYamlNodes(default_node[key], node.second);
-        continue;
-      }
-    }
-    output_node[node.first] = node.second;
-  }
-
-  return YAML::Node(output_node);
-}
-
 void SRDFModel::initFile(const tesseract_scene_graph::SceneGraph& scene_graph,
                          const std::string& filename,
                          const tesseract_common::ResourceLocator::Ptr& locator)
@@ -249,8 +205,10 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
         std::throw_with_nested(
             std::runtime_error("kinematics_plugin_config: Failed to locate resource '" + filename + "'."));
 
-      kinematics_information.kinematics_plugin_config =
-          mergeYamlNodes(kinematics_information.kinematics_plugin_config, YAML::LoadFile(resource->getFilePath()));
+      YAML::Node config = YAML::LoadFile(resource->getFilePath());
+      const YAML::Node& kin_plugin_info = config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
+      auto info = kin_plugin_info.as<tesseract_common::KinematicsPluginInfo>();
+      kinematics_information.kinematics_plugin_info.insert(info);
     }
   }
   catch (...)
@@ -378,11 +336,13 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     }
   }
 
-  if (kinematics_information.kinematics_plugin_config.IsDefined())
+  if (!kinematics_information.kinematics_plugin_info.empty())
   {
     tesseract_common::fs::path p(file_path);
     std::ofstream fout(p.parent_path() / "kinematics_plugin_config.yaml");
-    fout << kinematics_information.kinematics_plugin_config;
+    YAML::Node config;
+    config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY] = kinematics_information.kinematics_plugin_info;
+    fout << config;
     tinyxml2::XMLElement* xml_kin_plugin_entry = doc.NewElement("kinematics_plugin_config");
     xml_kin_plugin_entry->SetAttribute("filename", "kinematics_plugin_config.yaml");
     xml_root->InsertEndChild(xml_kin_plugin_entry);

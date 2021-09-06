@@ -30,6 +30,27 @@ namespace tesseract_common
 {
 const std::string KinematicsPluginInfo::CONFIG_KEY{ "kinematic_plugins" };
 
+void KinematicsPluginInfo::insert(const KinematicsPluginInfo& other)
+{
+  search_paths.insert(other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
+  fwd_plugin_infos.insert(other.fwd_plugin_infos.begin(), other.fwd_plugin_infos.end());
+  inv_plugin_infos.insert(other.inv_plugin_infos.begin(), other.inv_plugin_infos.end());
+}
+
+void KinematicsPluginInfo::clear()
+{
+  search_paths.clear();
+  search_libraries.clear();
+  fwd_plugin_infos.clear();
+  inv_plugin_infos.clear();
+}
+
+bool KinematicsPluginInfo::empty() const
+{
+  return (search_paths.empty() && search_libraries.empty() && fwd_plugin_infos.empty() && inv_plugin_infos.empty());
+}
+
 std::size_t PairHash::operator()(const LinkNamesPair& pair) const
 {
   return std::hash<std::string>()(pair.first + pair.second);

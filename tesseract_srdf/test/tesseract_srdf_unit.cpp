@@ -7,6 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_common/yaml_utils.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_srdf/collision_margins.h>
@@ -571,31 +572,32 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   std::string yaml_kin_plugins_string =
       R"(kinematic_plugins:
            fwd_kin_plugins:
-             - name: KDLFwdKinChain
-               class: KDLFwdKinChainFactory
-               group: manipulator
-               default: true
-               config:
-                 base_link: base_link
-                 tip_link: tool0
+             manipulator:
+               KDLFwdKinChain:
+                 class: KDLFwdKinChainFactory
+                 default: true
+                 config:
+                   base_link: base_link
+                   tip_link: tool0
            inv_kin_plugins:
-             - name: KDLInvKinChainLMA
-               class: KDLInvKinChainLMAFactory
-               group: manipulator
-               default: true
-               config:
-                 base_link: base_link
-                 tip_link: tool0
-             - name: KDLInvKinChainNR
-               class: KDLInvKinChainNRFactory
-               group: manipulator
-               config:
-                 base_link: base_link
-                 tip_link: tool0)";
+             manipulator:
+               KDLInvKinChainLMA:
+                 class: KDLInvKinChainLMAFactory
+                 default: true
+                 config:
+                   base_link: base_link
+                   tip_link: tool0
+               KDLInvKinChainNR:
+                 class: KDLInvKinChainNRFactory
+                 config:
+                   base_link: base_link
+                   tip_link: tool0)";
 
   SRDFModel srdf_save;
   srdf_save.initString(*g, xml_string, locator);
-  srdf_save.kinematics_information.kinematics_plugin_config = YAML::Load(yaml_kin_plugins_string);
+  YAML::Node kinematics_plugin_config = YAML::Load(yaml_kin_plugins_string);
+  srdf_save.kinematics_information.kinematics_plugin_info =
+      kinematics_plugin_config[KinematicsPluginInfo::CONFIG_KEY].as<KinematicsPluginInfo>();
 
   std::string save_path = tesseract_common::getTempPath() + "unit_test_save_srdf.srdf";
   EXPECT_TRUE(srdf_save.saveToFile(save_path));
@@ -607,7 +609,7 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_EQ(srdf.version[1], 0);
   EXPECT_EQ(srdf.version[2], 0);
 
-  EXPECT_TRUE(srdf.kinematics_information.kinematics_plugin_config.IsDefined());
+  EXPECT_FALSE(srdf_save.kinematics_information.kinematics_plugin_info.empty());
 
   processSRDFAllowedCollisions(*g, srdf);
 

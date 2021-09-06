@@ -115,6 +115,15 @@ struct KinematicsPluginInfo
   /** @brief A map of group name to inverse kinematics plugin infos */
   std::map<std::string, tesseract_common::PluginInfoMap> inv_plugin_infos;
 
+  /** @brief Insert the content of an other KinematicsPluginInfo */
+  void insert(const KinematicsPluginInfo& other);
+
+  /** @brief Clear the contents */
+  void clear();
+
+  /** @brief Check if structure is empty */
+  bool empty() const;
+
   // Yaml Config key
   static const std::string CONFIG_KEY;
 };
