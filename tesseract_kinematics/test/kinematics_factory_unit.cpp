@@ -202,9 +202,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["OPWInvKin"];
     plugin.remove("class");
 
-    KinematicsPluginFactory factory(config);
-    auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
-    EXPECT_TRUE(inv_kin == nullptr);
+    EXPECT_ANY_THROW(KinematicsPluginFactory factory(config));
   }
   {  // missing default (which is allowed)
     YAML::Node config = YAML::Load(yaml_string);

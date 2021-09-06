@@ -49,7 +49,8 @@ add_library(
   src/kinematic_limits.cpp
   src/serialization.cpp
   src/utils.cpp
-  src/resource_locator.cpp)
+  src/resource_locator.cpp
+  src/types.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen

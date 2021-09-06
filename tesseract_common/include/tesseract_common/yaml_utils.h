@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <yaml-cpp/yaml.h>
 #include <set>
+#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
@@ -203,6 +204,113 @@ struct convert<Eigen::Vector2d>
 
     for (long i = 0; i < 2; ++i)
       rhs(i) = node[i].as<double>();
+
+    return true;
+  }
+};
+
+template <>
+struct convert<tesseract_common::KinematicsPluginInfo>
+{
+  static Node encode(const tesseract_common::KinematicsPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string FWD_KIN_PLUGINS_KEY{ "fwd_kin_plugins" };
+    const std::string INV_KIN_PLUGINS_KEY{ "inv_kin_plugins" };
+
+    YAML::Node kinematic_plugins;
+    if (!rhs.search_paths.empty())
+      kinematic_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
+
+    if (!rhs.search_libraries.empty())
+      kinematic_plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+
+    if (!rhs.fwd_plugin_infos.empty())
+      kinematic_plugins[FWD_KIN_PLUGINS_KEY] = rhs.fwd_plugin_infos;
+
+    if (!rhs.inv_plugin_infos.empty())
+      kinematic_plugins[INV_KIN_PLUGINS_KEY] = rhs.inv_plugin_infos;
+
+    return kinematic_plugins;
+  }
+
+  static bool decode(const Node& node, tesseract_common::KinematicsPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string FWD_KIN_PLUGINS_KEY{ "fwd_kin_plugins" };
+    const std::string INV_KIN_PLUGINS_KEY{ "inv_kin_plugins" };
+
+    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
+    {
+      std::set<std::string> sp;
+      try
+      {
+        sp = search_paths.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + SEARCH_PATHS_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_paths.insert(sp.begin(), sp.end());
+    }
+
+    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
+    {
+      std::set<std::string> sl;
+      try
+      {
+        sl = search_libraries.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_libraries.insert(sl.begin(), sl.end());
+    }
+
+    if (const YAML::Node& fwd_kin_plugins = node[FWD_KIN_PLUGINS_KEY])
+    {
+      if (!fwd_kin_plugins.IsMap())
+        throw std::runtime_error(FWD_KIN_PLUGINS_KEY + ", should contain a map of group names to solver plugins!");
+
+      try
+      {
+        rhs.fwd_plugin_infos = fwd_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoMap>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + FWD_KIN_PLUGINS_KEY +
+                                 "' to std::map<std::string, "
+                                 "tesseract_common::PluginInfoMap>! Details: " +
+                                 e.what());
+      }
+    }
+
+    if (const YAML::Node& inv_kin_plugins = node[INV_KIN_PLUGINS_KEY])
+    {
+      if (!inv_kin_plugins.IsMap())
+        throw std::runtime_error(INV_KIN_PLUGINS_KEY + ", should contain a map of group names to solver plugins!");
+
+      try
+      {
+        rhs.inv_plugin_infos = inv_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoMap>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + INV_KIN_PLUGINS_KEY +
+                                 "' to std::map<std::string, "
+                                 "tesseract_common::PluginInfoMap>! Details: " +
+                                 e.what());
+      }
+    }
 
     return true;
   }

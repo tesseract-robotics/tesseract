@@ -68,10 +68,12 @@ using Toolpath = AlignedVector<VectorIsometry3d>;
 using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
 using LinkNamesPair = std::pair<std::string, std::string>;
+
 struct PairHash
 {
-  std::size_t operator()(const LinkNamesPair& pair) const { return std::hash<std::string>()(pair.first + pair.second); }
+  std::size_t operator()(const LinkNamesPair& pair) const;
 };
+
 /**
  * @brief Create a pair of strings, where the pair.first is always <= pair.second.
  *
@@ -80,13 +82,7 @@ struct PairHash
  * @param link_name2 Second link anme
  * @return LinkNamesPair a lexicographically sorted pair of strings
  */
-static inline LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
-{
-  if (link_name1 <= link_name2)
-    return std::make_pair(link_name1, link_name2);
-
-  return std::make_pair(link_name2, link_name1);
-}
+LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2);
 
 /** @brief The Plugin Information struct */
 struct PluginInfo
@@ -104,6 +100,24 @@ struct PluginInfo
 /** @brief A map of PluginInfo to user defined name */
 using PluginInfoMap = std::map<std::string, PluginInfo>;
 
+/** @brief The kinematics plugin information structure */
+struct KinematicsPluginInfo
+{
+  /** @brief A list of paths to search for plugins */
+  std::set<std::string> search_paths;
+
+  /** @brief A list of library names without the prefix or sufix that contain plugins*/
+  std::set<std::string> search_libraries;
+
+  /** @brief A map of group name to forward kinematics plugin infos */
+  std::map<std::string, tesseract_common::PluginInfoMap> fwd_plugin_infos;
+
+  /** @brief A map of group name to inverse kinematics plugin infos */
+  std::map<std::string, tesseract_common::PluginInfoMap> inv_plugin_infos;
+
+  // Yaml Config key
+  static const std::string CONFIG_KEY;
+};
 }  // namespace tesseract_common
 
 #endif  // TESSERACT_COMMON_TYPES_H
