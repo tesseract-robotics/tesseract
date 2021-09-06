@@ -49,7 +49,7 @@ namespace tesseract_common
  * used for looding Example: TESSERACT_ADD_PLUGIN(my_namespace::MyPlugin, plugin)
  *
  *   PluginLoader loader;
- *   loader.plugins["plugin"] = "my_plugin"; // libmy_plugin.so
+ *   loader.search_libraries.insert("my_plugin"); // libmy_plugin.so
  *   std::shared_ptr<PluginBase> p = loader.instantiate<PluginBase>("plugin");
  */
 class PluginLoader
@@ -62,7 +62,7 @@ public:
   std::set<std::string> search_paths;
 
   /** @brief A list of library names without the prefix or sufix that contain plugins*/
-  std::set<std::string> plugins;
+  std::set<std::string> search_libraries;
 
   /** @brief The environment variable containing plugin search paths */
   std::string search_paths_env;
@@ -73,7 +73,7 @@ public:
    * The library name does not contain prefix or suffix
    *   Format: library_name:library_name1:library_name2
    */
-  std::string plugins_env;
+  std::string search_libraries_env;
 
   /**
    * @brief Instantiate a plugin with the provided name
