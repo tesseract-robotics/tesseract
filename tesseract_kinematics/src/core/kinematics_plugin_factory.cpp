@@ -29,15 +29,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/plugin_loader.hpp>
+#include <tesseract_common/yaml_utils.h>
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
 
 const std::string TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES";
 const std::string TESSERACT_KINEMATICS_PLUGINS_ENV = "TESSERACT_KINEMATICS_PLUGINS";
-const std::string CONFIG_KEY = "kinematic_plugins";
-const std::string SEARCH_PATHS_KEY = "search_paths";
-const std::string SEARCH_LIBRARIES_KEY = "search_libraries";
-const std::string FWD_KIN_PLUGINS_KEY = "fwd_kin_plugins";
-const std::string INV_KIN_PLUGINS_KEY = "inv_kin_plugins";
+
+using tesseract_common::KinematicsPluginInfo;
 
 namespace tesseract_kinematics
 {
@@ -51,77 +49,13 @@ KinematicsPluginFactory::KinematicsPluginFactory() : plugin_loader_(std::make_un
 
 KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : KinematicsPluginFactory()
 {
-  if (const YAML::Node& plugin_info = config[CONFIG_KEY])
+  if (const YAML::Node& plugin_info = config[KinematicsPluginInfo::CONFIG_KEY])
   {
-    if (const YAML::Node& search_paths = plugin_info[SEARCH_PATHS_KEY])
-    {
-      std::set<std::string> sp;
-      try
-      {
-        sp = search_paths.as<std::set<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast '%s' to std::set<std::string>! "
-                                "Details: %s",
-                                SEARCH_PATHS_KEY.c_str(),
-                                e.what());
-      }
-      plugin_loader_->search_paths.insert(sp.begin(), sp.end());
-    }
-
-    if (const YAML::Node& search_libraries = plugin_info[SEARCH_LIBRARIES_KEY])
-    {
-      std::set<std::string> sl;
-      try
-      {
-        sl = search_libraries.as<std::set<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast '%s' to std::set<std::string>! "
-                                "Details: %s",
-                                SEARCH_LIBRARIES_KEY.c_str(),
-                                e.what());
-      }
-      plugin_loader_->plugins.insert(sl.begin(), sl.end());
-    }
-
-    if (const YAML::Node& fwd_kin_plugins = plugin_info[FWD_KIN_PLUGINS_KEY])
-    {
-      if (!fwd_kin_plugins.IsMap())
-        throw std::runtime_error(FWD_KIN_PLUGINS_KEY + ", should contain a map of group names to solver plugins!");
-
-      try
-      {
-        fwd_plugin_info_ = fwd_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoMap>>();
-      }
-      catch (const std::exception& e)
-      {
-        CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast '%s' to std::map<std::string, "
-                                "tesseract_common::PluginInfoMap>! Details: %s",
-                                FWD_KIN_PLUGINS_KEY.c_str(),
-                                e.what());
-      }
-    }
-
-    if (const YAML::Node& inv_kin_plugins = plugin_info[INV_KIN_PLUGINS_KEY])
-    {
-      if (!inv_kin_plugins.IsMap())
-        throw std::runtime_error(INV_KIN_PLUGINS_KEY + ", should contain a map of group names to solver plugins!");
-
-      try
-      {
-        inv_plugin_info_ = inv_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoMap>>();
-      }
-      catch (const std::exception& e)
-      {
-        CONSOLE_BRIDGE_logError("KinematicsPluginFactory: Constructor failed to cast '%s' to std::map<std::string, "
-                                "tesseract_common::PluginInfoMap>! Details: %s",
-                                INV_KIN_PLUGINS_KEY.c_str(),
-                                e.what());
-      }
-    }
+    auto kin_plugin_info = plugin_info.as<tesseract_common::KinematicsPluginInfo>();
+    plugin_loader_->search_paths.insert(kin_plugin_info.search_paths.begin(), kin_plugin_info.search_paths.end());
+    plugin_loader_->plugins.insert(kin_plugin_info.search_libraries.begin(), kin_plugin_info.search_libraries.end());
+    fwd_plugin_info_ = kin_plugin_info.fwd_plugin_infos;
+    inv_plugin_info_ = kin_plugin_info.inv_plugin_infos;
   }
 }
 
@@ -390,20 +324,14 @@ void KinematicsPluginFactory::saveConfig(tesseract_common::fs::path file_path) c
 
 YAML::Node KinematicsPluginFactory::getConfig() const
 {
-  YAML::Node config, kinematic_plugins;
-  if (!plugin_loader_->search_paths.empty())
-    kinematic_plugins[SEARCH_PATHS_KEY] = plugin_loader_->search_paths;
+  tesseract_common::KinematicsPluginInfo kinematic_plugins;
+  kinematic_plugins.search_paths = plugin_loader_->search_paths;
+  kinematic_plugins.search_libraries = plugin_loader_->plugins;
+  kinematic_plugins.fwd_plugin_infos = fwd_plugin_info_;
+  kinematic_plugins.inv_plugin_infos = inv_plugin_info_;
 
-  if (!plugin_loader_->plugins.empty())
-    kinematic_plugins[SEARCH_LIBRARIES_KEY] = plugin_loader_->plugins;
-
-  if (!fwd_plugin_info_.empty())
-    kinematic_plugins[FWD_KIN_PLUGINS_KEY] = fwd_plugin_info_;
-
-  if (!inv_plugin_info_.empty())
-    kinematic_plugins[INV_KIN_PLUGINS_KEY] = inv_plugin_info_;
-
-  config[CONFIG_KEY] = kinematic_plugins;
+  YAML::Node config;
+  config[KinematicsPluginInfo::CONFIG_KEY] = kinematic_plugins;
 
   return config;
 }
