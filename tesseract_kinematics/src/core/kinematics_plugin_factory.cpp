@@ -41,10 +41,11 @@ namespace tesseract_kinematics
 {
 KinematicsPluginFactory::KinematicsPluginFactory() : plugin_loader_(std::make_unique<tesseract_common::PluginLoader>())
 {
-  plugin_loader_->plugins_env = TESSERACT_KINEMATICS_PLUGINS_ENV;
+  plugin_loader_->search_libraries_env = TESSERACT_KINEMATICS_PLUGINS_ENV;
   plugin_loader_->search_paths_env = TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV;
   plugin_loader_->search_paths.insert(TESSERACT_KINEMATICS_PLUGIN_PATH);
-  boost::split(plugin_loader_->plugins, TESSERACT_KINEMATICS_PLUGINS, boost::is_any_of(":"), boost::token_compress_on);
+  boost::split(
+      plugin_loader_->search_libraries, TESSERACT_KINEMATICS_PLUGINS, boost::is_any_of(":"), boost::token_compress_on);
 }
 
 KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : KinematicsPluginFactory()
@@ -53,7 +54,8 @@ KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : Kinematics
   {
     auto kin_plugin_info = plugin_info.as<tesseract_common::KinematicsPluginInfo>();
     plugin_loader_->search_paths.insert(kin_plugin_info.search_paths.begin(), kin_plugin_info.search_paths.end());
-    plugin_loader_->plugins.insert(kin_plugin_info.search_libraries.begin(), kin_plugin_info.search_libraries.end());
+    plugin_loader_->search_libraries.insert(kin_plugin_info.search_libraries.begin(),
+                                            kin_plugin_info.search_libraries.end());
     fwd_plugin_info_ = kin_plugin_info.fwd_plugin_infos;
     inv_plugin_info_ = kin_plugin_info.inv_plugin_infos;
   }
@@ -76,10 +78,13 @@ const std::set<std::string>& KinematicsPluginFactory::getSearchPaths() const { r
 
 void KinematicsPluginFactory::addSearchLibrary(const std::string& library_name)
 {
-  plugin_loader_->plugins.insert(library_name);
+  plugin_loader_->search_libraries.insert(library_name);
 }
 
-const std::set<std::string>& KinematicsPluginFactory::getSearchLibraries() const { return plugin_loader_->plugins; }
+const std::set<std::string>& KinematicsPluginFactory::getSearchLibraries() const
+{
+  return plugin_loader_->search_libraries;
+}
 
 void KinematicsPluginFactory::addFwdKinPlugin(const std::string& group_name,
                                               const std::string& solver_name,
@@ -326,7 +331,7 @@ YAML::Node KinematicsPluginFactory::getConfig() const
 {
   tesseract_common::KinematicsPluginInfo kinematic_plugins;
   kinematic_plugins.search_paths = plugin_loader_->search_paths;
-  kinematic_plugins.search_libraries = plugin_loader_->plugins;
+  kinematic_plugins.search_libraries = plugin_loader_->search_libraries;
   kinematic_plugins.fwd_plugin_infos = fwd_plugin_info_;
   kinematic_plugins.inv_plugin_infos = inv_plugin_info_;
 

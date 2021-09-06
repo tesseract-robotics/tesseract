@@ -64,65 +64,25 @@ inline std::set<std::string> getAllSearchPaths(const std::string& search_paths_e
   return existing_search_paths;
 }
 
-// inline std::unordered_map<std::string, std::string> parseEnvironmentVariableMap(const std::string& env_variable)
-//{
-//  std::unordered_map<std::string, std::string> plugins;
-
-//  // Parse list first
-//  std::list<std::string> list;
-//  std::string evn_str = std::string(std::getenv(env_variable.c_str()));
-//  boost::split(list, evn_str, boost::is_any_of(":"), boost::token_compress_on);
-
-//  // Parse pairs
-//  for (const auto& pair : list)
-//  {
-//    std::vector<std::string> plugin_pair;
-//    boost::split(plugin_pair, pair, boost::is_any_of(","), boost::token_compress_on);
-//    if (plugin_pair.size() == 2)
-//    {
-//      plugins[plugin_pair[0]] = plugin_pair[1];
-//    }
-//    else
-//    {
-//      CONSOLE_BRIDGE_logWarn("Failed to parse information for plugin from environment variable: %s", pair.c_str());
-//    }
-//  }
-//  return plugins;
-//}
-
-// inline std::unordered_map<std::string, std::string>
-// getAllPlugins(const std::string& plugins_env, const std::unordered_map<std::string, std::string>& existing_plugins)
-//{
-//  // Check for environment variable to override default library
-//  if (!plugins_env.empty())
-//  {
-//    std::unordered_map<std::string, std::string> plugins = parseEnvironmentVariableMap(plugins_env);
-//    plugins.insert(existing_plugins.begin(), existing_plugins.end());
-//    return plugins;
-//  }
-
-//  return existing_plugins;
-//}
-
-inline std::set<std::string> getAllPlugins(const std::string& plugins_env,
-                                           const std::set<std::string>& existing_plugins)
+inline std::set<std::string> getAllSearchLibraries(const std::string& search_libraries_env,
+                                                   const std::set<std::string>& existing_search_libraries)
 {
   // Check for environment variable to override default library
-  if (!plugins_env.empty())
+  if (!search_libraries_env.empty())
   {
-    std::set<std::string> plugins = parseEnvironmentVariableList(plugins_env);
-    plugins.insert(existing_plugins.begin(), existing_plugins.end());
-    return plugins;
+    std::set<std::string> search_libraries = parseEnvironmentVariableList(search_libraries_env);
+    search_libraries.insert(existing_search_libraries.begin(), existing_search_libraries.end());
+    return search_libraries;
   }
 
-  return existing_plugins;
+  return existing_search_libraries;
 }
 
 template <class PluginBase>
 std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_name) const
 {
   // Check for environment variable for plugin definitions
-  std::set<std::string> plugins_local = getAllPlugins(plugins_env, plugins);
+  std::set<std::string> plugins_local = getAllSearchLibraries(search_libraries_env, search_libraries);
   if (plugins_local.empty())
   {
     CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
@@ -133,7 +93,7 @@ std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_
   std::set<std::string> search_paths_local = getAllSearchPaths(search_paths_env, search_paths);
   for (const auto& path : search_paths_local)
   {
-    for (const auto& library : plugins)
+    for (const auto& library : search_libraries)
     {
       if (ClassLoader::isClassAvailable(plugin_name, library, path))
         return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library, path);
@@ -143,7 +103,7 @@ std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_
   // If not found in any of the provided search paths then search system folders if allowed
   if (search_system_folders)
   {
-    for (const auto& library : plugins)
+    for (const auto& library : search_libraries)
     {
       if (ClassLoader::isClassAvailable(plugin_name, library))
         return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library);
@@ -160,7 +120,7 @@ std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_
     msg << "    - " + path << std::endl;
 
   msg << "Search Libraries:" << std::endl;
-  for (const auto& library : plugins)
+  for (const auto& library : search_libraries)
     msg << "    - " + ClassLoader::decorate(library) << std::endl;
 
   CONSOLE_BRIDGE_logError("Failed to instantiate plugin '%s', Details: %s", plugin_name.c_str(), msg.str().c_str());
@@ -171,7 +131,7 @@ std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_
 bool PluginLoader::isPluginAvailable(const std::string& plugin_name) const
 {
   // Check for environment variable for plugin definitions
-  std::set<std::string> plugins_local = getAllPlugins(plugins_env, plugins);
+  std::set<std::string> plugins_local = getAllSearchLibraries(search_libraries_env, search_libraries);
   if (plugins_local.empty())
   {
     CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
@@ -182,7 +142,7 @@ bool PluginLoader::isPluginAvailable(const std::string& plugin_name) const
   std::set<std::string> search_paths_local = getAllSearchPaths(search_paths_env, search_paths);
   for (const auto& path : search_paths_local)
   {
-    for (const auto& library : plugins)
+    for (const auto& library : search_libraries)
     {
       if (ClassLoader::isClassAvailable(plugin_name, library, path))
         return true;
@@ -192,7 +152,7 @@ bool PluginLoader::isPluginAvailable(const std::string& plugin_name) const
   // If not found in any of the provided search paths then search system folders if allowed
   if (search_system_folders)
   {
-    for (const auto& library : plugins)
+    for (const auto& library : search_libraries)
     {
       if (ClassLoader::isClassAvailable(plugin_name, library))
         return true;
@@ -202,7 +162,10 @@ bool PluginLoader::isPluginAvailable(const std::string& plugin_name) const
   return false;
 }
 
-int PluginLoader::count() const { return static_cast<int>(getAllPlugins(plugins_env, plugins).size()); }
+int PluginLoader::count() const
+{
+  return static_cast<int>(getAllSearchLibraries(search_libraries_env, search_libraries).size());
+}
 
 }  // namespace tesseract_common
 
