@@ -36,6 +36,7 @@ void KinematicsInformation::clear()
   link_groups.clear();
   group_states.clear();
   group_tcps.clear();
+  kinematics_plugin_info.clear();
 }
 
 }  // namespace tesseract_srdf

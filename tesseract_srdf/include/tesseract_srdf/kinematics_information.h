@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <vector>
 #include <array>
+#include <map>
 #include <Eigen/Geometry>
 #include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -80,8 +81,8 @@ struct KinematicsInformation
   /** @brief A map of group tool center points */
   GroupTCPs group_tcps;
 
-  /** @brief The kinematics plugin config file */
-  YAML::Node kinematics_plugin_config;
+  /** @brief The kinematics pugin information */
+  tesseract_common::KinematicsPluginInfo kinematics_plugin_info;
 
   /** @brief Clear the kinematics information */
   void clear();
