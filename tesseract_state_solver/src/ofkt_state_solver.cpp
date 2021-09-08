@@ -137,7 +137,10 @@ void OFKTStateSolver::cloneHelper(OFKTStateSolver& cloned, const OFKTNode* node)
   }
 }
 
-OFKTStateSolver::OFKTStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph) { initHelper(scene_graph); }
+OFKTStateSolver::OFKTStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix)
+{
+  initHelper(scene_graph, prefix);
+}
 
 OFKTStateSolver::OFKTStateSolver(const std::string& root_name)
 {
@@ -437,9 +440,9 @@ bool OFKTStateSolver::replaceJoint(const Joint& joint)
     return false;
   }
 
-  if (it->second->getParent()->getLinkName() != joint.parent_link_name)
+  if (link_map_.find(joint.parent_link_name) == link_map_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to replace joint '%s' with different parent link name!",
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to replace joint '%s' with parent link name that does not exist!",
                             joint.getName().c_str());
     return false;
   }
@@ -463,6 +466,20 @@ bool OFKTStateSolver::replaceJoint(const Joint& joint)
 bool OFKTStateSolver::moveLink(const Joint& joint)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
+
+  if (link_map_.find(joint.child_link_name) == link_map_.end())
+  {
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to link '%s' that does not exist!", joint.child_link_name.c_str());
+    return false;
+  }
+
+  if (link_map_.find(joint.child_link_name) == link_map_.end())
+  {
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to move link to parent link '%s' that does not exist!",
+                            joint.parent_link_name.c_str());
+    return false;
+  }
+
   std::vector<JointLimits::ConstPtr> new_joint_limits;
   moveLinkHelper(new_joint_limits, joint);
   addNewJointLimits(new_joint_limits);
@@ -661,12 +678,12 @@ bool OFKTStateSolver::insertSceneGraph(const SceneGraph& scene_graph, const Join
     return false;
   }
 
-  std::vector<JointLimits::ConstPtr> new_kinematic_joints;
-  new_kinematic_joints.reserve(boost::num_edges(scene_graph));
+  std::vector<JointLimits::ConstPtr> new_joints_limits;
+  new_joints_limits.reserve(boost::num_edges(scene_graph));
 
-  addNode(joint, joint.getName(), joint.parent_link_name, joint.child_link_name, new_kinematic_joints);
+  addNode(joint, joint.getName(), joint.parent_link_name, joint.child_link_name, new_joints_limits);
 
-  ofkt_builder builder(*this, new_kinematic_joints, prefix);
+  ofkt_builder builder(*this, new_joints_limits, prefix);
 
   std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t> index_map;
   boost::associative_property_map<std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t>> prop_index_map(
@@ -681,6 +698,9 @@ bool OFKTStateSolver::insertSceneGraph(const SceneGraph& scene_graph, const Join
                             boost::visitor(builder)
                                 .root_vertex(scene_graph.getVertex(scene_graph.getRoot()))
                                 .vertex_index_map(prop_index_map));
+
+  // Populate Joint Limits
+  addNewJointLimits(new_joints_limits);
 
   update(root_.get(), false);
   return true;
@@ -780,7 +800,7 @@ void OFKTStateSolver::update(SceneState& state,
     update(state, child, parent_world_tf, update_required);
 }
 
-bool OFKTStateSolver::initHelper(const tesseract_scene_graph::SceneGraph& scene_graph)
+bool OFKTStateSolver::initHelper(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix)
 {
   clear();
 
@@ -789,7 +809,7 @@ bool OFKTStateSolver::initHelper(const tesseract_scene_graph::SceneGraph& scene_
 
   assert(scene_graph.isTree());
 
-  const std::string& root_name = scene_graph.getRoot();
+  const std::string& root_name = prefix + scene_graph.getRoot();
 
   root_ = std::make_unique<OFKTRootNode>(root_name);
   link_map_[root_name] = root_.get();
@@ -798,7 +818,7 @@ bool OFKTStateSolver::initHelper(const tesseract_scene_graph::SceneGraph& scene_
 
   std::vector<JointLimits::ConstPtr> new_joints_limits;
   new_joints_limits.reserve(scene_graph.getJoints().size());
-  ofkt_builder builder(*this, new_joints_limits);
+  ofkt_builder builder(*this, new_joints_limits, prefix);
 
   std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t> index_map;
   boost::associative_property_map<std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t>> prop_index_map(
@@ -869,7 +889,7 @@ void OFKTStateSolver::replaceJointHelper(std::vector<JointLimits::ConstPtr>& new
 {
   auto& n = nodes_[joint.getName()];
 
-  if (n->getType() == joint.type)
+  if (n->getType() == joint.type && n->getParent()->getLinkName() == joint.parent_link_name)
   {
     n->getParent()->removeChild(n.get());
     n->setStaticTransformation(joint.parent_to_joint_origin_transform);
