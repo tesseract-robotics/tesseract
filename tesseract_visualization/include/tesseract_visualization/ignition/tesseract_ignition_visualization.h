@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
 #include <tesseract_visualization/ignition/entity_manager.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 
 namespace tesseract_visualization
 {
@@ -52,12 +52,12 @@ public:
 
   void waitForConnection(long seconds = 0) const override;
 
-  void plotEnvironment(tesseract_environment::Environment::ConstPtr env, std::string ns = "") override;
+  void plotEnvironment(const tesseract_environment::Environment& env, std::string ns = "") override;
 
-  void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state, std::string ns = "") override;
+  void plotEnvironmentState(const tesseract_scene_graph::SceneState& state, std::string ns = "") override;
 
   void plotTrajectory(const tesseract_common::JointTrajectory& traj,
-                      tesseract_environment::StateSolver::Ptr state_solver,
+                      const tesseract_scene_graph::StateSolver& state_solver,
                       std::string ns = "") override;
 
   void plotMarker(const Marker& marker, std::string ns = "") override;
@@ -77,9 +77,9 @@ private:
 
   /**
    * @brief Helper function for sending state to visualization tool
-   * @param env_state Environment state
+   * @param scene_state Environment state
    */
-  void sendEnvState(const tesseract_environment::EnvState::ConstPtr& env_state);
+  void sendSceneState(const tesseract_scene_graph::SceneState& scene_state);
 };
 
 }  // namespace tesseract_visualization

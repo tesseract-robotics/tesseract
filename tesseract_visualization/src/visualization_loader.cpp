@@ -43,9 +43,9 @@ namespace tesseract_visualization
 VisualizationLoader::VisualizationLoader()
 {
   search_paths_env = TESSERACT_VISUALIZATION_PLUGIN_DIRECTORIES_ENV;
-  plugins_env = TESSERACT_VISUALIZATION_PLUGINS_ENV;
-  plugins[TESSERACT_IGNITION_SYMBOL_NAME] = TESSERACT_IGNITION_LIBRARY_NAME;
-  search_paths.push_back(TESSERACT_VISUALIZATION_PLUGIN_PATH);
+  search_libraries_env = TESSERACT_VISUALIZATION_PLUGINS_ENV;
+  search_libraries.insert(TESSERACT_IGNITION_LIBRARY_NAME);
+  search_paths.insert(TESSERACT_VISUALIZATION_PLUGIN_PATH);
 }
 
 Visualization::Ptr VisualizationLoader::get(std::string plugin_name) const
