@@ -46,7 +46,7 @@ void runKinematicsFactoryTest(tesseract_common::fs::path config_path)
   tesseract_scene_graph::KDLStateSolver abb_state_solver(*abb_scene_graph);
   tesseract_scene_graph::SceneState abb_scene_state = abb_state_solver.getState();
 
-  tesseract_scene_graph::SceneGraph::UPtr ur_scene_graph = getSceneGraphUR(UR10Parameters);
+  tesseract_scene_graph::SceneGraph::UPtr ur_scene_graph = getSceneGraphUR(UR10Parameters, 0.220941, -0.1719);
   tesseract_scene_graph::KDLStateSolver ur_state_solver(*ur_scene_graph);
   tesseract_scene_graph::SceneState ur_scene_state = ur_state_solver.getState();
 
@@ -462,7 +462,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
 
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphUR(UR10Parameters);
+  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphUR(UR10Parameters, 0.220941, -0.1719);
   tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract_scene_graph::SceneState scene_state = state_solver.getState();
 

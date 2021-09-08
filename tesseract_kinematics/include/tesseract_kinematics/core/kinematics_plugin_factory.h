@@ -181,7 +181,7 @@ public:
    * @param group_name The group
    * @return The default solver name
    */
-  std::string getDefaultFwdKinPlugin(const std::string& group_name);
+  std::string getDefaultFwdKinPlugin(const std::string& group_name) const;
 
   /**
    * @brief Add a inverse kinematics plugin to the manager
@@ -213,7 +213,7 @@ public:
    * @param group_name The group
    * @return The default solver name
    */
-  std::string getDefaultInvKinPlugin(const std::string& group_name);
+  std::string getDefaultInvKinPlugin(const std::string& group_name) const;
 
   /**
    * @brief Get forward kinematics object given group name and solver name
@@ -282,7 +282,7 @@ private:
   mutable std::map<std::string, InvKinFactory::Ptr> inv_kin_factories_;
   std::map<std::string, tesseract_common::PluginInfoMap> fwd_plugin_info_;
   std::map<std::string, tesseract_common::PluginInfoMap> inv_plugin_info_;
-  std::unique_ptr<tesseract_common::PluginLoader> plugin_loader_;
+  tesseract_common::PluginLoader plugin_loader_;
 };
 
 }  // namespace tesseract_kinematics

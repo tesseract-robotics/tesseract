@@ -39,13 +39,13 @@ using tesseract_common::KinematicsPluginInfo;
 
 namespace tesseract_kinematics
 {
-KinematicsPluginFactory::KinematicsPluginFactory() : plugin_loader_(std::make_unique<tesseract_common::PluginLoader>())
+KinematicsPluginFactory::KinematicsPluginFactory()
 {
-  plugin_loader_->search_libraries_env = TESSERACT_KINEMATICS_PLUGINS_ENV;
-  plugin_loader_->search_paths_env = TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV;
-  plugin_loader_->search_paths.insert(TESSERACT_KINEMATICS_PLUGIN_PATH);
+  plugin_loader_.search_libraries_env = TESSERACT_KINEMATICS_PLUGINS_ENV;
+  plugin_loader_.search_paths_env = TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV;
+  plugin_loader_.search_paths.insert(TESSERACT_KINEMATICS_PLUGIN_PATH);
   boost::split(
-      plugin_loader_->search_libraries, TESSERACT_KINEMATICS_PLUGINS, boost::is_any_of(":"), boost::token_compress_on);
+      plugin_loader_.search_libraries, TESSERACT_KINEMATICS_PLUGINS, boost::is_any_of(":"), boost::token_compress_on);
 }
 
 KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : KinematicsPluginFactory()
@@ -53,9 +53,9 @@ KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : Kinematics
   if (const YAML::Node& plugin_info = config[KinematicsPluginInfo::CONFIG_KEY])
   {
     auto kin_plugin_info = plugin_info.as<tesseract_common::KinematicsPluginInfo>();
-    plugin_loader_->search_paths.insert(kin_plugin_info.search_paths.begin(), kin_plugin_info.search_paths.end());
-    plugin_loader_->search_libraries.insert(kin_plugin_info.search_libraries.begin(),
-                                            kin_plugin_info.search_libraries.end());
+    plugin_loader_.search_paths.insert(kin_plugin_info.search_paths.begin(), kin_plugin_info.search_paths.end());
+    plugin_loader_.search_libraries.insert(kin_plugin_info.search_libraries.begin(),
+                                           kin_plugin_info.search_libraries.end());
     fwd_plugin_info_ = kin_plugin_info.fwd_plugin_infos;
     inv_plugin_info_ = kin_plugin_info.inv_plugin_infos;
   }
@@ -72,18 +72,18 @@ KinematicsPluginFactory::KinematicsPluginFactory(std::string config) : Kinematic
 // If not the forward declare of PluginLoader cause compiler error.
 KinematicsPluginFactory::~KinematicsPluginFactory() = default;
 
-void KinematicsPluginFactory::addSearchPath(const std::string& path) { plugin_loader_->search_paths.insert(path); }
+void KinematicsPluginFactory::addSearchPath(const std::string& path) { plugin_loader_.search_paths.insert(path); }
 
-const std::set<std::string>& KinematicsPluginFactory::getSearchPaths() const { return plugin_loader_->search_paths; }
+const std::set<std::string>& KinematicsPluginFactory::getSearchPaths() const { return plugin_loader_.search_paths; }
 
 void KinematicsPluginFactory::addSearchLibrary(const std::string& library_name)
 {
-  plugin_loader_->search_libraries.insert(library_name);
+  plugin_loader_.search_libraries.insert(library_name);
 }
 
 const std::set<std::string>& KinematicsPluginFactory::getSearchLibraries() const
 {
-  return plugin_loader_->search_libraries;
+  return plugin_loader_.search_libraries;
 }
 
 void KinematicsPluginFactory::addFwdKinPlugin(const std::string& group_name,
@@ -128,7 +128,7 @@ void KinematicsPluginFactory::setDefaultFwdKinPlugin(const std::string& group_na
   solver_it->second.is_default = true;
 }
 
-std::string KinematicsPluginFactory::getDefaultFwdKinPlugin(const std::string& group_name)
+std::string KinematicsPluginFactory::getDefaultFwdKinPlugin(const std::string& group_name) const
 {
   auto group_it = fwd_plugin_info_.find(group_name);
   if (group_it == fwd_plugin_info_.end())
@@ -187,7 +187,7 @@ void KinematicsPluginFactory::setDefaultInvKinPlugin(const std::string& group_na
   solver_it->second.is_default = true;
 }
 
-std::string KinematicsPluginFactory::getDefaultInvKinPlugin(const std::string& group_name)
+std::string KinematicsPluginFactory::getDefaultInvKinPlugin(const std::string& group_name) const
 {
   auto group_it = inv_plugin_info_.find(group_name);
   if (group_it == inv_plugin_info_.end())
@@ -246,7 +246,7 @@ KinematicsPluginFactory::createFwdKin(const std::string& group_name,
     if (it != fwd_kin_factories_.end())
       return it->second->create(group_name, solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
-    auto plugin = plugin_loader_->instantiate<FwdKinFactory>(plugin_info.class_name);
+    auto plugin = plugin_loader_.instantiate<FwdKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
       CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
@@ -304,7 +304,7 @@ KinematicsPluginFactory::createInvKin(const std::string& group_name,
     if (it != inv_kin_factories_.end())
       return it->second->create(group_name, solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
-    auto plugin = plugin_loader_->instantiate<InvKinFactory>(plugin_info.class_name);
+    auto plugin = plugin_loader_.instantiate<InvKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
       CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
@@ -330,8 +330,8 @@ void KinematicsPluginFactory::saveConfig(tesseract_common::fs::path file_path) c
 YAML::Node KinematicsPluginFactory::getConfig() const
 {
   tesseract_common::KinematicsPluginInfo kinematic_plugins;
-  kinematic_plugins.search_paths = plugin_loader_->search_paths;
-  kinematic_plugins.search_libraries = plugin_loader_->search_libraries;
+  kinematic_plugins.search_paths = plugin_loader_.search_paths;
+  kinematic_plugins.search_libraries = plugin_loader_.search_libraries;
   kinematic_plugins.fwd_plugin_infos = fwd_plugin_info_;
   kinematic_plugins.inv_plugin_infos = inv_plugin_info_;
 
