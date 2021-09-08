@@ -195,13 +195,17 @@ Eigen::MatrixXd KDLStateSolver::getJacobian(const std::vector<std::string>& join
   throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
 }
 
-std::vector<std::string> KDLStateSolver::getJointNames() const { return data_.active_joint_names; }
+std::vector<std::string> KDLStateSolver::getJointNames() const { return data_.joint_names; }
+
+std::vector<std::string> KDLStateSolver::getActiveJointNames() const { return data_.active_joint_names; }
 
 std::string KDLStateSolver::getBaseLinkName() const { return data_.base_link_name; }
 
 std::vector<std::string> KDLStateSolver::getLinkNames() const { return data_.link_names; }
 
 std::vector<std::string> KDLStateSolver::getActiveLinkNames() const { return data_.active_link_names; }
+
+std::vector<std::string> KDLStateSolver::getStaticLinkNames() const { return data_.static_link_names; }
 
 tesseract_common::KinematicLimits KDLStateSolver::getLimits() const { return limits_; }
 

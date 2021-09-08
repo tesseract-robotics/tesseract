@@ -145,10 +145,16 @@ public:
   virtual SceneState getRandomState() const = 0;
 
   /**
-   * @brief Get the vector of joint names which align with the limits
+   * @brief Get the vector of joint names
    * @return A vector of joint names
    */
   virtual std::vector<std::string> getJointNames() const = 0;
+
+  /**
+   * @brief Get the vector of joint names which align with the limits
+   * @return A vector of joint names
+   */
+  virtual std::vector<std::string> getActiveJointNames() const = 0;
 
   /**
    * @brief Get the base link name
@@ -167,6 +173,12 @@ public:
    * @return A vector of active link names
    */
   virtual std::vector<std::string> getActiveLinkNames() const = 0;
+
+  /**
+   * @brief Get a vector of static link names in the environment
+   * @return A vector of static link names
+   */
+  virtual std::vector<std::string> getStaticLinkNames() const = 0;
 
   /**
    * @brief Getter for kinematic limits

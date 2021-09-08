@@ -152,6 +152,7 @@ OFKTStateSolver& OFKTStateSolver::operator=(const OFKTStateSolver& other)
 {
   current_state_ = other.current_state_;
   joint_names_ = other.joint_names_;
+  active_joint_names_ = other.active_joint_names_;
   link_names_ = other.link_names_;
   root_ = std::make_unique<OFKTRootNode>(other.root_->getLinkName());
   link_map_[other.root_->getLinkName()] = root_.get();
@@ -185,6 +186,7 @@ void OFKTStateSolver::clear()
 
   current_state_ = SceneState();
   joint_names_.clear();
+  active_joint_names_.clear();
   link_names_.clear();
   nodes_.clear();
   link_map_.clear();
@@ -195,12 +197,12 @@ void OFKTStateSolver::clear()
 void OFKTStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  assert(joint_names_.size() == static_cast<std::size_t>(joint_values.size()));
+  assert(active_joint_names_.size() == static_cast<std::size_t>(joint_values.size()));
   Eigen::VectorXd jv = joint_values;
-  for (std::size_t i = 0; i < joint_names_.size(); ++i)
+  for (std::size_t i = 0; i < active_joint_names_.size(); ++i)
   {
-    nodes_[joint_names_[i]]->storeJointValue(joint_values(static_cast<long>(i)));
-    current_state_.joints[joint_names_[i]] = joint_values(static_cast<long>(i));
+    nodes_[active_joint_names_[i]]->storeJointValue(joint_values(static_cast<long>(i)));
+    current_state_.joints[active_joint_names_[i]] = joint_values(static_cast<long>(i));
   }
 
   update(root_.get(), false);
@@ -237,10 +239,10 @@ void OFKTStateSolver::setState(const std::vector<std::string>& joint_names,
 SceneState OFKTStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  assert(static_cast<Eigen::Index>(joint_names_.size()) == joint_values.size());
+  assert(static_cast<Eigen::Index>(active_joint_names_.size()) == joint_values.size());
   auto state = SceneState(current_state_);
-  for (std::size_t i = 0; i < joint_names_.size(); ++i)
-    state.joints[joint_names_[i]] = joint_values[static_cast<long>(i)];
+  for (std::size_t i = 0; i < active_joint_names_.size(); ++i)
+    state.joints[active_joint_names_[i]] = joint_values[static_cast<long>(i)];
 
   update(state, root_.get(), Eigen::Isometry3d::Identity(), false);
   return state;
@@ -278,7 +280,7 @@ SceneState OFKTStateSolver::getState() const
 SceneState OFKTStateSolver::getRandomState() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return getState(joint_names_, tesseract_common::generateRandomNumber(limits_.joint_limits));
+  return getState(active_joint_names_, tesseract_common::generateRandomNumber(limits_.joint_limits));
 }
 
 Eigen::MatrixXd OFKTStateSolver::getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
@@ -287,7 +289,7 @@ Eigen::MatrixXd OFKTStateSolver::getJacobian(const Eigen::Ref<const Eigen::Vecto
   std::shared_lock<std::shared_mutex> lock(mutex_);
   std::unordered_map<std::string, double> joints = current_state_.joints;
   for (Eigen::Index i = 0; i < joint_values.rows(); ++i)
-    joints[joint_names_[static_cast<std::size_t>(i)]] = joint_values[i];
+    joints[active_joint_names_[static_cast<std::size_t>(i)]] = joint_values[i];
 
   return calcJacobianHelper(joints, link_name);
 }
@@ -319,7 +321,7 @@ Eigen::MatrixXd OFKTStateSolver::calcJacobianHelper(const std::unordered_map<std
                                                     const std::string& link_name) const
 {
   OFKTNode* node = link_map_.at(link_name);
-  Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(6, static_cast<Eigen::Index>(joint_names_.size()));
+  Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(6, static_cast<Eigen::Index>(active_joint_names_.size()));
 
   Eigen::Isometry3d total_tf = Eigen::Isometry3d::Identity();
   while (node != root_.get())
@@ -333,8 +335,9 @@ Eigen::MatrixXd OFKTStateSolver::calcJacobianHelper(const std::unordered_map<std
       Eigen::Isometry3d local_tf = node->computeLocalTransformation(joints.at(node->getJointName()));
       total_tf = local_tf * total_tf;
 
-      Eigen::Index idx = std::distance(joint_names_.begin(),
-                                       std::find(joint_names_.begin(), joint_names_.end(), node->getJointName()));
+      Eigen::Index idx =
+          std::distance(active_joint_names_.begin(),
+                        std::find(active_joint_names_.begin(), active_joint_names_.end(), node->getJointName()));
       Eigen::VectorXd twist = node->getLocalTwist();
       tesseract_common::twistChangeRefPoint(twist, total_tf.translation() - local_tf.translation());
       tesseract_common::twistChangeBase(twist, total_tf.inverse());
@@ -352,6 +355,12 @@ std::vector<std::string> OFKTStateSolver::getJointNames() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return joint_names_;
+}
+
+std::vector<std::string> OFKTStateSolver::getActiveJointNames() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return active_joint_names_;
 }
 
 std::string OFKTStateSolver::getBaseLinkName() const
@@ -372,6 +381,15 @@ std::vector<std::string> OFKTStateSolver::getActiveLinkNames() const
   std::vector<std::string> link_names;
   link_names.reserve(nodes_.size());
   loadActiveLinkNamesRecursive(link_names, root_.get(), false);
+  return link_names;
+}
+
+std::vector<std::string> OFKTStateSolver::getStaticLinkNames() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::vector<std::string> link_names;
+  link_names.reserve(nodes_.size());
+  loadStaticLinkNamesRecursive(link_names, root_.get());
   return link_names;
 }
 
@@ -470,13 +488,16 @@ bool OFKTStateSolver::removeLink(const std::string& name)
   std::vector<std::string> removed_joints;
   removed_joints.reserve(nodes_.size());
 
-  std::vector<long> removed_joints_indices;
-  removed_joints_indices.reserve(nodes_.size());
+  std::vector<std::string> removed_active_joints;
+  removed_active_joints.reserve(nodes_.size());
 
-  removeNode(it->second, removed_links, removed_joints, removed_joints_indices);
+  std::vector<long> removed_active_joints_indices;
+  removed_active_joints_indices.reserve(nodes_.size());
+
+  removeNode(it->second, removed_links, removed_joints, removed_active_joints, removed_active_joints_indices);
 
   // Remove deleted joints
-  removeJointHelper(removed_links, removed_joints, removed_joints_indices);
+  removeJointHelper(removed_links, removed_joints, removed_active_joints, removed_active_joints_indices);
 
   update(root_.get(), false);
 
@@ -499,13 +520,16 @@ bool OFKTStateSolver::removeJoint(const std::string& name)
   std::vector<std::string> removed_joints;
   removed_joints.reserve(nodes_.size());
 
-  std::vector<long> removed_joints_indices;
-  removed_joints_indices.reserve(nodes_.size());
+  std::vector<std::string> removed_active_joints;
+  removed_active_joints.reserve(nodes_.size());
 
-  removeNode(it->second.get(), removed_links, removed_joints, removed_joints_indices);
+  std::vector<long> removed_active_joints_indices;
+  removed_active_joints_indices.reserve(nodes_.size());
+
+  removeNode(it->second.get(), removed_links, removed_joints, removed_active_joints, removed_active_joints_indices);
 
   // Remove deleted joints
-  removeJointHelper(removed_links, removed_joints, removed_joints_indices);
+  removeJointHelper(removed_links, removed_joints, removed_active_joints, removed_active_joints_indices);
 
   update(root_.get(), false);
 
@@ -569,7 +593,8 @@ bool OFKTStateSolver::changeJointPositionLimits(const std::string& name, double 
     return false;
   }
 
-  long idx = std::distance(joint_names_.begin(), std::find(joint_names_.begin(), joint_names_.end(), name));
+  long idx = std::distance(active_joint_names_.begin(),
+                           std::find(active_joint_names_.begin(), active_joint_names_.end(), name));
   limits_.joint_limits(idx, 0) = lower;
   limits_.joint_limits(idx, 1) = upper;
   return true;
@@ -586,7 +611,8 @@ bool OFKTStateSolver::changeJointVelocityLimits(const std::string& name, double 
     return false;
   }
 
-  long idx = std::distance(joint_names_.begin(), std::find(joint_names_.begin(), joint_names_.end(), name));
+  long idx = std::distance(active_joint_names_.begin(),
+                           std::find(active_joint_names_.begin(), active_joint_names_.end(), name));
   limits_.velocity_limits(idx) = limit;
   return true;
 }
@@ -602,7 +628,8 @@ bool OFKTStateSolver::changeJointAccelerationLimits(const std::string& name, dou
     return false;
   }
 
-  long idx = std::distance(joint_names_.begin(), std::find(joint_names_.begin(), joint_names_.end(), name));
+  long idx = std::distance(active_joint_names_.begin(),
+                           std::find(active_joint_names_.begin(), active_joint_names_.end(), name));
   limits_.acceleration_limits(idx) = limit;
   return true;
 }
@@ -683,6 +710,18 @@ void OFKTStateSolver::loadActiveLinkNamesRecursive(std::vector<std::string>& act
       for (auto* child : node->getChildren())
         loadActiveLinkNamesRecursive(active_link_names, child, true);
     }
+  }
+}
+
+void OFKTStateSolver::loadStaticLinkNamesRecursive(std::vector<std::string>& static_link_names,
+                                                   const OFKTNode* node) const
+{
+  if (node->getType() == tesseract_scene_graph::JointType::FIXED ||
+      node->getType() == tesseract_scene_graph::JointType::FLOATING)
+  {
+    static_link_names.push_back(node->getLinkName());
+    for (auto* child : node->getChildren())
+      loadStaticLinkNamesRecursive(static_link_names, child);
   }
 }
 
@@ -789,16 +828,18 @@ void OFKTStateSolver::moveLinkHelper(std::vector<JointLimits::ConstPtr>& new_joi
   const std::string& old_joint_name = old_node->getJointName();
   old_node->getParent()->removeChild(old_node);
 
-  auto it = std::find(joint_names_.begin(), joint_names_.end(), old_joint_name);
+  auto it = std::find(active_joint_names_.begin(), active_joint_names_.end(), old_joint_name);
   std::vector<std::string> removed_links;
   removed_links.push_back(joint.child_link_name);
 
   std::vector<std::string> removed_joints;
-  std::vector<long> removed_joints_indices;
-  if (it != joint_names_.end())
+  std::vector<std::string> removed_active_joints;
+  std::vector<long> removed_active_joints_indices;
+  removed_joints.push_back(old_joint_name);
+  if (it != active_joint_names_.end())
   {
-    removed_joints.push_back(old_joint_name);
-    removed_joints_indices.push_back(std::distance(joint_names_.begin(), it));
+    removed_active_joints.push_back(old_joint_name);
+    removed_active_joints_indices.push_back(std::distance(active_joint_names_.begin(), it));
   }
 
   // store to add to new node
@@ -806,7 +847,7 @@ void OFKTStateSolver::moveLinkHelper(std::vector<JointLimits::ConstPtr>& new_joi
 
   // erase node
   nodes_.erase(old_joint_name);
-  removeJointHelper(removed_links, removed_joints, removed_joints_indices);
+  removeJointHelper(removed_links, removed_joints, removed_active_joints, removed_active_joints_indices);
   current_state_.joints.erase(old_joint_name);
   current_state_.joint_transforms.erase(old_joint_name);
 
@@ -844,7 +885,8 @@ void OFKTStateSolver::replaceJointHelper(std::vector<JointLimits::ConstPtr>& new
 
 void OFKTStateSolver::removeJointHelper(const std::vector<std::string>& removed_links,
                                         const std::vector<std::string>& removed_joints,
-                                        const std::vector<long>& removed_joints_indices)
+                                        const std::vector<std::string>& removed_active_joints,
+                                        const std::vector<long>& removed_active_joints_indices)
 {
   if (!removed_links.empty())
   {
@@ -866,16 +908,29 @@ void OFKTStateSolver::removeJointHelper(const std::vector<std::string>& removed_
                                                 removed_joints.end());
                                       }),
                        joint_names_.end());
+  }
+
+  if (!removed_active_joints.empty())
+  {
+    active_joint_names_.erase(std::remove_if(active_joint_names_.begin(),
+                                             active_joint_names_.end(),
+                                             [removed_active_joints](const std::string& joint_name) {
+                                               return (std::find(removed_active_joints.begin(),
+                                                                 removed_active_joints.end(),
+                                                                 joint_name) != removed_active_joints.end());
+                                             }),
+                              active_joint_names_.end());
 
     tesseract_common::KinematicLimits l1;
-    l1.joint_limits.resize(static_cast<long int>(joint_names_.size()), 2);
-    l1.velocity_limits.resize(static_cast<long int>(joint_names_.size()));
-    l1.acceleration_limits.resize(static_cast<long int>(joint_names_.size()));
+    l1.joint_limits.resize(static_cast<long int>(active_joint_names_.size()), 2);
+    l1.velocity_limits.resize(static_cast<long int>(active_joint_names_.size()));
+    l1.acceleration_limits.resize(static_cast<long int>(active_joint_names_.size()));
 
     long cnt = 0;
     for (long i = 0; i < limits_.joint_limits.rows(); ++i)
     {
-      if (std::find(removed_joints_indices.begin(), removed_joints_indices.end(), i) == removed_joints_indices.end())
+      if (std::find(removed_active_joints_indices.begin(), removed_active_joints_indices.end(), i) ==
+          removed_active_joints_indices.end())
       {
         l1.joint_limits.row(cnt) = limits_.joint_limits.row(i);
         l1.velocity_limits(cnt) = limits_.velocity_limits(i);
@@ -906,6 +961,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint& joint,
       parent_node->addChild(n.get());
       current_state_.link_transforms[n->getLinkName()] = n->getWorldTransformation();
       current_state_.joint_transforms[n->getJointName()] = n->getWorldTransformation();
+      joint_names_.push_back(joint_name);
       link_names_.push_back(n->getLinkName());
       nodes_[joint_name] = std::move(n);
       break;
@@ -922,6 +978,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint& joint,
       current_state_.link_transforms[n->getLinkName()] = n->getWorldTransformation();
       current_state_.joint_transforms[n->getJointName()] = n->getWorldTransformation();
       joint_names_.push_back(joint_name);
+      active_joint_names_.push_back(joint_name);
       link_names_.push_back(n->getLinkName());
       new_joint_limits.push_back(joint.limits);
       nodes_[joint_name] = std::move(n);
@@ -939,6 +996,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint& joint,
       current_state_.link_transforms[n->getLinkName()] = n->getWorldTransformation();
       current_state_.joint_transforms[n->getJointName()] = n->getWorldTransformation();
       joint_names_.push_back(joint_name);
+      active_joint_names_.push_back(joint_name);
       link_names_.push_back(n->getLinkName());
       new_joint_limits.push_back(joint.limits);
       nodes_[joint_name] = std::move(n);
@@ -956,6 +1014,7 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint& joint,
       current_state_.link_transforms[n->getLinkName()] = n->getWorldTransformation();
       current_state_.joint_transforms[n->getJointName()] = n->getWorldTransformation();
       joint_names_.push_back(joint_name);
+      active_joint_names_.push_back(joint_name);
       link_names_.push_back(n->getLinkName());
       new_joint_limits.push_back(joint.limits);
       nodes_[joint_name] = std::move(n);
@@ -971,15 +1030,17 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint& joint,
 void OFKTStateSolver::removeNode(OFKTNode* node,
                                  std::vector<std::string>& removed_links,
                                  std::vector<std::string>& removed_joints,
-                                 std::vector<long>& removed_joints_indices)
+                                 std::vector<std::string>& removed_active_joints,
+                                 std::vector<long>& removed_active_joints_indices)
 {
   removed_links.push_back(node->getLinkName());
+  removed_joints.push_back(node->getJointName());
 
-  auto it = std::find(joint_names_.begin(), joint_names_.end(), node->getJointName());
-  if (it != joint_names_.end())
+  auto it = std::find(active_joint_names_.begin(), active_joint_names_.end(), node->getJointName());
+  if (it != active_joint_names_.end())
   {
-    removed_joints.push_back(node->getJointName());
-    removed_joints_indices.push_back(std::distance(joint_names_.begin(), it));
+    removed_active_joints.push_back(node->getJointName());
+    removed_active_joints_indices.push_back(std::distance(active_joint_names_.begin(), it));
   }
 
   current_state_.link_transforms.erase(node->getLinkName());
@@ -988,7 +1049,7 @@ void OFKTStateSolver::removeNode(OFKTNode* node,
 
   std::vector<OFKTNode*> children = node->getChildren();
   for (auto* child : node->getChildren())
-    removeNode(child, removed_links, removed_joints, removed_joints_indices);
+    removeNode(child, removed_links, removed_joints, removed_active_joints, removed_active_joints_indices);
 
   if (node->getParent() != nullptr)
     node->getParent()->removeChild(node);

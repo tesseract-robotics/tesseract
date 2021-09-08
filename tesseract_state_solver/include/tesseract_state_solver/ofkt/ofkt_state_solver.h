@@ -63,76 +63,83 @@ public:
 
   OFKTStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph);
   OFKTStateSolver(const std::string& root_name);
-  ~OFKTStateSolver() override = default;
+  ~OFKTStateSolver() override final = default;
   OFKTStateSolver(const OFKTStateSolver& other);
   OFKTStateSolver& operator=(const OFKTStateSolver& other);
   OFKTStateSolver(OFKTStateSolver&&) = default;
   OFKTStateSolver& operator=(OFKTStateSolver&&) = default;
 
-  void setRevision(int revision) override;
+  void setRevision(int revision) override final;
 
-  int getRevision() const override;
+  int getRevision() const override final;
 
-  void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
-  void setState(const std::unordered_map<std::string, double>& joint_values) override;
+  void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) override final;
+  void setState(const std::unordered_map<std::string, double>& joint_values) override final;
   void setState(const std::vector<std::string>& joint_names,
-                const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values) override final;
 
-  SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
-  SceneState getState(const std::unordered_map<std::string, double>& joint_values) const override;
+  SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
+  SceneState getState(const std::unordered_map<std::string, double>& joint_values) const override final;
   SceneState getState(const std::vector<std::string>& joint_names,
-                      const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
 
-  SceneState getState() const override;
+  SceneState getState() const override final;
 
-  SceneState getRandomState() const override;
+  SceneState getRandomState() const override final;
 
   Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name) const override;
+                              const std::string& link_name) const override final;
 
   Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints_values,
-                              const std::string& link_name) const override;
+                              const std::string& link_name) const override final;
   Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name) const override;
+                              const std::string& link_name) const override final;
 
-  std::vector<std::string> getJointNames() const override;
+  std::vector<std::string> getJointNames() const override final;
 
-  std::string getBaseLinkName() const override;
+  std::vector<std::string> getActiveJointNames() const override final;
 
-  std::vector<std::string> getLinkNames() const override;
+  std::string getBaseLinkName() const override final;
 
-  std::vector<std::string> getActiveLinkNames() const override;
+  std::vector<std::string> getLinkNames() const override final;
 
-  tesseract_common::KinematicLimits getLimits() const override;
+  std::vector<std::string> getActiveLinkNames() const override final;
 
-  bool addLink(const Link& link, const Joint& joint) override;
+  std::vector<std::string> getStaticLinkNames() const override final;
 
-  bool moveLink(const Joint& joint) override;
+  tesseract_common::KinematicLimits getLimits() const override final;
 
-  bool removeLink(const std::string& name) override;
+  bool addLink(const Link& link, const Joint& joint) override final;
 
-  bool replaceJoint(const Joint& joint) override;
+  bool moveLink(const Joint& joint) override final;
 
-  bool removeJoint(const std::string& name) override;
+  bool removeLink(const std::string& name) override final;
 
-  bool moveJoint(const std::string& name, const std::string& parent_link) override;
+  bool replaceJoint(const Joint& joint) override final;
 
-  bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin) override;
+  bool removeJoint(const std::string& name) override final;
 
-  bool changeJointPositionLimits(const std::string& name, double lower, double upper) override;
+  bool moveJoint(const std::string& name, const std::string& parent_link) override final;
 
-  bool changeJointVelocityLimits(const std::string& name, double limit) override;
+  bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin) override final;
 
-  bool changeJointAccelerationLimits(const std::string& name, double limit) override;
+  bool changeJointPositionLimits(const std::string& name, double lower, double upper) override final;
 
-  bool insertSceneGraph(const SceneGraph& scene_graph, const Joint& joint, const std::string& prefix = "") override;
+  bool changeJointVelocityLimits(const std::string& name, double limit) override final;
 
-  StateSolver::UPtr clone() const override;
+  bool changeJointAccelerationLimits(const std::string& name, double limit) override final;
+
+  bool insertSceneGraph(const SceneGraph& scene_graph,
+                        const Joint& joint,
+                        const std::string& prefix = "") override final;
+
+  StateSolver::UPtr clone() const override final;
 
 private:
   SceneState current_state_;                              /**< Current state of the scene */
-  std::vector<std::string> joint_names_;                  /**< The active joint names */
+  std::vector<std::string> joint_names_;                  /**< The link names */
+  std::vector<std::string> active_joint_names_;           /**< The active joint names */
   std::vector<std::string> link_names_;                   /**< The link names */
   std::unordered_map<std::string, OFKTNode::UPtr> nodes_; /**< The joint name map to node */
   std::unordered_map<std::string, OFKTNode*> link_map_;   /**< The link name map to node */
@@ -151,6 +158,9 @@ private:
   void loadActiveLinkNamesRecursive(std::vector<std::string>& active_link_names,
                                     const OFKTNode* node,
                                     bool active) const;
+
+  /** @brief load the static link names */
+  void loadStaticLinkNamesRecursive(std::vector<std::string>& static_link_names, const OFKTNode* node) const;
 
   /**
    * @brief This update the local and world transforms
@@ -206,12 +216,14 @@ private:
    * @param node The node to remove
    * @param removed_links The removed link names container
    * @param removed_joints The removed joint names container
-   * @param removed_joints_indices The removed joint names indices container
+   * @param removed_active_joints The removed active joint names container
+   * @param removed_active_joints_indices The removed active joint names indices container
    */
   void removeNode(OFKTNode* node,
                   std::vector<std::string>& removed_links,
                   std::vector<std::string>& removed_joints,
-                  std::vector<long>& removed_joints_indices);
+                  std::vector<std::string>& removed_active_joints,
+                  std::vector<long>& removed_active_joints_indices);
 
   /**
    * @brief This a helper function for moving a link
@@ -231,11 +243,13 @@ private:
    * @brief This will clean up member variables joint_names_ and limits_
    * @param removed_links The removed link names container
    * @param removed_joints The removed joint names container
-   * @param removed_joints_indices The removed joint names indices container
+   * @param removed_active_joints The removed active joint names container
+   * @param removed_active_joints_indices The removed active joint names indices container
    */
   void removeJointHelper(const std::vector<std::string>& removed_links,
                          const std::vector<std::string>& removed_joints,
-                         const std::vector<long>& removed_joints_indices);
+                         const std::vector<std::string>& removed_active_joints,
+                         const std::vector<long>& removed_active_joints_indices);
 
   /**
    * @brief appends the new joint limits

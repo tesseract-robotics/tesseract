@@ -106,9 +106,11 @@ struct KDLTreeData
 {
   KDL::Tree tree;
   std::string base_link_name;
+  std::vector<std::string> joint_names;
+  std::vector<std::string> active_joint_names;
   std::vector<std::string> link_names;
   std::vector<std::string> active_link_names;
-  std::vector<std::string> active_joint_names;
+  std::vector<std::string> static_link_names;
 };
 
 /**

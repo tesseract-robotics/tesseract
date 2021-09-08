@@ -181,9 +181,12 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
       std::size_t num_e = boost::num_edges(graph);
       data_.link_names.reserve(num_v);
       data_.active_link_names.reserve(num_v);
+      data_.static_link_names.reserve(num_v);
+      data_.joint_names.reserve(num_e);
       data_.active_joint_names.reserve(num_e);
 
       data_.link_names.push_back(link->getName());
+      data_.static_link_names.push_back(link->getName());
       data_.base_link_name = link->getName();
       return;
     }
@@ -194,6 +197,8 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
     boost::tie(ei, ei_end) = boost::in_edges(vertex, graph);
     SceneGraph::Edge e = *ei;
     const Joint::ConstPtr& parent_joint = boost::get(boost::edge_joint, graph)[e];
+    data_.joint_names.push_back(parent_joint->getName());
+
     KDL::Joint kdl_jnt = convert(parent_joint);
     if (kdl_jnt.getType() != KDL::Joint::None)
     {
@@ -206,6 +211,8 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
           std::find(data_.active_link_names.begin(), data_.active_link_names.end(), parent_joint->parent_link_name);
       if (it != data_.active_link_names.end())
         data_.active_link_names.push_back(link->getName());
+      else
+        data_.static_link_names.push_back(link->getName());
     }
 
     // construct the kdl segment

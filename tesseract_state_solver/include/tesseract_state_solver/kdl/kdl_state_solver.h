@@ -46,7 +46,7 @@ public:
 
   KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph);
   KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, KDLTreeData data);
-  ~KDLStateSolver() override = default;
+  ~KDLStateSolver() override final = default;
   KDLStateSolver(const KDLStateSolver& other);
   KDLStateSolver& operator=(const KDLStateSolver& other);
   KDLStateSolver(KDLStateSolver&&) = default;
@@ -54,38 +54,42 @@ public:
 
   StateSolver::UPtr clone() const override;
 
-  void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
-  void setState(const std::unordered_map<std::string, double>& joint_values) override;
+  void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) override final;
+  void setState(const std::unordered_map<std::string, double>& joint_values) override final;
   void setState(const std::vector<std::string>& joint_names,
-                const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values) override final;
 
-  SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
-  SceneState getState(const std::unordered_map<std::string, double>& joint_values) const override;
+  SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
+  SceneState getState(const std::unordered_map<std::string, double>& joint_values) const override final;
   SceneState getState(const std::vector<std::string>& joint_names,
-                      const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
 
-  SceneState getState() const override;
+  SceneState getState() const override final;
 
-  SceneState getRandomState() const override;
+  SceneState getRandomState() const override final;
 
   Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name) const override;
+                              const std::string& link_name) const override final;
 
   Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joint_values,
-                              const std::string& link_name) const override;
+                              const std::string& link_name) const override final;
   Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name) const override;
+                              const std::string& link_name) const override final;
 
-  std::vector<std::string> getJointNames() const override;
+  std::vector<std::string> getJointNames() const override final;
 
-  std::string getBaseLinkName() const override;
+  std::vector<std::string> getActiveJointNames() const override final;
 
-  std::vector<std::string> getLinkNames() const override;
+  std::string getBaseLinkName() const override final;
 
-  std::vector<std::string> getActiveLinkNames() const override;
+  std::vector<std::string> getLinkNames() const override final;
 
-  tesseract_common::KinematicLimits getLimits() const override;
+  std::vector<std::string> getActiveLinkNames() const override final;
+
+  std::vector<std::string> getStaticLinkNames() const override final;
+
+  tesseract_common::KinematicLimits getLimits() const override final;
 
 private:
   SceneState current_state_;                                   /**< Current state of the environment */
