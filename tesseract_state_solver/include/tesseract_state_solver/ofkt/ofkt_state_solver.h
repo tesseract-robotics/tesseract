@@ -61,7 +61,7 @@ public:
   using Ptr = std::shared_ptr<OFKTStateSolver>;
   using ConstPtr = std::shared_ptr<const OFKTStateSolver>;
 
-  OFKTStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph);
+  OFKTStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
   OFKTStateSolver(const std::string& root_name);
   ~OFKTStateSolver() override final = default;
   OFKTStateSolver(const OFKTStateSolver& other);
@@ -150,7 +150,7 @@ private:
   /** @brief The state solver can be accessed from multiple threads, need use mutex throughout */
   mutable std::shared_mutex mutex_;
 
-  bool initHelper(const tesseract_scene_graph::SceneGraph& scene_graph);
+  bool initHelper(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix);
 
   void clear();
 

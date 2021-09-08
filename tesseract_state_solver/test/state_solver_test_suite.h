@@ -1176,7 +1176,7 @@ void runReplaceJointTest()
     runCompareStateSolverLimits(*scene_graph, base_state_solver);
   }
 
-  {  // Replace joint and with different parent should fail
+  {  // Replace joint with different parent which is a replace and move
     // Get the scene graph
     auto scene_graph = getSceneGraph();
     auto state_solver = S(*scene_graph);
@@ -1184,7 +1184,10 @@ void runReplaceJointTest()
     Joint new_joint_a3 = scene_graph->getJoint("joint_a3")->clone();
     new_joint_a3.parent_link_name = "base_link";
 
-    EXPECT_FALSE(state_solver.replaceJoint(new_joint_a3));
+    EXPECT_TRUE(state_solver.replaceJoint(new_joint_a3));
+
+    EXPECT_TRUE(scene_graph->removeJoint("joint_a3"));
+    EXPECT_TRUE(scene_graph->addJoint(new_joint_a3));
 
     KDLStateSolver base_state_solver(*scene_graph);
 
