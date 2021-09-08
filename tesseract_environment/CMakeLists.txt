@@ -11,11 +11,11 @@ endif()
 
 # System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
-find_package(orocos_kdl REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_kinematics REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
+find_package(tesseract_state_solver REQUIRED)
 find_package(tesseract_srdf REQUIRED)
 find_package(tesseract_urdf REQUIRED)
 find_package(tesseract_common REQUIRED)
@@ -47,78 +47,36 @@ set(COVERAGE_EXCLUDE
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 # Create interface for core
-add_library(${PROJECT_NAME}_core
-  src/core/environment.cpp
-  src/core/manipulator_manager.cpp
-  src/core/types.cpp
-  src/core/utils.cpp)
+add_library(${PROJECT_NAME}
+  src/environment.cpp
+  src/utils.cpp)
 target_link_libraries(
-  ${PROJECT_NAME}_core
+  ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
          tesseract::tesseract_common
          tesseract::tesseract_collision_core
          tesseract::tesseract_collision_bullet
          tesseract::tesseract_collision_fcl
          tesseract::tesseract_scene_graph
+         tesseract::tesseract_state_solver_ofkt
          tesseract::tesseract_srdf
          tesseract::tesseract_urdf
          tesseract::tesseract_kinematics_kdl
          tesseract::tesseract_kinematics_opw)
-target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
-target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_core ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME}_core PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
-  ${PROJECT_NAME}_core
+  ${PROJECT_NAME}
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-target_include_directories(${PROJECT_NAME}_core PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                        "$<INSTALL_INTERFACE:include>")
 
-add_library(${PROJECT_NAME}_kdl src/kdl/kdl_state_solver.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_kdl
-  PUBLIC ${PROJECT_NAME}_core
-         Eigen3::Eigen
-         tesseract::tesseract_scene_graph
-         orocos-kdl
-         console_bridge::console_bridge)
-target_compile_options(${PROJECT_NAME}_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
-target_compile_options(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_kdl ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME}_kdl PUBLIC VERSION ${TESSERACT_CXX_VERSION})
-target_code_coverage(
-  ${PROJECT_NAME}_kdl
-  ALL
-  EXCLUDE ${COVERAGE_EXCLUDE}
-  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-target_include_directories(${PROJECT_NAME}_kdl PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                      "$<INSTALL_INTERFACE:include>")
-
-add_library(${PROJECT_NAME}_ofkt src/ofkt/ofkt_state_solver.cpp src/ofkt/ofkt_nodes.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_ofkt
-  PUBLIC ${PROJECT_NAME}_core
-         Eigen3::Eigen
-         tesseract::tesseract_scene_graph
-         console_bridge::console_bridge)
-target_compile_options(${PROJECT_NAME}_ofkt PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
-target_compile_options(${PROJECT_NAME}_ofkt PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_ofkt PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_ofkt ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME}_ofkt PUBLIC VERSION ${TESSERACT_CXX_VERSION})
-target_code_coverage(
-  ${PROJECT_NAME}_ofkt
-  ALL
-  EXCLUDE ${COVERAGE_EXCLUDE}
-  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-target_include_directories(${PROJECT_NAME}_ofkt PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                       "$<INSTALL_INTERFACE:include>")
-
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt)
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
 # Mark cpp header files for installation
 install(
@@ -150,16 +108,17 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
       "libconsole-bridge-dev"
-      "liborocos-kdl-dev"
       "libeigen3-dev"
     WINDOWS_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
       "console_bridge"
