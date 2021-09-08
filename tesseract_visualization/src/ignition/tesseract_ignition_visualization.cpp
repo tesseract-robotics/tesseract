@@ -84,32 +84,28 @@ void TesseractIgnitionVisualization::waitForConnection(long seconds) const
   }
 }
 
-void TesseractIgnitionVisualization::plotEnvironment(tesseract_environment::Environment::ConstPtr env,
-                                                     std::string /*ns*/)
+void TesseractIgnitionVisualization::plotEnvironment(const tesseract_environment::Environment& env, std::string /*ns*/)
 {
-  if (env == nullptr)
-    return;
-
   ignition::msgs::Scene msg;
-  toMsg(msg, entity_manager_, *(env->getSceneGraph()), env->getCurrentState()->link_transforms);
+  toMsg(msg, entity_manager_, *(env.getSceneGraph()), env.getCurrentState()->link_transforms);
   scene_pub_.Publish(msg);
 }
 
-void TesseractIgnitionVisualization::plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state,
+void TesseractIgnitionVisualization::plotEnvironmentState(const tesseract_scene_graph::SceneState& state,
                                                           std::string /*ns*/)
 {
-  sendEnvState(state);
+  sendSceneState(state);
 }
 
 void TesseractIgnitionVisualization::plotTrajectory(const tesseract_common::JointTrajectory& traj,
-                                                    tesseract_environment::StateSolver::Ptr state_solver,
+                                                    const tesseract_scene_graph::StateSolver& state_solver,
                                                     std::string /*ns*/)
 {
   std::chrono::duration<double> fp_s(5.0 / static_cast<double>(traj.size()));
   for (const auto& traj_state : traj)
   {
-    tesseract_environment::EnvState::Ptr state = state_solver->getState(traj_state.joint_names, traj_state.position);
-    sendEnvState(state);
+    tesseract_scene_graph::SceneState state = state_solver.getState(traj_state.joint_names, traj_state.position);
+    sendSceneState(state);
     std::this_thread::sleep_for(fp_s);
   }
 }
@@ -366,10 +362,10 @@ void TesseractIgnitionVisualization::waitForInput(std::string message)
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-void TesseractIgnitionVisualization::sendEnvState(const tesseract_environment::EnvState::ConstPtr& env_state)
+void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph::SceneState& scene_state)
 {
   ignition::msgs::Pose_V pose_v;
-  for (const auto& pair : env_state->link_transforms)
+  for (const auto& pair : scene_state.link_transforms)
   {
     ignition::msgs::Pose* pose = pose_v.add_pose();
     pose->CopyFrom(ignition::msgs::Convert(ignition::math::eigen3::convert(pair.second)));

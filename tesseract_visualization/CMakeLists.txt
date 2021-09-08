@@ -72,7 +72,7 @@ add_library(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
-         tesseract::tesseract_environment_core
+         tesseract::tesseract_environment
          tesseract::tesseract_scene_graph
          tesseract::tesseract_collision_core
          tesseract::tesseract_common

@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/joint_state.h>
 #include <tesseract_collision/core/types.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 #include <tesseract_visualization/markers/marker.h>
 
 #ifdef SWIG
@@ -75,13 +75,13 @@ public:
    * @brief Plot environment
    * @param env The environment.
    */
-  virtual void plotEnvironment(tesseract_environment::Environment::ConstPtr env, std::string ns = "") = 0;
+  virtual void plotEnvironment(const tesseract_environment::Environment& env, std::string ns = "") = 0;
 
   /**
    * @brief Plot state of the environment
    * @param state The state of the environment.
    */
-  virtual void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state, std::string ns = "") = 0;
+  virtual void plotEnvironmentState(const tesseract_scene_graph::SceneState& state, std::string ns = "") = 0;
 
   /**
    * @brief Plot a JointTrajectory
@@ -89,7 +89,7 @@ public:
    * @param trajectory JointTrajectory to be plotted
    */
   virtual void plotTrajectory(const tesseract_common::JointTrajectory& traj,
-                              tesseract_environment::StateSolver::Ptr state_solver,
+                              const tesseract_scene_graph::StateSolver& state_solver,
                               std::string ns = "") = 0;
 
   /**
