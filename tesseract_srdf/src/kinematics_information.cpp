@@ -39,4 +39,39 @@ void KinematicsInformation::clear()
   kinematics_plugin_info.clear();
 }
 
+void KinematicsInformation::insert(const KinematicsInformation& other)
+{
+  group_names.insert(other.group_names.begin(), other.group_names.end());
+  chain_groups.insert(other.chain_groups.begin(), other.chain_groups.end());
+  joint_groups.insert(other.joint_groups.begin(), other.joint_groups.end());
+  link_groups.insert(other.link_groups.begin(), other.link_groups.end());
+  for (const auto& group : other.group_states)
+  {
+    auto it = group_states.find(group.first);
+    if (it == group_states.end())
+    {
+      group_states[group.first] = group.second;
+    }
+    else
+    {
+      it->second.insert(group.second.begin(), group.second.end());
+    }
+  }
+
+  for (const auto& group : other.group_tcps)
+  {
+    auto it = group_tcps.find(group.first);
+    if (it == group_tcps.end())
+    {
+      group_tcps[group.first] = group.second;
+    }
+    else
+    {
+      it->second.insert(group.second.begin(), group.second.end());
+    }
+  }
+
+  kinematics_plugin_info.insert(other.kinematics_plugin_info);
+}
+
 }  // namespace tesseract_srdf

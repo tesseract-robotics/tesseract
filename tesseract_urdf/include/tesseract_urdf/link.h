@@ -60,7 +60,7 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_scene_graph::Link>
 parseLink(const tinyxml2::XMLElement* xml_element,
-          const std::shared_ptr<tesseract_common::ResourceLocator>& locator,
+          const tesseract_common::ResourceLocator& locator,
           std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
           int version);
 

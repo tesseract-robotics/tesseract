@@ -247,7 +247,7 @@ TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
 
   std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
-  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
+  SimpleResourceLocator locator(locateResource);
   SceneGraph g;
 
   g.setName("kuka_lbr_iiwa_14_r820");
@@ -356,7 +356,7 @@ TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
   using namespace tesseract_srdf;
   using namespace tesseract_common;
 
-  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
+  SimpleResourceLocator locator(locateResource);
   SRDFModel srdf;
 
   // Set Name
@@ -447,7 +447,7 @@ TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
   using namespace tesseract_srdf;
   using namespace tesseract_common;
 
-  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
+  SimpleResourceLocator locator(locateResource);
   SceneGraph::Ptr g = getABBSceneGraph();
 
   std::string xml_string =
@@ -521,7 +521,7 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   using namespace tesseract_common;
 
   SceneGraph::Ptr g = getABBSceneGraph(ABBConfig::ROBOT_ON_RAIL);
-  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
+  SimpleResourceLocator locator(locateResource);
 
   std::string xml_string =
       R"(<robot name="abb_irb2400" version="1.0.0">
@@ -780,7 +780,7 @@ TEST(TesseractSRDFUnit, SRDFChainGroupUnit)  // NOLINT
       parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
 
   EXPECT_EQ(group_names.size(), 1);
-  EXPECT_EQ(group_names[0], "manipulator");
+  EXPECT_EQ(*group_names.begin(), "manipulator");
   EXPECT_EQ(chain_groups.size(), 1);
   EXPECT_TRUE(joint_groups.empty());
   EXPECT_TRUE(link_groups.empty());
@@ -885,7 +885,7 @@ TEST(TesseractSRDFUnit, SRDFJointGroupUnit)  // NOLINT
       parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
 
   EXPECT_EQ(group_names.size(), 1);
-  EXPECT_EQ(group_names[0], "manipulator");
+  EXPECT_EQ(*group_names.begin(), "manipulator");
   EXPECT_TRUE(chain_groups.empty());
   EXPECT_EQ(joint_groups.size(), 1);
   EXPECT_TRUE(link_groups.empty());
@@ -968,7 +968,7 @@ TEST(TesseractSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
       parseGroups(*g, element, std::array<int, 3>({ 1, 0, 0 }));
 
   EXPECT_EQ(group_names.size(), 1);
-  EXPECT_EQ(group_names[0], "manipulator");
+  EXPECT_EQ(*group_names.begin(), "manipulator");
   EXPECT_TRUE(chain_groups.empty());
   EXPECT_TRUE(joint_groups.empty());
   EXPECT_EQ(link_groups.size(), 1);

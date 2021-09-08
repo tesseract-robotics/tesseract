@@ -127,10 +127,9 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:1: Create scene graph
 
   // documentation:start:2: Get the srdf file path
-  tesseract_common::ResourceLocator::Ptr locator =
-      std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator locator(locateResource);
   std::string srdf_file =
-      locator->locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf")->getFilePath();
+      locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf")->getFilePath();
   // documentation:end:2: Get the srdf file path
 
   // documentation:start:3: Parse the srdf

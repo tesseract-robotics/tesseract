@@ -49,10 +49,10 @@ namespace tesseract_srdf
 {
 void SRDFModel::initFile(const tesseract_scene_graph::SceneGraph& scene_graph,
                          const std::string& filename,
-                         const tesseract_common::ResourceLocator::Ptr& locator)
+                         const tesseract_common::ResourceLocator& locator)
 {
   // get the entire file
-  tesseract_common::Resource::Ptr resource = locator->locateResource(filename);
+  tesseract_common::Resource::Ptr resource = locator.locateResource(filename);
   std::string xml_string;
   std::fstream xml_file(filename.c_str(), std::fstream::in);
   if (xml_file.is_open())
@@ -66,7 +66,7 @@ void SRDFModel::initFile(const tesseract_scene_graph::SceneGraph& scene_graph,
     xml_file.close();
     try
     {
-      initString(scene_graph, xml_string, resource);
+      initString(scene_graph, xml_string, *resource);
     }
     catch (...)
     {
@@ -81,7 +81,7 @@ void SRDFModel::initFile(const tesseract_scene_graph::SceneGraph& scene_graph,
 
 void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
                            const std::string& xmlstring,
-                           const tesseract_common::ResourceLocator::Ptr& locator)
+                           const tesseract_common::ResourceLocator& locator)
 {
   tinyxml2::XMLDocument xml_doc;
   tinyxml2::XMLError status = xml_doc.Parse(xmlstring.c_str());
@@ -200,7 +200,7 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
         std::throw_with_nested(std::runtime_error("kinematics_plugin_config: Missing or failded to parse 'filename' "
                                                   "attribute."));
 
-      tesseract_common::Resource::Ptr resource = locator->locateResource(filename);
+      tesseract_common::Resource::Ptr resource = locator.locateResource(filename);
       if (resource == nullptr)
         std::throw_with_nested(
             std::runtime_error("kinematics_plugin_config: Failed to locate resource '" + filename + "'."));

@@ -123,17 +123,17 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
     if (!chains.empty() && links.empty() && joints.empty())
     {
       chain_groups[group_name] = chains;
-      group_names.push_back(group_name);
+      group_names.insert(group_name);
     }
     else if (chains.empty() && !links.empty() && joints.empty())
     {
       link_groups[group_name] = links;
-      group_names.push_back(group_name);
+      group_names.insert(group_name);
     }
     else if (chains.empty() && links.empty() && !joints.empty())
     {
       joint_groups[group_name] = joints;
-      group_names.push_back(group_name);
+      group_names.insert(group_name);
     }
     else
     {

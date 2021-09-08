@@ -43,7 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 std::vector<tesseract_geometry::SDFMesh::Ptr>
 tesseract_urdf::parseSDFMesh(const tinyxml2::XMLElement* xml_element,
-                             const tesseract_common::ResourceLocator::Ptr& locator,
+                             const tesseract_common::ResourceLocator& locator,
                              bool visual,
                              int /*version*/)
 {
@@ -82,10 +82,10 @@ tesseract_urdf::parseSDFMesh(const tinyxml2::XMLElement* xml_element,
 
   if (visual)
     meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::SDFMesh>(
-        locator->locateResource(filename), scale, true, true, true, true, true);
+        locator.locateResource(filename), scale, true, true, true, true, true);
   else
     meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::SDFMesh>(
-        locator->locateResource(filename), scale, true, false);
+        locator.locateResource(filename), scale, true, false);
 
   if (meshes.empty())
     std::throw_with_nested(std::runtime_error("SDFMesh: Error importing meshes from filename: '" + filename + "'!"));

@@ -60,7 +60,7 @@ namespace tesseract_urdf
  */
 std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>>
 parseConvexMesh(const tinyxml2::XMLElement* xml_element,
-                const std::shared_ptr<tesseract_common::ResourceLocator>& locator,
+                const tesseract_common::ResourceLocator& locator,
                 bool visual,
                 int version);
 

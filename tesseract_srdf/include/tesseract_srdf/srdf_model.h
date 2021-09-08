@@ -75,7 +75,7 @@ public:
    */
   void initFile(const tesseract_scene_graph::SceneGraph& scene_graph,
                 const std::string& filename,
-                const tesseract_common::ResourceLocator::Ptr& locator);
+                const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Load Model from a XML-string
@@ -83,7 +83,7 @@ public:
    */
   void initString(const tesseract_scene_graph::SceneGraph& scene_graph,
                   const std::string& xmlstring,
-                  const tesseract_common::ResourceLocator::Ptr& locator);
+                  const tesseract_common::ResourceLocator& locator);
 
   /** @brief Save the model to a file */
   bool saveToFile(const std::string& file_path) const;

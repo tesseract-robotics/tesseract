@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 std::vector<tesseract_scene_graph::Collision::Ptr>
 tesseract_urdf::parseCollision(const tinyxml2::XMLElement* xml_element,
-                               const tesseract_common::ResourceLocator::Ptr& locator,
+                               const tesseract_common::ResourceLocator& locator,
                                int version)
 {
   std::vector<tesseract_scene_graph::Collision::Ptr> collisions;
