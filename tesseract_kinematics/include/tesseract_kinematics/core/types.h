@@ -67,13 +67,13 @@ const static URParameters UR5Parameters(0.089159, -0.42500, -0.39225, 0.10915, 0
 const static URParameters UR3Parameters(0.1519, -0.24365, -0.21325, 0.11235, 0.08535, 0.0819);
 
 /** @brief The UR10e kinematic parameters */
-const static URParameters UR10eParameters(0.181, -0.613, -0.571, 0.135, 0.120, 0.117);
+const static URParameters UR10eParameters(0.181, -0.613, -0.571, 0.135 + 0.176 - 0.137, 0.120, 0.117);
 
 /** @brief The UR5e kinematic parameters */
-const static URParameters UR5eParameters(0.163, -0.425, -0.392, 0.127, 0.100, 0.100);
+const static URParameters UR5eParameters(0.163, -0.425, -0.392, 0.127 + 0.138 - 0.131, 0.100, 0.100);
 
 /** @brief The UR3e kinematic parameters */
-const static URParameters UR3eParameters(0.152, -0.244, -0.213, 0.104, 0.085, 0.092);
+const static URParameters UR3eParameters(0.152, -0.244, -0.213, 0.104 + 0.138 - 0.131, 0.085, 0.092);
 
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_TYPES_H

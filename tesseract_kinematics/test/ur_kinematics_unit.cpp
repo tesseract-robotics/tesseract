@@ -36,12 +36,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 using namespace tesseract_kinematics::test_suite;
 using namespace tesseract_kinematics;
 
-void runURKinematicsTests(const URParameters& params, const Eigen::Isometry3d& pose)
+void runURKinematicsTests(const URParameters& params,
+                          double shoulder_offset,
+                          double elbow_offset,
+                          const Eigen::Isometry3d& pose)
 {
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(6);
 
   // Setup test
-  auto scene_graph = getSceneGraphUR(params);
+  auto scene_graph = getSceneGraphUR(params, shoulder_offset, elbow_offset);
 
   std::string manip_name = "manip";
   std::string base_link_name = "base_link";
@@ -87,7 +90,10 @@ TEST(TesseractKinematicsUnit, UR10InvKinUnit)  // NOLINT
   pose.translation()[1] = 0;
   pose.translation()[2] = 0.75;
 
-  runURKinematicsTests(UR10Parameters, pose);
+  double shoulder_offset{ 0.220941 };
+  double elbow_offset{ -0.1719 };
+
+  runURKinematicsTests(UR10Parameters, shoulder_offset, elbow_offset, pose);
 }
 
 TEST(TesseractKinematicsUnit, UR5InvKinUnit)  // NOLINT
@@ -99,7 +105,10 @@ TEST(TesseractKinematicsUnit, UR5InvKinUnit)  // NOLINT
   pose.translation()[1] = 0;
   pose.translation()[2] = 0.5;
 
-  runURKinematicsTests(UR5Parameters, pose);
+  double shoulder_offset{ 0.13585 };
+  double elbow_offset{ -0.1197 };
+
+  runURKinematicsTests(UR5Parameters, shoulder_offset, elbow_offset, pose);
 }
 
 TEST(TesseractKinematicsUnit, UR3InvKinUnit)  // NOLINT
@@ -111,7 +120,10 @@ TEST(TesseractKinematicsUnit, UR3InvKinUnit)  // NOLINT
   pose.translation()[1] = 0;
   pose.translation()[2] = 0.25;
 
-  runURKinematicsTests(UR3Parameters, pose);
+  double shoulder_offset{ 0.1198 };
+  double elbow_offset{ -0.0925 };
+
+  runURKinematicsTests(UR3Parameters, shoulder_offset, elbow_offset, pose);
 }
 
 TEST(TesseractKinematicsUnit, UR10eInvKinUnit)  // NOLINT
@@ -123,7 +135,10 @@ TEST(TesseractKinematicsUnit, UR10eInvKinUnit)  // NOLINT
   pose.translation()[1] = 0;
   pose.translation()[2] = 0.75;
 
-  runURKinematicsTests(UR10eParameters, pose);
+  double shoulder_offset{ 0.176 };
+  double elbow_offset{ -0.137 };
+
+  runURKinematicsTests(UR10eParameters, shoulder_offset, elbow_offset, pose);
 }
 
 TEST(TesseractKinematicsUnit, UR5eInvKinUnit)  // NOLINT
@@ -135,7 +150,10 @@ TEST(TesseractKinematicsUnit, UR5eInvKinUnit)  // NOLINT
   pose.translation()[1] = 0;
   pose.translation()[2] = 0.5;
 
-  runURKinematicsTests(UR5eParameters, pose);
+  double shoulder_offset{ 0.138 };
+  double elbow_offset{ -0.131 };
+
+  runURKinematicsTests(UR5eParameters, shoulder_offset, elbow_offset, pose);
 }
 
 TEST(TesseractKinematicsUnit, UR3eInvKinUnit)  // NOLINT
@@ -147,7 +165,10 @@ TEST(TesseractKinematicsUnit, UR3eInvKinUnit)  // NOLINT
   pose.translation()[1] = 0;
   pose.translation()[2] = 0.25;
 
-  runURKinematicsTests(UR3eParameters, pose);
+  double shoulder_offset{ 0.120 };
+  double elbow_offset{ -0.093 };
+
+  runURKinematicsTests(UR3eParameters, shoulder_offset, elbow_offset, pose);
 }
 
 int main(int argc, char** argv)

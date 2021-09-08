@@ -81,7 +81,7 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphIIWA()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  auto locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator locator(locateResource);
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -89,7 +89,7 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphABBExternalPositione
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400_external_positioner.urdf";
 
-  auto locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator locator(locateResource);
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -97,7 +97,7 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphABBOnPositioner()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400_on_positioner.urdf";
 
-  auto locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator locator(locateResource);
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -105,11 +105,13 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphABB()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.urdf";
 
-  auto locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator locator(locateResource);
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
-inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract_kinematics::URParameters& params)
+inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract_kinematics::URParameters& params,
+                                                               double shoulder_offset,
+                                                               double elbow_offset)
 {
   using namespace tesseract_scene_graph;
 
@@ -145,7 +147,7 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract_k
     j.parent_link_name = "shoulder_link";
     j.child_link_name = "upper_arm_link";
     j.axis = Eigen::Vector3d::UnitY();
-    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0.220941, 0);
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, shoulder_offset, 0);
     j.parent_to_joint_origin_transform =
         j.parent_to_joint_origin_transform * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY());
     j.limits = std::make_shared<JointLimits>();
@@ -162,7 +164,7 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract_k
     j.parent_link_name = "upper_arm_link";
     j.child_link_name = "forearm_link";
     j.axis = Eigen::Vector3d::UnitY();
-    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, -0.1719, -params.a2);
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, elbow_offset, -params.a2);
     j.limits = std::make_shared<JointLimits>();
     j.limits->lower = -2.0 * M_PI;
     j.limits->upper = 2.0 * M_PI;
@@ -194,7 +196,8 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract_k
     j.parent_link_name = "wrist_1_link";
     j.child_link_name = "wrist_2_link";
     j.axis = Eigen::Vector3d::UnitZ();
-    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, params.d4 + 0.1719 - 0.220941, 0);
+    j.parent_to_joint_origin_transform.translation() =
+        Eigen::Vector3d(0, params.d4 - elbow_offset - shoulder_offset, 0);
     j.limits = std::make_shared<JointLimits>();
     j.limits->lower = -2.0 * M_PI;
     j.limits->upper = 2.0 * M_PI;
