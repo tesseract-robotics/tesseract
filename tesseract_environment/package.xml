@@ -19,11 +19,10 @@
   <depend>tesseract_geometry</depend>
   <depend>tesseract_kinematics</depend>
   <depend>tesseract_scene_graph</depend>
+  <depend>tesseract_state_solver</depend>
   <depend>tesseract_common</depend>
   <depend>tesseract_urdf</depend>
-
-  <depend condition="$ROS_DISTRO != noetic">orocos_kdl</depend>
-  <depend condition="$ROS_DISTRO == noetic">liborocos-kdl-dev</depend>
+  <depend>tesseract_srdf</depend>
 
   <test_depend>gtest</test_depend>
   <test_depend>tesseract_support</test_depend>

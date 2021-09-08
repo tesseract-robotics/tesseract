@@ -43,8 +43,7 @@ target_link_libraries(
   ${PROJECT_NAME}_unit
   PRIVATE GTest::GTest
           GTest::Main
-          ${PROJECT_NAME}_kdl
-          ${PROJECT_NAME}_ofkt
+          ${PROJECT_NAME}
           tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_collision_bullet
@@ -61,73 +60,27 @@ target_code_coverage(
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 add_gtest_discover_tests(${PROJECT_NAME}_unit)
-add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME}_kdl)
+add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_unit)
 
-add_executable(${PROJECT_NAME}_ofkt_unit tesseract_environment_ofkt_unit.cpp)
+add_executable(${PROJECT_NAME}_collision tesseract_environment_collision.cpp)
 target_link_libraries(
-  ${PROJECT_NAME}_ofkt_unit
+  ${PROJECT_NAME}_collision
   PRIVATE GTest::GTest
           GTest::Main
-          ${PROJECT_NAME}_ofkt
+          ${PROJECT_NAME}
           tesseract::tesseract_support)
-target_compile_options(${PROJECT_NAME}_ofkt_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                         ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_ofkt_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_ofkt_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS}
-                  ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME}_ofkt_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
-target_code_coverage(
-  ${PROJECT_NAME}_ofkt_unit
-  ALL
-  EXCLUDE ${COVERAGE_EXCLUDE}
-  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-add_gtest_discover_tests(${PROJECT_NAME}_ofkt_unit)
-add_dependencies(${PROJECT_NAME}_ofkt_unit ${PROJECT_NAME}_kdl)
-add_dependencies(run_tests ${PROJECT_NAME}_ofkt_unit)
-
-add_executable(${PROJECT_NAME}_manipulator_manager_unit tesseract_environment_manipulator_manager_unit.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_manipulator_manager_unit
-  PRIVATE GTest::GTest
-          GTest::Main
-          ${PROJECT_NAME}_core
-          ${PROJECT_NAME}_ofkt
-          tesseract::tesseract_support)
-target_compile_options(${PROJECT_NAME}_manipulator_manager_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                                        ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_manipulator_manager_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_manipulator_manager_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS}
-                  ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME}_manipulator_manager_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
-target_code_coverage(
-  ${PROJECT_NAME}_manipulator_manager_unit
-  ALL
-  EXCLUDE ${COVERAGE_EXCLUDE}
-  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-add_gtest_discover_tests(${PROJECT_NAME}_manipulator_manager_unit)
-add_dependencies(${PROJECT_NAME}_manipulator_manager_unit ${PROJECT_NAME}_kdl)
-add_dependencies(run_tests ${PROJECT_NAME}_manipulator_manager_unit)
-
-add_executable(${PROJECT_NAME}_environment_collision tesseract_environment_collision.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_environment_collision
-  PRIVATE GTest::GTest
-          GTest::Main
-          ${PROJECT_NAME}_kdl
-          ${PROJECT_NAME}_ofkt
-          tesseract::tesseract_support)
-target_compile_options(${PROJECT_NAME}_environment_collision PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+target_compile_options(${PROJECT_NAME}_collision PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                      ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_environment_collision PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_environment_collision ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS}
+target_compile_definitions(${PROJECT_NAME}_collision PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_clang_tidy(${PROJECT_NAME}_collision ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS}
                   ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME}_environment_collision PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+target_cxx_version(${PROJECT_NAME}_collision PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
-  ${PROJECT_NAME}_environment_collision
+  ${PROJECT_NAME}_collision
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-add_gtest_discover_tests(${PROJECT_NAME}_environment_collision)
-add_dependencies(${PROJECT_NAME}_environment_collision ${PROJECT_NAME}_kdl)
-add_dependencies(run_tests ${PROJECT_NAME}_environment_collision)
+add_gtest_discover_tests(${PROJECT_NAME}_collision)
+add_dependencies(${PROJECT_NAME}_collision ${PROJECT_NAME})
+add_dependencies(run_tests ${PROJECT_NAME}_collision)
