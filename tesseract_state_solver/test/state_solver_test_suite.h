@@ -49,7 +49,7 @@ SceneGraph::UPtr getSceneGraph()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  auto locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator locator(locateResource);
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -109,12 +109,13 @@ void runCompareSceneStates(const SceneState& base_state, const SceneState& compa
 
 void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_solver)
 {
-  std::vector<std::string> base_joint_names = base_solver.getJointNames();
-  std::vector<std::string> comp_joint_names = comp_solver.getJointNames();
   EXPECT_EQ(base_solver.getBaseLinkName(), comp_solver.getBaseLinkName());
-  EXPECT_TRUE(tesseract_common::isIdentical(base_joint_names, comp_joint_names, false));
+  EXPECT_TRUE(tesseract_common::isIdentical(base_solver.getJointNames(), comp_solver.getJointNames(), false));
+  EXPECT_TRUE(
+      tesseract_common::isIdentical(base_solver.getActiveJointNames(), comp_solver.getActiveJointNames(), false));
   EXPECT_TRUE(tesseract_common::isIdentical(base_solver.getLinkNames(), comp_solver.getLinkNames(), false));
   EXPECT_TRUE(tesseract_common::isIdentical(base_solver.getActiveLinkNames(), comp_solver.getActiveLinkNames(), false));
+  EXPECT_TRUE(tesseract_common::isIdentical(base_solver.getStaticLinkNames(), comp_solver.getStaticLinkNames(), false));
 
   for (int i = 0; i < 10; ++i)
   {
@@ -130,7 +131,7 @@ void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_sol
 
 void runCompareStateSolverLimits(const SceneGraph& scene_graph, const StateSolver& comp_solver)
 {
-  std::vector<std::string> comp_joint_names = comp_solver.getJointNames();
+  std::vector<std::string> comp_joint_names = comp_solver.getActiveJointNames();
   tesseract_common::KinematicLimits limits = comp_solver.getLimits();
 
   for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(comp_joint_names.size()); ++i)
@@ -227,7 +228,7 @@ inline void runCompareJacobian(StateSolver& state_solver,
 
   // The numerical jacobian orders things base on the provided joint list
   // The order needs to be calculated to compare
-  std::vector<std::string> solver_jn = state_solver.getJointNames();
+  std::vector<std::string> solver_jn = state_solver.getActiveJointNames();
   std::vector<long> order;
   if (joint_names.empty())
   {
@@ -371,7 +372,7 @@ inline void runJacobianTest()
   /////////////////////////////////
   // Test Jacobian with joint names
   /////////////////////////////////
-  std::vector<std::string> joint_names = state_solver.getJointNames();
+  std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   {
     Eigen::Vector3d link_point(0, 0, 0);
     for (const auto& link_name : link_names)
@@ -563,7 +564,7 @@ void runAddandRemoveLinkTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  std::vector<std::string> joint_names = state_solver.getJointNames();
+  std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   SceneState state = state_solver.getState();
   // Fixed joints are not listed
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
@@ -580,7 +581,7 @@ void runAddandRemoveLinkTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  joint_names = state_solver.getJointNames();
+  joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   // Fixed joints are not listed
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
@@ -600,7 +601,7 @@ void runAddandRemoveLinkTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  joint_names = state_solver.getJointNames();
+  joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
   EXPECT_TRUE(state.link_transforms.find(link_name1) == state.link_transforms.end());
@@ -642,7 +643,7 @@ void runAddandRemoveLinkTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  joint_names = state_solver.getJointNames();
+  joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   // Fixed joints are not listed
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
@@ -659,7 +660,7 @@ void runAddandRemoveLinkTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  joint_names = state_solver.getJointNames();
+  joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   // Fixed joints are not listed
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
@@ -679,7 +680,7 @@ void runAddandRemoveLinkTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  joint_names = state_solver.getJointNames();
+  joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
   EXPECT_TRUE(state.link_transforms.find(link_name1) == state.link_transforms.end());
@@ -748,7 +749,7 @@ void runAddSceneGraphTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  std::vector<std::string> joint_names = state_solver.getJointNames();
+  std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   SceneState state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), subgraph_joint_name) == joint_names.end());
   EXPECT_TRUE(state.link_transforms.find(subgraph->getRoot()) != state.link_transforms.end());
@@ -779,7 +780,7 @@ void runAddSceneGraphTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  joint_names = state_solver.getJointNames();
+  joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
   EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot()) != state.link_transforms.end());
@@ -801,7 +802,7 @@ void runAddSceneGraphTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  joint_names = state_solver.getJointNames();
+  joint_names = state_solver.getActiveJointNames();
 
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
   state = state_solver.getState();
@@ -905,7 +906,7 @@ void runMoveJointTest()
 
   runCompareStateSolver(base_state_solver, state_solver);
 
-  std::vector<std::string> joint_names = state_solver.getJointNames();
+  std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
@@ -926,7 +927,7 @@ void runMoveJointTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  joint_names = state_solver.getJointNames();
+  joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
@@ -986,7 +987,7 @@ void runMoveLinkTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  std::vector<std::string> joint_names = state_solver.getJointNames();
+  std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
@@ -1011,7 +1012,7 @@ void runMoveLinkTest()
   runCompareStateSolver(base_state_solver, state_solver);
   runCompareStateSolverLimits(*scene_graph, base_state_solver);
 
-  joint_names = state_solver.getJointNames();
+  joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), moved_joint_name) == joint_names.end());
@@ -1048,7 +1049,7 @@ void runChangeJointLimitsTest()
   state_solver.changeJointVelocityLimits("joint_a1", new_velocity);
   state_solver.changeJointAccelerationLimits("joint_a1", new_acceleration);
 
-  std::vector<std::string> joint_names = state_solver.getJointNames();
+  std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   long idx = std::distance(joint_names.begin(), std::find(joint_names.begin(), joint_names.end(), "joint_a1"));
   auto limits = state_solver.getLimits();
   EXPECT_NEAR(limits.joint_limits(idx, 0), new_lower, 1e-5);
