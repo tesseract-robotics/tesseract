@@ -74,4 +74,107 @@ void KinematicsInformation::insert(const KinematicsInformation& other)
   kinematics_plugin_info.insert(other.kinematics_plugin_info);
 }
 
+bool KinematicsInformation::hasGroup(const std::string& group_name) const
+{
+  return std::find(group_names.begin(), group_names.end(), group_name) != group_names.end();
+}
+
+void KinematicsInformation::addChainGroup(const std::string& group_name, const ChainGroup& chain_group)
+{
+  chain_groups[group_name] = chain_group;
+  group_names.insert(group_name);
+}
+
+void KinematicsInformation::removeChainGroup(const std::string& group_name)
+{
+  if (chain_groups.erase(group_name) > 0)
+    group_names.erase(group_name);
+}
+
+bool KinematicsInformation::hasChainGroup(const std::string& group_name) const
+{
+  return (chain_groups.find(group_name) != chain_groups.end());
+}
+
+void KinematicsInformation::addJointGroup(const std::string& group_name, const JointGroup& joint_group)
+{
+  joint_groups[group_name] = joint_group;
+  group_names.insert(group_name);
+}
+
+void KinematicsInformation::removeJointGroup(const std::string& group_name)
+{
+  if (joint_groups.erase(group_name) > 0)
+    group_names.erase(group_name);
+}
+
+bool KinematicsInformation::hasJointGroup(const std::string& group_name) const
+{
+  return (joint_groups.find(group_name) != joint_groups.end());
+}
+
+void KinematicsInformation::addLinkGroup(const std::string& group_name, const LinkGroup& link_group)
+{
+  link_groups[group_name] = link_group;
+  group_names.insert(group_name);
+}
+
+void KinematicsInformation::removeLinkGroup(const std::string& group_name)
+{
+  if (link_groups.erase(group_name) > 0)
+    group_names.erase(group_name);
+}
+
+bool KinematicsInformation::hasLinkGroup(const std::string& group_name) const
+{
+  return (link_groups.find(group_name) != link_groups.end());
+}
+
+void KinematicsInformation::addGroupJointState(const std::string& group_name,
+                                               const std::string& state_name,
+                                               const GroupsJointState& joint_state)
+{
+  group_states[group_name][state_name] = joint_state;
+}
+
+void KinematicsInformation::removeGroupJointState(const std::string& group_name, const std::string& state_name)
+{
+  group_states[group_name].erase(state_name);
+
+  if (group_states[group_name].empty())
+    group_states.erase(group_name);
+}
+
+bool KinematicsInformation::hasGroupJointState(const std::string& group_name, const std::string& state_name) const
+{
+  auto it = group_states.find(group_name);
+  if (it == group_states.end())
+    return false;
+
+  return (it->second.find(state_name) != it->second.end());
+}
+
+void KinematicsInformation::addGroupTCP(const std::string& group_name,
+                                        const std::string& tcp_name,
+                                        const Eigen::Isometry3d& tcp)
+{
+  group_tcps[group_name][tcp_name] = tcp;
+}
+
+void KinematicsInformation::removeGroupTCP(const std::string& group_name, const std::string& tcp_name)
+{
+  group_tcps.at(group_name).erase(tcp_name);
+
+  if (group_tcps[group_name].empty())
+    group_tcps.erase(group_name);
+}
+
+bool KinematicsInformation::hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const
+{
+  auto it = group_tcps.find(group_name);
+  if (it == group_tcps.end())
+    return false;
+
+  return (it->second.find(tcp_name) != it->second.end());
+}
 }  // namespace tesseract_srdf

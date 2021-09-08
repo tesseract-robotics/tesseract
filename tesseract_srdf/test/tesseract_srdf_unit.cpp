@@ -1437,6 +1437,128 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
   }
 }
 
+TEST(TesseractSRDFUnit, AddRemoveChainGroupUnit)  // NOLINT
+{
+  using namespace tesseract_srdf;
+  KinematicsInformation info;
+
+  // ADD
+  ChainGroup chain_group;
+  chain_group.push_back(std::make_pair("base_link", "tool0"));
+  info.addChainGroup("manipulator", chain_group);
+  EXPECT_TRUE(info.hasChainGroup("manipulator"));
+  EXPECT_TRUE(info.chain_groups.at("manipulator") == chain_group);
+  EXPECT_EQ(info.chain_groups.size(), 1);
+  EXPECT_EQ(info.group_names.size(), 1);
+  EXPECT_TRUE(info.hasGroup("manipulator"));
+
+  // Remove
+  info.removeChainGroup("manipulator");
+  EXPECT_FALSE(info.hasChainGroup("manipulator"));
+  EXPECT_FALSE(info.hasGroup("manipulator"));
+  EXPECT_EQ(info.chain_groups.size(), 0);
+  EXPECT_EQ(info.group_names.size(), 0);
+}
+
+TEST(TesseractSRDFUnit, AddRemoveJointGroupUnit)  // NOLINT
+{
+  using namespace tesseract_srdf;
+  KinematicsInformation info;
+
+  // ADD
+  JointGroup joint_group = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  info.addJointGroup("manipulator", joint_group);
+  EXPECT_TRUE(info.hasJointGroup("manipulator"));
+  EXPECT_TRUE(info.hasGroup("manipulator"));
+  EXPECT_TRUE(info.joint_groups.at("manipulator") == joint_group);
+  EXPECT_EQ(info.joint_groups.size(), 1);
+  EXPECT_EQ(info.group_names.size(), 1);
+
+  // Remove
+  info.removeJointGroup("manipulator");
+  EXPECT_FALSE(info.hasJointGroup("manipulator"));
+  EXPECT_FALSE(info.hasGroup("manipulator"));
+  EXPECT_EQ(info.joint_groups.size(), 0);
+  EXPECT_EQ(info.group_names.size(), 0);
+}
+
+TEST(TesseractSRDFUnit, AddRemoveLinkGroupUnit)  // NOLINT
+{
+  using namespace tesseract_srdf;
+  KinematicsInformation info;
+
+  // ADD
+  LinkGroup link_group = { "link_1", "link_2", "link_3", "link_4", "link_5", "link_6" };
+  info.addLinkGroup("manipulator", link_group);
+  EXPECT_TRUE(info.hasLinkGroup("manipulator"));
+  EXPECT_TRUE(info.hasGroup("manipulator"));
+  EXPECT_EQ(info.link_groups.size(), 1);
+  EXPECT_EQ(info.group_names.size(), 1);
+
+  // Remove
+  info.removeLinkGroup("manipulator");
+  EXPECT_FALSE(info.hasLinkGroup("manipulator"));
+  EXPECT_FALSE(info.hasGroup("manipulator"));
+  EXPECT_EQ(info.link_groups.size(), 0);
+  EXPECT_EQ(info.group_names.size(), 0);
+}
+
+TEST(TesseractSRDFUnit, AddRemoveGroupJointStateUnit)  // NOLINT
+{
+  using namespace tesseract_srdf;
+  KinematicsInformation info;
+
+  // ADD
+  GroupsJointState group_states;
+  group_states["joint_1"] = 0;
+  group_states["joint_2"] = 0;
+  group_states["joint_3"] = 0;
+  group_states["joint_4"] = 0;
+  group_states["joint_5"] = 0;
+  group_states["joint_6"] = 0;
+
+  info.addGroupJointState("manipulator", "all-zeros", group_states);
+  EXPECT_TRUE(info.hasGroupJointState("manipulator", "all-zeros"));
+  EXPECT_TRUE(info.group_states.at("manipulator").at("all-zeros") == group_states);
+  EXPECT_EQ(info.group_states.at("manipulator").size(), 1);
+  EXPECT_EQ(info.group_states.size(), 1);
+
+  // Remove
+  info.removeGroupJointState("manipulator", "all-zeros");
+  EXPECT_FALSE(info.hasGroupJointState("manipulator", "all-zeros"));
+  EXPECT_EQ(info.group_states.size(), 0);
+}
+
+TEST(TesseractSRDFUnit, AddRemoveGroupTCPUnit)  // NOLINT
+{
+  using namespace tesseract_srdf;
+  KinematicsInformation info;
+
+  // ADD
+  GroupsTCPs group_tcps;
+  Eigen::Isometry3d tcp_laser = Eigen::Isometry3d::Identity();
+  tcp_laser.translation() = Eigen::Vector3d(1, 0.1, 1);
+
+  Eigen::Isometry3d tcp_welder = Eigen::Isometry3d::Identity();
+  tcp_welder.translation() = Eigen::Vector3d(0.1, 1, 0.2);
+
+  info.addGroupTCP("manipulator", "laser", tcp_laser);
+  info.addGroupTCP("manipulator", "welder", tcp_welder);
+  EXPECT_TRUE(info.hasGroupTCP("manipulator", "laser"));
+  EXPECT_TRUE(info.hasGroupTCP("manipulator", "welder"));
+  EXPECT_TRUE(info.group_tcps.at("manipulator").at("laser").isApprox(tcp_laser, 1e-6));
+  EXPECT_TRUE(info.group_tcps.at("manipulator").at("welder").isApprox(tcp_welder, 1e-6));
+  EXPECT_EQ(info.group_tcps.at("manipulator").size(), 2);
+  EXPECT_EQ(info.group_tcps.size(), 1);
+
+  // Remove
+  info.removeGroupTCP("manipulator", "laser");
+  info.removeGroupTCP("manipulator", "welder");
+  EXPECT_FALSE(info.hasGroupTCP("manipulator", "laser"));
+  EXPECT_FALSE(info.hasGroupTCP("manipulator", "welder"));
+  EXPECT_EQ(info.group_tcps.size(), 0);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
