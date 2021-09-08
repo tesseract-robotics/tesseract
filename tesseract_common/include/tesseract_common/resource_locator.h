@@ -58,7 +58,7 @@ public:
 
   ResourceLocator() = default;
   virtual ~ResourceLocator() = default;
-  ResourceLocator(const ResourceLocator&) = delete;
+  ResourceLocator(const ResourceLocator&) = default;
   ResourceLocator& operator=(const ResourceLocator&) = delete;
   ResourceLocator(ResourceLocator&&) = delete;
   ResourceLocator& operator=(ResourceLocator&&) = delete;
@@ -81,10 +81,10 @@ public:
 
   Resource() = default;
   virtual ~Resource() = default;
-  Resource(const Resource&) = delete;
-  Resource& operator=(const Resource&) = delete;
-  Resource(Resource&&) = delete;
-  Resource& operator=(Resource&&) = delete;
+  Resource(const Resource&) = default;
+  Resource& operator=(const Resource&) = default;
+  Resource(Resource&&) = default;
+  Resource& operator=(Resource&&) = default;
 
   /**
    * @brief Returns true if the located resource is a local file
@@ -125,7 +125,7 @@ public:
 using SimpleResourceLocatorFn = std::function<std::string(const std::string&)>;
 
 /** @brief Resource locator implementation using a provided function to locate file resources */
-class SimpleResourceLocator : public ResourceLocator, public std::enable_shared_from_this<SimpleResourceLocator>
+class SimpleResourceLocator : public ResourceLocator
 {
 public:
   using Ptr = std::shared_ptr<SimpleResourceLocator>;
@@ -137,13 +137,13 @@ public:
    * @param locator_function Function to use to resolve resource file paths from URLs
    */
   SimpleResourceLocator(SimpleResourceLocatorFn locator_function);
-  ~SimpleResourceLocator() override = default;
-  SimpleResourceLocator(const SimpleResourceLocator&) = delete;
-  SimpleResourceLocator& operator=(const SimpleResourceLocator&) = delete;
-  SimpleResourceLocator(SimpleResourceLocator&&) = delete;
-  SimpleResourceLocator& operator=(SimpleResourceLocator&&) = delete;
+  ~SimpleResourceLocator() override final = default;
+  SimpleResourceLocator(const SimpleResourceLocator&) = default;
+  SimpleResourceLocator& operator=(const SimpleResourceLocator&) = default;
+  SimpleResourceLocator(SimpleResourceLocator&&) = default;
+  SimpleResourceLocator& operator=(SimpleResourceLocator&&) = default;
 
-  tesseract_common::Resource::Ptr locateResource(const std::string& url) const override;
+  tesseract_common::Resource::Ptr locateResource(const std::string& url) const override final;
 
 protected:
   SimpleResourceLocatorFn locator_function_;
@@ -159,23 +159,23 @@ public:
   SimpleLocatedResource(const std::string& url,
                         const std::string& filename,
                         const SimpleResourceLocator::ConstPtr& parent = nullptr);
-  ~SimpleLocatedResource() override = default;
-  SimpleLocatedResource(const SimpleLocatedResource&) = delete;
-  SimpleLocatedResource& operator=(const SimpleLocatedResource&) = delete;
-  SimpleLocatedResource(SimpleLocatedResource&&) = delete;
-  SimpleLocatedResource& operator=(SimpleLocatedResource&&) = delete;
+  ~SimpleLocatedResource() override final = default;
+  SimpleLocatedResource(const SimpleLocatedResource&) = default;
+  SimpleLocatedResource& operator=(const SimpleLocatedResource&) = default;
+  SimpleLocatedResource(SimpleLocatedResource&&) = default;
+  SimpleLocatedResource& operator=(SimpleLocatedResource&&) = default;
 
-  bool isFile() const override;
+  bool isFile() const override final;
 
-  std::string getUrl() const override;
+  std::string getUrl() const override final;
 
-  std::string getFilePath() const override;
+  std::string getFilePath() const override final;
 
-  std::vector<uint8_t> getResourceContents() const override;
+  std::vector<uint8_t> getResourceContents() const override final;
 
-  std::shared_ptr<std::istream> getResourceContentStream() const override;
+  std::shared_ptr<std::istream> getResourceContentStream() const override final;
 
-  Resource::Ptr locateResource(const std::string& url) const override;
+  Resource::Ptr locateResource(const std::string& url) const override final;
 
 protected:
   std::string url_;
@@ -188,18 +188,18 @@ class BytesResource : public tesseract_common::Resource
 public:
   BytesResource(std::string url, std::vector<uint8_t> bytes);
   BytesResource(std::string url, const uint8_t* bytes, size_t bytes_len);
-  ~BytesResource() override = default;
-  BytesResource(const BytesResource&) = delete;
-  BytesResource& operator=(const BytesResource&) = delete;
-  BytesResource(BytesResource&&) = delete;
-  BytesResource& operator=(BytesResource&&) = delete;
+  ~BytesResource() override final = default;
+  BytesResource(const BytesResource&) = default;
+  BytesResource& operator=(const BytesResource&) = default;
+  BytesResource(BytesResource&&) = default;
+  BytesResource& operator=(BytesResource&&) = default;
 
-  bool isFile() const override;
-  std::string getUrl() const override;
-  std::string getFilePath() const override;
-  std::vector<uint8_t> getResourceContents() const override;
-  std::shared_ptr<std::istream> getResourceContentStream() const override;
-  Resource::Ptr locateResource(const std::string& url) const override;
+  bool isFile() const override final;
+  std::string getUrl() const override final;
+  std::string getFilePath() const override final;
+  std::vector<uint8_t> getResourceContents() const override final;
+  std::shared_ptr<std::istream> getResourceContentStream() const override final;
+  Resource::Ptr locateResource(const std::string& url) const override final;
 
 protected:
   std::string url_;

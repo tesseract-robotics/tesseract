@@ -43,7 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_urdf
 {
 tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_xml_string,
-                                                        const tesseract_common::ResourceLocator::Ptr& locator)
+                                                        const tesseract_common::ResourceLocator& locator)
 {
   tinyxml2::XMLDocument xml_doc;
   if (xml_doc.Parse(urdf_xml_string.c_str()) != tinyxml2::XML_SUCCESS)
@@ -156,7 +156,7 @@ tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_
 }
 
 tesseract_scene_graph::SceneGraph::UPtr parseURDFFile(const std::string& path,
-                                                      const tesseract_common::ResourceLocator::Ptr& locator)
+                                                      const tesseract_common::ResourceLocator& locator)
 {
   std::ifstream ifs(path);
   if (!ifs)

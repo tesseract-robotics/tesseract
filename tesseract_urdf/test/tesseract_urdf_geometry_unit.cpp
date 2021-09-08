@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
 {
-  auto resource_locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
   {
     std::string str = R"(<geometry extra="0 0 0">
                            <box size="1 1 1" />

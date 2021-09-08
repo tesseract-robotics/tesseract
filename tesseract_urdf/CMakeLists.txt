@@ -138,11 +138,11 @@ install(FILES include/${PROJECT_NAME}/mesh_writer.h DESTINATION include/${PROJEC
 # ADD Examples
 add_subdirectory(examples)
 
-if(TESSERACT_ENABLE_TESTING)
+#if(TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
-endif()
+#endif()
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(

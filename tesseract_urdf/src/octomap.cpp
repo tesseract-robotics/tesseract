@@ -42,7 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #endif
 
 tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctomap(const tinyxml2::XMLElement* xml_element,
-                                                             const tesseract_common::ResourceLocator::Ptr& locator,
+                                                             const tesseract_common::ResourceLocator& locator,
                                                              const bool /*visual*/,
                                                              int version)
 {

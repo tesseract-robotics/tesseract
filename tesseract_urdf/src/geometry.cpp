@@ -48,7 +48,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 std::vector<tesseract_geometry::Geometry::Ptr>
 tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
-                              const tesseract_common::ResourceLocator::Ptr& locator,
+                              const tesseract_common::ResourceLocator& locator,
                               bool visual,
                               int version)
 {

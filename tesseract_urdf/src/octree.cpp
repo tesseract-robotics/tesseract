@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 
 tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctree(const tinyxml2::XMLElement* xml_element,
-                                                            const tesseract_common::ResourceLocator::Ptr& locator,
+                                                            const tesseract_common::ResourceLocator& locator,
                                                             tesseract_geometry::Octree::SubType shape_type,
                                                             bool prune,
                                                             int /*version*/)
@@ -46,7 +46,7 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctree(const tinyxml2::XMLE
   if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Octree: Missing or failed parsing attribute 'filename'!"));
 
-  tesseract_common::Resource::Ptr resource = locator->locateResource(filename);
+  tesseract_common::Resource::Ptr resource = locator.locateResource(filename);
   if (!resource || !resource->isFile())
     std::throw_with_nested(std::runtime_error("Octree: Missing resource '" + filename + "'!"));
 

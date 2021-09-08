@@ -41,11 +41,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_geometry/impl/mesh.h>
 
-std::vector<tesseract_geometry::Mesh::Ptr>
-tesseract_urdf::parseMesh(const tinyxml2::XMLElement* xml_element,
-                          const tesseract_common::ResourceLocator::Ptr& locator,
-                          bool visual,
-                          int /*version*/)
+std::vector<tesseract_geometry::Mesh::Ptr> tesseract_urdf::parseMesh(const tinyxml2::XMLElement* xml_element,
+                                                                     const tesseract_common::ResourceLocator& locator,
+                                                                     bool visual,
+                                                                     int /*version*/)
 {
   std::vector<tesseract_geometry::Mesh::Ptr> meshes;
 
@@ -82,10 +81,10 @@ tesseract_urdf::parseMesh(const tinyxml2::XMLElement* xml_element,
 
   if (visual)
     meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
-        locator->locateResource(filename), scale, true, true, true, true, true);
+        locator.locateResource(filename), scale, true, true, true, true, true);
   else
     meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
-        locator->locateResource(filename), scale, true, false);
+        locator.locateResource(filename), scale, true, false);
 
   if (meshes.empty())
     std::throw_with_nested(std::runtime_error("Mesh: Error importing meshes from filename: '" + filename + "'!"));

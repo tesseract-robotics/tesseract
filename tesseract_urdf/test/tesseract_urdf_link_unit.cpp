@@ -11,7 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_link)  // NOLINT
 {
-  auto resource_locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
 
   {
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;

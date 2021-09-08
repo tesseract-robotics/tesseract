@@ -42,7 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 std::vector<tesseract_scene_graph::Visual::Ptr>
 tesseract_urdf::parseVisual(const tinyxml2::XMLElement* xml_element,
-                            const tesseract_common::ResourceLocator::Ptr& locator,
+                            const tesseract_common::ResourceLocator& locator,
                             std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
                             int version)
 {

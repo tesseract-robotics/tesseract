@@ -11,7 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_octree)  // NOLINT
 {
-  auto resource_locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
   //  {
   //    // Create octomap and add save it
   //    pcl::PointCloud<pcl::PointXYZ> full_cloud;

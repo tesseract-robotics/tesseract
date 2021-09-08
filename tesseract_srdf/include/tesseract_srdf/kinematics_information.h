@@ -53,7 +53,7 @@ using JointGroup = std::vector<std::string>;
 using JointGroups = std::unordered_map<std::string, JointGroup>;
 using LinkGroup = std::vector<std::string>;
 using LinkGroups = std::unordered_map<std::string, LinkGroup>;
-using GroupNames = std::vector<std::string>;
+using GroupNames = std::set<std::string>;
 
 /**
  * @brief This hold the kinematics information used to create the SRDF and is the data
@@ -63,8 +63,8 @@ struct KinematicsInformation
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  /** @brief A vector of group names */
-  std::vector<std::string> group_names;
+  /** @brief A set of group names */
+  GroupNames group_names;
 
   /** @brief A map of chains groups*/
   ChainGroups chain_groups;
@@ -83,6 +83,9 @@ struct KinematicsInformation
 
   /** @brief The kinematics pugin information */
   tesseract_common::KinematicsPluginInfo kinematics_plugin_info;
+
+  /** @brief Insert the content of an other KinematicsInformation */
+  void insert(const KinematicsInformation& other);
 
   /** @brief Clear the kinematics information */
   void clear();

@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_mesh_material_dae)  // NOLINT
 {
-  auto resource_locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/tesseract_material_mesh.dae"/>)";
     std::vector<tesseract_geometry::Mesh::Ptr> meshes;
@@ -84,7 +84,7 @@ TEST(TesseractURDFUnit, parse_mesh_material_dae)  // NOLINT
 #ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
 TEST(TesseractURDFUnit, parse_mesh_material_gltf2)  // NOLINT
 {
-  auto resource_locator = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/tesseract_material_mesh.glb"/>)";
     std::vector<tesseract_geometry::Mesh::Ptr> meshes;

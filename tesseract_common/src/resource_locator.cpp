@@ -48,7 +48,7 @@ tesseract_common::Resource::Ptr SimpleResourceLocator::locateResource(const std:
   std::string filename = locator_function_(url);
   if (!tesseract_common::fs::path(filename).is_complete())
     return nullptr;
-  return std::make_shared<SimpleLocatedResource>(url, filename, shared_from_this());
+  return std::make_shared<SimpleLocatedResource>(url, filename, std::make_shared<SimpleResourceLocator>(*this));
 }
 
 SimpleLocatedResource::SimpleLocatedResource(const std::string& url,
