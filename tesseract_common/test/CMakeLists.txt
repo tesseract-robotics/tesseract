@@ -98,11 +98,7 @@ add_dependencies(${PROJECT_NAME}_plugin_loader_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_plugin_loader_unit)
 
 add_executable(${PROJECT_NAME}_resource_unit resource_locator_unit.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_resource_unit
-  PRIVATE GTest::GTest
-          GTest::Main
-          ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_resource_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME}_resource_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_resource_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})

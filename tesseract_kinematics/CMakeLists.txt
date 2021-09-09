@@ -54,13 +54,13 @@ endif()
 set(KINEMATICS_PLUGINS "")
 
 # Create interface for core
-add_library(${PROJECT_NAME}_core
+add_library(
+  ${PROJECT_NAME}_core
   src/core/rop_inv_kin.cpp
   src/core/rep_inv_kin.cpp
   src/core/joint_group.cpp
   src/core/kinematic_group.cpp
-  src/core/kinematics_plugin_factory.cpp
-  )
+  src/core/kinematics_plugin_factory.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen
@@ -85,28 +85,21 @@ target_include_directories(${PROJECT_NAME}_core PUBLIC "$<BUILD_INTERFACE:${CMAK
                                                        "$<INSTALL_INTERFACE:include>")
 
 # Add KDL kinematics factories
-add_library(
- ${PROJECT_NAME}_core_factories
- src/core/rop_factory.cpp
- src/core/rep_factory.cpp
- )
-target_link_libraries(
- ${PROJECT_NAME}_core_factories
- PUBLIC ${PROJECT_NAME}_core
-        console_bridge::console_bridge)
+add_library(${PROJECT_NAME}_core_factories src/core/rop_factory.cpp src/core/rep_factory.cpp)
+target_link_libraries(${PROJECT_NAME}_core_factories PUBLIC ${PROJECT_NAME}_core console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_core_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core_factories PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_core_factories ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_core_factories PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
- ${PROJECT_NAME}_core_factories
- ALL
- EXCLUDE ${COVERAGE_EXCLUDE}
- ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-target_include_directories(${PROJECT_NAME}_core_factories PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                       "$<INSTALL_INTERFACE:include>")
-
+  ${PROJECT_NAME}_core_factories
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+target_include_directories(
+  ${PROJECT_NAME}_core_factories PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                        "$<INSTALL_INTERFACE:include>")
 
 # Add factory library so kinematic_factory can find these factories by defauult
 list(APPEND KINEMATICS_PLUGINS "${PROJECT_NAME}_core_factories")
@@ -162,9 +155,7 @@ target_include_directories(${PROJECT_NAME}_kdl PUBLIC "$<BUILD_INTERFACE:${CMAKE
                                                       "$<INSTALL_INTERFACE:include>")
 
 # Add KDL kinematics factories
-add_library(
-  ${PROJECT_NAME}_kdl_factories
-  src/kdl/kdl_factories.cpp)
+add_library(${PROJECT_NAME}_kdl_factories src/kdl/kdl_factories.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_kdl_factories
   PUBLIC ${PROJECT_NAME}_kdl
@@ -182,8 +173,7 @@ target_code_coverage(
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME}_kdl_factories PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                        "$<INSTALL_INTERFACE:include>")
-
+                                                                "$<INSTALL_INTERFACE:include>")
 
 # Add factory library so kinematic_factory can find these factories by defauult
 list(APPEND KINEMATICS_PLUGINS "${PROJECT_NAME}_kdl_factories")
@@ -211,11 +201,8 @@ target_include_directories(${PROJECT_NAME}_opw PUBLIC "$<BUILD_INTERFACE:${CMAKE
                                                       "$<INSTALL_INTERFACE:include>")
 
 add_library(${PROJECT_NAME}_opw_factory src/opw/opw_factory.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_opw_factory
-  PUBLIC ${PROJECT_NAME}_opw
-         tesseract::tesseract_scene_graph
-         console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME}_opw_factory PUBLIC ${PROJECT_NAME}_opw tesseract::tesseract_scene_graph
+                                                         console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_opw_factory PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_opw_factory PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_opw_factory PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -227,7 +214,7 @@ target_code_coverage(
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME}_opw_factory PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                      "$<INSTALL_INTERFACE:include>")
+                                                              "$<INSTALL_INTERFACE:include>")
 
 # Add factory library so kinematic_factory can find these factories by defauult
 list(APPEND KINEMATICS_PLUGINS "${PROJECT_NAME}_opw_factory")
@@ -254,29 +241,30 @@ target_include_directories(${PROJECT_NAME}_ur PUBLIC "$<BUILD_INTERFACE:${CMAKE_
                                                      "$<INSTALL_INTERFACE:include>")
 
 add_library(${PROJECT_NAME}_ur_factory src/ur/ur_factory.cpp)
-target_link_libraries(
- ${PROJECT_NAME}_ur_factory
- PUBLIC ${PROJECT_NAME}_ur
-        tesseract::tesseract_scene_graph
-        console_bridge::console_bridge)
+target_link_libraries(${PROJECT_NAME}_ur_factory PUBLIC ${PROJECT_NAME}_ur tesseract::tesseract_scene_graph
+                                                        console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_ur_factory PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_ur_factory PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ur_factory PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_ur_factory ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_ur_factory PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
- ${PROJECT_NAME}_ur_factory
- ALL
- EXCLUDE ${COVERAGE_EXCLUDE}
- ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+  ${PROJECT_NAME}_ur_factory
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME}_ur_factory PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                    "$<INSTALL_INTERFACE:include>")
+                                                             "$<INSTALL_INTERFACE:include>")
 
 # Add factory library so kinematic_factory can find these factories by defauult
 list(APPEND KINEMATICS_PLUGINS "${PROJECT_NAME}_ur_factory")
 
 # Add compiler definition to core so it can find all plugins produced
-string(REPLACE ";" ":" KINEMATICS_PLUGINS_STRING "${KINEMATICS_PLUGINS}")
+string(
+  REPLACE ";"
+          ":"
+          KINEMATICS_PLUGINS_STRING
+          "${KINEMATICS_PLUGINS}")
 target_compile_definitions(${PROJECT_NAME}_core PRIVATE TESSERACT_KINEMATICS_PLUGINS="${KINEMATICS_PLUGINS_STRING}")
 
 configure_package(
@@ -289,8 +277,7 @@ configure_package(
           ${PROJECT_NAME}_core_factories
           ${PROJECT_NAME}_kdl_factories
           ${PROJECT_NAME}_opw_factory
-          ${PROJECT_NAME}_ur_factory
-          )
+          ${PROJECT_NAME}_ur_factory)
 
 # Mark cpp header files for installation
 install(
@@ -316,7 +303,8 @@ if(TESSERACT_PACKAGE)
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph" tesseract_state_solver
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      tesseract_state_solver
       "${TESSERACT_PACKAGE_PREFIX}tesseract_state_solver"
       "${TESSERACT_PACKAGE_PREFIX}opw-kinematics"
       "libconsole-bridge-dev"
