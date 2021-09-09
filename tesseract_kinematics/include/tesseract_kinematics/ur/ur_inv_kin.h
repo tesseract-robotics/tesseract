@@ -58,7 +58,7 @@ public:
   using UPtr = std::unique_ptr<URInvKin>;
   using ConstUPtr = std::unique_ptr<const URInvKin>;
 
-  ~URInvKin() override final = default;
+  ~URInvKin() override = default;
   URInvKin(const URInvKin& other);
   URInvKin& operator=(const URInvKin& other);
   URInvKin(URInvKin&&) = default;

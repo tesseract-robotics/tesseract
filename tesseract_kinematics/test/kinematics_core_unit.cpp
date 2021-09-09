@@ -129,6 +129,8 @@ void runRedundantSolutionsTest()
     EXPECT_EQ(solutions.size(), 0);
 
     redundancy_capable_joints = { 10 };
+
+    // NOLINTNEXTLINE
     EXPECT_THROW(tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints),
                  std::runtime_error);
   }

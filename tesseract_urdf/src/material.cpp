@@ -72,7 +72,7 @@ tesseract_scene_graph::Material::Ptr tesseract_urdf::parseMaterial(
       if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
         std::throw_with_nested(std::runtime_error("Material: Failed to parse color attribute 'rgba' from string!"));
 
-      double r, g, b, a;
+      double r{ 0 }, g{ 0 }, b{ 0 }, a{ 0 };
       // No need to check return values because the tokens are verified above
       tesseract_common::toNumeric<double>(tokens[0], r);
       tesseract_common::toNumeric<double>(tokens[1], g);

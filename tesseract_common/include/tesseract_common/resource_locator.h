@@ -59,9 +59,9 @@ public:
   ResourceLocator() = default;
   virtual ~ResourceLocator() = default;
   ResourceLocator(const ResourceLocator&) = default;
-  ResourceLocator& operator=(const ResourceLocator&) = delete;
-  ResourceLocator(ResourceLocator&&) = delete;
-  ResourceLocator& operator=(ResourceLocator&&) = delete;
+  ResourceLocator& operator=(const ResourceLocator&) = default;
+  ResourceLocator(ResourceLocator&&) = default;
+  ResourceLocator& operator=(ResourceLocator&&) = default;
 
   /**
    * @brief Locate a resource based on a URL
@@ -80,7 +80,7 @@ public:
   using ConstPtr = std::shared_ptr<const Resource>;
 
   Resource() = default;
-  virtual ~Resource() = default;
+  ~Resource() override = default;
   Resource(const Resource&) = default;
   Resource& operator=(const Resource&) = default;
   Resource(Resource&&) = default;
@@ -137,7 +137,7 @@ public:
    * @param locator_function Function to use to resolve resource file paths from URLs
    */
   SimpleResourceLocator(SimpleResourceLocatorFn locator_function);
-  ~SimpleResourceLocator() override final = default;
+  ~SimpleResourceLocator() override = default;
   SimpleResourceLocator(const SimpleResourceLocator&) = default;
   SimpleResourceLocator& operator=(const SimpleResourceLocator&) = default;
   SimpleResourceLocator(SimpleResourceLocator&&) = default;
@@ -145,7 +145,7 @@ public:
 
   tesseract_common::Resource::Ptr locateResource(const std::string& url) const override final;
 
-protected:
+private:
   SimpleResourceLocatorFn locator_function_;
 };
 
@@ -159,7 +159,7 @@ public:
   SimpleLocatedResource(const std::string& url,
                         const std::string& filename,
                         const SimpleResourceLocator::ConstPtr& parent = nullptr);
-  ~SimpleLocatedResource() override final = default;
+  ~SimpleLocatedResource() override = default;
   SimpleLocatedResource(const SimpleLocatedResource&) = default;
   SimpleLocatedResource& operator=(const SimpleLocatedResource&) = default;
   SimpleLocatedResource(SimpleLocatedResource&&) = default;
@@ -177,7 +177,7 @@ public:
 
   Resource::Ptr locateResource(const std::string& url) const override final;
 
-protected:
+private:
   std::string url_;
   std::string filename_;
   SimpleResourceLocator::ConstPtr parent_;
@@ -188,7 +188,7 @@ class BytesResource : public tesseract_common::Resource
 public:
   BytesResource(std::string url, std::vector<uint8_t> bytes);
   BytesResource(std::string url, const uint8_t* bytes, size_t bytes_len);
-  ~BytesResource() override final = default;
+  ~BytesResource() override = default;
   BytesResource(const BytesResource&) = default;
   BytesResource& operator=(const BytesResource&) = default;
   BytesResource(BytesResource&&) = default;
@@ -201,7 +201,7 @@ public:
   std::shared_ptr<std::istream> getResourceContentStream() const override final;
   Resource::Ptr locateResource(const std::string& url) const override final;
 
-protected:
+private:
   std::string url_;
   std::vector<uint8_t> bytes_;
 };

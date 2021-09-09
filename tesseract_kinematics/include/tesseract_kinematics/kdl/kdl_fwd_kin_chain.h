@@ -67,7 +67,7 @@ public:
   using UPtr = std::unique_ptr<KDLFwdKinChain>;
   using ConstUPtr = std::unique_ptr<const KDLFwdKinChain>;
 
-  ~KDLFwdKinChain() override final = default;
+  ~KDLFwdKinChain() override = default;
   KDLFwdKinChain(const KDLFwdKinChain& other);
   KDLFwdKinChain& operator=(const KDLFwdKinChain& other);
   KDLFwdKinChain(KDLFwdKinChain&&) = default;

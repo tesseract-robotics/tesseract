@@ -44,7 +44,7 @@ namespace tesseract_scene_graph
 struct ofkt_builder : public boost::dfs_visitor<>
 {
   ofkt_builder(OFKTStateSolver& tree, std::vector<JointLimits::ConstPtr>& new_joints_limits, std::string prefix = "")
-    : tree_(tree), new_joints_limits_(new_joints_limits), prefix_(prefix)
+    : tree_(tree), new_joints_limits_(new_joints_limits), prefix_(std::move(prefix))
   {
   }
 
@@ -713,7 +713,7 @@ void OFKTStateSolver::loadActiveLinkNamesRecursive(std::vector<std::string>& act
   if (active)
   {
     active_link_names.push_back(node->getLinkName());
-    for (auto* child : node->getChildren())
+    for (const auto* child : node->getChildren())
       loadActiveLinkNamesRecursive(active_link_names, child, active);
   }
   else
@@ -721,13 +721,13 @@ void OFKTStateSolver::loadActiveLinkNamesRecursive(std::vector<std::string>& act
     if (node->getType() == tesseract_scene_graph::JointType::FIXED ||
         node->getType() == tesseract_scene_graph::JointType::FLOATING)
     {
-      for (auto* child : node->getChildren())
+      for (const auto* child : node->getChildren())
         loadActiveLinkNamesRecursive(active_link_names, child, active);
     }
     else
     {
       active_link_names.push_back(node->getLinkName());
-      for (auto* child : node->getChildren())
+      for (const auto* child : node->getChildren())
         loadActiveLinkNamesRecursive(active_link_names, child, true);
     }
   }
@@ -740,7 +740,7 @@ void OFKTStateSolver::loadStaticLinkNamesRecursive(std::vector<std::string>& sta
       node->getType() == tesseract_scene_graph::JointType::FLOATING)
   {
     static_link_names.push_back(node->getLinkName());
-    for (auto* child : node->getChildren())
+    for (const auto* child : node->getChildren())
       loadStaticLinkNamesRecursive(static_link_names, child);
   }
 }
@@ -1094,9 +1094,8 @@ void OFKTStateSolver::addNewJointLimits(const std::vector<JointLimits::ConstPtr>
     l.acceleration_limits.head(limits_.joint_limits.rows()) = limits_.acceleration_limits;
 
     long cnt = limits_.joint_limits.rows();
-    for (std::size_t i = 0; i < new_joint_limits.size(); ++i)
+    for (const auto& limits : new_joint_limits)
     {
-      const auto& limits = new_joint_limits[i];
       l.joint_limits(cnt, 0) = limits->lower;
       l.joint_limits(cnt, 1) = limits->upper;
       l.velocity_limits(cnt) = limits->velocity;

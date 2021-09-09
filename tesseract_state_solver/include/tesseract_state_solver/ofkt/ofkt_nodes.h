@@ -51,7 +51,7 @@ public:
                OFKTNode* parent,
                std::string link_name,
                std::string joint_name,
-               Eigen::Isometry3d static_tf);
+               const Eigen::Isometry3d& static_tf);
 
   JointType getType() const override;
 
@@ -146,7 +146,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  OFKTFixedNode(OFKTNode* parent, std::string link_name, std::string joint_name, Eigen::Isometry3d static_tf);
+  OFKTFixedNode(OFKTNode* parent, std::string link_name, std::string joint_name, const Eigen::Isometry3d& static_tf);
 
   void storeJointValue(double joint_value) override;
   double getJointValue() const override;
@@ -171,8 +171,8 @@ public:
   OFKTRevoluteNode(OFKTNode* parent,
                    std::string link_name,
                    std::string joint_name,
-                   Eigen::Isometry3d static_tf,
-                   Eigen::Vector3d axis);
+                   const Eigen::Isometry3d& static_tf,
+                   const Eigen::Vector3d& axis);
 
   void storeJointValue(double joint_value) override;
   void computeAndStoreLocalTransformation() override;
@@ -200,8 +200,8 @@ public:
   OFKTContinuousNode(OFKTNode* parent,
                      std::string link_name,
                      std::string joint_name,
-                     Eigen::Isometry3d static_tf,
-                     Eigen::Vector3d axis);
+                     const Eigen::Isometry3d& static_tf,
+                     const Eigen::Vector3d& axis);
 
   void computeAndStoreLocalTransformation() override;
   Eigen::Isometry3d computeLocalTransformation(double joint_value) const override;
@@ -228,8 +228,8 @@ public:
   OFKTPrismaticNode(OFKTNode* parent,
                     std::string link_name,
                     std::string joint_name,
-                    Eigen::Isometry3d static_tf,
-                    Eigen::Vector3d axis);
+                    const Eigen::Isometry3d& static_tf,
+                    const Eigen::Vector3d& axis);
 
   void computeAndStoreLocalTransformation() override;
   Eigen::Isometry3d computeLocalTransformation(double joint_value) const override;

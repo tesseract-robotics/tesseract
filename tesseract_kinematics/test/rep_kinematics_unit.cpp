@@ -76,6 +76,7 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
 
   {  // Test failure
     auto scene_graph_empty = std::make_shared<tesseract_scene_graph::SceneGraph>();
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_shared<REPInvKin>("robot_external_positioner",
                                                  *scene_graph_empty,
                                                  scene_state,
@@ -84,6 +85,7 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
                                                  positioner_kin->clone(),
                                                  positioner_resolution));
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_shared<REPInvKin>("robot_external_positioner",
                                                  scene_graph,
                                                  scene_state,
@@ -92,6 +94,7 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
                                                  positioner_kin->clone(),
                                                  positioner_resolution));
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_shared<REPInvKin>("robot_external_positioner",
                                                  scene_graph,
                                                  scene_state,
@@ -100,10 +103,12 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
                                                  positioner_kin->clone(),
                                                  positioner_resolution));
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
         "robot_external_positioner", scene_graph, scene_state, opw_kin->clone(), 2.5, nullptr, positioner_resolution));
 
     positioner_resolution = Eigen::VectorXd();
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_shared<REPInvKin>("robot_external_positioner",
                                                  scene_graph,
                                                  scene_state,
@@ -113,6 +118,7 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
                                                  positioner_resolution));
 
     positioner_resolution = Eigen::VectorXd::Constant(2, -0.1);
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_shared<REPInvKin>("robot_external_positioner",
                                                  scene_graph,
                                                  scene_state,

@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     po::store(po::parse_command_line(argc, argv, desc), vm);  // can throw
 
     /** --help option */
-    if (vm.count("help"))
+    if (vm.count("help") != 0U)
     {
       std::cout << "Basic Command Line Parameter App" << std::endl << desc << std::endl;
       return SUCCESS;

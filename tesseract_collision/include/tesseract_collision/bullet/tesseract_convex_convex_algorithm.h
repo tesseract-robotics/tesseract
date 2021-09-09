@@ -113,7 +113,7 @@ public:
   void getAllContactManifolds(btManifoldArray& manifoldArray) override
   {
     /// should we use m_ownManifold to avoid adding duplicates?
-    if (m_manifoldPtr && m_ownManifold)
+    if (m_manifoldPtr && m_ownManifold)  // NOLINT
       manifoldArray.push_back(m_manifoldPtr);
   }
 

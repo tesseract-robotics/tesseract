@@ -41,11 +41,9 @@
 
 #include "tesseract_collision/bullet/bullet_cast_bvh_manager.h"
 
-extern btScalar gDbvtMargin;
+extern btScalar gDbvtMargin;  // NOLINT
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
 static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
@@ -86,7 +84,7 @@ ContinuousContactManager::Ptr BulletCastBVHManager::clone() const
 {
   auto manager = std::make_shared<BulletCastBVHManager>();
 
-  btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+  auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
 
   for (const auto& cow : link2cow_)
   {
@@ -120,7 +118,7 @@ bool BulletCastBVHManager::addCollisionObject(const std::string& name,
   COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
-    btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+    auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
     new_cow->setContactProcessingThreshold(margin);
     addCollisionObject(new_cow);
     return true;
@@ -179,7 +177,7 @@ bool BulletCastBVHManager::enableCollisionObject(const std::string& name)
     // Need to clean the proxy from broadphase cache so BroadPhaseFilter gets called again.
     // The BroadPhaseFilter only gets called once, so if you change when two objects can be in collision, like filters
     // this must be called or contacts between shapes will be missed.
-    if (it->second->getBroadphaseHandle())
+    if (it->second->getBroadphaseHandle() != nullptr)
       broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(it->second->getBroadphaseHandle(), dispatcher_.get());
 
     auto cast_cow = link2castcow_[name];
@@ -188,7 +186,7 @@ bool BulletCastBVHManager::enableCollisionObject(const std::string& name)
     // Need to clean the proxy from broadphase cache so BroadPhaseFilter gets called again.
     // The BroadPhaseFilter only gets called once, so if you change when two objects can be in collision, like filters
     // this must be called or contacts between shapes will be missed.
-    if (cast_cow->getBroadphaseHandle())
+    if (cast_cow->getBroadphaseHandle() != nullptr)
       broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(cast_cow->getBroadphaseHandle(), dispatcher_.get());
 
     return true;
@@ -207,7 +205,7 @@ bool BulletCastBVHManager::disableCollisionObject(const std::string& name)
     // Need to clean the proxy from broadphase cache so BroadPhaseFilter gets called again.
     // The BroadPhaseFilter only gets called once, so if you change when two objects can be in collision, like filters
     // this must be called or contacts between shapes will be missed.
-    if (it->second->getBroadphaseHandle())
+    if (it->second->getBroadphaseHandle() != nullptr)
       broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(it->second->getBroadphaseHandle(), dispatcher_.get());
 
     auto cast_cow = link2castcow_[name];
@@ -216,7 +214,7 @@ bool BulletCastBVHManager::disableCollisionObject(const std::string& name)
     // Need to clean the proxy from broadphase cache so BroadPhaseFilter gets called again.
     // The BroadPhaseFilter only gets called once, so if you change when two objects can be in collision, like filters
     // this must be called or contacts between shapes will be missed.
-    if (cast_cow->getBroadphaseHandle())
+    if (cast_cow->getBroadphaseHandle() != nullptr)
       broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(cast_cow->getBroadphaseHandle(), dispatcher_.get());
 
     return true;
@@ -238,7 +236,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
     link2castcow_[name]->setWorldTransform(tf);
 
     // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
-    if (cow->getBroadphaseHandle())
+    if (cow->getBroadphaseHandle() != nullptr)
       updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 }
@@ -247,7 +245,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::s
                                                         const tesseract_common::VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
-  for (auto i = 0u; i < names.size(); ++i)
+  for (auto i = 0U; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], poses[i]);
 }
 
@@ -337,7 +335,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::s
 {
   assert(names.size() == pose1.size());
   assert(names.size() == pose2.size());
-  for (auto i = 0u; i < names.size(); ++i)
+  for (auto i = 0U; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
 
@@ -461,7 +459,7 @@ void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const Conta
   pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
 }
 
-void BulletCastBVHManager::addCollisionObject(COW::Ptr cow)
+void BulletCastBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
   cow->setUserPointer(&contact_test_data_);
   link2cow_[cow->getName()] = cow;
@@ -491,12 +489,12 @@ void BulletCastBVHManager::addCollisionObject(COW::Ptr cow)
 
 void BulletCastBVHManager::onCollisionMarginDataChanged()
 {
-  btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+  auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
   for (auto& co : link2cow_)
   {
     COW::Ptr& cow = co.second;
     cow->setContactProcessingThreshold(margin);
-    if (cow->getBroadphaseHandle())
+    if (cow->getBroadphaseHandle() != nullptr)
       updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 
@@ -504,10 +502,9 @@ void BulletCastBVHManager::onCollisionMarginDataChanged()
   {
     COW::Ptr& cow = co.second;
     cow->setContactProcessingThreshold(margin);
-    if (cow->getBroadphaseHandle())
+    if (cow->getBroadphaseHandle() != nullptr)
       updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 }
 
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet

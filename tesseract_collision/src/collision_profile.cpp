@@ -32,14 +32,14 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_single_link, 
     loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
-    std::shared_ptr<tesseract_common::VectorVector3d> ch_verticies(new tesseract_common::VectorVector3d());
-    std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
+    auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
+    auto ch_faces = std::shared_ptr<Eigen::VectorXi>();
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
+    sphere = std::make_shared<ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
   }
   else
   {
-    sphere.reset(new Sphere(0.25));
+    sphere = std::make_shared<Sphere>(0.25);
   }
 
   Eigen::Isometry3d sphere_pose;
@@ -101,14 +101,14 @@ void addCollisionObjects(ContinuousContactManager& checker, bool use_single_link
     loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
-    std::shared_ptr<tesseract_common::VectorVector3d> ch_verticies(new tesseract_common::VectorVector3d());
-    std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
+    auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
+    auto ch_faces = std::shared_ptr<Eigen::VectorXi>();
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
+    sphere = std::make_shared<ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
   }
   else
   {
-    sphere.reset(new Sphere(0.25));
+    sphere = std::make_shared<Sphere>(0.25);
   }
 
   Eigen::Isometry3d sphere_pose;
@@ -160,9 +160,9 @@ std::vector<Eigen::Isometry3d> getTransforms(std::size_t num_poses)
   std::vector<Eigen::Isometry3d> poses(num_poses);
   for (std::size_t i = 0; i < num_poses; ++i)
   {
-    double x = (rand() / RAND_MAX) * double(DIM);
-    double y = (rand() / RAND_MAX) * double(DIM);
-    double z = (rand() / RAND_MAX) * double(DIM);
+    double x = (double(rand()) / RAND_MAX) * double(DIM);
+    double y = (double(rand()) / RAND_MAX) * double(DIM);
+    double z = (double(rand()) / RAND_MAX) * double(DIM);
     poses[i] = Eigen::Isometry3d::Identity();
     poses[i].translation() = Eigen::Vector3d(x, y, z);
   }

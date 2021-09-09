@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_visualization
 {
-void TrajectoryPlayer::setTrajectory(tesseract_common::JointTrajectory trajectory)
+void TrajectoryPlayer::setTrajectory(const tesseract_common::JointTrajectory& trajectory)
 {
   // Prepare the new trajectory message
   trajectory_ = std::make_unique<TrajectoryInterpolator>(trajectory);

@@ -513,6 +513,7 @@ inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)
 
 inline void runJacobianIIWATest(tesseract_kinematics::ForwardKinematics& kin, bool is_kin_tree = false)
 {
+  UNUSED(is_kin_tree);
   std::string tip_link = "tool0";
   std::string base_link = "base_link";
 
@@ -620,8 +621,11 @@ inline void runKinGroupJacobianIIWATest(tesseract_kinematics::KinematicGroup& ki
   for (const auto& link_name : link_names)
     runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
 
+  // NOLINTNEXTLINE
   EXPECT_ANY_THROW(
       runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
+
+  // NOLINTNEXTLINE
   EXPECT_ANY_THROW(
       runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
 
@@ -636,8 +640,11 @@ inline void runKinGroupJacobianIIWATest(tesseract_kinematics::KinematicGroup& ki
     for (const auto& link_name : link_names)
       runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
+
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -785,8 +792,11 @@ inline void runKinGroupJacobianABBOnPositionerTest(tesseract_kinematics::Kinemat
   for (const auto& link_name : link_names)
     runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
 
+  // NOLINTNEXTLINE
   EXPECT_ANY_THROW(
       runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
+
+  // NOLINTNEXTLINE
   EXPECT_ANY_THROW(
       runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
 
@@ -801,8 +811,11 @@ inline void runKinGroupJacobianABBOnPositionerTest(tesseract_kinematics::Kinemat
     for (const auto& link_name : link_names)
       runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
+
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -910,8 +923,11 @@ inline void runKinGroupJacobianABBExternalPositionerTest(tesseract_kinematics::K
   for (const auto& link_name : link_names)
     runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
 
+  // NOLINTNEXTLINE
   EXPECT_ANY_THROW(
       runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
+
+  // NOLINTNEXTLINE
   EXPECT_ANY_THROW(
       runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
 
@@ -926,8 +942,11 @@ inline void runKinGroupJacobianABBExternalPositionerTest(tesseract_kinematics::K
     for (const auto& link_name : link_names)
       runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
+
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
   }

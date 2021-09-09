@@ -136,7 +136,7 @@ public:
    * @brief Set the marker scale
    * @param scale The marker scale
    */
-  virtual void setScale(Eigen::Vector3d scale);
+  virtual void setScale(const Eigen::Vector3d& scale);
 
   /**
    * @brief Get the marker scale

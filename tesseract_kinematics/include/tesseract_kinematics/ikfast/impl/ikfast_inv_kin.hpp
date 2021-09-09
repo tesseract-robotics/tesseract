@@ -97,7 +97,7 @@ inline IKSolutions IKFastInvKin::calcInvKin(const IKInput& tip_link_poses,
 
   // Unpack the solutions into the output vector
   const std::size_t n_sols = ikfast_solution_set.GetNumSolutions();
-  const std::size_t ikfast_dof = numJoints();
+  const auto ikfast_dof = static_cast<std::size_t>(numJoints());
 
   std::vector<IkReal> ikfast_output;
   ikfast_output.resize(n_sols * ikfast_dof);

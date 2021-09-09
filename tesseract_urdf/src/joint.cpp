@@ -128,7 +128,7 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
                                                   "joint '" +
                                                   joint_name + "'!"));
 
-      double ax, ay, az;
+      double ax{ 0 }, ay{ 0 }, az{ 0 };
       // No need to check return values because the tokens are verified above
       tesseract_common::toNumeric<double>(tokens[0], ax);
       tesseract_common::toNumeric<double>(tokens[1], ay);

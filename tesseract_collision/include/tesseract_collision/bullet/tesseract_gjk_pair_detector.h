@@ -62,15 +62,15 @@ class TesseractGjkPairDetector : public btDiscreteCollisionDetectorInterface
   btScalar m_marginB;
 
   bool m_ignoreMargin;
-  btScalar m_cachedSeparatingDistance;
+  btScalar m_cachedSeparatingDistance{ 0 };
 
   const ContactTestData* m_cdata;
 
 public:
   // some debugging to fix degeneracy problems
   int m_lastUsedMethod;
-  int m_curIter;
-  int m_degenerateSimplex;
+  int m_curIter{ 0 };
+  int m_degenerateSimplex{ 0 };
   int m_catchDegeneracies;
   int m_fixContactNormalDirection;
 

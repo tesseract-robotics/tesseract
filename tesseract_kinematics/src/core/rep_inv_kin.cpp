@@ -41,7 +41,7 @@ REPInvKin::REPInvKin(std::string name,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
                      ForwardKinematics::UPtr positioner,
-                     Eigen::VectorXd positioner_sample_resolution,
+                     const Eigen::VectorXd& positioner_sample_resolution,
                      std::string solver_name)
 {
   if (positioner == nullptr)
@@ -61,7 +61,7 @@ REPInvKin::REPInvKin(std::string name,
     positioner_limits(i, 1) = joint->limits->upper;
   }
 
-  init(name,
+  init(std::move(name),
        scene_graph,
        scene_state,
        std::move(manipulator),
@@ -69,7 +69,7 @@ REPInvKin::REPInvKin(std::string name,
        std::move(positioner),
        positioner_limits,
        positioner_sample_resolution,
-       solver_name);
+       std::move(solver_name));
 }
 
 REPInvKin::REPInvKin(std::string name,
@@ -78,11 +78,11 @@ REPInvKin::REPInvKin(std::string name,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
                      ForwardKinematics::UPtr positioner,
-                     Eigen::MatrixX2d poitioner_sample_range,
-                     Eigen::VectorXd positioner_sample_resolution,
+                     const Eigen::MatrixX2d& poitioner_sample_range,
+                     const Eigen::VectorXd& positioner_sample_resolution,
                      std::string solver_name)
 {
-  init(name,
+  init(std::move(name),
        scene_graph,
        scene_state,
        std::move(manipulator),
@@ -90,7 +90,7 @@ REPInvKin::REPInvKin(std::string name,
        std::move(positioner),
        poitioner_sample_range,
        positioner_sample_resolution,
-       solver_name);
+       std::move(solver_name));
 }
 
 void REPInvKin::init(std::string name,
@@ -99,8 +99,8 @@ void REPInvKin::init(std::string name,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
                      ForwardKinematics::UPtr positioner,
-                     Eigen::MatrixX2d poitioner_sample_range,
-                     Eigen::VectorXd positioner_sample_resolution,
+                     const Eigen::MatrixX2d& poitioner_sample_range,
+                     const Eigen::VectorXd& positioner_sample_resolution,
                      std::string solver_name)
 {
   if (solver_name.empty())
@@ -156,7 +156,8 @@ void REPInvKin::init(std::string name,
     int cnt = static_cast<int>(std::ceil(std::abs(poitioner_sample_range(d, 1) - poitioner_sample_range(d, 0)) /
                                          positioner_sample_resolution(d))) +
               1;
-    dof_range_.push_back(Eigen::VectorXd::LinSpaced(cnt, poitioner_sample_range(d, 0), poitioner_sample_range(d, 1)));
+    dof_range_.emplace_back(
+        Eigen::VectorXd::LinSpaced(cnt, poitioner_sample_range(d, 0), poitioner_sample_range(d, 1)));
   }
 }
 

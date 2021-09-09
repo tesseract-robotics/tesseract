@@ -57,12 +57,12 @@ KDLInvKinChainNR::KDLInvKinChainNR(std::string name,
   ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR>(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_);
 }
 
-KDLInvKinChainNR::KDLInvKinChainNR(const std::string& name,
+KDLInvKinChainNR::KDLInvKinChainNR(std::string name,
                                    const tesseract_scene_graph::SceneGraph& scene_graph,
                                    const std::string& base_link,
                                    const std::string& tip_link,
                                    std::string solver_name)
-  : KDLInvKinChainNR(name, scene_graph, { std::make_pair(base_link, tip_link) }, solver_name)
+  : KDLInvKinChainNR(std::move(name), scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
 {
 }
 

@@ -50,7 +50,7 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctomap(const tinyxml2::XML
   if (tesseract_common::QueryStringAttribute(xml_element, "shape_type", shape_type) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Octomap: Missing or failed parsing attribute 'shape_type'!"));
 
-  tesseract_geometry::Octree::SubType sub_type;
+  tesseract_geometry::Octree::SubType sub_type{ tesseract_geometry::Octree::SubType::BOX };
   if (shape_type == "box")
     sub_type = tesseract_geometry::Octree::SubType::BOX;
   else if (shape_type == "sphere_inside")

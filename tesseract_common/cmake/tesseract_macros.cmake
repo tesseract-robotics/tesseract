@@ -44,42 +44,6 @@ macro(tesseract_variables)
   set(TESSERACT_COMPILE_OPTIONS_PUBLIC "")
   set(TESSERACT_COMPILE_OPTIONS_PRIVATE "")
   if(NOT TESSERACT_ENABLE_TESTING AND NOT TESSERACT_ENABLE_TESTING_ALL)
-    set(TESSERACT_CLANG_TIDY_ARGS
-        "-header-filter=.*"
-        "-line-filter=[{'name':'EnvironmentMonitorDynamicReconfigureConfig.h','lines':[[9999999,9999999]]}, {'name':'.h'}, {'name':'.hpp'}]"
-        "-checks=-*, \
-      clang-analyzer-*, \
-      bugprone-*, \
-      cppcoreguidelines-avoid-goto, \
-      cppcoreguidelines-c-copy-assignment-signature, \
-      cppcoreguidelines-interfaces-global-init, \
-      cppcoreguidelines-narrowing-conversions, \
-      cppcoreguidelines-no-malloc, \
-      cppcoreguidelines-slicing, \
-      cppcoreguidelines-special-member-functions, \
-      misc-*, \
-      -misc-non-private-member-variables-in-classes, \
-      modernize-*, \
-      -modernize-use-trailing-return-type, \
-      -modernize-use-nodiscard, \
-      performance-*, \
-      readability-avoid-const-params-in-decls, \
-      readability-container-size-empty, \
-      readability-delete-null-pointer, \
-      readability-deleted-default, \
-      readability-else-after-return, \
-      readability-function-size, \
-      readability-identifier-naming, \
-      readability-inconsistent-declaration-parameter-name, \
-      readability-misleading-indentation, \
-      readability-misplaced-array-index, \
-      readability-non-const-parameter, \
-      readability-redundant-*, \
-      readability-simplify-*, \
-      readability-static-*, \
-      readability-string-compare, \
-      readability-uniqueptr-delete-release, \
-      readability-rary-objects")
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       set(TESSERACT_COMPILE_OPTIONS_PRIVATE
           -Wall
@@ -117,75 +81,6 @@ macro(tesseract_variables)
       message(WARNING "${CMAKE_CXX_COMPILER_ID} Unsupported compiler detected.")
     endif()
   else()
-    set(TESSERACT_CLANG_TIDY_ARGS
-        "-header-filter=.*"
-        "-line-filter=[{'name':'EnvironmentMonitorDynamicReconfigureConfig.h','lines':[[9999999,9999999]]}, {'name':'.h'}, {'name':'.hpp'}]"
-        "-checks=-*, \
-      clang-analyzer-*, \
-      bugprone-*, \
-      cppcoreguidelines-avoid-goto, \
-      cppcoreguidelines-c-copy-assignment-signature, \
-      cppcoreguidelines-interfaces-global-init, \
-      cppcoreguidelines-narrowing-conversions, \
-      cppcoreguidelines-no-malloc, \
-      cppcoreguidelines-slicing, \
-      cppcoreguidelines-special-member-functions, \
-      misc-*, \
-      -misc-non-private-member-variables-in-classes, \
-      modernize-*, \
-      -modernize-use-trailing-return-type, \
-      -modernize-use-nodiscard, \
-      performance-*, \
-      readability-avoid-const-params-in-decls, \
-      readability-container-size-empty, \
-      readability-delete-null-pointer, \
-      readability-deleted-default, \
-      readability-else-after-return, \
-      readability-function-size, \
-      readability-identifier-naming, \
-      readability-inconsistent-declaration-parameter-name, \
-      readability-misleading-indentation, \
-      readability-misplaced-array-index, \
-      readability-non-const-parameter, \
-      readability-redundant-*, \
-      readability-simplify-*, \
-      readability-static-*, \
-      readability-string-compare, \
-      readability-uniqueptr-delete-release, \
-      readability-rary-objects"
-        "-warnings-as-errors=-*, \
-      clang-analyzer-*, \
-      bugprone-*, \
-      cppcoreguidelines-avoid-goto, \
-      cppcoreguidelines-c-copy-assignment-signature, \
-      cppcoreguidelines-interfaces-global-init, \
-      cppcoreguidelines-narrowing-conversions, \
-      cppcoreguidelines-no-malloc, \
-      cppcoreguidelines-slicing, \
-      cppcoreguidelines-special-member-functions, \
-      misc-*, \
-      -misc-non-private-member-variables-in-classes, \
-      modernize-*, \
-      -modernize-use-trailing-return-type, \
-      -modernize-use-nodiscard, \
-      performance-*, \
-      readability-avoid-const-params-in-decls, \
-      readability-container-size-empty, \
-      readability-delete-null-pointer, \
-      readability-deleted-default, \
-      readability-else-after-return, \
-      readability-function-size, \
-      readability-identifier-naming, \
-      readability-inconsistent-declaration-parameter-name, \
-      readability-misleading-indentation, \
-      readability-misplaced-array-index, \
-      readability-non-const-parameter, \
-      readability-redundant-*, \
-      readability-simplify-*, \
-      readability-static-*, \
-      readability-string-compare, \
-      readability-uniqueptr-delete-release, \
-      readability-rary-objects")
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       set(TESSERACT_COMPILE_OPTIONS_PRIVATE
           -Werror=all

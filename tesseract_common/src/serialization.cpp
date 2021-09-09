@@ -38,9 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/serialization.h>
 
-namespace boost
-{
-namespace serialization
+namespace boost::serialization
 {
 /*****************************/
 /****** Eigen::VectorXd ******/
@@ -56,7 +54,7 @@ void save(Archive& ar, const Eigen::VectorXd& g, const unsigned int /*version*/)
 template <class Archive>
 void load(Archive& ar, Eigen::VectorXd& g, const unsigned int /*version*/)
 {
-  long rows;
+  long rows{ 0 };
   ar& BOOST_SERIALIZATION_NVP(rows);
   g.resize(rows);
   ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows));
@@ -111,7 +109,7 @@ void save(Archive& ar, const Eigen::MatrixX2d& g, const unsigned int /*version*/
 template <class Archive>
 void load(Archive& ar, Eigen::MatrixX2d& g, const unsigned int /*version*/)
 {
-  long rows;
+  long rows{ 0 };
   ar& BOOST_SERIALIZATION_NVP(rows);
   g.resize(rows, 2);
   ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows * 2));
@@ -123,8 +121,7 @@ void serialize(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version)
   split_free(ar, g, version);
 }
 
-}  // namespace serialization
-}  // namespace boost
+}  // namespace boost::serialization
 
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>

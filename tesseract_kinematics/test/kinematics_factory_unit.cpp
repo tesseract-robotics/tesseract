@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 using namespace tesseract_kinematics::test_suite;
 using namespace tesseract_kinematics;
 
-void runKinematicsFactoryTest(tesseract_common::fs::path config_path)
+void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
 {
   tesseract_scene_graph::SceneGraph::UPtr iiwa_scene_graph = getSceneGraphIIWA();
   tesseract_scene_graph::KDLStateSolver iiwa_state_solver(*iiwa_scene_graph);
@@ -90,11 +90,11 @@ void runKinematicsFactoryTest(tesseract_common::fs::path config_path)
   EXPECT_EQ(fwd_kin_plugins.size(), 1);
   for (auto group_it = fwd_kin_plugins.begin(); group_it != fwd_kin_plugins.end(); ++group_it)
   {
-    std::string group_name = group_it->first.as<std::string>();
+    auto group_name = group_it->first.as<std::string>();
     for (auto solver_it = group_it->second.begin(); solver_it != group_it->second.end(); ++solver_it)
     {
       const YAML::Node& plugin = solver_it->second;
-      std::string solver_name = solver_it->first.as<std::string>();
+      auto solver_name = solver_it->first.as<std::string>();
 
       tesseract_common::PluginInfo info;
       info.class_name = plugin["class"].as<std::string>();
@@ -115,11 +115,11 @@ void runKinematicsFactoryTest(tesseract_common::fs::path config_path)
   EXPECT_EQ(inv_kin_plugins.size(), 5);
   for (auto group_it = inv_kin_plugins.begin(); group_it != inv_kin_plugins.end(); ++group_it)
   {
-    std::string group_name = group_it->first.as<std::string>();
+    auto group_name = group_it->first.as<std::string>();
     for (auto solver_it = group_it->second.begin(); solver_it != group_it->second.end(); ++solver_it)
     {
       const YAML::Node& plugin = solver_it->second;
-      std::string solver_name = solver_it->first.as<std::string>();
+      auto solver_name = solver_it->first.as<std::string>();
 
       tesseract_common::PluginInfo info;
       info.class_name = plugin["class"].as<std::string>();
@@ -202,7 +202,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["OPWInvKin"];
     plugin.remove("class");
 
-    EXPECT_ANY_THROW(KinematicsPluginFactory factory(config));
+    EXPECT_ANY_THROW(KinematicsPluginFactory factory(config));  // NOLINT
   }
   {  // missing default (which is allowed)
     YAML::Node config = YAML::Load(yaml_string);

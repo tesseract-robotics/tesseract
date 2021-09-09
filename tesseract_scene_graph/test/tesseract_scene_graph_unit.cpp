@@ -227,7 +227,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   std::cout << (g.getName().c_str()) << std::endl;
 
   // Should throw since this is a directory and not a file
-  EXPECT_ANY_THROW(g.saveDOT(tesseract_common::getTempPath()));
+  EXPECT_ANY_THROW(g.saveDOT(tesseract_common::getTempPath()));  // NOLINT
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphClearUnit)  // NOLINT
@@ -1111,7 +1111,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
   new_joint.child_link_name = prefix + new_joint.parent_link_name;
   new_joint.type = tesseract_scene_graph::JointType::FIXED;
   new_joint.parent_to_joint_origin_transform = Eigen::Translation3d(1, 0, 0) * Eigen::Isometry3d::Identity();
-  EXPECT_TRUE(ng.insertSceneGraph(g, std::move(new_joint), prefix));
+  EXPECT_TRUE(ng.insertSceneGraph(g, new_joint, prefix));
   EXPECT_TRUE(ng.isTree());
 
   // Check Graph

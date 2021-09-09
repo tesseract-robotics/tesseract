@@ -58,7 +58,7 @@ KDLFwdKinChain::KDLFwdKinChain(std::string name,
                                const std::string& base_link,
                                const std::string& tip_link,
                                std::string solver_name)
-  : KDLFwdKinChain(name, scene_graph, { std::make_pair(base_link, tip_link) }, solver_name)
+  : KDLFwdKinChain(std::move(name), scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
 {
 }
 

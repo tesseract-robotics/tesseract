@@ -62,7 +62,7 @@ public:
   using UPtr = std::unique_ptr<ROPInvKin>;
   using ConstUPtr = std::unique_ptr<const ROPInvKin>;
 
-  ~ROPInvKin() override final = default;
+  ~ROPInvKin() override = default;
   ROPInvKin(const ROPInvKin& other);
   ROPInvKin& operator=(const ROPInvKin& other);
   ROPInvKin(ROPInvKin&&) = default;
@@ -87,7 +87,7 @@ public:
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
             ForwardKinematics::UPtr positioner,
-            Eigen::VectorXd positioner_sample_resolution,
+            const Eigen::VectorXd& positioner_sample_resolution,
             std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
 
   /**
@@ -110,8 +110,8 @@ public:
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
             ForwardKinematics::UPtr positioner,
-            Eigen::MatrixX2d poitioner_sample_range,
-            Eigen::VectorXd positioner_sample_resolution,
+            const Eigen::MatrixX2d& poitioner_sample_range,
+            const Eigen::VectorXd& positioner_sample_resolution,
             std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
 
   IKSolutions calcInvKin(const IKInput& tip_link_poses,
@@ -133,7 +133,7 @@ private:
   std::string manip_tip_link_;
   std::string positioner_tip_link_;
   double manip_reach_{ 0 };
-  Eigen::Index dof_;
+  Eigen::Index dof_{ -1 };
   Eigen::Isometry3d positioner_to_robot_{ Eigen::Isometry3d::Identity() };
   std::vector<Eigen::VectorXd> dof_range_;
   std::string name_;                                           /**< @brief Name of the kinematic chain */
@@ -145,8 +145,8 @@ private:
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
             ForwardKinematics::UPtr positioner,
-            Eigen::MatrixX2d poitioner_sample_range,
-            Eigen::VectorXd positioner_sample_resolution,
+            const Eigen::MatrixX2d& poitioner_sample_range,
+            const Eigen::VectorXd& positioner_sample_resolution,
             std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
 
   /** @brief calcFwdKin helper function */

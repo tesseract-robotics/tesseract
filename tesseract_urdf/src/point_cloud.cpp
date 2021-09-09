@@ -47,7 +47,7 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parsePointCloud(const tinyxml2::
   if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("PointCloud: Missing or failed parsing attribute 'filename'!"));
 
-  double resolution;
+  double resolution{ 0 };
   if (xml_element->QueryDoubleAttribute("resolution", &resolution) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("PointCloud: Missing or failed parsing point_cloud attribute "
                                               "'resolution'!"));

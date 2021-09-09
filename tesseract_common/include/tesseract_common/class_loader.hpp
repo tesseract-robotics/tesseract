@@ -114,7 +114,7 @@ std::string ClassLoader::decorate(const std::string& library_name, const std::st
     sl = boost::filesystem::path(library_directory) / library_name;
 
   boost::filesystem::path actual_path =
-      (std::strncmp(sl.filename().string().c_str(), "lib", 3) ?
+      (std::strncmp(sl.filename().string().c_str(), "lib", 3) != 0 ?
            boost::filesystem::path((sl.has_parent_path() ? sl.parent_path() / L"lib" : L"lib").native() +
                                    sl.filename().native()) :
            sl);

@@ -68,10 +68,9 @@ bool Environment::initHelper(const Commands& commands)
     return false;
   }
 
-  is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
-                                     scene_graph_,
-                                     std::placeholders::_1,
-                                     std::placeholders::_2);
+  is_contact_allowed_fn_ = [this](const std::string& l1, const std::string& l2) {
+    return scene_graph_->isCollisionAllowed(l1, l2);
+  };
 
   initialized_ = true;
   init_revision_ = revision_;
@@ -242,7 +241,7 @@ void Environment::clear()
 }
 
 Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                      const tesseract_srdf::SRDFModel::ConstPtr& srdf_model) const
+                                      const tesseract_srdf::SRDFModel::ConstPtr& srdf_model)
 {
   Commands commands;
 
@@ -370,7 +369,8 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicsGroup(const
       std::move(inv_kin), *scene_graph_const_, *current_state_);
 }
 
-Eigen::Isometry3d Environment::findTCP(const tesseract_common::ManipulatorInfo& manip_info) const
+// NOLINTNEXTLINE
+Eigen::Isometry3d Environment::findTCP(const tesseract_common::ManipulatorInfo& /*manip_info*/) const
 {
   //  std::shared_lock<std::shared_mutex> lock(mutex_);
   //  if (manip_info.tcp.empty())
@@ -419,10 +419,10 @@ Eigen::Isometry3d Environment::findTCP(const tesseract_common::ManipulatorInfo& 
   //  if (manip_info.tcp.isTransform())
   //    return manip_info.tcp.getTransform();
 
-  //  throw std::runtime_error("Could not find tcp!");
+  throw std::runtime_error("Could not find tcp!");
 }
 
-void Environment::addFindTCPCallback(FindTCPCallbackFn fn)
+void Environment::addFindTCPCallback(const FindTCPCallbackFn& fn)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   find_tcp_cb_.push_back(fn);
@@ -437,7 +437,7 @@ std::vector<FindTCPCallbackFn> Environment::getFindTCPCallbacks() const
 void Environment::setResourceLocator(tesseract_common::ResourceLocator::ConstPtr locator)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  resource_locator_ = locator;
+  resource_locator_ = std::move(locator);
 }
 
 tesseract_common::ResourceLocator::ConstPtr Environment::getResourceLocator() const
@@ -553,7 +553,7 @@ Eigen::VectorXd Environment::getCurrentJointValues() const
   Eigen::VectorXd jv;
   std::vector<std::string> active_joint_names = state_solver_->getActiveJointNames();
   jv.resize(static_cast<long int>(active_joint_names.size()));
-  for (auto j = 0u; j < active_joint_names.size(); ++j)
+  for (auto j = 0U; j < active_joint_names.size(); ++j)
     jv(j) = current_state_->joints[active_joint_names[j]];
 
   return jv;
@@ -564,7 +564,7 @@ Eigen::VectorXd Environment::getCurrentJointValues(const std::vector<std::string
   std::shared_lock<std::shared_mutex> lock(mutex_);
   Eigen::VectorXd jv;
   jv.resize(static_cast<long int>(joint_names.size()));
-  for (auto j = 0u; j < joint_names.size(); ++j)
+  for (auto j = 0U; j < joint_names.size(); ++j)
     jv(j) = current_state_->joints[joint_names[j]];
 
   return jv;
@@ -860,7 +860,7 @@ Environment::getContinuousContactManagerHelper(const std::string& name) const
 
 void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
                                      tesseract_common::VectorIsometry3d& shape_poses,
-                                     const tesseract_scene_graph::Link& link) const
+                                     const tesseract_scene_graph::Link& link)
 {
   for (const auto& c : link.collision)
   {
@@ -952,16 +952,17 @@ Environment::Ptr Environment::clone() const
 
   // There is not dynamic pointer cast for std::unique_ptr
   auto cloned_solver = state_solver_->clone();
-  tesseract_scene_graph::MutableStateSolver* p =
-      dynamic_cast<tesseract_scene_graph::MutableStateSolver*>(cloned_solver.get());
-  if (p)
-    cloned_solver.release();
+  auto* p = dynamic_cast<tesseract_scene_graph::MutableStateSolver*>(cloned_solver.get());
+  if (p != nullptr)
+    (void)cloned_solver.release();
 
   cloned_env->state_solver_ = std::unique_ptr<tesseract_scene_graph::MutableStateSolver>(p);
   cloned_env->kinematics_information_ = kinematics_information_;
   cloned_env->kinematics_factory_ = kinematics_factory_;
   cloned_env->find_tcp_cb_ = find_tcp_cb_;
   cloned_env->collision_margin_data_ = collision_margin_data_;
+
+  // NOLINTNEXTLINE
   cloned_env->is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
                                                  cloned_env->scene_graph_,
                                                  std::placeholders::_1,
@@ -1399,7 +1400,7 @@ bool Environment::applyReplaceJointCommand(const ReplaceJointCommand::ConstPtr& 
   return true;
 }
 
-bool Environment::applyChangeLinkOriginCommand(const ChangeLinkOriginCommand::ConstPtr& /*cmd*/)
+bool Environment::applyChangeLinkOriginCommand(const ChangeLinkOriginCommand::ConstPtr& /*cmd*/)  // NOLINT
 {
   throw std::runtime_error("Unhandled environment command: CHANGE_LINK_ORIGIN");
 }

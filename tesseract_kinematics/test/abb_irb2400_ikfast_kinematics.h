@@ -11,7 +11,7 @@ namespace tesseract_kinematics
 class AbbIRB2400Kinematics : public IKFastInvKin
 {
 public:
-  AbbIRB2400Kinematics() = default;
+  AbbIRB2400Kinematics() = default;  // NOLINT
   AbbIRB2400Kinematics(std::string name,
                        std::string base_link_name,
                        std::string tip_link_name,

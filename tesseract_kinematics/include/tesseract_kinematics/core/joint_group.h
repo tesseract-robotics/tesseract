@@ -111,7 +111,7 @@ public:
    * @brief Setter for kinematic limits (joint, velocity, acceleration, etc.)
    * @param Kinematic Limits
    */
-  void setLimits(tesseract_common::KinematicLimits limits);
+  void setLimits(const tesseract_common::KinematicLimits& limits);
 
   /**
    * @brief Get vector indicating which joints are capable of producing redundant solutions

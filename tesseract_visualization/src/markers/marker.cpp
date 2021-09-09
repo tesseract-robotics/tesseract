@@ -15,7 +15,7 @@ void Marker::setLayer(int layer) { layer_ = layer; }
 
 int Marker::getLayer() const { return layer_; }
 
-void Marker::setScale(Eigen::Vector3d scale) { scale_ = scale; }
+void Marker::setScale(const Eigen::Vector3d& scale) { scale_ = scale; }
 
 const Eigen::Vector3d& Marker::getScale() const { return scale_; }
 

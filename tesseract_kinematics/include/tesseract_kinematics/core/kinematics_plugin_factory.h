@@ -108,6 +108,10 @@ class KinematicsPluginFactory
 public:
   KinematicsPluginFactory();
   ~KinematicsPluginFactory();
+  KinematicsPluginFactory(const KinematicsPluginFactory&) = default;
+  KinematicsPluginFactory& operator=(const KinematicsPluginFactory&) = default;
+  KinematicsPluginFactory(KinematicsPluginFactory&&) = default;
+  KinematicsPluginFactory& operator=(KinematicsPluginFactory&&) = default;
 
   /**
    * @brief Load plugins from yaml nodde
@@ -119,13 +123,13 @@ public:
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  KinematicsPluginFactory(tesseract_common::fs::path config);
+  KinematicsPluginFactory(const boost::filesystem::path& config);
 
   /**
    * @brief Load plugins from string
    * @param config The config string
    */
-  KinematicsPluginFactory(std::string config);
+  KinematicsPluginFactory(const std::string& config);
 
   /**
    * @brief Add location for the plugin loader to search
@@ -269,7 +273,7 @@ public:
    * @brief Save the plugin information to a yaml config file
    * @param file_path The file path
    */
-  void saveConfig(tesseract_common::fs::path file_path) const;
+  void saveConfig(const boost::filesystem::path& file_path) const;
 
   /**
    * @brief Get the plugin information config as a yaml node

@@ -91,10 +91,10 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
   clear();
 
   const tinyxml2::XMLElement* srdf_xml = xml_doc.FirstChildElement("robot");
-  if (!srdf_xml)
+  if (srdf_xml == nullptr)
     std::throw_with_nested(std::runtime_error("SRDF: Missing 'robot' element in the xml file!"));
 
-  if (!srdf_xml || std::strncmp(srdf_xml->Name(), "robot", 5) != 0)
+  if (srdf_xml == nullptr || std::strncmp(srdf_xml->Name(), "robot", 5) != 0)
     std::throw_with_nested(std::runtime_error("SRDF: Missing 'robot' element in the xml file!"));
 
   // get the robot name
@@ -191,7 +191,8 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
 
   try
   {
-    for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("kinematics_plugin_config"); xml_element;
+    for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("kinematics_plugin_config");
+         xml_element != nullptr;
          xml_element = xml_element->NextSiblingElement("kinematics_plugin_config"))
     {
       std::string filename;
@@ -339,7 +340,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   if (!kinematics_information.kinematics_plugin_info.empty())
   {
     tesseract_common::fs::path p(file_path);
-    std::ofstream fout(p.parent_path() / "kinematics_plugin_config.yaml");
+    std::ofstream fout(p.parent_path().append("kinematics_plugin_config.yaml").string());
     YAML::Node config;
     config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY] = kinematics_information.kinematics_plugin_info;
     fout << config;

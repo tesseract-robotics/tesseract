@@ -178,7 +178,7 @@ std::vector<std::string> JointGroup::getActiveLinkNames() const { return state_s
 
 tesseract_common::KinematicLimits JointGroup::getLimits() const { return limits_; }
 
-void JointGroup::setLimits(tesseract_common::KinematicLimits limits)
+void JointGroup::setLimits(const tesseract_common::KinematicLimits& limits)
 {
   Eigen::Index nj = numJoints();
   if (limits.joint_limits.rows() != nj || limits.velocity_limits.size() != nj ||

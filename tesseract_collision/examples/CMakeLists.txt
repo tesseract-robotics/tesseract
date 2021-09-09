@@ -14,8 +14,7 @@ target_link_libraries(
   ${LIBFCL_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_box_box_example PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_clang_tidy(${PROJECT_NAME}_box_box_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS}
-                  ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_box_box_example ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_box_box_example PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_compile_definitions(${PROJECT_NAME}_box_box_example PRIVATE DATA_DIR="${CMAKE_SOURCE_DIR}/test"
                                                                    ${BULLET_DEFINITIONS})

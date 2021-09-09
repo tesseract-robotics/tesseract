@@ -91,45 +91,46 @@ struct ContactResult
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   /** @brief The distance between two links */
-  double distance;
+  double distance{ std::numeric_limits<double>::max() };
   /** @brief A user defined type id that is added to the contact shapes */
-  std::array<int, 2> type_id;
+  std::array<int, 2> type_id{ 0, 0 };
   /** @brief The two links that are in contact */
   std::array<std::string, 2> link_names;
   /** @brief The two shapes that are in contact. Each link can be made up of multiple shapes */
-  std::array<int, 2> shape_id;
+  std::array<int, 2> shape_id{ -1, -1 };
   /** @brief Some shapes like octomap and mesh have subshape (boxes and triangles) */
-  std::array<int, 2> subshape_id;
+  std::array<int, 2> subshape_id{ -1, -1 };
   /** @brief The nearest point on both links in world coordinates */
-  std::array<Eigen::Vector3d, 2> nearest_points;
+  std::array<Eigen::Vector3d, 2> nearest_points{ Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero() };
   /** @brief The nearest point on both links in local(link) coordinates */
-  std::array<Eigen::Vector3d, 2> nearest_points_local;
+  std::array<Eigen::Vector3d, 2> nearest_points_local{ Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero() };
   /** @brief The transform of link in world coordinates */
-  std::array<Eigen::Isometry3d, 2> transform;
+  std::array<Eigen::Isometry3d, 2> transform{ Eigen::Isometry3d::Identity(), Eigen::Isometry3d::Identity() };
   /**
    * @brief The normal vector to move the two objects out of contact in world coordinates
    *
    * @note This points from link_name[0] to link_name[1], so it shows the direction to move link_name[1] to avoid or get
    *       out of collision with link_name[0].
    */
-  Eigen::Vector3d normal;
+  Eigen::Vector3d normal{ Eigen::Vector3d::Zero() };
   /** @brief This is between 0 and 1 indicating the point of contact */
-  std::array<double, 2> cc_time;
+  std::array<double, 2> cc_time{ -1, -1 };
   /** @brief The type of continuous contact */
-  std::array<ContinuousCollisionType, 2> cc_type;
+  std::array<ContinuousCollisionType, 2> cc_type{ ContinuousCollisionType::CCType_None,
+                                                  ContinuousCollisionType::CCType_None };
   /** @brief The transform of link in world coordinates at its desired final location.
    * Note: This is not the location of the link at the point of contact but the final location the link when performing
    *       continuous collision checking. If you desire the location of contact use cc_time and interpolate between
    *       transform and cc_transform;
    */
-  std::array<Eigen::Isometry3d, 2> cc_transform;
+  std::array<Eigen::Isometry3d, 2> cc_transform{ Eigen::Isometry3d::Identity(), Eigen::Isometry3d::Identity() };
 
   /** @brief Some collision checkers only provide a single contact point for a given pair. This is used to indicate
    * if only one contact point is provided which means nearest_points[0] must equal nearest_points[1].
    */
-  bool single_contact_point = false;
+  bool single_contact_point{ false };
 
-  ContactResult() { clear(); }
+  ContactResult() = default;
 
   /** @brief reset to default values */
   void clear()

@@ -221,7 +221,7 @@ public:
    * @brief This allows for user defined callbacks for looking up TCP information
    * @param fn User defind callback function for locating TCP information
    */
-  void addFindTCPCallback(FindTCPCallbackFn fn);
+  void addFindTCPCallback(const FindTCPCallbackFn& fn);
 
   /**
    * @brief This get the current find tcp callbacks stored in the environment
@@ -494,7 +494,7 @@ protected:
   tesseract_scene_graph::SceneState::Ptr current_state_;
 
   /** @brief Current state timestamp */
-  std::chrono::high_resolution_clock::duration current_state_timestamp_;
+  std::chrono::high_resolution_clock::duration current_state_timestamp_{ 0 };
 
   /** @brief Tesseract State Solver */
   tesseract_scene_graph::MutableStateSolver::UPtr state_solver_;
@@ -544,9 +544,9 @@ protected:
 private:
   bool removeLinkHelper(const std::string& name);
 
-  void getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
-                          tesseract_common::VectorIsometry3d& shape_poses,
-                          const tesseract_scene_graph::Link& link) const;
+  static void getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
+                                 tesseract_common::VectorIsometry3d& shape_poses,
+                                 const tesseract_scene_graph::Link& link);
 
   bool registerDefaultContactManagersHelper();
   bool setActiveDiscreteContactManagerHelper(const std::string& name);
@@ -557,8 +557,8 @@ private:
   tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManagerHelper(const std::string& name) const;
 
   bool initHelper(const Commands& commands);
-  Commands getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
-                           const tesseract_srdf::SRDFModel::ConstPtr& srdf_model = nullptr) const;
+  static Commands getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                  const tesseract_srdf::SRDFModel::ConstPtr& srdf_model = nullptr);
 
   /** @brief Apply Command Helper which does not lock */
   bool applyCommandsHelper(const Commands& commands);

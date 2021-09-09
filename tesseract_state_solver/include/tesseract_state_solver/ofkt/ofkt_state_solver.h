@@ -63,11 +63,11 @@ public:
 
   OFKTStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
   OFKTStateSolver(const std::string& root_name);
-  ~OFKTStateSolver() override final = default;
+  ~OFKTStateSolver() override = default;
   OFKTStateSolver(const OFKTStateSolver& other);
   OFKTStateSolver& operator=(const OFKTStateSolver& other);
-  OFKTStateSolver(OFKTStateSolver&&) = default;
-  OFKTStateSolver& operator=(OFKTStateSolver&&) = default;
+  OFKTStateSolver(OFKTStateSolver&&) = delete;
+  OFKTStateSolver& operator=(OFKTStateSolver&&) = delete;
 
   void setRevision(int revision) override final;
 

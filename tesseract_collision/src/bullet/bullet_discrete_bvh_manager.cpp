@@ -41,11 +41,9 @@
 
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 
-extern btScalar gDbvtMargin;
+extern btScalar gDbvtMargin;  // NOLINT
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
 static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
@@ -82,7 +80,7 @@ DiscreteContactManager::Ptr BulletDiscreteBVHManager::clone() const
 {
   auto manager = std::make_shared<BulletDiscreteBVHManager>();
 
-  btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+  auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
 
   for (const auto& cow : link2cow_)
   {
@@ -116,7 +114,7 @@ bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
   COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
-    btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+    auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
     new_cow->setContactProcessingThreshold(margin);
     addCollisionObject(new_cow);
     return true;
@@ -210,7 +208,7 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<st
                                                             const tesseract_common::VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
-  for (auto i = 0u; i < names.size(); ++i)
+  for (auto i = 0U; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], poses[i]);
 }
 
@@ -282,7 +280,7 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const C
   pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
 }
 
-void BulletDiscreteBVHManager::addCollisionObject(COW::Ptr cow)
+void BulletDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
   cow->setUserPointer(&contact_test_data_);
   link2cow_[cow->getName()] = cow;
@@ -294,7 +292,7 @@ void BulletDiscreteBVHManager::addCollisionObject(COW::Ptr cow)
 
 void BulletDiscreteBVHManager::onCollisionMarginDataChanged()
 {
-  btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+  auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
   for (auto& co : link2cow_)
   {
     COW::Ptr& cow = co.second;
@@ -303,5 +301,4 @@ void BulletDiscreteBVHManager::onCollisionMarginDataChanged()
     updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 }
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet

@@ -44,7 +44,8 @@ parseDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph,
 {
   tesseract_scene_graph::AllowedCollisionMatrix acm;
 
-  for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("disable_collisions"); xml_element;
+  for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("disable_collisions");
+       xml_element != nullptr;
        xml_element = xml_element->NextSiblingElement("disable_collisions"))
   {
     std::string link1_name, link2_name, reason;

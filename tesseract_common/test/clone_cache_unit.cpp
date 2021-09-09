@@ -77,7 +77,7 @@ public:
     return true;
   }
 
-  TestObjectSupportsUpdateFailure::Ptr clone() const
+  TestObjectSupportsUpdateFailure::Ptr clone() const  // NOLINT
   {
     throw std::runtime_error("TestObjectSupportsUpdateFailure: clone failed!");
   }

@@ -46,7 +46,7 @@ OFKTBaseNode::OFKTBaseNode(tesseract_scene_graph::JointType type,
                            OFKTNode* parent,
                            std::string link_name,
                            std::string joint_name,
-                           Eigen::Isometry3d static_tf)
+                           const Eigen::Isometry3d& static_tf)
   : type_(type)
   , parent_(parent)
   , link_name_(std::move(link_name))
@@ -114,8 +114,8 @@ void OFKTBaseNode::addChild(OFKTNode* node)
 
 void OFKTBaseNode::removeChild(const OFKTNode* node)
 {
-  children_.erase(std::remove(children_.begin(), children_.end(), node));
-  children_const_.erase(std::remove(children_const_.begin(), children_const_.end(), node));
+  children_.erase(std::remove(children_.begin(), children_.end(), node), children_.end());
+  children_const_.erase(std::remove(children_const_.begin(), children_const_.end(), node), children_const_.end());
 }
 
 std::vector<OFKTNode*>& OFKTBaseNode::getChildren() { return children_; }
@@ -146,8 +146,8 @@ void OFKTRootNode::setStaticTransformation(Eigen::Isometry3d /*static_tf*/)
   throw std::runtime_error("OFKTRootNode: does not have a static transform!");
 }
 
-void OFKTRootNode::computeAndStoreLocalTransformation() { return; }
-void OFKTRootNode::computeAndStoreWorldTransformation() { return; }
+void OFKTRootNode::computeAndStoreLocalTransformation() {}
+void OFKTRootNode::computeAndStoreWorldTransformation() {}
 bool OFKTRootNode::updateWorldTransformationRequired() const { return false; }
 
 Eigen::Isometry3d OFKTRootNode::computeLocalTransformation(double /*joint_value*/) const { return static_tf_; }
@@ -158,7 +158,7 @@ Eigen::Isometry3d OFKTRootNode::computeLocalTransformation(double /*joint_value*
 OFKTFixedNode::OFKTFixedNode(OFKTNode* parent,
                              std::string link_name,
                              std::string joint_name,
-                             Eigen::Isometry3d static_tf)
+                             const Eigen::Isometry3d& static_tf)
   : OFKTBaseNode(tesseract_scene_graph::JointType::FIXED,
                  parent,
                  std::move(link_name),
@@ -182,7 +182,7 @@ void OFKTFixedNode::setStaticTransformation(Eigen::Isometry3d static_tf)
   update_world_required_ = true;
 }
 
-void OFKTFixedNode::computeAndStoreLocalTransformation() { return; }
+void OFKTFixedNode::computeAndStoreLocalTransformation() {}
 
 Eigen::Isometry3d OFKTFixedNode::computeLocalTransformation(double /*joint_value*/) const { return local_tf_; }
 
@@ -192,8 +192,8 @@ Eigen::Isometry3d OFKTFixedNode::computeLocalTransformation(double /*joint_value
 OFKTRevoluteNode::OFKTRevoluteNode(OFKTNode* parent,
                                    std::string link_name,
                                    std::string joint_name,
-                                   Eigen::Isometry3d static_tf,
-                                   Eigen::Vector3d axis)
+                                   const Eigen::Isometry3d& static_tf,
+                                   const Eigen::Vector3d& axis)
   : OFKTBaseNode(tesseract_scene_graph::JointType::REVOLUTE,
                  parent,
                  std::move(link_name),
@@ -230,8 +230,8 @@ const Eigen::Vector3d& OFKTRevoluteNode::getAxis() const { return axis_; }
 OFKTContinuousNode::OFKTContinuousNode(OFKTNode* parent,
                                        std::string link_name,
                                        std::string joint_name,
-                                       Eigen::Isometry3d static_tf,
-                                       Eigen::Vector3d axis)
+                                       const Eigen::Isometry3d& static_tf,
+                                       const Eigen::Vector3d& axis)
   : OFKTBaseNode(tesseract_scene_graph::JointType::CONTINUOUS,
                  parent,
                  std::move(link_name),
@@ -266,8 +266,8 @@ const Eigen::Vector3d& OFKTContinuousNode::getAxis() const { return axis_; }
 OFKTPrismaticNode::OFKTPrismaticNode(OFKTNode* parent,
                                      std::string link_name,
                                      std::string joint_name,
-                                     Eigen::Isometry3d static_tf,
-                                     Eigen::Vector3d axis)
+                                     const Eigen::Isometry3d& static_tf,
+                                     const Eigen::Vector3d& axis)
   : OFKTBaseNode(tesseract_scene_graph::JointType::PRISMATIC,
                  parent,
                  std::move(link_name),

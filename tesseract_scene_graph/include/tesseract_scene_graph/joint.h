@@ -67,9 +67,9 @@ public:
   using Ptr = std::shared_ptr<JointDynamics>;
   using ConstPtr = std::shared_ptr<const JointDynamics>;
 
-  JointDynamics() { this->clear(); }
-  double damping;
-  double friction;
+  JointDynamics() = default;
+  double damping{ 0 };
+  double friction{ 0 };
 
   void clear()
   {
@@ -84,12 +84,12 @@ public:
   using Ptr = std::shared_ptr<JointLimits>;
   using ConstPtr = std::shared_ptr<const JointLimits>;
 
-  JointLimits() { this->clear(); }
-  double lower;
-  double upper;
-  double effort;
-  double velocity;
-  double acceleration;
+  JointLimits() = default;
+  double lower{ 0 };
+  double upper{ 0 };
+  double effort{ 0 };
+  double velocity{ 0 };
+  double acceleration{ 0 };
 
   void clear()
   {
@@ -115,8 +115,7 @@ public:
   using Ptr = std::shared_ptr<JointSafety>;
   using ConstPtr = std::shared_ptr<const JointSafety>;
 
-  /// clear variables on construction
-  JointSafety() { this->clear(); }
+  JointSafety() = default;
 
   ///
   /// IMPORTANT:  The safety controller support is very much PR2 specific, not intended for generic usage.
@@ -150,10 +149,10 @@ public:
   ///
   /// Please see wiki for more details: http://www.ros.org/wiki/pr2_controller_manager/safety_limits
   ///
-  double soft_upper_limit;
-  double soft_lower_limit;
-  double k_position;
-  double k_velocity;
+  double soft_upper_limit{ 0 };
+  double soft_lower_limit{ 0 };
+  double k_position{ 0 };
+  double k_velocity{ 0 };
 
   void clear()
   {
@@ -177,9 +176,9 @@ public:
   using Ptr = std::shared_ptr<JointCalibration>;
   using ConstPtr = std::shared_ptr<const JointCalibration>;
 
-  JointCalibration() { this->clear(); }
-  double reference_position;
-  double rising, falling;
+  JointCalibration() = default;
+  double reference_position{ 0 };
+  double rising{ 0 }, falling{ 0 };
 
   void clear()
   {
@@ -202,9 +201,9 @@ public:
   using Ptr = std::shared_ptr<JointMimic>;
   using ConstPtr = std::shared_ptr<const JointMimic>;
 
-  JointMimic() { this->clear(); }
-  double offset;
-  double multiplier;
+  JointMimic() = default;
+  double offset{ 0 };
+  double multiplier{ 1.0 };
   std::string joint_name;
 
   void clear()

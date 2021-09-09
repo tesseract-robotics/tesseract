@@ -81,7 +81,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -104,7 +104,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -123,7 +123,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l3"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -143,7 +143,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l2"/>
              <link name="l3"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -162,7 +162,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -182,7 +182,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l2"/>
              <link name="l1"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -201,7 +201,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -225,7 +225,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l2"/>
              <link name="l3"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -362,7 +362,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
                </visual>
              </link>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {

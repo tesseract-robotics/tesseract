@@ -95,10 +95,9 @@ public:
 
   void getAllContactManifolds(btManifoldArray& manifoldArray) override
   {
-    int i;
-    for (i = 0; i < m_childCollisionAlgorithms.size(); i++)
+    for (int i = 0; i < m_childCollisionAlgorithms.size(); i++)
     {
-      if (m_childCollisionAlgorithms[i])
+      if (m_childCollisionAlgorithms[i] != nullptr)
         m_childCollisionAlgorithms[i]->getAllContactManifolds(manifoldArray);
     }
   }

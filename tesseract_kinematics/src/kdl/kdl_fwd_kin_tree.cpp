@@ -134,7 +134,7 @@ KDL::JntArray KDLFwdKinTree::getKDLJntArray(const std::vector<std::string>& join
   return kdl_joints;
 }
 
-void KDLFwdKinTree::setStartState(std::unordered_map<std::string, double> start_state)
+void KDLFwdKinTree::setStartState(const std::unordered_map<std::string, double>& start_state)
 {
   input_start_state_ = start_state;
   KDL::JntArray kdl_joints;
@@ -146,7 +146,7 @@ void KDLFwdKinTree::setStartState(std::unordered_map<std::string, double> start_
 }
 
 void kdlRecursiveFk(tesseract_common::TransformMap& poses,
-                    KDL::Frame parent_frame,
+                    const KDL::Frame& parent_frame,
                     const KDL::JntArray& kdl_joints,
                     const KDL::SegmentMap::const_iterator& it)
 {
@@ -171,7 +171,7 @@ tesseract_common::TransformMap KDLFwdKinTree::calcFwdKinHelper(const KDL::JntArr
   KDL::Frame kdl_pose = KDL::Frame::Identity();
   tesseract_common::TransformMap all_poses;
 
-  KDL::SegmentMap::const_iterator rootIterator = kdl_tree_.getRootSegment();
+  auto rootIterator = kdl_tree_.getRootSegment();
   kdlRecursiveFk(all_poses, kdl_pose, kdl_joints, rootIterator);
 
   tesseract_common::TransformMap poses;

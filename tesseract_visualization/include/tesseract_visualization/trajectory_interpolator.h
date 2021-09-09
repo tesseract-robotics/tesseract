@@ -65,9 +65,9 @@ private:
 
   void findStateIndices(const double& duration, long& before, long& after, double& blend) const;
 
-  tesseract_common::JointState interpolate(const tesseract_common::JointState& start,
-                                           const tesseract_common::JointState& end,
-                                           double t) const;
+  static tesseract_common::JointState interpolate(const tesseract_common::JointState& start,
+                                                  const tesseract_common::JointState& end,
+                                                  double t);
 };
 }  // namespace tesseract_visualization
 #endif  // TESSERACT_VISUALIZATION_TRAJECTORY_INTERPOLATOR_H

@@ -373,7 +373,7 @@ void runFindTCPTest()
   {  // If the manipulator does not exist it should throw an exception
     tesseract_common::ManipulatorInfo manip_info("missing_manipulator");
     manip_info.tcp = tesseract_common::ToolCenterPoint("unknown");
-    EXPECT_ANY_THROW(env->findTCP(manip_info));
+    EXPECT_ANY_THROW(env->findTCP(manip_info));  // NOLINT
   }
 }
 
@@ -954,7 +954,7 @@ void runChangeLinkOriginCommandTest()
   EXPECT_EQ(cmd->getType(), CommandType::CHANGE_LINK_ORIGIN);
   EXPECT_EQ(cmd->getLinkName(), link_name);
   EXPECT_TRUE(new_origin.isApprox(cmd->getOrigin()));
-  EXPECT_ANY_THROW(env->applyCommand(cmd));
+  EXPECT_ANY_THROW(env->applyCommand(cmd));  // NOLINT
 }
 
 void runChangeLinkCollisionEnabledCommandTest()

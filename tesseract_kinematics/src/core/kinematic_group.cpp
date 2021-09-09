@@ -43,12 +43,10 @@ KinematicGroup::KinematicGroup(InverseKinematics::UPtr inv_kin,
   inv_kin_ = std::move(inv_kin);
 
   std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
-  bool static_added{ false };
   std::string working_frame = inv_kin_->getWorkingFrame();
   auto it = std::find(active_link_names.begin(), active_link_names.end(), working_frame);
-  if (it == active_link_names.end() && !static_added)
+  if (it == active_link_names.end())
   {
-    static_added = true;
     working_frames_.insert(working_frames_.end(), static_link_names_.begin(), static_link_names_.end());
     inv_working_frames_map_[working_frame] = working_frame;
     for (const auto& static_link_name : static_link_names_)

@@ -37,7 +37,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
 {
   ForwardKinematics::UPtr fwd_kin;
   InverseKinematics::UPtr inv_kin;
-  double m_reach;
+  double m_reach{ 0 };
   Eigen::MatrixX2d sample_range;
   Eigen::VectorXd sample_res;
 
@@ -56,7 +56,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
       for (auto it = sample_res_node.begin(); it != sample_res_node.end(); ++it)
       {
         const YAML::Node& joint = *it;
-        std::array<double, 3> values;
+        std::array<double, 3> values{ 0, 0, 0 };
 
         std::string joint_name;
         if (YAML::Node n = joint["name"])
@@ -103,7 +103,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
     // Get Positioner
     if (YAML::Node positioner = config["positioner"])
     {
-      std::string group_name = group_name + "_positioner";
+      std::string positioner_group_name = group_name + "_positioner";
 
       tesseract_common::PluginInfo p_info;
       if (YAML::Node n = positioner["class"])
@@ -114,7 +114,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
       if (YAML::Node n = positioner["config"])
         p_info.config = n;
 
-      fwd_kin = plugin_factory.createFwdKin(group_name, p_info.class_name, p_info, scene_graph, scene_state);
+      fwd_kin = plugin_factory.createFwdKin(positioner_group_name, p_info.class_name, p_info, scene_graph, scene_state);
       if (fwd_kin == nullptr)
         throw std::runtime_error("REPInvKinFactory, failed to create positioner forward kinematics!");
 
@@ -145,7 +145,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
     // Get Manipulator
     if (YAML::Node manipulator = config["manipulator"])
     {
-      std::string group_name = group_name + "_manipulator";
+      std::string manipulator_group_name = group_name + "_manipulator";
 
       tesseract_common::PluginInfo m_info;
       if (YAML::Node n = manipulator["class"])
@@ -156,7 +156,8 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
       if (YAML::Node n = manipulator["config"])
         m_info.config = n;
 
-      inv_kin = plugin_factory.createInvKin(group_name, m_info.class_name, m_info, scene_graph, scene_state);
+      inv_kin =
+          plugin_factory.createInvKin(manipulator_group_name, m_info.class_name, m_info, scene_graph, scene_state);
       if (inv_kin == nullptr)
         throw std::runtime_error("REPInvKinFactory, failed to create positioner forward kinematics!");
     }

@@ -53,7 +53,7 @@ public:
    * positioner, where the positioner has the tool and the robot is holding the part. Basically
    * anytime the tool is not attached to the tip link of the kinematic chain.
    */
-  ToolCenterPoint(const std::string& name, bool external = false);
+  ToolCenterPoint(std::string name, bool external = false);
 
   /**
    * @brief Tool Center Point Defined by transform

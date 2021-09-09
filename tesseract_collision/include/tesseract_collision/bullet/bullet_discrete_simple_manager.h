@@ -125,7 +125,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(COW::Ptr cow);
+  void addCollisionObject(const COW::Ptr& cow);
 #endif  // SWIG
 
 private:

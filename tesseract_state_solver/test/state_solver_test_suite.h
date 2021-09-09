@@ -14,11 +14,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
 
-namespace tesseract_scene_graph
+namespace tesseract_scene_graph::test_suite
 {
-namespace test_suite
-{
-std::string locateResource(const std::string& url)
+inline std::string locateResource(const std::string& url)
 {
   std::string mod_url = url;
   if (url.find("package://tesseract_support") == 0)
@@ -45,7 +43,7 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-SceneGraph::UPtr getSceneGraph()
+inline SceneGraph::UPtr getSceneGraph()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
@@ -53,7 +51,7 @@ SceneGraph::UPtr getSceneGraph()
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
-SceneGraph::UPtr getSubSceneGraph()
+inline SceneGraph::UPtr getSubSceneGraph()
 {
   auto subgraph = std::make_unique<SceneGraph>();
   subgraph->setName("subgraph");
@@ -85,7 +83,7 @@ SceneGraph::UPtr getSubSceneGraph()
   return subgraph;
 }
 
-void runCompareSceneStates(const SceneState& base_state, const SceneState& compare_state)
+inline void runCompareSceneStates(const SceneState& base_state, const SceneState& compare_state)
 {
   EXPECT_EQ(base_state.joints.size(), compare_state.joints.size());
   EXPECT_EQ(base_state.joint_transforms.size(), compare_state.joint_transforms.size());
@@ -107,7 +105,7 @@ void runCompareSceneStates(const SceneState& base_state, const SceneState& compa
   }
 }
 
-void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_solver)
+inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_solver)
 {
   EXPECT_EQ(base_solver.getBaseLinkName(), comp_solver.getBaseLinkName());
   EXPECT_TRUE(tesseract_common::isIdentical(base_solver.getJointNames(), comp_solver.getJointNames(), false));
@@ -129,7 +127,7 @@ void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_sol
   }
 }
 
-void runCompareStateSolverLimits(const SceneGraph& scene_graph, const StateSolver& comp_solver)
+inline void runCompareStateSolverLimits(const SceneGraph& scene_graph, const StateSolver& comp_solver)
 {
   std::vector<std::string> comp_joint_names = comp_solver.getActiveJointNames();
   tesseract_common::KinematicLimits limits = comp_solver.getLimits();
@@ -232,9 +230,8 @@ inline void runCompareJacobian(StateSolver& state_solver,
   std::vector<long> order;
   if (joint_names.empty())
   {
-    int i = 0;
-    for (const auto& joint_name : solver_jn)
-      order.push_back(i++);
+    for (int i = 0; i < static_cast<int>(solver_jn.size()); ++i)
+      order.push_back(i);
 
     poses = state_solver.getState(jvals).link_transforms;
     jacobian = state_solver.getJacobian(jvals, link_name);
@@ -259,7 +256,7 @@ inline void runCompareJacobian(StateSolver& state_solver,
   {
     for (int j = 0; j < static_cast<int>(jvals.size()); ++j)
     {
-      EXPECT_NEAR(numerical_jacobian(i, order[j]), jacobian(i, j), 1e-3);
+      EXPECT_NEAR(numerical_jacobian(i, order[static_cast<std::size_t>(j)]), jacobian(i, j), 1e-3);
     }
   }
 }
@@ -305,6 +302,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
         state_solver, joint_names_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -320,6 +318,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
         state_solver, joint_names_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -342,6 +341,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, change_base);
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runCompareJacobian(state_solver, joint_names_empty, jvals, "", link_point, change_base));  // NOLINT
   }
@@ -365,6 +365,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, change_base);
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runCompareJacobian(state_solver, joint_names_empty, jvals, "", link_point, change_base));  // NOLINT
   }
@@ -378,6 +379,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -393,6 +395,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -415,6 +418,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
   }
 
@@ -437,6 +441,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
   }
 
@@ -457,6 +462,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -472,6 +478,7 @@ inline void runJacobianTest()
     for (const auto& link_name : link_names)
       runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
 
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
         runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -1195,7 +1202,6 @@ void runReplaceJointTest()
     runCompareStateSolverLimits(*scene_graph, base_state_solver);
   }
 }
-}  // namespace test_suite
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract_scene_graph::test_suite
 
 #endif  // TESSERACT_STATE_SOLVER_

@@ -60,7 +60,7 @@ KDLInvKinChainLMA::KDLInvKinChainLMA(std::string name,
                                      const std::string& base_link,
                                      const std::string& tip_link,
                                      std::string solver_name)
-  : KDLInvKinChainLMA(name, scene_graph, { std::make_pair(base_link, tip_link) }, solver_name)
+  : KDLInvKinChainLMA(std::move(name), scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
 {
 }
 
