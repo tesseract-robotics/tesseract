@@ -90,9 +90,9 @@ public:
                          CollisionShapesConst shapes,
                          tesseract_common::VectorIsometry3d shape_poses);
 
-  short int m_collisionFilterGroup;
-  short int m_collisionFilterMask;
-  bool m_enabled;
+  short int m_collisionFilterGroup{ CollisionFilterGroups::KinematicFilter };
+  short int m_collisionFilterMask{ CollisionFilterGroups::StaticFilter | CollisionFilterGroups::KinematicFilter };
+  bool m_enabled{ true };
 
   const std::string& getName() const { return name_; }
   const int& getTypeID() const { return type_id_; }
@@ -173,9 +173,9 @@ public:
   int getShapeIndex(const fcl::CollisionObjectd* co) const;
 
 protected:
-  std::string name_;             // name of the collision object
-  int type_id_;                  // user defined type id
-  Eigen::Isometry3d world_pose_; /**< @brief Collision Object World Transformation */
+  std::string name_;                                              // name of the collision object
+  int type_id_{ -1 };                                             // user defined type id
+  Eigen::Isometry3d world_pose_{ Eigen::Isometry3d::Identity() }; /**< @brief Collision Object World Transformation */
   CollisionShapesConst shapes_;
   tesseract_common::VectorIsometry3d shape_poses_;
   std::vector<CollisionGeometryPtr> collision_geometries_;

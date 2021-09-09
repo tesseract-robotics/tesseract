@@ -42,8 +42,8 @@ struct VHACDParameters
   uint32_t convexhull_downsampling{ 4 };
   uint32_t pca{ 0 };
   uint32_t mode{ 0 };  // 0: voxel-based (recommended), 1: tetrahedron-based
-  uint32_t convexhull_approximation{ true };
-  uint32_t ocl_acceleration{ true };
+  uint32_t convexhull_approximation{ 1U };
+  uint32_t ocl_acceleration{ 1U };
   uint32_t max_convehulls{ 1024 };
   /**
    * @brief This will project the output convex hull vertices onto the original source mesh

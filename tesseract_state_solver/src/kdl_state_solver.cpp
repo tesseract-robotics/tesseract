@@ -70,7 +70,7 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
 void KDLStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
   assert(static_cast<Eigen::Index>(data_.active_joint_names.size()) == joint_values.size());
-  for (auto i = 0u; i < data_.active_joint_names.size(); ++i)
+  for (auto i = 0U; i < data_.active_joint_names.size(); ++i)
   {
     if (setJointValuesHelper(kdl_jnt_array_, data_.active_joint_names[i], joint_values[i]))
       current_state_.joints[data_.active_joint_names[i]] = joint_values[i];
@@ -81,7 +81,7 @@ void KDLStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_val
 
 void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joint_values)
 {
-  for (auto& joint : joint_values)
+  for (const auto& joint : joint_values)
   {
     if (setJointValuesHelper(kdl_jnt_array_, joint.first, joint.second))
       current_state_.joints[joint.first] = joint.second;
@@ -94,7 +94,7 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
   assert(static_cast<Eigen::Index>(joint_names.size()) == joint_values.size());
-  for (auto i = 0u; i < joint_names.size(); ++i)
+  for (auto i = 0U; i < joint_names.size(); ++i)
   {
     if (setJointValuesHelper(kdl_jnt_array_, joint_names[i], joint_values[i]))
       current_state_.joints[joint_names[i]] = joint_values[i];
@@ -109,7 +109,7 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
   SceneState state{ current_state_ };
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
-  for (auto i = 0u; i < data_.active_joint_names.size(); ++i)
+  for (auto i = 0U; i < data_.active_joint_names.size(); ++i)
   {
     if (setJointValuesHelper(jnt_array, data_.active_joint_names[i], joint_values[i]))
       state.joints[data_.active_joint_names[i]] = joint_values[i];
@@ -125,7 +125,7 @@ SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double
   SceneState state{ current_state_ };
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
-  for (auto& joint : joint_values)
+  for (const auto& joint : joint_values)
   {
     if (setJointValuesHelper(jnt_array, joint.first, joint.second))
       state.joints[joint.first] = joint.second;
@@ -142,13 +142,14 @@ SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
   SceneState state{ current_state_ };
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
-  for (auto i = 0u; i < joint_names.size(); ++i)
+  for (auto i = 0U; i < joint_names.size(); ++i)
   {
     if (setJointValuesHelper(jnt_array, joint_names[i], joint_values[i]))
       state.joints[joint_names[i]] = joint_values[i];
   }
 
-  calculateTransforms(state, jnt_array, data_.tree.getRootSegment(), Eigen::Isometry3d::Identity());
+  Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+  calculateTransforms(state, jnt_array, data_.tree.getRootSegment(), parent_frame);  // NOLINT
 
   return state;
 }
@@ -157,7 +158,8 @@ SceneState KDLStateSolver::getState() const { return current_state_; }
 
 SceneState KDLStateSolver::getRandomState() const
 {
-  return getState(data_.active_joint_names, tesseract_common::generateRandomNumber(limits_.joint_limits));
+  Eigen::VectorXd rs = tesseract_common::generateRandomNumber(limits_.joint_limits);
+  return getState(data_.active_joint_names, rs);  // NOLINT
 }
 
 Eigen::MatrixXd KDLStateSolver::getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
@@ -283,9 +285,9 @@ void KDLStateSolver::calculateTransformsHelper(SceneState& state,
     if (current_element.segment.getName() != data_.tree.getRootSegment()->first)
       state.joint_transforms[current_element.segment.getJoint().getName()] = global_frame;
 
-    for (auto& child : current_element.children)
+    for (const auto& child : current_element.children)
     {
-      calculateTransformsHelper(state, q_in, child, global_frame);
+      calculateTransformsHelper(state, q_in, child, global_frame);  // NOLINT
     }
   }
 }
@@ -295,7 +297,7 @@ void KDLStateSolver::calculateTransforms(SceneState& state,
                                          const KDL::SegmentMap::const_iterator& it,
                                          const Eigen::Isometry3d& parent_frame) const
 {
-  calculateTransformsHelper(state, q_in, it, parent_frame);
+  calculateTransformsHelper(state, q_in, it, parent_frame);  // NOLINT
 }
 
 bool KDLStateSolver::calcJacobianHelper(KDL::Jacobian& jacobian,

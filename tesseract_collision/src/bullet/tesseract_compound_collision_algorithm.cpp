@@ -33,9 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 
 // LCOV_EXCL_START
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 TesseractCompoundCollisionAlgorithm::TesseractCompoundCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci,
                                                                          const btCollisionObjectWrapper* body0Wrap,
@@ -48,7 +46,7 @@ TesseractCompoundCollisionAlgorithm::TesseractCompoundCollisionAlgorithm(const b
   const btCollisionObjectWrapper* colObjWrap = m_isSwapped ? body1Wrap : body0Wrap;
   btAssert(colObjWrap->getCollisionShape()->isCompound());
 
-  const btCompoundShape* compoundShape = static_cast<const btCompoundShape*>(colObjWrap->getCollisionShape());
+  const auto* compoundShape = static_cast<const btCompoundShape*>(colObjWrap->getCollisionShape());
   m_compoundShapeRevision = compoundShape->getUpdateRevision();
 
   preallocateChildAlgorithms(body0Wrap, body1Wrap);
@@ -61,15 +59,14 @@ void TesseractCompoundCollisionAlgorithm::preallocateChildAlgorithms(const btCol
   const btCollisionObjectWrapper* otherObjWrap = m_isSwapped ? body0Wrap : body1Wrap;
   btAssert(colObjWrap->getCollisionShape()->isCompound());
 
-  const btCompoundShape* compoundShape = static_cast<const btCompoundShape*>(colObjWrap->getCollisionShape());
+  const auto* compoundShape = static_cast<const btCompoundShape*>(colObjWrap->getCollisionShape());
 
   int numChildren = compoundShape->getNumChildShapes();
-  int i;
 
   m_childCollisionAlgorithms.resize(numChildren);
-  for (i = 0; i < numChildren; i++)
+  for (int i = 0; i < numChildren; i++)
   {
-    if (compoundShape->getDynamicAabbTree())
+    if (compoundShape->getDynamicAabbTree() != nullptr)
     {
       m_childCollisionAlgorithms[i] = nullptr;
     }
@@ -95,10 +92,9 @@ void TesseractCompoundCollisionAlgorithm::preallocateChildAlgorithms(const btCol
 void TesseractCompoundCollisionAlgorithm::removeChildAlgorithms()
 {
   int numChildren = m_childCollisionAlgorithms.size();
-  int i;
-  for (i = 0; i < numChildren; i++)
+  for (int i = 0; i < numChildren; i++)
   {
-    if (m_childCollisionAlgorithms[i])
+    if (m_childCollisionAlgorithms[i] != nullptr)
     {
       m_childCollisionAlgorithms[i]->~btCollisionAlgorithm();
       m_dispatcher->freeCollisionAlgorithm(m_childCollisionAlgorithms[i]);
@@ -142,8 +138,7 @@ public:
   void ProcessChildShape(const btCollisionShape* childShape, int index)
   {
     btAssert(index >= 0);
-    const btCompoundShape* compoundShape =
-        static_cast<const btCompoundShape*>(m_compoundColObjWrap->getCollisionShape());
+    const auto* compoundShape = static_cast<const btCompoundShape*>(m_compoundColObjWrap->getCollisionShape());
     btAssert(index < compoundShape->getNumChildShapes());
 
     if (m_contact_test_data->done)
@@ -188,7 +183,7 @@ public:
       else
       {
         // the contactpoint is still projected back using the original inverted worldtrans
-        if (!m_childCollisionAlgorithms[index])
+        if (m_childCollisionAlgorithms[index] == nullptr)
         {
           m_childCollisionAlgorithms[index] =
               m_dispatcher->findAlgorithm(&compoundWrap, m_otherObjWrap, m_sharedManifold, BT_CONTACT_POINT_ALGORITHMS);
@@ -238,12 +233,11 @@ public:
       }
     }
   }
-  void Process(const btDbvtNode* leaf)
+  void Process(const btDbvtNode* leaf) override
   {
     int index = leaf->dataAsInt;
 
-    const btCompoundShape* compoundShape =
-        static_cast<const btCompoundShape*>(m_compoundColObjWrap->getCollisionShape());
+    const auto* compoundShape = static_cast<const btCompoundShape*>(m_compoundColObjWrap->getCollisionShape());
     const btCollisionShape* childShape = compoundShape->getChildShape(index);
 
 #if 0
@@ -269,7 +263,7 @@ void TesseractCompoundCollisionAlgorithm::processCollision(const btCollisionObje
   const btCollisionObjectWrapper* otherObjWrap = m_isSwapped ? body0Wrap : body1Wrap;
 
   btAssert(colObjWrap->getCollisionShape()->isCompound());
-  const btCompoundShape* compoundShape = static_cast<const btCompoundShape*>(colObjWrap->getCollisionShape());
+  const auto* compoundShape = static_cast<const btCompoundShape*>(colObjWrap->getCollisionShape());
 
   /// btCompoundShape might have changed:
   ////make sure the internal child collision algorithm caches are still valid
@@ -299,16 +293,15 @@ void TesseractCompoundCollisionAlgorithm::processCollision(const btCollisionObje
   /// note that we should actually recursively traverse all children, btCompoundShape can nested more then 1 level deep
   /// so we should add a 'refreshManifolds' in the btCollisionAlgorithm
   {
-    int i;
     manifoldArray.resize(0);
-    for (i = 0; i < m_childCollisionAlgorithms.size(); i++)
+    for (int i = 0; i < m_childCollisionAlgorithms.size(); i++)
     {
-      if (m_childCollisionAlgorithms[i])
+      if (m_childCollisionAlgorithms[i] != nullptr)
       {
         m_childCollisionAlgorithms[i]->getAllContactManifolds(manifoldArray);
         for (int m = 0; m < manifoldArray.size(); m++)
         {
-          if (manifoldArray[m]->getNumContacts())
+          if (manifoldArray[m]->getNumContacts() != 0)
           {
             resultOut->setPersistentManifold(manifoldArray[m]);
             resultOut->refreshContactPoints();
@@ -320,7 +313,7 @@ void TesseractCompoundCollisionAlgorithm::processCollision(const btCollisionObje
     }
   }
 
-  if (tree)
+  if (tree != nullptr)
   {
     btVector3 localAabbMin, localAabbMax;
     btTransform otherInCompoundSpace;
@@ -340,8 +333,7 @@ void TesseractCompoundCollisionAlgorithm::processCollision(const btCollisionObje
   {
     // iterate over all children, perform an AABB check inside ProcessChildShape
     int numChildren = m_childCollisionAlgorithms.size();
-    int i;
-    for (i = 0; i < numChildren; i++)
+    for (int i = 0; i < numChildren; i++)
     {
       callback.ProcessChildShape(compoundShape->getChildShape(i), i);
     }
@@ -350,7 +342,6 @@ void TesseractCompoundCollisionAlgorithm::processCollision(const btCollisionObje
   {
     // iterate over all children, perform an AABB check inside ProcessChildShape
     int numChildren = m_childCollisionAlgorithms.size();
-    int i;
     manifoldArray.resize(0);
     const btCollisionShape* childShape = nullptr;
     btTransform orgTrans;
@@ -358,9 +349,9 @@ void TesseractCompoundCollisionAlgorithm::processCollision(const btCollisionObje
     btTransform newChildWorldTrans;
     btVector3 aabbMin0, aabbMax0, aabbMin1, aabbMax1;
 
-    for (i = 0; i < numChildren; i++)
+    for (int i = 0; i < numChildren; i++)
     {
-      if (m_childCollisionAlgorithms[i])
+      if (m_childCollisionAlgorithms[i] != nullptr)
       {
         childShape = compoundShape->getChildShape(i);
         // if not longer overlapping, remove the algorithm
@@ -396,7 +387,7 @@ btScalar TesseractCompoundCollisionAlgorithm::calculateTimeOfImpact(btCollisionO
 
   btAssert(colObj->getCollisionShape()->isCompound());
 
-  btCompoundShape* compoundShape = static_cast<btCompoundShape*>(colObj->getCollisionShape());
+  auto* compoundShape = static_cast<btCompoundShape*>(colObj->getCollisionShape());
 
   // We will use the OptimizedBVH, AABB tree to cull potential child-overlaps
   // If both proxies are Compound, we will deal with that directly, by performing sequential/parallel tree traversals
@@ -405,13 +396,11 @@ btScalar TesseractCompoundCollisionAlgorithm::calculateTimeOfImpact(btCollisionO
   // then use each overlapping node AABB against Tree0
   // and vise versa.
 
-  btScalar hitFraction = btScalar(1.);
+  auto hitFraction = btScalar(1.);
 
   int numChildren = m_childCollisionAlgorithms.size();
-  int i;
   btTransform orgTrans;
-  btScalar frac;
-  for (i = 0; i < numChildren; i++)
+  for (int i = 0; i < numChildren; i++)
   {
     // btCollisionShape* childShape = compoundShape->getChildShape(i);
 
@@ -424,7 +413,7 @@ btScalar TesseractCompoundCollisionAlgorithm::calculateTimeOfImpact(btCollisionO
 
     // btCollisionShape* tmpShape = colObj->getCollisionShape();
     // colObj->internalSetTemporaryCollisionShape( childShape );
-    frac = m_childCollisionAlgorithms[i]->calculateTimeOfImpact(colObj, otherObj, dispatchInfo, resultOut);
+    btScalar frac = m_childCollisionAlgorithms[i]->calculateTimeOfImpact(colObj, otherObj, dispatchInfo, resultOut);
     if (frac < hitFraction)
     {
       hitFraction = frac;
@@ -435,6 +424,5 @@ btScalar TesseractCompoundCollisionAlgorithm::calculateTimeOfImpact(btCollisionO
   }
   return hitFraction;
 }
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet
 // LCOV_EXCL_STOP

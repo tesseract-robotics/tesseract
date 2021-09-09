@@ -49,11 +49,11 @@ template <typename T>
 class IkSingleDOFSolutionBase
 {
 public:
-  IkSingleDOFSolutionBase() { indices[0] = indices[1] = indices[2] = indices[3] = indices[4] = -1; }
+  IkSingleDOFSolutionBase() { indices[0] = indices[1] = indices[2] = indices[3] = indices[4] = -1; }  // NOLINT
   T fmul{ 0 };                      ///< joint value is fmul*sol[freeind]+foffset
   T foffset{ 0 };                   ///< joint value is fmul*sol[freeind]+foffset
   signed char freeind{ -1 };        ///< if >= 0, mimics another joint
-  unsigned char jointtype;          ///< joint type, 0x01 is revolute, 0x11 is slider
+  unsigned char jointtype{ 1 };     ///< joint type, 0x01 is revolute, 0x11 is slider
   unsigned char maxsolutions{ 1 };  ///< max possible indices, 0 if controlled by free index or a free joint itself
   unsigned char indices[5];  // NOLINT  ///< unique index of the solution used to keep track on what part it came from.
                              // sometimes a

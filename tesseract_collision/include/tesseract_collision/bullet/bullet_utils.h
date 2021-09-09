@@ -60,11 +60,11 @@ namespace tesseract_collision_bullet
 {
 #define METERS
 
-const btScalar BULLET_MARGIN = 0.0f;
-const btScalar BULLET_SUPPORT_FUNC_TOLERANCE = 0.01f METERS;
-const btScalar BULLET_LENGTH_TOLERANCE = 0.001f METERS;
-const btScalar BULLET_EPSILON = 1e-3f;
-const btScalar BULLET_DEFAULT_CONTACT_DISTANCE = 0.05f;
+const btScalar BULLET_MARGIN = btScalar(0.0);
+const btScalar BULLET_SUPPORT_FUNC_TOLERANCE = btScalar(0.01) METERS;
+const btScalar BULLET_LENGTH_TOLERANCE = btScalar(0.001) METERS;
+const btScalar BULLET_EPSILON = btScalar(1e-3);
+const btScalar BULLET_DEFAULT_CONTACT_DISTANCE = btScalar(0.05);
 const bool BULLET_COMPOUND_USE_DYNAMIC_AABB = true;
 
 inline btVector3 convertEigenToBt(const Eigen::Vector3d& v)
@@ -138,9 +138,9 @@ public:
                          CollisionShapesConst shapes,
                          tesseract_common::VectorIsometry3d shape_poses);
 
-  short int m_collisionFilterGroup;
-  short int m_collisionFilterMask;
-  bool m_enabled;
+  short int m_collisionFilterGroup{ btBroadphaseProxy::KinematicFilter };
+  short int m_collisionFilterMask{ btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter };
+  bool m_enabled{ true };
 
   /** @brief Get the collision object name */
   const std::string& getName() const { return m_name; }
@@ -201,7 +201,7 @@ public:
 
 protected:
   std::string m_name;                               /**< @brief The name of the collision object */
-  int m_type_id;                                    /**< @brief A user defined type id */
+  int m_type_id{ -1 };                              /**< @brief A user defined type id */
   CollisionShapesConst m_shapes;                    /**< @brief The shapes that define the collison object */
   tesseract_common::VectorIsometry3d m_shape_poses; /**< @brief The shpaes poses information */
 
@@ -311,7 +311,7 @@ GetAverageSupport(const btConvexShape* shape, const btVector3& localNormal, btSc
   btScalar maxSupport = -1000;
 
   const auto* pshape = dynamic_cast<const btPolyhedralConvexShape*>(shape);
-  if (pshape)
+  if (pshape != nullptr)
   {
     int nPts = pshape->getNumVertices();
 
@@ -356,9 +356,9 @@ GetAverageSupport(const btConvexShape* shape, const btVector3& localNormal, btSc
  */
 inline btTransform getLinkTransformFromCOW(const btCollisionObjectWrapper* cow)
 {
-  if (cow->m_parent)
+  if (cow->m_parent != nullptr)
   {
-    if (cow->m_parent->m_parent)
+    if (cow->m_parent->m_parent != nullptr)
     {
       assert(cow->m_parent->m_parent->m_parent == nullptr);
       return cow->m_parent->m_parent->getWorldTransform();
@@ -380,8 +380,8 @@ inline btTransform getLinkTransformFromCOW(const btCollisionObjectWrapper* cow)
  */
 inline bool needsCollisionCheck(const COW& cow1, const COW& cow2, const IsContactAllowedFn& acm, bool verbose = false)
 {
-  return cow1.m_enabled && cow2.m_enabled && (cow2.m_collisionFilterGroup & cow1.m_collisionFilterMask) &&
-         (cow1.m_collisionFilterGroup & cow2.m_collisionFilterMask) &&
+  return cow1.m_enabled && cow2.m_enabled && (cow2.m_collisionFilterGroup & cow1.m_collisionFilterMask) &&  // NOLINT
+         (cow1.m_collisionFilterGroup & cow2.m_collisionFilterMask) &&                                      // NOLINT
          !isContactAllowed(cow1.getName(), cow2.getName(), acm, verbose);
 }
 
@@ -392,8 +392,8 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
 {
   assert(dynamic_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject()) != nullptr);
   assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);
-  const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());
-  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());
+  const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());  // NOLINT
+  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());  // NOLINT
 
   ObjectPairKey pc = getObjectPairKey(cd0->getName(), cd1->getName());
 
@@ -432,10 +432,8 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   contact.distance = static_cast<double>(cp.m_distance1);
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  if (!processResult(collisions, contact, pc, found))
-  {
+  if (processResult(collisions, contact, pc, found) == nullptr)
     return 0;
-  }
 
   return 1;
 }
@@ -474,13 +472,13 @@ inline void calculateContinuousData(ContactResult* col,
 
   // Calculate the contact point at the start location using the casted normal vector in thapes local coordinate system
   btVector3 shape_ptLocal0;
-  btScalar shape_localsup0;
+  btScalar shape_localsup0{ std::numeric_limits<btScalar>::max() };
   GetAverageSupport(shape->m_shape, shape_normalLocal0, shape_localsup0, shape_ptLocal0);
   btVector3 shape_ptWorld0 = shape_tfWorld0 * shape_ptLocal0;
 
   // Calculate the contact point at the final location using the casted normal vector in thapes local coordinate system
   btVector3 shape_ptLocal1;
-  btScalar shape_localsup1;
+  btScalar shape_localsup1{ std::numeric_limits<btScalar>::max() };
   GetAverageSupport(shape->m_shape, shape_normalLocal1, shape_localsup1, shape_ptLocal1);
   btVector3 shape_ptWorld1 = shape_tfWorld1 * shape_ptLocal1;
 
@@ -533,8 +531,8 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
 {
   assert(dynamic_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject()) != nullptr);
   assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);
-  const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());
-  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());
+  const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());  // NOLINT
+  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());  // NOLINT
 
   const std::pair<std::string, std::string>& pc = cd0->getName() < cd1->getName() ?
                                                       std::make_pair(cd0->getName(), cd1->getName()) :
@@ -575,7 +573,7 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
   ContactResult* col = processResult(collisions, contact, pc, found);
-  if (!col)
+  if (col == nullptr)
     return 0;
 
   if (cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter &&
@@ -842,12 +840,12 @@ public:
       btCollisionObjectWrapper obj1Wrap(nullptr, cow1->getCollisionShape(), cow1, cow1->getWorldTransform(), -1, -1);
 
       // dispatcher will keep algorithms persistent in the collision pair
-      if (!pair.m_algorithm)
+      if (pair.m_algorithm == nullptr)
       {
         pair.m_algorithm = dispatcher_->findAlgorithm(&obj0Wrap, &obj1Wrap, nullptr, BT_CLOSEST_POINT_ALGORITHMS);
       }
 
-      if (pair.m_algorithm)
+      if (pair.m_algorithm != nullptr)
       {
         TesseractBroadphaseBridgedManifoldResult contactPointResult(&obj0Wrap, &obj1Wrap, results_callback_);
         contactPointResult.m_closestPointDistanceThreshold = static_cast<btScalar>(results_callback_.contact_distance_);
@@ -1022,7 +1020,7 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
   if (btBroadphaseProxy::isConvex(new_cow->getCollisionShape()->getShapeType()))
   {
     assert(dynamic_cast<btConvexShape*>(new_cow->getCollisionShape()) != nullptr);
-    auto* convex = static_cast<btConvexShape*>(new_cow->getCollisionShape());
+    auto* convex = static_cast<btConvexShape*>(new_cow->getCollisionShape());  // NOLINT
     assert(convex->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if the collision object is already a
                                                                  // cast collision object
 
@@ -1035,7 +1033,7 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
   else if (btBroadphaseProxy::isCompound(new_cow->getCollisionShape()->getShapeType()))
   {
     assert(dynamic_cast<btCompoundShape*>(new_cow->getCollisionShape()) != nullptr);
-    auto* compound = static_cast<btCompoundShape*>(new_cow->getCollisionShape());
+    auto* compound = static_cast<btCompoundShape*>(new_cow->getCollisionShape());  // NOLINT
     auto new_compound =
         std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
@@ -1043,7 +1041,7 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
     {
       if (btBroadphaseProxy::isConvex(compound->getChildShape(i)->getShapeType()))
       {
-        auto* convex = static_cast<btConvexShape*>(compound->getChildShape(i));
+        auto* convex = static_cast<btConvexShape*>(compound->getChildShape(i));  // NOLINT
         assert(convex->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if already a cast collision object
 
         btTransform geomTrans = compound->getChildTransform(i);
@@ -1057,7 +1055,7 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
       }
       else if (btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()))
       {
-        auto* second_compound = static_cast<btCompoundShape*>(compound->getChildShape(i));
+        auto* second_compound = static_cast<btCompoundShape*>(compound->getChildShape(i));  // NOLINT
         auto new_second_compound =
             std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, second_compound->getNumChildShapes());
         for (int j = 0; j < second_compound->getNumChildShapes(); ++j)
@@ -1065,7 +1063,7 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
           assert(!btBroadphaseProxy::isCompound(second_compound->getChildShape(j)->getShapeType()));
           assert(dynamic_cast<btConvexShape*>(second_compound->getChildShape(j)) != nullptr);
 
-          auto* convex = static_cast<btConvexShape*>(second_compound->getChildShape(j));
+          auto* convex = static_cast<btConvexShape*>(second_compound->getChildShape(j));  // NOLINT
           assert(convex->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if already a cast collision object
 
           btTransform geomTrans = second_compound->getChildTransform(j);
@@ -1140,7 +1138,7 @@ inline void removeCollisionObjectFromBroadphase(const COW::Ptr& cow,
                                                 const std::unique_ptr<btCollisionDispatcher>& dispatcher)
 {
   btBroadphaseProxy* bp = cow->getBroadphaseHandle();
-  if (bp)
+  if (bp != nullptr)
   {
     // only clear the cached algorithms
     broadphase->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher.get());
@@ -1201,7 +1199,7 @@ inline void refreshBroadphaseProxy(const COW::Ptr& cow,
                                    const std::unique_ptr<btBroadphaseInterface>& broadphase,
                                    const std::unique_ptr<btCollisionDispatcher>& dispatcher)
 {
-  if (cow->getBroadphaseHandle())
+  if (cow->getBroadphaseHandle() != nullptr)
   {
     broadphase->destroyProxy(cow->getBroadphaseHandle(), dispatcher.get());
 

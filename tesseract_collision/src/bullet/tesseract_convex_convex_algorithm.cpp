@@ -57,12 +57,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 ///////////
-extern btScalar gContactBreakingThreshold;
+extern btScalar gContactBreakingThreshold;  // NOLINT
 
 // LCOV_EXCL_START
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 static SIMD_FORCE_INLINE void segmentsClosestPoints(btVector3& ptsVector,
                                                     btVector3& offsetA,
@@ -81,11 +79,11 @@ static SIMD_FORCE_INLINE void segmentsClosestPoints(btVector3& ptsVector,
   btScalar dirA_dot_trans = btDot(dirA, translation);
   btScalar dirB_dot_trans = btDot(dirB, translation);
 
-  btScalar denom = 1.0f - dirA_dot_dirB * dirA_dot_dirB;
+  btScalar denom = btScalar(1.0) - dirA_dot_dirB * dirA_dot_dirB;
 
-  if (denom == 0.0f)
+  if (denom == btScalar(0.0))
   {
-    tA = 0.0f;
+    tA = btScalar(0.0);
   }
   else
   {
@@ -153,7 +151,8 @@ static SIMD_FORCE_INLINE btScalar capsuleCapsuleDistance(btVector3& normalOnB,
   btVector3 ptsVector;  // the vector between the closest points
 
   btVector3 offsetA, offsetB;  // offsets from segment centers to their closest points
-  btScalar tA, tB;             // parameters on line segment
+  btScalar tA{ std::numeric_limits<btScalar>::max() },
+      tB{ std::numeric_limits<btScalar>::max() };  // parameters on line segment
 
   segmentsClosestPoints(
       ptsVector, offsetA, offsetB, tA, tB, translation, directionA, capsuleLengthA, directionB, capsuleLengthB);
@@ -220,14 +219,14 @@ TesseractConvexConvexAlgorithm::~TesseractConvexConvexAlgorithm()
 {
   if (m_ownManifold)
   {
-    if (m_manifoldPtr)
+    if (m_manifoldPtr != nullptr)
       m_dispatcher->releaseManifold(m_manifoldPtr);
   }
 }
 
 void TesseractConvexConvexAlgorithm::setLowLevelOfDetail(bool useLowLevel) { m_lowLevelOfDetail = useLowLevel; }
 
-struct btPerturbedContactResult : public btManifoldResult
+struct btPerturbedContactResult : public btManifoldResult  // NOLINT
 {
   btManifoldResult* m_originalManifoldResult;
   btTransform m_transformA;
@@ -250,12 +249,12 @@ struct btPerturbedContactResult : public btManifoldResult
     , m_debugDrawer(debugDrawer)
   {
   }
-  virtual ~btPerturbedContactResult() {}
+  ~btPerturbedContactResult() override = default;
 
-  virtual void addContactPoint(const btVector3& normalOnBInWorld, const btVector3& pointInWorld, btScalar orgDepth)
+  void addContactPoint(const btVector3& normalOnBInWorld, const btVector3& pointInWorld, btScalar orgDepth) override
   {
     btVector3 endPt, startPt;
-    btScalar newDepth;
+    btScalar newDepth{ std::numeric_limits<btScalar>::max() };
     btVector3 newNormal;
 
     if (m_perturbA)
@@ -291,7 +290,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
                                                       const btDispatcherInfo& dispatchInfo,
                                                       btManifoldResult* resultOut)
 {
-  if (!m_manifoldPtr)
+  if (m_manifoldPtr == nullptr)
   {
     // swapped?
     m_manifoldPtr = m_dispatcher->getNewManifold(body0Wrap->getCollisionObject(), body1Wrap->getCollisionObject());
@@ -302,8 +301,8 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
   // comment-out next line to test multi-contact generation
   // resultOut->getPersistentManifold()->clearManifold();
 
-  const btConvexShape* min0 = static_cast<const btConvexShape*>(body0Wrap->getCollisionShape());
-  const btConvexShape* min1 = static_cast<const btConvexShape*>(body1Wrap->getCollisionShape());
+  const auto* min0 = static_cast<const btConvexShape*>(body0Wrap->getCollisionShape());
+  const auto* min1 = static_cast<const btConvexShape*>(body1Wrap->getCollisionShape());
 
   btVector3 normalOnB;
   btVector3 pointOnBWorld;
@@ -312,8 +311,8 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
   {
     // m_manifoldPtr->clearManifold();
 
-    btCapsuleShape* capsuleA = (btCapsuleShape*)min0;
-    btCapsuleShape* capsuleB = (btCapsuleShape*)min1;
+    auto* capsuleA = (btCapsuleShape*)min0;  // NOLINT
+    auto* capsuleB = (btCapsuleShape*)min1;  // NOLINT
 
     btScalar threshold = m_manifoldPtr->getContactBreakingThreshold() + resultOut->m_closestPointDistanceThreshold;
 
@@ -342,8 +341,8 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
   {
     // m_manifoldPtr->clearManifold();
 
-    btCapsuleShape* capsuleA = (btCapsuleShape*)min0;
-    btSphereShape* capsuleB = (btSphereShape*)min1;
+    auto* capsuleA = (btCapsuleShape*)min0;  // NOLINT
+    auto* capsuleB = (btSphereShape*)min1;   // NOLINT
 
     btScalar threshold = m_manifoldPtr->getContactBreakingThreshold() + resultOut->m_closestPointDistanceThreshold;
 
@@ -372,8 +371,8 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
   {
     // m_manifoldPtr->clearManifold();
 
-    btSphereShape* capsuleA = (btSphereShape*)min0;
-    btCapsuleShape* capsuleB = (btCapsuleShape*)min1;
+    auto* capsuleA = (btSphereShape*)min0;   // NOLINT
+    auto* capsuleB = (btCapsuleShape*)min1;  // NOLINT
 
     btScalar threshold = m_manifoldPtr->getContactBreakingThreshold() + resultOut->m_closestPointDistanceThreshold;
 
@@ -462,14 +461,14 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
       {
         btVector3 m_normalOnBInWorld;
         btVector3 m_pointInWorld;
-        btScalar m_depth;
-        bool m_hasContact;
+        btScalar m_depth{ std::numeric_limits<btScalar>::max() };
+        bool m_hasContact{ false };
 
-        btDummyResult() : m_hasContact(false) {}
+        btDummyResult() = default;
 
-        virtual void setShapeIdentifiersA(int /*partId0*/, int /*index0*/) {}
-        virtual void setShapeIdentifiersB(int /*partId1*/, int /*index1*/) {}
-        virtual void addContactPoint(const btVector3& normalOnBInWorld, const btVector3& pointInWorld, btScalar depth)
+        void setShapeIdentifiersA(int /*partId0*/, int /*index0*/) override {}
+        void setShapeIdentifiersB(int /*partId1*/, int /*index1*/) override {}
+        void addContactPoint(const btVector3& normalOnBInWorld, const btVector3& pointInWorld, btScalar depth) override
         {
           m_hasContact = true;
           m_normalOnBInWorld = normalOnBInWorld;
@@ -484,7 +483,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
         btVector3 m_reportedNormalOnWorld;
         btScalar m_marginOnA;
         btScalar m_marginOnB;
-        btScalar m_reportedDistance;
+        btScalar m_reportedDistance{ 0 };
 
         bool m_foundResult;
         btWithoutMarginResult(btDiscreteCollisionDetectorInterface::Result* result,
@@ -494,18 +493,18 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
         {
         }
 
-        virtual void setShapeIdentifiersA(int /*partId0*/, int /*index0*/) {}
-        virtual void setShapeIdentifiersB(int /*partId1*/, int /*index1*/) {}
-        virtual void addContactPoint(const btVector3& normalOnBInWorld,
-                                     const btVector3& pointInWorldOrg,
-                                     btScalar depthOrg)
+        void setShapeIdentifiersA(int /*partId0*/, int /*index0*/) override {}
+        void setShapeIdentifiersB(int /*partId1*/, int /*index1*/) override {}
+        void addContactPoint(const btVector3& normalOnBInWorld,
+                             const btVector3& pointInWorldOrg,
+                             btScalar depthOrg) override
         {
           m_reportedDistance = depthOrg;
           m_reportedNormalOnWorld = normalOnBInWorld;
 
           btVector3 adjustedPointB = pointInWorldOrg - normalOnBInWorld * m_marginOnB;
           m_reportedDistance = depthOrg + (m_marginOnA + m_marginOnB);
-          if (m_reportedDistance < 0.f)
+          if (m_reportedDistance < btScalar(0.))
           {
             m_foundResult = true;
           }
@@ -517,18 +516,19 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
 
       /// btBoxShape is an exception: its vertices are created WITH margin so don't subtract it
 
-      btScalar min0Margin = min0->getShapeType() == BOX_SHAPE_PROXYTYPE ? 0.f : min0->getMargin();
-      btScalar min1Margin = min1->getShapeType() == BOX_SHAPE_PROXYTYPE ? 0.f : min1->getMargin();
+      btScalar min0Margin = min0->getShapeType() == BOX_SHAPE_PROXYTYPE ? btScalar(0.) : min0->getMargin();
+      btScalar min1Margin = min1->getShapeType() == BOX_SHAPE_PROXYTYPE ? btScalar(0.) : min1->getMargin();
 
       btWithoutMarginResult withoutMargin(resultOut, min0Margin, min1Margin);
 
-      btPolyhedralConvexShape* polyhedronA = (btPolyhedralConvexShape*)min0;
-      btPolyhedralConvexShape* polyhedronB = (btPolyhedralConvexShape*)min1;
-      if (polyhedronA->getConvexPolyhedron() && polyhedronB->getConvexPolyhedron())
+      auto* polyhedronA = (btPolyhedralConvexShape*)min0;  // NOLINT
+      auto* polyhedronB = (btPolyhedralConvexShape*)min1;  // NOLINT
+
+      if (polyhedronA->getConvexPolyhedron() != nullptr && polyhedronB->getConvexPolyhedron() != nullptr)
       {
         btScalar threshold = m_manifoldPtr->getContactBreakingThreshold() + resultOut->m_closestPointDistanceThreshold;
 
-        btScalar minDist = -1e30f;
+        auto minDist = btScalar(-1e30);
         btVector3 sepNormalWorldSpace;
         bool foundSepAxis = true;
 
@@ -590,14 +590,14 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
         }
         return;
       }
-      else
+      else  // NOLINT
       {
         // we can also deal with convex versus triangle (without connectivity data)
-        if (dispatchInfo.m_enableSatConvex && polyhedronA->getConvexPolyhedron() &&
+        if (dispatchInfo.m_enableSatConvex && polyhedronA->getConvexPolyhedron() != nullptr &&
             polyhedronB->getShapeType() == TRIANGLE_SHAPE_PROXYTYPE)
         {
           btVertexArray worldSpaceVertices;
-          btTriangleShape* tri = (btTriangleShape*)polyhedronB;
+          auto* tri = (btTriangleShape*)polyhedronB;  // NOLINT
           worldSpaceVertices.push_back(body1Wrap->getWorldTransform() * tri->m_vertices1[0]);
           worldSpaceVertices.push_back(body1Wrap->getWorldTransform() * tri->m_vertices1[1]);
           worldSpaceVertices.push_back(body1Wrap->getWorldTransform() * tri->m_vertices1[2]);
@@ -608,7 +608,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
               m_manifoldPtr->getContactBreakingThreshold() + resultOut->m_closestPointDistanceThreshold;
 
           btVector3 sepNormalWorldSpace;
-          btScalar minDist = -1e30f;
+          auto minDist = btScalar(-1e30);
           btScalar maxDist = threshold;
 
           bool foundSepAxis = false;
@@ -624,7 +624,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
           } else
 #endif
             {
-              btVector3 uniqueEdges[3] = { tri->m_vertices1[1] - tri->m_vertices1[0],
+              btVector3 uniqueEdges[3] = { tri->m_vertices1[1] - tri->m_vertices1[0],  // NOLINT
                                            tri->m_vertices1[2] - tri->m_vertices1[1],
                                            tri->m_vertices1[0] - tri->m_vertices1[2] };
 
@@ -644,7 +644,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
                 combinedFaceA.m_indices.push_back(2);
                 btVector3 faceNormal = uniqueEdges[0].cross(uniqueEdges[1]);
                 faceNormal.normalize();
-                btScalar planeEq = 1e30f;
+                auto planeEq = btScalar(1e30);
                 for (int v = 0; v < combinedFaceA.m_indices.size(); v++)
                 {
                   btScalar eq = tri->m_vertices1[combinedFaceA.m_indices[v]].dot(faceNormal);
@@ -666,7 +666,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
                 combinedFaceB.m_indices.push_back(1);
                 btVector3 faceNormal = -uniqueEdges[0].cross(uniqueEdges[1]);
                 faceNormal.normalize();
-                btScalar planeEq = 1e30f;
+                auto planeEq = btScalar(1e30);
                 for (int v = 0; v < combinedFaceB.m_indices.size(); v++)
                 {
                   btScalar eq = tri->m_vertices1[combinedFaceB.m_indices[v]].dot(faceNormal);
@@ -766,23 +766,22 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
     // now perform 'm_numPerturbationIterations' collision queries with the perturbated collision objects
 
     // perform perturbation when more then 'm_minimumPointsPerturbationThreshold' points
-    if (m_numPerturbationIterations &&
+    if (m_numPerturbationIterations != 0 &&
         resultOut->getPersistentManifold()->getNumContacts() < m_minimumPointsPerturbationThreshold)
     {
-      int i;
       btVector3 v0, v1;
       btVector3 sepNormalWorldSpace;
       btScalar l2 = gjkPairDetector.getCachedSeparatingAxis().length2();
 
       if (l2 > SIMD_EPSILON)
       {
-        sepNormalWorldSpace = gjkPairDetector.getCachedSeparatingAxis() * (1.f / l2);
+        sepNormalWorldSpace = gjkPairDetector.getCachedSeparatingAxis() * (btScalar(1.) / l2);
 
         btPlaneSpace1(sepNormalWorldSpace, v0, v1);
 
         bool perturbeA = true;
-        const btScalar angleLimit = 0.125f * SIMD_PI;
-        btScalar perturbeAngle;
+        const btScalar angleLimit = btScalar(0.125) * SIMD_PI;
+        btScalar perturbeAngle{ std::numeric_limits<btScalar>::max() };
         btScalar radiusA = min0->getAngularMotionDisc();
         btScalar radiusB = min1->getAngularMotionDisc();
         if (radiusA < radiusB)
@@ -808,7 +807,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
           unPerturbedTransform = input.m_transformB;
         }
 
-        for (i = 0; i < m_numPerturbationIterations; i++)
+        for (int i = 0; i < m_numPerturbationIterations; i++)
         {
           if (v0.length2() > SIMD_EPSILON)
           {
@@ -874,7 +873,7 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
 
   /// Linear motion for one of objects needs to exceed m_ccdSquareMotionThreshold
   /// col0->m_worldTransform,
-  btScalar resultFraction = btScalar(1.);
+  auto resultFraction = btScalar(1.);
 
   btScalar squareMot0 =
       (body0->getInterpolationWorldTransform().getOrigin() - body0->getWorldTransform().getOrigin()).length2();
@@ -896,7 +895,7 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
 
   /// Convex0 against sphere for Convex1
   {
-    btConvexShape* convex0 = static_cast<btConvexShape*>(body0->getCollisionShape());
+    auto* convex0 = static_cast<btConvexShape*>(body0->getCollisionShape());
 
     btSphereShape sphere1(body1->getCcdSweptSphereRadius());  // todo: allow non-zero sphere sizes, for better
                                                               // approximation
@@ -927,7 +926,7 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
 
   /// Sphere (for convex0) against Convex1
   {
-    btConvexShape* convex1 = static_cast<btConvexShape*>(body1->getCollisionShape());
+    auto* convex1 = static_cast<btConvexShape*>(body1->getCollisionShape());
 
     btSphereShape sphere0(body0->getCcdSweptSphereRadius());  // todo: allow non-zero sphere sizes, for better
                                                               // approximation
@@ -958,6 +957,5 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
 
   return resultFraction;
 }
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet
 // LCOV_EXCL_STOP

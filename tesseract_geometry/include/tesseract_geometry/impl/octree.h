@@ -101,7 +101,7 @@ public:
    * @brief Octrees are typically generated from 3D sensor data so this method
    * should be used to efficiently update the collision shape.
    */
-  void update() { assert(false); }
+  void update() { assert(false); }  // NOLINT
 
   /**
    * @brief Calculate the number of sub shapes that would get generated for this octree

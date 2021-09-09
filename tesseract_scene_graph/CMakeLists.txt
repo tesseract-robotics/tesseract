@@ -63,7 +63,7 @@ target_compile_definitions(
          Boost_USE_STATIC_LIBS=OFF
          Boost_USE_MULTITHREADED=ON
          Boost_USE_STATIC_RUNTIME=OFF)
-target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}
@@ -86,11 +86,11 @@ install(
 # ADD Examples
 add_subdirectory(examples)
 
-#if(TESSERACT_ENABLE_TESTING)
+if(TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
-#endif()
+endif()
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(

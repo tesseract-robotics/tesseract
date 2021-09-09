@@ -95,7 +95,7 @@ InverseKinematics::UPtr OPWInvKinFactory::create(const std::string& group_name,
 
       if (YAML::Node sign_corrections = opw_params["sign_corrections"])
       {
-        std::array<int, 6> sc = sign_corrections.as<std::array<int, 6>>();
+        auto sc = sign_corrections.as<std::array<int, 6>>();
         for (std::size_t i = 0; i < sc.size(); ++i)
         {
           if (sc[i] == 1)

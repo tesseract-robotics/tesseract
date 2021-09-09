@@ -55,7 +55,7 @@ public:
   using UPtr = std::unique_ptr<OPWInvKin>;
   using ConstUPtr = std::unique_ptr<const OPWInvKin>;
 
-  ~OPWInvKin() override final = default;
+  ~OPWInvKin() override = default;
   OPWInvKin(const OPWInvKin& other);
   OPWInvKin& operator=(const OPWInvKin& other);
   OPWInvKin(OPWInvKin&&) = default;

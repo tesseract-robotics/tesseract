@@ -46,7 +46,7 @@ public:
   using ConstUPtr = std::unique_ptr<const MutableStateSolver>;
 
   MutableStateSolver() = default;
-  virtual ~MutableStateSolver() = default;
+  ~MutableStateSolver() override = default;
   MutableStateSolver(const MutableStateSolver&) = default;
   MutableStateSolver& operator=(const MutableStateSolver&) = default;
   MutableStateSolver(MutableStateSolver&&) = default;

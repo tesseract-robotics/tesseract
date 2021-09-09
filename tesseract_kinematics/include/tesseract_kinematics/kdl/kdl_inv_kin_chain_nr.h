@@ -64,7 +64,7 @@ public:
   using UPtr = std::unique_ptr<KDLInvKinChainNR>;
   using ConstUPtr = std::unique_ptr<const KDLInvKinChainNR>;
 
-  ~KDLInvKinChainNR() override final = default;
+  ~KDLInvKinChainNR() override = default;
   KDLInvKinChainNR(const KDLInvKinChainNR& other);
   KDLInvKinChainNR& operator=(const KDLInvKinChainNR& other);
   KDLInvKinChainNR(KDLInvKinChainNR&&) = default;
@@ -78,7 +78,7 @@ public:
    * @param base_link The name of the base link for the kinematic chain
    * @param tip_link The name of the tip link for the kinematic chain
    */
-  KDLInvKinChainNR(const std::string& name,
+  KDLInvKinChainNR(std::string name,
                    const tesseract_scene_graph::SceneGraph& scene_graph,
                    const std::string& base_link,
                    const std::string& tip_link,

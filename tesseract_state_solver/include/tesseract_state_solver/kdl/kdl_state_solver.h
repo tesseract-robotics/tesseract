@@ -46,7 +46,7 @@ public:
 
   KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph);
   KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, KDLTreeData data);
-  ~KDLStateSolver() override final = default;
+  ~KDLStateSolver() override = default;
   KDLStateSolver(const KDLStateSolver& other);
   KDLStateSolver& operator=(const KDLStateSolver& other);
   KDLStateSolver(KDLStateSolver&&) = default;
@@ -117,7 +117,7 @@ private:
   /** @brief Get an updated kdl joint array */
   KDL::JntArray getKDLJntArray(const std::vector<std::string>& joint_names,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
-  KDL::JntArray getKDLJntArray(const std::unordered_map<std::string, double>& joints_values) const;
+  KDL::JntArray getKDLJntArray(const std::unordered_map<std::string, double>& joint_values) const;
 
   bool processKDLData(const tesseract_scene_graph::SceneGraph& scene_graph);
 };

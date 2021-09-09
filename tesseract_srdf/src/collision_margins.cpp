@@ -56,7 +56,8 @@ tesseract_common::CollisionMarginData::Ptr parseCollisionMargins(const tesseract
     std::throw_with_nested(std::runtime_error("CollisionMargins: collision_margins missing attribute "
                                               "'default_margin'."));
 
-  for (const tinyxml2::XMLElement* xml_pair_element = xml_element->FirstChildElement("pair_margin"); xml_pair_element;
+  for (const tinyxml2::XMLElement* xml_pair_element = xml_element->FirstChildElement("pair_margin");
+       xml_pair_element != nullptr;
        xml_pair_element = xml_pair_element->NextSiblingElement("pair_margin"))
   {
     std::string link1_name, link2_name;

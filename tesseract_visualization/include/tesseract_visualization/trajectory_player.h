@@ -45,7 +45,7 @@ public:
    * @brief Set the the trajectory for the trajectory player
    * @param program The trajectory to play
    */
-  void setTrajectory(tesseract_common::JointTrajectory trajectory);
+  void setTrajectory(const tesseract_common::JointTrajectory& trajectory);
 
   /**
    * @brief Set the scale factor for the play back of the trajectory

@@ -54,9 +54,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/fcl/fcl_utils.h>
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_fcl
+namespace tesseract_collision::tesseract_collision_fcl
 {
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Plane::ConstPtr& geom)
 {
@@ -202,7 +200,7 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
 {
-  auto* cdata = reinterpret_cast<ContactTestData*>(data);
+  auto* cdata = reinterpret_cast<ContactTestData*>(data);  // NOLINT
 
   if (cdata->done)
     return true;
@@ -212,8 +210,8 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   assert(cd1->getName() != cd2->getName());
 
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
-                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
-                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
+                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
+                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
                          !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false);
 
   assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
@@ -232,8 +230,8 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
   if (col_result.isCollision())
   {
-    Eigen::Isometry3d tf1 = cd1->getCollisionObjectsTransform();
-    Eigen::Isometry3d tf2 = cd2->getCollisionObjectsTransform();
+    const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
+    const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
     Eigen::Isometry3d tf1_inv = tf1.inverse();
     Eigen::Isometry3d tf2_inv = tf2.inverse();
 
@@ -271,7 +269,7 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
 bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
 {
-  auto* cdata = reinterpret_cast<ContactTestData*>(data);
+  auto* cdata = reinterpret_cast<ContactTestData*>(data);  // NOLINT
 
   if (cdata->done)
     return true;
@@ -281,8 +279,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   assert(cd1->getName() != cd2->getName());
 
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
-                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
-                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
+                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
+                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
                          !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false);
 
   assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
@@ -297,8 +295,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 
   if (d < cdata->collision_margin_data.getMaxCollisionMargin())
   {
-    Eigen::Isometry3d tf1 = cd1->getCollisionObjectsTransform();
-    Eigen::Isometry3d tf2 = cd2->getCollisionObjectsTransform();
+    const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
+    const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
     Eigen::Isometry3d tf1_inv = tf1.inverse();
     Eigen::Isometry3d tf2_inv = tf2.inverse();
 
@@ -339,10 +337,10 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                tesseract_common::VectorIsometry3d shape_poses)
   : name_(std::move(name)), type_id_(type_id), shapes_(std::move(shapes)), shape_poses_(std::move(shape_poses))
 {
-  assert(!shapes_.empty());
-  assert(!shape_poses_.empty());
-  assert(!name_.empty());
-  assert(shapes_.size() == shape_poses_.size());
+  assert(!shapes_.empty());                       // NOLINT
+  assert(!shape_poses_.empty());                  // NOLINT
+  assert(!name_.empty());                         // NOLINT
+  assert(shapes_.size() == shape_poses_.size());  // NOLINT
 
   m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;
   m_collisionFilterMask = CollisionFilterGroups::StaticFilter | CollisionFilterGroups::KinematicFilter;
@@ -378,5 +376,4 @@ int CollisionObjectWrapper::getShapeIndex(const fcl::CollisionObjectd* co) const
   return -1;
 }
 
-}  // namespace tesseract_collision_fcl
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_fcl

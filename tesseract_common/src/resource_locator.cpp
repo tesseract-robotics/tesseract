@@ -28,7 +28,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <console_bridge/console.h>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_common
 {
 SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocatorFn locator_function)
-  : ResourceLocator(), locator_function_(std::move(locator_function))
+  : locator_function_(std::move(locator_function))
 {
   assert(locator_function_);
 }
@@ -54,7 +54,6 @@ tesseract_common::Resource::Ptr SimpleResourceLocator::locateResource(const std:
 SimpleLocatedResource::SimpleLocatedResource(const std::string& url,
                                              const std::string& filename,
                                              const SimpleResourceLocator::ConstPtr& parent)
-  : tesseract_common::Resource()
 {
   url_ = url;
   filename_ = filename;
@@ -82,7 +81,7 @@ std::vector<uint8_t> SimpleLocatedResource::getResourceContents() const
   std::vector<uint8_t> file_contents(static_cast<size_t>(pos));
 
   ifs.seekg(0, std::ios::beg);
-  ifs.read(reinterpret_cast<std::ifstream::char_type*>(&file_contents[0]), pos);
+  ifs.read(reinterpret_cast<std::ifstream::char_type*>(&file_contents[0]), pos);  // NOLINT
 
   return file_contents;
 }
@@ -112,7 +111,7 @@ tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std:
     return nullptr;
 
   auto last_slash = url_.find_last_of('/');
-  if (last_slash == url_.npos)
+  if (last_slash == std::string::npos)
     return nullptr;
 
   std::string url_base_path = url_.substr(0, last_slash);
@@ -129,7 +128,7 @@ BytesResource::BytesResource(std::string url, std::vector<uint8_t> bytes)
 BytesResource::BytesResource(std::string url, const uint8_t* bytes, size_t bytes_len)
 {
   url_ = std::move(url);
-  bytes_ = std::vector<uint8_t>(bytes, bytes + bytes_len);
+  bytes_ = std::vector<uint8_t>(bytes, bytes + bytes_len);  // NOLINT
 }
 
 bool BytesResource::isFile() const { return false; }
@@ -139,11 +138,11 @@ std::vector<uint8_t> BytesResource::getResourceContents() const { return bytes_;
 std::shared_ptr<std::istream> BytesResource::getResourceContentStream() const
 {
   std::shared_ptr<std::stringstream> o = std::make_shared<std::stringstream>();
-  o->write((const char*)&bytes_.at(0), static_cast<std::streamsize>(bytes_.size()));
+  o->write((const char*)&bytes_.at(0), static_cast<std::streamsize>(bytes_.size()));  // NOLINT
   o->seekg(0, o->beg);
   return o;
 }
 
-Resource::Ptr BytesResource::locateResource(const std::string& url) const { return nullptr; }
+Resource::Ptr BytesResource::locateResource(const std::string& /*url*/) const { return nullptr; }
 
 }  // namespace tesseract_common

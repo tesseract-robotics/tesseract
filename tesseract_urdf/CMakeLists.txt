@@ -84,7 +84,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost console_bridge::conso
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}
@@ -138,11 +138,11 @@ install(FILES include/${PROJECT_NAME}/mesh_writer.h DESTINATION include/${PROJEC
 # ADD Examples
 add_subdirectory(examples)
 
-#if(TESSERACT_ENABLE_TESTING)
+if(TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
-#endif()
+endif()
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(

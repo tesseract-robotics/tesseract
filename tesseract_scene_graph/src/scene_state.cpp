@@ -36,7 +36,7 @@ Eigen::VectorXd SceneState::getJointValues(const std::vector<std::string>& joint
 {
   Eigen::VectorXd jv;
   jv.resize(static_cast<long int>(joint_names.size()));
-  for (auto j = 0u; j < joint_names.size(); ++j)
+  for (auto j = 0U; j < joint_names.size(); ++j)
     jv(j) = joints.at(joint_names[j]);
 
   return jv;

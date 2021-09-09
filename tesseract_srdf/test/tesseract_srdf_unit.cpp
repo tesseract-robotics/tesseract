@@ -474,7 +474,7 @@ TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
            </robot>)";
 
     SRDFModel srdf;
-    EXPECT_ANY_THROW(srdf.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // invalid version
     std::string xml_string =
@@ -485,7 +485,7 @@ TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
            </robot>)";
 
     SRDFModel srdf;
-    EXPECT_ANY_THROW(srdf.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // invalid xml
     std::string xml_string =
@@ -496,7 +496,7 @@ TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
            </robot_invalid>)";
 
     SRDFModel srdf;
-    EXPECT_ANY_THROW(srdf.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // initXml missing robot element
     std::string xml_string =
@@ -507,11 +507,11 @@ TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
            </missing_robot>)";
 
     SRDFModel srdf;
-    EXPECT_ANY_THROW(srdf.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // initFile file path does not exist
     SRDFModel srdf;
-    EXPECT_ANY_THROW(srdf.initFile(*g, "/tmp/file_does_not_exist.srdf", locator));
+    EXPECT_ANY_THROW(srdf.initFile(*g, "/tmp/file_does_not_exist.srdf", locator));  // NOLINT
   }
 }
 TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT

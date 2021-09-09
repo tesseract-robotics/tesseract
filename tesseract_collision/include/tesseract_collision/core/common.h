@@ -261,7 +261,7 @@ inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
 
   auto num_faces = static_cast<size_t>(conv.faces.size());
   std::vector<int> local_faces;
-  local_faces.reserve(3ul * num_faces);
+  local_faces.reserve(3UL * num_faces);
   for (int i = 0; i < conv.faces.size(); i++)
   {
     std::vector<int> face;
@@ -516,7 +516,7 @@ inline int loadSimplePlyFile(const std::string& path,
   if (myfile.fail())
   {
     CONSOLE_BRIDGE_logError("Failed to open file: %s", path.c_str());
-    return false;
+    return 0;
   }
   std::string str;
   std::getline(myfile, str);
@@ -528,7 +528,7 @@ inline int loadSimplePlyFile(const std::string& path,
   if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens.back()))
   {
     CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
-    return false;
+    return 0;
   }
   auto num_vertices = static_cast<size_t>(std::stoi(tokens.back()));
 
@@ -542,7 +542,7 @@ inline int loadSimplePlyFile(const std::string& path,
   if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens.back()))
   {
     CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
-    return false;
+    return 0;
   }
 
   auto num_faces = static_cast<size_t>(std::stoi(tokens.back()));
@@ -551,7 +551,7 @@ inline int loadSimplePlyFile(const std::string& path,
   if (str != "end_header")
   {
     CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
-    return false;
+    return 0;
   }
 
   vertices.reserve(num_vertices);
@@ -563,7 +563,7 @@ inline int loadSimplePlyFile(const std::string& path,
     if (tokens.size() != 3)
     {
       CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
-      return false;
+      return 0;
     }
 
     vertices.push_back(Eigen::Vector3d(std::stod(tokens[0]), std::stod(tokens[1]), std::stod(tokens[2])));
@@ -580,7 +580,7 @@ inline int loadSimplePlyFile(const std::string& path,
     if (tokens.size() < 3)
     {
       CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
-      return false;
+      return 0;
     }
 
     auto num_verts = static_cast<int>(tokens.size());

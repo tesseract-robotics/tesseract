@@ -120,7 +120,7 @@ bool parseSceneGraph(KDLChainData& results,
 
   results.segment_index.clear();
   results.segment_index[results.base_link_name] = 0;
-  results.segment_index[results.tip_link_name] = results.robot_chain.getNrOfSegments();
+  results.segment_index[results.tip_link_name] = static_cast<int>(results.robot_chain.getNrOfSegments());
 
   for (unsigned i = 0, j = 0; i < results.robot_chain.getNrOfSegments(); ++i)
   {

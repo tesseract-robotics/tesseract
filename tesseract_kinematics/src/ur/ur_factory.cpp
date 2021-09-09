@@ -61,7 +61,7 @@ InverseKinematics::UPtr URInvKinFactory::create(const std::string& group_name,
 
     if (YAML::Node model = config["model"])
     {
-      std::string model_str = model.as<std::string>();
+      auto model_str = model.as<std::string>();
       if (model_str == "UR3")
         params = UR3Parameters;
       else if (model_str == "UR5")

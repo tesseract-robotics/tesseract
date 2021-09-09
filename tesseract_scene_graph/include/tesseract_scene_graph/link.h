@@ -101,10 +101,10 @@ public:
   using Ptr = std::shared_ptr<Inertial>;
   using ConstPtr = std::shared_ptr<const Inertial>;
 
-  Inertial() { this->clear(); }
-  Eigen::Isometry3d origin;
-  double mass;
-  double ixx, ixy, ixz, iyy, iyz, izz;
+  Inertial() = default;
+  Eigen::Isometry3d origin{ Eigen::Isometry3d::Identity() };
+  double mass{ 0 };
+  double ixx{ 0 }, ixy{ 0 }, ixz{ 0 }, iyy{ 0 }, iyz{ 0 }, izz{ 0 };
 
   void clear()
   {

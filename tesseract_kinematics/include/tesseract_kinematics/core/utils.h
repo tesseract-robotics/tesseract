@@ -422,7 +422,7 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
                                         std::vector<Eigen::Index>::const_iterator current_index,
                                         std::vector<Eigen::Index>::const_iterator end_index)
 {
-  double val;
+  double val{ 0 };
   for (; current_index != end_index; ++current_index)
   {
     if (std::isinf(limits(*current_index, 0)))

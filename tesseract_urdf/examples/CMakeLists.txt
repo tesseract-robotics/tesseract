@@ -9,7 +9,6 @@ target_link_libraries(
   tesseract::tesseract_support)
 target_compile_options(${PROJECT_NAME}_load_urdf_example PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                  ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_clang_tidy(${PROJECT_NAME}_load_urdf_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS}
-                  ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_load_urdf_example ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_load_urdf_example PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 install(TARGETS ${PROJECT_NAME}_load_urdf_example DESTINATION bin)

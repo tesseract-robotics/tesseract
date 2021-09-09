@@ -130,7 +130,7 @@ bool isNumeric(const std::string& s)
 
   ss << s;
 
-  double out;
+  double out{ 0 };
   ss >> out;
 
   return !(ss.fail() || !ss.eof());
@@ -187,7 +187,7 @@ void reorder(Eigen::Ref<Eigen::VectorXd> v, std::vector<Eigen::Index> order)
     if (order[i] == static_cast<Eigen::Index>(i))
       continue;
 
-    size_t j;
+    size_t j{ 0 };
     for (j = i + 1; j < order.size(); ++j)
     {
       if (order[j] == static_cast<Eigen::Index>(i))

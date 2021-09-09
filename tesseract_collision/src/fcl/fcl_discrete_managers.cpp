@@ -41,9 +41,7 @@
 
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_fcl
+namespace tesseract_collision::tesseract_collision_fcl
 {
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
 static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
@@ -180,7 +178,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<std::
   assert(names.size() == poses.size());
   static_update_.clear();
   dynamic_update_.clear();
-  for (auto i = 0u; i < names.size(); ++i)
+  for (auto i = 0U; i < names.size(); ++i)
   {
     auto it = link2cow_.find(names[i]);
     if (it != link2cow_.end())
@@ -301,9 +299,9 @@ void selfCollisionContactTest(ContactTestData& cdata,
 {
   std::vector<fcl::CollisionObjectd*> co;
   dynamic_manager->getObjects(co);
-  for (std::vector<fcl::CollisionObjectd*>::const_iterator it1 = co.begin(), end = co.end(); it1 != end; ++it1)
+  for (auto it1 = co.begin(), end = co.end(); it1 != end; ++it1)
   {
-    std::vector<fcl::CollisionObjectd*>::const_iterator it2 = it1;
+    auto it2 = it1;
     it2++;
     for (; it2 != end; ++it2)
     {
@@ -341,7 +339,7 @@ void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const Cont
   }
 }
 
-void FCLDiscreteBVHManager::addCollisionObject(COW::Ptr cow)
+void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
   std::size_t cnt = cow->getCollisionObjectsRaw().size();
   fcl_co_count_ += cnt;
@@ -397,5 +395,4 @@ void FCLDiscreteBVHManager::onCollisionMarginDataChanged()
   if (!dynamic_update_.empty())
     dynamic_manager_->update(dynamic_update_);
 }
-}  // namespace tesseract_collision_fcl
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_fcl

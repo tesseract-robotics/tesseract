@@ -159,20 +159,20 @@ TEST(TesseractCommonUnit, trim)  // NOLINT
 
 struct TestHasMemberFunction
 {
-  bool update() const { return true; }
-  int add(int a) const { return a + 1; }
+  bool update() const { return true; }    // NOLINT
+  int add(int a) const { return a + 1; }  // NOLINT
 };
 
 struct TestHasMemberWithArgFunction
 {
-  bool update(std::shared_ptr<TestHasMemberWithArgFunction>& p) { return (p == nullptr); }
-  double add(double a, double b) const { return a + b; }
+  bool update(std::shared_ptr<TestHasMemberWithArgFunction>& p) { return (p == nullptr); }  // NOLINT
+  double add(double a, double b) const { return a + b; }                                    // NOLINT
 };
 
 struct TestMissingMemberFunction
 {
-  bool missingUpdate() const { return false; }
-  double add(int a) const { return a + 1; }
+  bool missingUpdate() const { return false; }  // NOLINT
+  double add(int a) const { return a + 1; }     // NOLINT
 };
 
 CREATE_MEMBER_CHECK(update);
@@ -217,7 +217,7 @@ TEST(TesseractCommonUnit, sfinaeHasMemberFunctionSignature)  // NOLINT
   EXPECT_FALSE(t_add_false);
 }
 
-TEST(TesseractCommonUnit, bytesResource)
+TEST(TesseractCommonUnit, bytesResource)  // NOLINT
 {
   std::vector<uint8_t> data;
   for (uint8_t i = 0; i < 8; i++)
@@ -238,11 +238,11 @@ TEST(TesseractCommonUnit, bytesResource)
     EXPECT_EQ(data[i], data2[i]);
   }
   auto data2_stream = bytes_resource->getResourceContentStream();
-  for (size_t i = 0; i < data.size(); i++)
+  for (unsigned char& i : data)
   {
-    char data2_val;
+    char data2_val{ 0 };
     data2_stream->read(&data2_val, 1);
-    EXPECT_EQ(data[i], *reinterpret_cast<uint8_t*>(&data2_val));
+    EXPECT_EQ(i, *reinterpret_cast<uint8_t*>(&data2_val));  // NOLINT
   }
 
   std::shared_ptr<tesseract_common::BytesResource> bytes_resource2 =
@@ -251,7 +251,7 @@ TEST(TesseractCommonUnit, bytesResource)
   EXPECT_EQ(bytes_resource->getResourceContents().size(), data.size());
 }
 
-TEST(TesseractCommonUnit, ToolCenterPoint)
+TEST(TesseractCommonUnit, ToolCenterPoint)  // NOLINT
 {
   {  // Empty tcp
     tesseract_common::ToolCenterPoint tcp;
@@ -259,9 +259,9 @@ TEST(TesseractCommonUnit, ToolCenterPoint)
     EXPECT_FALSE(tcp.isString());
     EXPECT_FALSE(tcp.isTransform());
     EXPECT_FALSE(tcp.isExternal());
-    EXPECT_ANY_THROW(tcp.getString());
-    EXPECT_ANY_THROW(tcp.getTransform());
-    EXPECT_ANY_THROW(tcp.getExternalFrame());
+    EXPECT_ANY_THROW(tcp.getString());         // NOLINT
+    EXPECT_ANY_THROW(tcp.getTransform());      // NOLINT
+    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
   }
 
   {  // The tcp is a link attached to the tip of the kinematic chain
@@ -271,8 +271,8 @@ TEST(TesseractCommonUnit, ToolCenterPoint)
     EXPECT_FALSE(tcp.isTransform());
     EXPECT_FALSE(tcp.isExternal());
     EXPECT_EQ(tcp.getString(), "tcp_link");
-    EXPECT_ANY_THROW(tcp.getTransform());
-    EXPECT_ANY_THROW(tcp.getExternalFrame());
+    EXPECT_ANY_THROW(tcp.getTransform());      // NOLINT
+    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
   }
 
   {  // The tcp is external
@@ -282,16 +282,16 @@ TEST(TesseractCommonUnit, ToolCenterPoint)
     EXPECT_FALSE(tcp.isTransform());
     EXPECT_TRUE(tcp.isExternal());
     EXPECT_EQ(tcp.getString(), "external_tcp_link");
-    EXPECT_ANY_THROW(tcp.getTransform());
-    EXPECT_ANY_THROW(tcp.getExternalFrame());
+    EXPECT_ANY_THROW(tcp.getTransform());      // NOLINT
+    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
 
     tcp.setExternal(false);
     EXPECT_FALSE(tcp.isExternal());
-    EXPECT_ANY_THROW(tcp.getExternalFrame());
+    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
 
     tcp.setExternal(true, "should_not_add");
     EXPECT_TRUE(tcp.isExternal());
-    EXPECT_ANY_THROW(tcp.getExternalFrame());
+    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
   }
 
   {  // The tcp is external with transform
@@ -322,12 +322,12 @@ TEST(TesseractCommonUnit, ToolCenterPoint)
     EXPECT_TRUE(tcp.isTransform());
     EXPECT_FALSE(tcp.isExternal());
     EXPECT_TRUE(tcp.getTransform().isApprox(pose, 1e-6));
-    EXPECT_ANY_THROW(tcp.getString());
-    EXPECT_ANY_THROW(tcp.getExternalFrame());
+    EXPECT_ANY_THROW(tcp.getString());         // NOLINT
+    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
   }
 }
 
-TEST(TesseractCommonUnit, ManipulatorInfo)
+TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
 {
   // Empty tcp
   tesseract_common::ManipulatorInfo manip_info;
@@ -378,7 +378,7 @@ TEST(TesseractCommonUnit, ManipulatorInfo)
   }
 }
 
-TEST(TesseractCommonUnit, serializationToolCenterPoint)
+TEST(TesseractCommonUnit, serializationToolCenterPoint)  // NOLINT
 {
   Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
 
@@ -404,7 +404,7 @@ TEST(TesseractCommonUnit, serializationToolCenterPoint)
   EXPECT_FALSE(tcp != ntcp);
 }
 
-TEST(TesseractCommonUnit, serializationManipulatorInfo)
+TEST(TesseractCommonUnit, serializationManipulatorInfo)  // NOLINT
 {
   Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
 
@@ -431,7 +431,7 @@ TEST(TesseractCommonUnit, serializationManipulatorInfo)
   EXPECT_FALSE(manip_info != nmanip_info);
 }
 
-TEST(TesseractCommonUnit, JointStateTest)
+TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
 {
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3" };
   Eigen::VectorXd positons = Eigen::VectorXd::Constant(3, 5);
@@ -440,7 +440,7 @@ TEST(TesseractCommonUnit, JointStateTest)
   EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
-TEST(TesseractCommonUnit, serializationJointState)
+TEST(TesseractCommonUnit, serializationJointState)  // NOLINT
 {
   tesseract_common::JointState joint_state;
   joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
@@ -470,7 +470,7 @@ TEST(TesseractCommonUnit, serializationJointState)
   EXPECT_FALSE(joint_state != njoint_state);
 }
 
-TEST(TesseractCommonUnit, serializationKinematicLimits)
+TEST(TesseractCommonUnit, serializationKinematicLimits)  // NOLINT
 {
   tesseract_common::KinematicLimits limits;
   limits.joint_limits.resize(3, 2);
@@ -498,7 +498,7 @@ TEST(TesseractCommonUnit, serializationKinematicLimits)
   EXPECT_FALSE(limits != nlimits);
 }
 
-TEST(TesseractCommonUnit, serializationVectorXd)
+TEST(TesseractCommonUnit, serializationVectorXd)  // NOLINT
 {
   {  // Serialize empty object
     Eigen::VectorXd ev;
@@ -593,7 +593,7 @@ TEST(TesseractCommonUnit, serializationVectorXd)
   }
 }
 
-TEST(TesseractCommonUnit, serializationMatrixX2d)
+TEST(TesseractCommonUnit, serializationMatrixX2d)  // NOLINT
 {
   {  // Serialize empty
     Eigen::MatrixX2d em;
@@ -690,7 +690,7 @@ TEST(TesseractCommonUnit, serializationMatrixX2d)
   }
 }
 
-TEST(TesseractCommonUnit, serializationIsometry3d)
+TEST(TesseractCommonUnit, serializationIsometry3d)  // NOLINT
 {
   for (int i = 0; i < 5; ++i)
   {
@@ -720,7 +720,7 @@ TEST(TesseractCommonUnit, serializationIsometry3d)
 
 TESSERACT_ANY_EXPORT(tesseract_common::JointState);  // NOLINT
 
-TEST(TesseractCommonUnit, anyUnit)
+TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 {
   tesseract_common::Any any_type;
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
@@ -773,10 +773,10 @@ TEST(TesseractCommonUnit, anyUnit)
   EXPECT_TRUE(nany_type.as<tesseract_common::JointState>() == joint_state);
 
   // Test bad cast
-  EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());
+  EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
 }
 
-TEST(TesseractCommonUnit, boundsUnit)
+TEST(TesseractCommonUnit, boundsUnit)  // NOLINT
 {
   Eigen::VectorXd v = Eigen::VectorXd::Ones(6);
   v = v.array() + std::numeric_limits<float>::epsilon();
@@ -809,7 +809,7 @@ TEST(TesseractCommonUnit, boundsUnit)
   ASSERT_EQ((v - limits.col(1)).norm(), 0);
 }
 
-TEST(TesseractCommonUnit, isIdenticalUnit)
+TEST(TesseractCommonUnit, isIdenticalUnit)  // NOLINT
 {
   std::vector<std::string> v1{ "a", "b", "c" };
   std::vector<std::string> v2{ "a", "b", "c" };
@@ -825,13 +825,13 @@ TEST(TesseractCommonUnit, isIdenticalUnit)
   EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, true));
 }
 
-TEST(TesseractCommonUnit, getTimestampStringUnit)
+TEST(TesseractCommonUnit, getTimestampStringUnit)  // NOLINT
 {
   std::string s1 = tesseract_common::getTimestampString();
   EXPECT_FALSE(s1.empty());
 }
 
-TEST(TesseractCommonUnit, reorder)
+TEST(TesseractCommonUnit, reorder)  // NOLINT
 {
   std::vector<std::vector<Eigen::Index>> checks;
   checks.push_back({ 5, 4, 3, 2, 1, 0 });
@@ -851,14 +851,14 @@ TEST(TesseractCommonUnit, reorder)
   }
 }
 
-TEST(TesseractCommonUnit, getTempPathUnit)
+TEST(TesseractCommonUnit, getTempPathUnit)  // NOLINT
 {
   std::string s1 = tesseract_common::getTempPath();
   EXPECT_FALSE(s1.empty());
   EXPECT_TRUE(tesseract_common::fs::exists(s1));
 }
 
-TEST(TesseractCommonUnit, QueryStringValueUnit)
+TEST(TesseractCommonUnit, QueryStringValueUnit)  // NOLINT
 {
   {
     std::string str = R"(<box>Test</box>)";
@@ -875,7 +875,7 @@ TEST(TesseractCommonUnit, QueryStringValueUnit)
   }
 }
 
-TEST(TesseractCommonUnit, QueryStringTextUnit)
+TEST(TesseractCommonUnit, QueryStringTextUnit)  // NOLINT
 {
   {
     std::string str = R"(<box>Test</box>)";
@@ -905,7 +905,7 @@ TEST(TesseractCommonUnit, QueryStringTextUnit)
   }
 }
 
-TEST(TesseractCommonUnit, QueryStringAttributeUnit)
+TEST(TesseractCommonUnit, QueryStringAttributeUnit)  // NOLINT
 {
   {
     std::string str = R"(<box name="test" />)";
@@ -935,7 +935,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeUnit)
   }
 }
 
-TEST(TesseractCommonUnit, StringAttributeUnit)
+TEST(TesseractCommonUnit, StringAttributeUnit)  // NOLINT
 {
   {
     std::string str = R"(<box name="test" />)";
@@ -962,7 +962,7 @@ TEST(TesseractCommonUnit, StringAttributeUnit)
   }
 }
 
-TEST(TesseractCommonUnit, QueryStringAttributeRequiredUnit)
+TEST(TesseractCommonUnit, QueryStringAttributeRequiredUnit)  // NOLINT
 {
   {
     std::string str = R"(<box name="test" />)";
@@ -992,7 +992,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeRequiredUnit)
   }
 }
 
-TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)
+TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)  // NOLINT
 {
   {
     std::string str = R"(<box name="1.5" />)";
@@ -1002,7 +1002,7 @@ TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
     EXPECT_TRUE(element != nullptr);
 
-    double double_value;
+    double double_value{ 0 };
     tinyxml2::XMLError status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_NEAR(double_value, 1.5, 1e-6);
@@ -1016,7 +1016,7 @@ TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
     EXPECT_TRUE(element != nullptr);
 
-    double double_value;
+    double double_value{ 0 };
     tinyxml2::XMLError status = tesseract_common::QueryDoubleAttributeRequired(element, "missing", double_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
@@ -1029,13 +1029,13 @@ TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
     EXPECT_TRUE(element != nullptr);
 
-    double double_value;
+    double double_value{ 0 };
     tinyxml2::XMLError status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
     EXPECT_TRUE(status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE);
   }
 }
 
-TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)
+TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)  // NOLINT
 {
   {
     std::string str = R"(<box name="1" />)";
@@ -1045,7 +1045,7 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
     EXPECT_TRUE(element != nullptr);
 
-    int int_value;
+    int int_value{ 0 };
     tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_NEAR(int_value, 1, 1e-6);
@@ -1059,7 +1059,7 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
     EXPECT_TRUE(element != nullptr);
 
-    int int_value;
+    int int_value{ 0 };
     tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "missing", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
@@ -1072,7 +1072,7 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
     EXPECT_TRUE(element != nullptr);
 
-    int int_value;
+    int int_value{ 0 };
     tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE);
   }
@@ -1091,7 +1091,7 @@ void runThrowNestedException()
   }
 }
 
-TEST(TesseractCommonUnit, printNestedExceptionUnit)
+TEST(TesseractCommonUnit, printNestedExceptionUnit)  // NOLINT
 {
   try
   {
@@ -1103,7 +1103,7 @@ TEST(TesseractCommonUnit, printNestedExceptionUnit)
   }
 }
 
-TEST(TesseractCommonUnit, almostEqualRelativeAndAbsUnit)
+TEST(TesseractCommonUnit, almostEqualRelativeAndAbsUnit)  // NOLINT
 {
   double a = 1e-5;
   double b = 0;

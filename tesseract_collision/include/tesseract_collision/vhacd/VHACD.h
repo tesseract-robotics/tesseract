@@ -128,28 +128,28 @@ public:
       m_minVolumePerCH = 0.0001;
       m_callback = nullptr;
       m_logger = nullptr;
-      m_convexhullApproximation = true;
-      m_oclAcceleration = true;
+      m_convexhullApproximation = 1U;
+      m_oclAcceleration = 1U;
       m_maxConvexHulls = 1024;
       m_projectHullVertices = true;  // This will project the output convex hull vertices onto the original source mesh
                                      // to increase the floating point accuracy of the results
     }
-    double m_concavity;
-    double m_alpha;
-    double m_beta;
-    double m_minVolumePerCH;
-    IUserCallback* m_callback;
-    IUserLogger* m_logger;
-    uint32_t m_resolution;
-    uint32_t m_maxNumVerticesPerCH;
-    uint32_t m_planeDownsampling;
-    uint32_t m_convexhullDownsampling;
-    uint32_t m_pca;
-    uint32_t m_mode;
-    uint32_t m_convexhullApproximation;
-    uint32_t m_oclAcceleration;
-    uint32_t m_maxConvexHulls;
-    bool m_projectHullVertices;
+    double m_concavity{ 0.001 };
+    double m_alpha{ 0.05 };
+    double m_beta{ 0.05 };
+    double m_minVolumePerCH{ 0.0001 };
+    IUserCallback* m_callback{ nullptr };
+    IUserLogger* m_logger{ nullptr };
+    uint32_t m_resolution{ 100000 };
+    uint32_t m_maxNumVerticesPerCH{ 64 };
+    uint32_t m_planeDownsampling{ 4 };
+    uint32_t m_convexhullDownsampling{ 4 };
+    uint32_t m_pca{ 0 };
+    uint32_t m_mode{ 0 };
+    uint32_t m_convexhullApproximation{ 1U };
+    uint32_t m_oclAcceleration{ 1U };
+    uint32_t m_maxConvexHulls{ 1024 };
+    bool m_projectHullVertices{ true };
   };
 
   virtual void Cancel() = 0;

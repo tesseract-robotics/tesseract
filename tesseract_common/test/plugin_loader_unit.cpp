@@ -69,14 +69,17 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
   }
 
   {
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, lib_name, "does_not_exist"));
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, "does_not_exist", lib_dir));
+    // NOLINTNEXTLINE
     EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>("does_not_exist", lib_name, lib_dir));
   }
 
   {
-    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, "does_not_exist"));
-    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>("does_not_exist", lib_name));
+    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, "does_not_exist"));  // NOLINT
+    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>("does_not_exist", lib_name));     // NOLINT
   }
 }
 

@@ -62,8 +62,7 @@ target_link_libraries(
 target_compile_options(${PROJECT_NAME}_core_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                          ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_core_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS}
-                  ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_core_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_core_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_core_unit
@@ -87,7 +86,7 @@ target_link_libraries(
 target_compile_options(${PROJECT_NAME}_kdl_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                         ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_kdl_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_kdl_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_kdl_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_kdl_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_kdl_unit
@@ -111,7 +110,7 @@ target_link_libraries(
 target_compile_options(${PROJECT_NAME}_opw_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                         ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_opw_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_opw_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_opw_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_opw_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_opw_unit
@@ -136,8 +135,7 @@ target_link_libraries(
 target_compile_options(${PROJECT_NAME}_ikfast_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                            ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ikfast_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_ikfast_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS}
-                  ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_ikfast_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_ikfast_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_ikfast_unit
@@ -161,7 +159,7 @@ target_link_libraries(
 target_compile_options(${PROJECT_NAME}_rop_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                         ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_rop_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_rop_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_rop_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_rop_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_rop_unit
@@ -185,7 +183,7 @@ target_link_libraries(
 target_compile_options(${PROJECT_NAME}_rep_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                         ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_rep_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_rep_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_rep_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_rep_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_rep_unit
@@ -209,7 +207,7 @@ target_link_libraries(
 target_compile_options(${PROJECT_NAME}_ur_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                        ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ur_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_ur_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_ur_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_ur_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_ur_unit
@@ -232,7 +230,7 @@ target_link_libraries(
 target_compile_options(${PROJECT_NAME}_factory_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                        ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_factory_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_factory_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_factory_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_factory_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_factory_unit

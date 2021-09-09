@@ -30,7 +30,8 @@
 
 namespace tesseract_visualization
 {
-TrajectoryInterpolator::TrajectoryInterpolator(tesseract_common::JointTrajectory trajectory) : trajectory_(trajectory)
+TrajectoryInterpolator::TrajectoryInterpolator(tesseract_common::JointTrajectory trajectory)
+  : trajectory_(std::move(trajectory))
 {
   double last_time = 0;
   double current_time = 0;
@@ -143,7 +144,7 @@ long TrajectoryInterpolator::getStateCount() const { return static_cast<long>(tr
 
 tesseract_common::JointState TrajectoryInterpolator::interpolate(const tesseract_common::JointState& start,
                                                                  const tesseract_common::JointState& end,
-                                                                 double t) const
+                                                                 double t)
 {
   assert(!start.joint_names.empty());
   assert(!end.joint_names.empty());

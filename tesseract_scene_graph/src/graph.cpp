@@ -118,9 +118,6 @@ bool SceneGraph::addLink(const Link& link, const Joint& joint)
     return false;
   }
 
-  std::string link_name = link.getName();
-  std::string joint_name = joint.getName();
-
   if (!addLinkHelper(std::make_shared<Link>(link.clone())))
     return false;
 
@@ -130,7 +127,7 @@ bool SceneGraph::addLink(const Link& link, const Joint& joint)
   return true;
 }
 
-bool SceneGraph::addLinkHelper(Link::Ptr link_ptr, bool replace_allowed)
+bool SceneGraph::addLinkHelper(const Link::Ptr& link_ptr, bool replace_allowed)
 {
   auto found = link_map_.find(link_ptr->getName());
   bool link_exists = (found != link_map_.end());
@@ -228,7 +225,7 @@ bool SceneGraph::removeLink(const std::string& name, bool recursive)
   {
     for (const auto& link_name : adjacent_link_names)
     {
-      if (getInboundJoints(link_name).size() == 0)
+      if (getInboundJoints(link_name).empty())
         removeLink(link_name, true);
     }
   }
@@ -294,7 +291,7 @@ bool SceneGraph::addJoint(const Joint& joint)
   return addJointHelper(joint_ptr);
 }
 
-bool SceneGraph::addJointHelper(Joint::Ptr joint_ptr)
+bool SceneGraph::addJointHelper(const Joint::Ptr& joint_ptr)
 {
   auto parent = link_map_.find(joint_ptr->parent_link_name);
   auto child = link_map_.find(joint_ptr->child_link_name);
@@ -656,7 +653,7 @@ std::vector<std::string> SceneGraph::getAdjacentLinkNames(const std::string& nam
 {
   std::vector<std::string> link_names;
   Vertex v = getVertex(name);
-  for (auto vd : boost::make_iterator_range(adjacent_vertices(v, *this)))
+  for (auto* vd : boost::make_iterator_range(adjacent_vertices(v, *this)))
     link_names.push_back(boost::get(boost::vertex_link, *this)[vd]->getName());
 
   return link_names;
@@ -666,7 +663,7 @@ std::vector<std::string> SceneGraph::getInvAdjacentLinkNames(const std::string& 
 {
   std::vector<std::string> link_names;
   Vertex v = getVertex(name);
-  for (auto vd : boost::make_iterator_range(inv_adjacent_vertices(v, *this)))
+  for (auto* vd : boost::make_iterator_range(inv_adjacent_vertices(v, *this)))
     link_names.push_back(boost::get(boost::vertex_link, *this)[vd]->getName());
 
   return link_names;
@@ -702,7 +699,8 @@ std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std
   return std::vector<std::string>(link_names.begin(), link_names.end());
 }
 
-std::unordered_map<std::string, std::string> SceneGraph::getAdjacencyMap(std::vector<std::string> link_names) const
+std::unordered_map<std::string, std::string>
+SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
 {
   std::map<Vertex, size_t> index_map;
   boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
@@ -857,12 +855,13 @@ SceneGraph::Edge SceneGraph::getEdge(const std::string& name) const
 /** addSceneGraph needs a couple helpers to handle prefixing, we hide them in an anonymous namespace here **/
 namespace
 {
-tesseract_scene_graph::Link clone_prefix(tesseract_scene_graph::Link::ConstPtr link, const std::string& prefix)
+tesseract_scene_graph::Link clone_prefix(const tesseract_scene_graph::Link::ConstPtr& link, const std::string& prefix)
 {
   return link->clone(prefix + link->getName());
 }
 
-tesseract_scene_graph::Joint clone_prefix(tesseract_scene_graph::Joint::ConstPtr joint, const std::string& prefix)
+tesseract_scene_graph::Joint clone_prefix(const tesseract_scene_graph::Joint::ConstPtr& joint,
+                                          const std::string& prefix)
 {
   auto ret = joint->clone(prefix + joint->getName());
   ret.child_link_name = prefix + joint->child_link_name;
@@ -870,7 +869,7 @@ tesseract_scene_graph::Joint clone_prefix(tesseract_scene_graph::Joint::ConstPtr
   return ret;
 }
 
-AllowedCollisionMatrix::Ptr clone_prefix(AllowedCollisionMatrix::ConstPtr acm, const std::string& prefix)
+AllowedCollisionMatrix::Ptr clone_prefix(const AllowedCollisionMatrix::ConstPtr& acm, const std::string& prefix)
 {
   if (prefix.empty())
     return std::make_shared<AllowedCollisionMatrix>(*acm);

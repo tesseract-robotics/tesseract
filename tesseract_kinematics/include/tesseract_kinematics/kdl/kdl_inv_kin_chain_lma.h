@@ -63,7 +63,7 @@ public:
   using UPtr = std::unique_ptr<KDLInvKinChainLMA>;
   using ConstUPtr = std::unique_ptr<const KDLInvKinChainLMA>;
 
-  ~KDLInvKinChainLMA() override final = default;
+  ~KDLInvKinChainLMA() override = default;
   KDLInvKinChainLMA(const KDLInvKinChainLMA& other);
   KDLInvKinChainLMA& operator=(const KDLInvKinChainLMA& other);
   KDLInvKinChainLMA(KDLInvKinChainLMA&&) = default;

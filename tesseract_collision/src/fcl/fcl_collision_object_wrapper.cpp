@@ -26,9 +26,7 @@
 
 #include <tesseract_collision/fcl/fcl_collision_object_wrapper.h>
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_fcl
+namespace tesseract_collision::tesseract_collision_fcl
 {
 FCLCollisionObjectWrapper::FCLCollisionObjectWrapper(const std::shared_ptr<fcl::CollisionGeometry<double>>& cgeom)
   : fcl::CollisionObject<double>(cgeom)
@@ -74,5 +72,4 @@ void FCLCollisionObjectWrapper::updateAABB()
   }
 }
 
-}  // namespace tesseract_collision_fcl
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_fcl

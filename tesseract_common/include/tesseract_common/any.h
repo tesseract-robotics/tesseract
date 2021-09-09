@@ -119,7 +119,7 @@ struct AnyInner final : AnyInnerBase
     // Compare class types before casting the incoming object to the T type
     if (rhs.getType() == getType())
     {
-      auto any_type = static_cast<const T*>(rhs.recover());
+      const auto* any_type = static_cast<const T*>(rhs.recover());
       return any_type_ == *any_type;
     }
     return false;
@@ -232,7 +232,7 @@ public:
     if (getType() != typeid(T))
       throw std::bad_cast();
 
-    auto p = static_cast<uncvref_t<T>*>(any_type_->recover());
+    auto* p = static_cast<uncvref_t<T>*>(any_type_->recover());
     return *p;
   }
 

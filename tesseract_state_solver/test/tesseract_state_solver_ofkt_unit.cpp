@@ -14,18 +14,18 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 {
   {  // OFKTRootNode
     OFKTRootNode node("base_link");
-    EXPECT_ANY_THROW(node.setParent(nullptr));
-    EXPECT_ANY_THROW(node.storeJointValue(0));
-    EXPECT_ANY_THROW(node.setStaticTransformation(Eigen::Isometry3d::Identity()));
+    EXPECT_ANY_THROW(node.setParent(nullptr));                                      // NOLINT
+    EXPECT_ANY_THROW(node.storeJointValue(0));                                      // NOLINT
+    EXPECT_ANY_THROW(node.setStaticTransformation(Eigen::Isometry3d::Identity()));  // NOLINT
     EXPECT_FALSE(node.updateWorldTransformationRequired());
     EXPECT_TRUE(Eigen::Isometry3d::Identity().isApprox(node.computeLocalTransformation(0), 1e-6));
   }
 
   {  // OFKTRootNode
     OFKTRootNode node("base_link");
-    EXPECT_ANY_THROW(node.setParent(nullptr));
-    EXPECT_ANY_THROW(node.storeJointValue(0));
-    EXPECT_ANY_THROW(node.setStaticTransformation(Eigen::Isometry3d::Identity()));
+    EXPECT_ANY_THROW(node.setParent(nullptr));                                      // NOLINT
+    EXPECT_ANY_THROW(node.storeJointValue(0));                                      // NOLINT
+    EXPECT_ANY_THROW(node.setStaticTransformation(Eigen::Isometry3d::Identity()));  // NOLINT
     EXPECT_FALSE(node.updateWorldTransformationRequired());
     EXPECT_TRUE(Eigen::Isometry3d::Identity().isApprox(node.computeLocalTransformation(0), 1e-6));
   }
@@ -33,8 +33,8 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   {  // OFKTFixedNode
     OFKTRootNode root_node("base_link");
     OFKTFixedNode node(&root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
-    EXPECT_ANY_THROW(node.storeJointValue(0));
-    EXPECT_ANY_THROW(node.getJointValue());
+    EXPECT_ANY_THROW(node.storeJointValue(0));  // NOLINT
+    EXPECT_ANY_THROW(node.getJointValue());     // NOLINT
     EXPECT_FALSE(node.updateWorldTransformationRequired());
     EXPECT_TRUE(Eigen::Isometry3d::Identity().isApprox(node.computeLocalTransformation(0), 1e-6));
   }

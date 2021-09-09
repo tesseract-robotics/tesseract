@@ -40,12 +40,14 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
             const tinyxml2::XMLElement* srdf_xml,
             const std::array<int, 3>& /*version*/)
 {
+  using tesseract_common::strFormat;
+
   GroupNames group_names;
   ChainGroups chain_groups;
   LinkGroups link_groups;
   JointGroups joint_groups;
 
-  for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("group"); xml_element;
+  for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("group"); xml_element != nullptr;
        xml_element = xml_element->NextSiblingElement("group"))
   {
     std::string group_name;
@@ -58,64 +60,66 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
     std::vector<std::pair<std::string, std::string>> chains;
 
     // get the links in the groups
-    for (const tinyxml2::XMLElement* link_xml = xml_element->FirstChildElement("link"); link_xml;
+    for (const tinyxml2::XMLElement* link_xml = xml_element->FirstChildElement("link"); link_xml != nullptr;
          link_xml = link_xml->NextSiblingElement("link"))
     {
       std::string link_name;
       tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(link_xml, "name", link_name);
       if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("Group: '" + group_name +
-                                                  "' link element is missing or failed to parse attribute 'name'!"));
+        std::throw_with_nested(std::runtime_error(
+            strFormat("Group: '%s' link element is missing or failed to parse attribute 'name'!", group_name)));
 
       if (!scene_graph.getLink(link_name))
-        std::throw_with_nested(std::runtime_error("Group: '" + group_name + "' link '" + link_name +
-                                                  "' is not known to the Scene Graph!"));
+        std::throw_with_nested(std::runtime_error(
+            strFormat("Group: '%s' link '%s' is not known to the Scene Graph!", group_name, link_name)));
 
       links.push_back(link_name);
     }
 
     // get the joints in the groups
-    for (const tinyxml2::XMLElement* joint_xml = xml_element->FirstChildElement("joint"); joint_xml;
+    for (const tinyxml2::XMLElement* joint_xml = xml_element->FirstChildElement("joint"); joint_xml != nullptr;
          joint_xml = joint_xml->NextSiblingElement("joint"))
     {
       std::string joint_name;
       tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(joint_xml, "name", joint_name);
       if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("Group: '" + group_name +
-                                                  "' joint element is missing or failed to parse attribute 'name'!"));
+        std::throw_with_nested(std::runtime_error(
+            strFormat("Group: '%s' joint element is missing or failed to parse attribute 'name'!", group_name)));
 
       if (!scene_graph.getJoint(joint_name))
-        std::throw_with_nested(std::runtime_error("Group: '" + group_name + "' joint '" + joint_name +
-                                                  "' is not known to the Scene Graph!"));
+        std::throw_with_nested(std::runtime_error(
+            strFormat("Group: '%s' joint '%s' is not known to the Scene Graph!", group_name, joint_name)));
 
       joints.push_back(joint_name);
     }
 
     // get the chains in the groups
-    for (const tinyxml2::XMLElement* chain_xml = xml_element->FirstChildElement("chain"); chain_xml;
+    for (const tinyxml2::XMLElement* chain_xml = xml_element->FirstChildElement("chain"); chain_xml != nullptr;
          chain_xml = chain_xml->NextSiblingElement("chain"))
     {
       std::string base_link_name, tip_link_name;
       tinyxml2::XMLError status =
           tesseract_common::QueryStringAttributeRequired(chain_xml, "base_link", base_link_name);
       if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("Group: '" + group_name +
-                                                  "' chain element is missing or failed to parse attribute "
-                                                  "'base_link'!"));
+        std::throw_with_nested(std::runtime_error(strFormat("Group: '%s' chain element is missing or failed to parse "
+                                                            "attribute "
+                                                            "'base_link'!",
+                                                            group_name)));
 
       status = tesseract_common::QueryStringAttributeRequired(chain_xml, "tip_link", tip_link_name);
       if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("Group: '" + group_name +
-                                                  "' chain element is missing or failed to parse attribute "
-                                                  "'tip_link'!"));
+        std::throw_with_nested(std::runtime_error(strFormat("Group: '%s' chain element is missing or failed to parse "
+                                                            "attribute "
+                                                            "'tip_link'!",
+                                                            group_name)));
 
       if (!scene_graph.getLink(base_link_name))
-        std::throw_with_nested(std::runtime_error("Group: '" + group_name + "' chain element base link '" +
-                                                  base_link_name + "' is not known to the Scene Graph!"));
+        std::throw_with_nested(std::runtime_error(strFormat(
+            "Group: '%s' chain element base link '%s' is not known to the Scene Graph!", group_name, base_link_name)));
 
       if (!scene_graph.getLink(tip_link_name))
-        std::throw_with_nested(std::runtime_error("Group: '" + group_name + "' chain element tip link '" +
-                                                  tip_link_name + "' is not known to the Scene Graph!"));
+        std::throw_with_nested(std::runtime_error(strFormat(
+            "Group: '%s' chain element tip link '%s' is not known to the Scene Graph!", group_name, tip_link_name)));
 
       chains.emplace_back(base_link_name, tip_link_name);
     }
@@ -138,7 +142,7 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
     else
     {
       std::throw_with_nested(
-          std::runtime_error("Group: '" + group_name + "' is empty or multiple types were provided!"));
+          std::runtime_error(strFormat("Group: '%s' is empty or multiple types were provided!", group_name)));
     }
   }
 

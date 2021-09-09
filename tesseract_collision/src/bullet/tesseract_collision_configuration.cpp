@@ -50,9 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/tesseract_compound_compound_collision_algorithm.h>
 #include <tesseract_collision/bullet/tesseract_convex_convex_algorithm.h>
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 TesseractCollisionConfiguration::TesseractCollisionConfiguration(
     const btDefaultCollisionConstructionInfo& constructionInfo)
@@ -106,7 +104,7 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(
   collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize3);
   collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize4);
 
-  if (constructionInfo.m_persistentManifoldPool)
+  if (constructionInfo.m_persistentManifoldPool != nullptr)
   {
     m_ownsPersistentManifoldPool = false;
     m_persistentManifoldPool = constructionInfo.m_persistentManifoldPool;
@@ -115,6 +113,7 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(
   {
     m_ownsPersistentManifoldPool = true;
     void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
+    // NOLINTNEXTLINE
     m_persistentManifoldPool = new (mem)
         btPoolAllocator(sizeof(btPersistentManifold), constructionInfo.m_defaultMaxPersistentManifoldPoolSize);
   }
@@ -123,7 +122,7 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(
   collisionAlgorithmMaxElementSize = (collisionAlgorithmMaxElementSize + 16) & 0xffffffffffff0;  // NOLINT
   TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-  if (constructionInfo.m_collisionAlgorithmPool)
+  if (constructionInfo.m_collisionAlgorithmPool != nullptr)
   {
     m_ownsCollisionAlgorithmPool = false;
     m_collisionAlgorithmPool = constructionInfo.m_collisionAlgorithmPool;
@@ -132,10 +131,10 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(
   {
     m_ownsCollisionAlgorithmPool = true;
     void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
+    // NOLINTNEXTLINE
     m_collisionAlgorithmPool = new (mem)
         btPoolAllocator(collisionAlgorithmMaxElementSize, constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize);
   }
 }
 
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet

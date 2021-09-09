@@ -38,7 +38,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-ToolCenterPoint::ToolCenterPoint(const std::string& name, bool external) : type_(1), name_(name), external_(external) {}
+ToolCenterPoint::ToolCenterPoint(std::string name, bool external)
+  : type_(1), name_(std::move(name)), external_(external)
+{
+}
 
 ToolCenterPoint::ToolCenterPoint(const Eigen::Isometry3d& transform, bool external, std::string external_frame)
   : type_(2), transform_(transform), external_(external), external_frame_(std::move(external_frame))

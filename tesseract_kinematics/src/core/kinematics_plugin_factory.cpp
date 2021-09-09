@@ -61,12 +61,15 @@ KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : Kinematics
   }
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(boost::filesystem::path config)
+KinematicsPluginFactory::KinematicsPluginFactory(const boost::filesystem::path& config)
   : KinematicsPluginFactory(YAML::LoadFile(config.string()))
 {
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(std::string config) : KinematicsPluginFactory(YAML::Load(config)) {}
+KinematicsPluginFactory::KinematicsPluginFactory(const std::string& config)
+  : KinematicsPluginFactory(YAML::Load(config))
+{
+}
 
 // This prevents it from being defined inline.
 // If not the forward declare of PluginLoader cause compiler error.
@@ -90,7 +93,7 @@ void KinematicsPluginFactory::addFwdKinPlugin(const std::string& group_name,
                                               const std::string& solver_name,
                                               tesseract_common::PluginInfo plugin_info)
 {
-  fwd_plugin_info_[group_name][solver_name] = plugin_info;
+  fwd_plugin_info_[group_name][solver_name] = std::move(plugin_info);
 }
 
 void KinematicsPluginFactory::removeFwdKinPlugin(const std::string& group_name, const std::string& solver_name)
@@ -135,7 +138,7 @@ std::string KinematicsPluginFactory::getDefaultFwdKinPlugin(const std::string& g
     throw std::runtime_error("KinematicsPluginFactory, tried to get default fwd kin solver for a group '" + group_name +
                              "' that does not exist!");
 
-  for (auto& solver : group_it->second)
+  for (const auto& solver : group_it->second)
   {
     if (solver.second.is_default)
       return solver.first;
@@ -149,7 +152,7 @@ void KinematicsPluginFactory::addInvKinPlugin(const std::string& group_name,
                                               const std::string& solver_name,
                                               tesseract_common::PluginInfo plugin_info)
 {
-  inv_plugin_info_[group_name][solver_name] = plugin_info;
+  inv_plugin_info_[group_name][solver_name] = std::move(plugin_info);
 }
 
 void KinematicsPluginFactory::removeInvKinPlugin(const std::string& group_name, const std::string& solver_name)
@@ -194,7 +197,7 @@ std::string KinematicsPluginFactory::getDefaultInvKinPlugin(const std::string& g
     throw std::runtime_error("KinematicsPluginFactory, tried to get default inv kin solver for a group '" + group_name +
                              "' that does not exist!");
 
-  for (auto& solver : group_it->second)
+  for (const auto& solver : group_it->second)
   {
     if (solver.second.is_default)
       return solver.first;
@@ -320,7 +323,7 @@ KinematicsPluginFactory::createInvKin(const std::string& group_name,
   }
 }
 
-void KinematicsPluginFactory::saveConfig(tesseract_common::fs::path file_path) const
+void KinematicsPluginFactory::saveConfig(const tesseract_common::fs::path& file_path) const
 {
   YAML::Node config = getConfig();
   std::ofstream fout(file_path.string());

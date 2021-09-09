@@ -66,7 +66,7 @@ public:
   using UPtr = std::unique_ptr<KDLFwdKinTree>;
   using ConstUPtr = std::unique_ptr<const KDLFwdKinTree>;
 
-  ~KDLFwdKinTree() override final = default;
+  ~KDLFwdKinTree() override = default;
   KDLFwdKinTree(const KDLFwdKinTree& other);
   KDLFwdKinTree& operator=(const KDLFwdKinTree& other);
   KDLFwdKinTree(KDLFwdKinTree&&) = default;
@@ -117,7 +117,7 @@ private:
   std::string solver_name_{ KDL_FWD_KIN_TREE_SOLVER_NAME }; /**< @brief Name of this solver */
 
   /** @brief Set the start state for all joints in the tree. */
-  void setStartState(std::unordered_map<std::string, double> start_state);
+  void setStartState(const std::unordered_map<std::string, double>& start_state);
 
   /** @brief Get an updated kdl joint array */
   KDL::JntArray getKDLJntArray(const std::vector<std::string>& joint_names,

@@ -67,7 +67,7 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
   }
 
   // get visual if it exists
-  for (const tinyxml2::XMLElement* visual = xml_element->FirstChildElement("visual"); visual;
+  for (const tinyxml2::XMLElement* visual = xml_element->FirstChildElement("visual"); visual != nullptr;
        visual = visual->NextSiblingElement("visual"))
   {
     std::vector<tesseract_scene_graph::Visual::Ptr> temp_visual;
@@ -84,7 +84,7 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
   }
 
   // get collision if exists
-  for (const tinyxml2::XMLElement* collision = xml_element->FirstChildElement("collision"); collision;
+  for (const tinyxml2::XMLElement* collision = xml_element->FirstChildElement("collision"); collision != nullptr;
        collision = collision->NextSiblingElement("collision"))
   {
     std::vector<tesseract_scene_graph::Collision::Ptr> temp_collision;

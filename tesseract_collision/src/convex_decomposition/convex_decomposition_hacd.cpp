@@ -24,7 +24,7 @@ ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertice
   points_local.reserve(vertices.size());
   for (const auto& v : vertices)
   {
-    points_local.push_back(HACD::Vec3<HACD::Real>(v.x(), v.y(), v.z()));
+    points_local.emplace_back(v.x(), v.y(), v.z());
   }
 
   std::vector<HACD::Vec3<long>> triangles_local;

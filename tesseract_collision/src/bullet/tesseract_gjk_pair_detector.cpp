@@ -41,9 +41,7 @@ static btScalar gGjkEpaPenetrationTolerance = 1.0e-12;
 static btScalar gGjkEpaPenetrationTolerance = 0.001f;
 #endif
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 TesseractGjkPairDetector::TesseractGjkPairDetector(const btConvexShape* objectA,
                                                    const btConvexShape* objectB,
@@ -99,7 +97,7 @@ void TesseractGjkPairDetector::getClosestPoints(const ClosestPointInput& input,
 {
   (void)swapResults;
 
-  getClosestPointsNonVirtual(input, output, debugDraw);
+  getClosestPointsNonVirtual(input, output, debugDraw);  // NOLINT
 }
 
 static void btComputeSupport(const btConvexShape* convexA,
@@ -126,8 +124,8 @@ static void btComputeSupport(const btConvexShape* convexA,
 
   if (check2d)
   {
-    supAworld[2] = 0.f;
-    supBworld[2] = 0.f;
+    supAworld[2] = btScalar(0.);
+    supBworld[2] = btScalar(0.);
   }
 
   aMinb = supAworld - supBworld;
@@ -142,8 +140,8 @@ struct btSupportVector
 
 struct btSimplex
 {
-  btSupportVector ps[4];
-  int last;  //!< index of last added point
+  btSupportVector ps[4];  // NOLINT
+  int last{ -1 };         //!< index of last added point
 };
 
 static btVector3 ccd_vec3_origin(0, 0, 0);
@@ -172,8 +170,7 @@ inline void ccdVec3Sub(btVector3* v, const btVector3* w) { *v -= *w; }
 inline void btVec3Sub2(btVector3* d, const btVector3* v, const btVector3* w) { *d = (*v) - (*w); }
 inline btScalar btVec3Dot(const btVector3* a, const btVector3* b)
 {
-  btScalar dot;
-  dot = a->dot(*b);
+  btScalar dot = a->dot(*b);
 
   return dot;
 }
@@ -208,22 +205,19 @@ inline void btTripleCross(const btVector3* a, const btVector3* b, const btVector
 
 inline int ccdEq(btScalar _a, btScalar _b)
 {
-  btScalar ab;
-  btScalar a, b;
-
-  ab = btFabs(_a - _b);
+  btScalar ab = btFabs(_a - _b);
   if (btFabs(ab) < SIMD_EPSILON)
     return 1;
 
-  a = btFabs(_a);
-  b = btFabs(_b);
+  btScalar a = btFabs(_a);
+  btScalar b = btFabs(_b);
   if (b > a)
   {
-    return ab < SIMD_EPSILON * b;
+    return ab < SIMD_EPSILON * b;  // NOLINT
   }
-  else
+  else  // NOLINT
   {
-    return ab < SIMD_EPSILON * a;
+    return ab < SIMD_EPSILON * a;  // NOLINT
   }
 }
 
@@ -234,7 +228,8 @@ btScalar ccdVec3Y(const btVector3* v) { return v->y(); }
 btScalar ccdVec3Z(const btVector3* v) { return v->z(); }
 inline int btVec3Eq(const btVector3* a, const btVector3* b)
 {
-  return ccdEq(ccdVec3X(a), ccdVec3X(b)) && ccdEq(ccdVec3Y(a), ccdVec3Y(b)) && ccdEq(ccdVec3Z(a), ccdVec3Z(b));
+  return ccdEq(ccdVec3X(a), ccdVec3X(b)) && ccdEq(ccdVec3Y(a), ccdVec3Y(b)) &&  // NOLINT
+         ccdEq(ccdVec3Z(a), ccdVec3Z(b));                                       // NOLINT
 }
 
 inline void btSimplexAdd(btSimplex* s, const btSupportVector* v)
@@ -256,7 +251,7 @@ inline int ccdSign(btScalar val)
   {
     return 0;
   }
-  else if (val < btScalar(0))
+  else if (val < btScalar(0))  // NOLINT
   {
     return -1;
   }
@@ -280,7 +275,7 @@ inline btScalar btVec3PointSegmentDist2(const btVector3* P, const btVector3* x0,
   //
   // Bonus of this method is witness point for free.
 
-  btScalar dist, t;
+  btScalar dist{ std::numeric_limits<btScalar>::max() }, t{ std::numeric_limits<btScalar>::max() };
   btVector3 d, a;
 
   // direction of segment
@@ -295,18 +290,18 @@ inline btScalar btVec3PointSegmentDist2(const btVector3* P, const btVector3* x0,
   if (t < btScalar(0) || btFuzzyZero(t))
   {
     dist = ccdVec3Dist2(x0, P);
-    if (witness)
+    if (witness != nullptr)
       btVec3Copy(witness, x0);
   }
-  else if (t > btScalar(1) || ccdEq(t, btScalar(1)))
+  else if (t > btScalar(1) || ccdEq(t, btScalar(1)))  // NOLINT
   {
     dist = ccdVec3Dist2(b, P);
-    if (witness)
+    if (witness != nullptr)
       btVec3Copy(witness, b);
   }
   else
   {
-    if (witness)
+    if (witness != nullptr)
     {
       btVec3Copy(witness, &d);
       btVec3Scale(witness, t);
@@ -338,29 +333,28 @@ btVec3PointTriDist2(const btVector3* P, const btVector3* x0, const btVector3* B,
   // computed.
 
   btVector3 d1, d2, a;
-  double u, v, w, p, q, r;
-  double s, t, dist, dist2;
+  double dist{ std::numeric_limits<double>::max() }, dist2{ std::numeric_limits<double>::max() };
   btVector3 witness2;
 
   btVec3Sub2(&d1, B, x0);
   btVec3Sub2(&d2, C, x0);
   btVec3Sub2(&a, x0, P);
 
-  u = btVec3Dot(&a, &a);
-  v = btVec3Dot(&d1, &d1);
-  w = btVec3Dot(&d2, &d2);
-  p = btVec3Dot(&a, &d1);
-  q = btVec3Dot(&a, &d2);
-  r = btVec3Dot(&d1, &d2);
+  double u = btVec3Dot(&a, &a);
+  double v = btVec3Dot(&d1, &d1);
+  double w = btVec3Dot(&d2, &d2);
+  double p = btVec3Dot(&a, &d1);
+  double q = btVec3Dot(&a, &d2);
+  double r = btVec3Dot(&d1, &d2);
 
-  s = (q * r - w * p) / (w * v - r * r);
-  t = (-s * r - q) / w;
+  double s = (q * r - w * p) / (w * v - r * r);
+  double t = (-s * r - q) / w;
 
-  if ((btFuzzyZero(static_cast<btScalar>(s)) || s > 0) && (ccdEq(static_cast<btScalar>(s), 1) || s < 1) &&
-      (btFuzzyZero(static_cast<btScalar>(t)) || t > 0) && (ccdEq(static_cast<btScalar>(t), 1) || t < 1) &&
-      (ccdEq(static_cast<btScalar>(t + s), 1) || static_cast<btScalar>(t + s) < 1))
+  if ((btFuzzyZero(static_cast<btScalar>(s)) || s > 0) && (ccdEq(static_cast<btScalar>(s), 1) || s < 1) &&  // NOLINT
+      (btFuzzyZero(static_cast<btScalar>(t)) || t > 0) && (ccdEq(static_cast<btScalar>(t), 1) || t < 1) &&  // NOLINT
+      (ccdEq(static_cast<btScalar>(t + s), 1) || static_cast<btScalar>(t + s) < 1))                         // NOLINT
   {
-    if (witness)
+    if (witness != nullptr)
     {
       btVec3Scale(&d1, static_cast<btScalar>(s));
       btVec3Scale(&d2, static_cast<btScalar>(t));
@@ -388,7 +382,7 @@ btVec3PointTriDist2(const btVector3* P, const btVector3* x0, const btVector3* B,
     if (dist2 < dist)
     {
       dist = dist2;
-      if (witness)
+      if (witness != nullptr)
         btVec3Copy(witness, &witness2);
     }
 
@@ -396,7 +390,7 @@ btVec3PointTriDist2(const btVector3* P, const btVector3* x0, const btVector3* B,
     if (dist2 < dist)
     {
       dist = dist2;
-      if (witness)
+      if (witness != nullptr)
         btVec3Copy(witness, &witness2);
     }
   }
@@ -406,14 +400,12 @@ btVec3PointTriDist2(const btVector3* P, const btVector3* x0, const btVector3* B,
 
 static int btDoSimplex2(btSimplex* simplex, btVector3* dir)
 {
-  const btSupportVector *A, *B;
   btVector3 AB, AO, tmp;
-  btScalar dot;
 
   // get last added as A
-  A = ccdSimplexLast(simplex);
+  const btSupportVector* A = ccdSimplexLast(simplex);
   // get the other point
-  B = btSimplexPoint(simplex, 0);
+  const btSupportVector* B = btSimplexPoint(simplex, 0);
   // compute AB oriented segment
   btVec3Sub2(&AB, &B->v, &A->v);
   // compute AO vector
@@ -421,7 +413,7 @@ static int btDoSimplex2(btSimplex* simplex, btVector3* dir)
   btVec3Scale(&AO, -btScalar(1));
 
   // dot product AB . AO
-  dot = btVec3Dot(&AB, &AO);
+  btScalar dot = btVec3Dot(&AB, &AO);
 
   // check if origin doesn't lie on AB segment
   btVec3Cross(&tmp, &AB, &AO);
@@ -452,18 +444,16 @@ static int btDoSimplex2(btSimplex* simplex, btVector3* dir)
 
 static int btDoSimplex3(btSimplex* simplex, btVector3* dir)
 {
-  const btSupportVector *A, *B, *C;
   btVector3 AO, AB, AC, ABC, tmp;
-  btScalar dot, dist;
 
   // get last added as A
-  A = ccdSimplexLast(simplex);
+  const btSupportVector* A = ccdSimplexLast(simplex);
   // get the other points
-  B = btSimplexPoint(simplex, 1);
-  C = btSimplexPoint(simplex, 0);
+  const btSupportVector* B = btSimplexPoint(simplex, 1);
+  const btSupportVector* C = btSimplexPoint(simplex, 0);
 
   // check touching contact
-  dist = btVec3PointTriDist2(&ccd_vec3_origin, &A->v, &B->v, &C->v, 0);
+  btScalar dist = btVec3PointTriDist2(&ccd_vec3_origin, &A->v, &B->v, &C->v, nullptr);
   if (btFuzzyZero(dist))
   {
     return 1;
@@ -471,7 +461,7 @@ static int btDoSimplex3(btSimplex* simplex, btVector3* dir)
 
   // check if triangle is really triangle (has area > 0)
   // if not simplex can't be expanded and thus no itersection is found
-  if (btVec3Eq(&A->v, &B->v) || btVec3Eq(&A->v, &C->v))
+  if (btVec3Eq(&A->v, &B->v) || btVec3Eq(&A->v, &C->v))  // NOLINT
   {
     return -1;
   }
@@ -486,7 +476,7 @@ static int btDoSimplex3(btSimplex* simplex, btVector3* dir)
   btVec3Cross(&ABC, &AB, &AC);
 
   btVec3Cross(&tmp, &ABC, &AC);
-  dot = btVec3Dot(&tmp, &AO);
+  btScalar dot = btVec3Dot(&tmp, &AO);
   if (btFuzzyZero(dot) || dot > btScalar(0))
   {
     dot = btVec3Dot(&AC, &AO);
@@ -561,23 +551,19 @@ static int btDoSimplex3(btSimplex* simplex, btVector3* dir)
 
 static int btDoSimplex4(btSimplex* simplex, btVector3* dir)
 {
-  const btSupportVector *A, *B, *C, *D;
   btVector3 AO, AB, AC, AD, ABC, ACD, ADB;
-  int B_on_ACD, C_on_ADB, D_on_ABC;
-  int AB_O, AC_O, AD_O;
-  btScalar dist;
 
   // get last added as A
-  A = ccdSimplexLast(simplex);
+  const btSupportVector* A = ccdSimplexLast(simplex);
   // get the other points
-  B = btSimplexPoint(simplex, 2);
-  C = btSimplexPoint(simplex, 1);
-  D = btSimplexPoint(simplex, 0);
+  const btSupportVector* B = btSimplexPoint(simplex, 2);
+  const btSupportVector* C = btSimplexPoint(simplex, 1);
+  const btSupportVector* D = btSimplexPoint(simplex, 0);
 
   // check if tetrahedron is really tetrahedron (has volume > 0)
   // if it is not simplex can't be expanded and thus no intersection is
   // found
-  dist = btVec3PointTriDist2(&A->v, &B->v, &C->v, &D->v, 0);
+  btScalar dist = btVec3PointTriDist2(&A->v, &B->v, &C->v, &D->v, nullptr);
   if (btFuzzyZero(dist))
   {
     return -1;
@@ -585,16 +571,16 @@ static int btDoSimplex4(btSimplex* simplex, btVector3* dir)
 
   // check if origin lies on some of tetrahedron's face - if so objects
   // intersect
-  dist = btVec3PointTriDist2(&ccd_vec3_origin, &A->v, &B->v, &C->v, 0);
+  dist = btVec3PointTriDist2(&ccd_vec3_origin, &A->v, &B->v, &C->v, nullptr);
   if (btFuzzyZero(dist))
     return 1;
-  dist = btVec3PointTriDist2(&ccd_vec3_origin, &A->v, &C->v, &D->v, 0);
+  dist = btVec3PointTriDist2(&ccd_vec3_origin, &A->v, &C->v, &D->v, nullptr);
   if (btFuzzyZero(dist))
     return 1;
-  dist = btVec3PointTriDist2(&ccd_vec3_origin, &A->v, &B->v, &D->v, 0);
+  dist = btVec3PointTriDist2(&ccd_vec3_origin, &A->v, &B->v, &D->v, nullptr);
   if (btFuzzyZero(dist))
     return 1;
-  dist = btVec3PointTriDist2(&ccd_vec3_origin, &B->v, &C->v, &D->v, 0);
+  dist = btVec3PointTriDist2(&ccd_vec3_origin, &B->v, &C->v, &D->v, nullptr);
   if (btFuzzyZero(dist))
     return 1;
 
@@ -610,23 +596,23 @@ static int btDoSimplex4(btSimplex* simplex, btVector3* dir)
 
   // side (positive or negative) of B, C, D relative to planes ACD, ADB
   // and ABC respectively
-  B_on_ACD = ccdSign(btVec3Dot(&ACD, &AB));
-  C_on_ADB = ccdSign(btVec3Dot(&ADB, &AC));
-  D_on_ABC = ccdSign(btVec3Dot(&ABC, &AD));
+  int B_on_ACD = ccdSign(btVec3Dot(&ACD, &AB));
+  int C_on_ADB = ccdSign(btVec3Dot(&ADB, &AC));
+  int D_on_ABC = ccdSign(btVec3Dot(&ABC, &AD));
 
   // whether origin is on same side of ACD, ADB, ABC as B, C, D
   // respectively
-  AB_O = ccdSign(btVec3Dot(&ACD, &AO)) == B_on_ACD;
-  AC_O = ccdSign(btVec3Dot(&ADB, &AO)) == C_on_ADB;
-  AD_O = ccdSign(btVec3Dot(&ABC, &AO)) == D_on_ABC;
+  int AB_O = ccdSign(btVec3Dot(&ACD, &AO)) == B_on_ACD;  // NOLINT
+  int AC_O = ccdSign(btVec3Dot(&ADB, &AO)) == C_on_ADB;  // NOLINT
+  int AD_O = ccdSign(btVec3Dot(&ABC, &AO)) == D_on_ABC;  // NOLINT
 
-  if (AB_O && AC_O && AD_O)
+  if (AB_O && AC_O && AD_O)  // NOLINT
   {
     // origin is in tetrahedron
     return 1;
     // rearrange simplex to triangle and call btDoSimplex3()
   }
-  else if (!AB_O)
+  else if (!AB_O)  // NOLINT
   {
     // B is farthest from the origin among all of the tetrahedron's
     // points, so remove it from the list and go on with the triangle
@@ -636,7 +622,7 @@ static int btDoSimplex4(btSimplex* simplex, btVector3* dir)
     btSimplexSet(simplex, 2, A);
     btSimplexSetSize(simplex, 3);
   }
-  else if (!AC_O)
+  else if (!AC_O)  // NOLINT
   {
     // C is farthest
     btSimplexSet(simplex, 1, D);
@@ -662,7 +648,7 @@ static int btDoSimplex(btSimplex* simplex, btVector3* dir)
     // simplex contains segment only one segment
     return btDoSimplex2(simplex, dir);
   }
-  else if (btSimplexSize(simplex) == 3)
+  else if (btSimplexSize(simplex) == 3)  // NOLINT
   {
     // simplex contains triangle
     return btDoSimplex3(simplex, dir);
@@ -685,9 +671,9 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
                                                           class btIDebugDraw* debugDraw)
 #endif
 {
-  m_cachedSeparatingDistance = 0.f;
+  m_cachedSeparatingDistance = btScalar(0.);
 
-  btScalar distance = btScalar(0.);
+  auto distance = btScalar(0.);
   btVector3 normalInB(btScalar(0.), btScalar(0.), btScalar(0.));
 
   btVector3 pointOnA, pointOnB;
@@ -731,7 +717,7 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
   // note, for large differences in shapes, use double precision build!
   {
     btScalar squaredDistance = BT_LARGE_FLOAT;
-    btScalar delta = btScalar(0.);
+    auto delta = btScalar(0.);
 
     btSimplex simplex1;
     btSimplex* simplex = &simplex1;
@@ -791,7 +777,7 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
           status = 0;  // intersection found
           break;
         }
-        else if (do_simplex_res == -1)
+        else if (do_simplex_res == -1)  // NOLINT
         {
           // intersection not found
           status = -1;
@@ -835,7 +821,7 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
 
     m_simplexSolver->reset();
     // printf("dir=%f,%f,%f\n",dir[0],dir[1],dir[2]);
-    if (1)
+    if (1)  // NOLINT
     {
       for (;;)
       // while (true)
@@ -851,8 +837,8 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
 
         if (check2d)
         {
-          pWorld[2] = 0.f;
-          qWorld[2] = 0.f;
+          pWorld[2] = btScalar(0.);
+          qWorld[2] = btScalar(0.);
         }
 
         btVector3 w = pWorld - qWorld;
@@ -1005,8 +991,9 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
       }
     }
 
-    bool catchDegeneratePenetrationCase = (m_catchDegeneracies && m_penetrationDepthSolver && m_degenerateSimplex &&
-                                           ((distance + margin) < gGjkEpaPenetrationTolerance));
+    bool catchDegeneratePenetrationCase =
+        (m_catchDegeneracies && m_penetrationDepthSolver && m_degenerateSimplex &&  // NOLINT
+         ((distance + margin) < gGjkEpaPenetrationTolerance));
 
     // if (checkPenetration && !isValid)
     if ((checkPenetration && (!isValid || catchDegeneratePenetrationCase)) || (status == 0))
@@ -1014,7 +1001,7 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
       // penetration case
 
       // if there is no way to handle penetrations, bail out
-      if (m_penetrationDepthSolver)
+      if (m_penetrationDepthSolver != nullptr)
       {
         // Penetration depth case.
         btVector3 tmpPointOnA, tmpPointOnB;
@@ -1112,14 +1099,14 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
   {
     m_cachedSeparatingAxis = normalInB;
     m_cachedSeparatingDistance = distance;
-    if (1)
+    if (1)  // NOLINT
     {
       /// todo: need to track down this EPA penetration solver degeneracy
       /// the penetration solver reports penetration but the contact normal
       /// connecting the contact points is pointing in the opposite direction
       /// until then, detect the issue and revert the normal
 
-      btScalar d2 = 0.f;
+      auto d2 = btScalar(0.);
       {
         btVector3 separatingAxisInA = (-orgNormalInB) * localTransA.getBasis();
         btVector3 separatingAxisInB = orgNormalInB * localTransB.getBasis();
@@ -1146,7 +1133,7 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
         btVector3 w = pWorld - qWorld;
         d1 = (-normalInB).dot(w) - margin;
       }
-      btScalar d0 = 0.f;
+      auto d0 = btScalar(0.);
       {
         btVector3 separatingAxisInA = (-normalInB) * input.m_transformA.getBasis();
         btVector3 separatingAxisInB = normalInB * input.m_transformB.getBasis();
@@ -1183,5 +1170,4 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
     // printf("invalid gjk query\n");
   }
 }
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet

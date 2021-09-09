@@ -488,7 +488,7 @@ public:
    * @param link_names The links to map other links to
    * @return A map of affected links to on of the provided link names.
    */
-  std::unordered_map<std::string, std::string> getAdjacencyMap(std::vector<std::string> link_names) const;
+  std::unordered_map<std::string, std::string> getAdjacencyMap(const std::vector<std::string>& link_names) const;
 
   /**
    * @brief Get all children link names for the given joint names
@@ -563,7 +563,7 @@ protected:
    * @param replace_allowed If true and the link exist it will be replaced
    * @return Return False if a link with the same name already exists and replace is not allowed, otherwise true
    */
-  bool addLinkHelper(Link::Ptr link_ptr, bool replace_allowed = false);
+  bool addLinkHelper(const Link::Ptr& link_ptr, bool replace_allowed = false);
 
   /**
    * @brief Adds joint to the graph
@@ -571,7 +571,7 @@ protected:
    * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
    * otherwise true
    */
-  bool addJointHelper(Joint::Ptr joint_ptr);
+  bool addJointHelper(const Joint::Ptr& joint_ptr);
 
 private:
   std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>> link_map_;

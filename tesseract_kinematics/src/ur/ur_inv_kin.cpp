@@ -43,7 +43,7 @@ namespace tesseract_kinematics
 namespace
 {
 const double ZERO_THRESH = 0.00000001;
-int SIGN(double x) { return (x > 0) - (x < 0); }
+int SIGN(double x) { return (x > 0) - (x < 0); }  // NOLINT
 const double PI = M_PI;
 }  // namespace
 
@@ -64,14 +64,14 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
   double T23 = T(2, 3);
 
   ////////////////////////////// shoulder rotate joint (q1) //////////////////////////////
-  double q1[2];
+  double q1[2];  // NOLINT
   {
     double A = params.d6 * T12 - T13;
     double B = params.d6 * T02 - T03;
     double R = A * A + B * B;
     if (fabs(A) < ZERO_THRESH)
     {
-      double div;
+      double div{ 0 };
       if (fabs(fabs(params.d4) - fabs(B)) < ZERO_THRESH)
         div = -SIGN(params.d4) * SIGN(B);
       else
@@ -87,7 +87,7 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
     }
     else if (fabs(B) < ZERO_THRESH)
     {
-      double div;
+      double div{ 0 };
       if (fabs(fabs(params.d4) - fabs(A)) < ZERO_THRESH)
         div = SIGN(params.d4) * SIGN(A);
       else
@@ -123,12 +123,12 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
   ////////////////////////////////////////////////////////////////////////////////
 
   ////////////////////////////// wrist 2 joint (q5) //////////////////////////////
-  double q5[2][2];
+  double q5[2][2];  // NOLINT
   {
     for (int i = 0; i < 2; i++)
     {
       double numer = (T03 * sin(q1[i]) - T13 * cos(q1[i]) - params.d4);
-      double div;
+      double div{ 0 };
       if (fabs(fabs(numer) - fabs(params.d6)) < ZERO_THRESH)
         div = SIGN(numer) * SIGN(params.d6);
       else
@@ -147,7 +147,7 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
       {
         double c1 = cos(q1[i]), s1 = sin(q1[i]);
         double c5 = cos(q5[i][j]), s5 = sin(q5[i][j]);
-        double q6;
+        double q6{ 0 };
         ////////////////////////////// wrist 3 joint (q6) //////////////////////////////
         if (fabs(s5) < ZERO_THRESH)
           q6 = q6_des;
@@ -161,7 +161,7 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
         }
         ////////////////////////////////////////////////////////////////////////////////
 
-        double q2[2], q3[2], q4[2];
+        double q2[2], q3[2], q4[2];  // NOLINT
         ///////////////////////////// RRR joints (q2,q3,q4) ////////////////////////////
         double c6 = cos(q6), s6 = sin(q6);
         double x04x = -s5 * (T02 * c1 + T12 * s1) - c5 * (s6 * (T01 * c1 + T11 * s1) - c6 * (T00 * c1 + T10 * s1));
@@ -260,8 +260,9 @@ IKSolutions URInvKin::calcInvKin(const IKInput& tip_link_poses, const Eigen::Ref
   Eigen::Isometry3d corrected_pose = base_offset.inverse() * tip_link_poses.at(tip_link_name_);
 
   // Do the analytic IK
+  // NOLINTNEXTLINE
   std::array<std::array<double, 6>, 8> sols;  // maximum of 8 IK solutions
-  std::size_t num_sols = static_cast<std::size_t>(inverse(corrected_pose, params_, sols[0].data(), 0));
+  auto num_sols = static_cast<std::size_t>(inverse(corrected_pose, params_, sols[0].data(), 0));
 
   // Check the output
   IKSolutions solution_set;

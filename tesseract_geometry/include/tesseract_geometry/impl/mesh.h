@@ -155,7 +155,7 @@ public:
 
   Geometry::Ptr clone() const override
   {
-    // getMaterial returns a pointer-to-const, so dereference and make_shared, but also guard against nullptr
+    // getMaterial returns a pointer-to-const, so deference and make_shared, but also guard against nullptr
     std::shared_ptr<Mesh> ptr;
     if (getMaterial() != nullptr)
     {
