@@ -59,8 +59,7 @@ target_code_coverage(
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME}_core INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                       "$<INSTALL_INTERFACE:include>")
-
+                                                          "$<INSTALL_INTERFACE:include>")
 
 add_library(${PROJECT_NAME}_kdl src/kdl_state_solver.cpp)
 target_link_libraries(

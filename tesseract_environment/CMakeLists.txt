@@ -47,9 +47,7 @@ set(COVERAGE_EXCLUDE
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 # Create interface for core
-add_library(${PROJECT_NAME}
-  src/environment.cpp
-  src/utils.cpp)
+add_library(${PROJECT_NAME} src/environment.cpp src/utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
@@ -74,7 +72,7 @@ target_code_coverage(
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                       "$<INSTALL_INTERFACE:include>")
+                                                  "$<INSTALL_INTERFACE:include>")
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 

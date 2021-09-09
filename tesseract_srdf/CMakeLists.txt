@@ -51,7 +51,12 @@ add_library(
   src/kinematics_information.cpp
   src/srdf_model.cpp
   src/utils.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen tesseract::tesseract_common tesseract::tesseract_scene_graph yaml-cpp)
+target_link_libraries(
+  ${PROJECT_NAME}
+  PUBLIC Eigen3::Eigen
+         tesseract::tesseract_common
+         tesseract::tesseract_scene_graph
+         yaml-cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
