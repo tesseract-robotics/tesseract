@@ -69,12 +69,17 @@ Eigen::Isometry3d convert(const KDL::Frame& frame)
 
 KDL::Vector convert(const Eigen::Vector3d& vector) { return KDL::Vector(vector(0), vector(1), vector(2)); }
 
-Eigen::MatrixXd convert(const KDL::Jacobian& jacobian)
+Eigen::Vector3d convert(const KDL::Vector& vector) { return Eigen::Vector3d(vector(0), vector(1), vector(2)); }
+
+Eigen::MatrixXd convert(const KDL::Jacobian& jacobian) { return jacobian.data; }
+
+KDL::Jacobian convert(const Eigen::MatrixXd& jacobian)
 {
-  Eigen::MatrixXd matrix(jacobian.rows(), jacobian.columns());
-  for (unsigned i = 0; i < jacobian.rows(); ++i)
-    for (unsigned j = 0; j < jacobian.columns(); ++j)
-      matrix(i, j) = jacobian(i, j);
+  if (jacobian.rows() != 6)
+    throw std::runtime_error("Eigen Jacobian must have six rows!");
+
+  KDL::Jacobian matrix;
+  matrix.data = jacobian;
 
   return matrix;
 }
@@ -86,8 +91,7 @@ Eigen::MatrixXd convert(const KDL::Jacobian& jacobian, const std::vector<int>& q
   for (int j = 0; j < static_cast<int>(q_nrs.size()); ++j)
   {
     auto c = static_cast<unsigned>(q_nrs[static_cast<size_t>(j)]);
-    for (int i = 0; i < static_cast<int>(jacobian.rows()); ++i)
-      matrix(i, j) = jacobian(static_cast<unsigned>(i), c);
+    matrix.col(j) = jacobian.data.col(c);
   }
 
   return matrix;

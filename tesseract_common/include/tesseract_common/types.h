@@ -125,7 +125,7 @@ struct KinematicsPluginInfo
   bool empty() const;
 
   // Yaml Config key
-  static const std::string CONFIG_KEY;
+  static inline const std::string CONFIG_KEY{ "kinematic_plugins" };
 };
 }  // namespace tesseract_common
 

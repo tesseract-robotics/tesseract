@@ -40,6 +40,7 @@
 
 namespace tesseract_kinematics
 {
+// LCOV_EXCL_START
 namespace
 {
 const double ZERO_THRESH = 0.00000001;
@@ -217,6 +218,7 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
   }
   return num_sols;
 }
+// LCOV_EXCL_STOP
 
 URInvKin::URInvKin(std::string name,
                    URParameters params,

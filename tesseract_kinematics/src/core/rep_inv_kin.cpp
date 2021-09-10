@@ -112,9 +112,6 @@ void REPInvKin::init(std::string name,
   if (manipulator == nullptr)
     throw std::runtime_error("Provided manipulator is a nullptr");
 
-  if (manipulator == nullptr)
-    throw std::runtime_error("Provided manipulator is a nullptr");
-
   if (!(manipulator_reach > 0))
     throw std::runtime_error("Manipulator reach is not greather than zero");
 

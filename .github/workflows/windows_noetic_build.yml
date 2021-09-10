@@ -37,6 +37,6 @@ jobs:
 
         rosdep install -q --from-paths . --ignore-src -y
 
-        catkin_make_isolated --install --force-cmake --only-pkg-with-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_support tesseract_urdf tesseract_visualization --cmake-args -DCMAKE_BUILD_TYPE=Release -DINSTALL_OMPL=OFF -DINSTALL_FCL=ON -DINSTALL_BULLET=ON -DBUILD_IPOPT=OFF -DBUILD_SNOPT=OFF
+        catkin_make_isolated --install --force-cmake --only-pkg-with-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_state_solver tesseract_support tesseract_urdf tesseract_visualization --cmake-args -DCMAKE_BUILD_TYPE=Release -DINSTALL_OMPL=OFF -DINSTALL_FCL=ON -DINSTALL_BULLET=ON -DBUILD_IPOPT=OFF -DBUILD_SNOPT=OFF
         call "D:\a\tesseract\tesseract\install_isolated\setup.bat"
-        catkin_make_isolated --install --force-cmake --pkg tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_support tesseract_urdf tesseract_visualization --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON -DINSTALL_OMPL=OFF -DINSTALL_FCL=ON -DINSTALL_BULLET=ON -DBUILD_IPOPT=OFF -DBUILD_SNOPT=OFF
+        catkin_make_isolated --install --force-cmake --pkg tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_state_solver tesseract_support tesseract_urdf tesseract_visualization --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON -DINSTALL_OMPL=OFF -DINSTALL_FCL=ON -DINSTALL_BULLET=ON -DBUILD_IPOPT=OFF -DBUILD_SNOPT=OFF

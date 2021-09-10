@@ -3,6 +3,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <iostream>
 #include <fstream>
+#include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
@@ -70,47 +71,49 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
   Link link_6("link_6");
   Link tool0("tool0");
 
-  g->addLink(base_link);
-  g->addLink(link_1);
-  g->addLink(link_2);
-  g->addLink(link_3);
-  g->addLink(link_4);
-  g->addLink(link_5);
-  g->addLink(link_6);
-  g->addLink(tool0);
+  EXPECT_TRUE(g->addLink(base_link));
+  EXPECT_TRUE(g->addLink(link_1));
+  EXPECT_TRUE(g->addLink(link_2));
+  EXPECT_TRUE(g->addLink(link_3));
+  EXPECT_TRUE(g->addLink(link_4));
+  EXPECT_TRUE(g->addLink(link_5));
+  EXPECT_TRUE(g->addLink(link_6));
+  EXPECT_TRUE(g->addLink(tool0));
 
   if (config == ABBConfig::ROBOT_ON_RAIL)
   {
-    g->addLink(Link("world"));
-    g->addLink(Link("axis_1"));
-    g->addLink(Link("axis_2"));
+    EXPECT_TRUE(g->addLink(Link("world")));
+    EXPECT_TRUE(g->addLink(Link("axis_1")));
+    EXPECT_TRUE(g->addLink(Link("axis_2")));
 
     Joint joint_a("joint_axis_1");
     joint_a.axis = Eigen::Vector3d(0, 1, 0);
     joint_a.parent_link_name = "world";
     joint_a.child_link_name = "axis_1";
     joint_a.type = JointType::PRISMATIC;
-    g->addJoint(joint_a);
+    joint_a.limits = std::make_shared<JointLimits>(-10, 10, 0, 5, 10);
+    EXPECT_TRUE(g->addJoint(joint_a));
 
     Joint joint_b("joint_axis_2");
     joint_b.axis = Eigen::Vector3d(1, 0, 0);
     joint_b.parent_link_name = "axis_1";
     joint_b.child_link_name = "axis_2";
     joint_b.type = JointType::PRISMATIC;
-    g->addJoint(joint_b);
+    joint_b.limits = std::make_shared<JointLimits>(-10, 10, 0, 5, 10);
+    EXPECT_TRUE(g->addJoint(joint_b));
 
     Joint joint_c("joint_base_link");
     joint_c.axis = Eigen::Vector3d(0, 1, 0);
     joint_c.parent_link_name = "axis_1";
     joint_c.child_link_name = "base_link";
     joint_c.type = JointType::FIXED;
-    g->addJoint(joint_c);
+    EXPECT_TRUE(g->addJoint(joint_c));
   }
   else if (config == ABBConfig::ROBOT_WITH_POSITIONER)
   {
-    g->addLink(Link("world"));
-    g->addLink(Link("axis_1"));
-    g->addLink(Link("axis_2"));
+    EXPECT_TRUE(g->addLink(Link("world")));
+    EXPECT_TRUE(g->addLink(Link("axis_1")));
+    EXPECT_TRUE(g->addLink(Link("axis_2")));
 
     Joint joint_a("joint_axis_1");
     joint_a.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 0, 0);
@@ -118,7 +121,8 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
     joint_a.parent_link_name = "world";
     joint_a.child_link_name = "axis_1";
     joint_a.type = JointType::PRISMATIC;
-    g->addJoint(joint_a);
+    joint_a.limits = std::make_shared<JointLimits>(-10, 10, 0, 5, 10);
+    EXPECT_TRUE(g->addJoint(joint_a));
 
     Joint joint_b("joint_axis_2");
     joint_b.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 0, 0);
@@ -126,60 +130,66 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
     joint_b.parent_link_name = "axis_1";
     joint_b.child_link_name = "axis_2";
     joint_b.type = JointType::PRISMATIC;
-    g->addJoint(joint_b);
+    joint_b.limits = std::make_shared<JointLimits>(-10, 10, 0, 5, 10);
+    EXPECT_TRUE(g->addJoint(joint_b));
 
     Joint joint_c("joint_base_link");
     joint_c.parent_link_name = "world";
     joint_c.child_link_name = "base_link";
     joint_c.type = JointType::FIXED;
-    g->addJoint(joint_c);
+    EXPECT_TRUE(g->addJoint(joint_c));
   }
 
   Joint joint_1("joint_1");
   joint_1.parent_link_name = "base_link";
   joint_1.child_link_name = "link_1";
   joint_1.type = JointType::FIXED;
-  g->addJoint(joint_1);
+  EXPECT_TRUE(g->addJoint(joint_1));
 
   Joint joint_2("joint_2");
   joint_2.parent_link_name = "link_1";
   joint_2.child_link_name = "link_2";
   joint_2.type = JointType::REVOLUTE;
-  g->addJoint(joint_2);
+  joint_2.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g->addJoint(joint_2));
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_3.parent_link_name = "link_2";
   joint_3.child_link_name = "link_3";
   joint_3.type = JointType::REVOLUTE;
-  g->addJoint(joint_3);
+  joint_3.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g->addJoint(joint_3));
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_4.parent_link_name = "link_3";
   joint_4.child_link_name = "link_4";
   joint_4.type = JointType::REVOLUTE;
-  g->addJoint(joint_4);
+  joint_4.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g->addJoint(joint_4));
 
   Joint joint_5("joint_5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_5.parent_link_name = "link_4";
   joint_5.child_link_name = "link_5";
   joint_5.type = JointType::REVOLUTE;
-  g->addJoint(joint_5);
+  joint_5.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g->addJoint(joint_5));
 
   Joint joint_6("joint_6");
   joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_6.parent_link_name = "link_5";
   joint_6.child_link_name = "link_6";
   joint_6.type = JointType::REVOLUTE;
-  g->addJoint(joint_6);
+  joint_6.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g->addJoint(joint_6));
 
   Joint joint_tool0("joint_tool0");
   joint_tool0.parent_link_name = "link_6";
   joint_tool0.child_link_name = "tool0";
   joint_tool0.type = JointType::FIXED;
-  g->addJoint(joint_tool0);
+  EXPECT_TRUE(g->addJoint(joint_tool0));
 
   return g;
 }
@@ -196,45 +206,49 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraph()
   Link link_4("link_4");
   Link link_5("link_5");
 
-  g.addLink(base_link);
-  g.addLink(link_1);
-  g.addLink(link_2);
-  g.addLink(link_3);
-  g.addLink(link_4);
-  g.addLink(link_5);
+  EXPECT_TRUE(g.addLink(base_link));
+  EXPECT_TRUE(g.addLink(link_1));
+  EXPECT_TRUE(g.addLink(link_2));
+  EXPECT_TRUE(g.addLink(link_3));
+  EXPECT_TRUE(g.addLink(link_4));
+  EXPECT_TRUE(g.addLink(link_5));
 
   Joint base_joint("base_joint");
   base_joint.parent_link_name = "base_link";
   base_joint.child_link_name = "link_1";
   base_joint.type = JointType::FIXED;
-  g.addJoint(base_joint);
+  EXPECT_TRUE(g.addJoint(base_joint));
 
   Joint joint_1("joint_1");
   joint_1.parent_link_name = "link_1";
   joint_1.child_link_name = "link_2";
   joint_1.type = JointType::REVOLUTE;
-  g.addJoint(joint_1);
+  joint_1.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_1));
 
   Joint joint_2("joint_2");
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_2.parent_link_name = "link_2";
   joint_2.child_link_name = "link_3";
   joint_2.type = JointType::REVOLUTE;
-  g.addJoint(joint_2);
+  joint_2.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_2));
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_3.parent_link_name = "link_3";
   joint_3.child_link_name = "link_4";
   joint_3.type = JointType::REVOLUTE;
-  g.addJoint(joint_3);
+  joint_3.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_3));
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_4.parent_link_name = "link_2";
   joint_4.child_link_name = "link_5";
   joint_4.type = JointType::REVOLUTE;
-  g.addJoint(joint_4);
+  joint_4.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_4));
 
   return g;
 }
@@ -262,68 +276,74 @@ TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
   Link link_7("link_7");
   Link tool0("tool0");
 
-  g.addLink(base_link);
-  g.addLink(link_1);
-  g.addLink(link_2);
-  g.addLink(link_3);
-  g.addLink(link_4);
-  g.addLink(link_5);
-  g.addLink(link_6);
-  g.addLink(link_7);
-  g.addLink(tool0);
+  EXPECT_TRUE(g.addLink(base_link));
+  EXPECT_TRUE(g.addLink(link_1));
+  EXPECT_TRUE(g.addLink(link_2));
+  EXPECT_TRUE(g.addLink(link_3));
+  EXPECT_TRUE(g.addLink(link_4));
+  EXPECT_TRUE(g.addLink(link_5));
+  EXPECT_TRUE(g.addLink(link_6));
+  EXPECT_TRUE(g.addLink(link_7));
+  EXPECT_TRUE(g.addLink(tool0));
 
   Joint joint_1("joint_a1");
   joint_1.parent_link_name = "base_link";
   joint_1.child_link_name = "link_1";
   joint_1.type = JointType::FIXED;
-  g.addJoint(joint_1);
+  EXPECT_TRUE(g.addJoint(joint_1));
 
   Joint joint_2("joint_a2");
   joint_2.parent_link_name = "link_1";
   joint_2.child_link_name = "link_2";
   joint_2.type = JointType::REVOLUTE;
-  g.addJoint(joint_2);
+  joint_2.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_2));
 
   Joint joint_3("joint_a3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_3.parent_link_name = "link_2";
   joint_3.child_link_name = "link_3";
   joint_3.type = JointType::REVOLUTE;
-  g.addJoint(joint_3);
+  joint_3.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_3));
 
   Joint joint_4("joint_a4");
   joint_4.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_4.parent_link_name = "link_3";
   joint_4.child_link_name = "link_4";
   joint_4.type = JointType::REVOLUTE;
-  g.addJoint(joint_4);
+  joint_4.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_4));
 
   Joint joint_5("joint_a5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_5.parent_link_name = "link_4";
   joint_5.child_link_name = "link_5";
   joint_5.type = JointType::REVOLUTE;
-  g.addJoint(joint_5);
+  joint_5.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_5));
 
   Joint joint_6("joint_a6");
   joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_6.parent_link_name = "link_5";
   joint_6.child_link_name = "link_6";
   joint_6.type = JointType::REVOLUTE;
-  g.addJoint(joint_6);
+  joint_6.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_6));
 
   Joint joint_7("joint_a7");
   joint_7.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_7.parent_link_name = "link_6";
   joint_7.child_link_name = "link_7";
   joint_7.type = JointType::REVOLUTE;
-  g.addJoint(joint_7);
+  joint_7.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
+  EXPECT_TRUE(g.addJoint(joint_7));
 
   Joint joint_tool0("joint_tool0");
   joint_tool0.parent_link_name = "link_7";
   joint_tool0.child_link_name = "tool0";
   joint_tool0.type = JointType::FIXED;
-  g.addJoint(joint_tool0);
+  EXPECT_TRUE(g.addJoint(joint_tool0));
 
   SRDFModel srdf;
   srdf.initFile(g, srdf_file, locator);

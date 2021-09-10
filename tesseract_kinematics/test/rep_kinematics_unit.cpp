@@ -175,12 +175,34 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_EQ(inv_kin->getJointNames(), joint_names);
 
   KinematicGroup kin_group(std::move(inv_kin), *scene_graph, scene_state);
+  KinematicGroup kin_group_copy(kin_group);
+
   EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
   runInvKinTest(kin_group, pose, working_frame, tip_link_name, seed);
   runKinGroupJacobianABBExternalPositionerTest(kin_group);
   runActiveLinkNamesABBExternalPositionerTest(kin_group);
   runKinJointLimitsTest(kin_group.getLimits(), target_limits);
   runKinSetJointLimitsTest(kin_group);
+  EXPECT_EQ(kin_group.getName(), manip_name);
+  EXPECT_EQ(kin_group.getJointNames(), joint_names);
+  EXPECT_EQ(kin_group.getTipLinkNames().size(), 1);
+  EXPECT_EQ(kin_group.getTipLinkNames()[0], tip_link_name);
+  EXPECT_EQ(kin_group.getWorkingFrames().size(), 1);
+  EXPECT_EQ(kin_group.getWorkingFrames()[0], working_frame);
+
+  // Check KinematicGroup copy
+  EXPECT_EQ(kin_group_copy.getBaseLinkName(), scene_graph->getRoot());
+  runInvKinTest(kin_group_copy, pose, working_frame, tip_link_name, seed);
+  runKinGroupJacobianABBExternalPositionerTest(kin_group_copy);
+  runActiveLinkNamesABBExternalPositionerTest(kin_group_copy);
+  runKinJointLimitsTest(kin_group_copy.getLimits(), target_limits);
+  runKinSetJointLimitsTest(kin_group_copy);
+  EXPECT_EQ(kin_group_copy.getName(), manip_name);
+  EXPECT_EQ(kin_group_copy.getJointNames(), joint_names);
+  EXPECT_EQ(kin_group_copy.getTipLinkNames().size(), 1);
+  EXPECT_EQ(kin_group_copy.getTipLinkNames()[0], tip_link_name);
+  EXPECT_EQ(kin_group_copy.getWorkingFrames().size(), 1);
+  EXPECT_EQ(kin_group_copy.getWorkingFrames()[0], working_frame);
 
   // Check cloned
   EXPECT_TRUE(inv_kin2 != nullptr);

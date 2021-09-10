@@ -50,13 +50,6 @@ namespace tesseract_kinematics
 void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform);
 
 /**
- * @brief Convert vector of KDL::Frame to vector Eigen::Isometry3d
- * @param frames Input KDL Frames
- * @param transforms Output Eigen transforms (Isometry3d)
- */
-void KDLToEigen(const std::vector<KDL::Frame>& frames, tesseract_common::VectorIsometry3d& transforms);
-
-/**
  * @brief Convert Eigen::Isometry3d to KDL::Frame
  * @param transform Input Eigen transform (Isometry3d)
  * @param frame Output KDL Frame

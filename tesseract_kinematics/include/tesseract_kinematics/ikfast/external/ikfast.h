@@ -32,6 +32,7 @@
    - IKFAST_NAMESPACE - Enclose all functions and classes in this namespace, the ``main`` function is excluded.
 
  */
+// LCOV_EXCL_START
 #include <vector>
 #include <list>
 #include <stdexcept>
@@ -355,3 +356,4 @@ IKFAST_API const char* GetKinematicsHash();
 #endif
 
 #endif  // IKFAST_HAS_LIBRARY
+// LCOV_EXCL_STOP

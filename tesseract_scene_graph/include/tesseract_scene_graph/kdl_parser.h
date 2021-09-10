@@ -66,11 +66,18 @@ KDL::Frame convert(const Eigen::Isometry3d& transform);
 Eigen::Isometry3d convert(const KDL::Frame& frame);
 
 /**
- * @brief Convert Eigen::Isometry3d to KDL::Frame
- * @param transform Input Eigen transform (Isometry3d)
- * @return frame Output KDL Frame
+ * @brief Convert Eigen::Vector3d to KDL::Vector
+ * @param vector Input Eigen Vector3d
+ * @return vector Output KDL Vector
  */
 KDL::Vector convert(const Eigen::Vector3d& vector);
+
+/**
+ * @brief Convert KDL::Vector to Eigen::Vector3d
+ * @param transform Input KDL Vector
+ * @return frame Output Eigen Vector3d
+ */
+Eigen::Vector3d convert(const KDL::Vector& vector);
 
 /**
  * @brief Convert KDL::Jacobian to Eigen::Matrix
@@ -78,6 +85,13 @@ KDL::Vector convert(const Eigen::Vector3d& vector);
  * @return Eigen MatrixXd
  */
 Eigen::MatrixXd convert(const KDL::Jacobian& jacobian);
+
+/**
+ * @brief Convert Eigen::Matrix to KDL::Jacobian
+ * @param jacobian Input Eigen MatrixXd
+ * @return KDL Jacobian
+ */
+KDL::Jacobian convert(const Eigen::MatrixXd& jacobian);
 
 /**
  * @brief Convert a subset of KDL::Jacobian to Eigen::Matrix

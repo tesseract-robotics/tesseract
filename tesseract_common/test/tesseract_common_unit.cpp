@@ -473,7 +473,11 @@ TEST(TesseractCommonUnit, serializationJointState)  // NOLINT
 TEST(TesseractCommonUnit, serializationKinematicLimits)  // NOLINT
 {
   tesseract_common::KinematicLimits limits;
-  limits.joint_limits.resize(3, 2);
+  limits.resize(3);
+  EXPECT_EQ(limits.joint_limits.rows(), 3);
+  EXPECT_EQ(limits.velocity_limits.rows(), 3);
+  EXPECT_EQ(limits.acceleration_limits.rows(), 3);
+
   limits.joint_limits << -5, 5, -5, 5, -5, 5;
   limits.velocity_limits = Eigen::VectorXd::Constant(3, 6);
   limits.acceleration_limits = Eigen::VectorXd::Constant(3, 7);
@@ -1139,6 +1143,45 @@ TEST(TesseractCommonUnit, almostEqualRelativeAndAbsUnit)  // NOLINT
   EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
 
   EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(Eigen::VectorXd(), Eigen::VectorXd()));
+}
+
+TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
+{
+  tesseract_common::KinematicsPluginInfo kpi;
+  EXPECT_TRUE(kpi.empty());
+
+  tesseract_common::KinematicsPluginInfo kpi_insert;
+  kpi_insert.search_paths.insert("/usr/local/lib");
+  kpi_insert.search_libraries.insert("tesseract_collision");
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "KDLFwdKin";
+    kpi.fwd_plugin_infos["manipulator"] = { std::make_pair("KDLFwdKin", pi) };
+  }
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "KDLInvKin";
+    kpi.inv_plugin_infos["manipulator"] = { std::make_pair("KDLInvKin", pi) };
+  }
+
+  EXPECT_FALSE(kpi_insert.empty());
+
+  kpi.insert(kpi_insert);
+  EXPECT_FALSE(kpi.empty());
+
+  kpi.clear();
+  EXPECT_TRUE(kpi.empty());
+}
+
+TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT
+{
+  tesseract_common::LinkNamesPair p1 = tesseract_common::makeOrderedLinkPair("link_1", "link_2");
+  tesseract_common::LinkNamesPair p2 = tesseract_common::makeOrderedLinkPair("link_2", "link_1");
+
+  tesseract_common::PairHash hash;
+  EXPECT_EQ(hash(p1), hash(p2));
 }
 
 int main(int argc, char** argv)

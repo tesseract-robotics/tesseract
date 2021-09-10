@@ -315,6 +315,15 @@ bool SceneGraph::addJointHelper(const Joint::Ptr& joint_ptr)
     return false;
   }
 
+  if ((joint_ptr->type != JointType::FIXED) && (joint_ptr->type != JointType::FLOATING) &&
+      (joint_ptr->type != JointType::CONTINUOUS) && joint_ptr->limits == nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Joint with name (%s) requires limits because it is not of type fixed, floating or "
+                           "continuous.",
+                           joint_ptr->getName().c_str());
+    return false;
+  }
+
   double d = joint_ptr->parent_to_joint_origin_transform.translation().norm();
 
   EdgeProperty info(joint_ptr, d);
@@ -357,15 +366,25 @@ bool SceneGraph::removeJoint(const std::string& name, bool recursive)
 
 bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_link)
 {
-  auto found = joint_map_.find(name);
+  auto found_joint = joint_map_.find(name);
+  auto found_parent_link = link_map_.find(parent_link);
 
-  if (found == joint_map_.end())
+  if (found_joint == joint_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to move Joint with name (%s) which does not exist in scene graph.", name.c_str());
     return false;
   }
 
-  Joint::Ptr joint = found->second.first;
+  if (found_parent_link == link_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to move Joint with name (%s) to parent link (%s) which does not exist in scene "
+                           "graph.",
+                           name.c_str(),
+                           parent_link.c_str());
+    return false;
+  }
+
+  Joint::Ptr joint = found_joint->second.first;
   if (!removeJoint(name))
     return false;
 
@@ -430,9 +449,9 @@ bool SceneGraph::changeJointLimits(const std::string& name, const JointLimits& l
     return false;
   }
 
-  if (found->second.first->type == JointType::FIXED)
+  if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint limits for a fixed joint type.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint limits for a fixed or floating joint type.", name.c_str());
     return false;
   }
 
@@ -459,9 +478,9 @@ bool SceneGraph::changeJointPositionLimits(const std::string& name, double lower
     return false;
   }
 
-  if (found->second.first->type == JointType::FIXED)
+  if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Position limits for a fixed joint type.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Position limits for a fixed or floating joint type.", name.c_str());
     return false;
   }
 
@@ -482,9 +501,9 @@ bool SceneGraph::changeJointVelocityLimits(const std::string& name, double limit
     return false;
   }
 
-  if (found->second.first->type == JointType::FIXED)
+  if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Velocity limit for a fixed joint type.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Velocity limit for a fixed or floating joint type.", name.c_str());
     return false;
   }
 
@@ -504,9 +523,10 @@ bool SceneGraph::changeJointAccelerationLimits(const std::string& name, double l
     return false;
   }
 
-  if (found->second.first->type == JointType::FIXED)
+  if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Acceleration limit for a fixed joint type.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Acceleration limit for a fixed or floating joint type.",
+                           name.c_str());
     return false;
   }
 

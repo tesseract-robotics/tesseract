@@ -166,6 +166,12 @@ public:
                        tesseract_common::PluginInfo plugin_info);
 
   /**
+   * @brief Get the map of forward kinematic plugins
+   * @return A map of plugins
+   */
+  const std::map<std::string, tesseract_common::PluginInfoMap>& getFwdKinPlugins() const;
+
+  /**
    * @brief remove forward kinematics plugin from the manager
    * @param group_name The group name
    * @param solver_name The solver name
@@ -196,6 +202,12 @@ public:
   void addInvKinPlugin(const std::string& group_name,
                        const std::string& solver_name,
                        tesseract_common::PluginInfo plugin_info);
+
+  /**
+   * @brief Get the map of inverse kinematic plugins
+   * @return A map of plugins
+   */
+  const std::map<std::string, tesseract_common::PluginInfoMap>& getInvKinPlugins() const;
 
   /**
    * @brief remove inverse kinematics plugin from the manager
