@@ -141,7 +141,7 @@ public:
 protected:
   std::string name_;
   tesseract_scene_graph::SceneState state_;
-  tesseract_scene_graph::KDLStateSolver::UPtr state_solver_;
+  tesseract_scene_graph::StateSolver::UPtr state_solver_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> static_link_names_;
   tesseract_common::KinematicLimits limits_;

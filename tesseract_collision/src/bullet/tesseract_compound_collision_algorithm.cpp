@@ -233,7 +233,7 @@ public:
       }
     }
   }
-  void Process(const btDbvtNode* leaf) override
+  void Process(const btDbvtNode* leaf)  // NOLINT
   {
     int index = leaf->dataAsInt;
 

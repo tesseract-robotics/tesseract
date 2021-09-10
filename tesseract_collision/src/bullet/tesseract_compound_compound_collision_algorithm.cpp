@@ -136,7 +136,7 @@ struct TesseractCompoundCompoundLeafCallback : btDbvt::ICollide
     btAssert(dynamic_cast<ContactTestData*>(compound1ObjWrap->m_collisionObject->getUserPointer()) != nullptr);
   }
 
-  void Process(const btDbvtNode* leaf0, const btDbvtNode* leaf1) override
+  void Process(const btDbvtNode* leaf0, const btDbvtNode* leaf1)  // NOLINT
   {
     BT_PROFILE("TesseractCompoundCompoundLeafCallback::Process");
     m_numOverlapPairs++;

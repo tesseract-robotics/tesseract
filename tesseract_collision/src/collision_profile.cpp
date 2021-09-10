@@ -33,7 +33,7 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_single_link, 
 
     // This is required because convex hull cannot have multiple faces on the same plane.
     auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
-    auto ch_faces = std::shared_ptr<Eigen::VectorXi>();
+    auto ch_faces = std::make_shared<Eigen::VectorXi>();
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
     sphere = std::make_shared<ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
   }
@@ -102,7 +102,7 @@ void addCollisionObjects(ContinuousContactManager& checker, bool use_single_link
 
     // This is required because convex hull cannot have multiple faces on the same plane.
     auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
-    auto ch_faces = std::shared_ptr<Eigen::VectorXi>();
+    auto ch_faces = std::make_shared<Eigen::VectorXi>();
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
     sphere = std::make_shared<ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
   }

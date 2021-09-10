@@ -91,11 +91,20 @@ InverseKinematics::UPtr OPWInvKinFactory::create(const std::string& group_name,
         throw std::runtime_error("OPWInvKinFactory, 'params' missing 'c4' entry");
 
       if (YAML::Node offsets = opw_params["offsets"])
-        params.offsets = offsets.as<std::array<double, 6>>();
+      {
+        auto o = offsets.as<std::vector<double>>();
+        if (o.size() != 6)
+          throw std::runtime_error("OPWInvKinFactory, offsets should have six elements!");
+
+        std::copy(o.begin(), o.end(), params.offsets.begin());
+      }
 
       if (YAML::Node sign_corrections = opw_params["sign_corrections"])
       {
-        auto sc = sign_corrections.as<std::array<int, 6>>();
+        auto sc = sign_corrections.as<std::vector<int>>();
+        if (sc.size() != 6)
+          throw std::runtime_error("OPWInvKinFactory, sign_corrections should have six elements!");
+
         for (std::size_t i = 0; i < sc.size(); ++i)
         {
           if (sc[i] == 1)

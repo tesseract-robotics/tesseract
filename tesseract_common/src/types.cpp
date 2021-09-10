@@ -28,8 +28,6 @@
 
 namespace tesseract_common
 {
-const std::string KinematicsPluginInfo::CONFIG_KEY{ "kinematic_plugins" };
-
 void KinematicsPluginInfo::insert(const KinematicsPluginInfo& other)
 {
   search_paths.insert(other.search_paths.begin(), other.search_paths.end());

@@ -96,6 +96,11 @@ void KinematicsPluginFactory::addFwdKinPlugin(const std::string& group_name,
   fwd_plugin_info_[group_name][solver_name] = std::move(plugin_info);
 }
 
+const std::map<std::string, tesseract_common::PluginInfoMap>& KinematicsPluginFactory::getFwdKinPlugins() const
+{
+  return fwd_plugin_info_;
+}
+
 void KinematicsPluginFactory::removeFwdKinPlugin(const std::string& group_name, const std::string& solver_name)
 {
   auto group_it = fwd_plugin_info_.find(group_name);
@@ -153,6 +158,11 @@ void KinematicsPluginFactory::addInvKinPlugin(const std::string& group_name,
                                               tesseract_common::PluginInfo plugin_info)
 {
   inv_plugin_info_[group_name][solver_name] = std::move(plugin_info);
+}
+
+const std::map<std::string, tesseract_common::PluginInfoMap>& KinematicsPluginFactory::getInvKinPlugins() const
+{
+  return inv_plugin_info_;
 }
 
 void KinematicsPluginFactory::removeInvKinPlugin(const std::string& group_name, const std::string& solver_name)

@@ -69,7 +69,7 @@ void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
 
   {
     const std::set<std::string>& sp = factory.getSearchPaths();
-    EXPECT_EQ(sp.size(), 1);
+    EXPECT_EQ(sp.size(), 2);
 
     for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
     {
@@ -144,7 +144,7 @@ void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
   factory.saveConfig(tesseract_common::fs::path(tesseract_common::getTempPath()) / "kinematic_plugins_export.yaml");
 }
 
-TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
+TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_ROP_REP_PluginTest)  // NOLINT
 {
   tesseract_common::fs::path file_path(__FILE__);
   tesseract_common::fs::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
@@ -157,6 +157,91 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_PluginTest)  // NOLINT
                                                                                                                 "export"
                                                                                                                 ".yaml";
   runKinematicsFactoryTest(export_config_path);
+}
+
+TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
+{
+  KinematicsPluginFactory factory;
+  EXPECT_FALSE(factory.getSearchPaths().empty());
+  EXPECT_EQ(factory.getSearchPaths().size(), 1);
+  EXPECT_FALSE(factory.getSearchLibraries().empty());
+  EXPECT_EQ(factory.getSearchLibraries().size(), 4);
+  EXPECT_EQ(factory.getFwdKinPlugins().size(), 0);
+  EXPECT_EQ(factory.getInvKinPlugins().size(), 0);
+
+  factory.addSearchPath("/usr/local/lib");
+  EXPECT_EQ(factory.getSearchPaths().size(), 2);
+  EXPECT_EQ(factory.getSearchLibraries().size(), 4);
+
+  factory.addSearchLibrary("tesseract_collision");
+  EXPECT_EQ(factory.getSearchPaths().size(), 2);
+  EXPECT_EQ(factory.getSearchLibraries().size(), 5);
+
+  {
+    const std::map<std::string, tesseract_common::PluginInfoMap>& map = factory.getFwdKinPlugins();
+    EXPECT_TRUE(map.find("manipulator") == map.end());
+
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "KDLFwdKin";
+    factory.addFwdKinPlugin("manipulator", "KDLFwdKin", pi);
+    EXPECT_EQ(factory.getFwdKinPlugins().size(), 1);
+    EXPECT_TRUE(map.find("manipulator") != map.end());
+    EXPECT_TRUE(map.at("manipulator").find("KDLFwdKin") != map.at("manipulator").end());
+    EXPECT_EQ(map.find("manipulator")->second.size(), 1);
+    EXPECT_EQ(factory.getDefaultFwdKinPlugin("manipulator"), "KDLFwdKin");
+
+    tesseract_common::PluginInfo pi2;
+    pi2.class_name = "KDLFwdKin";
+    pi2.is_default = true;
+    factory.addFwdKinPlugin("manipulator", "default", pi2);
+    EXPECT_EQ(factory.getFwdKinPlugins().size(), 1);
+    EXPECT_TRUE(map.find("manipulator") != map.end());
+    EXPECT_TRUE(map.at("manipulator").find("default") != map.at("manipulator").end());
+    EXPECT_EQ(map.find("manipulator")->second.size(), 2);
+    EXPECT_EQ(factory.getDefaultFwdKinPlugin("manipulator"), "default");
+    factory.setDefaultFwdKinPlugin("manipulator", "KDLFwdKin");
+    EXPECT_EQ(factory.getDefaultFwdKinPlugin("manipulator"), "KDLFwdKin");
+
+    factory.removeFwdKinPlugin("manipulator", "KDLFwdKin");
+    EXPECT_TRUE(map.find("manipulator") != map.end());
+    EXPECT_EQ(factory.getFwdKinPlugins().size(), 1);
+    EXPECT_EQ(map.find("manipulator")->second.size(), 1);
+    // The default was removed so it should now be the first solver
+    EXPECT_EQ(factory.getDefaultFwdKinPlugin("manipulator"), "default");
+  }
+
+  {
+    const std::map<std::string, tesseract_common::PluginInfoMap>& map = factory.getInvKinPlugins();
+    EXPECT_TRUE(map.find("manipulator") == map.end());
+
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "KDLInvKin";
+    factory.addInvKinPlugin("manipulator", "KDLInvKin", pi);
+    EXPECT_EQ(factory.getInvKinPlugins().size(), 1);
+    EXPECT_TRUE(map.find("manipulator") != map.end());
+    EXPECT_TRUE(map.at("manipulator").find("KDLInvKin") != map.at("manipulator").end());
+    EXPECT_EQ(map.find("manipulator")->second.size(), 1);
+    EXPECT_EQ(factory.getDefaultInvKinPlugin("manipulator"), "KDLInvKin");
+
+    tesseract_common::PluginInfo pi2;
+    pi2.class_name = "KDLInvKin";
+    pi2.is_default = true;
+    factory.addInvKinPlugin("manipulator", "default", pi2);
+    EXPECT_EQ(factory.getInvKinPlugins().size(), 1);
+    EXPECT_TRUE(map.find("manipulator") != map.end());
+    EXPECT_TRUE(map.at("manipulator").find("default") != map.at("manipulator").end());
+    EXPECT_EQ(map.find("manipulator")->second.size(), 2);
+    EXPECT_EQ(factory.getDefaultInvKinPlugin("manipulator"), "default");
+    factory.setDefaultInvKinPlugin("manipulator", "KDLInvKin");
+    EXPECT_EQ(factory.getDefaultInvKinPlugin("manipulator"), "KDLInvKin");
+
+    factory.removeInvKinPlugin("manipulator", "KDLInvKin");
+    EXPECT_TRUE(map.find("manipulator") != map.end());
+    EXPECT_EQ(factory.getInvKinPlugins().size(), 1);
+    EXPECT_EQ(map.find("manipulator")->second.size(), 1);
+    // The default was removed so it should now be the first solver
+    EXPECT_EQ(factory.getDefaultInvKinPlugin("manipulator"), "default");
+  }
 }
 
 TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
@@ -247,6 +332,8 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   KinematicsPluginFactory factory(YAML::Load(yaml_string));
   auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
   EXPECT_TRUE(inv_kin != nullptr);
+  EXPECT_EQ(inv_kin->getSolverName(), "OPWInvKin");
+  EXPECT_EQ(inv_kin->getName(), "manipulator");
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_string);
@@ -438,6 +525,15 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
+  {  // invalid offset size
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["OPWInvKin"];
+    plugin["config"]["params"]["offsets"].push_back(0);
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
   {  // invalid sign_corrections
     YAML::Node config = YAML::Load(yaml_string);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["OPWInvKin"];
@@ -451,6 +547,15 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     YAML::Node config = YAML::Load(yaml_string);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["OPWInvKin"];
     plugin["config"]["params"]["sign_corrections"][0] = 5;
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // invalid sign_corrections size
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["OPWInvKin"];
+    plugin["config"]["params"]["sign_corrections"].push_back(0);
 
     KinematicsPluginFactory factory(config);
     auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
@@ -496,18 +601,78 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
                      d5: 0.1157
                      d6: 0.0922)";
 
-  {
+  {  // Test loading UR10
     KinematicsPluginFactory factory(YAML::Load(yaml_model_string));
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
+    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
+  {  // Test loading UR10e
+    YAML::Node config = YAML::Load(yaml_model_string);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["URInvKin"]["config"]["model"] = "UR10e";
 
-  {
+    KinematicsPluginFactory factory(YAML::Load(yaml_model_string));
+    auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
+    EXPECT_EQ(inv_kin->getName(), "manipulator");
+  }
+  {  // Test loading UR5
+    YAML::Node config = YAML::Load(yaml_model_string);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["URInvKin"]["config"]["model"] = "UR5";
+
+    KinematicsPluginFactory factory(YAML::Load(yaml_model_string));
+    auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
+    EXPECT_EQ(inv_kin->getName(), "manipulator");
+  }
+  {  // Test loading UR5e
+    YAML::Node config = YAML::Load(yaml_model_string);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["URInvKin"]["config"]["model"] = "UR5e";
+
+    KinematicsPluginFactory factory(YAML::Load(yaml_model_string));
+    auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
+    EXPECT_EQ(inv_kin->getName(), "manipulator");
+  }
+  {  // Test loading UR3
+    YAML::Node config = YAML::Load(yaml_model_string);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["URInvKin"]["config"]["model"] = "UR3";
+
+    KinematicsPluginFactory factory(YAML::Load(yaml_model_string));
+    auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
+    EXPECT_EQ(inv_kin->getName(), "manipulator");
+  }
+  {  // Test loading UR3e
+    YAML::Node config = YAML::Load(yaml_model_string);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["URInvKin"]["config"]["model"] = "UR3e";
+
+    KinematicsPluginFactory factory(YAML::Load(yaml_model_string));
+    auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
+    EXPECT_EQ(inv_kin->getName(), "manipulator");
+  }
+  {  // Test loading custom UR paramters
     KinematicsPluginFactory factory(YAML::Load(yaml_params_string));
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
+    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
+  {  // invalid ur model
+    YAML::Node config = YAML::Load(yaml_model_string);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["URInvKin"]["config"]["model"] = "DoesNotExist";
 
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
   {  // missing config
     YAML::Node config = YAML::Load(yaml_model_string);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["URInvKin"];
@@ -682,6 +847,8 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
                    positioner_sample_resolution:
                      - name: positioner_joint_1
                        value: 0.1
+                       min: -1.0
+                       max: 1.0
                      - name: positioner_joint_2
                        value: 0.1
                    positioner:
@@ -708,6 +875,8 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
   KinematicsPluginFactory factory(YAML::Load(yaml_string));
   auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
   EXPECT_TRUE(inv_kin != nullptr);
+  EXPECT_EQ(inv_kin->getSolverName(), "REPInvKin");
+  EXPECT_EQ(inv_kin->getName(), "manipulator");
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_string);
@@ -736,6 +905,24 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
+  {  // missing positioner_sample_resolution entry name
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["REPInvKin"];
+    plugin["config"]["positioner_sample_resolution"][0].remove("name");
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // missing positioner_sample_resolution entry value
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["REPInvKin"];
+    plugin["config"]["positioner_sample_resolution"][0].remove("value");
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
   {  // missing positioner
     YAML::Node config = YAML::Load(yaml_string);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["REPInvKin"];
@@ -745,10 +932,28 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
+  {  // missing positioner entry class
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["REPInvKin"];
+    plugin["config"]["positioner"].remove("class");
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
   {  // missing manipulator
     YAML::Node config = YAML::Load(yaml_string);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["REPInvKin"];
     plugin["config"].remove("manipulator");
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // missing manipulator entry class
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["REPInvKin"];
+    plugin["config"]["manipulator"].remove("class");
 
     KinematicsPluginFactory factory(config);
     auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
@@ -775,6 +980,8 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
                    positioner_sample_resolution:
                      - name: positioner_joint_1
                        value: 0.1
+                       min: -1.0
+                       max: 1.0
                    positioner:
                      class: KDLFwdKinChainFactory
                      config:
@@ -799,6 +1006,8 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
   KinematicsPluginFactory factory(YAML::Load(yaml_string));
   auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
   EXPECT_TRUE(inv_kin != nullptr);
+  EXPECT_EQ(inv_kin->getSolverName(), "ROPInvKin");
+  EXPECT_EQ(inv_kin->getName(), "manipulator");
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_string);
@@ -827,6 +1036,24 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
+  {  // missing positioner_sample_resolution entry name
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["ROPInvKin"];
+    plugin["config"]["positioner_sample_resolution"][0].remove("name");
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // missing positioner_sample_resolution entry value
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["ROPInvKin"];
+    plugin["config"]["positioner_sample_resolution"][0].remove("value");
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
   {  // missing positioner
     YAML::Node config = YAML::Load(yaml_string);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["ROPInvKin"];
@@ -836,10 +1063,28 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
+  {  // missing positioner entry class
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["ROPInvKin"];
+    plugin["config"]["positioner"].remove("class");
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
   {  // missing manipulator
     YAML::Node config = YAML::Load(yaml_string);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["ROPInvKin"];
     plugin["config"].remove("manipulator");
+
+    KinematicsPluginFactory factory(config);
+    auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // missing manipulator entry class
+    YAML::Node config = YAML::Load(yaml_string);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["ROPInvKin"];
+    plugin["config"]["manipulator"].remove("class");
 
     KinematicsPluginFactory factory(config);
     auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
@@ -883,18 +1128,24 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     KinematicsPluginFactory factory(YAML::Load(yaml_string));
     auto fwd_kin = factory.createFwdKin("manipulator", "KDLFwdKinChain", *scene_graph, scene_state);
     EXPECT_TRUE(fwd_kin != nullptr);
+    EXPECT_EQ(fwd_kin->getSolverName(), "KDLFwdKinChain");
+    EXPECT_EQ(fwd_kin->getName(), "manipulator");
   }
 
   {
     KinematicsPluginFactory factory(YAML::Load(yaml_string));
     auto inv_kin = factory.createInvKin("manipulator", "KDLInvKinChainLMA", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "KDLInvKinChainLMA");
+    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
 
   {
     KinematicsPluginFactory factory(YAML::Load(yaml_string));
     auto inv_kin = factory.createInvKin("manipulator", "KDLInvKinChainNR", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "KDLInvKinChainNR");
+    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
 
   {  // KDLFwdKinChain missing config

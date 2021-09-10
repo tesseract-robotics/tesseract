@@ -85,6 +85,11 @@ public:
   using ConstPtr = std::shared_ptr<const JointLimits>;
 
   JointLimits() = default;
+  JointLimits(double l, double u, double e, double v, double a)
+    : lower(l), upper(u), effort(e), velocity(v), acceleration(a)
+  {
+  }
+
   double lower{ 0 };
   double upper{ 0 };
   double effort{ 0 };

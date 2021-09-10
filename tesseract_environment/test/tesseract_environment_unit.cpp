@@ -229,7 +229,7 @@ Environment::Ptr getEnvironment(EnvRegisterMethod register_contact_managers = En
   return env;
 }
 
-void runEnvInitFailuresTest()
+TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
 {
   auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
@@ -251,7 +251,7 @@ void runEnvInitFailuresTest()
   EXPECT_FALSE(env->isInitialized());
 }
 
-void runContactManagerCloneTest()
+TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
 {
   {  // Get the environment
     auto env = getEnvironment();
@@ -377,7 +377,7 @@ void runFindTCPTest()
   }
 }
 
-void runAddandRemoveAllowedCollisionCommandTest()
+TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -443,7 +443,7 @@ void runAddandRemoveAllowedCollisionCommandTest()
   EXPECT_EQ(env->getCommandHistory().back(), cmd_remove_link);
 }
 
-void runAddandRemoveLinkTest()
+TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -593,7 +593,7 @@ void runAddandRemoveLinkTest()
   EXPECT_EQ(env->getCommandHistory().size(), 5);
 }
 
-void runAddKinematicsInformationCommandTest()
+TEST(TesseractEnvironmentUnit, EnvAddKinematicsInformationCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -621,7 +621,7 @@ void runAddKinematicsInformationCommandTest()
   EXPECT_EQ(env->getCommandHistory().size(), 3);
 }
 
-void runAddSceneGraphCommandTest()
+TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -743,7 +743,7 @@ void runAddSceneGraphCommandTest()
   EXPECT_TRUE(env->getCurrentState()->joints.find("provided_subgraph_joint") == env->getCurrentState()->joints.end());
 }
 
-void runChangeJointLimitsCommandTest()
+TEST(TesseractEnvironmentUnit, EnvChangeJointLimitsCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -891,7 +891,7 @@ void runChangeJointLimitsCommandTest()
   //  }
 }
 
-void runChangeJointOriginCommandTest()
+TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -939,7 +939,7 @@ void runChangeJointOriginCommandTest()
   env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "after_change_joint_origin_unit.dot");
 }
 
-void runChangeLinkOriginCommandTest()
+TEST(TesseractEnvironmentUnit, EnvChangeLinkOriginCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -957,7 +957,7 @@ void runChangeLinkOriginCommandTest()
   EXPECT_ANY_THROW(env->applyCommand(cmd));  // NOLINT
 }
 
-void runChangeLinkCollisionEnabledCommandTest()
+TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledCommandUnit)  // NOLINT
 {
   // Get the environment
   /** @todo update contact manager to have function to check collision object enabled state */
@@ -997,7 +997,7 @@ void runChangeLinkCollisionEnabledCommandTest()
   EXPECT_TRUE(env->getSceneGraph()->getLinkCollisionEnabled(link_name));
 }
 
-void runChangeLinkVisibilityCommandTest()
+TEST(TesseractEnvironmentUnit, EnvChangeLinkVisibilityCommandUnit)  // NOLINT
 {
   // Get the environment
   /** @todo update contact manager to have function to check collision object enabled state */
@@ -1021,7 +1021,7 @@ void runChangeLinkVisibilityCommandTest()
   EXPECT_FALSE(env->getSceneGraph()->getLinkVisibility(link_name));
 }
 
-void runChangeCollisionMarginsCommandTest()
+TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
 {
   {  // MODIFY_PAIR_MARGIN  and OVERRIDE_PAIR_MARGIN Unit Test
     std::string link_name1 = "link_1";
@@ -1130,7 +1130,7 @@ void runChangeCollisionMarginsCommandTest()
   }
 }
 
-void runMoveJointCommandTest()
+TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -1217,7 +1217,7 @@ void runMoveJointCommandTest()
   env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "after_move_joint_unit.dot");
 }
 
-void runMoveLinkCommandTest()
+TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -1311,7 +1311,7 @@ void runMoveLinkCommandTest()
   env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "after_move_link_unit.dot");
 }
 
-void runCurrentStatePreservedWhenEnvChangesTest()
+TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -1363,7 +1363,7 @@ void runCurrentStatePreservedWhenEnvChangesTest()
   }
 }
 
-void runEnvironmentResetTest()
+TEST(TesseractEnvironmentUnit, EnvResetUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -1416,7 +1416,7 @@ void runEnvironmentResetTest()
   }
 }
 
-void runEnvironmentChangeNameTest()
+TEST(TesseractEnvironmentUnit, EnvChangeNameUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -1472,7 +1472,7 @@ void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_sol
   }
 }
 
-void runApplyCommandsStateSolverCompareTest()
+TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLINT
 {
   // This is testing commands that modify the connectivity of scene graph
   // It checks that the state solver are updated correctly
@@ -1832,16 +1832,16 @@ void runApplyCommandsStateSolverCompareTest()
   }
 }
 
-void runMultithreadedApplyCommandsTest(int num_threads)
+TEST(TesseractEnvironmentUnit, EnvMultithreadedApplyCommandsTest)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
 
-#pragma omp parallel for num_threads(num_threads) shared(env)
-  for (long i = 0; i < num_threads; ++i)  // NOLINT
+#pragma omp parallel for num_threads(10) shared(env)
+  for (long i = 0; i < 10; ++i)  // NOLINT
   {
     const int tn = omp_get_thread_num();
-    CONSOLE_BRIDGE_logDebug("Thread (ID: %i): %i of %i", tn, i, num_threads);
+    CONSOLE_BRIDGE_logDebug("Thread (ID: %i): %i of %i", tn, i, 10);
 
     auto visual = std::make_shared<Visual>();
     visual->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
@@ -1864,7 +1864,7 @@ void runMultithreadedApplyCommandsTest(int num_threads)
   }
 }
 
-void runEnvCloneTest()
+TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -1964,7 +1964,7 @@ void runEnvCloneTest()
   EXPECT_EQ(env->getCollisionMarginData(), clone->getCollisionMarginData());
 }
 
-void runEnvSetStateTest()
+TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -2097,7 +2097,7 @@ void runEnvSetStateTest()
   }
 }
 
-void runEnvSetStateTest2()
+TEST(TesseractEnvironmentUnit, EnvSetState2)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
@@ -2199,117 +2199,10 @@ void runEnvSetStateTest2()
   }
 }
 
-TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
-{
-  runContactManagerCloneTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
-{
-  runEnvInitFailuresTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvChangeNameUnit)  // NOLINT
-{
-  runEnvironmentChangeNameTest();
-}
-
 // TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
 //{
 //  runFindTCPTest();
 //}
-
-TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // NOLINT
-{
-  runAddandRemoveAllowedCollisionCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
-{
-  runAddandRemoveLinkTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvAddKinematicsInformationCommandUnit)  // NOLINT
-{
-  runAddKinematicsInformationCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
-{
-  runAddSceneGraphCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
-{
-  runChangeCollisionMarginsCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvChangeJointLimitsCommandUnit)  // NOLINT
-{
-  runChangeJointOriginCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
-{
-  runChangeJointOriginCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvChangeLinkOriginCommandUnit)  // NOLINT
-{
-  runChangeLinkOriginCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledCommandUnit)  // NOLINT
-{
-  runChangeLinkCollisionEnabledCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvChangeLinkVisibilityCommandUnit)  // NOLINT
-{
-  runChangeLinkVisibilityCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
-{
-  runMoveJointCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
-{
-  runMoveLinkCommandTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLINT
-{
-  runCurrentStatePreservedWhenEnvChangesTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvResetUnit)  // NOLINT
-{
-  runEnvironmentResetTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLINT
-{
-  runApplyCommandsStateSolverCompareTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvMultithreadedApplyCommandsTest)  // NOLINT
-{
-  runMultithreadedApplyCommandsTest(10);
-}
-
-TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
-{
-  runEnvCloneTest();
-}
-
-TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
-{
-  runEnvSetStateTest();
-
-  runEnvSetStateTest2();
-}
 
 int main(int argc, char** argv)
 {

@@ -1,6 +1,6 @@
 kinematic_plugins:
   search_paths:
-    - /home/larmstrong/catkin_ws/tesseract_kin_group_ws/devel/lib
+    - /usr/local/lib
   search_libraries:
     - tesseract_kinematics_kdl_factories
   fwd_kin_plugins:

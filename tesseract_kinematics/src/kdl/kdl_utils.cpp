@@ -41,15 +41,6 @@ void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
     transform(i / 3, i % 3) = frame.M.data[i];
 }
 
-void KDLToEigen(const std::vector<KDL::Frame>& frames, tesseract_common::VectorIsometry3d& transforms)
-{
-  transforms.resize(frames.size());
-  for (size_t i = 0; i < frames.size(); ++i)
-  {
-    KDLToEigen(frames[i], transforms[i]);
-  }
-}
-
 void EigenToKDL(const Eigen::Isometry3d& transform, KDL::Frame& frame)
 {
   frame.Identity();

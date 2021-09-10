@@ -95,6 +95,7 @@ JointGroup& JointGroup::operator=(const JointGroup& other)
 {
   name_ = other.name_;
   state_ = other.state_;
+  state_solver_ = other.state_solver_->clone();
   joint_names_ = other.joint_names_;
   static_link_names_ = other.static_link_names_;
   limits_ = other.limits_;

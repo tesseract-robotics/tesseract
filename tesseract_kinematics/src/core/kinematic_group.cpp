@@ -66,7 +66,7 @@ KinematicGroup::KinematicGroup(InverseKinematics::UPtr inv_kin,
   tip_link_names_ = inv_kin_->getTipLinkNames();
   for (const auto& tip_link : inv_kin_->getTipLinkNames())
   {
-    std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(working_frame);
+    std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(tip_link);
     tip_link_names_.insert(tip_link_names_.end(), child_link_names.begin(), child_link_names.end());
 
     inv_tip_links_map_[tip_link] = tip_link;
@@ -88,6 +88,7 @@ KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
   working_frames_ = other.working_frames_;
   tip_link_names_ = other.tip_link_names_;
   inv_working_frames_map_ = other.inv_working_frames_map_;
+  inv_tip_links_map_ = other.inv_tip_links_map_;
   return *this;
 }
 

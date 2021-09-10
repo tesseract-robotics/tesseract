@@ -23,7 +23,7 @@ jobs:
       DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
       CCACHE_DIR: "/home/runner/work/tesseract/tesseract/CodeCov/.ccache"
       UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CODE_COVERAGE=ON"
+      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CODE_COVERAGE=ON -DTESSERACT_WARNINGS_AS_ERRORS=OFF"
       AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_urdf --make-args ccov-all
                      && bash <(curl -s https://codecov.io/bash) -t c4af0da7-9fc3-4d3c-bb2e-6b2523ddd382 -s $target_ws/build -f *all-merged.info'
     steps:
