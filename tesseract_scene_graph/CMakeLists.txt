@@ -44,7 +44,6 @@ add_library(
   ${PROJECT_NAME}
   src/graph.cpp
   src/utils.cpp
-  src/adjacency_map.cpp
   src/kdl_parser.cpp
   src/scene_state.cpp)
 target_link_libraries(
