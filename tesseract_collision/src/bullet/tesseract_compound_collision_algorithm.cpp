@@ -136,7 +136,6 @@ public:
     , m_sharedManifold(sharedManifold)
     , m_contact_test_data(static_cast<ContactTestData*>(compoundObjWrap->m_collisionObject->getUserPointer()))
   {
-    btAssert(dynamic_cast<ContactTestData*>(compoundObjWrap->m_collisionObject->getUserPointer()) != nullptr);
   }
 
   void ProcessChildShape(const btCollisionShape* childShape, int index)
