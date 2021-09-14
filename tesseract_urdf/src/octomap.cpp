@@ -95,7 +95,6 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctomap(const tinyxml2::XML
   std::throw_with_nested(std::runtime_error("Octomap: Missing element 'octree' or 'point_cloud', must define one!"));
 }
 
-
 tinyxml2::XMLElement* tesseract_urdf::writeOctomap(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
                                                    tinyxml2::XMLDocument& doc,
                                                    const std::string& directory,

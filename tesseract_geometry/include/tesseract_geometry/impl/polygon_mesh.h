@@ -160,15 +160,16 @@ public:
    * @brief Get vertex count
    * @return Number of vertices
    */
-  [[deprecated ("Deprecated due to typo.  Please use getVertexCount()")]]
-  int getVerticeCount() const { return getVertexCount(); }
+  [[deprecated("Deprecated due to typo.  Please use getVertexCount()")]] int getVerticeCount() const
+  {
+    return getVertexCount();
+  }
 
   /**
    * @brief Get vertex count
    * @return Number of vertices
    */
   int getVertexCount() const { return vertex_count_; }
-
 
   /**
    * @brief Get face count
@@ -252,4 +253,4 @@ private:
 
 }  // namespace tesseract_geometry
 
-#endif // POLYGON_MESH_H
+#endif  // POLYGON_MESH_H

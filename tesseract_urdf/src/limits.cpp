@@ -61,7 +61,9 @@ tesseract_scene_graph::JointLimits::Ptr tesseract_urdf::parseLimits(const tinyxm
   return limits;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeLimits(const std::shared_ptr<const tesseract_scene_graph::JointLimits>& limits, tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement*
+tesseract_urdf::writeLimits(const std::shared_ptr<const tesseract_scene_graph::JointLimits>& limits,
+                            tinyxml2::XMLDocument& doc)
 {
   if (limits == nullptr)
     std::throw_with_nested(std::runtime_error("Limits are nullptr and cannot be converted to XML"));

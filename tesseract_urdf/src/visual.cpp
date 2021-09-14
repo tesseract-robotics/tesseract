@@ -131,7 +131,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeVisual(const std::shared_ptr<const te
                                                   tinyxml2::XMLDocument& doc,
                                                   const std::string& directory,
                                                   const std::string& link_name,
-                                                  const int id)
+                                                  const int id = -1)
 {
   if (visual == nullptr)
     std::throw_with_nested(std::runtime_error("Visual is nullptr and cannot be converted to XML"));

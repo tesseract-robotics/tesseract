@@ -152,7 +152,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeLink(const std::shared_ptr<const tess
     }
     catch (...)
     {
-      std::throw_with_nested(std::runtime_error("Could not write collision to XML for link `" + link->getName() + "`!"));
+      std::throw_with_nested(
+          std::runtime_error("Could not write collision to XML for link `" + link->getName() + "`!"));
     }
   }
 

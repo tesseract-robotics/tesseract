@@ -82,7 +82,9 @@ tesseract_scene_graph::Inertial::Ptr tesseract_urdf::parseInertial(const tinyxml
   return inertial;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeInertial(const std::shared_ptr<const tesseract_scene_graph::Inertial>& inertial, tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement*
+tesseract_urdf::writeInertial(const std::shared_ptr<const tesseract_scene_graph::Inertial>& inertial,
+                              tinyxml2::XMLDocument& doc)
 {
   if (inertial == nullptr)
     std::throw_with_nested(std::runtime_error("Inertial is nullptr and cannot be converted to XML"));

@@ -225,7 +225,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const 
   {
     try
     {
-      tinyxml2::XMLElement* xml_sphere = writeSphere(std::static_pointer_cast<const tesseract_geometry::Sphere>(geometry), doc);
+      tinyxml2::XMLElement* xml_sphere =
+          writeSphere(std::static_pointer_cast<const tesseract_geometry::Sphere>(geometry), doc);
       xml_element->InsertEndChild(xml_sphere);
     }
     catch (...)
@@ -237,7 +238,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const 
   {
     try
     {
-      tinyxml2::XMLElement* xml_cylinder = writeCylinder(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geometry), doc);
+      tinyxml2::XMLElement* xml_cylinder =
+          writeCylinder(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geometry), doc);
       xml_element->InsertEndChild(xml_cylinder);
     }
     catch (...)
@@ -249,7 +251,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const 
   {
     try
     {
-      tinyxml2::XMLElement* xml_capsule = writeCapsule(std::static_pointer_cast<const tesseract_geometry::Capsule>(geometry), doc);
+      tinyxml2::XMLElement* xml_capsule =
+          writeCapsule(std::static_pointer_cast<const tesseract_geometry::Capsule>(geometry), doc);
       xml_element->InsertEndChild(xml_capsule);
     }
     catch (...)
@@ -261,7 +264,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const 
   {
     try
     {
-      tinyxml2::XMLElement* xml_cone = writeCone(std::static_pointer_cast<const tesseract_geometry::Cone>(geometry), doc);
+      tinyxml2::XMLElement* xml_cone =
+          writeCone(std::static_pointer_cast<const tesseract_geometry::Cone>(geometry), doc);
       xml_element->InsertEndChild(xml_cone);
     }
     catch (...)
@@ -289,7 +293,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const 
   {
     try
     {
-      tinyxml2::XMLElement* xml_mesh = writeMesh(std::static_pointer_cast<const tesseract_geometry::Mesh>(geometry), doc, directory, filename + ".ply");
+      tinyxml2::XMLElement* xml_mesh = writeMesh(
+          std::static_pointer_cast<const tesseract_geometry::Mesh>(geometry), doc, directory, filename + ".ply");
       xml_element->InsertEndChild(xml_mesh);
     }
     catch (...)
@@ -301,7 +306,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const 
   {
     try
     {
-      tinyxml2::XMLElement* xml_convex_mesh = writeConvexMesh(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geometry), doc, directory, filename + ".ply");
+      tinyxml2::XMLElement* xml_convex_mesh = writeConvexMesh(
+          std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geometry), doc, directory, filename + ".ply");
       xml_element->InsertEndChild(xml_convex_mesh);
     }
     catch (...)
@@ -313,7 +319,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const 
   {
     try
     {
-      tinyxml2::XMLElement* xml_sdf_mesh = writeSDFMesh(std::static_pointer_cast<const tesseract_geometry::SDFMesh>(geometry), doc, directory, filename + ".ply");
+      tinyxml2::XMLElement* xml_sdf_mesh = writeSDFMesh(
+          std::static_pointer_cast<const tesseract_geometry::SDFMesh>(geometry), doc, directory, filename + ".ply");
       xml_element->InsertEndChild(xml_sdf_mesh);
     }
     catch (...)
@@ -325,7 +332,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const 
   {
     try
     {
-      tinyxml2::XMLElement* xml_octree = writeOctomap(std::static_pointer_cast<const tesseract_geometry::Octree>(geometry), doc, directory, filename + ".bt");
+      tinyxml2::XMLElement* xml_octree = writeOctomap(
+          std::static_pointer_cast<const tesseract_geometry::Octree>(geometry), doc, directory, filename + ".bt");
       xml_element->InsertEndChild(xml_octree);
     }
     catch (...)

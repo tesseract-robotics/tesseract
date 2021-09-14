@@ -119,7 +119,9 @@ tesseract_scene_graph::Material::Ptr tesseract_urdf::parseMaterial(
   return m;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeMaterial(const std::shared_ptr<const tesseract_scene_graph::Material>& material, tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement*
+tesseract_urdf::writeMaterial(const std::shared_ptr<const tesseract_scene_graph::Material>& material,
+                              tinyxml2::XMLDocument& doc)
 {
   if (material == nullptr)
     std::throw_with_nested(std::runtime_error("Material is nullptr and cannot be converted to XML"));
@@ -132,11 +134,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeMaterial(const std::shared_ptr<const 
   xml_element->InsertEndChild(xml_texture);
 
   tinyxml2::XMLElement* xml_color = doc.NewElement("color");
-  std::string color_string =
-      std::to_string(material->color(0)) + " " +
-      std::to_string(material->color(1)) + " " +
-      std::to_string(material->color(2)) + " " +
-      std::to_string(material->color(3));
+  std::string color_string = std::to_string(material->color(0)) + " " + std::to_string(material->color(1)) + " " +
+                             std::to_string(material->color(2)) + " " + std::to_string(material->color(3));
   xml_color->SetAttribute("color", color_string.c_str());
   xml_element->InsertEndChild(xml_color);
 

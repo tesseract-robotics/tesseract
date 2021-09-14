@@ -45,7 +45,8 @@ tesseract_geometry::Capsule::Ptr tesseract_urdf::parseCapsule(const tinyxml2::XM
   return std::make_shared<tesseract_geometry::Capsule>(r, l);
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeCapsule(const std::shared_ptr<const tesseract_geometry::Capsule>& capsule, tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* tesseract_urdf::writeCapsule(const std::shared_ptr<const tesseract_geometry::Capsule>& capsule,
+                                                   tinyxml2::XMLDocument& doc)
 {
   if (capsule == nullptr)
     std::throw_with_nested(std::runtime_error("Capsule is nullptr and cannot be written to XML file"));

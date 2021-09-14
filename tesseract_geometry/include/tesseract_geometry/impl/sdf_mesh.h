@@ -75,21 +75,20 @@ public:
           std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
           MeshMaterial::Ptr mesh_material = nullptr,
           std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
-    : PolygonMesh(vertices,
-                  triangles,
-                  resource,
-                  scale,
-                  normals,
-                  vertex_colors,
-                  mesh_material,
-                  mesh_textures,
+    : PolygonMesh(std::move(vertices),
+                  std::move(triangles),
+                  std::move(resource),
+                  std::move(scale),
+                  std::move(normals),
+                  std::move(vertex_colors),
+                  std::move(mesh_material),
+                  std::move(mesh_textures),
                   GeometryType::SDF_MESH)
   {
     if ((getFaceCount() * 4) != getFaces()->size())
     {
       std::throw_with_nested(std::runtime_error("Mesh is not triangular"));
     }
-    return;
   }
 
   /**
@@ -116,22 +115,21 @@ public:
           std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
           MeshMaterial::Ptr mesh_material = nullptr,
           std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
-    : PolygonMesh(vertices,
-                  triangles,
+    : PolygonMesh(std::move(vertices),
+                  std::move(triangles),
                   triangle_count,
-                  resource,
-                  scale,
-                  normals,
-                  vertex_colors,
-                  mesh_material,
-                  mesh_textures,
+                  std::move(resource),
+                  std::move(scale),
+                  std::move(normals),
+                  std::move(vertex_colors),
+                  std::move(mesh_material),
+                  std::move(mesh_textures),
                   GeometryType::SDF_MESH)
   {
     if ((getFaceCount() * 4) != getFaces()->size())
     {
       std::throw_with_nested(std::runtime_error("Mesh is not triangular"));
     }
-    return;
   }
 
   ~SDFMesh() override = default;
@@ -144,23 +142,20 @@ public:
    * @brief Get SDF mesh Triangles
    * @return A vector of triangle indices
    */
-  [[deprecated ("Please use getFaces() instead")]]
-  const std::shared_ptr<const Eigen::VectorXi>& getTriangles() const { return getFaces(); }
+  [[deprecated("Please use getFaces() instead")]] const std::shared_ptr<const Eigen::VectorXi>& getTriangles() const
+  {
+    return getFaces();
+  }
 
   /**
    * @brief Get triangle count
    * @return Number of triangles
    */
-  [[deprecated ("Please use getFaceCount() instead")]]
-  int getTriangleCount() const { return getFaceCount(); }
+  [[deprecated("Please use getFaceCount() instead")]] int getTriangleCount() const { return getFaceCount(); }
 
   Geometry::Ptr clone() const override
   {
-    return std::make_shared<SDFMesh>(getVertices(),
-                                     getFaces(),
-                                     getFaceCount(),
-                                     getResource(),
-                                     getScale());
+    return std::make_shared<SDFMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
   }
 
 private:

@@ -227,7 +227,8 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
   return j;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tesseract_scene_graph::Joint>& joint, tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tesseract_scene_graph::Joint>& joint,
+                                                 tinyxml2::XMLDocument& doc)
 {
   if (joint == nullptr)
     std::throw_with_nested(std::runtime_error("Joint is nullptr and cannot be converted to XML"));
@@ -264,17 +265,15 @@ tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tes
   else if (joint->type == tesseract_scene_graph::JointType::FIXED)
     xml_element->SetAttribute("type", "fixed");
   else
-    std::throw_with_nested(
-        std::runtime_error("Joint: Invalid joint type for joint '" + joint->getName() + "'!"));
+    std::throw_with_nested(std::runtime_error("Joint: Invalid joint type for joint '" + joint->getName() + "'!"));
 
   // Set joint axis
-  if (joint->type != tesseract_scene_graph::JointType::FLOATING && joint->type != tesseract_scene_graph::JointType::FIXED)
+  if (joint->type != tesseract_scene_graph::JointType::FLOATING &&
+      joint->type != tesseract_scene_graph::JointType::FIXED)
   {
     tinyxml2::XMLElement* xml_axis = doc.NewElement("axis");
     std::string axis_str =
-        std::to_string(joint->axis.x()) + " " +
-        std::to_string(joint->axis.y()) + " " +
-        std::to_string(joint->axis.z());
+        std::to_string(joint->axis.x()) + " " + std::to_string(joint->axis.y()) + " " + std::to_string(joint->axis.z());
     xml_axis->SetAttribute("xyz", axis_str.c_str());
     xml_element->InsertEndChild(xml_axis);
   }

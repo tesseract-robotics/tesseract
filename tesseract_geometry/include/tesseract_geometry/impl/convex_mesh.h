@@ -45,7 +45,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-
 class ConvexMesh : public PolygonMesh
 {
 public:
@@ -77,17 +76,16 @@ public:
              std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
              MeshMaterial::Ptr mesh_material = nullptr,
              std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
-    : PolygonMesh(vertices,
-                  faces,
-                  resource,
-                  scale,
-                  normals,
-                  vertex_colors,
-                  mesh_material,
-                  mesh_textures,
+    : PolygonMesh(std::move(vertices),
+                  std::move(faces),
+                  std::move(resource),
+                  std::move(scale),
+                  std::move(normals),
+                  std::move(vertex_colors),
+                  std::move(mesh_material),
+                  std::move(mesh_textures),
                   GeometryType::CONVEX_MESH)
   {
-    return;
   }
 
   /**
@@ -108,26 +106,25 @@ public:
    * @param mesh_textures A vector of MeshTexture to apply to the mesh (optional)
    */
   ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
-              std::shared_ptr<const Eigen::VectorXi> faces,
-              int face_count,
-              tesseract_common::Resource::Ptr resource = nullptr,
-              Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
-              std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
-              std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
-              MeshMaterial::Ptr mesh_material = nullptr,
-              std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
-    : PolygonMesh(vertices,
-                  faces,
+             std::shared_ptr<const Eigen::VectorXi> faces,
+             int face_count,
+             tesseract_common::Resource::Ptr resource = nullptr,
+             Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+             std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
+             std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+             MeshMaterial::Ptr mesh_material = nullptr,
+             std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
+    : PolygonMesh(std::move(vertices),
+                  std::move(faces),
                   face_count,
-                  resource,
-                  scale,
-                  normals,
-                  vertex_colors,
-                  mesh_material,
-                  mesh_textures,
+                  std::move(resource),
+                  std::move(scale),
+                  std::move(normals),
+                  std::move(vertex_colors),
+                  std::move(mesh_material),
+                  std::move(mesh_textures),
                   GeometryType::CONVEX_MESH)
   {
-    return;
   }
 
   ~ConvexMesh() override = default;
@@ -144,6 +141,6 @@ public:
 private:
 };
 
-} // namespace tesseract_geometry
+}  // namespace tesseract_geometry
 
 #endif

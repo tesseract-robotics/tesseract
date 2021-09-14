@@ -34,7 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 namespace tesseract_scene_graph
 {
 class JointMimic;
@@ -50,7 +51,8 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_scene_graph::JointMimic> parseMimic(const tinyxml2::XMLElement* xml_element, int version);
 
-tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract_scene_graph::JointMimic>& mimic, tinyxml2::XMLDocument& doc);
+tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract_scene_graph::JointMimic>& mimic,
+                                 tinyxml2::XMLDocument& doc);
 
 }  // namespace tesseract_urdf
 

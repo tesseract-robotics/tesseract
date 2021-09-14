@@ -128,19 +128,14 @@ tinyxml2::XMLElement* tesseract_urdf::writeOrigin(const Eigen::Isometry3d& origi
   tinyxml2::XMLElement* xml_element = doc.NewElement("origin");
 
   // Format and write the translation
-  std::string xyz_string =
-      std::to_string(origin.translation().x()) + " " +
-      std::to_string(origin.translation().y()) + " " +
-      std::to_string(origin.translation().z());
+  std::string xyz_string = std::to_string(origin.translation().x()) + " " + std::to_string(origin.translation().y()) +
+                           " " + std::to_string(origin.translation().z());
   xml_element->SetAttribute("xyz", xyz_string.c_str());
 
   // Extract, format, and write the rotation
-  Eigen::Quaterniond q (origin.linear());
+  Eigen::Quaterniond q(origin.linear());
   std::string wxyz_string =
-      std::to_string(q.w()) + " " +
-      std::to_string(q.x()) + " " +
-      std::to_string(q.y()) + " " +
-      std::to_string(q.z());
+      std::to_string(q.w()) + " " + std::to_string(q.x()) + " " + std::to_string(q.y()) + " " + std::to_string(q.z());
   xml_element->SetAttribute("wxyz", wxyz_string.c_str());
 
   return xml_element;

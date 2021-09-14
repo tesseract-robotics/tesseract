@@ -35,7 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 namespace tesseract_scene_graph
 {
 class ResourceLocator;
@@ -47,7 +48,6 @@ class Mesh;
 
 namespace tesseract_urdf
 {
-
 /**
  * @brief Parse xml element mesh
  * @param xml_element The xml element

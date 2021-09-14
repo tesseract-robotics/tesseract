@@ -64,7 +64,8 @@ tesseract_geometry::Box::Ptr tesseract_urdf::parseBox(const tinyxml2::XMLElement
   return std::make_shared<tesseract_geometry::Box>(l, w, h);
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeBox(const std::shared_ptr<const tesseract_geometry::Box>& box, tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* tesseract_urdf::writeBox(const std::shared_ptr<const tesseract_geometry::Box>& box,
+                                               tinyxml2::XMLDocument& doc)
 {
   if (box == nullptr)
     std::throw_with_nested(std::runtime_error("Box is nullptr and cannot be converted to XML"));

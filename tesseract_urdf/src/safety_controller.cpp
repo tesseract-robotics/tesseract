@@ -70,7 +70,9 @@ tesseract_scene_graph::JointSafety::Ptr tesseract_urdf::parseSafetyController(co
   return s;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeSafetyController(const std::shared_ptr<const tesseract_scene_graph::JointSafety>& safety, tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement*
+tesseract_urdf::writeSafetyController(const std::shared_ptr<const tesseract_scene_graph::JointSafety>& safety,
+                                      tinyxml2::XMLDocument& doc)
 {
   if (safety == nullptr)
     std::throw_with_nested(std::runtime_error("Safety Controller is nullptr and cannot be converted to XML"));

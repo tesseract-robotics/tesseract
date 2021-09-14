@@ -107,11 +107,12 @@ tesseract_urdf::parseCollision(const tinyxml2::XMLElement* xml_element,
   return collisions;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeCollision(const std::shared_ptr<const tesseract_scene_graph::Collision>& collision,
-                                                     tinyxml2::XMLDocument& doc,
-                                                     const std::string& directory,
-                                                     const std::string& link_name,
-                                                     const int id)
+tinyxml2::XMLElement*
+tesseract_urdf::writeCollision(const std::shared_ptr<const tesseract_scene_graph::Collision>& collision,
+                               tinyxml2::XMLDocument& doc,
+                               const std::string& directory,
+                               const std::string& link_name,
+                               const int id = -1)
 {
   if (collision == nullptr)
     std::throw_with_nested(std::runtime_error("Collision is nullptr and cannot be converted to XML"));

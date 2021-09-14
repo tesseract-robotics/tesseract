@@ -35,7 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 namespace tesseract_scene_graph
 {
 class Collision;
@@ -60,7 +61,7 @@ tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract_scene
                                      tinyxml2::XMLDocument& doc,
                                      const std::string& directory,
                                      const std::string& link_name,
-                                     const int id = -1);
+                                     int id);
 
 }  // namespace tesseract_urdf
 

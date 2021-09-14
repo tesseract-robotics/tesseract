@@ -60,7 +60,9 @@ tesseract_scene_graph::JointDynamics::Ptr tesseract_urdf::parseDynamics(const ti
   return dynamics;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeDynamics(const std::shared_ptr<const tesseract_scene_graph::JointDynamics>& dynamics, tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement*
+tesseract_urdf::writeDynamics(const std::shared_ptr<const tesseract_scene_graph::JointDynamics>& dynamics,
+                              tinyxml2::XMLDocument& doc)
 {
   if (dynamics == nullptr)
     std::throw_with_nested(std::runtime_error("Dynamics is nullptr and cannot be converted to XML"));

@@ -11,7 +11,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 template <class T>
 aiScene createAssetFromMesh(const std::shared_ptr<const T>& mesh)
 {
@@ -36,28 +35,27 @@ aiScene createAssetFromMesh(const std::shared_ptr<const T>& mesh)
   scene.mRootNode->mNumMeshes = 1;
 
   // Transcribe in the mesh vertices
-  scene.mMeshes[0]->mVertices = new aiVector3D[mesh->getVertexCount()];
+  scene.mMeshes[0]->mVertices = new aiVector3D[static_cast<unsigned long>(mesh->getVertexCount())];
   scene.mMeshes[0]->mNumVertices = static_cast<unsigned int>(mesh->getVertexCount());
 
-  for (std::size_t i = 0; i < mesh->getVertexCount(); ++i)
+  for (std::size_t i = 0; i < static_cast<std::size_t>(mesh->getVertexCount()); ++i)
   {
-    scene.mMeshes[0]->mVertices[i] = aiVector3D(
-          static_cast<float>(mesh->getVertices()->at(i).x()),
-          static_cast<float>(mesh->getVertices()->at(i).y()),
-          static_cast<float>(mesh->getVertices()->at(i).z()));
+    scene.mMeshes[0]->mVertices[i] = aiVector3D(static_cast<float>(mesh->getVertices()->at(i).x()),
+                                                static_cast<float>(mesh->getVertices()->at(i).y()),
+                                                static_cast<float>(mesh->getVertices()->at(i).z()));
   }
 
   // Transcribe in the mesh triangles
-  scene.mMeshes[0]->mFaces = new aiFace[mesh->getFaceCount()];
+  scene.mMeshes[0]->mFaces = new aiFace[static_cast<unsigned long>(mesh->getFaceCount())];
   scene.mMeshes[0]->mNumFaces = static_cast<unsigned int>(mesh->getFaceCount());
 
   int indices = 0;
-  for (std::size_t i = 0; i < mesh->getFaceCount() && indices < mesh->getFaces()->size(); ++i)
+  for (std::size_t i = 0; i < static_cast<std::size_t>(mesh->getFaceCount()) && indices < mesh->getFaces()->size(); ++i)
   {
     // Find and set the number of vertices for this face
     int num_vertices = (*mesh->getFaces())(indices);
-    scene.mMeshes[0]->mFaces[i].mIndices = new unsigned int[num_vertices];
-    scene.mMeshes[0]->mFaces[i].mNumIndices = num_vertices;
+    scene.mMeshes[0]->mFaces[i].mIndices = new unsigned int[static_cast<unsigned long>(num_vertices)];
+    scene.mMeshes[0]->mFaces[i].mNumIndices = static_cast<unsigned int>(num_vertices);
 
     // Copy over the index pointing to each vertex
     for (int j = 1; j <= num_vertices; ++j)
@@ -76,8 +74,7 @@ aiScene createAssetFromMesh(const std::shared_ptr<const T>& mesh)
 }
 
 template <class T>
-void writeMeshToFile(const std::shared_ptr<const T>& mesh,
-                     const std::string& filepath)
+void writeMeshToFile(const std::shared_ptr<const T>& mesh, const std::string& filepath)
 {
   aiScene scene = createAssetFromMesh(mesh);
   Assimp::Exporter exporter;
@@ -86,10 +83,9 @@ void writeMeshToFile(const std::shared_ptr<const T>& mesh,
 
   if (ret != AI_SUCCESS)
     std::throw_with_nested(std::runtime_error("Could not export file"));
-  return;
 }
 
-} // namespace tesseract_urdf
+}  // namespace tesseract_urdf
 
 #ifdef SWIG
 %pybuffer_binary(const uint8_t* bytes, size_t bytes_len);
@@ -101,4 +97,4 @@ void writeMeshToFile(const std::shared_ptr<const T>& mesh,
 %template(writeConvexMeshToFile) tesseract_urdf::writeMeshToFile<tesseract_geometry::ConvexMesh>;
 #endif
 
-#endif // TESSERACT_SCENE_GRAPH_MESH_WRITER_H
+#endif  // TESSERACT_SCENE_GRAPH_MESH_WRITER_H

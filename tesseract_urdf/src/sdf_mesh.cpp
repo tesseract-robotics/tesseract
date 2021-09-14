@@ -98,7 +98,6 @@ tinyxml2::XMLElement* tesseract_urdf::writeSDFMesh(const std::shared_ptr<const t
                                                    const std::string& directory,
                                                    const std::string& filename)
 {
-
   if (sdf_mesh == nullptr)
     std::throw_with_nested(std::runtime_error("SDF Mesh is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("sdf_mesh");
@@ -113,10 +112,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeSDFMesh(const std::shared_ptr<const t
   }
   xml_element->SetAttribute("filename", filename.c_str());
 
-  std::string scale_string =
-      std::to_string(sdf_mesh->getScale().x()) + " " +
-      std::to_string(sdf_mesh->getScale().y()) + " " +
-      std::to_string(sdf_mesh->getScale().z());
+  std::string scale_string = std::to_string(sdf_mesh->getScale().x()) + " " + std::to_string(sdf_mesh->getScale().y()) +
+                             " " + std::to_string(sdf_mesh->getScale().z());
   xml_element->SetAttribute("scale", scale_string.c_str());
 
   xml_element->SetAttribute("convert", false);
