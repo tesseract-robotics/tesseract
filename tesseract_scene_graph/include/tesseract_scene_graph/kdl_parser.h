@@ -151,23 +151,6 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
                             const std::vector<std::string>& joint_names,
                             const std::unordered_map<std::string, double>& joint_values);
 
-/**
- * @brief Convert a portion of a Tesseract SceneGraph into a KDL Tree
- * @details This will create a new tree from multple sub tree defined by the provided joint names
- * The values are used to convert non fixed joints that are not listed in joint_names to a
- * fixed joint. The first tree found defines the base link and all other trees are attached to this
- * link by a fixed joint.
- * @throws If graph is not a tree it will return false.
- * @param scene_graph The Tesseract Scene Graph
- * @param tree The KDL Tree to populate.
- * @return Returns KDL tree representation of the sub scene graph
- */
-KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
-                            const std::string& base_link_name,
-                            const std::vector<std::string>& tip_link_names,
-                            const std::vector<std::string>& fixed_joints,
-                            const std::unordered_map<std::string, double>& joint_values);
-
 }  // namespace tesseract_scene_graph
 
 #endif  // TESSERACT_SCENE_GRAPH_KDL_PARSER_H
