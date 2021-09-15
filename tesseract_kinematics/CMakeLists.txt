@@ -126,7 +126,6 @@ target_include_directories(${PROJECT_NAME}_ikfast INTERFACE "$<BUILD_INTERFACE:$
 add_library(
   ${PROJECT_NAME}_kdl
   src/kdl/kdl_fwd_kin_chain.cpp
-  src/kdl/kdl_fwd_kin_tree.cpp
   src/kdl/kdl_inv_kin_chain_lma.cpp
   src/kdl/kdl_inv_kin_chain_nr.cpp
   src/kdl/kdl_utils.cpp)
