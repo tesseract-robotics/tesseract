@@ -26,7 +26,6 @@
 
 #include <tesseract_kinematics/kdl/kdl_factories.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
-#include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
 
@@ -62,14 +61,6 @@ ForwardKinematics::UPtr KDLFwdKinChainFactory::create(const std::string& group_n
 
   return std::make_unique<KDLFwdKinChain>(group_name, scene_graph, base_link, tip_link, solver_name);
 }
-
-// ForwardKinematics::UPtr KDLFwdKinTreePlugin::create(const std::string& name,
-//                                 const tesseract_scene_graph::SceneGraph& scene_graph,
-//                                 const tesseract_scene_graph::SceneState& scene_state,
-//                                 const YAML::Node& config) const
-//{
-
-//}
 
 InverseKinematics::UPtr KDLInvKinChainLMAFactory::create(const std::string& group_name,
                                                          const std::string& solver_name,

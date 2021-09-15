@@ -40,14 +40,6 @@ class KDLFwdKinChainFactory : public FwdKinFactory
                                  const YAML::Node& config) const override final;
 };
 
-// class KDLFwdKinTreePlugin : public FwdKinPlugin
-//{
-//  ForwardKinematics::UPtr create(const std::string& name,
-//                                 const tesseract_scene_graph::SceneGraph& scene_graph,
-//                                 const tesseract_scene_graph::SceneState& scene_state,
-//                                 const YAML::Node& config) const override final;
-//};
-
 class KDLInvKinChainLMAFactory : public InvKinFactory
 {
   InverseKinematics::UPtr create(const std::string& group_name,
