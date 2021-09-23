@@ -141,24 +141,13 @@ tinyxml2::XMLElement* tesseract_urdf::writeVisual(const std::shared_ptr<const te
   if (!visual->name.empty())
     xml_element->SetAttribute("name", visual->name.c_str());
 
-  try
-  {
-    tinyxml2::XMLElement* xml_origin = writeOrigin(visual->origin, doc);
-    xml_element->InsertEndChild(xml_origin);
-  }
-  catch (...)
-  {
-    std::throw_with_nested(std::runtime_error("Could not write origin for visual '" + visual->name + "'!"));
-  }
+  tinyxml2::XMLElement* xml_origin = writeOrigin(visual->origin, doc);
+  xml_element->InsertEndChild(xml_origin);
 
-  try
+  if (visual->material != nullptr)
   {
     tinyxml2::XMLElement* xml_material = writeMaterial(visual->material, doc);
     xml_element->InsertEndChild(xml_material);
-  }
-  catch (...)
-  {
-    std::throw_with_nested(std::runtime_error("Could not write material for visual '" + visual->name + "'!"));
   }
 
   try

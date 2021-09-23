@@ -179,12 +179,74 @@ TEST(TesseractURDFUnit, write_octree)  // NOLINT
     EXPECT_NE(text, "");
   }
 
+  {  // Trigger failed-to-write
+    tesseract_geometry::Octree::Ptr geom = std::make_shared<tesseract_geometry::Octree>(
+        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::BOX);
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::Octree::Ptr>(
+                  geom, &tesseract_urdf::writeOctree, text, std::string("/tmp/"), std::string("")));
+    EXPECT_EQ(text, "");
+  }
+
   {  // trigger nullptr input
     tesseract_geometry::Octree::Ptr geom = nullptr;
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Octree::Ptr>(
                   geom, &tesseract_urdf::writeOctree, text, std::string("/tmp/"), std::string("oct2.bt")));
+    EXPECT_EQ(text, "");
+  }
+}
+
+TEST(TesseractURDFUnit, write_octomap)  // NOLINT
+{
+  {  // box
+    tesseract_geometry::Octree::Ptr geom = std::make_shared<tesseract_geometry::Octree>(
+        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::BOX);
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract_geometry::Octree::Ptr>(
+                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("octo0.bt")));
+    EXPECT_NE(text, "");
+  }
+
+  {  // sphere inside
+    tesseract_geometry::Octree::Ptr geom = std::make_shared<tesseract_geometry::Octree>(
+        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::SPHERE_INSIDE);
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract_geometry::Octree::Ptr>(
+                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("octo1.bt")));
+    EXPECT_NE(text, "");
+  }
+
+  {  // sphere outside
+    tesseract_geometry::Octree::Ptr geom = std::make_shared<tesseract_geometry::Octree>(
+        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE);
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract_geometry::Octree::Ptr>(
+                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("octo2.bt")));
+    EXPECT_NE(text, "");
+  }
+
+  {  // Trigger failed-to-write
+    tesseract_geometry::Octree::Ptr geom = std::make_shared<tesseract_geometry::Octree>(
+        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::BOX);
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::Octree::Ptr>(
+                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("")));
+    EXPECT_EQ(text, "");
+  }
+
+  {  // trigger nullptr input
+    tesseract_geometry::Octree::Ptr geom = nullptr;
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::Octree::Ptr>(
+                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("oct2.bt")));
     EXPECT_EQ(text, "");
   }
 }

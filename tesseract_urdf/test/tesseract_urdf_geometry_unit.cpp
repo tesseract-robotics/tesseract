@@ -351,4 +351,14 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
                   geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("geom3")));
     EXPECT_NE(text, "");
   }
+
+  {  // octree failed-to-write
+    tesseract_geometry::Geometry::Ptr geometry = std::make_shared<tesseract_geometry::Octree>(
+        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::BOX);
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::Geometry::Ptr>(
+                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/nonexistant/"), std::string("")));
+    EXPECT_EQ(text, "");
+  }
 }

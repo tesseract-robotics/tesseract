@@ -171,13 +171,28 @@ TEST(TesseractURDFUnit, write_convex_mesh)  // NOLINT
                                                   Eigen::Vector3d(0, 1, 0) };
     Eigen::VectorXi indices(4);
     indices << 3, 0, 1, 2;
-    tesseract_geometry::ConvexMesh::Ptr sdf_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(
+    tesseract_geometry::ConvexMesh::Ptr convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(
         std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
     std::string text = "";
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::ConvexMesh::Ptr>(
-                  sdf_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("convex0.ply")));
+                  convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("convex0.ply")));
     EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_common::VectorVector3d vertices = { Eigen::Vector3d(0, 0, 0),
+                                                  Eigen::Vector3d(1, 0, 0),
+                                                  Eigen::Vector3d(0, 1, 0) };
+    Eigen::VectorXi indices(4);
+    indices << 3, 0, 1, 2;
+    tesseract_geometry::ConvexMesh::Ptr convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(
+        std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
+    std::string text = "";
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::ConvexMesh::Ptr>(
+                  convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("")));
+    EXPECT_EQ(text, "");
   }
 
   {

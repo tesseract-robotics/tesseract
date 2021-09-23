@@ -100,6 +100,7 @@ TEST(TesseractURDFUnit, write_visual)  // NOLINT
     visual->name = "test";
     visual->origin = Eigen::Isometry3d::Identity();
     visual->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    visual->material = std::make_shared<tesseract_scene_graph::Material>("black");
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_scene_graph::Visual::Ptr>(
