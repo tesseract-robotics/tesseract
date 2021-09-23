@@ -77,3 +77,20 @@ TEST(TesseractURDFUnit, parse_capsule)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_capsule)  // NOLINT
+{
+  {
+    tesseract_geometry::Capsule::Ptr capsule = std::make_shared<tesseract_geometry::Capsule>(0.5, 1.0);
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_geometry::Capsule::Ptr>(capsule, &tesseract_urdf::writeCapsule, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_geometry::Capsule::Ptr capsule = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_geometry::Capsule::Ptr>(capsule, &tesseract_urdf::writeCapsule, text));
+    EXPECT_EQ(text, "");
+  }
+}

@@ -446,3 +446,82 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(elem, &tesseract_urdf::parseJoint, str, "joint", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_joint)  // NOLINT
+{
+  {  // trigger nullptr input
+    tesseract_scene_graph::Joint::Ptr joint = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
+    EXPECT_EQ(text, "");
+  }
+
+  {  // trigger type planar, set joint axis
+    tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint->type = tesseract_scene_graph::JointType::PLANAR;
+    joint->axis = Eigen::Vector3d::UnitX();
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger type floating
+    tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint->type = tesseract_scene_graph::JointType::FLOATING;
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger type revolute; set joint axis, joint limits, joint safety, joint cal, mimic joint, dynamics
+    tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint->type = tesseract_scene_graph::JointType::REVOLUTE;
+    joint->axis = Eigen::Vector3d::UnitY();
+    joint->limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    joint->safety = std::make_shared<tesseract_scene_graph::JointSafety>();
+    joint->calibration = std::make_shared<tesseract_scene_graph::JointCalibration>();
+    joint->mimic = std::make_shared<tesseract_scene_graph::JointMimic>();
+    joint->dynamics = std::make_shared<tesseract_scene_graph::JointDynamics>();
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger type continuous
+    tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint->type = tesseract_scene_graph::JointType::CONTINUOUS;
+    joint->axis = Eigen::Vector3d::UnitZ();
+    joint->limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger type prismatic
+    tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint->type = tesseract_scene_graph::JointType::PRISMATIC;
+    joint->limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    joint->axis = Eigen::Vector3d::Ones();
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger type fixed
+    tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint->type = tesseract_scene_graph::JointType::FIXED;
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger no joint limits
+    tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint->type = tesseract_scene_graph::JointType::PRISMATIC;
+    joint->limits = nullptr;
+    joint->axis = Eigen::Vector3d::Ones();
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
+    EXPECT_EQ(text, "");
+  }
+}

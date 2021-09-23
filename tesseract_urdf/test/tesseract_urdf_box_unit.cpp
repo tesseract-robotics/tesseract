@@ -64,3 +64,20 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::parseBox, str, "box", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_box)  // NOLINT
+{
+  {
+    tesseract_geometry::Box::Ptr geom = std::make_shared<tesseract_geometry::Box>(1.0, 2.0, 3.0);
+    std::string text = "";
+    EXPECT_EQ(0, writeTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::writeBox, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_geometry::Box::Ptr geom = nullptr;
+    std::string text = "";
+    EXPECT_EQ(1, writeTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::writeBox, text));
+    EXPECT_EQ(text, "");
+  }
+}

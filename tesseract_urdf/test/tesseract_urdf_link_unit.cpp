@@ -4,6 +4,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_geometry/impl/box.h>
+#include <tesseract_urdf/box.h>
 #include <tesseract_urdf/link.h>
 #include "tesseract_urdf_common_unit.h"
 
@@ -345,5 +347,76 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Link::Ptr>(
         elem, &tesseract_urdf::parseLink, str, "link", resource_locator, empty_available_materials, 2));
+  }
+}
+
+TEST(TesseractURDFUnit, write_link)  // NOLINT
+{
+  {  // Trigger id adjustments and inertial
+    tesseract_scene_graph::Link::Ptr link = std::make_shared<tesseract_scene_graph::Link>("link");
+    link->inertial = std::make_shared<tesseract_scene_graph::Inertial>();
+
+    tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
+    collision->name = "test";
+    collision->origin = Eigen::Isometry3d::Identity();
+    collision->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    link->collision.push_back(collision);
+    link->collision.push_back(collision);
+
+    tesseract_scene_graph::Visual::Ptr visual = std::make_shared<tesseract_scene_graph::Visual>();
+    visual->name = "test";
+    visual->origin = Eigen::Isometry3d::Identity();
+    visual->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    link->visual.push_back(visual);
+    link->visual.push_back(visual);
+
+    std::string text;
+    EXPECT_EQ(
+        0, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, std::string("/tmp/")));
+    EXPECT_NE(text, "");
+  }
+
+  {  // Trigger nullptr collision
+    tesseract_scene_graph::Link::Ptr link = std::make_shared<tesseract_scene_graph::Link>("link");
+    link->inertial = std::make_shared<tesseract_scene_graph::Inertial>();
+
+    link->collision.push_back(nullptr);
+
+    tesseract_scene_graph::Visual::Ptr visual = std::make_shared<tesseract_scene_graph::Visual>();
+    visual->name = "test";
+    visual->origin = Eigen::Isometry3d::Identity();
+    visual->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    link->visual.push_back(visual);
+
+    std::string text;
+    EXPECT_EQ(
+        1, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, std::string("/tmp/")));
+    EXPECT_EQ(text, "");
+  }
+
+  {  // Trigger nullptr visual
+    tesseract_scene_graph::Link::Ptr link = std::make_shared<tesseract_scene_graph::Link>("link");
+    link->inertial = std::make_shared<tesseract_scene_graph::Inertial>();
+
+    tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
+    collision->name = "test";
+    collision->origin = Eigen::Isometry3d::Identity();
+    collision->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    link->collision.push_back(collision);
+
+    link->visual.push_back(nullptr);
+
+    std::string text;
+    EXPECT_EQ(
+        1, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, std::string("/tmp/")));
+    EXPECT_EQ(text, "");
+  }
+
+  {
+    tesseract_scene_graph::Link::Ptr link = nullptr;
+    std::string text;
+    EXPECT_EQ(
+        1, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, std::string("/tmp/")));
+    EXPECT_EQ(text, "");
   }
 }

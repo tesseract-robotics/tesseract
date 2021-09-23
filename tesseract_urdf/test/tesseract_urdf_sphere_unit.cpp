@@ -51,3 +51,20 @@ TEST(TesseractURDFUnit, parse_sphere)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_geometry::Sphere::Ptr>(geom, &tesseract_urdf::parseSphere, str, "sphere", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_sphere)  // NOLINT
+{
+  {
+    tesseract_geometry::Sphere::Ptr geom = std::make_shared<tesseract_geometry::Sphere>(1.0);
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_geometry::Sphere::Ptr>(geom, &tesseract_urdf::writeSphere, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_geometry::Sphere::Ptr geom = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_geometry::Sphere::Ptr>(geom, &tesseract_urdf::writeSphere, text));
+    EXPECT_EQ(text, "");
+  }
+}

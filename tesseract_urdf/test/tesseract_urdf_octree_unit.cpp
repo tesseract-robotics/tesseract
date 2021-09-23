@@ -166,3 +166,25 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
         geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
   }
 }
+
+TEST(TesseractURDFUnit, write_octree)  // NOLINT
+{
+  {
+    tesseract_geometry::Octree::Ptr geom = std::make_shared<tesseract_geometry::Octree>(
+        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::BOX);
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract_geometry::Octree::Ptr>(
+                  geom, &tesseract_urdf::writeOctree, text, std::string("/tmp/"), std::string("oct0.bt")));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger nullptr input
+    tesseract_geometry::Octree::Ptr geom = nullptr;
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::Octree::Ptr>(
+                  geom, &tesseract_urdf::writeOctree, text, std::string("/tmp/"), std::string("oct2.bt")));
+    EXPECT_EQ(text, "");
+  }
+}

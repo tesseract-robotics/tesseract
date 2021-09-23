@@ -77,3 +77,20 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_geometry::Cylinder::Ptr>(geom, &tesseract_urdf::parseCylinder, str, "cylinder", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_cylinder)  // NOLINT
+{
+  {
+    tesseract_geometry::Cylinder::Ptr cylinder = std::make_shared<tesseract_geometry::Cylinder>(0.5, 1.0);
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_geometry::Cylinder::Ptr>(cylinder, &tesseract_urdf::writeCylinder, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_geometry::Cylinder::Ptr cylinder = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_geometry::Cylinder::Ptr>(cylinder, &tesseract_urdf::writeCylinder, text));
+    EXPECT_EQ(text, "");
+  }
+}

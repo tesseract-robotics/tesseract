@@ -57,3 +57,22 @@ TEST(TesseractURDFUnit, parse_calibration)  // NOLINT
         elem, &tesseract_urdf::parseCalibration, str, "calibration", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_calibration)  // NOLINT
+{
+  {
+    tesseract_scene_graph::JointCalibration::Ptr cal = std::make_shared<tesseract_scene_graph::JointCalibration>();
+    cal->rising = 5.0;
+    cal->falling = 3.0;
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointCalibration::Ptr>(cal, &tesseract_urdf::writeCalibration, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_scene_graph::JointCalibration::Ptr cal = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_scene_graph::JointCalibration::Ptr>(cal, &tesseract_urdf::writeCalibration, text));
+    EXPECT_EQ(text, "");
+  }
+}

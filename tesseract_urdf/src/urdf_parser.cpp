@@ -180,6 +180,10 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
                    const std::string& directory,
                    const std::string& filename)
 {
+  // Check for null input
+  if (sg == nullptr)
+    std::throw_with_nested(std::runtime_error("Scene Graph is nullptr and cannot be converted to URDF"));
+
   // If the directory does not exist, make it
   boost::filesystem::create_directory(boost::filesystem::path(directory));
 
@@ -204,7 +208,7 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
     try
     {
       tinyxml2::XMLElement* xml_link = writeLink(l, doc, directory);
-      doc.InsertEndChild(xml_link);
+      xml_robot->InsertEndChild(xml_link);
     }
     catch (...)
     {
@@ -218,7 +222,7 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
     try
     {
       tinyxml2::XMLElement* xml_joint = writeJoint(j, doc);
-      doc.InsertEndChild(xml_joint);
+      xml_robot->InsertEndChild(xml_joint);
     }
     catch (...)
     {

@@ -60,6 +60,7 @@ add_library(
   src/link.cpp
   src/material.cpp
   src/mesh.cpp
+  src/mesh_writer.cpp
   src/mimic.cpp
   src/octomap.cpp
   src/octree.cpp
@@ -132,6 +133,7 @@ configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
 # Mark cpp header files for installation
 install(FILES include/${PROJECT_NAME}/urdf_parser.h DESTINATION include/${PROJECT_NAME})
+install(FILES include/${PROJECT_NAME}/mesh_writer.h DESTINATION include/${PROJECT_NAME})
 
 # ADD Examples
 add_subdirectory(examples)

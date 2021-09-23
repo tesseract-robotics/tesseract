@@ -114,3 +114,20 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, &tesseract_urdf::parseLimits, str, "limit", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_limits)  // NOLINT
+{
+  {
+    tesseract_scene_graph::JointLimits::Ptr limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointLimits::Ptr>(limits, &tesseract_urdf::writeLimits, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_scene_graph::JointLimits::Ptr limits = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_scene_graph::JointLimits::Ptr>(limits, &tesseract_urdf::writeLimits, text));
+    EXPECT_EQ(text, "");
+  }
+}

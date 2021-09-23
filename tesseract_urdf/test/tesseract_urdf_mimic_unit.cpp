@@ -63,3 +63,20 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, &tesseract_urdf::parseMimic, str, "mimic", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_mimic)  // NOLINT
+{
+  {
+    tesseract_scene_graph::JointMimic::Ptr mimic = std::make_shared<tesseract_scene_graph::JointMimic>();
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointMimic::Ptr>(mimic, &tesseract_urdf::writeMimic, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_scene_graph::JointMimic::Ptr mimic = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_scene_graph::JointMimic::Ptr>(mimic, &tesseract_urdf::writeMimic, text));
+    EXPECT_EQ(text, "");
+  }
+}

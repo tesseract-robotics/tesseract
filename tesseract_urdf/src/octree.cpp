@@ -70,6 +70,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeOctree(const tesseract_geometry::Octr
                                                   const std::string& directory,
                                                   const std::string& filename)
 {
+  if (octree == nullptr)
+    std::throw_with_nested(std::runtime_error("Octree is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("octree");
 
   std::string filepath = directory + filename;

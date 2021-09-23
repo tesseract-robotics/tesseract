@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/collision.h>
+#include <tesseract_geometry/impl/box.h>
 #include "tesseract_urdf_common_unit.h"
 
 TEST(TesseractURDFUnit, parse_collision)  // NOLINT
@@ -89,5 +90,41 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
     EXPECT_FALSE(runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(
         elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
     EXPECT_TRUE(elem.empty());
+  }
+}
+
+TEST(TesseractURDFUnit, write_collision)  // NOLINT
+{
+  {  // trigger check for an assigned name and check for specified ID
+    tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
+    collision->name = "test";
+    collision->origin = Eigen::Isometry3d::Identity();
+    collision->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract_scene_graph::Collision::Ptr>(
+                  collision, &tesseract_urdf::writeCollision, text, std::string("/tmp/"), std::string("test"), 0));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger check for nullptr input
+    tesseract_scene_graph::Collision::Ptr collision = nullptr;
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Collision::Ptr>(
+                  collision, &tesseract_urdf::writeCollision, text, std::string("/tmp/"), std::string("test"), -1));
+    EXPECT_EQ(text, "");
+  }
+
+  {  // trigger check for bad geometry
+    tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
+    collision->name = "test";
+    collision->origin = Eigen::Isometry3d::Identity();
+    collision->geometry = nullptr;
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Collision::Ptr>(
+                  collision, &tesseract_urdf::writeCollision, text, std::string("/tmp/"), std::string("test"), -1));
+    EXPECT_EQ(text, "");
   }
 }

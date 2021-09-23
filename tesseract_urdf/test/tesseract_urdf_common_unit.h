@@ -188,4 +188,182 @@ bool runTest(ElementType& type,
   return true;
 }
 
+/**
+ * @brief writeTest - test write functions
+ * @param type - object of type being tested
+ * @param func - function to write object to URDF-XML
+ * @param text - xml text generated
+ * @return 0 if success, 1 if exception thrown, 2 if nullptr generated
+ */
+template <typename TessType>
+int writeTest(TessType& type,
+              std::function<tinyxml2::XMLElement*(const TessType&, tinyxml2::XMLDocument&)> func,
+              std::string& text)
+{
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLPrinter printer;
+  std::stringstream ss;
+  int status = 0;
+  try
+  {
+    tinyxml2::XMLElement* element = func(type, doc);
+    if (element != nullptr)
+    {
+      element->Accept(&printer);
+      ss << printer.CStr();
+      text = ss.str();
+      status = 0;
+    }
+    else
+    {
+      text = "";
+      status = 2;
+    }
+  }
+  catch (...)
+  {
+    text = "";
+    status = 1;
+  }
+  return status;
+}
+
+/**
+ * @brief writeTest - test write functions for links
+ * @param type - object of type being tested
+ * @param func - function to write object to URDF-XML
+ * @param text - xml text generated
+ * @param directory - directory to save files
+ * @return 0 if success, 1 if exception thrown, 2 if nullptr generated
+ */
+template <typename TessType>
+int writeTest(TessType& type,
+              std::function<tinyxml2::XMLElement*(const TessType&, tinyxml2::XMLDocument&, const std::string&)> func,
+              std::string& text,
+              const std::string& directory)
+{
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLPrinter printer;
+  std::stringstream ss;
+  int status = 0;
+  try
+  {
+    tinyxml2::XMLElement* element = func(type, doc, directory);
+    if (element != nullptr)
+    {
+      element->Accept(&printer);
+      ss << printer.CStr();
+      text = ss.str();
+      status = 0;
+    }
+    else
+    {
+      text = "";
+      status = 2;
+    }
+  }
+  catch (...)
+  {
+    text = "";
+    status = 1;
+  }
+  return status;
+}
+
+/**
+ * @brief writeTest - test write functions for meshes
+ * @param type - object of type being tested
+ * @param func - function to write object to URDF-XML
+ * @param text - xml text generated
+ * @param directory - directory to save files
+ * @param filename - name of link to which geometry is attached
+ * @return 0 if success, 1 if exception thrown, 2 if nullptr generated
+ */
+template <typename TessType>
+int writeTest(
+    TessType& type,
+    std::function<
+        tinyxml2::XMLElement*(const TessType&, tinyxml2::XMLDocument&, const std::string&, const std::string&)> func,
+    std::string& text,
+    const std::string& directory,
+    const std::string& filename)
+{
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLPrinter printer;
+  std::stringstream ss;
+  int status = 0;
+  try
+  {
+    tinyxml2::XMLElement* element = func(type, doc, directory, filename);
+    if (element != nullptr)
+    {
+      element->Accept(&printer);
+      ss << printer.CStr();
+      text = ss.str();
+      status = 0;
+    }
+    else
+    {
+      text = "";
+      status = 2;
+    }
+  }
+  catch (...)
+  {
+    text = "";
+    status = 1;
+  }
+  return status;
+}
+
+/**
+ * @brief writeTest - test write functions for collision and visual geometries
+ * @param type - object of type being tested
+ * @param func - function to write object to URDF-XML
+ * @param text - xml text generated
+ * @param directory - directory to save files
+ * @param link_name - name of link to which geometry is attached
+ * @param id - index of this geometry in list
+ * @return 0 if success, 1 if exception thrown, 2 if nullptr generated
+ */
+template <typename TessType>
+int writeTest(TessType& type,
+              std::function<tinyxml2::XMLElement*(const TessType&,
+                                                  tinyxml2::XMLDocument&,
+                                                  const std::string&,
+                                                  const std::string&,
+                                                  const int)> func,
+              std::string& text,
+              const std::string& directory,
+              const std::string& link_name,
+              const int id)
+{
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLPrinter printer;
+  std::stringstream ss;
+  int status = 0;
+  try
+  {
+    tinyxml2::XMLElement* element = func(type, doc, directory, link_name, id);
+    if (element != nullptr)
+    {
+      element->Accept(&printer);
+      ss << printer.CStr();
+      text = ss.str();
+      status = 0;
+    }
+    else
+    {
+      text = "";
+      status = 2;
+    }
+  }
+  catch (...)
+  {
+    text = "";
+    status = 1;
+  }
+  return status;
+}
+
 #endif  // TESSERACT_URDF_COMMON_UNIT_H

@@ -77,3 +77,20 @@ TEST(TesseractURDFUnit, parse_cone)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_geometry::Cone::Ptr>(geom, &tesseract_urdf::parseCone, str, "cone", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_cone)  // NOLINT
+{
+  {
+    tesseract_geometry::Cone::Ptr cone = std::make_shared<tesseract_geometry::Cone>(0.5, 1.0);
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_geometry::Cone::Ptr>(cone, &tesseract_urdf::writeCone, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_geometry::Cone::Ptr cone = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_geometry::Cone::Ptr>(cone, &tesseract_urdf::writeCone, text));
+    EXPECT_EQ(text, "");
+  }
+}
