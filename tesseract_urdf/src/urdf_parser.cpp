@@ -194,6 +194,10 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
   // Create XML Document
   tinyxml2::XMLDocument doc;
 
+  // Add XML Declaration
+  tinyxml2::XMLDeclaration* xml_declaration = doc.NewDeclaration(R"(xml version="1.0" )");
+  doc.InsertFirstChild(xml_declaration);
+
   // Assign Robot Name
   tinyxml2::XMLElement* xml_robot = doc.NewElement("robot");
   xml_robot->SetAttribute("name", sg->getName().c_str());
