@@ -174,9 +174,10 @@ TEST(TesseractURDFUnit, write_convex_mesh)  // NOLINT
     tesseract_geometry::ConvexMesh::Ptr convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(
         std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
     std::string text = "";
-    EXPECT_EQ(0,
-              writeTest<tesseract_geometry::ConvexMesh::Ptr>(
-                  convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("convex0.ply")));
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_geometry::ConvexMesh::Ptr>(
+            convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("convex0.ply")));
     EXPECT_NE(text, "");
   }
 
