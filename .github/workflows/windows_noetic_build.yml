@@ -25,6 +25,7 @@ jobs:
       run: |
         choco sources add -n=roswin -s https://aka.ms/ros/public --priority 1
         choco install ros-%ROS_DISTRO%-desktop_full -y --no-progress
+        vcpkg install pcl:x64-windows-static
 
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
         call "C:\opt\ros\%ROS_DISTRO%\x64\setup.bat"
