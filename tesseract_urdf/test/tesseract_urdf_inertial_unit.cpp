@@ -223,3 +223,27 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
         runTest<tesseract_scene_graph::Inertial::Ptr>(elem, &tesseract_urdf::parseInertial, str, "inertial", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_inertial)  // NOLINT
+{
+  {
+    tesseract_scene_graph::Inertial::Ptr inertial = std::make_shared<tesseract_scene_graph::Inertial>();
+    inertial->origin = Eigen::Isometry3d::Identity();
+    inertial->ixx = 1.0;
+    inertial->ixy = 2.0;
+    inertial->iyy = 3.0;
+    inertial->iyz = 4.0;
+    inertial->izz = 5.0;
+    inertial->ixz = 6.0;
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Inertial::Ptr>(inertial, &tesseract_urdf::writeInertial, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_scene_graph::Inertial::Ptr inertial = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_scene_graph::Inertial::Ptr>(inertial, &tesseract_urdf::writeInertial, text));
+    EXPECT_EQ(text, "");
+  }
+}

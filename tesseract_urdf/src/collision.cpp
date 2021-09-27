@@ -106,3 +106,37 @@ tesseract_urdf::parseCollision(const tinyxml2::XMLElement* xml_element,
 
   return collisions;
 }
+
+tinyxml2::XMLElement*
+tesseract_urdf::writeCollision(const std::shared_ptr<const tesseract_scene_graph::Collision>& collision,
+                               tinyxml2::XMLDocument& doc,
+                               const std::string& directory,
+                               const std::string& link_name,
+                               const int id = -1)
+{
+  if (collision == nullptr)
+    std::throw_with_nested(std::runtime_error("Collision is nullptr and cannot be converted to XML"));
+
+  tinyxml2::XMLElement* xml_element = doc.NewElement("collision");
+
+  if (!collision->name.empty())
+    xml_element->SetAttribute("name", collision->name.c_str());
+
+  tinyxml2::XMLElement* xml_origin = writeOrigin(collision->origin, doc);
+  xml_element->InsertEndChild(xml_origin);
+
+  try
+  {
+    std::string filename = "collision/" + link_name + "_collision";
+    if (id >= 0)
+      filename += "_" + std::to_string(id);
+    tinyxml2::XMLElement* xml_geometry = writeGeometry(collision->geometry, doc, directory, filename);
+    xml_element->InsertEndChild(xml_geometry);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("Could not write geometry for collision '" + collision->name + "'!"));
+  }
+
+  return xml_element;
+}

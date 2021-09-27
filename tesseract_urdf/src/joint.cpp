@@ -226,3 +226,96 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
 
   return j;
 }
+
+tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tesseract_scene_graph::Joint>& joint,
+                                                 tinyxml2::XMLDocument& doc)
+{
+  if (joint == nullptr)
+    std::throw_with_nested(std::runtime_error("Joint is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("joint");
+
+  // Set the joint name
+  xml_element->SetAttribute("name", joint->getName().c_str());
+
+  // Set joint origin
+  tinyxml2::XMLElement* xml_origin = writeOrigin(joint->parent_to_joint_origin_transform, doc);
+  xml_element->InsertEndChild(xml_origin);
+
+  // Set parent link
+  tinyxml2::XMLElement* xml_parent = doc.NewElement("parent");
+  xml_parent->SetAttribute("link", joint->parent_link_name.c_str());
+  xml_element->InsertEndChild(xml_parent);
+
+  // Set child link
+  tinyxml2::XMLElement* xml_child = doc.NewElement("child");
+  xml_child->SetAttribute("link", joint->child_link_name.c_str());
+  xml_element->InsertEndChild(xml_child);
+
+  // Set joint type
+  if (joint->type == tesseract_scene_graph::JointType::PLANAR)
+    xml_element->SetAttribute("type", "planar");
+  else if (joint->type == tesseract_scene_graph::JointType::FLOATING)
+    xml_element->SetAttribute("type", "floating");
+  else if (joint->type == tesseract_scene_graph::JointType::REVOLUTE)
+    xml_element->SetAttribute("type", "revolute");
+  else if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS)
+    xml_element->SetAttribute("type", "continuous");
+  else if (joint->type == tesseract_scene_graph::JointType::PRISMATIC)
+    xml_element->SetAttribute("type", "prismatic");
+  else if (joint->type == tesseract_scene_graph::JointType::FIXED)
+    xml_element->SetAttribute("type", "fixed");
+  else
+    std::throw_with_nested(std::runtime_error("Joint: Invalid joint type for joint '" + joint->getName() + "'!"));
+
+  // Set joint axis
+  if (joint->type != tesseract_scene_graph::JointType::FLOATING &&
+      joint->type != tesseract_scene_graph::JointType::FIXED)
+  {
+    tinyxml2::XMLElement* xml_axis = doc.NewElement("axis");
+    std::string axis_str =
+        std::to_string(joint->axis.x()) + " " + std::to_string(joint->axis.y()) + " " + std::to_string(joint->axis.z());
+    xml_axis->SetAttribute("xyz", axis_str.c_str());
+    xml_element->InsertEndChild(xml_axis);
+  }
+
+  // Set joint limits
+  if (joint->type == tesseract_scene_graph::JointType::REVOLUTE ||
+      joint->type == tesseract_scene_graph::JointType::PRISMATIC ||
+      joint->type == tesseract_scene_graph::JointType::CONTINUOUS)
+  {
+    if (joint->limits == nullptr)
+      std::throw_with_nested(std::runtime_error("Joint: Missing limits for joint '" + joint->getName() + "'!"));
+    tinyxml2::XMLElement* xml_limits = writeLimits(joint->limits, doc);
+    xml_element->InsertEndChild(xml_limits);
+  }
+
+  // Set joint safety if it exists
+  if (joint->safety != nullptr)
+  {
+    tinyxml2::XMLElement* xml_safety = writeSafetyController(joint->safety, doc);
+    xml_element->InsertEndChild(xml_safety);
+  }
+
+  // Set joint calibration if it exists
+  if (joint->calibration != nullptr)
+  {
+    tinyxml2::XMLElement* xml_calibration = writeCalibration(joint->calibration, doc);
+    xml_element->InsertEndChild(xml_calibration);
+  }
+
+  // Set mimic joint it it exists
+  if (joint->mimic != nullptr)
+  {
+    tinyxml2::XMLElement* xml_mimic = writeMimic(joint->mimic, doc);
+    xml_element->InsertEndChild(xml_mimic);
+  }
+
+  // Set dynamics if exists
+  if (joint->dynamics != nullptr)
+  {
+    tinyxml2::XMLElement* xml_dynamics = writeDynamics(joint->dynamics, doc);
+    xml_element->InsertEndChild(xml_dynamics);
+  }
+
+  return xml_element;
+}

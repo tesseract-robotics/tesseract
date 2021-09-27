@@ -95,3 +95,45 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
     EXPECT_TRUE(geom.empty());
   }
 }
+
+TEST(TesseractURDFUnit, write_mesh)  // NOLINT
+{
+  {
+    tesseract_common::VectorVector3d vertices = { Eigen::Vector3d(0, 0, 0),
+                                                  Eigen::Vector3d(1, 0, 0),
+                                                  Eigen::Vector3d(0, 1, 0) };
+    Eigen::VectorXi indices(4);
+    indices << 3, 0, 1, 2;
+    tesseract_geometry::Mesh::Ptr mesh = std::make_shared<tesseract_geometry::Mesh>(
+        std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
+    std::string text = "";
+    EXPECT_EQ(0,
+              writeTest<tesseract_geometry::Mesh::Ptr>(
+                  mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("mesh0.ply")));
+    EXPECT_NE(text, "");
+  }
+
+  {  // fail to write
+    tesseract_common::VectorVector3d vertices = { Eigen::Vector3d(0, 0, 0),
+                                                  Eigen::Vector3d(1, 0, 0),
+                                                  Eigen::Vector3d(0, 1, 0) };
+    Eigen::VectorXi indices(4);
+    indices << 3, 0, 1, 2;
+    tesseract_geometry::Mesh::Ptr mesh = std::make_shared<tesseract_geometry::Mesh>(
+        std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
+    std::string text = "";
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::Mesh::Ptr>(
+                  mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("")));
+    EXPECT_EQ(text, "");
+  }
+
+  {
+    tesseract_geometry::Mesh::Ptr mesh = nullptr;
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::Mesh::Ptr>(
+                  mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("mesh1.ply")));
+    EXPECT_EQ(text, "");
+  }
+}

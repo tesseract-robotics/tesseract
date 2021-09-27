@@ -4,6 +4,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_geometry/impl/box.h>
+#include <tesseract_urdf/box.h>
 #include <tesseract_urdf/visual.h>
 #include "tesseract_urdf_common_unit.h"
 
@@ -88,5 +90,42 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
     EXPECT_FALSE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
         elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
+  }
+}
+
+TEST(TesseractURDFUnit, write_visual)  // NOLINT
+{
+  {  // trigger check for an assigned name and check for specified ID
+    tesseract_scene_graph::Visual::Ptr visual = std::make_shared<tesseract_scene_graph::Visual>();
+    visual->name = "test";
+    visual->origin = Eigen::Isometry3d::Identity();
+    visual->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    visual->material = std::make_shared<tesseract_scene_graph::Material>("black");
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract_scene_graph::Visual::Ptr>(
+                  visual, &tesseract_urdf::writeVisual, text, std::string("/tmp/"), std::string("test"), 0));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger check for nullptr input
+    tesseract_scene_graph::Visual::Ptr visual = nullptr;
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Visual::Ptr>(
+                  visual, &tesseract_urdf::writeVisual, text, std::string("/tmp/"), std::string("test"), -1));
+    EXPECT_EQ(text, "");
+  }
+
+  {  // trigger check for bad geometry
+    tesseract_scene_graph::Visual::Ptr visual = std::make_shared<tesseract_scene_graph::Visual>();
+    visual->name = "test";
+    visual->origin = Eigen::Isometry3d::Identity();
+    visual->geometry = nullptr;
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Visual::Ptr>(
+                  visual, &tesseract_urdf::writeVisual, text, std::string("/tmp/"), std::string("test"), -1));
+    EXPECT_EQ(text, "");
   }
 }

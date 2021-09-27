@@ -202,3 +202,20 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
         elem, &tesseract_urdf::parseMaterial, str, "material", empty_available_materials, 2, true));
   }
 }
+
+TEST(TesseractURDFUnit, write_material)  // NOLINT
+{
+  {
+    tesseract_scene_graph::Material::Ptr material = std::make_shared<tesseract_scene_graph::Material>("unobtainium");
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Material::Ptr>(material, &tesseract_urdf::writeMaterial, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_scene_graph::Material::Ptr material = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_scene_graph::Material::Ptr>(material, &tesseract_urdf::writeMaterial, text));
+    EXPECT_EQ(text, "");
+  }
+}

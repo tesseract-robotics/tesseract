@@ -36,7 +36,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 namespace tesseract_scene_graph
 {
 class ResourceLocator;
@@ -59,6 +60,7 @@ parsePointCloud(const tinyxml2::XMLElement* xml_element,
                 tesseract_geometry::Octree::SubType shape_type,
                 bool prune,
                 int version);
+
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_POINT_CLOUD_H

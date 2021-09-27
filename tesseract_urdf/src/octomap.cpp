@@ -94,3 +94,40 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctomap(const tinyxml2::XML
 
   std::throw_with_nested(std::runtime_error("Octomap: Missing element 'octree' or 'point_cloud', must define one!"));
 }
+
+tinyxml2::XMLElement* tesseract_urdf::writeOctomap(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
+                                                   tinyxml2::XMLDocument& doc,
+                                                   const std::string& directory,
+                                                   const std::string& filename)
+{
+  if (octree == nullptr)
+    std::throw_with_nested(std::runtime_error("Octree is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("octree");
+
+  std::string type_string;
+  if (octree->getSubType() == tesseract_geometry::Octree::SubType::BOX)
+    type_string = "box";
+  else if (octree->getSubType() == tesseract_geometry::Octree::SubType::SPHERE_INSIDE)
+    type_string = "sphere_inside";
+  else if (octree->getSubType() == tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE)
+    type_string = "sphere_outside";
+  else
+    std::throw_with_nested(std::runtime_error("Octree subtype is invalid and cannot be converted to XML"));
+  xml_element->SetAttribute("shape_type", type_string.c_str());
+
+  xml_element->SetAttribute("prune", octree->getPruned());
+
+  try
+  {
+    tinyxml2::XMLElement* xml_octree = writeOctree(octree, doc, directory, filename);
+    xml_element->InsertEndChild(xml_octree);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("Octomap: Could not write octree to file"));
+  }
+
+  // @dmerz - optionally write to .pcd file?
+
+  return xml_element;
+}

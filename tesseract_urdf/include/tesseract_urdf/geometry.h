@@ -34,7 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 namespace tesseract_scene_graph
 {
 class ResourceLocator;
@@ -59,6 +60,11 @@ parseGeometry(const tinyxml2::XMLElement* xml_element,
               const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
               bool visual,
               int version);
+
+tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract_geometry::Geometry>& geometry,
+                                    tinyxml2::XMLDocument& doc,
+                                    const std::string& directory,
+                                    const std::string& filename);
 
 }  // namespace tesseract_urdf
 

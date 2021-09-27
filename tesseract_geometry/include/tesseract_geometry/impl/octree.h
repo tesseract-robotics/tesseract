@@ -73,7 +73,10 @@ public:
       ot->updateNode(point.x, point.y, point.z, true);
 
     if (prune)
+    {
       tesseract_geometry::Octree::prune(*ot);
+      pruned_ = prune;
+    }
 
     octree_ = ot;
   }
@@ -89,6 +92,8 @@ public:
   const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
 #endif  // SWIG
   SubType getSubType() const { return sub_type_; }
+
+  bool getPruned() const { return pruned_; }
 
   Geometry::Ptr clone() const override { return std::make_shared<Octree>(octree_, sub_type_); }
 
@@ -120,6 +125,7 @@ public:
 private:
   std::shared_ptr<const octomap::OcTree> octree_;
   SubType sub_type_;
+  bool pruned_;
 
   static bool isNodeCollapsible(octomap::OcTree& octree, octomap::OcTreeNode* node)
   {

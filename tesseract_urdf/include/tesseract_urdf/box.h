@@ -34,7 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 namespace tesseract_geometry
 {
 class Box;
@@ -48,6 +49,8 @@ namespace tesseract_urdf
  * @return Tesseract Geometry Box
  */
 std::shared_ptr<tesseract_geometry::Box> parseBox(const tinyxml2::XMLElement* xml_element, int version);
+
+tinyxml2::XMLElement* writeBox(const std::shared_ptr<const tesseract_geometry::Box>& box, tinyxml2::XMLDocument& doc);
 
 }  // namespace tesseract_urdf
 

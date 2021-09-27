@@ -59,3 +59,17 @@ tesseract_scene_graph::JointMimic::Ptr tesseract_urdf::parseMimic(const tinyxml2
 
   return m;
 }
+
+tinyxml2::XMLElement* tesseract_urdf::writeMimic(const std::shared_ptr<const tesseract_scene_graph::JointMimic>& mimic,
+                                                 tinyxml2::XMLDocument& doc)
+{
+  if (mimic == nullptr)
+    std::throw_with_nested(std::runtime_error("Mimic Joint is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("mimic");
+
+  xml_element->SetAttribute("joint", mimic->joint_name.c_str());
+  xml_element->SetAttribute("offset", mimic->offset);
+  xml_element->SetAttribute("multiplier", mimic->multiplier);
+
+  return xml_element;
+}

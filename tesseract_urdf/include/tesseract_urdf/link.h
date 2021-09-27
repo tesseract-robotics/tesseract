@@ -35,7 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 namespace tesseract_scene_graph
 {
 class Link;
@@ -58,6 +59,10 @@ parseLink(const tinyxml2::XMLElement* xml_element,
           const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
           std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
           int version);
+
+tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_graph::Link>& link,
+                                tinyxml2::XMLDocument& doc,
+                                const std::string& directory);
 
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_LINK_H

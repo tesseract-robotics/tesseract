@@ -125,3 +125,13 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     EXPECT_FALSE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_origin)  // NOLINT
+{
+  {
+    Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+    std::string text;
+    EXPECT_EQ(0, writeTest<Eigen::Isometry3d>(origin, &tesseract_urdf::writeOrigin, text));
+    EXPECT_NE(text, "");
+  }
+}

@@ -34,7 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 namespace tesseract_scene_graph
 {
 class Joint;
@@ -49,5 +50,9 @@ namespace tesseract_urdf
  * @return A Tesseract Joint
  */
 std::shared_ptr<tesseract_scene_graph::Joint> parseJoint(const tinyxml2::XMLElement* xml_element, int version);
+
+tinyxml2::XMLElement* writeJoint(const std::shared_ptr<const tesseract_scene_graph::Joint>& joint,
+                                 tinyxml2::XMLDocument& doc);
+
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_JOINT_H

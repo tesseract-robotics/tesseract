@@ -101,3 +101,30 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
         geom, &tesseract_urdf::parseSDFMesh, str, "sdf_mesh", resource_locator, 2, true));
   }
 }
+
+TEST(TesseractURDFUnit, write_sdf_mesh)  // NOLINT
+{
+  {
+    tesseract_common::VectorVector3d vertices = { Eigen::Vector3d(0, 0, 0),
+                                                  Eigen::Vector3d(1, 0, 0),
+                                                  Eigen::Vector3d(0, 1, 0) };
+    Eigen::VectorXi indices(4);
+    indices << 3, 0, 1, 2;
+    tesseract_geometry::SDFMesh::Ptr sdf_mesh = std::make_shared<tesseract_geometry::SDFMesh>(
+        std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
+    std::string text = "";
+    EXPECT_EQ(0,
+              writeTest<tesseract_geometry::SDFMesh::Ptr>(
+                  sdf_mesh, &tesseract_urdf::writeSDFMesh, text, std::string("/tmp/"), std::string("sdf0.ply")));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_geometry::SDFMesh::Ptr sdf_mesh = nullptr;
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::SDFMesh::Ptr>(
+                  sdf_mesh, &tesseract_urdf::writeSDFMesh, text, std::string("/tmp/"), std::string("sdf2.ply")));
+    EXPECT_EQ(text, "");
+  }
+}

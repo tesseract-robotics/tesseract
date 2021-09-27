@@ -79,3 +79,22 @@ TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
         elem, &tesseract_urdf::parseSafetyController, str, "safety_controller", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_safety_controller)  // NOLINT
+{
+  {
+    tesseract_scene_graph::JointSafety::Ptr safety = std::make_shared<tesseract_scene_graph::JointSafety>();
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract_scene_graph::JointSafety::Ptr>(safety, &tesseract_urdf::writeSafetyController, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_scene_graph::JointSafety::Ptr safety = nullptr;
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::JointSafety::Ptr>(safety, &tesseract_urdf::writeSafetyController, text));
+    EXPECT_EQ(text, "");
+  }
+}

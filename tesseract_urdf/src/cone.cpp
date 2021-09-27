@@ -44,3 +44,14 @@ tesseract_geometry::Cone::Ptr tesseract_urdf::parseCone(const tinyxml2::XMLEleme
 
   return std::make_shared<tesseract_geometry::Cone>(r, l);
 }
+
+tinyxml2::XMLElement* tesseract_urdf::writeCone(const std::shared_ptr<const tesseract_geometry::Cone>& cone,
+                                                tinyxml2::XMLDocument& doc)
+{
+  if (cone == nullptr)
+    std::throw_with_nested(std::runtime_error("Cone is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("cone");
+  xml_element->SetAttribute("length", cone->getLength());
+  xml_element->SetAttribute("radius", cone->getRadius());
+  return xml_element;
+}

@@ -34,7 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 namespace tesseract_geometry
 {
 class Capsule;
@@ -48,6 +49,9 @@ namespace tesseract_urdf
  * @return Tesseract Geometry Capsule
  */
 std::shared_ptr<tesseract_geometry::Capsule> parseCapsule(const tinyxml2::XMLElement* xml_element, int version);
+
+tinyxml2::XMLElement* writeCapsule(const std::shared_ptr<const tesseract_geometry::Capsule>& capsule,
+                                   tinyxml2::XMLDocument& doc);
 
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_CAPSULE_H

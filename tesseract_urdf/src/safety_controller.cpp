@@ -69,3 +69,21 @@ tesseract_scene_graph::JointSafety::Ptr tesseract_urdf::parseSafetyController(co
 
   return s;
 }
+
+tinyxml2::XMLElement*
+tesseract_urdf::writeSafetyController(const std::shared_ptr<const tesseract_scene_graph::JointSafety>& safety,
+                                      tinyxml2::XMLDocument& doc)
+{
+  if (safety == nullptr)
+    std::throw_with_nested(std::runtime_error("Safety Controller is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("safety");
+
+  xml_element->SetAttribute("k_velocity", safety->k_velocity);
+
+  // Could potentially check for and not write out zero.
+  xml_element->SetAttribute("soft_upper_limit", safety->soft_upper_limit);
+  xml_element->SetAttribute("soft_lower_limit", safety->soft_lower_limit);
+  xml_element->SetAttribute("k_position", safety->k_position);
+
+  return xml_element;
+}

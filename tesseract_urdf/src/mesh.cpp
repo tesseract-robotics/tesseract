@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/mesh.h>
+#include <tesseract_urdf/mesh_writer.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_geometry/mesh_parser.h>
@@ -90,4 +91,32 @@ tesseract_urdf::parseMesh(const tinyxml2::XMLElement* xml_element,
     std::throw_with_nested(std::runtime_error("Mesh: Error importing meshes from filename: '" + filename + "'!"));
 
   return meshes;
+}
+
+tinyxml2::XMLElement* tesseract_urdf::writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
+                                                tinyxml2::XMLDocument& doc,
+                                                const std::string& directory,
+                                                const std::string& filename)
+{
+  if (mesh == nullptr)
+    std::throw_with_nested(std::runtime_error("Mesh is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("mesh");
+
+  try
+  {
+    writeMeshToFile(mesh, directory + filename);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("Failed to write convex mesh to file: " + directory + filename));
+  }
+  xml_element->SetAttribute("filename", filename.c_str());
+
+  std::string scale_string = std::to_string(mesh->getScale().x()) + " " + std::to_string(mesh->getScale().y()) + " " +
+                             std::to_string(mesh->getScale().z());
+  xml_element->SetAttribute("scale", scale_string.c_str());
+
+  xml_element->SetAttribute("convert", false);
+
+  return xml_element;
 }

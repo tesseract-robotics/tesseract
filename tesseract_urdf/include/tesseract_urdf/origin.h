@@ -35,7 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tinyxml2
 {
 class XMLElement;
-}
+class XMLDocument;
+}  // namespace tinyxml2
 
 namespace tesseract_urdf
 {
@@ -46,6 +47,8 @@ namespace tesseract_urdf
  * @return A Eigen::Isometry3d
  */
 Eigen::Isometry3d parseOrigin(const tinyxml2::XMLElement* xml_element, int version);
+
+tinyxml2::XMLElement* writeOrigin(const Eigen::Isometry3d& origin, tinyxml2::XMLDocument& doc);
 
 }  // namespace tesseract_urdf
 

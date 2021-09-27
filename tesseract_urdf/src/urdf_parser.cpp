@@ -28,6 +28,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <stdexcept>
+
+#include <boost/filesystem.hpp>
 #include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -172,6 +174,73 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,
   }
 
   return sg;
+}
+
+void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
+                   const std::string& directory,
+                   const std::string& filename)
+{
+  // Check for null input
+  if (sg == nullptr)
+    std::throw_with_nested(std::runtime_error("Scene Graph is nullptr and cannot be converted to URDF"));
+
+  // If the directory does not exist, make it
+  boost::filesystem::create_directory(boost::filesystem::path(directory));
+
+  // If the collision and visual subdirectories do not exist, make them
+  boost::filesystem::create_directory(boost::filesystem::path(directory + "collision"));
+  boost::filesystem::create_directory(boost::filesystem::path(directory + "visual"));
+
+  // Create XML Document
+  tinyxml2::XMLDocument doc;
+
+  // Add XML Declaration
+  tinyxml2::XMLDeclaration* xml_declaration = doc.NewDeclaration(R"(xml version="1.0" )");
+  doc.InsertFirstChild(xml_declaration);
+
+  // Assign Robot Name
+  tinyxml2::XMLElement* xml_robot = doc.NewElement("robot");
+  xml_robot->SetAttribute("name", sg->getName().c_str());
+  // version?
+  doc.InsertEndChild(xml_robot);
+
+  // Materials were not saved anywhere at load
+
+  // Write Links
+  for (const tesseract_scene_graph::Link::ConstPtr& l : sg->getLinks())
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_link = writeLink(l, doc, directory);
+      xml_robot->InsertEndChild(xml_link);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write out urdf link"));
+    }
+  }
+
+  // Write out urdf joints to xml
+  for (const tesseract_scene_graph::Joint::ConstPtr& j : sg->getJoints())
+  {
+    try
+    {
+      tinyxml2::XMLElement* xml_joint = writeJoint(j, doc);
+      xml_robot->InsertEndChild(xml_joint);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write out urdf joint"));
+    }
+  }
+
+  // Check for acyclic?
+
+  // Write the document to a file
+  std::string full_filepath = directory + filename;
+  doc.SaveFile(full_filepath.c_str());
+
+  return;
 }
 
 }  // namespace tesseract_urdf

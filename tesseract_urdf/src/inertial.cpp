@@ -81,3 +81,30 @@ tesseract_scene_graph::Inertial::Ptr tesseract_urdf::parseInertial(const tinyxml
 
   return inertial;
 }
+
+tinyxml2::XMLElement*
+tesseract_urdf::writeInertial(const std::shared_ptr<const tesseract_scene_graph::Inertial>& inertial,
+                              tinyxml2::XMLDocument& doc)
+{
+  if (inertial == nullptr)
+    std::throw_with_nested(std::runtime_error("Inertial is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("inertial");
+
+  tinyxml2::XMLElement* xml_origin = writeOrigin(inertial->origin, doc);
+  xml_element->InsertEndChild(xml_origin);
+
+  tinyxml2::XMLElement* xml_mass = doc.NewElement("mass");
+  xml_mass->SetAttribute("value", inertial->mass);
+
+  tinyxml2::XMLElement* xml_inertia = doc.NewElement("inertia");
+  xml_inertia->SetAttribute("ixx", inertial->ixx);
+  xml_inertia->SetAttribute("ixy", inertial->ixy);
+  xml_inertia->SetAttribute("ixz", inertial->ixz);
+  xml_inertia->SetAttribute("iyy", inertial->iyy);
+  xml_inertia->SetAttribute("iyz", inertial->iyz);
+  xml_inertia->SetAttribute("izz", inertial->izz);
+
+  xml_element->InsertEndChild(xml_mass);
+  xml_element->InsertEndChild(xml_inertia);
+  return xml_element;
+}

@@ -58,3 +58,15 @@ tesseract_scene_graph::JointCalibration::Ptr tesseract_urdf::parseCalibration(co
 
   return calibration;
 }
+
+tinyxml2::XMLElement*
+tesseract_urdf::writeCalibration(const std::shared_ptr<const tesseract_scene_graph::JointCalibration>& calibration,
+                                 tinyxml2::XMLDocument& doc)
+{
+  if (calibration == nullptr)
+    std::throw_with_nested(std::runtime_error("Calibration is nullptr and cannot be converted to XML"));
+  tinyxml2::XMLElement* xml_element = doc.NewElement("calibration");
+  xml_element->SetAttribute("rising", calibration->rising);
+  xml_element->SetAttribute("falling", calibration->falling);
+  return xml_element;
+}

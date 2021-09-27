@@ -440,3 +440,115 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a3") != path.second.end());
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a4") != path.second.end());
 }
+
+TEST(TesseractURDFUnit, write_urdf)  // NOLINT
+{
+  {  // trigger nullptr input
+    tesseract_scene_graph::SceneGraph::Ptr sg = nullptr;
+    bool success = true;
+    try
+    {
+      tesseract_urdf::writeURDFFile(sg, "/tmp/", "urdf0.urdf");
+    }
+    catch (...)
+    {
+      success = false;
+    }
+
+    EXPECT_FALSE(success);
+  }
+
+  {  // Successful run
+    tesseract_scene_graph::SceneGraph::Ptr sg = std::make_shared<tesseract_scene_graph::SceneGraph>();
+
+    // Add 2 links
+    tesseract_scene_graph::Link::Ptr link_0 = std::make_shared<tesseract_scene_graph::Link>("link_0");
+    tesseract_scene_graph::Link::Ptr link_1 = std::make_shared<tesseract_scene_graph::Link>("link_1");
+    sg->addLink(*link_0);
+    sg->addLink(*link_1);
+
+    // Add joint
+    tesseract_scene_graph::Joint::Ptr joint_0 = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint_0->type = tesseract_scene_graph::JointType::FIXED;
+    joint_0->parent_link_name = link_0->getName();
+    joint_0->child_link_name = link_1->getName();
+    sg->addJoint(*joint_0);
+
+    bool success = true;
+    try
+    {
+      tesseract_urdf::writeURDFFile(sg, "/tmp/", "urdf1.urdf");
+    }
+    catch (...)
+    {
+      success = false;
+    }
+
+    EXPECT_TRUE(success);
+  }
+
+  {  // Trigger Bad Joint
+    tesseract_scene_graph::SceneGraph::Ptr sg = std::make_shared<tesseract_scene_graph::SceneGraph>();
+
+    // Add 2 links
+    tesseract_scene_graph::Link::Ptr link_0 = std::make_shared<tesseract_scene_graph::Link>("link_0");
+    tesseract_scene_graph::Link::Ptr link_1 = std::make_shared<tesseract_scene_graph::Link>("link_1");
+    sg->addLink(*link_0);
+    sg->addLink(*link_1);
+
+    // Add joint
+    tesseract_scene_graph::Joint::Ptr joint_0 = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint_0->type = tesseract_scene_graph::JointType::REVOLUTE;
+    joint_0->limits = nullptr;  // REVOLUTE joints require limits, this will cause write failure
+    joint_0->parent_link_name = link_0->getName();
+    joint_0->child_link_name = link_1->getName();
+    sg->addJoint(*joint_0);
+
+    bool success = true;
+    try
+    {
+      tesseract_urdf::writeURDFFile(sg, "/tmp/", "urdf2.urdf");
+    }
+    catch (...)
+    {
+      success = false;
+    }
+
+    EXPECT_FALSE(success);
+  }
+
+  /* Triggering a bad link is actually very difficult.  The addLink function uses Link::clone(), which
+   * dereferences all the collision & visual pointers, causing a segfault if the link was ill-formed.
+   * This should probably get changed to throwing an exception if it is nullptr.
+  { // Trigger Bad Link
+    tesseract_scene_graph::SceneGraph::Ptr sg = std::make_shared<tesseract_scene_graph::SceneGraph>();
+
+    // Add 2 links
+    tesseract_scene_graph::Link::Ptr link_0 = std::make_shared<tesseract_scene_graph::Link>("link_0");
+    link_0->visual.resize(1);
+    link_0->visual[0] = nullptr;  // Bad visual geometry to cause write failure in link
+    tesseract_scene_graph::Link::Ptr link_1 = std::make_shared<tesseract_scene_graph::Link>("link_1");
+    sg->addLink(*link_0);
+    sg->addLink(*link_1);
+
+    // Add joint
+    tesseract_scene_graph::Joint::Ptr joint_0 = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint_0->type = tesseract_scene_graph::JointType::FIXED;
+    joint_0->parent_link_name = link_0->getName();
+    joint_0->child_link_name = link_1->getName();
+    sg->addJoint(*joint_0);
+
+    bool success = true;
+    try
+    {
+      tesseract_urdf::writeURDFFile(sg, "/tmp/", "urdf3.urdf");
+    }
+    catch (...)
+    {
+      success = false;
+    }
+
+    EXPECT_FALSE(success);
+  }
+  */
+}

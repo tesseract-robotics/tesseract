@@ -57,3 +57,22 @@ TEST(TesseractURDFUnit, parse_dynamics)  // NOLINT
         runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, &tesseract_urdf::parseDynamics, str, "dynamics", 2));
   }
 }
+
+TEST(TesseractURDFUnit, write_dynamics)  // NOLINT
+{
+  {
+    tesseract_scene_graph::JointDynamics::Ptr dynamics = std::make_shared<tesseract_scene_graph::JointDynamics>();
+    dynamics->damping = 1.5;
+    dynamics->friction = 2.5;
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointDynamics::Ptr>(dynamics, &tesseract_urdf::writeDynamics, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract_scene_graph::JointDynamics::Ptr dynamics = nullptr;
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_scene_graph::JointDynamics::Ptr>(dynamics, &tesseract_urdf::writeDynamics, text));
+    EXPECT_EQ(text, "");
+  }
+}

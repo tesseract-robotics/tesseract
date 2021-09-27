@@ -164,6 +164,19 @@ inline bool isIdentical(const Geometry& geom1, const Geometry& geom2)
 
       break;
     }
+    case GeometryType::POLYGON_MESH:
+    {
+      const PolygonMesh& s1 = static_cast<const PolygonMesh&>(geom1);
+      const PolygonMesh& s2 = static_cast<const PolygonMesh&>(geom2);
+
+      if (s1.getVerticeCount() != s2.getVerticeCount())
+        return false;
+
+      if (s1.getFaceCount() != s2.getFaceCount())
+        return false;
+
+      break;
+    }
     default:
     {
       CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported", static_cast<int>(geom1.getType()));
