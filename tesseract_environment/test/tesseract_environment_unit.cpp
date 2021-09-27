@@ -324,18 +324,15 @@ void runFindTCPTest()
   env->applyCommand(std::make_shared<AddLinkCommand>(external_tcp_link, external_tcp_joint));
 
   {  // Should return the solution form the provided callback
-    tesseract_common::ManipulatorInfo manip_info("manipulator");
-    manip_info.tcp = tesseract_common::ToolCenterPoint("unknown");
-
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.1);
-
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", tcp);
     Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
-    EXPECT_TRUE(tcp.isApprox(found_tcp, 1e-6));
+    EXPECT_TRUE(manip_info.tcp_offset.isApprox(found_tcp, 1e-6));
   }
 
   {  // Empty tcp should return identity
-    tesseract_common::ManipulatorInfo manip_info("manipulator");
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "");
 
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
@@ -343,36 +340,27 @@ void runFindTCPTest()
   }
 
   {  // The tcp is a link attached to the tip of the kinematic chain
-    tesseract_common::ManipulatorInfo manip_info("manipulator");
-    manip_info.tcp = tesseract_common::ToolCenterPoint("tcp_link");
-
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "tcp_link");
     Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
     EXPECT_TRUE(tcp_link_tf.isApprox(found_tcp, 1e-6));
   }
 
   {  // The tcp is external link name
-    tesseract_common::ManipulatorInfo manip_info("manipulator");
-    manip_info.tcp = tesseract_common::ToolCenterPoint("external_tcp_link", true);
-
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "external_tcp_link");
     Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
     EXPECT_TRUE(external_tcp_link_tf.isApprox(found_tcp, 1e-6));
   }
 
   {  // If the manipulator has a tcp transform then it should be returned
-    tesseract_common::ManipulatorInfo manip_info("manipulator");
-
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
-
-    manip_info.tcp = tesseract_common::ToolCenterPoint(tcp);
-
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "", tcp);
     Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
-    EXPECT_TRUE(tcp.isApprox(found_tcp, 1e-6));
+    EXPECT_TRUE(manip_info.tcp_offset.isApprox(found_tcp, 1e-6));
   }
 
   {  // If the manipulator does not exist it should throw an exception
-    tesseract_common::ManipulatorInfo manip_info("missing_manipulator");
-    manip_info.tcp = tesseract_common::ToolCenterPoint("unknown");
+    tesseract_common::ManipulatorInfo manip_info("missing_manipulator", "unknown");
     EXPECT_ANY_THROW(env->findTCP(manip_info));  // NOLINT
   }
 }

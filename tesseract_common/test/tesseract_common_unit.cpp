@@ -251,165 +251,56 @@ TEST(TesseractCommonUnit, bytesResource)  // NOLINT
   EXPECT_EQ(bytes_resource->getResourceContents().size(), data.size());
 }
 
-TEST(TesseractCommonUnit, ToolCenterPoint)  // NOLINT
-{
-  {  // Empty tcp
-    tesseract_common::ToolCenterPoint tcp;
-    EXPECT_TRUE(tcp.empty());
-    EXPECT_FALSE(tcp.isString());
-    EXPECT_FALSE(tcp.isTransform());
-    EXPECT_FALSE(tcp.isExternal());
-    EXPECT_ANY_THROW(tcp.getString());         // NOLINT
-    EXPECT_ANY_THROW(tcp.getTransform());      // NOLINT
-    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
-  }
-
-  {  // The tcp is a link attached to the tip of the kinematic chain
-    tesseract_common::ToolCenterPoint tcp("tcp_link");
-    EXPECT_FALSE(tcp.empty());
-    EXPECT_TRUE(tcp.isString());
-    EXPECT_FALSE(tcp.isTransform());
-    EXPECT_FALSE(tcp.isExternal());
-    EXPECT_EQ(tcp.getString(), "tcp_link");
-    EXPECT_ANY_THROW(tcp.getTransform());      // NOLINT
-    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
-  }
-
-  {  // The tcp is external
-    tesseract_common::ToolCenterPoint tcp("external_tcp_link", true);
-    EXPECT_FALSE(tcp.empty());
-    EXPECT_TRUE(tcp.isString());
-    EXPECT_FALSE(tcp.isTransform());
-    EXPECT_TRUE(tcp.isExternal());
-    EXPECT_EQ(tcp.getString(), "external_tcp_link");
-    EXPECT_ANY_THROW(tcp.getTransform());      // NOLINT
-    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
-
-    tcp.setExternal(false);
-    EXPECT_FALSE(tcp.isExternal());
-    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
-
-    tcp.setExternal(true, "should_not_add");
-    EXPECT_TRUE(tcp.isExternal());
-    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
-  }
-
-  {  // The tcp is external with transform
-    Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
-    pose.translation() = Eigen::Vector3d(0, 0, 0.25);
-    tesseract_common::ToolCenterPoint tcp(pose, true, "external_frame");
-    EXPECT_EQ(tcp.getExternalFrame(), "external_frame");
-    EXPECT_TRUE(tcp.isExternal());
-    EXPECT_TRUE(tcp.isTransform());
-    EXPECT_TRUE(tcp.getTransform().isApprox(pose, 1e-6));
-
-    // Set as external after construction
-    tcp = tesseract_common::ToolCenterPoint(pose);
-    tcp.setExternal(true, "external_frame");
-    EXPECT_EQ(tcp.getExternalFrame(), "external_frame");
-    EXPECT_TRUE(tcp.isExternal());
-    EXPECT_TRUE(tcp.isTransform());
-    EXPECT_TRUE(tcp.getTransform().isApprox(pose, 1e-6));
-  }
-
-  {  // TCP as transform
-    Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
-    pose.translation() = Eigen::Vector3d(0, 0, 0.25);
-
-    tesseract_common::ToolCenterPoint tcp(pose);
-    EXPECT_FALSE(tcp.empty());
-    EXPECT_FALSE(tcp.isString());
-    EXPECT_TRUE(tcp.isTransform());
-    EXPECT_FALSE(tcp.isExternal());
-    EXPECT_TRUE(tcp.getTransform().isApprox(pose, 1e-6));
-    EXPECT_ANY_THROW(tcp.getString());         // NOLINT
-    EXPECT_ANY_THROW(tcp.getExternalFrame());  // NOLINT
-  }
-}
-
 TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
 {
   // Empty tcp
   tesseract_common::ManipulatorInfo manip_info;
   EXPECT_TRUE(manip_info.empty());
-  EXPECT_TRUE(manip_info.tcp.empty());
+  EXPECT_TRUE(manip_info.tcp_frame.empty());
   EXPECT_TRUE(manip_info.manipulator.empty());
   EXPECT_TRUE(manip_info.manipulator_ik_solver.empty());
   EXPECT_TRUE(manip_info.working_frame.empty());
 
-  Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
-  pose.translation() = Eigen::Vector3d(0, 0, 0.25);
-
-  tesseract_common::ManipulatorInfo manip_info_override("manipulator");
-  manip_info_override.tcp = tesseract_common::ToolCenterPoint(pose);
+  tesseract_common::ManipulatorInfo manip_info_override("manipulator", "tool0");
+  manip_info_override.tcp_offset.translation() = Eigen::Vector3d(0.0, 0.0, 0.25);
   manip_info_override.manipulator_ik_solver = "OPWInvKin";
-  manip_info_override.working_frame = "tool0";
+  manip_info_override.working_frame = "base_link";
 
   manip_info = manip_info.getCombined(manip_info_override);
   EXPECT_FALSE(manip_info.empty());
-  EXPECT_TRUE(manip_info.tcp == manip_info_override.tcp);
+  EXPECT_TRUE(manip_info.tcp_frame == manip_info_override.tcp_frame);
   EXPECT_EQ(manip_info.manipulator, manip_info_override.manipulator);
   EXPECT_EQ(manip_info.manipulator_ik_solver, manip_info_override.manipulator_ik_solver);
   EXPECT_EQ(manip_info.working_frame, manip_info_override.working_frame);
 
   // Test empty method
   {
-    tesseract_common::ManipulatorInfo manip_info;
-    manip_info.manipulator = "manip";
-    EXPECT_FALSE(manip_info.empty());
+    tesseract_common::ManipulatorInfo manip_info("manip", "");
+    EXPECT_TRUE(manip_info.empty());
   }
 
   {
-    tesseract_common::ManipulatorInfo manip_info;
+    tesseract_common::ManipulatorInfo manip_info("", "");
     manip_info.manipulator_ik_solver = "manip";
-    EXPECT_FALSE(manip_info.empty());
+    EXPECT_TRUE(manip_info.empty());
   }
 
   {
-    tesseract_common::ManipulatorInfo manip_info;
+    tesseract_common::ManipulatorInfo manip_info("", "");
     manip_info.working_frame = "manip";
-    EXPECT_FALSE(manip_info.empty());
+    EXPECT_TRUE(manip_info.empty());
   }
 
   {
-    tesseract_common::ManipulatorInfo manip_info;
-    manip_info.tcp = tesseract_common::ToolCenterPoint("manip");
-    EXPECT_FALSE(manip_info.empty());
+    tesseract_common::ManipulatorInfo manip_info("", "manip");
+    manip_info.tcp_frame = "manip";
+    EXPECT_TRUE(manip_info.empty());
   }
-}
-
-TEST(TesseractCommonUnit, serializationToolCenterPoint)  // NOLINT
-{
-  Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
-
-  tesseract_common::ToolCenterPoint tcp(pose);
-
-  {
-    std::ofstream os("/tmp/tool_center_point_boost.xml");
-    boost::archive::xml_oarchive oa(os);
-    oa << BOOST_SERIALIZATION_NVP(tcp);
-  }
-
-  tesseract_common::ToolCenterPoint ntcp;
-  {
-    std::ifstream ifs("/tmp/tool_center_point_boost.xml");
-    assert(ifs.good());
-    boost::archive::xml_iarchive ia(ifs);
-
-    // restore the schedule from the archive
-    ia >> BOOST_SERIALIZATION_NVP(ntcp);
-  }
-
-  EXPECT_TRUE(tcp == ntcp);
-  EXPECT_FALSE(tcp != ntcp);
 }
 
 TEST(TesseractCommonUnit, serializationManipulatorInfo)  // NOLINT
 {
-  Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
-
-  tesseract_common::ManipulatorInfo manip_info("manipulator");
-  manip_info.tcp = tesseract_common::ToolCenterPoint(pose);
+  tesseract_common::ManipulatorInfo manip_info("manipulator", "");
 
   {
     std::ofstream os("/tmp/manipulator_info_boost.xml");
