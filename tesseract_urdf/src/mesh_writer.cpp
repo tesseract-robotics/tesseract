@@ -2,13 +2,10 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-
-#include <pcl/conversions.h>
-#include <pcl/io/vtk_lib_io.h>
-#include <pcl/point_cloud.h>
-
 // #include <assimp/Exporter.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_collision/core/common.h>
 
 namespace tesseract_urdf
 {
@@ -75,53 +72,10 @@ aiScene createAssetFromMesh(const std::shared_ptr<const tesseract_geometry::Poly
 }
 */
 
-pcl::PolygonMesh createPCLMesh(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh)
-{
-  // Create a PCL polygon mesh
-  pcl::PolygonMesh pcl_mesh;
-
-  // Transcribe in the mesh vertices
-  pcl::PointCloud<pcl::PointXYZ> cloud;
-  cloud.resize(static_cast<unsigned long>(mesh->getVertexCount()));
-  for (std::size_t i = 0; i < static_cast<std::size_t>(mesh->getVertexCount()); ++i)
-  {
-    cloud[i] = pcl::PointXYZ(static_cast<float>(mesh->getVertices()->at(i).x()),
-                             static_cast<float>(mesh->getVertices()->at(i).y()),
-                             static_cast<float>(mesh->getVertices()->at(i).z()));
-  }
-  pcl::toPCLPointCloud2(cloud, pcl_mesh.cloud);
-
-  // Transcribe in the mesh polygons
-  pcl_mesh.polygons.resize(static_cast<std::size_t>(mesh->getFaceCount()));
-
-  std::size_t indices = 0;
-  for (std::size_t i = 0; i < static_cast<std::size_t>(mesh->getFaceCount()) &&
-                          indices < static_cast<std::size_t>(mesh->getFaces()->size());
-       ++i)
-  {
-    // Find and set the number of vertices for this face
-    int num_vertices = (*mesh->getFaces())(static_cast<Eigen::Index>(indices));
-    pcl_mesh.polygons[i].vertices.resize(static_cast<std::size_t>(num_vertices));
-
-    // Copy over the index pointing to each vertex
-    for (std::size_t j = 0; j < static_cast<std::size_t>(num_vertices); ++j)
-      pcl_mesh.polygons[i].vertices[j] =
-          static_cast<unsigned int>((*mesh->getFaces())(static_cast<Eigen::Index>(indices + 1 + j)));
-
-    // Move along all the vertex indices just applied
-    indices += static_cast<std::size_t>(num_vertices);
-
-    // And move one more to get to the next face-size-indicator
-    ++indices;
-  }
-
-  return pcl_mesh;
-}
-
 void writeMeshToFile(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh, const std::string& filepath)
 {
-  pcl::PolygonMesh pcl_mesh = createPCLMesh(mesh);
-  if (pcl::io::savePolygonFile(filepath, pcl_mesh) == 0)
+  if (!tesseract_collision::writeSimplePlyFile(
+          filepath, *(mesh->getVertices()), *(mesh->getFaces()), mesh->getFaceCount()))
     std::throw_with_nested(std::runtime_error("Could not export file"));
 
   /* Option to use the Assimp code if errors are resolved.

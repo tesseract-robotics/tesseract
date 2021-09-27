@@ -18,9 +18,6 @@ find_package(tesseract_common REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_collision REQUIRED)
 
-include_directories(BEFORE ${PCL_INCLUDE_DIRS})
-link_directories(BEFORE ${PCL_LIBRARY_DIRS})
-
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
   set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
