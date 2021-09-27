@@ -76,12 +76,13 @@ public:
   InverseKinematics& operator=(InverseKinematics&&) = default;
 
   /**
-   * @brief Calculates joint solutions given an input for each tip link.
-   * @details This is to support a pose relative to a active link. For example a robot
+   * @brief Calculates joint solutions given a pose for each tip link.
+   * @details This interface supports IK for both kinematic chains that have a single tool tip link and kinematic chains that have multiple tip links. For example, consider a robot with external part positioner: a pose can be specified to be relative to the tip link of the robot or the tip link of the positioner
+   
+   is to support a pose relative to a active link. For example a robot
    * with an external positioner where the pose is relative to the tip link of the positioner.
-   * @note If redundant solutions are needed see utility funciton getRedundantSolutions.
-   * @param tip_link_poses The input information to solve inverse kinematics for. There must be an input for each link
-   * provided in getTipLinkNames
+   * @note Redundant joint solutions can be provided by the utility function getRedundantSolutions
+   * @param tip_link_poses A map of poses corresponding to each tip link provided in getTipLinkNames and relative to the working frame of the kinematics group for which to solve inverse kinematics
    * @param seed Vector of seed joint angles (size must match number of joints in kinemtic object)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
@@ -105,18 +106,17 @@ public:
 
   /**
    * @brief Get the inverse kinematics working frame
-   * @details This is the frame that the IK solvers expects the provided pose in calcInvKin to be relative to.
+   * @details This is the frame of reference in which all poses given to the calcInvKin function should be defined
    */
   virtual std::string getWorkingFrame() const = 0;
 
   /**
-   * @brief Get the tip link names
-   * @details This is usually only returns one tip link but for the case of a IK solver containing multiple
-   * manipulators this could return the tip link for each manipulator.
+   * @brief Get the names of the tip links of the kinematics group
+   * @details In the case of a kinematic chain, this returns one tip link; in the case of a kinematic tree this returns the tip link for each branch of the tree.
    */
   virtual std::vector<std::string> getTipLinkNames() const = 0;
 
-  /** @brief Name of the maniputlator */
+  /** @brief Name of the manipulator */
   virtual std::string getName() const = 0;
 
   /** @brief Get the name of the solver. Recommned using the name of the class. */

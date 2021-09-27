@@ -70,17 +70,17 @@ public:
   ForwardKinematics& operator=(ForwardKinematics&&) = default;
 
   /**
-   * @brief Calculates the link poses for the kinematics object
+   * @brief Calculates the transform for each tip link in the kinematic group
    * @details
    * This should return a transform for every link listed in getTipLinkNames()
    * Throws an exception on failures (including uninitialized)
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   * @return A transform map of link name to pose
+   * @return A map of tip link names and transforms
    */
   virtual tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
-   * @brief Calculated jacobian at a link given joint angles
+   * @brief Calculates the Jacobian matrix for a given joint state in the reference frame of the specified link
    * @details
    * This should be able to return a jacobian given any link listed in getTipLinkNames()
    * Throws an exception on failures (including uninitialized)
