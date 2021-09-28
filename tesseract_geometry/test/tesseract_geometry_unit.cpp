@@ -141,13 +141,13 @@ TEST(TesseractGeometryUnit, ConvexMesh)  // NOLINT
   auto geom = std::make_shared<T>(vertices, faces);
   EXPECT_TRUE(geom->getVertices() != nullptr);
   EXPECT_TRUE(geom->getFaces() != nullptr);
-  EXPECT_TRUE(geom->getVerticeCount() == 4);
+  EXPECT_TRUE(geom->getVertexCount() == 4);
   EXPECT_TRUE(geom->getFaceCount() == 1);
 
   auto geom_clone = geom->clone();
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVerticeCount() == 4);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 1);
 }
 
@@ -174,15 +174,15 @@ TEST(TesseractGeometryUnit, Mesh)  // NOLINT
   using T = tesseract_geometry::Mesh;
   auto geom = std::make_shared<T>(vertices, faces);
   EXPECT_TRUE(geom->getVertices() != nullptr);
-  EXPECT_TRUE(geom->getTriangles() != nullptr);
-  EXPECT_TRUE(geom->getVerticeCount() == 4);
-  EXPECT_TRUE(geom->getTriangleCount() == 2);
+  EXPECT_TRUE(geom->getFaces() != nullptr);
+  EXPECT_TRUE(geom->getVertexCount() == 4);
+  EXPECT_TRUE(geom->getFaceCount() == 2);
 
   auto geom_clone = geom->clone();
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getTriangles() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVerticeCount() == 4);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getTriangleCount() == 2);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
 }
 
 TEST(TesseractGeometryUnit, SDFMesh)  // NOLINT
@@ -208,15 +208,15 @@ TEST(TesseractGeometryUnit, SDFMesh)  // NOLINT
   using T = tesseract_geometry::SDFMesh;
   auto geom = std::make_shared<T>(vertices, faces);
   EXPECT_TRUE(geom->getVertices() != nullptr);
-  EXPECT_TRUE(geom->getTriangles() != nullptr);
-  EXPECT_TRUE(geom->getVerticeCount() == 4);
-  EXPECT_TRUE(geom->getTriangleCount() == 2);
+  EXPECT_TRUE(geom->getFaces() != nullptr);
+  EXPECT_TRUE(geom->getVertexCount() == 4);
+  EXPECT_TRUE(geom->getFaceCount() == 2);
 
   auto geom_clone = geom->clone();
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getTriangles() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVerticeCount() == 4);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getTriangleCount() == 2);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
 }
 
 TEST(TesseractGeometryUnit, Octree)  // NOLINT
@@ -253,47 +253,47 @@ TEST(TesseractGeometryUnit, LoadMeshUnit)  // NOLINT
   std::string mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
   std::vector<Mesh::Ptr> meshes = createMeshFromPath<Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
+  EXPECT_TRUE(meshes[0]->getFaceCount() == 80);
+  EXPECT_TRUE(meshes[0]->getVertexCount() == 42);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply";
   meshes = createMeshFromPath<Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
+  EXPECT_TRUE(meshes[0]->getFaceCount() == 80);
+  EXPECT_TRUE(meshes[0]->getVertexCount() == 42);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
   meshes = createMeshFromPath<Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 2);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
-  EXPECT_TRUE(meshes[1]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[1]->getVerticeCount() == 42);
+  EXPECT_TRUE(meshes[0]->getFaceCount() == 80);
+  EXPECT_TRUE(meshes[0]->getVertexCount() == 42);
+  EXPECT_TRUE(meshes[1]->getFaceCount() == 80);
+  EXPECT_TRUE(meshes[1]->getVertexCount() == 42);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
   meshes = createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, true);
   EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 2 * 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 2 * 42);
+  EXPECT_TRUE(meshes[0]->getFaceCount() == 2 * 80);
+  EXPECT_TRUE(meshes[0]->getVertexCount() == 2 * 42);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
   meshes = createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true);
   EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
+  EXPECT_TRUE(meshes[0]->getFaceCount() == 12);
+  EXPECT_TRUE(meshes[0]->getVertexCount() == 8);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
   meshes = createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true);
   EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
+  EXPECT_TRUE(meshes[0]->getFaceCount() == 12);
+  EXPECT_TRUE(meshes[0]->getVertexCount() == 8);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
   std::vector<ConvexMesh::Ptr> convex_meshes =
       createMeshFromPath<ConvexMesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, false);
   EXPECT_TRUE(convex_meshes.size() == 1);
   EXPECT_TRUE(convex_meshes[0]->getFaceCount() == 6);
-  EXPECT_TRUE(convex_meshes[0]->getVerticeCount() == 8);
+  EXPECT_TRUE(convex_meshes[0]->getVertexCount() == 8);
 }
 
 #ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
@@ -312,14 +312,14 @@ TEST(TesseractGeometryUnit, LoadMeshWithMaterialGltf2Unit)  // NOLINT
   auto& mesh2 = meshes[2];
   auto& mesh3 = meshes[3];
 
-  EXPECT_EQ(mesh0->getTriangleCount(), 34);
-  EXPECT_EQ(mesh0->getVerticeCount(), 68);
-  EXPECT_EQ(mesh1->getTriangleCount(), 15);
-  EXPECT_EQ(mesh1->getVerticeCount(), 17);
-  EXPECT_EQ(mesh2->getTriangleCount(), 15);
-  EXPECT_EQ(mesh2->getVerticeCount(), 17);
-  EXPECT_EQ(mesh3->getTriangleCount(), 2);
-  EXPECT_EQ(mesh3->getVerticeCount(), 4);
+  EXPECT_EQ(mesh0->getFaceCount(), 34);
+  EXPECT_EQ(mesh0->getVertexCount(), 68);
+  EXPECT_EQ(mesh1->getFaceCount(), 15);
+  EXPECT_EQ(mesh1->getVertexCount(), 17);
+  EXPECT_EQ(mesh2->getFaceCount(), 15);
+  EXPECT_EQ(mesh2->getVertexCount(), 17);
+  EXPECT_EQ(mesh3->getFaceCount(), 2);
+  EXPECT_EQ(mesh3->getVertexCount(), 4);
 
   auto mesh0_normals = mesh0->getNormals();
   ASSERT_TRUE(mesh0_normals != nullptr);

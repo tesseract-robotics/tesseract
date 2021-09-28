@@ -90,10 +90,10 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Capsule::Con
 
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom)
 {
-  int vertice_count = geom->getVerticeCount();
-  int triangle_count = geom->getTriangleCount();
+  int vertice_count = geom->getVertexCount();
+  int triangle_count = geom->getFaceCount();
   const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
-  const Eigen::VectorXi& triangles = *(geom->getTriangles());
+  const Eigen::VectorXi& triangles = *(geom->getFaces());
 
   auto g = std::make_shared<fcl::BVHModel<fcl::OBBRSSd>>();
   if (vertice_count > 0 && triangle_count > 0)
@@ -120,7 +120,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstP
 
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::ConstPtr& geom)
 {
-  int vertice_count = geom->getVerticeCount();
+  int vertice_count = geom->getVertexCount();
   int face_count = geom->getFaceCount();
 
   if (vertice_count > 0 && face_count > 0)

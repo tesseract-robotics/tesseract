@@ -20,7 +20,7 @@ TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
         geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 6);
-    EXPECT_TRUE(geom[0]->getVerticeCount() == 8);
+    EXPECT_TRUE(geom[0]->getVertexCount() == 8);
     EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[1], 2, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);
@@ -34,7 +34,7 @@ TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
         geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, true));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 12);
-    EXPECT_TRUE(geom[0]->getVerticeCount() == 8);
+    EXPECT_TRUE(geom[0]->getVertexCount() == 8);
     EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[1], 2, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);
@@ -49,7 +49,7 @@ TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() >= 6);  // Because we are converting due to numerical variance you could end up
                                                 // with additional faces.
-    EXPECT_TRUE(geom[0]->getVerticeCount() == 8);
+    EXPECT_TRUE(geom[0]->getVertexCount() == 8);
   }
 
   {
@@ -68,7 +68,7 @@ TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
         geom, &tesseract_urdf::parseConvexMesh, str, "convex_mesh", resource_locator, 2, false));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 6);
-    EXPECT_TRUE(geom[0]->getVerticeCount() == 8);
+    EXPECT_TRUE(geom[0]->getVertexCount() == 8);
     EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[1], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);

@@ -14,9 +14,9 @@ int main(int /*argc*/, char** /*argv*/)
 
   // documentation:start:2: Print mesh information
   CONSOLE_BRIDGE_logInform("Number of meshes: %f", meshes.size());
-  CONSOLE_BRIDGE_logInform("Mesh #1 Triangle Count: %f", meshes[0]->getTriangleCount());
-  CONSOLE_BRIDGE_logInform("Mesh #1 Triangle Count: %f", meshes[0]->getVerticeCount());
-  CONSOLE_BRIDGE_logInform("Mesh #2 Triangle Count: %f", meshes[1]->getTriangleCount());
-  CONSOLE_BRIDGE_logInform("Mesh #2 Triangle Count: %f", meshes[1]->getVerticeCount());
+  CONSOLE_BRIDGE_logInform("Mesh #1 Triangle Count: %f", meshes[0]->getFaceCount());
+  CONSOLE_BRIDGE_logInform("Mesh #1 Triangle Count: %f", meshes[0]->getVertexCount());
+  CONSOLE_BRIDGE_logInform("Mesh #2 Triangle Count: %f", meshes[1]->getFaceCount());
+  CONSOLE_BRIDGE_logInform("Mesh #2 Triangle Count: %f", meshes[1]->getVertexCount());
   // documentation:end:2: Print mesh information
 }

@@ -105,10 +105,10 @@ inline bool isIdentical(const Geometry& geom1, const Geometry& geom2)
       const Mesh& s1 = static_cast<const Mesh&>(geom1);
       const Mesh& s2 = static_cast<const Mesh&>(geom2);
 
-      if (s1.getVerticeCount() != s2.getVerticeCount())
+      if (s1.getVertexCount() != s2.getVertexCount())
         return false;
 
-      if (s1.getTriangleCount() != s2.getTriangleCount())
+      if (s1.getFaceCount() != s2.getFaceCount())
         return false;
 
       break;
@@ -118,7 +118,7 @@ inline bool isIdentical(const Geometry& geom1, const Geometry& geom2)
       const ConvexMesh& s1 = static_cast<const ConvexMesh&>(geom1);
       const ConvexMesh& s2 = static_cast<const ConvexMesh&>(geom2);
 
-      if (s1.getVerticeCount() != s2.getVerticeCount())
+      if (s1.getVertexCount() != s2.getVertexCount())
         return false;
 
       if (s1.getFaceCount() != s2.getFaceCount())
@@ -131,10 +131,10 @@ inline bool isIdentical(const Geometry& geom1, const Geometry& geom2)
       const SDFMesh& s1 = static_cast<const SDFMesh&>(geom1);
       const SDFMesh& s2 = static_cast<const SDFMesh&>(geom2);
 
-      if (s1.getVerticeCount() != s2.getVerticeCount())
+      if (s1.getVertexCount() != s2.getVertexCount())
         return false;
 
-      if (s1.getTriangleCount() != s2.getTriangleCount())
+      if (s1.getFaceCount() != s2.getFaceCount())
         return false;
 
       break;
@@ -169,7 +169,7 @@ inline bool isIdentical(const Geometry& geom1, const Geometry& geom2)
       const PolygonMesh& s1 = static_cast<const PolygonMesh&>(geom1);
       const PolygonMesh& s2 = static_cast<const PolygonMesh&>(geom2);
 
-      if (s1.getVerticeCount() != s2.getVerticeCount())
+      if (s1.getVertexCount() != s2.getVertexCount())
         return false;
 
       if (s1.getFaceCount() != s2.getFaceCount())

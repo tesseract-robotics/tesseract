@@ -95,10 +95,10 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
                                                        CollisionObjectWrapper* cow,
                                                        int shape_index)
 {
-  int vertice_count = geom->getVerticeCount();
-  int triangle_count = geom->getTriangleCount();
+  int vertice_count = geom->getVertexCount();
+  int triangle_count = geom->getFaceCount();
   const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
-  const Eigen::VectorXi& triangles = *(geom->getTriangles());
+  const Eigen::VectorXi& triangles = *(geom->getFaces());
 
   if (vertice_count > 0 && triangle_count > 0)
   {
@@ -140,7 +140,7 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
 
 std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::ConvexMesh::ConstPtr& geom)
 {
-  int vertice_count = geom->getVerticeCount();
+  int vertice_count = geom->getVertexCount();
   int triangle_count = geom->getFaceCount();
   const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
 

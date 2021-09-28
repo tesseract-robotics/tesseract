@@ -25,7 +25,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   EXPECT_GT(num_faces, 0);
 
   sphere = std::make_shared<tesseract_geometry::Mesh>(vertices, faces);
-  EXPECT_TRUE(num_faces == sphere->getTriangleCount());
+  EXPECT_TRUE(num_faces == sphere->getFaceCount());
 
   Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
