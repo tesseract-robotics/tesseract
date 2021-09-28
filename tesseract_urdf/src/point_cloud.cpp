@@ -27,9 +27,10 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
-#include <tesseract_common/utils.h>
+
 #include <console_bridge/console.h>
 #include <pcl/io/pcd_io.h>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

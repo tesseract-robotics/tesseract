@@ -26,13 +26,15 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <stdexcept>
+
+#include <console_bridge/console.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/safety_controller.h>
 #include <tesseract_scene_graph/joint.h>
+#include <tesseract_urdf/safety_controller.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_scene_graph::JointSafety::Ptr tesseract_urdf::parseSafetyController(const tinyxml2::XMLElement* xml_element,
                                                                               int /*version*/)
@@ -78,12 +80,12 @@ tesseract_urdf::writeSafetyController(const std::shared_ptr<const tesseract_scen
     std::throw_with_nested(std::runtime_error("Safety Controller is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("safety");
 
-  xml_element->SetAttribute("k_velocity", safety->k_velocity);
+  xml_element->SetAttribute("k_velocity", toString(safety->k_velocity).c_str());
 
   // Could potentially check for and not write out zero.
-  xml_element->SetAttribute("soft_upper_limit", safety->soft_upper_limit);
-  xml_element->SetAttribute("soft_lower_limit", safety->soft_lower_limit);
-  xml_element->SetAttribute("k_position", safety->k_position);
+  xml_element->SetAttribute("soft_upper_limit", toString(safety->soft_upper_limit).c_str());
+  xml_element->SetAttribute("soft_lower_limit", toString(safety->soft_lower_limit).c_str());
+  xml_element->SetAttribute("k_position", toString(safety->k_position).c_str());
 
   return xml_element;
 }

@@ -58,6 +58,7 @@ add_executable(
   tesseract_urdf_sdf_mesh_unit.cpp
   tesseract_urdf_sphere_unit.cpp
   tesseract_urdf_urdf_unit.cpp
+  tesseract_urdf_utils_unit.cpp
   tesseract_urdf_visual_unit.cpp)
 
 target_link_libraries(

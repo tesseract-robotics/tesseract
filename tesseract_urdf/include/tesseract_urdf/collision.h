@@ -58,9 +58,20 @@ namespace tesseract_urdf
 std::vector<std::shared_ptr<tesseract_scene_graph::Collision>>
 parseCollision(const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, int version);
 
+/**
+ * @brief writeCollision Write collision object to URDF XML
+ * @param collision Collision object to be written
+ * @param doc XML Document to which XML will belong
+ * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
+ * set, geometry will be saved with absolute paths.
+ * @param link_name Name of link to which collision object is attached
+ * @param id If set, this ID will be appended to the geometry name for saving to distinguish between multiple collision
+ * geometries on the same link.
+ * @return An XML element representing the collision object in URDF format.
+ */
 tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract_scene_graph::Collision>& collision,
                                      tinyxml2::XMLDocument& doc,
-                                     const std::string& directory,
+                                     const std::string& package_path,
                                      const std::string& link_name,
                                      int id);
 

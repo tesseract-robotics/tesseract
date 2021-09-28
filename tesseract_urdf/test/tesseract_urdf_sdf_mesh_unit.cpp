@@ -115,7 +115,7 @@ TEST(TesseractURDFUnit, write_sdf_mesh)  // NOLINT
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::SDFMesh::Ptr>(
                   sdf_mesh, &tesseract_urdf::writeSDFMesh, text, std::string("/tmp/"), std::string("sdf0.ply")));
-    EXPECT_NE(text, "");
+    EXPECT_EQ(text, R"(<sdf_mesh filename="package://tmp/sdf0.ply"/>)");
   }
 
   {

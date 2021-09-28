@@ -63,9 +63,19 @@ std::vector<std::shared_ptr<tesseract_geometry::SDFMesh>> parseSDFMesh(const tin
                                                                        bool visual,
                                                                        int version);
 
+/**
+ * @brief writeSDFMesh Write SDF Mesh to URDF XML.  This is non-standard URDF / tesseract-exclusive
+ * @param sdf_mesh Mesh to be written
+ * @param doc XML Document to manage generated XML
+ * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
+ * set, geometry will be saved with absolute paths.
+ * @param filename Desired file location.  If package_path is set, this should be relative to the package.  Otherwise,
+ * this should be an absolute path
+ * @return XML element representing the sdf mesh object in URDF format
+ */
 tinyxml2::XMLElement* writeSDFMesh(const std::shared_ptr<const tesseract_geometry::SDFMesh>& sdf_mesh,
                                    tinyxml2::XMLDocument& doc,
-                                   const std::string& directory,
+                                   const std::string& package_path,
                                    const std::string& filename);
 
 }  // namespace tesseract_urdf
