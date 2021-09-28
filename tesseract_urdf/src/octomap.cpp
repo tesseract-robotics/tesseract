@@ -127,7 +127,5 @@ tinyxml2::XMLElement* tesseract_urdf::writeOctomap(const std::shared_ptr<const t
     std::throw_with_nested(std::runtime_error("Octomap: Could not write octree to file"));
   }
 
-  // @dmerz - optionally write to .pcd file?
-
   return xml_element;
 }

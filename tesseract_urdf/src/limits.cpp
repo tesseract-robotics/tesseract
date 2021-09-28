@@ -67,7 +67,7 @@ tesseract_urdf::writeLimits(const std::shared_ptr<const tesseract_scene_graph::J
 {
   if (limits == nullptr)
     std::throw_with_nested(std::runtime_error("Limits are nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("limits");
+  tinyxml2::XMLElement* xml_element = doc.NewElement("limit");
 
   xml_element->SetAttribute("lower", limits->lower);
   xml_element->SetAttribute("upper", limits->upper);

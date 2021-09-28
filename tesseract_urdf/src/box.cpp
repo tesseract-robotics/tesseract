@@ -70,8 +70,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeBox(const std::shared_ptr<const tesse
   if (box == nullptr)
     std::throw_with_nested(std::runtime_error("Box is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("box");
-  xml_element->SetAttribute("l", box->getX());
-  xml_element->SetAttribute("w", box->getY());
-  xml_element->SetAttribute("h", box->getZ());
+  std::string size_string = std::to_string(box->getX()) + " " + std::to_string(box->getY()) + " " +
+                            std::to_string(box->getZ());
+  xml_element->SetAttribute("size", size_string.c_str());
   return xml_element;
 }

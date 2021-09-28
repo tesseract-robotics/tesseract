@@ -136,7 +136,7 @@ tesseract_urdf::writeMaterial(const std::shared_ptr<const tesseract_scene_graph:
   tinyxml2::XMLElement* xml_color = doc.NewElement("color");
   std::string color_string = std::to_string(material->color(0)) + " " + std::to_string(material->color(1)) + " " +
                              std::to_string(material->color(2)) + " " + std::to_string(material->color(3));
-  xml_color->SetAttribute("color", color_string.c_str());
+  xml_color->SetAttribute("rgba", color_string.c_str());
   xml_element->InsertEndChild(xml_color);
 
   return xml_element;
