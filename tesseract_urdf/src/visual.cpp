@@ -27,8 +27,9 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
-#include <tesseract_common/utils.h>
+
 #include <Eigen/Geometry>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -128,7 +129,7 @@ tesseract_urdf::parseVisual(const tinyxml2::XMLElement* xml_element,
 
 tinyxml2::XMLElement* tesseract_urdf::writeVisual(const std::shared_ptr<const tesseract_scene_graph::Visual>& visual,
                                                   tinyxml2::XMLDocument& doc,
-                                                  const std::string& directory,
+                                                  const std::string& package_path,
                                                   const std::string& link_name,
                                                   const int id = -1)
 {
@@ -140,8 +141,11 @@ tinyxml2::XMLElement* tesseract_urdf::writeVisual(const std::shared_ptr<const te
   if (!visual->name.empty())
     xml_element->SetAttribute("name", visual->name.c_str());
 
-  tinyxml2::XMLElement* xml_origin = writeOrigin(visual->origin, doc);
-  xml_element->InsertEndChild(xml_origin);
+  if (!visual->origin.matrix().isIdentity(std::numeric_limits<double>::epsilon()))
+  {
+    tinyxml2::XMLElement* xml_origin = writeOrigin(visual->origin, doc);
+    xml_element->InsertEndChild(xml_origin);
+  }
 
   if (visual->material != nullptr)
   {
@@ -149,12 +153,27 @@ tinyxml2::XMLElement* tesseract_urdf::writeVisual(const std::shared_ptr<const te
     xml_element->InsertEndChild(xml_material);
   }
 
+  // Construct Filename, without extension (could be .ply or .bt)
+  std::string filename = link_name;
+  if (!visual->name.empty())
+    filename = filename + "_" + visual->name;
+  else
+    filename = filename + "_visual";
+
+  // If a package path was specified, save in a visual sub-directory
+  if (!package_path.empty())
+    filename = "visual/" + filename;
+
+  // If there is more than one visual object for this link, append the id
+  if (id >= 0)
+    filename = filename + "_" + std::to_string(id);
+
   try
   {
     std::string filename = "visual/" + link_name + "_visual";
     if (id >= 0)
       filename += "_" + std::to_string(id);
-    tinyxml2::XMLElement* xml_geometry = writeGeometry(visual->geometry, doc, directory, filename);
+    tinyxml2::XMLElement* xml_geometry = writeGeometry(visual->geometry, doc, package_path, filename);
     xml_element->InsertEndChild(xml_geometry);
   }
   catch (...)

@@ -26,14 +26,16 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <stdexcept>
+
+#include <console_bridge/console.h>
 #include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/mimic.h>
 #include <tesseract_scene_graph/joint.h>
+#include <tesseract_urdf/mimic.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_scene_graph::JointMimic::Ptr tesseract_urdf::parseMimic(const tinyxml2::XMLElement* xml_element,
                                                                   int /*version*/)
@@ -68,8 +70,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeMimic(const std::shared_ptr<const tes
   tinyxml2::XMLElement* xml_element = doc.NewElement("mimic");
 
   xml_element->SetAttribute("joint", mimic->joint_name.c_str());
-  xml_element->SetAttribute("offset", mimic->offset);
-  xml_element->SetAttribute("multiplier", mimic->multiplier);
+  xml_element->SetAttribute("offset", toString(mimic->offset).c_str());
+  xml_element->SetAttribute("multiplier", toString(mimic->multiplier).c_str());
 
   return xml_element;
 }

@@ -63,9 +63,19 @@ std::vector<std::shared_ptr<tesseract_geometry::Mesh>> parseMesh(const tinyxml2:
                                                                  bool visual,
                                                                  int version);
 
+/**
+ * @brief writeMesh Write a mesh to URDF XML and PLY file
+ * @param mesh Mesh to be saved out and described in XML
+ * @param doc XML Document to manage generated XML
+ * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
+ * set, geometry will be saved with absolute paths.
+ * @param filename Desired file location.  If package_path is set, this should be relative to the package, If not, this
+ * should be an absolute path
+ * @return XML element representing the mesh object in URDF format.
+ */
 tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
                                 tinyxml2::XMLDocument& doc,
-                                const std::string& directory,
+                                const std::string& package_path,
                                 const std::string& filename);
 
 }  // namespace tesseract_urdf

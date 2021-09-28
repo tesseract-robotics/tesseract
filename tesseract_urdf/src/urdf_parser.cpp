@@ -34,10 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_urdf/joint.h>
 #include <tesseract_urdf/link.h>
 #include <tesseract_urdf/material.h>
+#include <tesseract_urdf/urdf_parser.h>
+#include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
 {
@@ -178,25 +179,27 @@ tesseract_scene_graph::SceneGraph::UPtr parseURDFFile(const std::string& path,
 }
 
 void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
-                   const std::string& directory,
-                   const std::string& filename)
+                   const std::string& package_path,
+                   const std::string& urdf_name)
 {
   // Check for null input
   if (sg == nullptr)
     std::throw_with_nested(std::runtime_error("Scene Graph is nullptr and cannot be converted to URDF"));
 
   // If the directory does not exist, make it
-  boost::filesystem::create_directory(boost::filesystem::path(directory));
+  if (package_path.empty())
+    std::throw_with_nested(std::runtime_error("Package path cannot be empty"));
+  boost::filesystem::create_directory(boost::filesystem::path(package_path));
 
-  // If the collision and visual sub-directories do not exist, make them
-  boost::filesystem::create_directory(boost::filesystem::path(directory + "collision"));
-  boost::filesystem::create_directory(boost::filesystem::path(directory + "visual"));
+  // // If the collision and visual subdirectories do not exist, make them
+  // boost::filesystem::create_directory(boost::filesystem::path(directory + "collision"));
+  // boost::filesystem::create_directory(boost::filesystem::path(directory + "visual"));
 
   // Create XML Document
   tinyxml2::XMLDocument doc;
 
   // Add XML Declaration
-  tinyxml2::XMLDeclaration* xml_declaration = doc.NewDeclaration(R"(XML version="1.0" )");
+  tinyxml2::XMLDeclaration* xml_declaration = doc.NewDeclaration(R"(xml version="1.0")");
   doc.InsertFirstChild(xml_declaration);
 
   // Assign Robot Name
@@ -207,12 +210,27 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
 
   // Materials were not saved anywhere at load
 
-  // Write Links
+  // Get Links
+  std::vector<std::string> link_names;
   for (const tesseract_scene_graph::Link::ConstPtr& l : sg->getLinks())
   {
+    if (l == nullptr)
+      std::throw_with_nested(std::runtime_error("Link is nullptr, cannot get name"));
+    link_names.push_back(l->getName());
+  }
+
+  // Sort the link names using a lamda-defined comparator function.
+  // The lamda takes in two strings, applies the default < operator, and returns a bool.
+  std::sort(
+      link_names.begin(), link_names.end(), [](const std::string& a, const std::string& b) -> bool { return a < b; });
+
+  // Iterate through the sorted names and write the corresponding links to XML
+  for (const std::string& s : link_names)
+  {
+    const tesseract_scene_graph::Link::ConstPtr& l = sg->getLink(s);
     try
     {
-      tinyxml2::XMLElement* xml_link = writeLink(l, doc, directory);
+      tinyxml2::XMLElement* xml_link = writeLink(l, doc, package_path);
       xml_robot->InsertEndChild(xml_link);
     }
     catch (...)
@@ -221,9 +239,24 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
     }
   }
 
-  // Write out urdf joints to XML
+  // Get joints
+  std::vector<std::string> joint_names;
   for (const tesseract_scene_graph::Joint::ConstPtr& j : sg->getJoints())
   {
+    if (j == nullptr)
+      std::throw_with_nested(std::runtime_error("Joint is nullptr, cannot get name!"));
+    joint_names.push_back(j->getName());
+  }
+
+  // Sort the joint names using a lamda-defined comparator function.
+  // The lamda takes in two strings, applies the default < operator, and returns a bool.
+  std::sort(
+      joint_names.begin(), joint_names.end(), [](const std::string& a, const std::string& b) -> bool { return a < b; });
+
+  // Iterate through the sorted joint names and write the corresponding joints to xml
+  for (const std::string& s : joint_names)
+  {
+    const tesseract_scene_graph::Joint::ConstPtr& j = sg->getJoint(s);
     try
     {
       tinyxml2::XMLElement* xml_joint = writeJoint(j, doc);
@@ -237,8 +270,15 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
 
   // Check for acyclic?
 
-  // Write the document to a file
-  std::string full_filepath = directory + filename;
+  // Prepare the urdf directory
+  boost::filesystem::create_directory(boost::filesystem::path(trailingSlash(package_path) + "urdf/"));
+
+  // Write the URDF XML to a file
+  std::string full_filepath;
+  if (!urdf_name.empty())
+    full_filepath = trailingSlash(package_path) + "urdf/" + noLeadingSlash(urdf_name) + ".urdf";
+  else
+    full_filepath = trailingSlash(package_path) + "urdf/" + sg->getName() + ".urdf";
   doc.SaveFile(full_filepath.c_str());
 }
 
