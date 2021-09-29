@@ -209,6 +209,17 @@ std::vector<std::string> KDLStateSolver::getActiveLinkNames() const { return dat
 
 std::vector<std::string> KDLStateSolver::getStaticLinkNames() const { return data_.static_link_names; }
 
+bool KDLStateSolver::isActiveLinkName(const std::string& link_name) const
+{
+  return (std::find(data_.active_link_names.begin(), data_.active_link_names.end(), link_name) !=
+          data_.active_link_names.end());
+};
+
+bool KDLStateSolver::hasLinkName(const std::string& link_name) const
+{
+  return (std::find(data_.link_names.begin(), data_.link_names.end(), link_name) != data_.link_names.end());
+}
+
 tesseract_common::KinematicLimits KDLStateSolver::getLimits() const { return limits_; }
 
 bool KDLStateSolver::processKDLData(const tesseract_scene_graph::SceneGraph& scene_graph)

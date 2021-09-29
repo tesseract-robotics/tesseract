@@ -396,6 +396,19 @@ std::vector<std::string> OFKTStateSolver::getStaticLinkNames() const
   return link_names;
 }
 
+bool OFKTStateSolver::isActiveLinkName(const std::string& link_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::vector<std::string> active_link_names = getActiveLinkNames();
+  return (std::find(active_link_names.begin(), active_link_names.end(), link_name) != active_link_names.end());
+}
+
+bool OFKTStateSolver::hasLinkName(const std::string& link_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return (std::find(link_names_.begin(), link_names_.end(), link_name) != link_names_.end());
+}
+
 tesseract_common::KinematicLimits OFKTStateSolver::getLimits() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
