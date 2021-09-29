@@ -87,6 +87,68 @@ void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::R
     twistChangeRefPoint(jacobian.col(i), ref_point);
 }
 
+Eigen::VectorXd concat(const Eigen::VectorXd& a, const Eigen::VectorXd& b)
+{
+  Eigen::VectorXd out(a.size() + b.size());
+  out.topRows(a.size()) = a;
+  out.middleRows(a.size(), b.size()) = b;
+  return out;
+}
+
+Eigen::Vector3d calcRotationalError(const Eigen::Ref<const Eigen::Matrix3d>& R)
+{
+  Eigen::Quaterniond q(R);
+  Eigen::AngleAxisd r12(q);
+
+  // Eigen angle axis flips the sign of axis so rotation is always positive which is
+  // not ideal for numerical differentiation.
+  int s = (q.vec().dot(r12.axis()) < 0) ? -1 : 1;
+
+  // Make sure that the angle is on [-pi, pi]
+  const static double two_pi = 2.0 * M_PI;
+  double angle = s * r12.angle();
+  Eigen::Vector3d axis = s * r12.axis();
+  angle = copysign(fmod(fabs(angle), two_pi), angle);
+  if (angle < -M_PI)
+    angle += two_pi;
+  else if (angle > M_PI)
+    angle -= two_pi;
+
+  assert(std::abs(angle) <= M_PI);
+
+  return axis * angle;
+}
+
+Eigen::Vector3d calcRotationalError2(const Eigen::Ref<const Eigen::Matrix3d>& R)
+{
+  Eigen::Quaterniond q(R);
+  Eigen::AngleAxisd r12(q);
+
+  // Eigen angle axis flips the sign of axis so rotation is always positive which is
+  // not ideal for numerical differentiation.
+  int s = (q.vec().dot(r12.axis()) < 0) ? -1 : 1;
+
+  // Make sure that the angle is on [0, 2 * pi]
+  const static double two_pi = 2.0 * M_PI;
+  double angle = s * r12.angle();
+  Eigen::Vector3d axis = s * r12.axis();
+  angle = copysign(fmod(fabs(angle), two_pi), angle);
+  if (angle < 0)
+    angle += two_pi;
+  else if (angle > two_pi)
+    angle -= two_pi;
+
+  assert(angle <= two_pi && angle >= 0);
+
+  return axis * angle;
+}
+
+Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2)
+{
+  Eigen::Isometry3d pose_err = t1.inverse() * t2;
+  return concat(pose_err.translation(), calcRotationalError(pose_err.rotation()));
+}
+
 Eigen::Vector4d computeRandomColor()
 {
   Eigen::Vector4d c;
