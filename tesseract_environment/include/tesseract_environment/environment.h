@@ -80,7 +80,7 @@ public:
 
   /**
    * @brief Default constructor
-   * @param register_default_contant_managers Indicate if the default contact managers should be registered
+   * @param register_default_contact_managers Indicate if the default contact managers should be registered
    */
   Environment(bool register_default_contact_managers = true);
 
@@ -93,7 +93,7 @@ public:
   /**
    * @brief Initialize the Environment
    *
-   * The templated class provided should be a derived class from StateSolver.
+   * The template class provided should be a derived class from StateSolver.
    *
    * @param scene_graph The scene graph to initialize the environment.
    * @return True if successful, otherwise false
@@ -103,7 +103,7 @@ public:
   /**
    * @brief Initialize the Environment
    *
-   * The templated class provided should be a derived class from StateSolver.
+   * The template class provided should be a derived class from StateSolver.
    *
    * @param scene_graph The scene graph to initialize the environment.
    * @return True if successful, otherwise false
@@ -136,7 +136,7 @@ public:
    */
   bool reset();
 
-  /** @brief clear content and uninitialize */
+  /** @brief clear content and uninitialized */
   void clear();
 
   /** @brief check if the environment is initialized */
@@ -209,7 +209,7 @@ public:
    *    - First check if manipulator info is empty, if so return identity
    *    - Next if not empty, it checks if the manipulator manager has tcp defined for the manipulator group
    *    - Next if not found, it looks up the tcp name in the EnvState along with manipulator tip link to calculate tcp
-   *    - Next if not found, it leverages the user defind callbacks to try an locate the tcp information.
+   *    - Next if not found, it leverages the user defined callbacks to try an locate the tcp information.
    *    - Next throw an exception, because no tcp information was located.
    *
    * @param manip_info The manipulator info
@@ -219,7 +219,7 @@ public:
 
   /**
    * @brief This allows for user defined callbacks for looking up TCP information
-   * @param fn User defind callback function for locating TCP information
+   * @param fn User defined callback function for locating TCP information
    */
   void addFindTCPCallback(const FindTCPCallbackFn& fn);
 
@@ -274,7 +274,7 @@ public:
                                              const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
 
   /** @brief Get the current state of the environment */
-  tesseract_scene_graph::SceneState::ConstPtr getCurrentState() const;
+  tesseract_scene_graph::SceneState getState() const;
 
   /** @brief Get the current state timestamp */
   std::chrono::high_resolution_clock::duration getCurrentStateTimestamp() const;
@@ -302,7 +302,7 @@ public:
 
   /**
    * @brief Get whether a link should be considered during collision checking
-   * @return True if should be condisdered during collision checking, otherwise false
+   * @return True if should be considered during collision checking, otherwise false
    */
   bool getLinkCollisionEnabled(const std::string& name) const;
 
@@ -413,7 +413,7 @@ public:
 
   /**
    * @brief Set the active discrete contact manager
-   * @param name The name used to registar the contact manager
+   * @param name The name used to register the contact manager
    * @return True of name exists in DiscreteContactManagerFactory
    */
   bool setActiveDiscreteContactManager(const std::string& name);
@@ -426,7 +426,7 @@ public:
 
   /**
    * @brief Set the active continuous contact manager
-   * @param name The name used to registar the contact manager
+   * @param name The name used to register the contact manager
    * @return True of name exists in ContinuousContactManagerFactory
    */
   bool setActiveContinuousContactManager(const std::string& name);
@@ -461,7 +461,7 @@ public:
 
   /**
    * @brief Register Default Contact Managers
-   * @return True if successful, otherwis false
+   * @return True if successful, otherwise false
    */
   bool registerDefaultContactManagers();
 
@@ -475,7 +475,7 @@ protected:
   /** @brief This is the revision number after initialization used when reset is called */
   int init_revision_{ 0 };
 
-  /** @brief The history of commands applied to the environment after intialization */
+  /** @brief The history of commands applied to the environment after initialization */
   Commands commands_;
 
   /** @brief Tesseract Scene Graph */
@@ -491,7 +491,7 @@ protected:
   tesseract_kinematics::KinematicsPluginFactory kinematics_factory_;
 
   /** @brief Current state of the environment */
-  tesseract_scene_graph::SceneState::Ptr current_state_;
+  tesseract_scene_graph::SceneState current_state_;
 
   /** @brief Current state timestamp */
   std::chrono::high_resolution_clock::duration current_state_timestamp_{ 0 };
@@ -520,13 +520,13 @@ protected:
   /** @brief The continuous contact manager object */
   tesseract_collision::ContinuousContactManager::Ptr continuous_manager_;
 
-  /** @brief Name of active descrete contact manager */
+  /** @brief Name of active discrete contact manager */
   std::string discrete_manager_name_;
 
   /** @brief Name of active continuous contact manager */
   std::string continuous_manager_name_;
 
-  /** @brief Descrete contact manager factory */
+  /** @brief Discrete contact manager factory */
   tesseract_collision::DiscreteContactManagerFactory discrete_factory_;
 
   /** @brief Continuous contact manager factory */
