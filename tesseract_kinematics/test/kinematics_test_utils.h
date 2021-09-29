@@ -308,43 +308,43 @@ inline void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin,
  * name
  * @param link_point Is expressed in the same base frame of the jacobian and is a vector from the old point to the new
  * point.
- * @param base_link_name The original base link name for which the jacobian should be calculated
- * @param change_base The transform from the desired frame to the current base frame of the jacobian
  */
 inline void runJacobianTest(tesseract_kinematics::KinematicGroup& kin_group,
                             const Eigen::VectorXd& jvals,
                             const std::string& link_name,
-                            const Eigen::Vector3d& link_point,
-                            const std::string& base_link_name,
-                            const Eigen::Isometry3d& change_base)
+                            const Eigen::Vector3d& link_point)
 {
   Eigen::MatrixXd jacobian, numerical_jacobian;
-  tesseract_common::TransformMap poses;
-
   jacobian.resize(6, kin_group.numJoints());
 
-  //  // The numerical jacobian orders things base on the provided joint list
-  //  // The order needs to be calculated to compare
-  //  std::vector<std::string> solver_jn = kin_group.getJointNames();
-  //  std::vector<long> order;
-  //  for (const auto& joint_name : solver_jn)
-  //    order.push_back(
-  //        std::distance(joint_names.begin(), std::find(joint_names.begin(), joint_names.end(), joint_name)));
+  tesseract_common::TransformMap poses = kin_group.calcFwdKin(jvals);
+  {  // Test with all information
+    jacobian = kin_group.calcJacobian(jvals, link_name, link_point);
 
-  poses = kin_group.calcFwdKin(jvals);
-  jacobian = kin_group.calcJacobian(jvals, link_name, base_link_name);
+    numerical_jacobian.resize(6, kin_group.numJoints());
+    tesseract_kinematics::numericalJacobian(numerical_jacobian, kin_group, jvals, link_name, link_point);
 
-  tesseract_common::jacobianChangeBase(jacobian, change_base);
-  tesseract_common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_name]).linear() * link_point);
-
-  numerical_jacobian.resize(6, kin_group.numJoints());
-  tesseract_kinematics::numericalJacobian(numerical_jacobian, change_base, kin_group, jvals, link_name, link_point);
-
-  for (int i = 0; i < 6; ++i)
-  {
-    for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
+    for (int i = 0; i < 6; ++i)
     {
-      EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+      for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
+      {
+        EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+      }
+    }
+  }
+
+  {  // Test don't use link_point
+    jacobian = kin_group.calcJacobian(jvals, link_name);
+
+    numerical_jacobian.resize(6, kin_group.numJoints());
+    tesseract_kinematics::numericalJacobian(numerical_jacobian, kin_group, jvals, link_name, Eigen::Vector3d::Zero());
+
+    for (int i = 0; i < 6; ++i)
+    {
+      for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
+      {
+        EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+      }
     }
   }
 }
@@ -615,22 +615,8 @@ inline void runKinGroupJacobianIIWATest(tesseract_kinematics::KinematicGroup& ki
   jvals(6) = -0.785398;
 
   ///////////////////////////
-  // Test Jacobian
-  ///////////////////////////
-  Eigen::Vector3d link_point(0, 0, 0);
-  for (const auto& link_name : link_names)
-    runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
-
-  // NOLINTNEXTLINE
-  EXPECT_ANY_THROW(
-      runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
-
-  // NOLINTNEXTLINE
-  EXPECT_ANY_THROW(
-      runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
-
-  ///////////////////////////
   // Test Jacobian at Point
+  // This also runs a test without the link point
   ///////////////////////////
   for (int k = 0; k < 3; ++k)
   {
@@ -638,60 +624,10 @@ inline void runKinGroupJacobianIIWATest(tesseract_kinematics::KinematicGroup& ki
     link_point[k] = 1;
 
     for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
+      runJacobianTest(kin_group, jvals, link_name, link_point);
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
-
-    // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
-  }
-
-  ///////////////////////////////////////////
-  // Test Jacobian with change base
-  ///////////////////////////////////////////
-  for (int k = 0; k < 3; ++k)
-  {
-    link_point = Eigen::Vector3d(0, 0, 0);
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = Eigen::Vector3d(0, 0, 0);
-    change_base.translation()[k] = 1;
-
-    for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, change_base);
-
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, base_link_name, change_base));     // NOLINT
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", change_base));  // NOLINT
-  }
-
-  ///////////////////////////////////////////
-  // Test Jacobian at point with change base
-  ///////////////////////////////////////////
-  for (int k = 0; k < 3; ++k)
-  {
-    Eigen::Vector3d link_point(0, 0, 0);
-    link_point[k] = 1;
-
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = link_point;
-
-    for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, change_base);
-
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, base_link_name, change_base));     // NOLINT
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", change_base));  // NOLINT
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point));
   }
 }
 
@@ -786,22 +722,8 @@ inline void runKinGroupJacobianABBOnPositionerTest(tesseract_kinematics::Kinemat
   jvals(6) = -0.785398;
 
   ///////////////////////////
-  // Test Jacobian
-  ///////////////////////////
-  Eigen::Vector3d link_point(0, 0, 0);
-  for (const auto& link_name : link_names)
-    runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
-
-  // NOLINTNEXTLINE
-  EXPECT_ANY_THROW(
-      runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
-
-  // NOLINTNEXTLINE
-  EXPECT_ANY_THROW(
-      runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
-
-  ///////////////////////////
   // Test Jacobian at Point
+  // Note: Also tests without the link point
   ///////////////////////////
   for (int k = 0; k < 3; ++k)
   {
@@ -809,60 +731,10 @@ inline void runKinGroupJacobianABBOnPositionerTest(tesseract_kinematics::Kinemat
     link_point[k] = 1;
 
     for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
+      runJacobianTest(kin_group, jvals, link_name, link_point);
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
-
-    // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
-  }
-
-  ///////////////////////////////////////////
-  // Test Jacobian with change base
-  ///////////////////////////////////////////
-  for (int k = 0; k < 3; ++k)
-  {
-    link_point = Eigen::Vector3d(0, 0, 0);
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = Eigen::Vector3d(0, 0, 0);
-    change_base.translation()[k] = 1;
-
-    for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, change_base);
-
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, base_link_name, change_base));     // NOLINT
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", change_base));  // NOLINT
-  }
-
-  ///////////////////////////////////////////
-  // Test Jacobian at point with change base
-  ///////////////////////////////////////////
-  for (int k = 0; k < 3; ++k)
-  {
-    Eigen::Vector3d link_point(0, 0, 0);
-    link_point[k] = 1;
-
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = link_point;
-
-    for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, change_base);
-
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, base_link_name, change_base));     // NOLINT
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", change_base));  // NOLINT
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point));
   }
 }
 
@@ -917,22 +789,8 @@ inline void runKinGroupJacobianABBExternalPositionerTest(tesseract_kinematics::K
   jvals(7) = 0.785398;
 
   ///////////////////////////
-  // Test Jacobian
-  ///////////////////////////
-  Eigen::Vector3d link_point(0, 0, 0);
-  for (const auto& link_name : link_names)
-    runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
-
-  // NOLINTNEXTLINE
-  EXPECT_ANY_THROW(
-      runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
-
-  // NOLINTNEXTLINE
-  EXPECT_ANY_THROW(
-      runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
-
-  ///////////////////////////
   // Test Jacobian at Point
+  // Note: Also tests without the link point
   ///////////////////////////
   for (int k = 0; k < 3; ++k)
   {
@@ -940,60 +798,10 @@ inline void runKinGroupJacobianABBExternalPositionerTest(tesseract_kinematics::K
     link_point[k] = 1;
 
     for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, Eigen::Isometry3d::Identity());
+      runJacobianTest(kin_group, jvals, link_name, link_point);
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runJacobianTest(kin_group, jvals, "", link_point, base_link_name, Eigen::Isometry3d::Identity()));  // NOLINT
-
-    // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", Eigen::Isometry3d::Identity()));  // NOLINT
-  }
-
-  ///////////////////////////////////////////
-  // Test Jacobian with change base
-  ///////////////////////////////////////////
-  for (int k = 0; k < 3; ++k)
-  {
-    link_point = Eigen::Vector3d(0, 0, 0);
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = Eigen::Vector3d(0, 0, 0);
-    change_base.translation()[k] = 1;
-
-    for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, change_base);
-
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, base_link_name, change_base));     // NOLINT
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", change_base));  // NOLINT
-  }
-
-  ///////////////////////////////////////////
-  // Test Jacobian at point with change base
-  ///////////////////////////////////////////
-  for (int k = 0; k < 3; ++k)
-  {
-    Eigen::Vector3d link_point(0, 0, 0);
-    link_point[k] = 1;
-
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = link_point;
-
-    for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point, base_link_name, change_base);
-
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point, base_link_name, change_base));     // NOLINT
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, link_names.back(), link_point, "", change_base));  // NOLINT
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point));
   }
 }
 

@@ -52,7 +52,6 @@ public:
 
   /**
    * @brief Create a kinematics group without inverse kinematics for the provided joint names
-   * @details If calcInvKin is called an exception will be thrown
    * @param name The name of the kinematic group
    * @param joint_names The joints names to create kinematic group from
    * @param scene_graph The scene graph
@@ -73,12 +72,46 @@ public:
 
   /**
    * @brief Calculated jacobian of robot given joint angles
-   * @param jacobian Output jacobian
    * @param joint_angles Input vector of joint angles
+   * @param link_name The frame that the jacobian is calculated for
+   * @return The jacobian at the provided link_name relative to the joint group base link
+   */
+  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                               const std::string& link_name) const;
+
+  /**
+   * @brief Calculated jacobian of robot given joint angles
+   * @param joint_angles Input vector of joint angles
+   * @param link_name The frame that the jacobian is calculated for
+   * @param link_point A point on the link that the jacobian is calculated for
+   * @return The jacobian at the provided link_name relative to the joint group base link
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const std::string& link_name,
-                               const std::string& base_link_name) const;
+                               const Eigen::Vector3d& link_point) const;
+
+  /**
+   * @brief Calculated jacobian of robot given joint angles
+   * @param joint_angles Input vector of joint angles
+   * @param base_link_name The frame that the jacobian is calculated in
+   * @return The jacobian at the provided link_name relative to the provided base_link_name
+   */
+  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                               const std::string& base_link_name,
+                               const std::string& link_name) const;
+
+  /**
+   * @brief Calculated jacobian of robot given joint angles
+   * @param joint_angles Input vector of joint angles
+   * @param base_link_name The frame that the jacobian is calculated in
+   * @param link_name The frame that the jacobian is calculated for
+   * @param link_point A point on the link that the jacobian is calculated for
+   * @return The jacobian at the provided link_name relative to the provided base_link_name
+   */
+  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                               const std::string& base_link_name,
+                               const std::string& link_name,
+                               const Eigen::Vector3d& link_point) const;
 
   /**
    * @brief Get list of joint names for kinematic object
@@ -102,6 +135,20 @@ public:
   std::vector<std::string> getActiveLinkNames() const;
 
   /**
+   * @brief Check if link is an active link
+   * @param link_name The link name to check
+   * @return True if active, otherwise false
+   */
+  bool isActiveLinkName(const std::string& link_name) const;
+
+  /**
+   * @brief Check if link name exists
+   * @param link_name The link name to check for
+   * @return True if it exists, otherwise false
+   */
+  bool hasLinkName(const std::string& link_name) const;
+
+  /**
    * @brief Getter for kinematic limits (joint, velocity, acceleration, etc.)
    * @return Kinematic Limits
    */
@@ -115,7 +162,7 @@ public:
 
   /**
    * @brief Get vector indicating which joints are capable of producing redundant solutions
-   * @return A vector of joint indicies
+   * @return A vector of joint indices
    */
   std::vector<Eigen::Index> getRedundancyCapableJointIndices() const;
 
@@ -128,7 +175,7 @@ public:
   /** @brief getter for the robot base link name */
   std::string getBaseLinkName() const;
 
-  /** @brief Name of the maniputlator */
+  /** @brief Name of the manipulator */
   std::string getName() const;
 
   /**
