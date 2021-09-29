@@ -177,7 +177,7 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
     if (link->inertial)
       inert = convert(link->inertial);
 
-    // Get incomming edges
+    // Get incoming edges
     auto num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
     if (num_in_edges == 0)  // The root of the tree will have not incoming edges
     {
@@ -253,7 +253,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     if (link->inertial)
       inert = convert(link->inertial);
 
-    // Get incomming edges
+    // Get incoming edges
     auto num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
     if (num_in_edges == 0)  // The root of the tree will have not incoming edges
     {
@@ -279,8 +279,8 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     std::string parent_link_name = parent_joint->parent_link_name;
 
     if (parent_joint->type != JointType::FIXED)
-      segment_transforms_[parent_joint->child_link_name] = segment_transforms_[parent_link_name] * parent_to_joint *
-                                                           kdl_jnt.pose(joint_values_.at(parent_joint->getName()));
+      segment_transforms_[parent_joint->child_link_name] =
+          segment_transforms_[parent_link_name] * kdl_jnt.pose(joint_values_.at(parent_joint->getName()));
     else
       segment_transforms_[parent_joint->child_link_name] =
           segment_transforms_[parent_link_name] * parent_to_joint * kdl_jnt.pose(0.0);
