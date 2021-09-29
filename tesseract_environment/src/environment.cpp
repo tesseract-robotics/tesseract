@@ -323,13 +323,13 @@ tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::str
         scene_graph_const_->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
 
     return std::make_unique<tesseract_kinematics::JointGroup>(
-        group_name, path.active_joints, *scene_graph_const_, *current_state_);
+        group_name, path.active_joints, *scene_graph_const_, current_state_);
   }
 
   auto joint_it = kinematics_information_.joint_groups.find(group_name);
   if (joint_it != kinematics_information_.joint_groups.end())
     return std::make_unique<tesseract_kinematics::JointGroup>(
-        group_name, joint_it->second, *scene_graph_const_, *current_state_);
+        group_name, joint_it->second, *scene_graph_const_, current_state_);
 
   auto link_it = kinematics_information_.link_groups.find(group_name);
   if (link_it != kinematics_information_.link_groups.end())
@@ -342,7 +342,7 @@ tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::str
                                                                   const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph_const_, *current_state_);
+  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph_const_, current_state_);
 }
 
 tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicsGroup(const std::string& group_name,
@@ -359,14 +359,14 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicsGroup(const
     ik_solver_name = kinematics_factory_.getDefaultInvKinPlugin(group_name);
 
   tesseract_kinematics::InverseKinematics::UPtr inv_kin =
-      kinematics_factory_.createInvKin(group_name, ik_solver_name, *scene_graph_const_, *current_state_);
+      kinematics_factory_.createInvKin(group_name, ik_solver_name, *scene_graph_const_, current_state_);
 
   // TODO add error message
   if (inv_kin == nullptr)
     return nullptr;
 
   return std::make_unique<tesseract_kinematics::KinematicGroup>(
-      std::move(inv_kin), *scene_graph_const_, *current_state_);
+      std::move(inv_kin), *scene_graph_const_, current_state_);
 }
 
 // NOLINTNEXTLINE
@@ -486,7 +486,7 @@ tesseract_scene_graph::SceneState Environment::getState(const std::vector<std::s
   return state_solver_->getState(joint_names, joint_values);
 }
 
-tesseract_scene_graph::SceneState::ConstPtr Environment::getCurrentState() const
+tesseract_scene_graph::SceneState Environment::getState() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return current_state_;
@@ -554,7 +554,7 @@ Eigen::VectorXd Environment::getCurrentJointValues() const
   std::vector<std::string> active_joint_names = state_solver_->getActiveJointNames();
   jv.resize(static_cast<long int>(active_joint_names.size()));
   for (auto j = 0U; j < active_joint_names.size(); ++j)
-    jv(j) = current_state_->joints[active_joint_names[j]];
+    jv(j) = current_state_.joints.at(active_joint_names[j]);
 
   return jv;
 }
@@ -565,7 +565,7 @@ Eigen::VectorXd Environment::getCurrentJointValues(const std::vector<std::string
   Eigen::VectorXd jv;
   jv.resize(static_cast<long int>(joint_names.size()));
   for (auto j = 0U; j < joint_names.size(); ++j)
-    jv(j) = current_state_->joints[joint_names[j]];
+    jv(j) = current_state_.joints.at(joint_names[j]);
 
   return jv;
 }
@@ -624,9 +624,9 @@ tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   tesseract_common::VectorIsometry3d link_tfs;
-  link_tfs.reserve(current_state_->link_transforms.size());
+  link_tfs.reserve(current_state_.link_transforms.size());
   for (const auto& link_name : state_solver_->getLinkNames())
-    link_tfs.push_back(current_state_->link_transforms[link_name]);
+    link_tfs.push_back(current_state_.link_transforms.at(link_name));
 
   return link_tfs;
 }
@@ -634,7 +634,7 @@ tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return current_state_->link_transforms[link_name];
+  return current_state_.link_transforms.at(link_name);
 }
 
 tesseract_scene_graph::StateSolver::UPtr Environment::getStateSolver() const
@@ -872,13 +872,13 @@ void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& 
 void Environment::currentStateChanged()
 {
   current_state_timestamp_ = std::chrono::high_resolution_clock::now().time_since_epoch();
-  current_state_ = std::make_shared<tesseract_scene_graph::SceneState>(state_solver_->getState());
+  current_state_ = state_solver_->getState();
   if (discrete_manager_ != nullptr)
-    discrete_manager_->setCollisionObjectsTransform(current_state_->link_transforms);
+    discrete_manager_->setCollisionObjectsTransform(current_state_.link_transforms);
   if (continuous_manager_ != nullptr)
   {
     std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
-    for (const auto& tf : current_state_->link_transforms)
+    for (const auto& tf : current_state_.link_transforms)
     {
       if (std::find(active_link_names.begin(), active_link_names.end(), tf.first) != active_link_names.end())
       {
@@ -948,7 +948,7 @@ Environment::Ptr Environment::clone() const
   cloned_env->commands_ = commands_;
   cloned_env->scene_graph_ = scene_graph_->clone();
   cloned_env->scene_graph_const_ = cloned_env->scene_graph_;
-  cloned_env->current_state_ = std::make_shared<tesseract_scene_graph::SceneState>(*current_state_);
+  cloned_env->current_state_ = current_state_;
 
   // There is not dynamic pointer cast for std::unique_ptr
   auto cloned_solver = state_solver_->clone();
