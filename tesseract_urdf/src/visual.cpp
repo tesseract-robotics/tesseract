@@ -141,8 +141,11 @@ tinyxml2::XMLElement* tesseract_urdf::writeVisual(const std::shared_ptr<const te
   if (!visual->name.empty())
     xml_element->SetAttribute("name", visual->name.c_str());
 
-  tinyxml2::XMLElement* xml_origin = writeOrigin(visual->origin, doc);
-  xml_element->InsertEndChild(xml_origin);
+  if (!visual->origin.matrix().isIdentity(std::numeric_limits<double>::epsilon()))
+  {
+    tinyxml2::XMLElement* xml_origin = writeOrigin(visual->origin, doc);
+    xml_element->InsertEndChild(xml_origin);
+  }
 
   if (visual->material != nullptr)
   {

@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/utils.h>
 #include <tesseract_urdf/limits.h>
 #include <tesseract_scene_graph/joint.h>
 
@@ -69,11 +70,21 @@ tesseract_urdf::writeLimits(const std::shared_ptr<const tesseract_scene_graph::J
     std::throw_with_nested(std::runtime_error("Limits are nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("limit");
 
-  xml_element->SetAttribute("lower", limits->lower);
-  xml_element->SetAttribute("upper", limits->upper);
-  xml_element->SetAttribute("effort", limits->effort);
-  xml_element->SetAttribute("velocity", limits->velocity);
-  xml_element->SetAttribute("acceleration", limits->acceleration);
+  // if upper and lower are both zero, don't write it.  This should only happen for continuous joints.
+  if (!tesseract_common::almostEqualRelativeAndAbs(limits->lower, 0.0) ||
+      !tesseract_common::almostEqualRelativeAndAbs(limits->upper, 0.0))
+  {
+    xml_element->SetAttribute("lower", limits->lower);
+    xml_element->SetAttribute("upper", limits->upper);
+  }
+
+  // Write out nonzero limits for effort, velocity, or acceleration.
+  if (!tesseract_common::almostEqualRelativeAndAbs(limits->effort, 0.0))
+    xml_element->SetAttribute("effort", limits->effort);
+  if (!tesseract_common::almostEqualRelativeAndAbs(limits->velocity, 0.0))
+    xml_element->SetAttribute("velocity", limits->velocity);
+  if (!tesseract_common::almostEqualRelativeAndAbs(limits->acceleration, 0.0))
+    xml_element->SetAttribute("acceleration", limits->acceleration);
 
   return xml_element;
 }

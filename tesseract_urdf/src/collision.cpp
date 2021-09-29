@@ -122,8 +122,11 @@ tesseract_urdf::writeCollision(const std::shared_ptr<const tesseract_scene_graph
   if (!collision->name.empty())
     xml_element->SetAttribute("name", collision->name.c_str());
 
-  tinyxml2::XMLElement* xml_origin = writeOrigin(collision->origin, doc);
-  xml_element->InsertEndChild(xml_origin);
+  if (!collision->origin.matrix().isIdentity(std::numeric_limits<double>::epsilon()))
+  {
+    tinyxml2::XMLElement* xml_origin = writeOrigin(collision->origin, doc);
+    xml_element->InsertEndChild(xml_origin);
+  }
 
   try
   {

@@ -112,9 +112,12 @@ tinyxml2::XMLElement* tesseract_urdf::writeMesh(const std::shared_ptr<const tess
   }
   xml_element->SetAttribute("filename", filename.c_str());
 
-  std::string scale_string = std::to_string(mesh->getScale().x()) + " " + std::to_string(mesh->getScale().y()) + " " +
-                             std::to_string(mesh->getScale().z());
-  xml_element->SetAttribute("scale", scale_string.c_str());
+  if (!mesh->getScale().isOnes(std::numeric_limits<double>::epsilon()))
+  {
+    std::string scale_string = std::to_string(mesh->getScale().x()) + " " + std::to_string(mesh->getScale().y()) + " " +
+        std::to_string(mesh->getScale().z());
+    xml_element->SetAttribute("scale", scale_string.c_str());
+  }
 
   return xml_element;
 }

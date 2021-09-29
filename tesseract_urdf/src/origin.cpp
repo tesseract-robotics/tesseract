@@ -128,15 +128,28 @@ tinyxml2::XMLElement* tesseract_urdf::writeOrigin(const Eigen::Isometry3d& origi
   tinyxml2::XMLElement* xml_element = doc.NewElement("origin");
 
   // Format and write the translation
-  std::string xyz_string = std::to_string(origin.translation().x()) + " " + std::to_string(origin.translation().y()) +
-                           " " + std::to_string(origin.translation().z());
-  xml_element->SetAttribute("xyz", xyz_string.c_str());
+  if (!origin.translation().isZero(std::numeric_limits<double>::epsilon()))
+  {
+    std::string xyz_string = std::to_string(origin.translation().x()) + " " + std::to_string(origin.translation().y()) +
+        " " + std::to_string(origin.translation().z());
+    xml_element->SetAttribute("xyz", xyz_string.c_str());
+  }
 
   // Extract, format, and write the rotation
+  if (!origin.linear().isIdentity(std::numeric_limits<double>::epsilon()))
+  {
+    Eigen::Vector3d rpy = origin.linear().eulerAngles(2, 1, 0);
+    std::string rpy_string = std::to_string(rpy.z()) + " " + std::to_string(rpy.y()) + " " + std::to_string(rpy.x());
+    xml_element->SetAttribute("rpy", rpy_string.c_str());
+  }
+
+  /*
+  // Extract rotation as Quaternion - Tesseract Exclusive
   Eigen::Quaterniond q(origin.linear());
   std::string wxyz_string =
       std::to_string(q.w()) + " " + std::to_string(q.x()) + " " + std::to_string(q.y()) + " " + std::to_string(q.z());
   xml_element->SetAttribute("wxyz", wxyz_string.c_str());
+  */
 
   return xml_element;
 }

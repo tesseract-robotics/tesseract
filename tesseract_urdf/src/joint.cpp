@@ -238,8 +238,11 @@ tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tes
   xml_element->SetAttribute("name", joint->getName().c_str());
 
   // Set joint origin
-  tinyxml2::XMLElement* xml_origin = writeOrigin(joint->parent_to_joint_origin_transform, doc);
-  xml_element->InsertEndChild(xml_origin);
+  if (!joint->parent_to_joint_origin_transform.matrix().isIdentity(std::numeric_limits<double>::epsilon()))
+  {
+    tinyxml2::XMLElement* xml_origin = writeOrigin(joint->parent_to_joint_origin_transform, doc);
+    xml_element->InsertEndChild(xml_origin);
+  }
 
   // Set parent link
   tinyxml2::XMLElement* xml_parent = doc.NewElement("parent");
@@ -279,14 +282,30 @@ tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tes
   }
 
   // Set joint limits
+  // For Revolute or Prismatic, we need nonzero upper or lower
   if (joint->type == tesseract_scene_graph::JointType::REVOLUTE ||
-      joint->type == tesseract_scene_graph::JointType::PRISMATIC ||
-      joint->type == tesseract_scene_graph::JointType::CONTINUOUS)
+      joint->type == tesseract_scene_graph::JointType::PRISMATIC)
   {
     if (joint->limits == nullptr)
       std::throw_with_nested(std::runtime_error("Joint: Missing limits for joint '" + joint->getName() + "'!"));
+    if (tesseract_common::almostEqualRelativeAndAbs(joint->limits->lower, 0.0) &&
+        tesseract_common::almostEqualRelativeAndAbs(joint->limits->upper, 0.0))
+      std::throw_with_nested(std::runtime_error("Upper/Lower limits for `" + joint->getName() + "` are both zero!"));
+
     tinyxml2::XMLElement* xml_limits = writeLimits(joint->limits, doc);
     xml_element->InsertEndChild(xml_limits);
+  }
+  // For continuous, we just need something. If e/v/a are all zero, don't bother writing.
+  if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS)
+  {
+    if (joint->limits != nullptr &&
+        (!tesseract_common::almostEqualRelativeAndAbs(joint->limits->effort, 0.0) ||
+         !tesseract_common::almostEqualRelativeAndAbs(joint->limits->velocity, 0.0) ||
+         !tesseract_common::almostEqualRelativeAndAbs(joint->limits->acceleration, 0.0)))
+    {
+      tinyxml2::XMLElement* xml_limits = writeLimits(joint->limits, doc);
+      xml_element->InsertEndChild(xml_limits);
+    }
   }
 
   // Set joint safety if it exists

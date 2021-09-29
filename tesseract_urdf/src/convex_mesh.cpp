@@ -127,10 +127,12 @@ tinyxml2::XMLElement* tesseract_urdf::writeConvexMesh(const std::shared_ptr<cons
 
   xml_element->SetAttribute("filename", filename.c_str());
 
-  std::string scale_string = std::to_string(mesh->getScale().x()) + " " + std::to_string(mesh->getScale().y()) + " " +
-                             std::to_string(mesh->getScale().z());
-
-  xml_element->SetAttribute("scale", scale_string.c_str());
+  if (!mesh->getScale().isOnes())
+  {
+    std::string scale_string = std::to_string(mesh->getScale().x()) + " " + std::to_string(mesh->getScale().y()) + " " +
+        std::to_string(mesh->getScale().z());
+    xml_element->SetAttribute("scale", scale_string.c_str());
+  }
 
   xml_element->SetAttribute("convert", false);
 

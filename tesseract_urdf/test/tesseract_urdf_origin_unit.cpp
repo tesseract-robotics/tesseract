@@ -1,5 +1,9 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+
+#include <iostream>
+#include <fstream>
+
 #include <gtest/gtest.h>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -130,6 +134,15 @@ TEST(TesseractURDFUnit, write_origin)  // NOLINT
 {
   {
     Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+    std::string text;
+    EXPECT_EQ(0, writeTest<Eigen::Isometry3d>(origin, &tesseract_urdf::writeOrigin, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+    origin.translation() = Eigen::Vector3d(1, 2, 3);
+    origin.linear() = Eigen::Quaterniond(1, 0, 0, 0).toRotationMatrix();
     std::string text;
     EXPECT_EQ(0, writeTest<Eigen::Isometry3d>(origin, &tesseract_urdf::writeOrigin, text));
     EXPECT_NE(text, "");
