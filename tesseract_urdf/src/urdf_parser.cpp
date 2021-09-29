@@ -206,9 +206,26 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
 
   // Materials were not saved anywhere at load
 
-  // Write Links
+  // Get Links
+  std::vector<std::string> link_names;
   for (const tesseract_scene_graph::Link::ConstPtr& l : sg->getLinks())
   {
+    if (l == nullptr)
+      std::throw_with_nested(std::runtime_error("Link is nullptr, cannot get name"));
+    link_names.push_back(l->getName());
+  }
+
+  // Sort the link names using a lamda-defined comparator function.
+  // The lamda takes in two strings, applies the default < operator, and returns a bool.
+  std::sort(link_names.begin(), link_names.end(), [](const std::string& a, const std::string& b) -> bool
+  {
+    return a < b;
+  });
+
+  // Iterate through the sorted names and write the corresponding links to XML
+  for (const std::string& s : link_names)
+  {
+    const tesseract_scene_graph::Link::ConstPtr& l = sg->getLink(s);
     try
     {
       tinyxml2::XMLElement* xml_link = writeLink(l, doc, directory);
@@ -220,9 +237,26 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
     }
   }
 
-  // Write out urdf joints to xml
+  // Get joints
+  std::vector<std::string> joint_names;
   for (const tesseract_scene_graph::Joint::ConstPtr& j : sg->getJoints())
   {
+    if (j == nullptr)
+      std::throw_with_nested(std::runtime_error("Joint is nullptr, cannot get name!"));
+    joint_names.push_back(j->getName());
+  }
+
+  // Sort the joint names using a lamda-defined comparator function.
+  // The lamda takes in two strings, applies the default < operator, and returns a bool.
+  std::sort(joint_names.begin(), joint_names.end(), [](const std::string& a, const std::string& b) -> bool
+  {
+    return a < b;
+  });
+
+  // Iterate through the sorted joint names and write the corresponding joints to xml
+  for (const std::string& s : joint_names)
+  {
+    const tesseract_scene_graph::Joint::ConstPtr& j = sg->getJoint(s);
     try
     {
       tinyxml2::XMLElement* xml_joint = writeJoint(j, doc);
