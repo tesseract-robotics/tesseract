@@ -108,6 +108,10 @@ public:
 
   std::vector<std::string> getStaticLinkNames() const override final;
 
+  bool isActiveLinkName(const std::string& link_name) const override final;
+
+  bool hasLinkName(const std::string& link_name) const override final;
+
   tesseract_common::KinematicLimits getLimits() const override final;
 
   bool addLink(const Link& link, const Joint& joint) override final;

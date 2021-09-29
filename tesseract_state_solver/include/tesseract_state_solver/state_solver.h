@@ -123,7 +123,7 @@ public:
   /**
    * @brief Get the jacobian of the scene for a given set or subset of joint values.
    *
-   *    * This does not return the jocoabian based on the provided joint names. It is order based
+   *    * This does not return the jacobian based on the provided joint names. It is order based
    * on the order returned from getJointNames
    *
    * This does not change the internal state of the solver.
@@ -179,6 +179,20 @@ public:
    * @return A vector of static link names
    */
   virtual std::vector<std::string> getStaticLinkNames() const = 0;
+
+  /**
+   * @brief Check if link is an active link
+   * @param link_name The link name to check
+   * @return True if active, otherwise false
+   */
+  virtual bool isActiveLinkName(const std::string& link_name) const = 0;
+
+  /**
+   * @brief Check if link name exists
+   * @param link_name The link name to check for
+   * @return True if it exists, otherwise false
+   */
+  virtual bool hasLinkName(const std::string& link_name) const = 0;
 
   /**
    * @brief Getter for kinematic limits
