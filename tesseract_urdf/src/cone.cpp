@@ -27,11 +27,13 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/cone.h>
 #include <tesseract_geometry/impl/cone.h>
+#include <tesseract_urdf/cone.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_geometry::Cone::Ptr tesseract_urdf::parseCone(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {
@@ -51,7 +53,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeCone(const std::shared_ptr<const tess
   if (cone == nullptr)
     std::throw_with_nested(std::runtime_error("Cone is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("cone");
-  xml_element->SetAttribute("length", cone->getLength());
-  xml_element->SetAttribute("radius", cone->getRadius());
+  xml_element->SetAttribute("length", toString(cone->getLength()).c_str());
+  xml_element->SetAttribute("radius", toString(cone->getRadius()).c_str());
   return xml_element;
 }

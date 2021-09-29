@@ -27,13 +27,14 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
-#include <tesseract_common/utils.h>
+
 #include <boost/algorithm/string.hpp>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/box.h>
 #include <tesseract_geometry/impl/box.h>
+#include <tesseract_urdf/box.h>
 
 tesseract_geometry::Box::Ptr tesseract_urdf::parseBox(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {
@@ -70,8 +71,9 @@ tinyxml2::XMLElement* tesseract_urdf::writeBox(const std::shared_ptr<const tesse
   if (box == nullptr)
     std::throw_with_nested(std::runtime_error("Box is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("box");
-  std::string size_string = std::to_string(box->getX()) + " " + std::to_string(box->getY()) + " " +
-                            std::to_string(box->getZ());
-  xml_element->SetAttribute("size", size_string.c_str());
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
+  std::stringstream size_string;
+  size_string << Eigen::Vector3d(box->getX(), box->getY(), box->getZ()).format(eigen_format);
+  xml_element->SetAttribute("size", size_string.str().c_str());
   return xml_element;
 }

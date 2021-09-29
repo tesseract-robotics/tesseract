@@ -27,14 +27,15 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
-#include <tesseract_common/utils.h>
-#include <boost/iostreams/stream.hpp>
+
 #include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/octree.h>
 #include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_urdf/octree.h>
 
 tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctree(const tinyxml2::XMLElement* xml_element,
                                                             const tesseract_scene_graph::ResourceLocator::Ptr& locator,

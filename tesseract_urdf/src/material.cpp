@@ -26,17 +26,18 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <stdexcept>
-#include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
-#include <boost/algorithm/string.hpp>
 #include <unordered_map>
+
+#include <boost/algorithm/string.hpp>
+#include <console_bridge/console.h>
+#include <Eigen/Geometry>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/material.h>
 #include <tesseract_scene_graph/link.h>
+#include <tesseract_urdf/material.h>
 
 tesseract_scene_graph::Material::Ptr tesseract_urdf::parseMaterial(
     const tinyxml2::XMLElement* xml_element,
@@ -126,6 +127,7 @@ tesseract_urdf::writeMaterial(const std::shared_ptr<const tesseract_scene_graph:
   if (material == nullptr)
     std::throw_with_nested(std::runtime_error("Material is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("material");
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   xml_element->SetAttribute("name", material->getName().c_str());
 
@@ -137,9 +139,9 @@ tesseract_urdf::writeMaterial(const std::shared_ptr<const tesseract_scene_graph:
   }
 
   tinyxml2::XMLElement* xml_color = doc.NewElement("color");
-  std::string color_string = std::to_string(material->color(0)) + " " + std::to_string(material->color(1)) + " " +
-                             std::to_string(material->color(2)) + " " + std::to_string(material->color(3));
-  xml_color->SetAttribute("rgba", color_string.c_str());
+  std::stringstream color_string;
+  color_string << material->color.format(eigen_format);
+  xml_color->SetAttribute("rgba", color_string.str().c_str());
   xml_element->InsertEndChild(xml_color);
 
   return xml_element;

@@ -27,17 +27,18 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+
 #include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_urdf/link.h>
-#include <tesseract_urdf/inertial.h>
-#include <tesseract_urdf/visual.h>
+#include <tesseract_scene_graph/utils.h>
 #include <tesseract_urdf/collision.h>
+#include <tesseract_urdf/inertial.h>
+#include <tesseract_urdf/link.h>
+#include <tesseract_urdf/visual.h>
 
 tesseract_scene_graph::Link::Ptr
 tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,

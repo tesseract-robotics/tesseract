@@ -1,11 +1,10 @@
-#include <tesseract_urdf/mesh_writer.h>
-
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 // #include <assimp/Exporter.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
+#include <tesseract_urdf/mesh_writer.h>
 
 namespace tesseract_urdf
 {

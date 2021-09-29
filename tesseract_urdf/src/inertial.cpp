@@ -27,12 +27,14 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_scene_graph/link.h>
 #include <tesseract_urdf/inertial.h>
 #include <tesseract_urdf/origin.h>
-#include <tesseract_scene_graph/link.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_scene_graph::Inertial::Ptr tesseract_urdf::parseInertial(const tinyxml2::XMLElement* xml_element, int version)
 {
@@ -97,15 +99,15 @@ tesseract_urdf::writeInertial(const std::shared_ptr<const tesseract_scene_graph:
   }
 
   tinyxml2::XMLElement* xml_mass = doc.NewElement("mass");
-  xml_mass->SetAttribute("value", inertial->mass);
+  xml_mass->SetAttribute("value", toString(inertial->mass).c_str());
 
   tinyxml2::XMLElement* xml_inertia = doc.NewElement("inertia");
-  xml_inertia->SetAttribute("ixx", inertial->ixx);
-  xml_inertia->SetAttribute("ixy", inertial->ixy);
-  xml_inertia->SetAttribute("ixz", inertial->ixz);
-  xml_inertia->SetAttribute("iyy", inertial->iyy);
-  xml_inertia->SetAttribute("iyz", inertial->iyz);
-  xml_inertia->SetAttribute("izz", inertial->izz);
+  xml_inertia->SetAttribute("ixx", toString(inertial->ixx).c_str());
+  xml_inertia->SetAttribute("ixy", toString(inertial->ixy).c_str());
+  xml_inertia->SetAttribute("ixz", toString(inertial->ixz).c_str());
+  xml_inertia->SetAttribute("iyy", toString(inertial->iyy).c_str());
+  xml_inertia->SetAttribute("iyz", toString(inertial->iyz).c_str());
+  xml_inertia->SetAttribute("izz", toString(inertial->izz).c_str());
 
   xml_element->InsertEndChild(xml_mass);
   xml_element->InsertEndChild(xml_inertia);

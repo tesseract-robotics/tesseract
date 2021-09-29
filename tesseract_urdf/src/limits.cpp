@@ -27,12 +27,14 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
-#include <tesseract_urdf/limits.h>
 #include <tesseract_scene_graph/joint.h>
+#include <tesseract_urdf/limits.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_scene_graph::JointLimits::Ptr tesseract_urdf::parseLimits(const tinyxml2::XMLElement* xml_element,
                                                                     int /*version*/)
@@ -74,17 +76,17 @@ tesseract_urdf::writeLimits(const std::shared_ptr<const tesseract_scene_graph::J
   if (!tesseract_common::almostEqualRelativeAndAbs(limits->lower, 0.0) ||
       !tesseract_common::almostEqualRelativeAndAbs(limits->upper, 0.0))
   {
-    xml_element->SetAttribute("lower", limits->lower);
-    xml_element->SetAttribute("upper", limits->upper);
+    xml_element->SetAttribute("lower", toString(limits->lower).c_str());
+    xml_element->SetAttribute("upper", toString(limits->upper).c_str());
   }
 
   // Write out nonzero limits for effort, velocity, or acceleration.
   if (!tesseract_common::almostEqualRelativeAndAbs(limits->effort, 0.0))
-    xml_element->SetAttribute("effort", limits->effort);
+    xml_element->SetAttribute("effort", toString(limits->effort).c_str());
   if (!tesseract_common::almostEqualRelativeAndAbs(limits->velocity, 0.0))
-    xml_element->SetAttribute("velocity", limits->velocity);
+    xml_element->SetAttribute("velocity", toString(limits->velocity).c_str());
   if (!tesseract_common::almostEqualRelativeAndAbs(limits->acceleration, 0.0))
-    xml_element->SetAttribute("acceleration", limits->acceleration);
+    xml_element->SetAttribute("acceleration", toString(limits->acceleration).c_str());
 
   return xml_element;
 }

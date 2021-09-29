@@ -27,11 +27,13 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/cylinder.h>
 #include <tesseract_geometry/impl/cylinder.h>
+#include <tesseract_urdf/cylinder.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_geometry::Cylinder::Ptr tesseract_urdf::parseCylinder(const tinyxml2::XMLElement* xml_element,
                                                                 int /*version*/)
@@ -52,7 +54,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeCylinder(const std::shared_ptr<const 
   if (cylinder == nullptr)
     std::throw_with_nested(std::runtime_error("Cylinder is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("cylinder");
-  xml_element->SetAttribute("length", cylinder->getLength());
-  xml_element->SetAttribute("radius", cylinder->getRadius());
+  xml_element->SetAttribute("length", toString(cylinder->getLength()).c_str());
+  xml_element->SetAttribute("radius", toString(cylinder->getRadius()).c_str());
   return xml_element;
 }

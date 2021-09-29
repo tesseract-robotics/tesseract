@@ -27,19 +27,20 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
-#include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
+
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <Eigen/Geometry>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_geometry/impl/sdf_mesh.h>
+#include <tesseract_geometry/mesh_parser.h>
+#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_scene_graph/utils.h>
 #include <tesseract_urdf/mesh_writer.h>
 #include <tesseract_urdf/sdf_mesh.h>
-#include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_geometry/mesh_parser.h>
-#include <tesseract_geometry/impl/sdf_mesh.h>
 
 std::vector<tesseract_geometry::SDFMesh::Ptr>
 tesseract_urdf::parseSDFMesh(const tinyxml2::XMLElement* xml_element,
@@ -101,6 +102,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeSDFMesh(const std::shared_ptr<const t
   if (sdf_mesh == nullptr)
     std::throw_with_nested(std::runtime_error("SDF Mesh is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("sdf_mesh");
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   try
   {
@@ -114,10 +116,9 @@ tinyxml2::XMLElement* tesseract_urdf::writeSDFMesh(const std::shared_ptr<const t
 
   if (!sdf_mesh->getScale().isOnes())
   {
-    std::string scale_string = std::to_string(sdf_mesh->getScale().x()) + " " + std::to_string(sdf_mesh->getScale().y()) +
-        " " + std::to_string(sdf_mesh->getScale().z());
-    xml_element->SetAttribute("scale", scale_string.c_str());
+    std::stringstream scale_string;
+    scale_string << sdf_mesh->getScale().format(eigen_format);
+    xml_element->SetAttribute("scale", scale_string.str().c_str());
   }
-
   return xml_element;
 }

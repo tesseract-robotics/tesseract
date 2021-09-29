@@ -27,20 +27,21 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
-#include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
+
 #include <boost/algorithm/string.hpp>
+#include <Eigen/Geometry>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/joint.h>
+#include <tesseract_scene_graph/joint.h>
 #include <tesseract_urdf/calibration.h>
 #include <tesseract_urdf/dynamics.h>
+#include <tesseract_urdf/joint.h>
 #include <tesseract_urdf/limits.h>
 #include <tesseract_urdf/mimic.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/safety_controller.h>
-#include <tesseract_scene_graph/joint.h>
 
 tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XMLElement* xml_element, int version)
 {
@@ -275,9 +276,10 @@ tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tes
       joint->type != tesseract_scene_graph::JointType::FIXED)
   {
     tinyxml2::XMLElement* xml_axis = doc.NewElement("axis");
-    std::string axis_str =
-        std::to_string(joint->axis.x()) + " " + std::to_string(joint->axis.y()) + " " + std::to_string(joint->axis.z());
-    xml_axis->SetAttribute("xyz", axis_str.c_str());
+    Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
+    std::stringstream axis_str;
+    axis_str << joint->axis.format(eigen_format);
+    xml_axis->SetAttribute("xyz", axis_str.str().c_str());
     xml_element->InsertEndChild(xml_axis);
   }
 

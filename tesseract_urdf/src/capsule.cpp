@@ -27,11 +27,13 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/capsule.h>
 #include <tesseract_geometry/impl/capsule.h>
+#include <tesseract_urdf/capsule.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_geometry::Capsule::Ptr tesseract_urdf::parseCapsule(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {
@@ -51,7 +53,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeCapsule(const std::shared_ptr<const t
   if (capsule == nullptr)
     std::throw_with_nested(std::runtime_error("Capsule is nullptr and cannot be written to XML file"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("capsule");
-  xml_element->SetAttribute("length", capsule->getLength());
-  xml_element->SetAttribute("radius", capsule->getRadius());
+  xml_element->SetAttribute("length", toString(capsule->getLength()).c_str());
+  xml_element->SetAttribute("radius", toString(capsule->getRadius()).c_str());
   return xml_element;
 }

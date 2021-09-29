@@ -27,11 +27,13 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/sphere.h>
 #include <tesseract_geometry/impl/sphere.h>
+#include <tesseract_urdf/sphere.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_geometry::Sphere::Ptr tesseract_urdf::parseSphere(const tinyxml2::XMLElement* xml_element, int /*version*/)
 {
@@ -49,7 +51,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeSphere(const std::shared_ptr<const te
     std::throw_with_nested(std::runtime_error("Sphere is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("sphere");
 
-  xml_element->SetAttribute("radius", sphere->getRadius());
+  xml_element->SetAttribute("radius", toString(sphere->getRadius()).c_str());
 
   return xml_element;
 }
