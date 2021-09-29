@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_common/utils.h>
 
 namespace tesseract_scene_graph
 {
@@ -322,6 +323,21 @@ bool SceneGraph::addJointHelper(const Joint::Ptr& joint_ptr)
                            "continuous.",
                            joint_ptr->getName().c_str());
     return false;
+  }
+
+  // Need to set limits for continuous joints. TODO: This may not be required
+  // by the optimization library but may be nice to have
+  if (joint_ptr->type == tesseract_scene_graph::JointType::CONTINUOUS)
+  {
+    if (joint_ptr->limits == nullptr)
+    {
+      joint_ptr->limits = std::make_shared<JointLimits>(-4 * M_PI, 4 * M_PI, 0, 2, 1);
+    }
+    else if (tesseract_common::almostEqualRelativeAndAbs(joint_ptr->limits->lower, joint_ptr->limits->upper, 1e-5))
+    {
+      joint_ptr->limits->lower = -4 * M_PI;
+      joint_ptr->limits->upper = +4 * M_PI;
+    }
   }
 
   double d = joint_ptr->parent_to_joint_origin_transform.translation().norm();
