@@ -874,67 +874,67 @@ void testSceneGraphKDLTree(KDL::Tree& tree)
   }
 }
 
-void testSubSceneGraphKDLTree(KDL::Tree& tree)
+void testSubSceneGraphKDLTree(tesseract_scene_graph::KDLTreeData& data,
+                              tesseract_scene_graph::KDLTreeData& full_data,
+                              const std::unordered_map<std::string, double>& joint_values)
 {
   std::vector<std::string> prefix{ "left_", "right_" };
-  KDL::TreeFkSolverPos_recursive solver(tree);
-  KDL::JntArray joints;
-  joints.resize(6);
-  for (unsigned int i = 0; i < 6; ++i)
-    joints(i) = 0;
+  KDL::TreeFkSolverPos_recursive solver(data.tree);
+  KDL::TreeFkSolverPos_recursive full_solver(data.tree);
 
-  EXPECT_EQ(tree.getRootSegment()->first, "world");
+  KDL::JntArray joints;
+  joints.resize(data.tree.getNrOfJoints());
+  for (unsigned int i = 0; i < data.tree.getNrOfJoints(); ++i)
+    joints(i) = joint_values.at(data.active_joint_names[i]);
+
+  KDL::JntArray full_joints;
+  joints.resize(full_data.tree.getNrOfJoints());
+  for (unsigned int i = 0; i < full_data.tree.getNrOfJoints(); ++i)
+    joints(i) = joint_values.at(full_data.active_joint_names[i]);
+
+  EXPECT_EQ(data.tree.getRootSegment()->first, "world");
+  EXPECT_EQ(full_data.tree.getRootSegment()->first, "world");
 
   for (const auto& p : prefix)
   {
     {
       KDL::Frame frame;
       solver.JntToCart(joints, frame, p + "link_2");
-      Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
-      Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
-      if (p == "left_")
-        c_frame.translation()(0) = 1;
-      else
-        c_frame.translation()(0) = -1;
-      EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
+
+      KDL::Frame c_frame;
+      full_solver.JntToCart(full_joints, c_frame, p + "link_2");
+
+      EXPECT_TRUE(tesseract_scene_graph::convert(frame).isApprox(tesseract_scene_graph::convert(c_frame), 1e-8));
     }
 
     {
       KDL::Frame frame;
       solver.JntToCart(joints, frame, p + "link_3");
-      Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
-      Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
-      if (p == "left_")
-        c_frame.translation()(0) = 1 + 1.25;
-      else
-        c_frame.translation()(0) = -1 + 1.25;
-      EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
+
+      KDL::Frame c_frame;
+      full_solver.JntToCart(full_joints, c_frame, p + "link_3");
+
+      EXPECT_TRUE(tesseract_scene_graph::convert(frame).isApprox(tesseract_scene_graph::convert(c_frame), 1e-8));
     }
 
     {
       KDL::Frame frame;
       solver.JntToCart(joints, frame, p + "link_4");
-      Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
-      Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
-      if (p == "left_")
-        c_frame.translation()(0) = 1 + 2 * 1.25;
-      else
-        c_frame.translation()(0) = -1 + 2 * 1.25;
-      EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
+
+      KDL::Frame c_frame;
+      full_solver.JntToCart(full_joints, c_frame, p + "link_4");
+
+      EXPECT_TRUE(tesseract_scene_graph::convert(frame).isApprox(tesseract_scene_graph::convert(c_frame), 1e-8));
     }
 
     {
       KDL::Frame frame;
       solver.JntToCart(joints, frame, p + "link_5");
-      Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
-      Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
-      if (p == "left_")
-        c_frame.translation()(0) = 1;
-      else
-        c_frame.translation()(0) = -1;
 
-      c_frame.translation()(1) = 1.25;
-      EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
+      KDL::Frame c_frame;
+      full_solver.JntToCart(full_joints, c_frame, p + "link_5");
+
+      EXPECT_TRUE(tesseract_scene_graph::convert(frame).isApprox(tesseract_scene_graph::convert(c_frame), 1e-8));
     }
   }
 }
@@ -1103,16 +1103,21 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 
   std::unordered_map<std::string, double> joint_values;
   for (const auto& joint_name : joint_names)
-    joint_values[joint_name] = 0;
+  {
+    auto jnt = g.getJoint(joint_name);
+    std::uniform_real_distribution<double> sample(jnt->limits->lower, jnt->limits->upper);
+    joint_values[joint_name] = sample(tesseract_common::mersenne);
+  }
 
   {
+    KDLTreeData full_data = parseSceneGraph(g);
     KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, sub_joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
-    testSubSceneGraphKDLTree(data.tree);
+    testSubSceneGraphKDLTree(data, full_data, joint_values);
 
     // walk through tree
     std::cout << " ======================================" << std::endl;
@@ -1135,13 +1140,14 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
   }
 
   {
+    KDLTreeData full_data = parseSceneGraph(g);
     KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, sub_joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
-    testSubSceneGraphKDLTree(data.tree);
+    testSubSceneGraphKDLTree(data, full_data, joint_values);
 
     // walk through tree
     std::cout << " ======================================" << std::endl;
