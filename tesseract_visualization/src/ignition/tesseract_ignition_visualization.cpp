@@ -87,7 +87,7 @@ void TesseractIgnitionVisualization::waitForConnection(long seconds) const
 void TesseractIgnitionVisualization::plotEnvironment(const tesseract_environment::Environment& env, std::string /*ns*/)
 {
   ignition::msgs::Scene msg;
-  toMsg(msg, entity_manager_, *(env.getSceneGraph()), env.getCurrentState()->link_transforms);
+  toMsg(msg, entity_manager_, *(env.getSceneGraph()), env.getState().link_transforms);
   scene_pub_.Publish(msg);
 }
 
