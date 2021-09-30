@@ -32,13 +32,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/types.h>
-#include <tesseract_common/resource_locator.h>
 #include <tesseract_geometry/geometry.h>
 #include <tesseract_geometry/impl/mesh_material.h>
 #include <tesseract_geometry/impl/polygon_mesh.h>
-#include <tesseract_common/resource.h>
-#include <tesseract_common/types.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_geometry::SDFMesh)
@@ -58,8 +54,8 @@ public:
   /**
    * @brief SDF Mesh geometry
    * @param vertices A vector of vertices associated with the mesh
-   * @param triangles A vector of face indices where the first indice indicates the number of vertices associated
-   *                  with the face followed by the vertice index in parameter vertices. For example a triangle
+   * @param triangles A vector of face indices where the first index indicates the number of vertices associated
+   *                  with the face followed by the vertices index in parameter vertices. For example a triangle
    *                  has three vertices so there should be four inputs where the first should be 3 indicating there are
    *                  three vertices that define this face followed by three indices.
    * @param resource A resource locator for locating resource
@@ -96,8 +92,8 @@ public:
   /**
    * @brief SDF Mesh geometry
    * @param vertices A vector of vertices associated with the mesh
-   * @param triangles A vector of face indices where the first indice indicates the number of vertices associated
-   *                  with the face followed by the vertice index in parameter vertices. For example a triangle
+   * @param triangles A vector of face indices where the first index indicates the number of vertices associated
+   *                  with the face followed by the vertices index in parameter vertices. For example a triangle
    *                  has three vertices so there should be four inputs where the first should be 3 indicating there are
    *                  three vertices that define this face followed by three indices.
    * @param triangle_count Provide the number of faces. This is faster because it does not need to loop over triangles.
