@@ -35,8 +35,7 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-ROPInvKin::ROPInvKin(std::string name,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+ROPInvKin::ROPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
                      const tesseract_scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
@@ -61,8 +60,7 @@ ROPInvKin::ROPInvKin(std::string name,
     positioner_limits(i, 1) = joint->limits->upper;
   }
 
-  init(std::move(name),
-       scene_graph,
+  init(scene_graph,
        scene_state,
        std::move(manipulator),
        manipulator_reach,
@@ -72,29 +70,26 @@ ROPInvKin::ROPInvKin(std::string name,
        std::move(solver_name));
 }
 
-ROPInvKin::ROPInvKin(std::string name,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+ROPInvKin::ROPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
                      const tesseract_scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
                      ForwardKinematics::UPtr positioner,
-                     const Eigen::MatrixX2d& poitioner_sample_range,
+                     const Eigen::MatrixX2d& positioner_sample_range,
                      const Eigen::VectorXd& positioner_sample_resolution,
                      std::string solver_name)
 {
-  init(std::move(name),
-       scene_graph,
+  init(scene_graph,
        scene_state,
        std::move(manipulator),
        manipulator_reach,
        std::move(positioner),
-       poitioner_sample_range,
+       positioner_sample_range,
        positioner_sample_resolution,
        std::move(solver_name));
 }
 
-void ROPInvKin::init(std::string name,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+void ROPInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
                      const tesseract_scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
@@ -134,7 +129,6 @@ void ROPInvKin::init(std::string name,
                            scene_state.link_transforms.at(manipulator->getBaseLinkName());
   }
 
-  name_ = std::move(name);
   solver_name_ = std::move(solver_name);
   manip_inv_kin_ = std::move(manipulator);
   positioner_fwd_kin_ = std::move(positioner);
@@ -169,7 +163,6 @@ ROPInvKin::ROPInvKin(const ROPInvKin& other) { *this = other; }
 
 ROPInvKin& ROPInvKin::operator=(const ROPInvKin& other)
 {
-  name_ = other.name_;
   manip_inv_kin_ = other.manip_inv_kin_->clone();
   positioner_fwd_kin_ = other.positioner_fwd_kin_->clone();
   manip_tip_link_ = other.manip_tip_link_;
@@ -257,8 +250,6 @@ std::string ROPInvKin::getBaseLinkName() const { return positioner_fwd_kin_->get
 std::string ROPInvKin::getWorkingFrame() const { return positioner_fwd_kin_->getBaseLinkName(); }
 
 std::vector<std::string> ROPInvKin::getTipLinkNames() const { return manip_inv_kin_->getTipLinkNames(); }
-
-std::string ROPInvKin::getName() const { return name_; }
 
 std::string ROPInvKin::getSolverName() const { return solver_name_; }
 

@@ -62,15 +62,13 @@ public:
 
   /**
    * @brief Create Inverse Kinematics Object
-   * @param group_name The group name of the kinematic object
    * @param solver_name The solver name of the kinematic object
    * @param scene_graph The Tesseract Scene Graph
    * @param scene_state The state of the scene graph
    * @param plugin_factory Provide access to the plugin factory so plugins and load plugins
    * @return If failed to create, nullptr is returned.
    */
-  virtual InverseKinematics::UPtr create(const std::string& group_name,
-                                         const std::string& solver_name,
+  virtual InverseKinematics::UPtr create(const std::string& solver_name,
                                          const tesseract_scene_graph::SceneGraph& scene_graph,
                                          const tesseract_scene_graph::SceneState& scene_state,
                                          const KinematicsPluginFactory& plugin_factory,
@@ -88,15 +86,13 @@ public:
 
   /**
    * @brief Create Inverse Kinematics Object
-   * @param group_name The group name of the kinematic object
    * @param solver_name The solver name of the kinematic object
    * @param scene_graph The Tesseract Scene Graph
    * @param scene_state The state of the scene graph
    * @param plugin_factory Provide access to the plugin factory so plugins and load plugins
    * @return If failed to create, nullptr is returned.
    */
-  virtual ForwardKinematics::UPtr create(const std::string& group_name,
-                                         const std::string& solver_name,
+  virtual ForwardKinematics::UPtr create(const std::string& solver_name,
                                          const tesseract_scene_graph::SceneGraph& scene_graph,
                                          const tesseract_scene_graph::SceneState& scene_state,
                                          const KinematicsPluginFactory& plugin_factory,
@@ -114,7 +110,7 @@ public:
   KinematicsPluginFactory& operator=(KinematicsPluginFactory&&) = default;
 
   /**
-   * @brief Load plugins from yaml nodde
+   * @brief Load plugins from yaml node
    * @param config The config node
    */
   KinematicsPluginFactory(YAML::Node config);
@@ -145,7 +141,7 @@ public:
 
   /**
    * @brief Add a library to search for plugin name
-   * @param library_name The library name without the prefix or sufix
+   * @param library_name The library name without the prefix or suffix
    */
   void addSearchLibrary(const std::string& library_name);
 
@@ -263,8 +259,7 @@ public:
    * @param scene_graph The scene graph
    * @param scene_state The scene state
    */
-  ForwardKinematics::UPtr createFwdKin(const std::string& group_name,
-                                       const std::string& solver_name,
+  ForwardKinematics::UPtr createFwdKin(const std::string& solver_name,
                                        const tesseract_common::PluginInfo& plugin_info,
                                        const tesseract_scene_graph::SceneGraph& scene_graph,
                                        const tesseract_scene_graph::SceneState& scene_state) const;
@@ -275,8 +270,7 @@ public:
    * @param scene_graph The scene graph
    * @param scene_state The scene state
    */
-  InverseKinematics::UPtr createInvKin(const std::string& group_name,
-                                       const std::string& solver_name,
+  InverseKinematics::UPtr createInvKin(const std::string& solver_name,
                                        const tesseract_common::PluginInfo& plugin_info,
                                        const tesseract_scene_graph::SceneGraph& scene_graph,
                                        const tesseract_scene_graph::SceneState& scene_state) const;

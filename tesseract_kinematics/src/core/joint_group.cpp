@@ -44,8 +44,7 @@ JointGroup::JointGroup(std::string name,
   for (const auto& joint_name : joint_names_)
   {
     if (scene_graph.getJoint(joint_name) == nullptr)
-      throw std::runtime_error("Joint name '" + joint_name +
-                               "' does not exist in the provided scene graph!");
+      throw std::runtime_error("Joint name '" + joint_name + "' does not exist in the provided scene graph!");
   }
 
   tesseract_scene_graph::KDLTreeData data =

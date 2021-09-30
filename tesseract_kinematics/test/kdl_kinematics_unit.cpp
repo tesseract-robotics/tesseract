@@ -16,7 +16,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)  // NOLINT
 {
   auto scene_graph = getSceneGraphIIWA();
 
-  tesseract_kinematics::KDLInvKinChainLMA derived_kin("manip", *scene_graph, "base_link", "tool0");
+  tesseract_kinematics::KDLInvKinChainLMA derived_kin(*scene_graph, "base_link", "tool0");
 
   tesseract_kinematics::KinematicsPluginFactory factory;
   runInvKinIIWATest(factory, "KDLInvKinChainLMAFactory", "KDLFwdKinChainFactory");
@@ -26,7 +26,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)  // NOLINT
 {
   auto scene_graph = getSceneGraphIIWA();
 
-  tesseract_kinematics::KDLInvKinChainNR derived_kin("manip", *scene_graph, "base_link", "tool0");
+  tesseract_kinematics::KDLInvKinChainNR derived_kin(*scene_graph, "base_link", "tool0");
 
   tesseract_kinematics::KinematicsPluginFactory factory;
   runInvKinIIWATest(factory, "KDLInvKinChainNRFactory", "KDLFwdKinChainFactory");

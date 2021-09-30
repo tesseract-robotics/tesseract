@@ -146,7 +146,7 @@ TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB();
 
-  tesseract_kinematics::KDLFwdKinChain fwd_kin("manip", *scene_graph, "base_link", "tool0");
+  tesseract_kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
@@ -171,7 +171,7 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB();
 
-  tesseract_kinematics::KDLFwdKinChain fwd_kin("manip", *scene_graph, "base_link", "tool0");
+  tesseract_kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);

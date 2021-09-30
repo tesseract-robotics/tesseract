@@ -51,7 +51,7 @@ namespace tesseract_kinematics
  * @details For simple case your inverse kinetics object only requires a single input to solve,
  * but imagine the case where you have two robots and a positioner. Now each robot requires an
  * input to solve IK for. This structure is to support the ability to provide multiple inputs for
- * kinematic arragements involving multiple robots.
+ * kinematic arrangements involving multiple robots.
  */
 using IKInput = tesseract_common::TransformMap;
 
@@ -77,13 +77,15 @@ public:
 
   /**
    * @brief Calculates joint solutions given a pose for each tip link.
-   * @details This interface supports IK for both kinematic chains that have a single tool tip link and kinematic chains that have multiple tip links. For example, consider a robot with external part positioner: a pose can be specified to be relative to the tip link of the robot or the tip link of the positioner
-   
-   is to support a pose relative to a active link. For example a robot
-   * with an external positioner where the pose is relative to the tip link of the positioner.
+   * @details This interface supports IK for both kinematic chains that have a single tool tip link and kinematic chains
+   * that have multiple tip links. For example, consider a robot with external part positioner: a pose can be specified
+   * to be relative to the tip link of the robot or the tip link of the positioner is to support a pose relative to a
+   * active link. For example a robot with an external positioner where the pose is relative to the tip link of the
+   * positioner.
    * @note Redundant joint solutions can be provided by the utility function getRedundantSolutions
-   * @param tip_link_poses A map of poses corresponding to each tip link provided in getTipLinkNames and relative to the working frame of the kinematics group for which to solve inverse kinematics
-   * @param seed Vector of seed joint angles (size must match number of joints in kinemtic object)
+   * @param tip_link_poses A map of poses corresponding to each tip link provided in getTipLinkNames and relative to the
+   * working frame of the kinematics group for which to solve inverse kinematics
+   * @param seed Vector of seed joint angles (size must match number of joints in kinematic object)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
   virtual IKSolutions calcInvKin(const IKInput& tip_link_poses,
@@ -101,7 +103,7 @@ public:
    */
   virtual Eigen::Index numJoints() const = 0;
 
-  /** @brief getter for the robot base link name */
+  /** @brief Get the robot base link name */
   virtual std::string getBaseLinkName() const = 0;
 
   /**
@@ -112,18 +114,16 @@ public:
 
   /**
    * @brief Get the names of the tip links of the kinematics group
-   * @details In the case of a kinematic chain, this returns one tip link; in the case of a kinematic tree this returns the tip link for each branch of the tree.
+   * @details In the case of a kinematic chain, this returns one tip link; in the case of a kinematic tree this returns
+   * the tip link for each branch of the tree.
    */
   virtual std::vector<std::string> getTipLinkNames() const = 0;
 
-  /** @brief Name of the manipulator */
-  virtual std::string getName() const = 0;
-
-  /** @brief Get the name of the solver. Recommned using the name of the class. */
+  /** @brief Get the name of the solver. Recommend using the name of the class. */
   virtual std::string getSolverName() const = 0;
 
   /** @brief Clone the forward kinematics object */
-  virtual std::unique_ptr<InverseKinematics> clone() const = 0;
+  virtual InverseKinematics::UPtr clone() const = 0;
 };
 
 }  // namespace tesseract_kinematics

@@ -345,8 +345,8 @@ tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::str
   return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph_const_, current_state_);
 }
 
-tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicsGroup(const std::string& group_name,
-                                                                           std::string ik_solver_name) const
+tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const std::string& group_name,
+                                                                          std::string ik_solver_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   auto it =
@@ -366,7 +366,7 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicsGroup(const
     return nullptr;
 
   return std::make_unique<tesseract_kinematics::KinematicGroup>(
-      std::move(inv_kin), *scene_graph_const_, current_state_);
+      group_name, std::move(inv_kin), *scene_graph_const_, current_state_);
 }
 
 // NOLINTNEXTLINE

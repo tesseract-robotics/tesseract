@@ -35,10 +35,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-KinematicGroup::KinematicGroup(InverseKinematics::UPtr inv_kin,
+KinematicGroup::KinematicGroup(std::string name,
+                               InverseKinematics::UPtr inv_kin,
                                const tesseract_scene_graph::SceneGraph& scene_graph,
                                const tesseract_scene_graph::SceneState& scene_state)
-  : JointGroup(inv_kin->getName(), inv_kin->getJointNames(), scene_graph, scene_state)
+  : JointGroup(std::move(name), inv_kin->getJointNames(), scene_graph, scene_state)
 {
   inv_kin_ = std::move(inv_kin);
 
@@ -63,11 +64,11 @@ KinematicGroup::KinematicGroup(InverseKinematics::UPtr inv_kin,
       inv_working_frames_map_[child] = working_frame;
   }
 
-  tip_link_names_ = inv_kin_->getTipLinkNames();
+  ik_tip_links_ = inv_kin_->getTipLinkNames();
   for (const auto& tip_link : inv_kin_->getTipLinkNames())
   {
     std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(tip_link);
-    tip_link_names_.insert(tip_link_names_.end(), child_link_names.begin(), child_link_names.end());
+    ik_tip_links_.insert(ik_tip_links_.end(), child_link_names.begin(), child_link_names.end());
 
     inv_tip_links_map_[tip_link] = tip_link;
     for (const auto& child : child_link_names)
@@ -86,7 +87,7 @@ KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
   inv_kin_ = other.inv_kin_->clone();
   inv_to_fwd_base_ = other.inv_to_fwd_base_;
   working_frames_ = other.working_frames_;
-  tip_link_names_ = other.tip_link_names_;
+  ik_tip_links_ = other.ik_tip_links_;
   inv_working_frames_map_ = other.inv_working_frames_map_;
   inv_tip_links_map_ = other.inv_tip_links_map_;
   return *this;
@@ -99,8 +100,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   IKInput ik_inputs;
   for (const auto& tip_link_pose : tip_link_poses)
   {
-    assert(std::find(tip_link_names_.begin(), tip_link_names_.end(), tip_link_pose.tip_link_name) !=
-           tip_link_names_.end());
+    assert(std::find(ik_tip_links_.begin(), ik_tip_links_.end(), tip_link_pose.tip_link_name) != ik_tip_links_.end());
     assert(std::find(working_frames_.begin(), working_frames_.end(), tip_link_pose.working_frame) !=
            working_frames_.end());
 
@@ -129,7 +129,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   return solutions_filtered;
 }
 
-std::vector<std::string> KinematicGroup::getWorkingFrames() const { return working_frames_; }
+std::vector<std::string> KinematicGroup::getAllValidWorkingFrames() const { return working_frames_; }
 
-std::vector<std::string> KinematicGroup::getTipLinkNames() const { return tip_link_names_; }
+std::vector<std::string> KinematicGroup::getAllPossibleTipLinkNames() const { return ik_tip_links_; }
 }  // namespace tesseract_kinematics

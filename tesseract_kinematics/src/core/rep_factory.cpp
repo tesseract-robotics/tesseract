@@ -28,8 +28,7 @@
 
 namespace tesseract_kinematics
 {
-InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
-                                                 const std::string& solver_name,
+InverseKinematics::UPtr REPInvKinFactory::create(const std::string& solver_name,
                                                  const tesseract_scene_graph::SceneGraph& scene_graph,
                                                  const tesseract_scene_graph::SceneState& scene_state,
                                                  const KinematicsPluginFactory& plugin_factory,
@@ -103,8 +102,6 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
     // Get Positioner
     if (YAML::Node positioner = config["positioner"])
     {
-      std::string positioner_group_name = group_name + "_positioner";
-
       tesseract_common::PluginInfo p_info;
       if (YAML::Node n = positioner["class"])
         p_info.class_name = n.as<std::string>();
@@ -114,7 +111,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
       if (YAML::Node n = positioner["config"])
         p_info.config = n;
 
-      fwd_kin = plugin_factory.createFwdKin(positioner_group_name, p_info.class_name, p_info, scene_graph, scene_state);
+      fwd_kin = plugin_factory.createFwdKin(p_info.class_name, p_info, scene_graph, scene_state);
       if (fwd_kin == nullptr)
         throw std::runtime_error("REPInvKinFactory, failed to create positioner forward kinematics!");
 
@@ -145,8 +142,6 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
     // Get Manipulator
     if (YAML::Node manipulator = config["manipulator"])
     {
-      std::string manipulator_group_name = group_name + "_manipulator";
-
       tesseract_common::PluginInfo m_info;
       if (YAML::Node n = manipulator["class"])
         m_info.class_name = n.as<std::string>();
@@ -156,8 +151,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
       if (YAML::Node n = manipulator["config"])
         m_info.config = n;
 
-      inv_kin =
-          plugin_factory.createInvKin(manipulator_group_name, m_info.class_name, m_info, scene_graph, scene_state);
+      inv_kin = plugin_factory.createInvKin(m_info.class_name, m_info, scene_graph, scene_state);
       if (inv_kin == nullptr)
         throw std::runtime_error("REPInvKinFactory, failed to create positioner forward kinematics!");
     }
@@ -172,15 +166,8 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& group_name,
     return nullptr;
   }
 
-  return std::make_unique<REPInvKin>(group_name,
-                                     scene_graph,
-                                     scene_state,
-                                     std::move(inv_kin),
-                                     m_reach,
-                                     std::move(fwd_kin),
-                                     sample_range,
-                                     sample_res,
-                                     solver_name);
+  return std::make_unique<REPInvKin>(
+      scene_graph, scene_state, std::move(inv_kin), m_reach, std::move(fwd_kin), sample_range, sample_res, solver_name);
 }
 }  // namespace tesseract_kinematics
 

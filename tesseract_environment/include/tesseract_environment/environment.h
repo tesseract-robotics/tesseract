@@ -193,14 +193,14 @@ public:
                                                        const std::vector<std::string>& joint_names) const;
 
   /**
-   * @brief Get a kinematics group given group name and solver name
+   * @brief Get a kinematic group given group name and solver name
    * @details If ik_solver_name is empty it will choose the first ik solver for the group
    * @param group_name The group name
    * @param ik_solver_name The IK solver name
    * @return A kinematics group
    */
-  tesseract_kinematics::KinematicGroup::UPtr getKinematicsGroup(const std::string& group_name,
-                                                                std::string ik_solver_name = "") const;
+  tesseract_kinematics::KinematicGroup::UPtr getKinematicGroup(const std::string& group_name,
+                                                               std::string ik_solver_name = "") const;
 
   /**
    * @brief Find tool center point provided in the manipulator info
