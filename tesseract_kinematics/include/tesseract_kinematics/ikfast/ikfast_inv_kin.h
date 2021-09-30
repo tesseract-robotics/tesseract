@@ -99,13 +99,12 @@ public:
 
   /**
    * @brief Construct IKFast Inverse Kinematics
-   * @param name The name of the kinematic chain
    * @param base_link_name The name of the base link for the kinematic chain
    * @param tip_link_name The name of the tip link for the kinematic chain
    * @param joint_names The joint names for the kinematic chain
+   * @param solver_name The solver name of the kinematic chain
    */
-  IKFastInvKin(std::string name,
-               std::string base_link_name,
+  IKFastInvKin(std::string base_link_name,
                std::string tip_link_name,
                std::vector<std::string> joint_names,
                std::string solver_name = IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
@@ -117,12 +116,10 @@ public:
   std::string getBaseLinkName() const override;
   std::string getWorkingFrame() const override;
   std::vector<std::string> getTipLinkNames() const override;
-  std::string getName() const override;
   std::string getSolverName() const override;
   InverseKinematics::UPtr clone() const override;
 
 protected:
-  std::string name_;                     /**< @brief Name of the kinematic chain */
   std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name_;            /**< @brief Link name of last kink in the kinematic object */
   std::vector<std::string> joint_names_; /**< @brief Joint names for the kinematic object */

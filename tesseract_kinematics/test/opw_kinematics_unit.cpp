@@ -71,13 +71,12 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
   std::string tip_link_name = "tool0";
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
 
-  KDLFwdKinChain fwd_kin(manip_name, *scene_graph, base_link_name, tip_link_name);
+  KDLFwdKinChain fwd_kin(*scene_graph, base_link_name, tip_link_name);
 
   opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
 
-  auto inv_kin = std::make_shared<OPWInvKin>(manip_name, opw_params, base_link_name, tip_link_name, joint_names);
+  auto inv_kin = std::make_shared<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_names);
 
-  EXPECT_EQ(inv_kin->getName(), manip_name);
   EXPECT_EQ(inv_kin->getSolverName(), OPW_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 6);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
@@ -91,7 +90,6 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
   // Check cloned
   InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
   EXPECT_TRUE(inv_kin2 != nullptr);
-  EXPECT_EQ(inv_kin2->getName(), manip_name);
   EXPECT_EQ(inv_kin2->getSolverName(), OPW_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin2->numJoints(), 6);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);

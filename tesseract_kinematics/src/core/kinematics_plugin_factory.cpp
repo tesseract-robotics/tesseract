@@ -243,12 +243,11 @@ KinematicsPluginFactory::createFwdKin(const std::string& group_name,
     return nullptr;
   }
 
-  return createFwdKin(group_name, solver_name, solver_it->second, scene_graph, scene_state);
+  return createFwdKin(solver_name, solver_it->second, scene_graph, scene_state);
 }
 
 ForwardKinematics::UPtr
-KinematicsPluginFactory::createFwdKin(const std::string& group_name,
-                                      const std::string& solver_name,
+KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
                                       const tesseract_common::PluginInfo& plugin_info,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
                                       const tesseract_scene_graph::SceneState& scene_state) const
@@ -257,7 +256,7 @@ KinematicsPluginFactory::createFwdKin(const std::string& group_name,
   {
     auto it = fwd_kin_factories_.find(plugin_info.class_name);
     if (it != fwd_kin_factories_.end())
-      return it->second->create(group_name, solver_name, scene_graph, scene_state, *this, plugin_info.config);
+      return it->second->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
     auto plugin = plugin_loader_.instantiate<FwdKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
@@ -266,7 +265,7 @@ KinematicsPluginFactory::createFwdKin(const std::string& group_name,
       return nullptr;
     }
     fwd_kin_factories_[plugin_info.class_name] = plugin;
-    return plugin->create(group_name, solver_name, scene_graph, scene_state, *this, plugin_info.config);
+    return plugin->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
   }
   catch (const std::exception&)
   {
@@ -301,12 +300,11 @@ KinematicsPluginFactory::createInvKin(const std::string& group_name,
     return nullptr;
   }
 
-  return createInvKin(group_name, solver_name, solver_it->second, scene_graph, scene_state);
+  return createInvKin(solver_name, solver_it->second, scene_graph, scene_state);
 }
 
 InverseKinematics::UPtr
-KinematicsPluginFactory::createInvKin(const std::string& group_name,
-                                      const std::string& solver_name,
+KinematicsPluginFactory::createInvKin(const std::string& solver_name,
                                       const tesseract_common::PluginInfo& plugin_info,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
                                       const tesseract_scene_graph::SceneState& scene_state) const
@@ -315,7 +313,7 @@ KinematicsPluginFactory::createInvKin(const std::string& group_name,
   {
     auto it = inv_kin_factories_.find(plugin_info.class_name);
     if (it != inv_kin_factories_.end())
-      return it->second->create(group_name, solver_name, scene_graph, scene_state, *this, plugin_info.config);
+      return it->second->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
     auto plugin = plugin_loader_.instantiate<InvKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
@@ -324,7 +322,7 @@ KinematicsPluginFactory::createInvKin(const std::string& group_name,
       return nullptr;
     }
     inv_kin_factories_[plugin_info.class_name] = plugin;
-    return plugin->create(group_name, solver_name, scene_graph, scene_state, *this, plugin_info.config);
+    return plugin->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
   }
   catch (const std::exception&)
   {

@@ -220,14 +220,12 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
 }
 // LCOV_EXCL_STOP
 
-URInvKin::URInvKin(std::string name,
-                   URParameters params,
+URInvKin::URInvKin(URParameters params,
                    std::string base_link_name,
                    std::string tip_link_name,
                    std::vector<std::string> joint_names,
                    std::string solver_name)
-  : name_(std::move(name))
-  , params_(params)
+  : params_(params)
   , base_link_name_(std::move(base_link_name))
   , tip_link_name_(std::move(tip_link_name))
   , joint_names_(std::move(joint_names))
@@ -243,7 +241,6 @@ URInvKin::URInvKin(const URInvKin& other) { *this = other; }
 
 URInvKin& URInvKin::operator=(const URInvKin& other)
 {
-  name_ = other.name_;
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
   joint_names_ = other.joint_names_;
@@ -288,7 +285,6 @@ std::vector<std::string> URInvKin::getJointNames() const { return joint_names_; 
 std::string URInvKin::getBaseLinkName() const { return base_link_name_; }
 std::string URInvKin::getWorkingFrame() const { return base_link_name_; }
 std::vector<std::string> URInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
-std::string URInvKin::getName() const { return name_; }
 std::string URInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract_kinematics

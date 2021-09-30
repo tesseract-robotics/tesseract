@@ -35,17 +35,17 @@ inline opw_kinematics::Parameters<double> getOPWKinematicsParamABB()
 
 ForwardKinematics::UPtr getRobotFwdKinematics(const tesseract_scene_graph::SceneGraph& scene_graph)
 {
-  return std::make_unique<KDLFwdKinChain>("manip", scene_graph, "base_link", "tool0");
+  return std::make_unique<KDLFwdKinChain>(scene_graph, "base_link", "tool0");
 }
 
 ForwardKinematics::UPtr getFullFwdKinematics(const tesseract_scene_graph::SceneGraph& scene_graph)
 {
-  return std::make_unique<KDLFwdKinChain>("robot_on_positioner", scene_graph, "positioner_base_link", "tool0");
+  return std::make_unique<KDLFwdKinChain>(scene_graph, "positioner_base_link", "tool0");
 }
 
 ForwardKinematics::UPtr getPositionerFwdKinematics(const tesseract_scene_graph::SceneGraph& scene_graph)
 {
-  return std::make_unique<KDLFwdKinChain>("positioner", scene_graph, "positioner_base_link", "positioner_tool0");
+  return std::make_unique<KDLFwdKinChain>(scene_graph, "positioner_base_link", "positioner_tool0");
 }
 
 InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneGraph& scene_graph)
@@ -57,69 +57,43 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
 
   opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
 
-  auto opw_kin = std::make_unique<OPWInvKin>("robot",
-                                             opw_params,
+  auto opw_kin = std::make_unique<OPWInvKin>(opw_params,
                                              robot_fwd_kin->getBaseLinkName(),
                                              robot_fwd_kin->getTipLinkNames()[0],
                                              robot_fwd_kin->getJointNames());
 
   auto positioner_kin = getPositionerFwdKinematics(scene_graph);
   Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(1, 1, 0.1);
-  auto rop_inv_kin = std::make_unique<ROPInvKin>("robot_on_positioner",
-                                                 scene_graph,
-                                                 scene_state,
-                                                 opw_kin->clone(),
-                                                 2.5,
-                                                 positioner_kin->clone(),
-                                                 positioner_resolution);
+  auto rop_inv_kin = std::make_unique<ROPInvKin>(
+      scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution);
 
   {  // Test failure
     tesseract_scene_graph::SceneGraph scene_graph_empty;
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_unique<ROPInvKin>("robot_on_positioner",
-                                                 scene_graph_empty,
-                                                 scene_state,
-                                                 opw_kin->clone(),
-                                                 2.5,
-                                                 positioner_kin->clone(),
-                                                 positioner_resolution));
+    EXPECT_ANY_THROW(std::make_unique<ROPInvKin>(
+        scene_graph_empty, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution));
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_unique<ROPInvKin>(
-        "robot_on_positioner", scene_graph, scene_state, nullptr, 2.5, positioner_kin->clone(), positioner_resolution));
-
-    // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_unique<ROPInvKin>("robot_on_positioner",
-                                                 scene_graph,
-                                                 scene_state,
-                                                 opw_kin->clone(),
-                                                 -2.5,
-                                                 positioner_kin->clone(),
-                                                 positioner_resolution));
+        scene_graph, scene_state, nullptr, 2.5, positioner_kin->clone(), positioner_resolution));
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_unique<ROPInvKin>(
-        "robot_on_positioner", scene_graph, scene_state, opw_kin->clone(), 2.5, nullptr, positioner_resolution));
+        scene_graph, scene_state, opw_kin->clone(), -2.5, positioner_kin->clone(), positioner_resolution));
+
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(
+        std::make_unique<ROPInvKin>(scene_graph, scene_state, opw_kin->clone(), 2.5, nullptr, positioner_resolution));
 
     positioner_resolution = Eigen::VectorXd();
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_unique<ROPInvKin>("robot_on_positioner",
-                                                 scene_graph,
-                                                 scene_state,
-                                                 opw_kin->clone(),
-                                                 2.5,
-                                                 positioner_kin->clone(),
-                                                 positioner_resolution));
+    EXPECT_ANY_THROW(std::make_unique<ROPInvKin>(
+        scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution));
 
     positioner_resolution = Eigen::VectorXd::Constant(1, -0.1);
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_unique<ROPInvKin>("robot_on_positioner",
-                                                 scene_graph,
-                                                 scene_state,
-                                                 opw_kin->clone(),
-                                                 2.5,
-                                                 positioner_kin->clone(),
-                                                 positioner_resolution));
+    EXPECT_ANY_THROW(std::make_unique<ROPInvKin>(
+        scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution));
   }
 
   return rop_inv_kin;
@@ -158,7 +132,6 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(fwd_kin->numJoints());
 
   EXPECT_TRUE(inv_kin != nullptr);
-  EXPECT_EQ(inv_kin->getName(), manip_name);
   EXPECT_EQ(inv_kin->getSolverName(), DEFAULT_ROP_INV_KIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 7);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
@@ -169,7 +142,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
 
   runInvKinTest(*inv_kin, *fwd_kin, pose, tip_link_name, seed);
 
-  KinematicGroup kin_group(std::move(inv_kin), *scene_graph, scene_state);
+  KinematicGroup kin_group(manip_name, std::move(inv_kin), *scene_graph, scene_state);
   KinematicGroup kin_group_copy(kin_group);
 
   EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
@@ -180,10 +153,10 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   runKinSetJointLimitsTest(kin_group);
   EXPECT_EQ(kin_group.getName(), manip_name);
   EXPECT_EQ(kin_group.getJointNames(), joint_names);
-  EXPECT_EQ(kin_group.getTipLinkNames().size(), 1);
-  EXPECT_EQ(kin_group.getTipLinkNames()[0], tip_link_name);
-  EXPECT_EQ(kin_group.getWorkingFrames().size(), 1);
-  EXPECT_EQ(kin_group.getWorkingFrames()[0], base_link_name);
+  EXPECT_EQ(kin_group.getAllPossibleTipLinkNames().size(), 1);
+  EXPECT_EQ(kin_group.getAllPossibleTipLinkNames()[0], tip_link_name);
+  EXPECT_EQ(kin_group.getAllValidWorkingFrames().size(), 1);
+  EXPECT_EQ(kin_group.getAllValidWorkingFrames()[0], base_link_name);
 
   // Check KinematicGroup copy
   EXPECT_EQ(kin_group_copy.getBaseLinkName(), scene_graph->getRoot());
@@ -194,14 +167,13 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   runKinSetJointLimitsTest(kin_group_copy);
   EXPECT_EQ(kin_group_copy.getName(), manip_name);
   EXPECT_EQ(kin_group_copy.getJointNames(), joint_names);
-  EXPECT_EQ(kin_group_copy.getTipLinkNames().size(), 1);
-  EXPECT_EQ(kin_group_copy.getTipLinkNames()[0], tip_link_name);
-  EXPECT_EQ(kin_group_copy.getWorkingFrames().size(), 1);
-  EXPECT_EQ(kin_group_copy.getWorkingFrames()[0], base_link_name);
+  EXPECT_EQ(kin_group_copy.getAllPossibleTipLinkNames().size(), 1);
+  EXPECT_EQ(kin_group_copy.getAllPossibleTipLinkNames()[0], tip_link_name);
+  EXPECT_EQ(kin_group_copy.getAllValidWorkingFrames().size(), 1);
+  EXPECT_EQ(kin_group_copy.getAllValidWorkingFrames()[0], base_link_name);
 
   // Check cloned
   EXPECT_TRUE(inv_kin2 != nullptr);
-  EXPECT_EQ(inv_kin2->getName(), manip_name);
   EXPECT_EQ(inv_kin2->getSolverName(), DEFAULT_ROP_INV_KIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin2->numJoints(), 7);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
@@ -212,7 +184,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
 
   runInvKinTest(*inv_kin2, *fwd_kin, pose, tip_link_name, seed);
 
-  KinematicGroup kin_group2(std::move(inv_kin2), *scene_graph, scene_state);
+  KinematicGroup kin_group2(manip_name, std::move(inv_kin2), *scene_graph, scene_state);
   EXPECT_EQ(kin_group2.getBaseLinkName(), scene_graph->getRoot());
   runInvKinTest(kin_group2, pose, base_link_name, tip_link_name, seed);
   runKinGroupJacobianABBOnPositionerTest(kin_group2);

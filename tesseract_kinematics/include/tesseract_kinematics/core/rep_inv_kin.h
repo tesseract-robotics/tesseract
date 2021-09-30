@@ -72,7 +72,6 @@ public:
 
   /**
    * @brief Construct Inverse Kinematics for a robot on a positioner
-   * @param name The name of the kinematic object
    * @param scene_graph The Tesseract Scene Graph
    * @param scene_state The Tesseract Scene State
    * @param manipulator
@@ -81,8 +80,7 @@ public:
    * @param positioner_sample_resolution
    * @param solver_name The name given to the solver. This is exposed so you may have same solver with different
    */
-  REPInvKin(std::string name,
-            const tesseract_scene_graph::SceneGraph& scene_graph,
+  REPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
             const tesseract_scene_graph::SceneState& scene_state,
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
@@ -92,23 +90,21 @@ public:
 
   /**
    * @brief Construct Inverse Kinematics for a robot on a positioner
-   * @param name The name of the kinematic object
    * @param scene_graph The Tesseract Scene Graph
    * @param manipulator
    * @param manipulator_reach
    * @param positioner
-   * @param poitioner_sample_range
+   * @param positioner_sample_range
    * @param positioner_sample_resolution
    * @param solver_name The name given to the solver. This is exposed so you may have same solver with different
    * sampling resolutions
    */
-  REPInvKin(std::string name,
-            const tesseract_scene_graph::SceneGraph& scene_graph,
+  REPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
             const tesseract_scene_graph::SceneState& scene_state,
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
             ForwardKinematics::UPtr positioner,
-            const Eigen::MatrixX2d& poitioner_sample_range,
+            const Eigen::MatrixX2d& positioner_sample_range,
             const Eigen::VectorXd& positioner_sample_resolution,
             std::string solver_name = DEFAULT_REP_INV_KIN_SOLVER_NAME);
 
@@ -120,7 +116,6 @@ public:
   std::string getBaseLinkName() const override final;
   std::string getWorkingFrame() const override final;
   std::vector<std::string> getTipLinkNames() const override final;
-  std::string getName() const override final;
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
 
@@ -134,11 +129,9 @@ private:
   Eigen::Isometry3d manip_base_to_positioner_base_;
   Eigen::Index dof_{ -1 };
   std::vector<Eigen::VectorXd> dof_range_;
-  std::string name_;                                           /**< @brief Name of the kinematic chain */
   std::string solver_name_{ DEFAULT_REP_INV_KIN_SOLVER_NAME }; /**< @brief Name of this solver */
 
-  void init(std::string name,
-            const tesseract_scene_graph::SceneGraph& scene_graph,
+  void init(const tesseract_scene_graph::SceneGraph& scene_graph,
             const tesseract_scene_graph::SceneState& scene_state,
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,

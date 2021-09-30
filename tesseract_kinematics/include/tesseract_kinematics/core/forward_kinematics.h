@@ -85,13 +85,13 @@ public:
    * This should be able to return a jacobian given any link listed in getTipLinkNames()
    * Throws an exception on failures (including uninitialized)
    * @param joint_angles Input vector of joint angles
-   * @param joint_link_name The joint link name to calculate jacobian
+   * @param link_name The link name to calculate jacobian
    * @return The jacobian at the provided link
    */
   virtual Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                       const std::string& joint_link_name) const = 0;
+                                       const std::string& link_name) const = 0;
 
-  /** @brief getter for the robot base link name */
+  /** @brief Get the robot base link name */
   virtual std::string getBaseLinkName() const = 0;
 
   /**
@@ -112,14 +112,11 @@ public:
    */
   virtual Eigen::Index numJoints() const = 0;
 
-  /** @brief Name of the maniputlator */
-  virtual std::string getName() const = 0;
-
-  /** @brief Get the name of the solver. Recommned using the name of the class. */
+  /** @brief Get the name of the solver. Recommend using the name of the class. */
   virtual std::string getSolverName() const = 0;
 
   /** @brief Clone the forward kinematics object */
-  virtual std::unique_ptr<ForwardKinematics> clone() const = 0;
+  virtual ForwardKinematics::UPtr clone() const = 0;
 };
 }  // namespace tesseract_kinematics
 

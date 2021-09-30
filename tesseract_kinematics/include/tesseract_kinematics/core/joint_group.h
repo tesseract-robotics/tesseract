@@ -32,6 +32,13 @@
 
 namespace tesseract_kinematics
 {
+/**
+ * @brief A Joint Group is defined by a list of joint_names.
+ * @details Provides the ability to calculate forward kinematics and jacobian.
+ * @note This creates an optimized object replace all joints not listed in the provided list with a fixed joint
+ * calculated using the provided state. Also the calcFwdKin only return the link transforms in the optimized object
+ * which is all active links and root of the scene graph usually.
+ */
 class JointGroup
 {
 public:
@@ -149,7 +156,7 @@ public:
   bool hasLinkName(const std::string& link_name) const;
 
   /**
-   * @brief Getter for kinematic limits (joint, velocity, acceleration, etc.)
+   * @brief Get the kinematic limits (joint, velocity, acceleration, etc.)
    * @return Kinematic Limits
    */
   tesseract_common::KinematicLimits getLimits() const;
@@ -172,7 +179,7 @@ public:
    */
   Eigen::Index numJoints() const;
 
-  /** @brief getter for the robot base link name */
+  /** @brief Get the robot base link name */
   std::string getBaseLinkName() const;
 
   /** @brief Name of the manipulator */

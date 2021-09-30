@@ -333,7 +333,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
   EXPECT_TRUE(inv_kin != nullptr);
   EXPECT_EQ(inv_kin->getSolverName(), "OPWInvKin");
-  EXPECT_EQ(inv_kin->getName(), "manipulator");
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_string);
@@ -606,7 +605,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
-    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
   {  // Test loading UR10e
     YAML::Node config = YAML::Load(yaml_model_string);
@@ -616,7 +614,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
-    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
   {  // Test loading UR5
     YAML::Node config = YAML::Load(yaml_model_string);
@@ -626,7 +623,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
-    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
   {  // Test loading UR5e
     YAML::Node config = YAML::Load(yaml_model_string);
@@ -636,7 +632,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
-    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
   {  // Test loading UR3
     YAML::Node config = YAML::Load(yaml_model_string);
@@ -646,7 +641,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
-    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
   {  // Test loading UR3e
     YAML::Node config = YAML::Load(yaml_model_string);
@@ -656,14 +650,12 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
-    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
   {  // Test loading custom UR paramters
     KinematicsPluginFactory factory(YAML::Load(yaml_params_string));
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
-    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
   {  // invalid ur model
     YAML::Node config = YAML::Load(yaml_model_string);
@@ -876,7 +868,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
   auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
   EXPECT_TRUE(inv_kin != nullptr);
   EXPECT_EQ(inv_kin->getSolverName(), "REPInvKin");
-  EXPECT_EQ(inv_kin->getName(), "manipulator");
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_string);
@@ -1007,7 +998,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
   auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
   EXPECT_TRUE(inv_kin != nullptr);
   EXPECT_EQ(inv_kin->getSolverName(), "ROPInvKin");
-  EXPECT_EQ(inv_kin->getName(), "manipulator");
 
   {  // missing config
     YAML::Node config = YAML::Load(yaml_string);
@@ -1129,7 +1119,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     auto fwd_kin = factory.createFwdKin("manipulator", "KDLFwdKinChain", *scene_graph, scene_state);
     EXPECT_TRUE(fwd_kin != nullptr);
     EXPECT_EQ(fwd_kin->getSolverName(), "KDLFwdKinChain");
-    EXPECT_EQ(fwd_kin->getName(), "manipulator");
   }
 
   {
@@ -1137,7 +1126,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "KDLInvKinChainLMA", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "KDLInvKinChainLMA");
-    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
 
   {
@@ -1145,7 +1133,6 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "KDLInvKinChainNR", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "KDLInvKinChainNR");
-    EXPECT_EQ(inv_kin->getName(), "manipulator");
   }
 
   {  // KDLFwdKinChain missing config

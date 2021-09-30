@@ -39,11 +39,10 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-KDLInvKinChainNR::KDLInvKinChainNR(std::string name,
-                                   const tesseract_scene_graph::SceneGraph& scene_graph,
+KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scene_graph,
                                    const std::vector<std::pair<std::string, std::string>>& chains,
                                    std::string solver_name)
-  : name_(std::move(name)), solver_name_(std::move(solver_name))
+  : solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
@@ -57,12 +56,11 @@ KDLInvKinChainNR::KDLInvKinChainNR(std::string name,
   ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR>(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_);
 }
 
-KDLInvKinChainNR::KDLInvKinChainNR(std::string name,
-                                   const tesseract_scene_graph::SceneGraph& scene_graph,
+KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scene_graph,
                                    const std::string& base_link,
                                    const std::string& tip_link,
                                    std::string solver_name)
-  : KDLInvKinChainNR(std::move(name), scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
+  : KDLInvKinChainNR(scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
 {
 }
 
@@ -72,7 +70,6 @@ KDLInvKinChainNR::KDLInvKinChainNR(const KDLInvKinChainNR& other) { *this = othe
 
 KDLInvKinChainNR& KDLInvKinChainNR::operator=(const KDLInvKinChainNR& other)
 {
-  name_ = other.name_;
   kdl_data_ = other.kdl_data_;
   fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
   ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(kdl_data_.robot_chain);
@@ -147,8 +144,6 @@ std::string KDLInvKinChainNR::getBaseLinkName() const { return kdl_data_.base_li
 std::string KDLInvKinChainNR::getWorkingFrame() const { return kdl_data_.base_link_name; }
 
 std::vector<std::string> KDLInvKinChainNR::getTipLinkNames() const { return { kdl_data_.tip_link_name }; }
-
-std::string KDLInvKinChainNR::getName() const { return name_; }
 
 std::string KDLInvKinChainNR::getSolverName() const { return solver_name_; }
 

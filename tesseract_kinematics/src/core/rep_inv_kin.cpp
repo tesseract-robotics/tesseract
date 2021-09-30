@@ -35,8 +35,7 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-REPInvKin::REPInvKin(std::string name,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+REPInvKin::REPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
                      const tesseract_scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
@@ -61,8 +60,7 @@ REPInvKin::REPInvKin(std::string name,
     positioner_limits(i, 1) = joint->limits->upper;
   }
 
-  init(std::move(name),
-       scene_graph,
+  init(scene_graph,
        scene_state,
        std::move(manipulator),
        manipulator_reach,
@@ -72,29 +70,26 @@ REPInvKin::REPInvKin(std::string name,
        std::move(solver_name));
 }
 
-REPInvKin::REPInvKin(std::string name,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+REPInvKin::REPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
                      const tesseract_scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
                      ForwardKinematics::UPtr positioner,
-                     const Eigen::MatrixX2d& poitioner_sample_range,
+                     const Eigen::MatrixX2d& positioner_sample_range,
                      const Eigen::VectorXd& positioner_sample_resolution,
                      std::string solver_name)
 {
-  init(std::move(name),
-       scene_graph,
+  init(scene_graph,
        scene_state,
        std::move(manipulator),
        manipulator_reach,
        std::move(positioner),
-       poitioner_sample_range,
+       positioner_sample_range,
        positioner_sample_resolution,
        std::move(solver_name));
 }
 
-void REPInvKin::init(std::string name,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+void REPInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
                      const tesseract_scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
@@ -113,7 +108,7 @@ void REPInvKin::init(std::string name,
     throw std::runtime_error("Provided manipulator is a nullptr");
 
   if (!(manipulator_reach > 0))
-    throw std::runtime_error("Manipulator reach is not greather than zero");
+    throw std::runtime_error("Manipulator reach is not greater than zero");
 
   if (positioner == nullptr)
     throw std::runtime_error("Provided positioner is a nullptr");
@@ -124,12 +119,12 @@ void REPInvKin::init(std::string name,
   for (long i = 0; i < positioner_sample_resolution.size(); ++i)
   {
     if (!(positioner_sample_resolution(i) > 0))
-      throw std::runtime_error("Positioner sample resolution is not greather than zero");
+      throw std::runtime_error("Positioner sample resolution is not greater than zero");
   }
 
   manip_base_to_positioner_base_ = scene_state.link_transforms.at(manipulator->getBaseLinkName()).inverse() *
                                    scene_state.link_transforms.at(positioner->getBaseLinkName());
-  name_ = std::move(name);
+
   solver_name_ = std::move(solver_name);
   manip_inv_kin_ = manipulator->clone();
   manip_reach_ = manipulator_reach;
@@ -164,7 +159,6 @@ REPInvKin::REPInvKin(const REPInvKin& other) { *this = other; }
 
 REPInvKin& REPInvKin::operator=(const REPInvKin& other)
 {
-  name_ = other.name_;
   manip_inv_kin_ = other.manip_inv_kin_->clone();
   positioner_fwd_kin_ = other.positioner_fwd_kin_->clone();
   manip_reach_ = other.manip_reach_;
@@ -254,8 +248,6 @@ std::string REPInvKin::getBaseLinkName() const { return manip_inv_kin_->getBaseL
 std::string REPInvKin::getWorkingFrame() const { return working_frame_; }
 
 std::vector<std::string> REPInvKin::getTipLinkNames() const { return { manip_tip_link_ }; }
-
-std::string REPInvKin::getName() const { return name_; }
 
 std::string REPInvKin::getSolverName() const { return solver_name_; }
 

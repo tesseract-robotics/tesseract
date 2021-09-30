@@ -35,8 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-InverseKinematics::UPtr URInvKinFactory::create(const std::string& group_name,
-                                                const std::string& solver_name,
+InverseKinematics::UPtr URInvKinFactory::create(const std::string& solver_name,
                                                 const tesseract_scene_graph::SceneGraph& scene_graph,
                                                 const tesseract_scene_graph::SceneState& /*scene_state*/,
                                                 const KinematicsPluginFactory& /*plugin_factory*/,
@@ -128,7 +127,7 @@ InverseKinematics::UPtr URInvKinFactory::create(const std::string& group_name,
     return nullptr;
   }
 
-  return std::make_unique<URInvKin>(group_name, params, base_link, tip_link, path.active_joints, solver_name);
+  return std::make_unique<URInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
 }
 }  // namespace tesseract_kinematics
 

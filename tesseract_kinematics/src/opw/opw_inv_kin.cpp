@@ -36,14 +36,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-OPWInvKin::OPWInvKin(std::string name,
-                     opw_kinematics::Parameters<double> params,
+OPWInvKin::OPWInvKin(opw_kinematics::Parameters<double> params,
                      std::string base_link_name,
                      std::string tip_link_name,
                      std::vector<std::string> joint_names,
                      std::string solver_name)
-  : name_(std::move(name))
-  , params_(params)
+  : params_(params)
   , base_link_name_(std::move(base_link_name))
   , tip_link_name_(std::move(tip_link_name))
   , joint_names_(std::move(joint_names))
@@ -59,7 +57,6 @@ OPWInvKin::OPWInvKin(const OPWInvKin& other) { *this = other; }
 
 OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
 {
-  name_ = other.name_;
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
   joint_names_ = other.joint_names_;
@@ -102,7 +99,6 @@ std::vector<std::string> OPWInvKin::getJointNames() const { return joint_names_;
 std::string OPWInvKin::getBaseLinkName() const { return base_link_name_; }
 std::string OPWInvKin::getWorkingFrame() const { return base_link_name_; }
 std::vector<std::string> OPWInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
-std::string OPWInvKin::getName() const { return name_; }
 std::string OPWInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract_kinematics

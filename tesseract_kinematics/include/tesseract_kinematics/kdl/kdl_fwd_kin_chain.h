@@ -79,10 +79,9 @@ public:
    * @param scene_graph The Tesseract Scene Graph
    * @param base_link The name of the base link for the kinematic chain
    * @param tip_link The name of the tip link for the kinematic chain
-   * @param name The name of the kinematic chain
+   * @param solver_name The solver name of the kinematic chain
    */
-  KDLFwdKinChain(std::string name,
-                 const tesseract_scene_graph::SceneGraph& scene_graph,
+  KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_graph,
                  const std::string& base_link,
                  const std::string& tip_link,
                  std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
@@ -92,10 +91,9 @@ public:
    * Creates a forward kinematic chain object from sequential chains
    * @param scene_graph The Tesseract Scene Graph
    * @param chains A vector of kinematics chains <base_link, tip_link> that get concatenated
-   * @param name The name of the kinematic chain
+   * @param solver_name The solver name of the kinematic chain
    */
-  KDLFwdKinChain(std::string name,
-                 const tesseract_scene_graph::SceneGraph& scene_graph,
+  KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_graph,
                  const std::vector<std::pair<std::string, std::string> >& chains,
                  std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
 
@@ -108,7 +106,6 @@ public:
   std::vector<std::string> getJointNames() const override final;
   std::vector<std::string> getTipLinkNames() const override final;
   Eigen::Index numJoints() const override final;
-  std::string getName() const override final;
   std::string getSolverName() const override final;
   ForwardKinematics::UPtr clone() const override final;
 

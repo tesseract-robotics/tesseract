@@ -42,7 +42,7 @@ namespace tesseract_kinematics
 {
 static const std::string OPW_INV_KIN_CHAIN_SOLVER_NAME = "OPWInvKin";
 
-/**@brief OPW Inverse Kinematics Implmentation. */
+/**@brief OPW Inverse Kinematics Implementation. */
 class OPWInvKin : public InverseKinematics
 {
 public:
@@ -63,14 +63,13 @@ public:
 
   /**
    * @brief Construct OPW Inverse Kinematics
-   * @param name The name of the kinematic chain
    * @param params OPW kinematics parameters
    * @param base_link_name The name of the base link for the kinematic chain
    * @param tip_link_name The name of the tip link for the kinematic chain
    * @param joint_names The joint names for the kinematic chain
+   * @param solver_name The solver name of the kinematic chain
    */
-  OPWInvKin(std::string name,
-            opw_kinematics::Parameters<double> params,
+  OPWInvKin(opw_kinematics::Parameters<double> params,
             std::string base_link_name,
             std::string tip_link_name,
             std::vector<std::string> joint_names,
@@ -84,12 +83,10 @@ public:
   std::string getBaseLinkName() const override final;
   std::string getWorkingFrame() const override final;
   std::vector<std::string> getTipLinkNames() const override final;
-  std::string getName() const override final;
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
 
 protected:
-  std::string name_;                          /**< @brief Name of the kinematic chain */
   opw_kinematics::Parameters<double> params_; /**< @brief The opw kinematics parameters */
   std::string base_link_name_;                /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name_;                 /**< @brief Link name of last kink in the kinematic object */

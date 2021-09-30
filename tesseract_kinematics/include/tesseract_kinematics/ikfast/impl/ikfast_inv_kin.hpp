@@ -43,13 +43,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-inline IKFastInvKin::IKFastInvKin(std::string name,
-                                  std::string base_link_name,
+inline IKFastInvKin::IKFastInvKin(std::string base_link_name,
                                   std::string tip_link_name,
                                   std::vector<std::string> joint_names,
                                   std::string solver_name)
-  : name_(std::move(name))
-  , base_link_name_(std::move(base_link_name))
+  : base_link_name_(std::move(base_link_name))
   , tip_link_name_(std::move(tip_link_name))
   , joint_names_(std::move(joint_names))
   , solver_name_(std::move(solver_name))
@@ -64,7 +62,6 @@ inline IKFastInvKin::IKFastInvKin(const IKFastInvKin& other) { *this = other; }
 
 inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
 {
-  name_ = other.name_;
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
   joint_names_ = other.joint_names_;
@@ -136,7 +133,6 @@ inline std::vector<std::string> IKFastInvKin::getJointNames() const { return joi
 inline std::string IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
 inline std::string IKFastInvKin::getWorkingFrame() const { return base_link_name_; }
 inline std::vector<std::string> IKFastInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
-inline std::string IKFastInvKin::getName() const { return name_; }
 inline std::string IKFastInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract_kinematics

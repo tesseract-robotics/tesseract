@@ -52,10 +52,9 @@ void runURKinematicsTests(const URParameters& params,
   std::vector<std::string> joint_names{ "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
                                         "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
 
-  KDLFwdKinChain fwd_kin(manip_name, *scene_graph, base_link_name, tip_link_name);
-  auto inv_kin = std::make_unique<URInvKin>(manip_name, params, base_link_name, tip_link_name, joint_names);
+  KDLFwdKinChain fwd_kin(*scene_graph, base_link_name, tip_link_name);
+  auto inv_kin = std::make_unique<URInvKin>(params, base_link_name, tip_link_name, joint_names);
 
-  EXPECT_EQ(inv_kin->getName(), manip_name);
   EXPECT_EQ(inv_kin->getSolverName(), UR_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 6);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
@@ -69,7 +68,6 @@ void runURKinematicsTests(const URParameters& params,
   // Check cloned
   InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
   EXPECT_TRUE(inv_kin2 != nullptr);
-  EXPECT_EQ(inv_kin2->getName(), manip_name);
   EXPECT_EQ(inv_kin2->getSolverName(), UR_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin2->numJoints(), 6);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
