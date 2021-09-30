@@ -97,5 +97,5 @@ jobs:
           DOCKER_COMMIT: ${{ steps.meta.outputs.tags }}
 
       - name: Push post-build Docker
-        if: ${{ env.PUSH_DOCKER_IMAGE }}
+        if: ${{ env.PUSH_DOCKER_IMAGE == 'true' }}
         run: docker push ${{ steps.meta.outputs.tags }}
