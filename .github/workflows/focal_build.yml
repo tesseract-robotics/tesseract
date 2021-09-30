@@ -7,6 +7,9 @@ on:
   pull_request:
   schedule:
     - cron: '0 5 * * *'
+  release:
+    types:
+      - released
 
 jobs:
   industrial_ci:
@@ -14,24 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI_NAME: Focal-Build
-      OS_NAME: ubuntu
-      OS_CODE_NAME: focal
-      ROS_DISTRO: noetic
-      ROS_REPO: main
-      UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
-      ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow"
-      DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
       CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Focal-Build/.ccache"
-      PARALLEL_TESTS: false
-      PARALLEL_BUILDS: false
-      BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source /root/target_ws/install/setup.bash"
-      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
-      AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_state_solver tesseract_urdf --make-args test'
+      ROS_DISTRO: noetic
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+      PUSH_DOCKER_IMAGE: ${{ github.ref == 'refs/heads/master' || github.event_name == 'release' }}
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout repository
+        uses: actions/checkout@v1
 
-      - name: Free Disk Space
+      - name: Free disk space
         continue-on-error: true
         run: |
           sudo swapoff -a
@@ -56,5 +51,52 @@ jobs:
           restore-keys: |
             ${{ env.CI_NAME }}-ccache-
 
-      - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{env}}
+      - name: Login to Github container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker meta-information
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=false
+            prefix=
+            suffix=
+          tags: |
+            type=ref,event=branch,prefix=${{ env.ROS_DISTRO }}-
+            type=ref,event=tag,prefix=${{ env.ROS_DISTRO }}-
+
+      - name: Set build type
+        run: |
+          if [[ "${{ env.PUSH_DOCKER_IMAGE }}" = true ]]
+          then
+            echo "BUILD_TYPE=Release" >> $GITHUB_ENV
+          else
+            echo "BUILD_TYPE=Debug" >> $GITHUB_ENV
+          fi
+
+      - name: Build repository
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          OS_NAME: ubuntu
+          OS_CODE_NAME: focal
+          ROS_REPO: main
+          UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
+          ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow"
+          DOCKER_IMAGE: "rosindustrial/tesseract:${{ env.ROS_DISTRO }}"
+          PARALLEL_TESTS: false
+          PARALLEL_BUILDS: false
+          BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source /root/target_ws/install/setup.bash"
+          UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+          TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTESSERACT_ENABLE_TESTING=ON"
+          AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_state_solver tesseract_urdf --make-args test'
+          DOCKER_COMMIT: ${{ steps.meta.outputs.tags }}
+
+      - name: Push post-build Docker
+        if: ${{ env.PUSH_DOCKER_IMAGE }}
+        run: docker push ${{ steps.meta.outputs.tags }}
