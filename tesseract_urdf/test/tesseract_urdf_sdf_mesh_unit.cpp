@@ -19,8 +19,8 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
     EXPECT_TRUE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
         geom, &tesseract_urdf::parseSDFMesh, str, "sdf_mesh", resource_locator, 2, true));
     EXPECT_TRUE(geom.size() == 1);
-    EXPECT_TRUE(geom[0]->getTriangleCount() == 80);
-    EXPECT_TRUE(geom[0]->getVerticeCount() == 240);
+    EXPECT_TRUE(geom[0]->getFaceCount() == 80);
+    EXPECT_TRUE(geom[0]->getVertexCount() == 240);
     EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[1], 2, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);
@@ -32,8 +32,8 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
     EXPECT_TRUE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
         geom, &tesseract_urdf::parseSDFMesh, str, "sdf_mesh", resource_locator, 2, true));
     EXPECT_TRUE(geom.size() == 1);
-    EXPECT_TRUE(geom[0]->getTriangleCount() == 80);
-    EXPECT_TRUE(geom[0]->getVerticeCount() == 240);
+    EXPECT_TRUE(geom[0]->getFaceCount() == 80);
+    EXPECT_TRUE(geom[0]->getVertexCount() == 240);
     EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[1], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);
@@ -45,8 +45,8 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
     EXPECT_TRUE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
         geom, &tesseract_urdf::parseSDFMesh, str, "sdf_mesh", resource_locator, 2, false));
     EXPECT_TRUE(geom.size() == 1);
-    EXPECT_TRUE(geom[0]->getTriangleCount() == 80);
-    EXPECT_TRUE(geom[0]->getVerticeCount() == 42);
+    EXPECT_TRUE(geom[0]->getFaceCount() == 80);
+    EXPECT_TRUE(geom[0]->getVertexCount() == 42);
     EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[1], 1, 1e-5);
     EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);

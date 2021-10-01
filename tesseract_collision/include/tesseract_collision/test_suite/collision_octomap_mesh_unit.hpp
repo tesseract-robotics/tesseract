@@ -94,7 +94,7 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   const tesseract_collision::CollisionShapesConst& geom = checker.getCollisionObjectGeometries("plane_link");
   const auto& mesh = std::static_pointer_cast<const tesseract_geometry::Mesh>(geom.at(0));
   const auto& mesh_vertices = mesh->getVertices();
-  const auto& mesh_triangles = mesh->getTriangles();
+  const auto& mesh_triangles = mesh->getFaces();
 
   // default color is green
   std::vector<Eigen::Vector3i> mesh_vertices_color(mesh_vertices->size(), Eigen::Vector3i(0, 128, 0));
@@ -113,7 +113,7 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
         (*mesh_triangles)[4 * r.subshape_id[static_cast<std::size_t>(idx)] + 3])] = Eigen::Vector3i(255, 0, 0);
   }
 
-  writeSimplePlyFile(file_path, *mesh_vertices, mesh_vertices_color, *mesh_triangles, mesh->getTriangleCount());
+  writeSimplePlyFile(file_path, *mesh_vertices, mesh_vertices_color, *mesh_triangles, mesh->getFaceCount());
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_TRUE(result_vector.size() == 2712);
