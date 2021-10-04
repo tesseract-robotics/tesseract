@@ -247,7 +247,7 @@ void IKFastInvKin::generateAllPossibleCombinations(const std::vector<std::vector
       curr_joint_values.push_back(free_joint_samples[i][curr_joint_indices[i]]);
     free_joint_combos_.push_back(curr_joint_values);
     curr_joint_indices.back()++;
-    for (std::size_t i = curr_joint_indices.size() - 1; i > 1; --i)
+    for (std::size_t i = curr_joint_indices.size() - 1; i > 0; --i)
     {
       if (curr_joint_indices[i] == free_joint_samples[i].size())
       {
