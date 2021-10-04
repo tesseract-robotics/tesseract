@@ -41,6 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_urdf/mesh.h>
 #include <tesseract_urdf/mesh_writer.h>
+#include <tesseract_urdf/utils.h>
 
 std::vector<tesseract_geometry::Mesh::Ptr>
 tesseract_urdf::parseMesh(const tinyxml2::XMLElement* xml_element,
@@ -96,7 +97,7 @@ tesseract_urdf::parseMesh(const tinyxml2::XMLElement* xml_element,
 
 tinyxml2::XMLElement* tesseract_urdf::writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
                                                 tinyxml2::XMLDocument& doc,
-                                                const std::string& directory,
+                                                const std::string& package_path,
                                                 const std::string& filename)
 {
   if (mesh == nullptr)
@@ -106,13 +107,13 @@ tinyxml2::XMLElement* tesseract_urdf::writeMesh(const std::shared_ptr<const tess
 
   try
   {
-    writeMeshToFile(mesh, directory + filename);
+    writeMeshToFile(mesh, trailingSlash(package_path) + noLeadingSlash(filename));
   }
   catch (...)
   {
-    std::throw_with_nested(std::runtime_error("Failed to write convex mesh to file: " + directory + filename));
+    std::throw_with_nested(std::runtime_error("Failed to write mesh to file: " + package_path + filename));
   }
-  xml_element->SetAttribute("filename", filename.c_str());
+  xml_element->SetAttribute("filename", makeURDFFilePath(package_path, filename).c_str());
 
   if (!mesh->getScale().isOnes(std::numeric_limits<double>::epsilon()))
   {

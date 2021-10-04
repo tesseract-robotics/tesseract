@@ -1,9 +1,5 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-
-#include <iostream>
-#include <fstream>
-
 #include <gtest/gtest.h>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP

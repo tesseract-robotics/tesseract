@@ -54,8 +54,8 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,
                                                      const tesseract_scene_graph::ResourceLocator::Ptr& locator);
 
 void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
-                   const std::string& directory,
-                   const std::string& filename);
+                   const std::string& package_path,
+                   const std::string& urdf_name = "");
 }  // namespace tesseract_urdf
 
 #endif

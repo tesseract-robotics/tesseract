@@ -177,7 +177,7 @@ TEST(TesseractURDFUnit, write_convex_mesh)  // NOLINT
     EXPECT_EQ(
         0,
         writeTest<tesseract_geometry::ConvexMesh::Ptr>(
-            convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("convex0.ply")));
+            convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string(""), std::string("/tmp/convex0.ply")));
     EXPECT_NE(text, "");
   }
 

@@ -70,7 +70,7 @@ parseOctree(const tinyxml2::XMLElement* xml_element,
  */
 tinyxml2::XMLElement* writeOctree(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
                                   tinyxml2::XMLDocument& doc,
-                                  const std::string& directory,
+                                  const std::string& package_path,
                                   const std::string& filename);
 
 }  // namespace tesseract_urdf

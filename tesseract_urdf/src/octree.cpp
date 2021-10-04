@@ -35,7 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_urdf/mesh_writer.h>
 #include <tesseract_urdf/octree.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctree(const tinyxml2::XMLElement* xml_element,
                                                             const tesseract_scene_graph::ResourceLocator::Ptr& locator,
@@ -68,14 +70,14 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctree(const tinyxml2::XMLE
 
 tinyxml2::XMLElement* tesseract_urdf::writeOctree(const tesseract_geometry::Octree::ConstPtr& octree,
                                                   tinyxml2::XMLDocument& doc,
-                                                  const std::string& directory,
+                                                  const std::string& package_path,
                                                   const std::string& filename)
 {
   if (octree == nullptr)
     std::throw_with_nested(std::runtime_error("Octree is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("octree");
 
-  std::string filepath = directory + filename;
+  std::string filepath = trailingSlash(package_path) + noLeadingSlash(filename);
 
   // This copy is unfortunate, but avoiding the copy requires flowing mutability up to a lot of
   // functions and their arguments. Don't know why writeBinary is non-const anyway, but we'll live.
@@ -84,7 +86,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeOctree(const tesseract_geometry::Octr
   if (!underlying_tree->writeBinary(filepath))
     std::throw_with_nested(std::runtime_error("Could not write octree to file `" + filepath + "`!"));
 
-  xml_element->SetAttribute("filename", filename.c_str());
+  xml_element->SetAttribute("filename", makeURDFFilePath(package_path, filename).c_str());
 
   return xml_element;
 }

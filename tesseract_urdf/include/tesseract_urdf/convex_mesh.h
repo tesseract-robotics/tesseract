@@ -64,7 +64,7 @@ parseConvexMesh(const tinyxml2::XMLElement* xml_element,
 
 tinyxml2::XMLElement* writeConvexMesh(const std::shared_ptr<const tesseract_geometry::ConvexMesh>& mesh,
                                       tinyxml2::XMLDocument& doc,
-                                      const std::string& directory,
+                                      const std::string& package_path,
                                       const std::string& filename);
 
 }  // namespace tesseract_urdf

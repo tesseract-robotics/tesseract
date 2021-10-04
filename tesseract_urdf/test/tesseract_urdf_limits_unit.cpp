@@ -122,6 +122,7 @@ TEST(TesseractURDFUnit, write_limits)  // NOLINT
     std::string text;
     EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointLimits::Ptr>(limits, &tesseract_urdf::writeLimits, text));
     EXPECT_NE(text, "");
+    writeTextToFile("/tmp/limits1.txt", text);
   }
 
   {

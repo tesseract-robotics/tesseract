@@ -17,6 +17,7 @@ aiScene createAssetFromMesh(const std::shared_ptr<const tesseract_geometry::Poly
 
 void writeMeshToFile(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh, const std::string& filepath);
 
+std::string makeURDFFilePath(const std::string& package_path, const std::string& filename);
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_MESH_WRITER_H

@@ -1,10 +1,13 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <string>
+
 // #include <assimp/Exporter.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
 #include <tesseract_urdf/mesh_writer.h>
+#include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
 {
@@ -86,5 +89,27 @@ void writeMeshToFile(const std::shared_ptr<const tesseract_geometry::PolygonMesh
   if (ret != AI_SUCCESS)
     std::throw_with_nested(std::runtime_error("Could not export file"));
   */
+}
+
+std::string makeURDFFilePath(const std::string& package_path, const std::string& filename)
+{
+  std::string ret;
+  if (!package_path.empty())
+  {
+    // Use a package-relative path if a package was specified
+
+    // Extract package name
+    std::string package_name = noTrailingSlash(package_path);
+    package_name = package_name.substr(package_name.find_last_of("/\\"));
+
+    // Set the path to the file
+    ret = "package://" + trailingSlash(package_name) + noLeadingSlash(filename);
+  }
+  else
+  {
+    // Use an absolute path if no package was specified
+    ret = filename;
+  }
+  return ret;
 }
 }  // namespace tesseract_urdf
