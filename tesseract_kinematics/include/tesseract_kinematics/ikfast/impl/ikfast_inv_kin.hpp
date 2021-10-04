@@ -97,7 +97,7 @@ IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen:
         // This actually walks the list EVERY time from the start of i.
         const auto& sol = ikfast_solution_set.GetSolution(i);
         auto* out = ikfast_output.data() + i * ikfast_dof;
-        sol.GetSolution(out, nullptr);
+        sol.GetSolution(out, &j_value);
       }
 
       sols.insert(
