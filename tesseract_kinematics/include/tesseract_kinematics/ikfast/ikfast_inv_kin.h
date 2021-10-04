@@ -122,7 +122,6 @@ public:
   const std::string& getTipLinkName() const override;
   const std::string& getName() const override;
   const std::string& getSolverName() const override;
-  std::vector<double> getFreeJointValues() const;
 
   /**
    * @brief Initialize IKFast Inverse Kinematics
