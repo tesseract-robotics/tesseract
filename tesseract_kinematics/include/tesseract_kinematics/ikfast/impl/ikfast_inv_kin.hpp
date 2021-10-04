@@ -80,37 +80,11 @@ IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen:
   // Call IK (TODO: Make a better solution list class? One that uses vector instead of list)
   ikfast::IkSolutionList<IkReal> ikfast_solution_set;
   std::vector<double> sols;
-  if (free_joint_values_.size() > 0)
-  {
-    for (auto j_value : free_joint_values_)
-    {
-      ComputeIk(translation.data(), rotation.data(), &j_value, ikfast_solution_set);
-
-      // Unpack the solutions into the output vector
-      const auto n_sols = ikfast_solution_set.GetNumSolutions();
-
-      std::vector<IkReal> ikfast_output;
-      ikfast_output.resize(n_sols * ikfast_dof);
-
-      for (std::size_t i = 0; i < n_sols; ++i)
-      {
-        // This actually walks the list EVERY time from the start of i.
-        const auto& sol = ikfast_solution_set.GetSolution(i);
-        auto* out = ikfast_output.data() + i * ikfast_dof;
-        sol.GetSolution(out, &j_value);
-      }
-
-      sols.insert(
-          end(sols), std::make_move_iterator(ikfast_output.begin()), std::make_move_iterator(ikfast_output.end()));
-    }
-  }
-  else
-  {
-    ComputeIk(translation.data(), rotation.data(), nullptr, ikfast_solution_set);
+  auto addSols = [&](const double* pfree) {
+    ComputeIk(translation.data(), rotation.data(), pfree, ikfast_solution_set);
 
     // Unpack the solutions into the output vector
     const auto n_sols = ikfast_solution_set.GetNumSolutions();
-    int ikfast_dof = numJoints();
 
     std::vector<IkReal> ikfast_output;
     ikfast_output.resize(n_sols * ikfast_dof);
@@ -120,11 +94,23 @@ IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen:
       // This actually walks the list EVERY time from the start of i.
       const auto& sol = ikfast_solution_set.GetSolution(i);
       auto* out = ikfast_output.data() + i * ikfast_dof;
-      sol.GetSolution(out, nullptr);
+      sol.GetSolution(out, pfree);
     }
 
     sols.insert(
         end(sols), std::make_move_iterator(ikfast_output.begin()), std::make_move_iterator(ikfast_output.end()));
+    return;
+  };
+  if (free_joint_values_.size() > 0)
+  {
+    for (auto j_value : free_joint_values_)
+    {
+      addSols(&j_value);
+    }
+  }
+  else
+  {
+    addSols(nullptr);
   }
 
   // Check the output
@@ -235,7 +221,6 @@ const std::string& IKFastInvKin::getBaseLinkName() const { return base_link_name
 const std::string& IKFastInvKin::getTipLinkName() const { return tip_link_name_; }
 const std::string& IKFastInvKin::getName() const { return name_; }
 const std::string& IKFastInvKin::getSolverName() const { return solver_name_; }
-std::vector<double> IKFastInvKin::getFreeJointValues() const { return free_joint_values_; }
 
 bool IKFastInvKin::checkInitialized() const
 {
