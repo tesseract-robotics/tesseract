@@ -122,6 +122,7 @@ public:
   const std::string& getTipLinkName() const override;
   const std::string& getName() const override;
   const std::string& getSolverName() const override;
+  std::vector<std::vector<double>> getFreeJointCombos() const;
 
   /**
    * @brief Initialize IKFast Inverse Kinematics
@@ -132,6 +133,7 @@ public:
    * @param link_names The link names for the kinematic chain
    * @param active_link_names The active links names for the kinematic chain
    * @param joint_limits The joint limits for the kinematic chain
+   * @param free_joint_combos The joint combinations of the free joints that should be sampled
    * @return True if successful
    */
   bool init(std::string name,
@@ -142,13 +144,23 @@ public:
             std::vector<std::string> active_link_names,
             tesseract_common::KinematicLimits limits,
             std::vector<Eigen::Index> redundancy_indices,
-            std::vector<double> free_joint_values = {});
+            std::vector<std::vector<double>> free_joint_combos = {});
 
   /**
    * @brief Checks if kinematics has been initialized
    * @return True if init() has completed successfully
    */
   bool checkInitialized() const;
+
+  /**
+   * @brief Generates all possible combinations of joint states and stores it to the free_joint_combos_ class member
+   * Example: Given 2 free joints, wanting to sample the first joint at 0, 1, and 2 and the second joint at 3 and 4
+   * the input would be [[0, 1, 2][3,4]] and it would generate [[0,3][0,4][1,3][1,4][2,3][2,4]]
+   * @param free_joint_samples A vector of vectors in which the lower level vectors each represent all of a single
+   * joint's possible positions to be sampled
+   * @return
+   */
+  void generateAllPossibleCombinations(const std::vector<std::vector<double>> free_joint_samples);
 
 protected:
   bool initialized_ = false;                     /**< @brief Identifies if the object has been initialized */
@@ -161,7 +173,9 @@ protected:
   std::vector<Eigen::Index> redundancy_indices_; /**< @brief Joint indicies that have redundancy (ex. revolute) */
   std::string name_;                             /**< @brief Name of the kinematic chain */
   std::string solver_name_;                      /**< @brief Name of this solver */
-  std::vector<double> free_joint_values_;        /**< @brief values to sample the free joint in case of a 7 DOF robot */
+  /**< @brief combinations of free joints to sample when computing IK
+   * Example: Given 3 free joints, a valid input would be [[0,0,0][0,0,1][-1,0,1][0,2,0]] */
+  std::vector<std::vector<double>> free_joint_combos_;
 
   /**
    * @brief This used by the clone method
