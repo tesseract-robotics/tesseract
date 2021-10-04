@@ -60,7 +60,7 @@ bool IKFastInvKin::update()
               active_link_names_,
               limits_,
               redundancy_indices_,
-              free_joint_values_);
+              free_joint_combos_);
 }
 
 IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const
@@ -80,6 +80,8 @@ IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen:
   // Call IK (TODO: Make a better solution list class? One that uses vector instead of list)
   ikfast::IkSolutionList<IkReal> ikfast_solution_set;
   std::vector<double> sols;
+
+  // Lambda to add all possible solutions for a given combination of free joints, or nullptr if no free joints
   auto addSols = [&](const double* pfree) {
     ComputeIk(translation.data(), rotation.data(), pfree, ikfast_solution_set);
 
@@ -101,11 +103,12 @@ IKSolutions IKFastInvKin::calcInvKin(const Eigen::Isometry3d& pose, const Eigen:
         end(sols), std::make_move_iterator(ikfast_output.begin()), std::make_move_iterator(ikfast_output.end()));
     return;
   };
-  if (free_joint_values_.size() > 0)
+
+  if (free_joint_combos_.size() > 0)
   {
-    for (auto j_value : free_joint_values_)
+    for (auto j_combo : free_joint_combos_)
     {
-      addSols(&j_value);
+      addSols(j_combo.data());
     }
   }
   else
@@ -169,7 +172,7 @@ bool IKFastInvKin::init(std::string name,
                         std::vector<std::string> active_link_names,
                         tesseract_common::KinematicLimits limits,
                         std::vector<Eigen::Index> redundancy_indices,
-                        std::vector<double> free_joint_values)
+                        std::vector<std::vector<double>> free_joint_combos)
 {
   name_ = std::move(name);
   base_link_name_ = std::move(base_link_name);
@@ -179,7 +182,7 @@ bool IKFastInvKin::init(std::string name,
   active_link_names_ = std::move(active_link_names);
   limits_ = limits;
   redundancy_indices_ = redundancy_indices;
-  free_joint_values_ = free_joint_values;
+  free_joint_combos_ = free_joint_combos;
   initialized_ = true;
 
   return initialized_;
@@ -197,7 +200,7 @@ bool IKFastInvKin::init(const IKFastInvKin& kin)
   active_link_names_ = kin.active_link_names_;
   limits_ = kin.limits_;
   redundancy_indices_ = kin.redundancy_indices_;
-  free_joint_values_ = kin.free_joint_values_;
+  free_joint_combos_ = kin.free_joint_combos_;
 
   return initialized_;
 }
@@ -221,6 +224,7 @@ const std::string& IKFastInvKin::getBaseLinkName() const { return base_link_name
 const std::string& IKFastInvKin::getTipLinkName() const { return tip_link_name_; }
 const std::string& IKFastInvKin::getName() const { return name_; }
 const std::string& IKFastInvKin::getSolverName() const { return solver_name_; }
+std::vector<std::vector<double>> IKFastInvKin::getFreeJointCombos() const { return free_joint_combos_; };
 
 bool IKFastInvKin::checkInitialized() const
 {
@@ -230,6 +234,29 @@ bool IKFastInvKin::checkInitialized() const
   }
 
   return initialized_;
+}
+
+void IKFastInvKin::generateAllPossibleCombinations(const std::vector<std::vector<double>> free_joint_samples)
+{
+  free_joint_combos_.clear();
+  std::vector<std::size_t> curr_joint_indices(free_joint_samples.size(), 0);
+  while (curr_joint_indices.front() < free_joint_samples.front().size())
+  {
+    std::vector<double> curr_joint_values;
+    for (std::size_t i = 0; i < curr_joint_indices.size(); ++i)
+      curr_joint_values.push_back(free_joint_samples[i][curr_joint_indices[i]]);
+    free_joint_combos_.push_back(curr_joint_values);
+    curr_joint_indices.back()++;
+    for (std::size_t i = curr_joint_indices.size() - 1; i > 1; --i)
+    {
+      if (curr_joint_indices[i] == free_joint_samples[i].size())
+      {
+        curr_joint_indices[i] = 0;
+        curr_joint_indices[i - 1]++;
+      }
+    }
+  }
+  return;
 }
 
 }  // namespace tesseract_kinematics
