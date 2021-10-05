@@ -13,8 +13,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
-std::string toString(const double& float_value, const int precision = 3);
+std::string toString(const double& float_value, int precision = 3);
 
 std::string trailingSlash(const std::string& path);
 

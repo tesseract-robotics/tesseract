@@ -141,7 +141,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeOrigin(const Eigen::Isometry3d& origi
   if (!origin.linear().isIdentity(std::numeric_limits<double>::epsilon()))
   {
     Eigen::Vector3d ypr = origin.linear().eulerAngles(2, 1, 0);
-    Eigen::Vector3d rpy (ypr.z(), ypr.y(), ypr.x());
+    Eigen::Vector3d rpy(ypr.z(), ypr.y(), ypr.x());
     std::stringstream rpy_string;
     rpy_string << rpy.format(eigen_format);
     xml_element->SetAttribute("rpy", rpy_string.str().c_str());

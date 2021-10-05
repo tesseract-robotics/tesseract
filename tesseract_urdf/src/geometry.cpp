@@ -307,8 +307,11 @@ tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const 
   {
     try
     {
-      tinyxml2::XMLElement* xml_convex_mesh = writeConvexMesh(
-          std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geometry), doc, package_path, filename + ".ply");
+      tinyxml2::XMLElement* xml_convex_mesh =
+          writeConvexMesh(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geometry),
+                          doc,
+                          package_path,
+                          filename + ".ply");
       xml_element->InsertEndChild(xml_convex_mesh);
     }
     catch (...)

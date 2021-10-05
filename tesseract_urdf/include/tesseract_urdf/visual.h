@@ -73,7 +73,7 @@ parseVisual(const tinyxml2::XMLElement* xml_element,
  */
 tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract_scene_graph::Visual>& visual,
                                   tinyxml2::XMLDocument& doc,
-                                  const std::string& directory,
+                                  const std::string& package_path,
                                   const std::string& link_name,
                                   int id);
 

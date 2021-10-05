@@ -532,7 +532,7 @@ TEST(TesseractURDFUnit, write_urdf)  // NOLINT
     sg->addLink(*link_1);
 
     // Add joint
-    tesseract_scene_graph::Joint::Ptr joint_0 = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    tesseract_scene_graph::Joint::Ptrros-industrial joint_0 = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
     joint_0->type = tesseract_scene_graph::JointType::FIXED;
     joint_0->parent_link_name = link_0->getName();
     joint_0->child_link_name = link_1->getName();

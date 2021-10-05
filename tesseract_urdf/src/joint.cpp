@@ -300,10 +300,9 @@ tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tes
   // For continuous, we just need something. If e/v/a are all zero, don't bother writing.
   if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS)
   {
-    if (joint->limits != nullptr &&
-        (!tesseract_common::almostEqualRelativeAndAbs(joint->limits->effort, 0.0) ||
-         !tesseract_common::almostEqualRelativeAndAbs(joint->limits->velocity, 0.0) ||
-         !tesseract_common::almostEqualRelativeAndAbs(joint->limits->acceleration, 0.0)))
+    if (joint->limits != nullptr && (!tesseract_common::almostEqualRelativeAndAbs(joint->limits->effort, 0.0) ||
+                                     !tesseract_common::almostEqualRelativeAndAbs(joint->limits->velocity, 0.0) ||
+                                     !tesseract_common::almostEqualRelativeAndAbs(joint->limits->acceleration, 0.0)))
     {
       tinyxml2::XMLElement* xml_limits = writeLimits(joint->limits, doc);
       xml_element->InsertEndChild(xml_limits);

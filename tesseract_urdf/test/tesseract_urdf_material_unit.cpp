@@ -211,10 +211,12 @@ TEST(TesseractURDFUnit, write_material)  // NOLINT
     std::string text;
     EXPECT_EQ(0, writeTest<tesseract_scene_graph::Material::Ptr>(material, &tesseract_urdf::writeMaterial, text));
     // This string literal is not pretty, but has to match whitespace for comparison.
+    // clang-format off
     std::string expected =
 R"(<material name="unobtainium">
     <color rgba="1 0.5 0.5 1"/>
 </material>)";
+    // clang-format on
     EXPECT_EQ(text, expected);
   }
 

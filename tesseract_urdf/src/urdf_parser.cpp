@@ -220,10 +220,8 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
 
   // Sort the link names using a lamda-defined comparator function.
   // The lamda takes in two strings, applies the default < operator, and returns a bool.
-  std::sort(link_names.begin(), link_names.end(), [](const std::string& a, const std::string& b) -> bool
-  {
-    return a < b;
-  });
+  std::sort(
+      link_names.begin(), link_names.end(), [](const std::string& a, const std::string& b) -> bool { return a < b; });
 
   // Iterate through the sorted names and write the corresponding links to XML
   for (const std::string& s : link_names)
@@ -251,10 +249,8 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
 
   // Sort the joint names using a lamda-defined comparator function.
   // The lamda takes in two strings, applies the default < operator, and returns a bool.
-  std::sort(joint_names.begin(), joint_names.end(), [](const std::string& a, const std::string& b) -> bool
-  {
-    return a < b;
-  });
+  std::sort(
+      joint_names.begin(), joint_names.end(), [](const std::string& a, const std::string& b) -> bool { return a < b; });
 
   // Iterate through the sorted joint names and write the corresponding joints to xml
   for (const std::string& s : joint_names)
