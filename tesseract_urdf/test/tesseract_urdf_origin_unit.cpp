@@ -132,7 +132,7 @@ TEST(TesseractURDFUnit, write_origin)  // NOLINT
     Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
     std::string text;
     EXPECT_EQ(0, writeTest<Eigen::Isometry3d>(origin, &tesseract_urdf::writeOrigin, text));
-    EXPECT_NE(text, "");
+    EXPECT_EQ(text, R"(<origin/>)");
   }
 
   {
@@ -141,6 +141,15 @@ TEST(TesseractURDFUnit, write_origin)  // NOLINT
     origin.linear() = Eigen::Quaterniond(1, 0, 0, 0).toRotationMatrix();
     std::string text;
     EXPECT_EQ(0, writeTest<Eigen::Isometry3d>(origin, &tesseract_urdf::writeOrigin, text));
-    EXPECT_NE(text, "");
+    EXPECT_EQ(text, R"(<origin xyz="1 2 3"/>)");
+  }
+
+  {
+    Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+    origin.translation() = Eigen::Vector3d(1, 2, 3);
+    origin.linear() = Eigen::Quaterniond(0, 0.577, 0.577, 0.577).toRotationMatrix();
+    std::string text;
+    EXPECT_EQ(0, writeTest<Eigen::Isometry3d>(origin, &tesseract_urdf::writeOrigin, text));
+    EXPECT_EQ(text, R"(<origin xyz="1 2 3" rpy="2.0359 -0.730089 2.03299"/>)");
   }
 }

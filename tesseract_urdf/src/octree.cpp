@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_urdf/mesh_writer.h>
 #include <tesseract_urdf/octree.h>
 #include <tesseract_urdf/utils.h>
 

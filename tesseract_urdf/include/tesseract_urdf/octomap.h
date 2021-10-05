@@ -61,6 +61,16 @@ parseOctomap(const tinyxml2::XMLElement* xml_element,
              bool visual,
              int version);
 
+/**
+ * @brief writeOctomap Write octomap to URDF XML. This is non-standard URDF / tesseract-exclusive
+ * @param octree Octomap to be written to XML
+ * @param doc XML document to manage generated xml
+ * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
+ * set, geometry will be saved with absolute paths.
+ * @param filename Desired file location.  If package_path is set, this should be relative to the package.  Otherwise,
+ * this should be an absolute path.
+ * @return XML element representing the octomap object in URDF Format
+ */
 tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
                                    tinyxml2::XMLDocument& doc,
                                    const std::string& package_path,

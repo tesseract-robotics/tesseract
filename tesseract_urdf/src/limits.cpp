@@ -80,12 +80,13 @@ tesseract_urdf::writeLimits(const std::shared_ptr<const tesseract_scene_graph::J
     xml_element->SetAttribute("upper", toString(limits->upper).c_str());
   }
 
-  // Write out nonzero limits for effort, velocity, or acceleration.
-  if (!tesseract_common::almostEqualRelativeAndAbs(limits->effort, 0.0))
-    xml_element->SetAttribute("effort", toString(limits->effort).c_str());
-  if (!tesseract_common::almostEqualRelativeAndAbs(limits->velocity, 0.0))
-    xml_element->SetAttribute("velocity", toString(limits->velocity).c_str());
-  if (!tesseract_common::almostEqualRelativeAndAbs(limits->acceleration, 0.0))
+  // Always write effort & velocity
+  xml_element->SetAttribute("effort", toString(limits->effort).c_str());
+  xml_element->SetAttribute("velocity", toString(limits->velocity).c_str());
+
+  // Write out nonzero acceleration (Tesseract-exclusive)
+  if (!tesseract_common::almostEqualRelativeAndAbs(limits->acceleration, 0.0) &&
+      !tesseract_common::almostEqualRelativeAndAbs(limits->acceleration, limits->velocity * 0.5))
     xml_element->SetAttribute("acceleration", toString(limits->acceleration).c_str());
 
   return xml_element;

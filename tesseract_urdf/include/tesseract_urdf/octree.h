@@ -64,7 +64,8 @@ parseOctree(const tinyxml2::XMLElement* xml_element,
  * @brief writeOctree Write octree out to file, and generate appropriate xml
  * @param octree The geometry element containing octree data
  * @param doc The XML document to which to add the xml data
- * @param directory Working directory, with trailing `/` (e.g. "/tmp/")
+ * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
+ * set, geometry will be saved with absolute paths.
  * @param filename Desired filename relative to the working directory ("octree.ot" or "collision/octree.ot")
  * @return An XML element containing information on the saved file.
  */

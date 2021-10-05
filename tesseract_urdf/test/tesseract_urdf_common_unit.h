@@ -192,6 +192,35 @@ bool runTest(ElementType& type,
 }
 
 /**
+ * @brief stripNewline - For some reason, tinyxml2 printers add a trailing newline.  This function removes it.
+ * @param in - input string
+ * @return out - string equal to input string with trailing newlines removed.
+ */
+inline std::string stripNewline(const std::string& in)
+{
+  std::string out;
+  if (!in.empty() && in.back() == '\n')
+    out = in.substr(0, in.size() - 1);
+  else
+    out = in;
+  return out;
+}
+
+inline std::string toString(const tinyxml2::XMLElement* element)
+{
+  std::string ret;
+  if (element != nullptr)
+  {
+    tinyxml2::XMLPrinter printer;
+    element->Accept(&printer);
+    std::stringstream ss;
+    ss << printer.CStr();
+    ret = stripNewline(ss.str());
+  }
+  return ret;
+}
+
+/**
  * @brief writeTest - test write functions
  * @param type - object of type being tested
  * @param func - function to write object to URDF-XML
@@ -204,24 +233,15 @@ int writeTest(TessType& type,
               std::string& text)
 {
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLPrinter printer;
-  std::stringstream ss;
   int status = 0;
   try
   {
     tinyxml2::XMLElement* element = func(type, doc);
+    text = toString(element);
     if (element != nullptr)
-    {
-      element->Accept(&printer);
-      ss << printer.CStr();
-      text = ss.str();
       status = 0;
-    }
     else
-    {
-      text = "";
       status = 2;
-    }
   }
   catch (...)
   {
@@ -246,24 +266,15 @@ int writeTest(TessType& type,
               const std::string& directory)
 {
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLPrinter printer;
-  std::stringstream ss;
   int status = 0;
   try
   {
     tinyxml2::XMLElement* element = func(type, doc, directory);
+    text = toString(element);
     if (element != nullptr)
-    {
-      element->Accept(&printer);
-      ss << printer.CStr();
-      text = ss.str();
       status = 0;
-    }
     else
-    {
-      text = "";
       status = 2;
-    }
   }
   catch (...)
   {
@@ -292,24 +303,15 @@ int writeTest(
     const std::string& filename)
 {
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLPrinter printer;
-  std::stringstream ss;
   int status = 0;
   try
   {
     tinyxml2::XMLElement* element = func(type, doc, directory, filename);
+    text = toString(element);
     if (element != nullptr)
-    {
-      element->Accept(&printer);
-      ss << printer.CStr();
-      text = ss.str();
       status = 0;
-    }
     else
-    {
-      text = "";
       status = 2;
-    }
   }
   catch (...)
   {
@@ -342,24 +344,15 @@ int writeTest(TessType& type,
               const int id)
 {
   tinyxml2::XMLDocument doc;
-  tinyxml2::XMLPrinter printer;
-  std::stringstream ss;
   int status = 0;
   try
   {
     tinyxml2::XMLElement* element = func(type, doc, directory, link_name, id);
+    text = toString(element);
     if (element != nullptr)
-    {
-      element->Accept(&printer);
-      ss << printer.CStr();
-      text = ss.str();
       status = 0;
-    }
     else
-    {
-      text = "";
       status = 2;
-    }
   }
   catch (...)
   {

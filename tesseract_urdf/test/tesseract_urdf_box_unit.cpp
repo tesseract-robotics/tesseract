@@ -71,7 +71,7 @@ TEST(TesseractURDFUnit, write_box)  // NOLINT
     tesseract_geometry::Box::Ptr geom = std::make_shared<tesseract_geometry::Box>(1.0, 2.0, 3.0);
     std::string text = "";
     EXPECT_EQ(0, writeTest<tesseract_geometry::Box::Ptr>(geom, &tesseract_urdf::writeBox, text));
-    EXPECT_NE(text, "");
+    EXPECT_EQ(text, R"(<box size="1 2 3"/>)");
   }
 
   {

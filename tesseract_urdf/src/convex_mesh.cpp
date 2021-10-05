@@ -38,7 +38,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_urdf/convex_mesh.h>
-#include <tesseract_urdf/mesh_writer.h>
 #include <tesseract_urdf/utils.h>
 
 std::vector<tesseract_geometry::ConvexMesh::Ptr>

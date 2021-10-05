@@ -110,7 +110,7 @@ TEST(TesseractURDFUnit, write_mesh)  // NOLINT
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Mesh::Ptr>(
                   mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("mesh0.ply")));
-    EXPECT_NE(text, "");
+    EXPECT_EQ(text, R"(<mesh filename="package://tmp/mesh0.ply"/>)");
   }
 
   {  // fail to write

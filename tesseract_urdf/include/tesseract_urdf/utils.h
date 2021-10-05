@@ -5,54 +5,31 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <sstream>
 #include <string>
+
+// #include <assimp/scene.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_geometry/impl/polygon_mesh.h>
 
 namespace tesseract_urdf
 {
 
-template <typename T>
-inline std::string toString(const T& float_value, const int precision = 3)
-{
-  std::stringstream sstring;
-  sstring.precision(precision);
-  sstring << float_value;
-  return sstring.str();
-}
+std::string toString(const double& float_value, const int precision = 3);
 
-inline std::string trailingSlash(const std::string& path)
-{
-  std::string ret;
-  if (path.empty())
-    ret = "/";
-  else
-  {
-    if (path.back() == '/')
-      ret = path;
-    else
-      ret = path + "/";
-  }
-  return ret;
-}
+std::string trailingSlash(const std::string& path);
 
-inline std::string noTrailingSlash(const std::string& path)
-{
-  std::string ret = path;
-  while (!ret.empty() && (ret.back() == '/' || ret.back() == '\\'))
-  {
-    ret = ret.substr(0, ret.size() - 1);
-  }
-  return ret;
-}
+std::string noTrailingSlash(const std::string& path);
 
-inline std::string noLeadingSlash(const std::string& filename)
-{
-  std::string ret = filename;
-  while (!ret.empty() && (ret.front() == '/' || ret.front() == '\\'))
-  {
-    ret = ret.substr(1);  // from second char to end
-  }
-  return ret;
-}
+std::string noLeadingSlash(const std::string& filename);
+
+std::string makeURDFFilePath(const std::string& package_path, const std::string& filename);
+
+/* Commented out due to nebulous errors during initial testing.
+ * If errors are resolved, this is probably superior to the writeSimplePLY method used.
+aiScene createAssetFromMesh(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh);
+*/
+
+void writeMeshToFile(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh, const std::string& filepath);
 
 }  // namespace tesseract_urdf
 

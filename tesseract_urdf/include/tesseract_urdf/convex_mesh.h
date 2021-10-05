@@ -62,6 +62,16 @@ parseConvexMesh(const tinyxml2::XMLElement* xml_element,
                 bool visual,
                 int version);
 
+/**
+ * @brief writeConvexMesh Write convex mesh to URDF XML.  This is non-standard URDF / tesseract-exclusive
+ * @param mesh Mesh to be written
+ * @param doc XML document to which xml will belong
+ * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
+ * set, geometry will be saved with absolute paths.
+ * @param filename Desired file location.  If package_path is set, this should be relative to the package.  If not,
+ * this should be an absolute path.
+ * @return XML element representing the convex mesh object in URDF format.
+ */
 tinyxml2::XMLElement* writeConvexMesh(const std::shared_ptr<const tesseract_geometry::ConvexMesh>& mesh,
                                       tinyxml2::XMLDocument& doc,
                                       const std::string& package_path,
