@@ -38,8 +38,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-ManipulatorInfo::ManipulatorInfo(std::string manipulator_, std::string tcp_frame_, const Eigen::Isometry3d& tcp_offset_)
-  : manipulator(std::move(manipulator_)), tcp_frame(std::move(tcp_frame_)), tcp_offset(tcp_offset_)
+ManipulatorInfo::ManipulatorInfo(std::string manipulator_,
+                                 std::string working_frame_,
+                                 std::string tcp_frame_,
+                                 const Eigen::Isometry3d& tcp_offset_)
+  : manipulator(std::move(manipulator_))
+  , working_frame(std::move(working_frame_))
+  , tcp_frame(std::move(tcp_frame_))
+  , tcp_offset(tcp_offset_)
 {
 }
 
@@ -68,7 +74,7 @@ ManipulatorInfo ManipulatorInfo::getCombined(const ManipulatorInfo& manip_info_o
 bool ManipulatorInfo::empty() const
 {
   // This struct is empty if either the manipulator or tcp_frame members are empty since they are required
-  return manipulator.empty() || tcp_frame.empty();
+  return manipulator.empty() || working_frame.empty() || tcp_frame.empty();
 }
 
 bool ManipulatorInfo::operator==(const ManipulatorInfo& rhs) const
@@ -76,9 +82,17 @@ bool ManipulatorInfo::operator==(const ManipulatorInfo& rhs) const
   bool ret_val = true;
   ret_val &= (manipulator == rhs.manipulator);
   ret_val &= (manipulator_ik_solver == rhs.manipulator_ik_solver);
-  ret_val &= (tcp_frame == rhs.tcp_frame);
-  ret_val &= tcp_offset.isApprox(rhs.tcp_offset);
   ret_val &= (working_frame == rhs.working_frame);
+  ret_val &= (tcp_frame == rhs.tcp_frame);
+  ret_val &= (tcp_offset.index() == rhs.tcp_offset.index());
+  if (ret_val == true)
+  {
+    if (tcp_offset.index() == 0)
+      ret_val &= (std::get<std::string>(tcp_offset) == std::get<std::string>(rhs.tcp_offset));
+    else
+      ret_val &= std::get<Eigen::Isometry3d>(tcp_offset).isApprox(std::get<Eigen::Isometry3d>(rhs.tcp_offset));
+  }
+
   return ret_val;
 }
 bool ManipulatorInfo::operator!=(const ManipulatorInfo& rhs) const { return !operator==(rhs); }
@@ -88,9 +102,9 @@ void ManipulatorInfo::serialize(Archive& ar, const unsigned int /*version*/)
 {
   ar& boost::serialization::make_nvp("manipulator", manipulator);
   ar& boost::serialization::make_nvp("manipulator_ik_solver", manipulator_ik_solver);
+  ar& boost::serialization::make_nvp("working_frame", working_frame);
   ar& boost::serialization::make_nvp("tcp_frame", tcp_frame);
   ar& boost::serialization::make_nvp("tcp_offset", tcp_offset);
-  ar& boost::serialization::make_nvp("working_frame", working_frame);
 }
 
 }  // namespace tesseract_common

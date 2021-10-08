@@ -61,7 +61,10 @@ JointGroup::JointGroup(std::string name,
   {
     auto it = std::find(active_link_names.begin(), active_link_names.end(), link->getName());
     if (it == active_link_names.end())
+    {
       static_link_names_.push_back(link->getName());
+      static_link_transforms_[link->getName()] = scene_state.link_transforms.at(link->getName());
+    }
   }
 
   limits_.resize(static_cast<Eigen::Index>(joint_names_.size()));
@@ -97,6 +100,7 @@ JointGroup& JointGroup::operator=(const JointGroup& other)
   state_solver_ = other.state_solver_->clone();
   joint_names_ = other.joint_names_;
   static_link_names_ = other.static_link_names_;
+  static_link_transforms_ = other.static_link_transforms_;
   limits_ = other.limits_;
   redundancy_indices_ = other.redundancy_indices_;
   jacobian_map_ = other.jacobian_map_;
@@ -105,7 +109,9 @@ JointGroup& JointGroup::operator=(const JointGroup& other)
 
 tesseract_common::TransformMap JointGroup::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
-  return state_solver_->getState(joint_names_, joint_angles).link_transforms;
+  tesseract_common::TransformMap state = state_solver_->getState(joint_names_, joint_angles).link_transforms;
+  state.insert(static_link_transforms_.begin(), static_link_transforms_.end());
+  return state;
 }
 
 Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
@@ -247,6 +253,8 @@ std::vector<std::string> JointGroup::getJointNames() const { return joint_names_
 std::vector<std::string> JointGroup::getLinkNames() const { return state_solver_->getLinkNames(); }
 
 std::vector<std::string> JointGroup::getActiveLinkNames() const { return state_solver_->getActiveLinkNames(); }
+
+std::vector<std::string> JointGroup::getStaticLinkNames() const { return state_solver_->getStaticLinkNames(); }
 
 bool JointGroup::isActiveLinkName(const std::string& link_name) const
 {

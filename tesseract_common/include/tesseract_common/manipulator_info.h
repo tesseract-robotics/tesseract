@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
+#include <variant>
 #include <Eigen/Geometry>
 #include <boost/serialization/base_object.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -46,29 +47,35 @@ struct ManipulatorInfo
 
   ManipulatorInfo() = default;
   ManipulatorInfo(std::string manipulator_,
+                  std::string working_frame_,
                   std::string tcp_frame_,
                   const Eigen::Isometry3d& tcp_offset_ = Eigen::Isometry3d::Identity());
 
   /** @brief Name of the manipulator group */
   std::string manipulator;
 
-  /** @brief The coordinate frame within to the environment to use as the reference frame for the tool center
-   * point (TCP) which is defined by an offset transform relative to this frame */
+  /**
+   * @brief The working frame to which waypoints are relative.
+   * @details If the tcp_frame is external to manipulator then the working frame must be an active frame on the
+   * manipulator
+   */
+  std::string working_frame;
+
+  /**
+   * @brief The coordinate frame within to the environment to use as the reference frame for the tool center
+   * point (TCP) which is defined by an offset transform relative to this frame
+   */
   std::string tcp_frame;
 
-  /** @brief Offset transform applied to the tcp_frame link to represent the manipulator TCP */
-  Eigen::Isometry3d tcp_offset{ Eigen::Isometry3d::Identity() };
+  /** @brief (Optional) Offset transform applied to the tcp_frame link to represent the manipulator TCP */
+  std::variant<std::string, Eigen::Isometry3d> tcp_offset{ Eigen::Isometry3d::Identity() };
 
   /** @brief (Optional) IK Solver to be used */
   std::string manipulator_ik_solver;
 
-  /** @brief (Optional) The working frame to which waypoints are relative. If empty the base link of the environment is
-   * used*/
-  std::string working_frame;
-
   /**
    * @brief If the provided manipulator information member is not empty it will override this and return a
-   * new manipualtor information with the combined results
+   * new manipulator information with the combined results
    * @param manip_info_override The manipulator information to check for overrides
    * @return The combined manipulator information
    */

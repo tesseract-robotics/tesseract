@@ -199,15 +199,32 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
       std::string filename;
       tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
       if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: Missing or failded to parse 'filename' "
+        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: Missing or failed to parse 'filename' "
                                                   "attribute."));
 
-      tesseract_common::Resource::Ptr resource = locator.locateResource(filename);
-      if (resource == nullptr)
+      tesseract_common::Resource::Ptr kin_plugin_resource = locator.locateResource(filename);
+      if (kin_plugin_resource == nullptr)
         std::throw_with_nested(
             std::runtime_error("kinematics_plugin_config: Failed to locate resource '" + filename + "'."));
 
-      YAML::Node config = YAML::LoadFile(resource->getFilePath());
+      tesseract_common::fs::path kin_plugin_file_path(kin_plugin_resource->getFilePath());
+      if (!tesseract_common::fs::exists(kin_plugin_file_path))
+        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: Kinematics plugins file does not exist: "
+                                                  "'" +
+                                                  kin_plugin_file_path.string() + "'."));
+
+      YAML::Node config;
+      try
+      {
+        config = YAML::LoadFile(kin_plugin_file_path.string());
+      }
+      catch (...)
+      {
+        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: YAML failed to parse kinematics plugins "
+                                                  "file '" +
+                                                  kin_plugin_file_path.string() + "'."));
+      }
+
       const YAML::Node& kin_plugin_info = config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
       auto info = kin_plugin_info.as<tesseract_common::KinematicsPluginInfo>();
       kinematics_information.kinematics_plugin_info.insert(info);

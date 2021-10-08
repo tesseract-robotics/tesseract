@@ -21,6 +21,10 @@
         <joint name="joint_a6" value="0" />
         <joint name="joint_a7" value="0" />
     </group_state>
+
+    <!--Groups kinematic plugins -->
+    <kinematics_plugin_config filename="lbr_iiwa_14_r820_plugins.yaml"/>
+
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="base_link" link2="link_1" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="link_2" reason="Never" />

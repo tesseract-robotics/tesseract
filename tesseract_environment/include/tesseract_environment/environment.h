@@ -64,7 +64,7 @@ namespace tesseract_environment
  *
  * The function should throw and exception if not located
  */
-using FindTCPCallbackFn = std::function<Eigen::Isometry3d(const tesseract_common::ManipulatorInfo&)>;
+using FindTCPOffsetCallbackFn = std::function<Eigen::Isometry3d(const tesseract_common::ManipulatorInfo&)>;
 
 class Environment
 {
@@ -206,28 +206,28 @@ public:
    * @brief Find tool center point provided in the manipulator info
    *
    * If manipulator information tcp is defined as a string it does the following
-   *    - First check if manipulator info is empty, if so return identity
-   *    - Next if not empty, it checks if the manipulator manager has tcp defined for the manipulator group
-   *    - Next if not found, it looks up the tcp name in the EnvState along with manipulator tip link to calculate tcp
+   *    - First check if manipulator info is empty or already an Isometry3d, if so return identity
+   *    - Next if not, it checks if the tcp offset name is a link in the environment if so it return identity
+   *    - Next if not found, it looks up the tcp name in the SRDF kinematics information
    *    - Next if not found, it leverages the user defined callbacks to try an locate the tcp information.
    *    - Next throw an exception, because no tcp information was located.
    *
    * @param manip_info The manipulator info
    * @return The tool center point
    */
-  Eigen::Isometry3d findTCP(const tesseract_common::ManipulatorInfo& manip_info) const;
+  Eigen::Isometry3d findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const;
 
   /**
    * @brief This allows for user defined callbacks for looking up TCP information
    * @param fn User defined callback function for locating TCP information
    */
-  void addFindTCPCallback(const FindTCPCallbackFn& fn);
+  void addFindTCPOffsetCallback(const FindTCPOffsetCallbackFn& fn);
 
   /**
    * @brief This get the current find tcp callbacks stored in the environment
    * @return A vector of callback functions
    */
-  std::vector<FindTCPCallbackFn> getFindTCPCallbacks() const;
+  std::vector<FindTCPOffsetCallbackFn> getFindTCPOffsetCallbacks() const;
 
   /**
    * @brief Set resource locator for environment
@@ -503,7 +503,7 @@ protected:
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;
 
   /** @brief A vector of user defined callbacks for locating tool center point */
-  std::vector<FindTCPCallbackFn> find_tcp_cb_;
+  std::vector<FindTCPOffsetCallbackFn> find_tcp_cb_;
 
   /** @brief This indicates that the default collision checker 'Bullet' should be registered */
   bool register_default_contact_managers_{ true };
