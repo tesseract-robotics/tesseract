@@ -15,6 +15,7 @@ find_package(tesseract_collision REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
+find_package(tesseract_state_solver REQUIRED)
 
 # Optional to build ignition visualization
 find_package(ignition-common3 COMPONENTS profiler events av QUIET)
@@ -74,6 +75,7 @@ target_link_libraries(
   PUBLIC Eigen3::Eigen
          tesseract::tesseract_environment
          tesseract::tesseract_scene_graph
+         tesseract::tesseract_state_solver_core
          tesseract::tesseract_collision_core
          tesseract::tesseract_common
          console_bridge::console_bridge)
@@ -195,6 +197,7 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
       "libconsole-bridge-dev"
       "libeigen3-dev"
     WINDOWS_DEPENDS
@@ -202,5 +205,6 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
       "Eigen3")
 endif()

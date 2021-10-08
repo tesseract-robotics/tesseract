@@ -53,7 +53,7 @@ void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
 
 /**
  * @brief Should perform a continuous collision check between two states.
- * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
  * @param manager A continuous contact manager
  * @param state0 First environment state
  * @param state1 Second environment state
@@ -62,13 +62,13 @@ void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
  */
 bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& contacts,
                             tesseract_collision::ContinuousContactManager& manager,
-                            const tesseract_scene_graph::SceneState& state0,
-                            const tesseract_scene_graph::SceneState& state1,
+                            const tesseract_common::TransformMap& state0,
+                            const tesseract_common::TransformMap& state1,
                             const tesseract_collision::CollisionCheckConfig& config);
 
 /**
  * @brief Should perform a discrete collision check a state.
- * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
  * @param manager A discrete contact manager
  * @param state First environment state
  * @param config CollisionCheckConfig used to specify collision check settings
@@ -76,12 +76,12 @@ bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& 
  */
 bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contacts,
                           tesseract_collision::DiscreteContactManager& manager,
-                          const tesseract_scene_graph::SceneState& state,
+                          const tesseract_common::TransformMap& state,
                           const tesseract_collision::CollisionCheckConfig& config);
 
 /**
  * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
- * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
  * @param manager A continuous contact manager
  * @param state_solver The environment state solver
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
@@ -97,8 +97,23 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
                      const tesseract_collision::CollisionCheckConfig& config);
 
 /**
+ * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
+ * @param manager A continuous contact manager
+ * @param manip The kinematic joint group
+ * @param traj The joint values at each time step
+ * @param config CollisionCheckConfig used to specify collision check settings
+ * @return True if collision was found, otherwise false.
+ */
+bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                     tesseract_collision::ContinuousContactManager& manager,
+                     const tesseract_kinematics::JointGroup& manip,
+                     const tesseract_common::TrajArray& traj,
+                     const tesseract_collision::CollisionCheckConfig& config);
+
+/**
  * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
- * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
  * @param manager A continuous contact manager
  * @param state_solver The environment state solver
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
@@ -110,6 +125,21 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
                      tesseract_collision::DiscreteContactManager& manager,
                      const tesseract_scene_graph::StateSolver& state_solver,
                      const std::vector<std::string>& joint_names,
+                     const tesseract_common::TrajArray& traj,
+                     const tesseract_collision::CollisionCheckConfig& config);
+
+/**
+ * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
+ * @param manager A continuous contact manager
+ * @param manip The kinematic joint group
+ * @param traj The joint values at each time step
+ * @param config CollisionCheckConfig used to specify collision check settings
+ * @return True if collision was found, otherwise false.
+ */
+bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                     tesseract_collision::DiscreteContactManager& manager,
+                     const tesseract_kinematics::JointGroup& manip,
                      const tesseract_common::TrajArray& traj,
                      const tesseract_collision::CollisionCheckConfig& config);
 

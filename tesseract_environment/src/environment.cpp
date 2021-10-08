@@ -370,65 +370,47 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
 }
 
 // NOLINTNEXTLINE
-Eigen::Isometry3d Environment::findTCP(const tesseract_common::ManipulatorInfo& /*manip_info*/) const
+Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const
 {
-  //  std::shared_lock<std::shared_mutex> lock(mutex_);
-  //  if (manip_info.tcp.empty())
-  //    return Eigen::Isometry3d::Identity();
+  std::shared_lock<std::shared_mutex> lock(mutex_);
 
-  //  auto composite_mi_fwd_kin = manipulator_manager_->getFwdKinematicSolver(manip_info.manipulator);
-  //  if (composite_mi_fwd_kin == nullptr)
-  //    throw std::runtime_error("findTCP: Manipulator '" + manip_info.manipulator + "' does not exist!");
+  // If it is already an Isometry3d return the offset
+  if (manip_info.tcp_offset.index() != 0)
+    return std::get<1>(manip_info.tcp_offset);
 
-  //  const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
-  //  if (manip_info.tcp.isString())
-  //  {
-  //    // Check Manipulator Manager for TCP
-  //    const std::string& tcp_name = manip_info.tcp.getString();
-  //    if (manipulator_manager_->hasGroupTCP(manip_info.manipulator, tcp_name))
-  //      return manipulator_manager_->getGroupsTCP(manip_info.manipulator, tcp_name);
+  // Check if the tcp offset name is a link in the scene, if so return Identity
+  std::string tcp_offset_name = std::get<0>(manip_info.tcp_offset);
+  if (state_solver_->hasLinkName(tcp_offset_name))
+    return Eigen::Isometry3d::Identity();
 
-  //    // Check Environment for links and calculate TCP
-  //    auto link_it = current_state_->link_transforms.find(tcp_name);
-  //    if (link_it != current_state_->link_transforms.end())
-  //    {
-  //      // If it is external then the tcp is not attached to the robot
-  //      if (manip_info.tcp.isExternal())
-  //        return link_it->second;
-  //      else
-  //        return current_state_->link_transforms.at(tip_link).inverse() * link_it->second;
-  //    }
+  // Check Manipulator Manager for TCP
+  if (kinematics_information_.hasGroupTCP(manip_info.manipulator, tcp_offset_name))
+    return kinematics_information_.group_tcps.at(manip_info.manipulator).at(tcp_offset_name);
 
-  //    // Check callbacks for TCP
-  //    for (const auto& fn : find_tcp_cb_)
-  //    {
-  //      try
-  //      {
-  //        Eigen::Isometry3d tcp = fn(manip_info);
-  //        return tcp;
-  //      }
-  //      catch (...)
-  //      {
-  //        CONSOLE_BRIDGE_logDebug("User Defined Find TCP Callback Failed!");
-  //      }
-  //    }
+  // Check callbacks for TCP Offset
+  for (const auto& fn : find_tcp_cb_)
+  {
+    try
+    {
+      Eigen::Isometry3d tcp = fn(manip_info);
+      return tcp;
+    }
+    catch (...)
+    {
+      CONSOLE_BRIDGE_logDebug("User Defined Find TCP Callback Failed!");
+    }
+  }
 
-  //    throw std::runtime_error("Could not find tcp by name " + tcp_name + "' setting to Identity!");
-  //  }
-
-  //  if (manip_info.tcp.isTransform())
-  //    return manip_info.tcp.getTransform();
-
-  throw std::runtime_error("Could not find tcp!");
+  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "' setting to Identity!");
 }
 
-void Environment::addFindTCPCallback(const FindTCPCallbackFn& fn)
+void Environment::addFindTCPOffsetCallback(const FindTCPOffsetCallbackFn& fn)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   find_tcp_cb_.push_back(fn);
 }
 
-std::vector<FindTCPCallbackFn> Environment::getFindTCPCallbacks() const
+std::vector<FindTCPOffsetCallbackFn> Environment::getFindTCPOffsetCallbacks() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return find_tcp_cb_;

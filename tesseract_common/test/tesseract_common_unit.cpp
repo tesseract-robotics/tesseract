@@ -261,8 +261,8 @@ TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
   EXPECT_TRUE(manip_info.manipulator_ik_solver.empty());
   EXPECT_TRUE(manip_info.working_frame.empty());
 
-  tesseract_common::ManipulatorInfo manip_info_override("manipulator", "tool0");
-  manip_info_override.tcp_offset.translation() = Eigen::Vector3d(0.0, 0.0, 0.25);
+  tesseract_common::ManipulatorInfo manip_info_override("manipulator", "world", "tool0");
+  manip_info_override.tcp_offset = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.0, 0.0, 0.25);
   manip_info_override.manipulator_ik_solver = "OPWInvKin";
   manip_info_override.working_frame = "base_link";
 
@@ -275,32 +275,30 @@ TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
 
   // Test empty method
   {
-    tesseract_common::ManipulatorInfo manip_info("manip", "");
+    tesseract_common::ManipulatorInfo manip_info("manip", "world", "");
     EXPECT_TRUE(manip_info.empty());
   }
 
   {
-    tesseract_common::ManipulatorInfo manip_info("", "");
+    tesseract_common::ManipulatorInfo manip_info("manip", "", "tool0");
+    EXPECT_TRUE(manip_info.empty());
+  }
+
+  {
+    tesseract_common::ManipulatorInfo manip_info("", "world", "tool0");
+    EXPECT_TRUE(manip_info.empty());
+  }
+
+  {
+    tesseract_common::ManipulatorInfo manip_info("", "", "");
     manip_info.manipulator_ik_solver = "manip";
-    EXPECT_TRUE(manip_info.empty());
-  }
-
-  {
-    tesseract_common::ManipulatorInfo manip_info("", "");
-    manip_info.working_frame = "manip";
-    EXPECT_TRUE(manip_info.empty());
-  }
-
-  {
-    tesseract_common::ManipulatorInfo manip_info("", "manip");
-    manip_info.tcp_frame = "manip";
     EXPECT_TRUE(manip_info.empty());
   }
 }
 
 TEST(TesseractCommonUnit, serializationManipulatorInfo)  // NOLINT
 {
-  tesseract_common::ManipulatorInfo manip_info("manipulator", "");
+  tesseract_common::ManipulatorInfo manip_info("manipulator", "world", "tool0");
 
   {
     std::ofstream os("/tmp/manipulator_info_boost.xml");

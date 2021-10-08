@@ -85,7 +85,7 @@ public:
   using UPtr = std::unique_ptr<KinematicGroup>;
   using ConstUPtr = std::unique_ptr<const KinematicGroup>;
 
-  ~KinematicGroup() = default;
+  ~KinematicGroup() override = default;
   KinematicGroup(const KinematicGroup& other);
   KinematicGroup& operator=(const KinematicGroup& other);
   KinematicGroup(KinematicGroup&&) = default;

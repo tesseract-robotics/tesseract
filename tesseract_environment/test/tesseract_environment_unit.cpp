@@ -222,9 +222,9 @@ Environment::Ptr getEnvironment(EnvRegisterMethod register_contact_managers = En
     EXPECT_TRUE(env->getContinuousContactManager() != nullptr);
   }
 
-  EXPECT_EQ(env->getFindTCPCallbacks().size(), 0);
-  env->addFindTCPCallback(tcpCallback);
-  EXPECT_EQ(env->getFindTCPCallbacks().size(), 1);
+  EXPECT_EQ(env->getFindTCPOffsetCallbacks().size(), 0);
+  env->addFindTCPOffsetCallback(tcpCallback);
+  EXPECT_EQ(env->getFindTCPOffsetCallbacks().size(), 1);
 
   return env;
 }
@@ -267,7 +267,7 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
   }
 
-  {  // Get the environment with registared default contact managers
+  {  // Get the environment with registered default contact managers
     auto env = getEnvironment(EnvRegisterMethod::ON_CONSTRUCTION);
 
     // Test after clone if active list correct
@@ -281,7 +281,7 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
   }
 
-  {  // Get the environment with registared default contact managers function
+  {  // Get the environment with registered default contact managers function
     auto env = getEnvironment(EnvRegisterMethod::CALL_DEFAULT_REGISTAR);
 
     // Test after clone if active list correct
@@ -326,42 +326,42 @@ void runFindTCPTest()
   {  // Should return the solution form the provided callback
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.1);
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", tcp);
-    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
-    EXPECT_TRUE(manip_info.tcp_offset.isApprox(found_tcp, 1e-6));
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown", tcp);
+    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
+    EXPECT_TRUE(std::get<Eigen::Isometry3d>(manip_info.tcp_offset).isApprox(found_tcp, 1e-6));
   }
 
   {  // Empty tcp should return identity
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "");
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "", "");
 
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
-    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
+    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(tcp.isApprox(found_tcp, 1e-6));
   }
 
   {  // The tcp is a link attached to the tip of the kinematic chain
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "tcp_link");
-    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", "tcp_link");
+    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(tcp_link_tf.isApprox(found_tcp, 1e-6));
   }
 
   {  // The tcp is external link name
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "external_tcp_link");
-    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", "external_tcp_link");
+    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(external_tcp_link_tf.isApprox(found_tcp, 1e-6));
   }
 
   {  // If the manipulator has a tcp transform then it should be returned
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "", tcp);
-    Eigen::Isometry3d found_tcp = env->findTCP(manip_info);
-    EXPECT_TRUE(manip_info.tcp_offset.isApprox(found_tcp, 1e-6));
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "", "", tcp);
+    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
+    EXPECT_TRUE(std::get<Eigen::Isometry3d>(manip_info.tcp_offset).isApprox(found_tcp, 1e-6));
   }
 
   {  // If the manipulator does not exist it should throw an exception
-    tesseract_common::ManipulatorInfo manip_info("missing_manipulator", "unknown");
-    EXPECT_ANY_THROW(env->findTCP(manip_info));  // NOLINT
+    tesseract_common::ManipulatorInfo manip_info("missing_manipulator", "unknown", "unknown");
+    EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
 }
 
@@ -593,11 +593,7 @@ TEST(TesseractEnvironmentUnit, EnvAddKinematicsInformationCommandUnit)  // NOLIN
   EXPECT_TRUE(kin_info2.chain_groups == kin_info.chain_groups);
   EXPECT_TRUE(kin_info2.joint_groups == kin_info.joint_groups);
   EXPECT_TRUE(kin_info2.link_groups == kin_info.link_groups);
-  //    EXPECT_TRUE(kin_info2.group_rop_kinematics == kin_info.group_rop_kinematics);
-  //    EXPECT_TRUE(kin_info2.group_rep_kinematics == kin_info.group_rep_kinematics);
   EXPECT_TRUE(kin_info2.group_states == kin_info.group_states);
-  //    EXPECT_TRUE(kin_info2.group_tcps == kin_info.group_tcps);
-  //    EXPECT_TRUE(kin_info2.group_opw_kinematics == kin_info.group_opw_kinematics);
   EXPECT_TRUE(env->applyCommand(cmd));
 
   EXPECT_EQ(env->getRevision(), 3);
@@ -852,21 +848,6 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointLimitsCommandUnit)  // NOLINT
     EXPECT_NEAR(new_limits.velocity, new_velocity, 1e-5);
     EXPECT_NEAR(new_limits.acceleration, new_acceleration, 1e-5);
   }
-  //  {
-  //    Eigen::MatrixX2d original;
-  //    Eigen::MatrixX2d new_limits;
-  //    {
-  //      auto kin = env->getManipulatorManager()->getFwdKinematicSolver("manipulator");
-  //      original = kin->getLimits().joint_limits;
-  //    }
-  //    env->changeJointPositionLimits("joint_a1", 0, 1);
-  //    {
-  //      auto kin = env->getManipulatorManager()->getFwdKinematicSolver("manipulator");
-  //      new_limits = kin->getLimits().joint_limits;
-  //    }
-  //    EXPECT_EQ(original.rows(), new_limits.rows());
-  //    EXPECT_EQ(original.cols(), new_limits.cols());
-  //  }
 }
 
 TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT

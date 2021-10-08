@@ -32,6 +32,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <variant>
 #include <Eigen/Dense>
 #include <boost/serialization/tracking.hpp>
 #include <boost/serialization/tracking_enum.hpp>
@@ -77,6 +78,18 @@ void load(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version);  // NOL
 
 template <class Archive>
 void serialize(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
+
+/*********************************************************/
+/****** std::variant<std::string, Eigen::Isometry3d> *****/
+/*********************************************************/
+template <class Archive>
+void save(Archive& ar, const std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
 
 }  // namespace serialization
 }  // namespace boost

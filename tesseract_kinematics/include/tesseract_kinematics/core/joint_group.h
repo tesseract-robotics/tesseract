@@ -51,7 +51,7 @@ public:
   using UPtr = std::unique_ptr<JointGroup>;
   using ConstUPtr = std::unique_ptr<const JointGroup>;
 
-  ~JointGroup() = default;
+  virtual ~JointGroup() = default;
   JointGroup(const JointGroup& other);
   JointGroup& operator=(const JointGroup& other);
   JointGroup(JointGroup&&) = default;
@@ -142,6 +142,13 @@ public:
   std::vector<std::string> getActiveLinkNames() const;
 
   /**
+   * @brief Get list of static link names (with and without geometry) for kinematic object
+   *
+   * @return A vector of static link names
+   */
+  std::vector<std::string> getStaticLinkNames() const;
+
+  /**
    * @brief Check if link is an active link
    * @param link_name The link name to check
    * @return True if active, otherwise false
@@ -198,6 +205,7 @@ protected:
   tesseract_scene_graph::StateSolver::UPtr state_solver_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> static_link_names_;
+  tesseract_common::TransformMap static_link_transforms_;
   tesseract_common::KinematicLimits limits_;
   std::vector<Eigen::Index> redundancy_indices_;
   std::vector<Eigen::Index> jacobian_map_;
