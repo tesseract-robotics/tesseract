@@ -69,8 +69,8 @@ public:
    */
   PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
               std::shared_ptr<const Eigen::VectorXi> faces,
-              tesseract_common::Resource::Ptr resource = nullptr,
-              Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+              tesseract_common::Resource::ConstPtr resource = nullptr,
+              const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),  // NOLINT
               std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
               std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
               MeshMaterial::Ptr mesh_material = nullptr,
@@ -80,7 +80,7 @@ public:
     , vertices_(std::move(vertices))
     , faces_(std::move(faces))
     , resource_(std::move(resource))
-    , scale_(std::move(scale))
+    , scale_(scale)
     , normals_(std::move(normals))
     , vertex_colors_(std::move(vertex_colors))
     , mesh_material_(std::move(mesh_material))
@@ -92,7 +92,7 @@ public:
     for (int i = 0; i < faces_->size(); ++i)
     {
       ++face_count_;
-      int num_verts = (*faces_)(i);
+      int num_verts = (*faces_)(i);  // NOLINT
       i += num_verts;
     }
   }
@@ -117,8 +117,8 @@ public:
   PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
               std::shared_ptr<const Eigen::VectorXi> faces,
               int face_count,
-              tesseract_common::Resource::Ptr resource = nullptr,
-              Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+              tesseract_common::Resource::ConstPtr resource = nullptr,
+              const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),  // NOLINT
               std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
               std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
               MeshMaterial::Ptr mesh_material = nullptr,
@@ -129,7 +129,7 @@ public:
     , faces_(std::move(faces))
     , face_count_(face_count)
     , resource_(std::move(resource))
-    , scale_(std::move(scale))
+    , scale_(scale)
     , normals_(std::move(normals))
     , vertex_colors_(std::move(vertex_colors))
     , mesh_material_(std::move(mesh_material))
@@ -184,7 +184,7 @@ public:
    *
    * @return Absolute path to the mesh file
    */
-  const tesseract_common::Resource::Ptr getResource() const { return resource_; }
+  tesseract_common::Resource::ConstPtr getResource() const { return resource_; }
 
   /**
    * @brief Get the scale applied to file used to generate the mesh
@@ -193,11 +193,11 @@ public:
   const Eigen::Vector3d& getScale() const { return scale_; }
 
   /**
-   * @brief Get the vertice normal vectors
+   * @brief Get the vertex normal vectors
    *
    * Optional, may be nullptr
    *
-   * @return The vertice normal vector
+   * @return The vertex normal vector
    */
   std::shared_ptr<const tesseract_common::VectorVector3d> getNormals() const { return normals_; }
 
@@ -243,7 +243,7 @@ private:
 
   int vertex_count_;
   int face_count_;
-  tesseract_common::Resource::Ptr resource_;
+  tesseract_common::Resource::ConstPtr resource_;
   Eigen::Vector3d scale_;
   std::shared_ptr<const tesseract_common::VectorVector3d> normals_;
   std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors_;

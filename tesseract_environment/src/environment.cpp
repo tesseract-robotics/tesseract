@@ -379,7 +379,7 @@ Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::Manipulator
     return std::get<1>(manip_info.tcp_offset);
 
   // Check if the tcp offset name is a link in the scene, if so return Identity
-  std::string tcp_offset_name = std::get<0>(manip_info.tcp_offset);
+  const std::string& tcp_offset_name = std::get<0>(manip_info.tcp_offset);
   if (state_solver_->hasLinkName(tcp_offset_name))
     return Eigen::Isometry3d::Identity();
 
