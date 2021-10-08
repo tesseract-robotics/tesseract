@@ -189,7 +189,7 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
   // If the directory does not exist, make it
   boost::filesystem::create_directory(boost::filesystem::path(directory));
 
-  // If the collision and visual subdirectories do not exist, make them
+  // If the collision and visual sub-directories do not exist, make them
   boost::filesystem::create_directory(boost::filesystem::path(directory + "collision"));
   boost::filesystem::create_directory(boost::filesystem::path(directory + "visual"));
 
@@ -197,7 +197,7 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
   tinyxml2::XMLDocument doc;
 
   // Add XML Declaration
-  tinyxml2::XMLDeclaration* xml_declaration = doc.NewDeclaration(R"(xml version="1.0" )");
+  tinyxml2::XMLDeclaration* xml_declaration = doc.NewDeclaration(R"(XML version="1.0" )");
   doc.InsertFirstChild(xml_declaration);
 
   // Assign Robot Name
@@ -222,7 +222,7 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
     }
   }
 
-  // Write out urdf joints to xml
+  // Write out urdf joints to XML
   for (const tesseract_scene_graph::Joint::ConstPtr& j : sg->getJoints())
   {
     try
@@ -241,8 +241,6 @@ void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
   // Write the document to a file
   std::string full_filepath = directory + filename;
   doc.SaveFile(full_filepath.c_str());
-
-  return;
 }
 
 }  // namespace tesseract_urdf

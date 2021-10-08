@@ -128,12 +128,12 @@ void save(Archive& ar, const std::variant<std::string, Eigen::Isometry3d>& g, co
   ar& BOOST_SERIALIZATION_NVP(index);
   if (index == 0)  // std::string
   {
-    const std::string& tcp_string = std::get<std::string>(g);
+    const auto& tcp_string = std::get<std::string>(g);
     ar& BOOST_SERIALIZATION_NVP(tcp_string);
   }
   else  // Eigen::Isometry3d
   {
-    const Eigen::Isometry3d& tcp_isometry = std::get<Eigen::Isometry3d>(g);
+    const auto& tcp_isometry = std::get<Eigen::Isometry3d>(g);
     ar& BOOST_SERIALIZATION_NVP(tcp_isometry);
   }
 }

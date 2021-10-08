@@ -56,8 +56,8 @@ public:
   /**
    * @brief Mesh geometry
    * @param vertices A vector of vertices associated with the mesh
-   * @param triangles A vector of face indices where the first indice indicates the number of vertices associated
-   *                  with the face followed by the vertice index in parameter vertices. For example a triangle
+   * @param triangles A vector of face indices where the first index indicates the number of vertices associated
+   *                  with the face followed by the vertex index in parameter vertices. For example a triangle
    *                  has three vertices so there should be four inputs where the first should be 3 indicating there are
    *                  three vertices that define this face followed by three indices.
    * @param resource A resource locator for locating resource
@@ -70,7 +70,7 @@ public:
   Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
        std::shared_ptr<const Eigen::VectorXi> triangles,
        tesseract_common::Resource::Ptr resource = nullptr,
-       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+       const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
        std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
        std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
        MeshMaterial::Ptr mesh_material = nullptr,
@@ -78,7 +78,7 @@ public:
     : PolygonMesh(std::move(vertices),
                   std::move(triangles),
                   std::move(resource),
-                  std::move(scale),
+                  scale,
                   std::move(normals),
                   std::move(vertex_colors),
                   std::move(mesh_material),
@@ -94,7 +94,7 @@ public:
   /**
    * @brief Mesh geometry
    * @param vertices A vector of vertices associated with the mesh
-   * @param triangles A vector of face indices where the first indice indicates the number of vertices associated
+   * @param triangles A vector of face indices where the first index indicates the number of vertices associated
    *                  with the face followed by the vertex index in parameter vertices. For example a triangle
    *                  has three vertices so there should be four inputs where the first should be 3 indicating there are
    *                  three vertices that define this face followed by three indices.
@@ -109,8 +109,8 @@ public:
   Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
        std::shared_ptr<const Eigen::VectorXi> triangles,
        int triangle_count,
-       tesseract_common::Resource::Ptr resource = nullptr,
-       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+       tesseract_common::Resource::ConstPtr resource = nullptr,
+       const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
        std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
        std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
        MeshMaterial::Ptr mesh_material = nullptr,
@@ -119,7 +119,7 @@ public:
                   std::move(triangles),
                   triangle_count,
                   std::move(resource),
-                  std::move(scale),
+                  scale,
                   std::move(normals),
                   std::move(vertex_colors),
                   std::move(mesh_material),

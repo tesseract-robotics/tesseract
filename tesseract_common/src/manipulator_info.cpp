@@ -85,7 +85,7 @@ bool ManipulatorInfo::operator==(const ManipulatorInfo& rhs) const
   ret_val &= (working_frame == rhs.working_frame);
   ret_val &= (tcp_frame == rhs.tcp_frame);
   ret_val &= (tcp_offset.index() == rhs.tcp_offset.index());
-  if (ret_val == true)
+  if (ret_val)
   {
     if (tcp_offset.index() == 0)
       ret_val &= (std::get<std::string>(tcp_offset) == std::get<std::string>(rhs.tcp_offset));

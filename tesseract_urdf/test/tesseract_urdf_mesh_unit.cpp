@@ -105,7 +105,7 @@ TEST(TesseractURDFUnit, write_mesh)  // NOLINT
     indices << 3, 0, 1, 2;
     tesseract_geometry::Mesh::Ptr mesh = std::make_shared<tesseract_geometry::Mesh>(
         std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
-    std::string text = "";
+    std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Mesh::Ptr>(
                   mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("mesh0.ply")));
@@ -120,7 +120,7 @@ TEST(TesseractURDFUnit, write_mesh)  // NOLINT
     indices << 3, 0, 1, 2;
     tesseract_geometry::Mesh::Ptr mesh = std::make_shared<tesseract_geometry::Mesh>(
         std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
-    std::string text = "";
+    std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Mesh::Ptr>(
                   mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("")));
