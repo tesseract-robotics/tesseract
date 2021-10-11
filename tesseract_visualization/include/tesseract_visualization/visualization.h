@@ -108,7 +108,7 @@ public:
 
   /**
    * @brief This is called at the start of the plotting for each iteration
-   *        to clear previous iteration graphics if neccessary.
+   *        to clear previous iteration graphics if necessary.
    */
   virtual void clear(std::string ns = "") = 0;
 

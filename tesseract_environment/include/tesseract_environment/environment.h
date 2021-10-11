@@ -412,6 +412,18 @@ public:
   tesseract_scene_graph::StateSolver::UPtr getStateSolver() const;
 
   /**
+   * @brief Get the kinematics information
+   * @return The kinematics information
+   */
+  tesseract_srdf::KinematicsInformation getKinematicsInformation() const;
+
+  /**
+   * @brief Get the available group names
+   * @return The group names
+   */
+  tesseract_srdf::GroupNames getGroupNames() const;
+
+  /**
    * @brief Set the active discrete contact manager
    * @param name The name used to register the contact manager
    * @return True of name exists in DiscreteContactManagerFactory

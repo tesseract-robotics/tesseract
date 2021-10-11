@@ -80,7 +80,7 @@ struct KinematicsInformation
   /** @brief A map of group tool center points */
   GroupTCPs group_tcps;
 
-  /** @brief The kinematics pugin information */
+  /** @brief The kinematics plugin information */
   tesseract_common::KinematicsPluginInfo kinematics_plugin_info;
 
   /** @brief Insert the content of an other KinematicsInformation */

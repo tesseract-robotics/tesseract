@@ -625,6 +625,18 @@ tesseract_scene_graph::StateSolver::UPtr Environment::getStateSolver() const
   return state_solver_->clone();
 }
 
+tesseract_srdf::KinematicsInformation Environment::getKinematicsInformation() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return kinematics_information_;
+}
+
+tesseract_srdf::GroupNames Environment::getGroupNames() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return kinematics_information_.group_names;
+}
+
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
