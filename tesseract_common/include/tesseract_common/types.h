@@ -79,7 +79,7 @@ struct PairHash
  *
  * This is commonly used along with PairHash as the key to an unordered_map<LinkNamesPair, Type, PairHash>
  * @param link_name1 First link name
- * @param link_name2 Second link anme
+ * @param link_name2 Second link name
  * @return LinkNamesPair a lexicographically sorted pair of strings
  */
 LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2);

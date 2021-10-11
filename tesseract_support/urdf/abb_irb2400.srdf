@@ -29,7 +29,7 @@
     </group_tcps>
 
     <!--Groups kinematic plugins -->
-    <kinematics_plugin_config filename="abb_irb2400_plugins.yaml"/>
+    <kinematics_plugin_config filename="package://tesseract_support/urdf/abb_irb2400_plugins.yaml"/>
 
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="FixedBase" type="fixed" parent_frame="world" child_link="base_link" />
