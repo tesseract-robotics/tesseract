@@ -276,14 +276,14 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     bool found = (std::find(joint_names_.begin(), joint_names_.end(), parent_joint->getName()) != joint_names_.end());
     KDL::Joint kdl_jnt = convert(parent_joint);
     KDL::Frame parent_to_joint = convert(parent_joint->parent_to_joint_origin_transform);
+    KDL::Segment kdl_sgm(link->getName(), kdl_jnt, parent_to_joint, inert);
     std::string parent_link_name = parent_joint->parent_link_name;
 
     if (parent_joint->type != JointType::FIXED)
       segment_transforms_[parent_joint->child_link_name] =
-          segment_transforms_[parent_link_name] * kdl_jnt.pose(joint_values_.at(parent_joint->getName()));
+          segment_transforms_[parent_link_name] * kdl_sgm.pose(joint_values_.at(parent_joint->getName()));
     else
-      segment_transforms_[parent_joint->child_link_name] =
-          segment_transforms_[parent_link_name] * parent_to_joint * kdl_jnt.pose(0.0);
+      segment_transforms_[parent_joint->child_link_name] = segment_transforms_[parent_link_name] * kdl_sgm.pose(0.0);
 
     if (!started_ && found)
     {
@@ -341,9 +341,9 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
       else if (it != link_names_.end() && !found)
       {
         if (parent_joint->type != JointType::FIXED)
-          parent_to_joint = parent_to_joint * kdl_jnt.pose(joint_values_.at(parent_joint->getName()));
+          parent_to_joint = kdl_sgm.pose(joint_values_.at(parent_joint->getName()));
         else
-          parent_to_joint = parent_to_joint * kdl_jnt.pose(0.0);
+          parent_to_joint = kdl_sgm.pose(0.0);
 
         kdl_jnt = KDL::Joint(parent_joint->getName(), KDL::Joint::None);
       }
