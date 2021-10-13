@@ -221,11 +221,11 @@ inline ContactResult* processResult(ContactTestData& cdata,
  *                "innerRadius" is the minimum distance of a face to the center of the convex hull.
  * @return The number of faces. If less than zero an error occured when trying to create the convex hull
  */
-inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
-                            Eigen::VectorXi& faces,
-                            const tesseract_common::VectorVector3d& input,
-                            double shrink = -1,
-                            double shrinkClamp = -1)
+int createConvexHull(tesseract_common::VectorVector3d& vertices,
+                     Eigen::VectorXi& faces,
+                     const tesseract_common::VectorVector3d& input,
+                     double shrink = -1,
+                     double shrinkClamp = -1)
 {
   vertices.clear();
 
