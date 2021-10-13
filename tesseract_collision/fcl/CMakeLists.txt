@@ -4,10 +4,7 @@ include_directories(BEFORE ${FCL_INCLUDE_DIRS})
 link_directories(BEFORE ${FCL_LIBRARY_DIRS})
 
 # Create target for FCL implementation
-add_library(${PROJECT_NAME}_fcl
-  src/fcl_discrete_managers.cpp
-  src/fcl_utils.cpp
-  src/fcl_collision_object_wrapper.cpp)
+add_library(${PROJECT_NAME}_fcl src/fcl_discrete_managers.cpp src/fcl_utils.cpp src/fcl_collision_object_wrapper.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_fcl
   PUBLIC ${PROJECT_NAME}_core

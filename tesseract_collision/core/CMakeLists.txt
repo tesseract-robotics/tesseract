@@ -69,6 +69,6 @@ install(
 
 install_targets(
   TARGETS
-    ${PROJECT_NAME}_core
-    ${PROJECT_NAME}_test_suite
-    ${PROJECT_NAME}_test_suite_benchmarks)
+  ${PROJECT_NAME}_core
+  ${PROJECT_NAME}_test_suite
+  ${PROJECT_NAME}_test_suite_benchmarks)
