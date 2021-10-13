@@ -78,7 +78,7 @@ target_link_libraries(
          tesseract::tesseract_common
          tesseract::tesseract_geometry
          tesseract::tesseract_scene_graph
-         tesseract::tesseract_collision_core
+         tesseract::tesseract_collision_bullet
          console_bridge::console_bridge)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
