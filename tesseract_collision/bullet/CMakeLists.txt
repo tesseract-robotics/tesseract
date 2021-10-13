@@ -79,8 +79,35 @@ target_code_coverage(
 target_include_directories(
   ${PROJECT_NAME}_hacd_convex_decomposition PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                               "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_hacd_convex_decomposition SYSTEM
-                           PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+target_include_directories(${PROJECT_NAME}_hacd_convex_decomposition
+  SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+
+if(NOT MSVC)
+  # Create target for creating convex hulls from meshes
+  add_executable(create_convex_hull src/create_convex_hull.cpp)
+  target_link_libraries(
+   create_convex_hull
+   PUBLIC ${PROJECT_NAME}_core
+          ${PROJECT_NAME}_bullet
+          Boost::boost
+          Boost::program_options
+          Eigen3::Eigen
+          tesseract::tesseract_common
+          tesseract::tesseract_geometry
+          console_bridge::console_bridge
+          octomap
+          octomath)
+  target_compile_options(create_convex_hull PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                   ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+                                                 target_compile_definitions(create_convex_hull PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+  target_clang_tidy(create_convex_hull ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+  target_cxx_version(create_convex_hull PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+  target_include_directories(create_convex_hull PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+
+  list(APPEND PACKAGE_LIBRARIES create_convex_hull)
+
+  install_targets(TARGETS create_convex_hull)
+endif()
 
 # Mark cpp header files for installation
 install(
