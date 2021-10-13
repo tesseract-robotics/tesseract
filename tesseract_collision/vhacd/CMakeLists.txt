@@ -18,7 +18,8 @@ if(NOT TARGET OpenMP::OpenMP_CXX)
   set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
 endif()
 
-add_library(${PROJECT_NAME}_vhacd
+add_library(
+  ${PROJECT_NAME}_vhacd
   ${VHACD_CPP_FILES}
   ${VHACD_C_FILES}
   ${VHACD_INC_FILES}
@@ -33,19 +34,14 @@ if(OpenCL_FOUND)
   target_compile_definitions(${PROJECT_NAME}_vhacd PRIVATE -DOPENCL_CL_FILES="${PROJECT_CL_FILES}")
 endif()
 
-#target_compile_definitions(${PROJECT_NAME}_vhacd PUBLIC ${BULLET_DEFINITIONS})
-target_link_libraries(
-  ${PROJECT_NAME}_vhacd
-  PUBLIC OpenMP::OpenMP_CXX
-         tesseract::tesseract_common
-         Eigen3::Eigen)
+# target_compile_definitions(${PROJECT_NAME}_vhacd PUBLIC ${BULLET_DEFINITIONS})
+target_link_libraries(${PROJECT_NAME}_vhacd PUBLIC OpenMP::OpenMP_CXX tesseract::tesseract_common Eigen3::Eigen)
 target_include_directories(${PROJECT_NAME}_vhacd PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                         "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_vhacd SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
 # Convex decomposition libraries
-add_library(${PROJECT_NAME}_vhacd_convex_decomposition
-  src/convex_decomposition_vhacd.cpp)
+add_library(${PROJECT_NAME}_vhacd_convex_decomposition src/convex_decomposition_vhacd.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_vhacd_convex_decomposition
   PUBLIC ${PROJECT_NAME}_core
@@ -65,7 +61,7 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(
   ${PROJECT_NAME}_vhacd_convex_decomposition PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                              "$<INSTALL_INTERFACE:include>")
+                                                    "$<INSTALL_INTERFACE:include>")
 
 # Mark cpp header files for installation
 install(
