@@ -250,7 +250,8 @@ URInvKin& URInvKin::operator=(const URInvKin& other)
   return *this;
 }
 
-IKSolutions URInvKin::calcInvKin(const IKInput& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
+IKSolutions URInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
+                                 const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);
   assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());

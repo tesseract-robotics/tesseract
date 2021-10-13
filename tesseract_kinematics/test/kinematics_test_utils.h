@@ -442,7 +442,7 @@ inline void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin
   // Test Inverse kinematics
   ///////////////////////////
   EXPECT_TRUE(inv_kin.getBaseLinkName() == fwd_kin.getBaseLinkName());  // This only works if they are equal
-  IKInput input{ std::make_pair(tip_link_name, target_pose) };
+  tesseract_common::TransformMap input{ std::make_pair(tip_link_name, target_pose) };
   IKSolutions solutions = inv_kin.calcInvKin(input, seed);
   EXPECT_TRUE(!solutions.empty());
 

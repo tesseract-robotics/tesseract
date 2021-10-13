@@ -46,15 +46,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-/**
- * @brief The Inverse Kinematics Input Data
- * @details For simple case your inverse kinetics object only requires a single input to solve,
- * but imagine the case where you have two robots and a positioner. Now each robot requires an
- * input to solve IK for. This structure is to support the ability to provide multiple inputs for
- * kinematic arrangements involving multiple robots.
- */
-using IKInput = tesseract_common::TransformMap;
-
 /** @brief Inverse kinematics functions. */
 class InverseKinematics
 {
@@ -88,7 +79,7 @@ public:
    * @param seed Vector of seed joint angles (size must match number of joints in kinematic object)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
-  virtual IKSolutions calcInvKin(const IKInput& tip_link_poses,
+  virtual IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
 
   /**

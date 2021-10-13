@@ -65,7 +65,7 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
   return *this;
 }
 
-IKSolutions OPWInvKin::calcInvKin(const IKInput& tip_link_poses,
+IKSolutions OPWInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                                   const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);

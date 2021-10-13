@@ -70,7 +70,7 @@ inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
   return *this;
 }
 
-inline IKSolutions IKFastInvKin::calcInvKin(const IKInput& tip_link_poses,
+inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                                             const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);

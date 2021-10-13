@@ -49,29 +49,18 @@ KinematicGroup::KinematicGroup(std::string name,
   if (it == active_link_names.end())
   {
     working_frames_.insert(working_frames_.end(), static_link_names_.begin(), static_link_names_.end());
-    inv_working_frames_map_[working_frame] = working_frame;
-    for (const auto& static_link_name : static_link_names_)
-      inv_working_frames_map_[static_link_name] = working_frame;
   }
   else
   {
     std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(working_frame);
     working_frames_.push_back(working_frame);
     working_frames_.insert(working_frames_.end(), child_link_names.begin(), child_link_names.end());
-
-    inv_working_frames_map_[working_frame] = working_frame;
-    for (const auto& child : child_link_names)
-      inv_working_frames_map_[child] = working_frame;
   }
 
-  ik_tip_links_ = inv_kin_->getTipLinkNames();
   for (const auto& tip_link : inv_kin_->getTipLinkNames())
   {
-    std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(tip_link);
-    ik_tip_links_.insert(ik_tip_links_.end(), child_link_names.begin(), child_link_names.end());
-
     inv_tip_links_map_[tip_link] = tip_link;
-    for (const auto& child : child_link_names)
+    for (const auto& child : scene_graph.getLinkChildrenNames(tip_link))
       inv_tip_links_map_[child] = tip_link;
   }
 
@@ -87,8 +76,6 @@ KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
   inv_kin_ = other.inv_kin_->clone();
   inv_to_fwd_base_ = other.inv_to_fwd_base_;
   working_frames_ = other.working_frames_;
-  ik_tip_links_ = other.ik_tip_links_;
-  inv_working_frames_map_ = other.inv_working_frames_map_;
   inv_tip_links_map_ = other.inv_tip_links_map_;
   return *this;
 }
@@ -97,24 +84,31 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
                                        const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   // Convert to IK Inputs
-  IKInput ik_inputs;
+  tesseract_common::TransformMap ik_inputs;
   for (const auto& tip_link_pose : tip_link_poses)
   {
-    assert(std::find(ik_tip_links_.begin(), ik_tip_links_.end(), tip_link_pose.tip_link_name) != ik_tip_links_.end());
     assert(std::find(working_frames_.begin(), working_frames_.end(), tip_link_pose.working_frame) !=
            working_frames_.end());
 
-    std::string inv_tip_link = inv_tip_links_map_.at(tip_link_pose.tip_link_name);
-    std::string inv_working_frame = inv_working_frames_map_.at(tip_link_pose.working_frame);
+    // The IK Solvers tip link and working frame
+    std::string ik_solver_tip_link = inv_tip_links_map_.at(tip_link_pose.tip_link_name);
+    std::string working_frame = inv_kin_->getWorkingFrame();
 
-    Eigen::Isometry3d wf_pose_offset =
-        state_.link_transforms.at(inv_working_frame).inverse() * state_.link_transforms.at(tip_link_pose.working_frame);
-    Eigen::Isometry3d tl_pose_offset =
-        state_.link_transforms.at(inv_tip_link).inverse() * state_.link_transforms.at(tip_link_pose.tip_link_name);
+    // Get transform from working frame to user working frame (reference frame for the target IK pose)
+    const Eigen::Isometry3d& world_to_user_wf = state_.link_transforms.at(tip_link_pose.working_frame);
+    const Eigen::Isometry3d& world_to_wf = state_.link_transforms.at(working_frame);
+    const Eigen::Isometry3d wf_to_user_wf = world_to_wf.inverse() * world_to_user_wf;
 
-    /** @todo Check this math (Levi) */
-    Eigen::Isometry3d inv_pose = wf_pose_offset * tip_link_pose.pose * tl_pose_offset.inverse();
-    ik_inputs[inv_tip_link] = inv_pose;
+    // Get the transform from IK solver tip link to the user tip link
+    const Eigen::Isometry3d& world_to_user_tl = state_.link_transforms.at(tip_link_pose.tip_link_name);
+    const Eigen::Isometry3d& world_to_tl = state_.link_transforms.at(ik_solver_tip_link);
+    const Eigen::Isometry3d tl_to_user_tl = world_to_tl.inverse() * world_to_user_tl;
+
+    // Get the transformation from the IK solver working frame to the IK solver tip frame
+    const Eigen::Isometry3d& user_wf_to_user_tl = tip_link_pose.pose;  // an unnecessary but helpful alias
+    const Eigen::Isometry3d wf_to_tl = wf_to_user_wf * user_wf_to_user_tl * tl_to_user_tl.inverse();
+
+    ik_inputs[ik_solver_tip_link] = wf_to_tl;
   }
 
   IKSolutions solutions = inv_kin_->calcInvKin(ik_inputs, seed);
@@ -131,5 +125,13 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
 
 std::vector<std::string> KinematicGroup::getAllValidWorkingFrames() const { return working_frames_; }
 
-std::vector<std::string> KinematicGroup::getAllPossibleTipLinkNames() const { return ik_tip_links_; }
+std::vector<std::string> KinematicGroup::getAllPossibleTipLinkNames() const
+{
+  std::vector<std::string> ik_tip_links;
+  ik_tip_links.reserve(inv_tip_links_map_.size());
+  for (const auto& pair : inv_tip_links_map_)
+    ik_tip_links.push_back(pair.first);
+
+  return ik_tip_links;
+}
 }  // namespace tesseract_kinematics
