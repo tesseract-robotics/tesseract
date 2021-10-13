@@ -26,7 +26,7 @@
 #ifndef TESSERACT_COLLISION_CONVEX_DECOMPOSITION_VHACD_H
 #define TESSERACT_COLLISION_CONVEX_DECOMPOSITION_VHACD_H
 
-#include <tesseract_collision/convex_decomposition/convex_decomposition.h>
+#include <tesseract_collision/core/convex_decomposition.h>
 
 namespace tesseract_collision
 {
