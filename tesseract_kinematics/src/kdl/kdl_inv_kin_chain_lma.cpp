@@ -85,7 +85,6 @@ IKSolutions KDLInvKinChainLMA::calcInvKinHelper(const Eigen::Isometry3d& pose,
   Eigen::VectorXd solution(seed.size());
 
   // run IK solver
-  // TODO: Need to update to handle seg number. Neet to create an IK solver for each seg.
   KDL::Frame kdl_pose;
   EigenToKDL(pose, kdl_pose);
   int status = ik_solver_->CartToJnt(kdl_seed, kdl_pose, kdl_solution);
@@ -117,7 +116,7 @@ IKSolutions KDLInvKinChainLMA::calcInvKinHelper(const Eigen::Isometry3d& pose,
   return { solution };
 }
 
-IKSolutions KDLInvKinChainLMA::calcInvKin(const IKInput& tip_link_poses,
+IKSolutions KDLInvKinChainLMA::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(tip_link_poses.find(kdl_data_.tip_link_name) != tip_link_poses.end());

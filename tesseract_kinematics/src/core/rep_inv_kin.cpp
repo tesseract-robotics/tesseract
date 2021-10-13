@@ -172,7 +172,7 @@ REPInvKin& REPInvKin::operator=(const REPInvKin& other)
   return *this;
 }
 
-IKSolutions REPInvKin::calcInvKinHelper(const IKInput& tip_link_poses,
+IKSolutions REPInvKin::calcInvKinHelper(const tesseract_common::TransformMap& tip_link_poses,
                                         const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
@@ -184,7 +184,7 @@ IKSolutions REPInvKin::calcInvKinHelper(const IKInput& tip_link_poses,
 void REPInvKin::nested_ik(IKSolutions& solutions,
                           int loop_level,
                           const std::vector<Eigen::VectorXd>& dof_range,
-                          const IKInput& tip_link_poses,
+                          const tesseract_common::TransformMap& tip_link_poses,
                           Eigen::VectorXd& positioner_pose,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
@@ -202,7 +202,7 @@ void REPInvKin::nested_ik(IKSolutions& solutions,
 }
 
 void REPInvKin::ikAt(IKSolutions& solutions,
-                     const IKInput& tip_link_poses,
+                     const tesseract_common::TransformMap& tip_link_poses,
                      Eigen::VectorXd& positioner_pose,
                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
@@ -214,7 +214,7 @@ void REPInvKin::ikAt(IKSolutions& solutions,
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
 
-  IKInput robot_target_poses{ std::make_pair(manip_tip_link_, robot_target_pose) };
+  tesseract_common::TransformMap robot_target_poses{ std::make_pair(manip_tip_link_, robot_target_pose) };
   auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
   auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
 
@@ -232,7 +232,8 @@ void REPInvKin::ikAt(IKSolutions& solutions,
   }
 }
 
-IKSolutions REPInvKin::calcInvKin(const IKInput& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& seed) const
+IKSolutions REPInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
+                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());
 

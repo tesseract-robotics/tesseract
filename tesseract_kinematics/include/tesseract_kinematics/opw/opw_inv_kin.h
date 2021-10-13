@@ -75,7 +75,7 @@ public:
             std::vector<std::string> joint_names,
             std::string solver_name = OPW_INV_KIN_CHAIN_SOLVER_NAME);
 
-  IKSolutions calcInvKin(const IKInput& tip_link_poses,
+  IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                          const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   Eigen::Index numJoints() const override final;

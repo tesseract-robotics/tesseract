@@ -138,8 +138,6 @@ private:
   InverseKinematics::UPtr inv_kin_;
   Eigen::Isometry3d inv_to_fwd_base_{ Eigen::Isometry3d::Identity() };
   std::vector<std::string> working_frames_;
-  std::vector<std::string> ik_tip_links_;
-  std::unordered_map<std::string, std::string> inv_working_frames_map_;
   std::unordered_map<std::string, std::string> inv_tip_links_map_;
 };
 

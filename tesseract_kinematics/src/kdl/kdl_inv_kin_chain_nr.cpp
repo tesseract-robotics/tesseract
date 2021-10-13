@@ -128,7 +128,7 @@ IKSolutions KDLInvKinChainNR::calcInvKinHelper(const Eigen::Isometry3d& pose,
   return { solution };
 }
 
-IKSolutions KDLInvKinChainNR::calcInvKin(const IKInput& tip_link_poses,
+IKSolutions KDLInvKinChainNR::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                                          const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(tip_link_poses.find(kdl_data_.tip_link_name) != tip_link_poses.end());
