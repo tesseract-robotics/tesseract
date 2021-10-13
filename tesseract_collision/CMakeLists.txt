@@ -17,6 +17,7 @@ find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_support REQUIRED)
 
+# These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
   set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
@@ -30,7 +31,6 @@ else()
   endif()
 endif()
 
-# These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
 if(NOT TARGET octomap)
   add_library(octomap INTERFACE IMPORTED)
   set_target_properties(octomap PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${OCTOMAP_INCLUDE_DIRS}")
@@ -96,35 +96,9 @@ if(TESSERACT_ENABLE_BENCHMARKING AND TESSERACT_BUILD_BULLET AND TESSERACT_BUILD_
   add_subdirectory(test/benchmarks)
 endif()
 
-# Profiler
+# Examples
 if(TESSERACT_BUILD_BULLET AND TESSERACT_BUILD_FCL)
-  # Examples
   add_subdirectory(examples)
-
-  # Create target that profiles the collision checkers.
-  add_executable(${PROJECT_NAME}_profile core/src/collision_profile.cpp)
-  target_link_libraries(
-    ${PROJECT_NAME}_profile
-    PRIVATE ${PROJECT_NAME}_bullet
-            ${PROJECT_NAME}_fcl
-            tesseract::tesseract_geometry
-            tesseract::tesseract_support
-            ${BULLET_LIBRARIES}
-            ${Boost_LIBRARIES}
-            ${OCTOMAP_LIBRARIES}
-            ${LIBFCL_LIBRARIES})
-  target_compile_options(${PROJECT_NAME}_profile PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
-  target_compile_definitions(${PROJECT_NAME}_profile INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
-  target_clang_tidy(${PROJECT_NAME}_profile ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-  target_cxx_version(${PROJECT_NAME}_profile PRIVATE VERSION ${TESSERACT_CXX_VERSION})
-  target_code_coverage(
-    ${PROJECT_NAME}_profile
-    PRIVATE
-    ALL
-    EXCLUDE ${COVERAGE_EXCLUDE}
-    ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-
-  install_targets(TARGETS ${PROJECT_NAME}_profile)
 endif()
 
 # Package configuration
