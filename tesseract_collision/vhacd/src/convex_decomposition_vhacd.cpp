@@ -5,7 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
-#include <tesseract_collision/convex_decomposition/convex_decomposition_vhacd.h>
+#include <tesseract_collision/vhacd/convex_decomposition_vhacd.h>
 
 namespace tesseract_collision
 {
