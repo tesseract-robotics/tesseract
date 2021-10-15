@@ -101,11 +101,7 @@ if(TESSERACT_BUILD_BULLET AND TESSERACT_BUILD_FCL)
   add_subdirectory(examples)
 endif()
 
-# Package configuration
-install(EXPORT ${PROJECT_NAME}-targets NAMESPACE "tesseract::" DESTINATION lib/cmake/${PROJECT_NAME})
-export(EXPORT ${PROJECT_NAME}-targets NAMESPACE "tesseract::"
-       FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
-configure_package()
+configure_package(NAMESPACE tesseract)
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(
