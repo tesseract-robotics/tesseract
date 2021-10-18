@@ -121,10 +121,6 @@ if(TESSERACT_ENABLE_TESTING)
   add_subdirectory(test)
 endif()
 
-if(TESSERACT_ENABLE_BENCHMARKING)
-  add_subdirectory(test/benchmarks)
-endif()
-
 if(TESSERACT_PACKAGE)
   tesseract_cpack(
     VERSION ${pkg_extracted_version}
