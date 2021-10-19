@@ -209,32 +209,6 @@ inline ContactResult* processResult(ContactTestData& cdata,
 }
 
 /**
- * @brief Create a convex hull from vertices using Bullet Convex Hull Computer
- * @param (Output) vertices A vector of vertices
- * @param (Output) faces The first values indicates the number of vertices that define the face followed by the vertice
- * index
- * @param (input) input A vector of point to create a convex hull from
- * @param (input) shrink If positive, the convex hull is shrunken by that amount (each face is moved by "shrink" length
- *                units towards the center along its normal).
- * @param (input) shrinkClamp If positive, "shrink" is clamped to not exceed "shrinkClamp * innerRadius", where
- *                "innerRadius" is the minimum distance of a face to the center of the convex hull.
- * @return The number of faces. If less than zero an error occured when trying to create the convex hull
- */
-int createConvexHull(tesseract_common::VectorVector3d& vertices,
-                     Eigen::VectorXi& faces,
-                     const tesseract_common::VectorVector3d& input,
-                     double shrink = -1,
-                     double shrinkClamp = -1);
-
-inline tesseract_geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract_geometry::Mesh& mesh)
-{
-  std::shared_ptr<tesseract_common::VectorVector3d> ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
-  std::shared_ptr<Eigen::VectorXi> ch_faces = std::make_shared<Eigen::VectorXi>();
-  int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, *mesh.getVertices());
-  return std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces);
-}
-
-/**
  * @brief Apply scaling to the geometry coordinates.
  * @details Given a scaling factor s, and center c, a given vertice v is transformed according to s (v - c) + c.
  * @param vertices The vertices to scale
