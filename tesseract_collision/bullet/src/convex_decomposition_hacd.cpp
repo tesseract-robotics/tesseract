@@ -10,6 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/bullet/convex_decomposition_hacd.h>
+#include <tesseract_collision/bullet/convex_hull_utils.h>
 
 namespace tesseract_collision
 {
@@ -86,7 +87,7 @@ ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertice
 
       auto ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
       auto ch_faces = std::make_shared<Eigen::VectorXi>();
-      int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, *hacd_vertices);
+      int ch_num_faces = createConvexHull(*ch_vertices, *ch_faces, *hacd_vertices);
       output.push_back(std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces));
     }
   }

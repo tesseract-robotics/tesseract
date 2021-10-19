@@ -1,6 +1,7 @@
 #ifndef TESSERACT_COLLISION_COLLISION_BOX_BOX_UNIT_HPP
 #define TESSERACT_COLLISION_COLLISION_BOX_BOX_UNIT_HPP
 
+#include <tesseract_collision/bullet/convex_hull_utils.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/common.h>

@@ -1,5 +1,10 @@
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
-#include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
+#include <tesseract_collision/bullet/convex_hull_utils.h>
 
 using namespace tesseract_collision;
 using namespace tesseract_geometry;
