@@ -62,12 +62,8 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 # Core
 add_subdirectory(core)
 
-# Bullet
-option(TESSERACT_BUILD_BULLET "Build Bullet components" ON)
-if(TESSERACT_BUILD_BULLET)
-  message("Building Bullet components")
-  add_subdirectory(bullet)
-endif()
+# Bullet (currently required for creation of convex hulls)
+add_subdirectory(bullet)
 
 # FCL
 option(TESSERACT_BUILD_FCL "Build FCL components" ON)
@@ -84,7 +80,7 @@ if(TESSERACT_BUILD_VHACD)
 endif()
 
 # Testing
-if(TESSERACT_ENABLE_TESTING AND TESSERACT_BUILD_BULLET AND TESSERACT_BUILD_FCL)
+if(TESSERACT_ENABLE_TESTING AND TESSERACT_BUILD_FCL)
   message(AUTHOR_WARNING "COLLISION CMAKE VERSION: ${CMAKE_VERSION}")
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
@@ -92,12 +88,12 @@ if(TESSERACT_ENABLE_TESTING AND TESSERACT_BUILD_BULLET AND TESSERACT_BUILD_FCL)
 endif()
 
 # Benchmarks
-if(TESSERACT_ENABLE_BENCHMARKING AND TESSERACT_BUILD_BULLET AND TESSERACT_BUILD_FCL)
+if(TESSERACT_ENABLE_BENCHMARKING AND TESSERACT_BUILD_FCL)
   add_subdirectory(test/benchmarks)
 endif()
 
 # Examples
-if(TESSERACT_BUILD_BULLET AND TESSERACT_BUILD_FCL)
+if(TESSERACT_BUILD_FCL)
   add_subdirectory(examples)
 endif()
 
