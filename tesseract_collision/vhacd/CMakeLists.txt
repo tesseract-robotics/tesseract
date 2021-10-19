@@ -1,6 +1,6 @@
+# Third party vhacd
 include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/vhacd_common.cmake")
 
-# Third party vhacd
 find_package(OpenMP REQUIRED)
 
 option(NO_OPENCL "NO_OPENCL" OFF)
@@ -34,11 +34,14 @@ if(OpenCL_FOUND)
   target_compile_definitions(${PROJECT_NAME}_vhacd PRIVATE -DOPENCL_CL_FILES="${PROJECT_CL_FILES}")
 endif()
 
-# target_compile_definitions(${PROJECT_NAME}_vhacd PUBLIC ${BULLET_DEFINITIONS})
-target_link_libraries(${PROJECT_NAME}_vhacd PUBLIC OpenMP::OpenMP_CXX tesseract::tesseract_common Eigen3::Eigen)
+target_link_libraries(
+  ${PROJECT_NAME}_vhacd
+  PUBLIC OpenMP::OpenMP_CXX
+         tesseract::tesseract_common
+         ${PROJECT_NAME}_bullet
+         Eigen3::Eigen)
 target_include_directories(${PROJECT_NAME}_vhacd PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                         "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_vhacd SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
 # Convex decomposition libraries
 add_library(${PROJECT_NAME}_vhacd_convex_decomposition src/convex_decomposition_vhacd.cpp)
