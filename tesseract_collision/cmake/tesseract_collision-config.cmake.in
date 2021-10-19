@@ -25,15 +25,13 @@ if(@TESSERACT_BUILD_FCL@)
   link_directories(BEFORE ${FCL_LIBRARY_DIRS})
 endif()
 
-if(@TESSERACT_BUILD_BULLET@)
-  find_package(Bullet REQUIRED CONFIGS BulletConfig-float64.cmake BulletConfig.cmake)
-  IF(NOT ${BULLET_DEFINITIONS} MATCHES ".*-DBT_USE_DOUBLE_PRECISION.*")
-    message(WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
-  endif()
-
-  include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
-  link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
+find_package(Bullet REQUIRED CONFIGS BulletConfig-float64.cmake BulletConfig.cmake)
+IF(NOT ${BULLET_DEFINITIONS} MATCHES ".*-DBT_USE_DOUBLE_PRECISION.*")
+  message(WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
 endif()
+
+include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
