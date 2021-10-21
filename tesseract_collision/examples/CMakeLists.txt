@@ -18,6 +18,5 @@ target_clang_tidy(${PROJECT_NAME}_box_box_example ENABLE ${TESSERACT_ENABLE_CLAN
 target_cxx_version(${PROJECT_NAME}_box_box_example PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_compile_definitions(${PROJECT_NAME}_box_box_example PRIVATE DATA_DIR="${CMAKE_SOURCE_DIR}/test"
                                                                    ${BULLET_DEFINITIONS})
-target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
 install(TARGETS ${PROJECT_NAME}_box_box_example DESTINATION bin)
