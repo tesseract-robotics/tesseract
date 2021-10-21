@@ -59,12 +59,12 @@
 
 #if defined(__linux__)
 #include <ctime>
-#include <cassert>
 #define __stdcall
 #endif
 
 #if defined(__APPLE__) || defined(__linux__)
 #include <pthread.h>
+#include <cassert>
 #endif
 
 #if defined(__APPLE__)
