@@ -1,6 +1,6 @@
 # Tesseract
 
-[![codecov](https://codecov.io/gh/ros-industrial-consortium/tesseract/branch/master/graph/badge.svg)](https://codecov.io/gh/ros-industrial-consortium/tesseract)
+[![codecov](https://codecov.io/gh/ros-industrial/tesseract/branch/master/graph/badge.svg?token=nh4aHZzgpR)](https://codecov.io/gh/ros-industrial/tesseract)
 
 [![Python](https://img.shields.io/badge/python-2.7+|3.6+-blue.svg)](https://github.com/ros-industrial-consortium/tesseract_python)
 
