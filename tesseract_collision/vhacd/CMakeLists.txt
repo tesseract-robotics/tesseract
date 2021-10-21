@@ -1,3 +1,20 @@
+find_package(
+  Bullet
+  REQUIRED
+  CONFIGS
+  BulletConfig-float64.cmake
+  BulletConfig.cmake)
+if(NOT
+   ${BULLET_DEFINITIONS}
+   MATCHES
+   ".*-DBT_USE_DOUBLE_PRECISION.*")
+  message(
+    WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
+endif()
+
+include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
+
 # Third party vhacd
 include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/vhacd_common.cmake")
 
@@ -26,6 +43,9 @@ add_library(
   ${VHACD_INL_FILES}
   ${VHACD_CL_FILES})
 target_cxx_version(${PROJECT_NAME}_vhacd PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_compile_options(${PROJECT_NAME}_vhacd PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+target_compile_options(${PROJECT_NAME}_vhacd PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(${PROJECT_NAME}_vhacd PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
 
 if(OpenCL_FOUND)
   target_include_directories(${PROJECT_NAME}_vhacd PRIVATE "${OpenCL_INCLUDE_DIR}")
@@ -38,16 +58,18 @@ target_link_libraries(
   ${PROJECT_NAME}_vhacd
   PUBLIC OpenMP::OpenMP_CXX
          tesseract::tesseract_common
-         ${PROJECT_NAME}_bullet
-         Eigen3::Eigen)
+         Eigen3::Eigen
+         ${BULLET_LIBRARIES})
 target_include_directories(${PROJECT_NAME}_vhacd PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                         "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_vhacd SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
 # Convex decomposition libraries
 add_library(${PROJECT_NAME}_vhacd_convex_decomposition src/convex_decomposition_vhacd.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_vhacd_convex_decomposition
   PUBLIC ${PROJECT_NAME}_core
+         ${PROJECT_NAME}_bullet
          ${PROJECT_NAME}_vhacd
          Eigen3::Eigen
          tesseract::tesseract_geometry
