@@ -228,26 +228,41 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   std::cout << "Is Tree: " << g.isTree() << std::endl;
   EXPECT_FALSE(g.isTree());
 
-  // Get Shortest Path
-  ShortestPath path = g.getShortestPath("link_1", "link_4");
+  {  // Get Shortest Path
+    ShortestPath path = g.getShortestPath("link_1", "link_4");
 
-  // Todo:: Look at using filtered graph for chains and subgraphs
-  // boost::filtered_graph<
+    std::cout << path << std::endl;
+    EXPECT_TRUE(path.links.size() == 3);
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_5") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
+    EXPECT_TRUE(path.joints.size() == 2);
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_5") != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_6") != path.joints.end());
+    EXPECT_TRUE(path.active_joints.size() == 2);
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_5") != path.active_joints.end());
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_6") != path.active_joints.end());
 
-  std::cout << path << std::endl;
-  EXPECT_TRUE(path.links.size() == 4);
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_2") != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_3") != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
-  EXPECT_TRUE(path.joints.size() == 3);
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_1") != path.joints.end());
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_2") != path.joints.end());
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_3") != path.joints.end());
-  EXPECT_TRUE(path.active_joints.size() == 1);
-  EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_2") != path.active_joints.end());
+    std::cout << (g.getName().c_str()) << std::endl;
+  }
 
-  std::cout << (g.getName().c_str()) << std::endl;
+  {  // Get Shortest Path wit links reversed
+    ShortestPath path = g.getShortestPath("link_4", "link_1");
+
+    std::cout << path << std::endl;
+    EXPECT_TRUE(path.links.size() == 3);
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_5") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
+    EXPECT_TRUE(path.joints.size() == 2);
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_5") != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_6") != path.joints.end());
+    EXPECT_TRUE(path.active_joints.size() == 2);
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_5") != path.active_joints.end());
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_6") != path.active_joints.end());
+
+    std::cout << (g.getName().c_str()) << std::endl;
+  }
 
   // Should throw since this is a directory and not a file
   EXPECT_ANY_THROW(g.saveDOT(tesseract_common::getTempPath()));  // NOLINT
