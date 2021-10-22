@@ -142,7 +142,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_EQ(inv_kin->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin->getJointNames(), joint_names);
 
-  KinematicGroup kin_group(manip_name, std::move(inv_kin), *scene_graph, scene_state);
+  KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
   KinematicGroup kin_group_copy(kin_group);
 
   EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
@@ -182,7 +182,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_EQ(inv_kin2->getTipLinkNames()[0], tip_link_name);
   EXPECT_EQ(inv_kin2->getJointNames(), joint_names);
 
-  KinematicGroup kin_group2(manip_name, std::move(inv_kin2), *scene_graph, scene_state);
+  KinematicGroup kin_group2(manip_name, joint_names, std::move(inv_kin2), *scene_graph, scene_state);
   EXPECT_EQ(kin_group2.getBaseLinkName(), scene_graph->getRoot());
   runInvKinTest(kin_group2, pose, working_frame, tip_link_name, seed);
   runKinGroupJacobianABBExternalPositionerTest(kin_group2);

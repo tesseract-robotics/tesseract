@@ -142,7 +142,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
 
   runInvKinTest(*inv_kin, *fwd_kin, pose, tip_link_name, seed);
 
-  KinematicGroup kin_group(manip_name, std::move(inv_kin), *scene_graph, scene_state);
+  KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
   KinematicGroup kin_group_copy(kin_group);
 
   EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
@@ -155,7 +155,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   EXPECT_EQ(kin_group.getJointNames(), joint_names);
   EXPECT_EQ(kin_group.getAllPossibleTipLinkNames().size(), 1);
   EXPECT_EQ(kin_group.getAllPossibleTipLinkNames()[0], tip_link_name);
-  EXPECT_EQ(kin_group.getAllValidWorkingFrames().size(), 1);
+  EXPECT_EQ(kin_group.getAllValidWorkingFrames().size(), 12);
   EXPECT_EQ(kin_group.getAllValidWorkingFrames()[0], base_link_name);
 
   // Check KinematicGroup copy
@@ -169,7 +169,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   EXPECT_EQ(kin_group_copy.getJointNames(), joint_names);
   EXPECT_EQ(kin_group_copy.getAllPossibleTipLinkNames().size(), 1);
   EXPECT_EQ(kin_group_copy.getAllPossibleTipLinkNames()[0], tip_link_name);
-  EXPECT_EQ(kin_group_copy.getAllValidWorkingFrames().size(), 1);
+  EXPECT_EQ(kin_group_copy.getAllValidWorkingFrames().size(), 12);
   EXPECT_EQ(kin_group_copy.getAllValidWorkingFrames()[0], base_link_name);
 
   // Check cloned
@@ -184,7 +184,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
 
   runInvKinTest(*inv_kin2, *fwd_kin, pose, tip_link_name, seed);
 
-  KinematicGroup kin_group2(manip_name, std::move(inv_kin2), *scene_graph, scene_state);
+  KinematicGroup kin_group2(manip_name, joint_names, std::move(inv_kin2), *scene_graph, scene_state);
   EXPECT_EQ(kin_group2.getBaseLinkName(), scene_graph->getRoot());
   runInvKinTest(kin_group2, pose, base_link_name, tip_link_name, seed);
   runKinGroupJacobianABBOnPositionerTest(kin_group2);

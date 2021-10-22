@@ -36,26 +36,41 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_kinematics
 {
 KinematicGroup::KinematicGroup(std::string name,
+                               std::vector<std::string> joint_names,
                                InverseKinematics::UPtr inv_kin,
                                const tesseract_scene_graph::SceneGraph& scene_graph,
                                const tesseract_scene_graph::SceneState& scene_state)
-  : JointGroup(std::move(name), inv_kin->getJointNames(), scene_graph, scene_state)
+  : JointGroup(std::move(name), joint_names, scene_graph, scene_state), joint_names_(std::move(joint_names))
 {
   inv_kin_ = std::move(inv_kin);
+  std::vector<std::string> inv_kin_joint_names = inv_kin_->getJointNames();
+
+  if (static_cast<Eigen::Index>(joint_names_.size()) != inv_kin_->numJoints())
+    throw std::runtime_error("KinematicGroup: joint_names is not the correct size");
+
+  if (!tesseract_common::isIdentical(joint_names_, inv_kin_joint_names, false))
+    throw std::runtime_error("KinematicGroup: joint_names does not match same names in inverse kinematics object!");
+
+  reorder_required_ = !tesseract_common::isIdentical(joint_names_, inv_kin_joint_names, true);
+
+  if (reorder_required_)
+  {
+    inv_kin_joint_map_.reserve(joint_names_.size());
+    for (const auto& joint_name : joint_names_)
+      inv_kin_joint_map_.push_back(std::distance(
+          inv_kin_joint_names.begin(), std::find(inv_kin_joint_names.begin(), inv_kin_joint_names.end(), joint_name)));
+  }
 
   std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
   std::string working_frame = inv_kin_->getWorkingFrame();
+
+  std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(working_frame);
+  working_frames_.push_back(working_frame);
+  working_frames_.insert(working_frames_.end(), child_link_names.begin(), child_link_names.end());
+
   auto it = std::find(active_link_names.begin(), active_link_names.end(), working_frame);
   if (it == active_link_names.end())
-  {
     working_frames_.insert(working_frames_.end(), static_link_names_.begin(), static_link_names_.end());
-  }
-  else
-  {
-    std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(working_frame);
-    working_frames_.push_back(working_frame);
-    working_frames_.insert(working_frames_.end(), child_link_names.begin(), child_link_names.end());
-  }
 
   for (const auto& tip_link : inv_kin_->getTipLinkNames())
   {
@@ -73,6 +88,9 @@ KinematicGroup::KinematicGroup(const KinematicGroup& other) : JointGroup(other) 
 KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
 {
   JointGroup::operator=(other);
+  joint_names_ = other.joint_names_;
+  reorder_required_ = other.reorder_required_;
+  inv_kin_joint_map_ = other.inv_kin_joint_map_;
   inv_kin_ = other.inv_kin_->clone();
   inv_to_fwd_base_ = other.inv_to_fwd_base_;
   working_frames_ = other.working_frames_;
@@ -109,6 +127,29 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
     const Eigen::Isometry3d wf_to_tl = wf_to_user_wf * user_wf_to_user_tl * tl_to_user_tl.inverse();
 
     ik_inputs[ik_solver_tip_link] = wf_to_tl;
+  }
+
+  // format seed for inverse kinematic solver
+  if (reorder_required_)
+  {
+    Eigen::VectorXd ordered_seed = seed;
+    for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
+      ordered_seed(inv_kin_joint_map_[static_cast<std::size_t>(i)]) = ordered_seed(i);
+
+    IKSolutions solutions = inv_kin_->calcInvKin(ik_inputs, ordered_seed);
+    IKSolutions solutions_filtered;
+    solutions_filtered.reserve(solutions.size());
+    for (const auto& solution : solutions)
+    {
+      Eigen::VectorXd ordered_sol = solution;
+      for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
+        ordered_sol(i) = solution(inv_kin_joint_map_[static_cast<std::size_t>(i)]);
+
+      if (tesseract_common::satisfiesPositionLimits(ordered_sol, limits_.joint_limits))
+        solutions_filtered.push_back(ordered_sol);
+    }
+
+    return solutions_filtered;
   }
 
   IKSolutions solutions = inv_kin_->calcInvKin(ik_inputs, seed);
