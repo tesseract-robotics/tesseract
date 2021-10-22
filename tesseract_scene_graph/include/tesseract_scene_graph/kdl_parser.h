@@ -138,7 +138,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph);
 
 /**
  * @brief Convert a portion of a Tesseract SceneGraph into a KDL Tree
- * @details This will create a new tree from multple sub tree defined by the provided joint names
+ * @details This will create a new tree from multiple sub tree defined by the provided joint names
  * The values are used to convert non fixed joints that are not listed in joint_names to a
  * fixed joint. The first tree found a link is defined attaching world to the base link and all
  * other trees are attached to this link by a fixed joint.

@@ -257,13 +257,13 @@ public:
 
   /**
    * @brief Set whether a link should be considered during collision checking
-   * @param enabled True if should be condisdered during collision checking, otherwise false
+   * @param enabled True if should be considered during collision checking, otherwise false
    */
   void setLinkCollisionEnabled(const std::string& name, bool enabled);
 
   /**
    * @brief Get whether a link should be considered during collision checking
-   * @return True if should be condisdered during collision checking, otherwise false
+   * @return True if should be considered during collision checking, otherwise false
    */
   bool getLinkCollisionEnabled(const std::string& name) const;
 
@@ -360,7 +360,7 @@ public:
    * @brief Disable collision between two collision objects
    * @param link_name1 Collision object name
    * @param link_name2 Collision object name
-   * @param reason The reason for disabling collison
+   * @param reason The reason for disabling collision
    */
   void addAllowedCollision(const std::string& link_name1, const std::string& link_name2, const std::string& reason);
 
@@ -492,7 +492,7 @@ public:
 
   /**
    * @brief Get all children link names for the given joint names
-   * @todo Need to create custom vistor so already process joint_names do not get processed again.
+   * @todo Need to create custom visitor so already process joint_names do not get processed again.
    * @param names Name of joints
    * @return A vector of child link names
    */
@@ -530,11 +530,11 @@ public:
   /**
    * @brief Merge a graph into the current graph
    * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
-   * @param prefix string Will be prepended to every link and joint of the merged graph
+   * @param prefix string Will prepend to every link and joint of the merged graph
    * @return Return False if any link or joint name collides with current environment, otherwise True
-   * Merge a subgraph into the current environment, considering that the root of the merged graph is attached to the
-   * root of the environment by a fixed joint and no displacement. Every joint and link of the subgraph will be copied
-   * into the environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with
+   * Merge a sub-graph into the current environment, considering that the root of the merged graph is attached to the
+   * root of the environment by a fixed joint and no displacement. Every joint and link of the sub-graph will be copied
+   * into the environment graph. The prefix argument is meant to allow adding multiple copies of the same sub-graph with
    * different names
    */
   bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
@@ -543,11 +543,11 @@ public:
    * @brief Merge a graph into the current environment
    * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
    * @param joint The joint that connects current environment with the inserted graph
-   * @param prefix string Will be prepended to every link and joint of the merged graph
+   * @param prefix string Will prepend to every link and joint of the merged graph
    * @return Return False if any link or joint name collides with current environment, otherwise True
-   * Merge a subgraph into the current environment. Every joint and link of the subgraph will be copied into the
-   * environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with different
-   * names
+   * Merge a sub-graph into the current environment. Every joint and link of the sub-graph will be copied into the
+   * environment graph. The prefix argument is meant to allow adding multiple copies of the same sub-graph with
+   * different names
    */
   bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
                         const tesseract_scene_graph::Joint& joint,

@@ -30,6 +30,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <queue>
 #include <console_bridge/console.h>
+#include <boost/graph/undirected_graph.hpp>
+#include <boost/graph/copy.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
@@ -37,6 +39,25 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
+using UGraph =
+    boost::adjacency_list<boost::listS, boost::listS, boost::undirectedS, VertexProperty, EdgeProperty, GraphProperty>;
+
+struct ugraph_vertex_copier
+{
+  ugraph_vertex_copier(const Graph& g1, UGraph& g2)
+    : vertex_all_map1(get(boost::vertex_all, g1)), vertex_all_map2(get(boost::vertex_all, g2))
+  {
+  }
+
+  template <typename Vertex1, typename Vertex2>
+  void operator()(const Vertex1& v1, Vertex2& v2) const
+  {
+    boost::put(vertex_all_map2, v2, get(vertex_all_map1, v1));
+  }
+  typename boost::property_map<Graph, boost::vertex_all_t>::const_type vertex_all_map1;
+  mutable typename boost::property_map<UGraph, boost::vertex_all_t>::type vertex_all_map2;
+};
+
 SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<AllowedCollisionMatrix>())
 {
   boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);
@@ -612,7 +633,7 @@ std::vector<Joint::ConstPtr> SceneGraph::getInboundJoints(const std::string& lin
   std::vector<Joint::ConstPtr> joints;
   Vertex vertex = getVertex(link_name);
 
-  // Get incomming edges
+  // Get incoming edges
   auto num_in_edges = static_cast<int>(boost::in_degree(vertex, *this));
   if (num_in_edges == 0)  // The root of the tree will have not incoming edges
     return joints;
@@ -632,7 +653,7 @@ std::vector<Joint::ConstPtr> SceneGraph::getOutboundJoints(const std::string& li
   std::vector<Joint::ConstPtr> joints;
   Vertex vertex = getVertex(link_name);
 
-  // Get incomming edges
+  // Get incoming edges
   auto num_out_edges = static_cast<int>(boost::out_degree(vertex, *this));
   if (num_out_edges == 0)
     return joints;
@@ -798,35 +819,62 @@ void SceneGraph::saveDOT(const std::string& path) const
 
 ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::string& tip) const
 {
-  const Graph& graph = *this;
-  Vertex s = getVertex(root);
+  // Must copy to undirected graph because order does not matter for creating kinematics chains.
 
-  std::map<Vertex, Vertex> predicessor_map;
-  boost::associative_property_map<std::map<Vertex, Vertex>> prop_predicessor_map(predicessor_map);
+  // Copy Graph
+  UGraph graph;
 
-  std::map<Vertex, double> distance_map;
-  boost::associative_property_map<std::map<Vertex, double>> prop_distance_map(distance_map);
+  std::map<Graph::vertex_descriptor, size_t> index_map;
+  boost::associative_property_map<std::map<Graph::vertex_descriptor, size_t>> prop_index_map(index_map);
 
-  std::map<Vertex, size_t> index_map;
-  boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
+  {
+    int c = 0;
+    Graph::vertex_iterator i, iend;
+    for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i, ++c)
+      boost::put(prop_index_map, *i, c);
+  }
 
-  int c = 0;
-  Graph::vertex_iterator i, iend;
-  for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
-    boost::put(prop_index_map, *i, c);
+  ugraph_vertex_copier v_copier(*this, graph);
+  boost::copy_graph(*this, graph, boost::vertex_index_map(prop_index_map).vertex_copy(v_copier));
 
-  std::map<Edge, double> weight_map;
-  boost::associative_property_map<std::map<Edge, double>> prop_weight_map(weight_map);
-  Graph::edge_iterator j, jend;
-  for (boost::tie(j, jend) = boost::edges(graph); j != jend; ++j)
-    boost::put(prop_weight_map, *j, boost::get(boost::edge_weight, graph)[*j]);
+  // Search Graph
+  UGraph::vertex_descriptor s_root = getVertex(root);
+  UGraph::vertex_descriptor s_tip = getVertex(tip);
+
+  auto prop_weight_map = boost::get(boost::edge_weight, graph);
+
+  std::map<UGraph::vertex_descriptor, UGraph::vertex_descriptor> predicessor_map;
+  boost::associative_property_map<std::map<UGraph::vertex_descriptor, UGraph::vertex_descriptor>> prop_predicessor_map(
+      predicessor_map);
+
+  std::map<UGraph::vertex_descriptor, double> distance_map;
+  boost::associative_property_map<std::map<UGraph::vertex_descriptor, double>> prop_distance_map(distance_map);
+
+  std::map<UGraph::vertex_descriptor, size_t> u_index_map;
+  boost::associative_property_map<std::map<UGraph::vertex_descriptor, size_t>> u_prop_index_map(u_index_map);
+
+  {  // Populate index map
+    int c = 0;
+    UGraph::vertex_iterator i, iend;
+    for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
+    {
+      std::string name = boost::get(boost::vertex_link, graph)[*i]->getName();
+      if (name == root)
+        s_root = *i;
+
+      if (name == tip)
+        s_tip = *i;
+
+      boost::put(u_prop_index_map, *i, c);
+    }
+  }
 
   dijkstra_shortest_paths(graph,
-                          s,
+                          s_root,
                           prop_predicessor_map,
                           prop_distance_map,
                           prop_weight_map,
-                          prop_index_map,
+                          u_prop_index_map,
                           std::less<>(),
                           boost::closed_plus<double>(),
                           (std::numeric_limits<double>::max)(),
@@ -837,14 +885,14 @@ ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::str
   path.links.reserve(predicessor_map.size());
   path.joints.reserve(predicessor_map.size());
   path.active_joints.reserve(predicessor_map.size());
-  Vertex v = getVertex(tip);           // We want to start at the destination and work our way back to the source
-  for (Vertex u = predicessor_map[v];  // Start by setting 'u' to the destintaion node's predecessor
-       u != v;                         // Keep tracking the path until we get to the source
-       v = u, u = predicessor_map[v])  // Set the current vertex to the current predecessor, and the predecessor to one
-                                       // level up
+  // We want to start at the destination and work our way back to the source
+  for (Vertex u = predicessor_map[s_tip];      // Start by setting 'u' to the destination node's predecessor
+       u != s_tip;                             // Keep tracking the path until we get to the source
+       s_tip = u, u = predicessor_map[s_tip])  // Set the current vertex to the current predecessor, and the predecessor
+                                               // to one level up
   {
-    path.links.push_back(boost::get(boost::vertex_link, graph)[v]->getName());
-    const Joint::ConstPtr& joint = boost::get(boost::edge_joint, graph)[boost::edge(u, v, graph).first];
+    path.links.push_back(boost::get(boost::vertex_link, graph)[s_tip]->getName());
+    const Joint::ConstPtr& joint = boost::get(boost::edge_joint, graph)[boost::edge(u, s_tip, graph).first];
 
     path.joints.push_back(joint->getName());
     if (joint->type != JointType::FIXED && joint->type != JointType::FLOATING)
@@ -857,7 +905,7 @@ ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::str
 
 #ifndef NDEBUG
   CONSOLE_BRIDGE_logDebug("distances and parents:");
-  Graph::vertex_iterator vi, vend;
+  UGraph::vertex_iterator vi, vend;
   for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
   {
     CONSOLE_BRIDGE_logDebug("distance(%s) = %d, parent(%s) = %s",
