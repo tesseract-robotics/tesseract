@@ -177,6 +177,13 @@ public:
   tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
 
   /**
+   * @brief Get a groups joint names
+   * @param group_name The group name
+   * @return A vector of joint names
+   */
+  std::vector<std::string> getGroupJointNames(const std::string& group_name) const;
+
+  /**
    * @brief Get a joint group by name
    * @param group_name The group name
    * @return A joint group

@@ -99,6 +99,7 @@ public:
    * @param scene_state The scene state
    */
   KinematicGroup(std::string name,
+                 std::vector<std::string> joint_names,
                  InverseKinematics::UPtr inv_kin,
                  const tesseract_scene_graph::SceneGraph& scene_graph,
                  const tesseract_scene_graph::SceneState& scene_state);
@@ -135,6 +136,9 @@ public:
   std::vector<std::string> getAllPossibleTipLinkNames() const;
 
 private:
+  std::vector<std::string> joint_names_;
+  bool reorder_required_{ false };
+  std::vector<Eigen::Index> inv_kin_joint_map_;
   InverseKinematics::UPtr inv_kin_;
   Eigen::Isometry3d inv_to_fwd_base_{ Eigen::Isometry3d::Identity() };
   std::vector<std::string> working_frames_;

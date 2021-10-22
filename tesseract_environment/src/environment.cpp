@@ -304,14 +304,14 @@ bool Environment::applyCommand(Command::ConstPtr command) { return applyCommands
 
 tesseract_scene_graph::SceneGraph::ConstPtr Environment::getSceneGraph() const { return scene_graph_const_; }
 
-tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& group_name) const
+std::vector<std::string> Environment::getGroupJointNames(const std::string& group_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   auto it =
       std::find(kinematics_information_.group_names.begin(), kinematics_information_.group_names.end(), group_name);
-  // TODO add error message
+
   if (it == kinematics_information_.group_names.end())
-    return nullptr;
+    throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
 
   auto chain_it = kinematics_information_.chain_groups.find(group_name);
   if (chain_it != kinematics_information_.chain_groups.end())
@@ -322,38 +322,40 @@ tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::str
     tesseract_scene_graph::ShortestPath path =
         scene_graph_const_->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
 
-    return std::make_unique<tesseract_kinematics::JointGroup>(
-        group_name, path.active_joints, *scene_graph_const_, current_state_);
+    return path.active_joints;
   }
 
   auto joint_it = kinematics_information_.joint_groups.find(group_name);
   if (joint_it != kinematics_information_.joint_groups.end())
-    return std::make_unique<tesseract_kinematics::JointGroup>(
-        group_name, joint_it->second, *scene_graph_const_, current_state_);
+    return joint_it->second;
 
   auto link_it = kinematics_information_.link_groups.find(group_name);
   if (link_it != kinematics_information_.link_groups.end())
     throw std::runtime_error("Environment, Link groups are currently not supported!");
 
-  return nullptr;
+  throw std::runtime_error("Environment, failed to get group '" + group_name + "' joint names!");
 }
 
-tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& name,
+tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::vector<std::string> joint_names = getGroupJointNames(name);
+  return getJointGroup(name, joint_names);
+}
+
+tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& group_name,
                                                                   const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph_const_, current_state_);
+  return std::make_unique<tesseract_kinematics::JointGroup>(
+      group_name, joint_names, *scene_graph_const_, current_state_);
 }
 
 tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const std::string& group_name,
                                                                           std::string ik_solver_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  auto it =
-      std::find(kinematics_information_.group_names.begin(), kinematics_information_.group_names.end(), group_name);
-  // TODO add error message
-  if (it == kinematics_information_.group_names.end())
-    return nullptr;
+  std::vector<std::string> joint_names = getGroupJointNames(group_name);
 
   if (ik_solver_name.empty())
     ik_solver_name = kinematics_factory_.getDefaultInvKinPlugin(group_name);
@@ -366,7 +368,7 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
     return nullptr;
 
   return std::make_unique<tesseract_kinematics::KinematicGroup>(
-      group_name, std::move(inv_kin), *scene_graph_const_, current_state_);
+      group_name, joint_names, std::move(inv_kin), *scene_graph_const_, current_state_);
 }
 
 // NOLINTNEXTLINE
