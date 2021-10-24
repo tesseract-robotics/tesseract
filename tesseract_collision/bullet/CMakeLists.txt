@@ -26,6 +26,7 @@ add_library(
   src/bullet_discrete_bvh_manager.cpp
   src/bullet_discrete_simple_manager.cpp
   src/bullet_utils.cpp
+  src/convex_hull_utils.cpp
   src/tesseract_compound_collision_algorithm.cpp
   src/tesseract_compound_compound_collision_algorithm.cpp
   src/tesseract_collision_configuration.cpp
