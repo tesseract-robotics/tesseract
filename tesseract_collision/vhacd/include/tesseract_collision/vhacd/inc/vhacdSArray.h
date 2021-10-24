@@ -24,6 +24,8 @@
  */
 #pragma once
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -155,3 +157,4 @@ private:
 };
 }  // namespace VHACD
 }  // namespace tesseract_collision
+TESSERACT_COMMON_IGNORE_WARNINGS_POP

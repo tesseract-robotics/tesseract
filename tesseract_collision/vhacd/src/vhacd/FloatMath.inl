@@ -2261,6 +2261,7 @@ public:
 class KdTreeInterface
 {
 public:
+  virtual ~KdTreeInterface() = default;
   virtual const double * getPositionDouble(uint32_t index) const = 0;
   virtual const float  * getPositionFloat(uint32_t index) const = 0;
 };
@@ -3886,10 +3887,7 @@ typedef std::vector< uint32_t > UintVector;
 class Myfm_Tesselate : public fm_Tesselate
 {
 public:
-  virtual ~Myfm_Tesselate(void)
-  {
-
-  }
+  virtual ~Myfm_Tesselate() = default;
 
   const uint32_t * tesselate(fm_VertexIndex *vindex,uint32_t tcount,const uint32_t *indices,float longEdge,uint32_t maxDepth,uint32_t &outcount) override
   {
@@ -4747,7 +4745,7 @@ void CTriangulator::triangulate(TU32Vector &indices)
 ///     Processes the triangulation
 void CTriangulator::_process(TU32Vector &indices)
 {
-	const int32_t n = (const int32_t)mPoints.size();
+	const int32_t n = (int32_t)mPoints.size();
 	if (n < 3)
 		return;
 	int32_t *V = (int32_t *)malloc(sizeof(int32_t)*n);

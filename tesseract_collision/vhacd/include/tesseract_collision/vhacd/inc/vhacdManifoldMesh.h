@@ -45,6 +45,11 @@ public:
   TMMVertex(void);
   ~TMMVertex(void);
 
+  TMMVertex(const TMMVertex&) = delete;
+  TMMVertex(TMMVertex&&) = default;
+  TMMVertex& operator=(const TMMVertex&) = default;
+  TMMVertex& operator=(TMMVertex&&) = default;
+
 private:
   Vec3<double> m_pos;
   int32_t m_name;
@@ -52,7 +57,7 @@ private:
   CircularListElement<TMMEdge>* m_duplicate;  // pointer to incident cone edge (or NULL)
   bool m_onHull;
   bool m_tag;
-  TMMVertex(const TMMVertex& rhs);
+
   friend class ICHull;
   friend class TMMesh;
   friend class TMMTriangle;
@@ -67,12 +72,16 @@ public:
   TMMEdge(void);
   ~TMMEdge(void);
 
+  TMMEdge(const TMMEdge&) = delete;
+  TMMEdge(TMMEdge&&) = default;
+  TMMEdge& operator=(const TMMEdge&) = default;
+  TMMEdge& operator=(TMMEdge&&) = default;
+
 private:
   size_t m_id;
   CircularListElement<TMMTriangle>* m_triangles[2];
   CircularListElement<TMMVertex>* m_vertices[2];
   CircularListElement<TMMTriangle>* m_newFace;
-  TMMEdge(const TMMEdge& rhs);
   friend class ICHull;
   friend class TMMTriangle;
   friend class TMMVertex;
@@ -87,13 +96,17 @@ public:
   TMMTriangle(void);
   ~TMMTriangle(void);
 
+  TMMTriangle(const TMMTriangle&) = delete;
+  TMMTriangle(TMMTriangle&&) = default;
+  TMMTriangle& operator=(const TMMTriangle&) = default;
+  TMMTriangle& operator=(TMMTriangle&&) = default;
+
 private:
   size_t m_id;
   CircularListElement<TMMEdge>* m_edges[3];
   CircularListElement<TMMVertex>* m_vertices[3];
   bool m_visible;
 
-  TMMTriangle(const TMMTriangle& rhs);
   friend class ICHull;
   friend class TMMesh;
   friend class TMMVertex;

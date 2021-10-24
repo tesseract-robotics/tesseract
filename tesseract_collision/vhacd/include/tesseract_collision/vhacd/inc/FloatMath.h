@@ -583,6 +583,7 @@ double fm_computeMeshVolume(const double* vertices, uint32_t tcount, const uint3
 class fm_VertexIndex
 {
 public:
+  virtual ~fm_VertexIndex() = default;
   virtual uint32_t getIndex(const float pos[3], bool& newPos) = 0;   // get welded index for this float vector[3]
   virtual uint32_t getIndex(const double pos[3], bool& newPos) = 0;  // get welded index for this double vector[3]
   virtual const float* getVerticesFloat(void) const = 0;
@@ -603,6 +604,7 @@ void fm_releaseVertexIndex(fm_VertexIndex* vindex);
 class fm_Triangulate
 {
 public:
+  virtual ~fm_Triangulate() = default;
   virtual const double* triangulate3d(uint32_t pcount,
                                       const double* points,
                                       uint32_t vstride,
@@ -731,6 +733,7 @@ void fm_OBBtoAABB(const float obmin[3], const float obmax[3], const float matrix
 class fm_Tesselate
 {
 public:
+  virtual ~fm_Tesselate() = default;
   virtual const uint32_t* tesselate(fm_VertexIndex* vindex,
                                     uint32_t tcount,
                                     const uint32_t* indices,
