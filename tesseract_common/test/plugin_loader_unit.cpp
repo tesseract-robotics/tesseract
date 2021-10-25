@@ -47,7 +47,7 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
     EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
   }
 
-// For some reason on Ubuntu 18.04 it does not search the current directoy when only the library name is provided
+// For some reason on Ubuntu 18.04 it does not search the current directory when only the library name is provided
 #if BOOST_VERSION > 106800
   {
     EXPECT_TRUE(ClassLoader::isClassAvailable(symbol_name, lib_name));
@@ -99,7 +99,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
   }
 
-// For some reason on Ubuntu 18.04 it does not search the current directoy when only the library name is provided
+// For some reason on Ubuntu 18.04 it does not search the current directory when only the library name is provided
 #if BOOST_VERSION > 106800
   {
     PluginLoader plugin_loader;
