@@ -113,5 +113,24 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
                      const tesseract_common::TrajArray& traj,
                      const tesseract_collision::CollisionCheckConfig& config);
 
+/**
+ * @brief Overload of checkTrajectory, to additionally populate a vector of trajectory points that are in collision
+ * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param contact_traj_points A vector of ints where each index corresponds to a trajectory point that is in collision
+ * @param manager A continuous contact manager
+ * @param state_solver The environment state solver
+ * @param joint_names JointNames corresponding to the values in traj (must be in same order)
+ * @param traj The joint values at each time step
+ * @param config CollisionCheckConfig used to specify collision check settings
+ * @return True if collision was found, otherwise false.
+ */
+bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                     std::vector<int>& contact_traj_points,
+                     tesseract_collision::DiscreteContactManager& manager,
+                     const tesseract_environment::StateSolver& state_solver,
+                     const std::vector<std::string>& joint_names,
+                     const tesseract_common::TrajArray& traj,
+                     const tesseract_collision::CollisionCheckConfig& config);
+
 }  // namespace tesseract_environment
 #endif  // TESSERACT_ENVIRONMENT_CORE_UTILS_H
