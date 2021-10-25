@@ -179,7 +179,7 @@ void KinematicsPluginFactory::removeInvKinPlugin(const std::string& group_name, 
 
   group_it->second.erase(solver_it);
   if (group_it->second.empty())
-    fwd_plugin_info_.erase(group_it);
+    inv_plugin_info_.erase(group_it);
 }
 
 void KinematicsPluginFactory::setDefaultInvKinPlugin(const std::string& group_name, const std::string& solver_name)
