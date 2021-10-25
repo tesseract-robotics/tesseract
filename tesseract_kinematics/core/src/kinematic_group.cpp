@@ -65,12 +65,16 @@ KinematicGroup::KinematicGroup(std::string name,
   std::string working_frame = inv_kin_->getWorkingFrame();
 
   std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(working_frame);
-  working_frames_.push_back(working_frame);
-  working_frames_.insert(working_frames_.end(), child_link_names.begin(), child_link_names.end());
+  std::list<std::string> working_frames;
+  working_frames.push_back(working_frame);
+  std::copy(child_link_names.begin(), child_link_names.end(), std::back_inserter(working_frames));
 
   auto it = std::find(active_link_names.begin(), active_link_names.end(), working_frame);
   if (it == active_link_names.end())
-    working_frames_.insert(working_frames_.end(), static_link_names_.begin(), static_link_names_.end());
+    std::copy(static_link_names_.begin(), static_link_names_.end(), std::back_inserter(working_frames));
+
+  working_frames_.reserve(working_frames.size());
+  working_frames_.insert(working_frames_.end(), working_frames.begin(), working_frames.end());
 
   for (const auto& tip_link : inv_kin_->getTipLinkNames())
   {
@@ -134,7 +138,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   {
     Eigen::VectorXd ordered_seed = seed;
     for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
-      ordered_seed(inv_kin_joint_map_[static_cast<std::size_t>(i)]) = ordered_seed(i);
+      ordered_seed(inv_kin_joint_map_[static_cast<std::size_t>(i)]) = seed(i);
 
     IKSolutions solutions = inv_kin_->calcInvKin(ik_inputs, ordered_seed);
     IKSolutions solutions_filtered;
