@@ -109,6 +109,14 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphABB()
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
+inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphIIWA7()
+{
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/iiwa7.urdf";
+
+  tesseract_common::SimpleResourceLocator locator(locateResource);
+  return tesseract_urdf::parseURDFFile(path, locator);
+}
+
 inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract_kinematics::URParameters& params,
                                                                double shoulder_offset,
                                                                double elbow_offset)
