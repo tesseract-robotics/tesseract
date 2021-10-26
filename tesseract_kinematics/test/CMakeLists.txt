@@ -59,7 +59,7 @@ target_compile_definitions(
 target_compile_options(iiwa7_ikfast_kinematics PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_options(iiwa7_ikfast_kinematics PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_include_directories(iiwa7_ikfast_kinematics PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
-                                                                "$<INSTALL_INTERFACE:include>")
+                                                          "$<INSTALL_INTERFACE:include>")
 target_include_directories(iiwa7_ikfast_kinematics SYSTEM PUBLIC ${LAPACK_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 add_dependencies(iiwa7_ikfast_kinematics ${PROJECT_NAME}_ikfast)
 
@@ -173,7 +173,7 @@ target_link_libraries(
           tesseract::tesseract_scene_graph
           iiwa7_ikfast_kinematics)
 target_compile_options(${PROJECT_NAME}_ikfast_7dof_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                           ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+                                                                ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ikfast_7dof_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_ikfast_7dof_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_ikfast_7dof_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
