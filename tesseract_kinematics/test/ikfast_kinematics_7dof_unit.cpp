@@ -55,9 +55,10 @@ TEST(TesseractKinematicsUnit, IKFastInvKin7DOF)  // NOLINT
 
   KDLFwdKinChain fwd_kin(*scene_graph, base_link_name, tip_link_name);
 
-  std::vector<std::vector<double>> free_joint_states = {{-2.0}, {-1.0}, {0.0}, {1.0}, {2.0}};
+  std::vector<std::vector<double>> free_joint_states = { { -2.0 }, { -1.0 }, { 0.0 }, { 1.0 }, { 2.0 } };
 
-  auto iiwa_inv_kin = std::make_shared<iiwa7Kinematics>(base_link_name, tip_link_name, joint_names, IKFAST_INV_KIN_CHAIN_SOLVER_NAME, free_joint_states);
+  auto iiwa_inv_kin = std::make_shared<iiwa7Kinematics>(
+      base_link_name, tip_link_name, joint_names, IKFAST_INV_KIN_CHAIN_SOLVER_NAME, free_joint_states);
 
   EXPECT_EQ(iiwa_inv_kin->getSolverName(), IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(iiwa_inv_kin->numJoints(), 7);
