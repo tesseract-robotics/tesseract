@@ -36,6 +36,7 @@
 #include <vector>
 #include <list>
 #include <stdexcept>
+#include <assert.h>
 
 #ifndef IKFAST_HEADER_COMMON
 #define IKFAST_HEADER_COMMON
