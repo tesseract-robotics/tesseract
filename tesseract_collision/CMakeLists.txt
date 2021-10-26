@@ -16,6 +16,7 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_support REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 # These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
 if(NOT TARGET console_bridge::console_bridge)
@@ -59,6 +60,16 @@ set(COVERAGE_EXCLUDE
     /*/include/fcl/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
+# Define compile-time default variables
+if(MSVC)
+  set(TESSERACT_CONTACT_MANAGERS_PLUGIN_PATH ${CMAKE_INSTALL_PREFIX}/bin)
+else()
+  set(TESSERACT_CONTACT_MANAGERS_PLUGIN_PATH ${CMAKE_INSTALL_PREFIX}/lib)
+endif()
+
+# Variable for kinematics plugins
+set(CONTACT_MANAGERS_PLUGINS "")
+
 # Core
 add_subdirectory(core)
 
@@ -78,6 +89,16 @@ if(TESSERACT_BUILD_VHACD)
   message("Building VHACD components")
   add_subdirectory(vhacd)
 endif()
+
+# Add compiler definition to core so it can find all plugins produced
+message("Plugins: ${CONTACT_MANAGERS_PLUGINS}")
+string(
+  REPLACE ";"
+          ":"
+          CONTACT_MANAGERS_PLUGINS_STRING
+          "${CONTACT_MANAGERS_PLUGINS}")
+target_compile_definitions(${PROJECT_NAME}_core
+                           PRIVATE TESSERACT_CONTACT_MANAGERS_PLUGINS="${CONTACT_MANAGERS_PLUGINS_STRING}")
 
 # Testing
 if(TESSERACT_ENABLE_TESTING AND TESSERACT_BUILD_FCL)

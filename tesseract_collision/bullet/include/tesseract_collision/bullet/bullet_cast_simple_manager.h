@@ -53,83 +53,86 @@ namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
 {
-/** @brief A simple implementaiton of a tesseract manager which does not use BHV */
+/** @brief A simple implementation of a tesseract manager which does not use BHV */
 class BulletCastSimpleManager : public ContinuousContactManager
 {
 public:
   using Ptr = std::shared_ptr<BulletCastSimpleManager>;
   using ConstPtr = std::shared_ptr<const BulletCastSimpleManager>;
+  using UPtr = std::unique_ptr<BulletCastSimpleManager>;
+  using ConstUPtr = std::unique_ptr<const BulletCastSimpleManager>;
 
-  BulletCastSimpleManager();
+  BulletCastSimpleManager(std::string name = "BulletCastSimpleManager");
   ~BulletCastSimpleManager() override = default;
   BulletCastSimpleManager(const BulletCastSimpleManager&) = delete;
   BulletCastSimpleManager& operator=(const BulletCastSimpleManager&) = delete;
   BulletCastSimpleManager(BulletCastSimpleManager&&) = delete;
   BulletCastSimpleManager& operator=(BulletCastSimpleManager&&) = delete;
 
-  static std::string name() { return "BulletCastSimpleManager"; }
-  static ContinuousContactManager::Ptr create() { return std::make_shared<BulletCastSimpleManager>(); }
+  std::string getName() const override final;
 
-  ContinuousContactManager::Ptr clone() const override;
+  ContinuousContactManager::UPtr clone() const override final;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
                           const CollisionShapesConst& shapes,
                           const tesseract_common::VectorIsometry3d& shape_poses,
-                          bool enabled = true) override;
+                          bool enabled = true) override final;
 
-  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const override;
+  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const override final;
 
   const tesseract_common::VectorIsometry3d&
-  getCollisionObjectGeometriesTransforms(const std::string& name) const override;
+  getCollisionObjectGeometriesTransforms(const std::string& name) const override final;
 
-  bool hasCollisionObject(const std::string& name) const override;
+  bool hasCollisionObject(const std::string& name) const override final;
 
-  bool removeCollisionObject(const std::string& name) override;
+  bool removeCollisionObject(const std::string& name) override final;
 
-  bool enableCollisionObject(const std::string& name) override;
+  bool enableCollisionObject(const std::string& name) override final;
 
-  bool disableCollisionObject(const std::string& name) override;
+  bool disableCollisionObject(const std::string& name) override final;
 
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
+  void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override final;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const tesseract_common::VectorIsometry3d& poses) override;
+                                    const tesseract_common::VectorIsometry3d& poses) override final;
 
-  void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) override;
+  void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) override final;
 
   void setCollisionObjectsTransform(const std::string& name,
                                     const Eigen::Isometry3d& pose1,
-                                    const Eigen::Isometry3d& pose2) override;
+                                    const Eigen::Isometry3d& pose2) override final;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
                                     const tesseract_common::VectorIsometry3d& pose1,
-                                    const tesseract_common::VectorIsometry3d& pose2) override;
+                                    const tesseract_common::VectorIsometry3d& pose2) override final;
 
   void setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1,
-                                    const tesseract_common::TransformMap& pose2) override;
+                                    const tesseract_common::TransformMap& pose2) override final;
 
-  const std::vector<std::string>& getCollisionObjects() const override;
+  const std::vector<std::string>& getCollisionObjects() const override final;
 
-  void setActiveCollisionObjects(const std::vector<std::string>& names) override;
+  void setActiveCollisionObjects(const std::vector<std::string>& names) override final;
 
-  const std::vector<std::string>& getActiveCollisionObjects() const override;
+  const std::vector<std::string>& getActiveCollisionObjects() const override final;
 
-  void
-  setCollisionMarginData(CollisionMarginData collision_margin_data,
-                         CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE) override;
+  void setCollisionMarginData(
+      CollisionMarginData collision_margin_data,
+      CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE) override final;
 
-  const CollisionMarginData& getCollisionMarginData() const override;
+  const CollisionMarginData& getCollisionMarginData() const override final;
 
-  void setDefaultCollisionMarginData(double default_collision_margin) override;
+  void setDefaultCollisionMarginData(double default_collision_margin) override final;
 
-  void setPairCollisionMarginData(const std::string& name1, const std::string& name2, double collision_margin) override;
+  void setPairCollisionMarginData(const std::string& name1,
+                                  const std::string& name2,
+                                  double collision_margin) override final;
 
-  void setIsContactAllowedFn(IsContactAllowedFn fn) override;
+  void setIsContactAllowedFn(IsContactAllowedFn fn) override final;
 
-  IsContactAllowedFn getIsContactAllowedFn() const override;
+  IsContactAllowedFn getIsContactAllowedFn() const override final;
 
-  void contactTest(ContactResultMap& collisions, const ContactRequest& request) override;
+  void contactTest(ContactResultMap& collisions, const ContactRequest& request) override final;
 
 #ifndef SWIG
   /**
@@ -140,6 +143,7 @@ public:
 #endif  // SWIG
 
 private:
+  std::string name_;
   std::vector<std::string> active_;            /**< @brief A list of the active collision objects */
   std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
 

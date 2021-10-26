@@ -29,16 +29,9 @@
         <joint name="joint_6" value="0" />
     </group_state>
 
-    <!--GROUP ROBOT ON POSITIONER INVERSE KINEMATICS PARAMETERS-->
-    <group_rop group="full_manipulator">
-      <manipulator group="manipulator" ik_solver="OPWInvKin" reach="2.3"/>
-      <positioner group="positioner" fk_solver="KDLFwdKinChain">
-        <joint name="positioner_joint_1" resolution="0.1"/>
-      </positioner>
-    </group_rop>
 
-    <!--GROUP OPW KINEMATICS PARAMETERS-->
-    <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 1 1 1"/>
+    <!--Contact Managers plugins -->
+    <contact_managers_plugin_config filename="package://tesseract_support/urdf/contact_manager_plugins.yaml"/>
 
     <!--GROUP TOOL CENTER POINTS -->
     <group_tcps group="full_manipulator">

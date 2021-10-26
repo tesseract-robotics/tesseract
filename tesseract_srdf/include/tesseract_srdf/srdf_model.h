@@ -97,11 +97,14 @@ public:
   /** @brief The version number major.minor[.patch] */
   std::array<int, 3> version{ { 1, 0, 0 } };
 
+  /** @brief Contact information related to kinematics */
+  KinematicsInformation kinematics_information;
+
+  /** @brief The contact managers plugin information */
+  tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info;
+
   /** @brief The allowed collision matrix */
   tesseract_scene_graph::AllowedCollisionMatrix acm;
-
-  /** @brief A map of group opw kinematics data */
-  KinematicsInformation kinematics_information;
 
   /** @brief Collision margin data */
   tesseract_common::CollisionMarginData::Ptr collision_margin_data;

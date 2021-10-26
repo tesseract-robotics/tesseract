@@ -432,7 +432,7 @@ TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
   acm.addAllowedCollision("link_2", "link_3", "Adjacent");
   acm.addAllowedCollision("link_3", "link_4", "Adjacent");
   acm.addAllowedCollision("link_4", "link_5", "Adjacent");
-  EXPECT_FALSE(srdf.acm.getAllAllowedCollisions().empty());
+  EXPECT_FALSE(acm.getAllAllowedCollisions().empty());
   srdf.saveToFile(tesseract_common::getTempPath() + "test.srdf");
 
   SceneGraph g = buildTestSceneGraph();
@@ -613,11 +613,38 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
                    base_link: base_link
                    tip_link: tool0)";
 
+  std::string yaml_cm_plugins_string =
+      R"(contact_manager_plugins:
+           search_paths:
+             - /usr/local/lib
+           search_libraries:
+             - tesseract_collision_bullet_factories
+             - tesseract_collision_fcl_factories
+           discrete_plugins:
+             BulletDiscreteBVHManager:
+               class: BulletDiscreteBVHManagerFactory
+               default: true
+             BulletDiscreteSimpleManager:
+               class: BulletDiscreteSimpleManagerFactory
+             FCLDiscreteBVHManager:
+               class: FCLDiscreteBVHManagerFactory
+           continuous_plugins:
+             BulletCastBVHManager:
+               class: BulletCastBVHManagerFactory
+               default: true
+             BulletCastSimpleManager:
+               class: BulletCastSimpleManagerFactory)";
+
   SRDFModel srdf_save;
   srdf_save.initString(*g, xml_string, locator);
+
   YAML::Node kinematics_plugin_config = YAML::Load(yaml_kin_plugins_string);
   srdf_save.kinematics_information.kinematics_plugin_info =
       kinematics_plugin_config[KinematicsPluginInfo::CONFIG_KEY].as<KinematicsPluginInfo>();
+
+  YAML::Node contact_managers_plugin_config = YAML::Load(yaml_cm_plugins_string);
+  srdf_save.contact_managers_plugin_info =
+      contact_managers_plugin_config[ContactManagersPluginInfo::CONFIG_KEY].as<ContactManagersPluginInfo>();
 
   std::string save_path = tesseract_common::getTempPath() + "unit_test_save_srdf.srdf";
   EXPECT_TRUE(srdf_save.saveToFile(save_path));
@@ -630,6 +657,7 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_EQ(srdf.version[2], 0);
 
   EXPECT_FALSE(srdf_save.kinematics_information.kinematics_plugin_info.empty());
+  EXPECT_FALSE(srdf_save.contact_managers_plugin_info.empty());
 
   processSRDFAllowedCollisions(*g, srdf);
 

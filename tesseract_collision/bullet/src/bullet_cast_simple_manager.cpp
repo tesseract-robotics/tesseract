@@ -46,7 +46,7 @@ namespace tesseract_collision::tesseract_collision_bullet
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
 static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
 
-BulletCastSimpleManager::BulletCastSimpleManager()
+BulletCastSimpleManager::BulletCastSimpleManager(std::string name) : name_(std::move(name))
 {
   dispatcher_ = std::make_unique<btCollisionDispatcher>(&coll_config_);
 
@@ -60,9 +60,11 @@ BulletCastSimpleManager::BulletCastSimpleManager()
   contact_test_data_.collision_margin_data = CollisionMarginData(0);
 }
 
-ContinuousContactManager::Ptr BulletCastSimpleManager::clone() const
+std::string BulletCastSimpleManager::getName() const { return name_; }
+
+ContinuousContactManager::UPtr BulletCastSimpleManager::clone() const
 {
-  auto manager = std::make_shared<BulletCastSimpleManager>();
+  auto manager = std::make_unique<BulletCastSimpleManager>();
 
   auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
 

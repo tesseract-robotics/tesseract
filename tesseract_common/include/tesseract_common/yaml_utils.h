@@ -316,6 +316,109 @@ struct convert<tesseract_common::KinematicsPluginInfo>
     return true;
   }
 };
+
+template <>
+struct convert<tesseract_common::ContactManagersPluginInfo>
+{
+  static Node encode(const tesseract_common::ContactManagersPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string DISCRETE_PLUGINS_KEY{ "discrete_plugins" };
+    const std::string CONTINUOUS_PLUGINS_KEY{ "continuous_plugins" };
+
+    YAML::Node contact_manager_plugins;
+    if (!rhs.search_paths.empty())
+      contact_manager_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
+
+    if (!rhs.search_libraries.empty())
+      contact_manager_plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+
+    if (!rhs.discrete_plugin_infos.empty())
+      contact_manager_plugins[DISCRETE_PLUGINS_KEY] = rhs.discrete_plugin_infos;
+
+    if (!rhs.discrete_plugin_infos.empty())
+      contact_manager_plugins[CONTINUOUS_PLUGINS_KEY] = rhs.continuous_plugin_infos;
+
+    return contact_manager_plugins;
+  }
+
+  static bool decode(const Node& node, tesseract_common::ContactManagersPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string DISCRETE_PLUGINS_KEY{ "discrete_plugins" };
+    const std::string CONTINUOUS_PLUGINS_KEY{ "continuous_plugins" };
+
+    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
+    {
+      std::set<std::string> sp;
+      try
+      {
+        sp = search_paths.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + SEARCH_PATHS_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_paths.insert(sp.begin(), sp.end());
+    }
+
+    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
+    {
+      std::set<std::string> sl;
+      try
+      {
+        sl = search_libraries.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_libraries.insert(sl.begin(), sl.end());
+    }
+
+    if (const YAML::Node& discrete_plugins = node[DISCRETE_PLUGINS_KEY])
+    {
+      if (!discrete_plugins.IsMap())
+        throw std::runtime_error(DISCRETE_PLUGINS_KEY + ", should contain a map of contact manager names to plugins!");
+
+      try
+      {
+        rhs.discrete_plugin_infos = discrete_plugins.as<tesseract_common::PluginInfoMap>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + DISCRETE_PLUGINS_KEY +
+                                 "' to tesseract_common::PluginInfoMap! Details: " + e.what());
+      }
+    }
+
+    if (const YAML::Node& continuous_plugins = node[CONTINUOUS_PLUGINS_KEY])
+    {
+      if (!continuous_plugins.IsMap())
+        throw std::runtime_error(CONTINUOUS_PLUGINS_KEY + ", should contain a map of names to plugins!");
+
+      try
+      {
+        rhs.continuous_plugin_infos = continuous_plugins.as<tesseract_common::PluginInfoMap>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + CONTINUOUS_PLUGINS_KEY +
+                                 "' to tesseract_common::PluginInfoMap! Details: " + e.what());
+      }
+    }
+
+    return true;
+  }
+};
 }  // namespace YAML
 
 #endif  // TESSERACT_COMMON_YAML_UTILS_H

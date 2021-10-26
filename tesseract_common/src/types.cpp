@@ -49,6 +49,28 @@ bool KinematicsPluginInfo::empty() const
   return (search_paths.empty() && search_libraries.empty() && fwd_plugin_infos.empty() && inv_plugin_infos.empty());
 }
 
+void ContactManagersPluginInfo::insert(const ContactManagersPluginInfo& other)
+{
+  search_paths.insert(other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
+  discrete_plugin_infos.insert(other.discrete_plugin_infos.begin(), other.discrete_plugin_infos.end());
+  continuous_plugin_infos.insert(other.continuous_plugin_infos.begin(), other.continuous_plugin_infos.end());
+}
+
+void ContactManagersPluginInfo::clear()
+{
+  search_paths.clear();
+  search_libraries.clear();
+  discrete_plugin_infos.clear();
+  continuous_plugin_infos.clear();
+}
+
+bool ContactManagersPluginInfo::empty() const
+{
+  return (search_paths.empty() && search_libraries.empty() && discrete_plugin_infos.empty() &&
+          continuous_plugin_infos.empty());
+}
+
 std::size_t PairHash::operator()(const LinkNamesPair& pair) const
 {
   return std::hash<std::string>()(pair.first + pair.second);

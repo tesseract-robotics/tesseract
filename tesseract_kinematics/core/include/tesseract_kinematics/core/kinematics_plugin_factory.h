@@ -41,11 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/plugin_loader.h>
 #include <tesseract_common/types.h>
 
-namespace tesseract_common
-{
-class PluginLoader;
-}
-
 namespace tesseract_kinematics
 {
 /** @brief Forward declare Plugin Factory */
@@ -119,7 +114,7 @@ public:
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  KinematicsPluginFactory(const boost::filesystem::path& config);
+  KinematicsPluginFactory(const tesseract_common::fs::path& config);
 
   /**
    * @brief Load plugins from string

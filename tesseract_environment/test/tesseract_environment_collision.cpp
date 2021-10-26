@@ -71,7 +71,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentCollisionTest)  // NOLINT
   auto srdf = getSRDFModel(*scene_graph);
   EXPECT_TRUE(srdf != nullptr);
 
-  auto env = std::make_shared<Environment>(true);
+  auto env = std::make_shared<Environment>();
   bool success = env->init(*scene_graph, srdf);
   EXPECT_TRUE(success);
 

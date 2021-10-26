@@ -61,7 +61,7 @@ KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : Kinematics
   }
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(const boost::filesystem::path& config)
+KinematicsPluginFactory::KinematicsPluginFactory(const tesseract_common::fs::path& config)
   : KinematicsPluginFactory(YAML::LoadFile(config.string()))
 {
 }

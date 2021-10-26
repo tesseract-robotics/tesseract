@@ -46,16 +46,18 @@ namespace tesseract_collision::tesseract_collision_fcl
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
 static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
 
-FCLDiscreteBVHManager::FCLDiscreteBVHManager()
+FCLDiscreteBVHManager::FCLDiscreteBVHManager(std::string name) : name_(std::move(name))
 {
   static_manager_ = std::make_unique<fcl::DynamicAABBTreeCollisionManagerd>();
   dynamic_manager_ = std::make_unique<fcl::DynamicAABBTreeCollisionManagerd>();
   collision_margin_data_ = CollisionMarginData(0);
 }
 
-DiscreteContactManager::Ptr FCLDiscreteBVHManager::clone() const
+std::string FCLDiscreteBVHManager::getName() const { return name_; }
+
+DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
 {
-  auto manager = std::make_shared<FCLDiscreteBVHManager>();
+  auto manager = std::make_unique<FCLDiscreteBVHManager>();
 
   for (const auto& cow : link2cow_)
     manager->addCollisionObject(cow.second->clone());

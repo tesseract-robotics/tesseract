@@ -106,13 +106,13 @@ struct KinematicsPluginInfo
   /** @brief A list of paths to search for plugins */
   std::set<std::string> search_paths;
 
-  /** @brief A list of library names without the prefix or sufix that contain plugins*/
+  /** @brief A list of library names without the prefix or suffix that contain plugins*/
   std::set<std::string> search_libraries;
 
-  /** @brief A map of group name to forward kinematics plugin infos */
+  /** @brief A map of group name to forward kinematics plugin information */
   std::map<std::string, tesseract_common::PluginInfoMap> fwd_plugin_infos;
 
-  /** @brief A map of group name to inverse kinematics plugin infos */
+  /** @brief A map of group name to inverse kinematics plugin information */
   std::map<std::string, tesseract_common::PluginInfoMap> inv_plugin_infos;
 
   /** @brief Insert the content of an other KinematicsPluginInfo */
@@ -126,6 +126,34 @@ struct KinematicsPluginInfo
 
   // Yaml Config key
   static inline const std::string CONFIG_KEY{ "kinematic_plugins" };
+};
+
+/** @brief The contact managers plugin information structure */
+struct ContactManagersPluginInfo
+{
+  /** @brief A list of paths to search for plugins */
+  std::set<std::string> search_paths;
+
+  /** @brief A list of library names without the prefix or suffix that contain plugins*/
+  std::set<std::string> search_libraries;
+
+  /** @brief A map of name to discrete contact manager plugin information */
+  tesseract_common::PluginInfoMap discrete_plugin_infos;
+
+  /** @brief A map of name to continuous contact manager plugin information */
+  tesseract_common::PluginInfoMap continuous_plugin_infos;
+
+  /** @brief Insert the content of an other ContactManagersPluginInfo */
+  void insert(const ContactManagersPluginInfo& other);
+
+  /** @brief Clear the contents */
+  void clear();
+
+  /** @brief Check if structure is empty */
+  bool empty() const;
+
+  // Yaml Config key
+  static inline const std::string CONFIG_KEY{ "contact_manager_plugins" };
 };
 }  // namespace tesseract_common
 

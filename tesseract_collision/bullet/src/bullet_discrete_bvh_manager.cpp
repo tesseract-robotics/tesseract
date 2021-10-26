@@ -48,7 +48,7 @@ namespace tesseract_collision::tesseract_collision_bullet
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
 static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
 
-BulletDiscreteBVHManager::BulletDiscreteBVHManager()
+BulletDiscreteBVHManager::BulletDiscreteBVHManager(std::string name) : name_(std::move(name))
 {
   // Bullet adds a margin of 5cm to which is an extern variable, so we set it to zero.
   gDbvtMargin = 0;
@@ -76,9 +76,11 @@ BulletDiscreteBVHManager::~BulletDiscreteBVHManager()
     removeCollisionObjectFromBroadphase(co.second, broadphase_, dispatcher_);
 }
 
-DiscreteContactManager::Ptr BulletDiscreteBVHManager::clone() const
+std::string BulletDiscreteBVHManager::getName() const { return name_; }
+
+DiscreteContactManager::UPtr BulletDiscreteBVHManager::clone() const
 {
-  auto manager = std::make_shared<BulletDiscreteBVHManager>();
+  auto manager = std::make_unique<BulletDiscreteBVHManager>();
 
   auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
 

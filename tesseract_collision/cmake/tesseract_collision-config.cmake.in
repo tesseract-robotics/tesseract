@@ -16,6 +16,7 @@ find_dependency(console_bridge)
 find_dependency(tesseract_common)
 find_dependency(tesseract_geometry)
 find_dependency(tesseract_support)
+find_dependency(yaml-cpp)
 
 if(@TESSERACT_BUILD_FCL@)
   find_dependency(fcl)
