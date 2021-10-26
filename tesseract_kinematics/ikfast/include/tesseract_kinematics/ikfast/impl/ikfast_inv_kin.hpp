@@ -89,7 +89,7 @@ inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap
   // ordering
   const Eigen::Matrix<IkReal, 3, 3, Eigen::RowMajor> rotation = ikfast_tcp.rotation();
 
-  int ikfast_dof = numJoints();
+  std::size_t ikfast_dof = static_cast<std::size_t>(numJoints());
 
   // Call IK (TODO: Make a better solution list class? One that uses vector instead of list)
   ikfast::IkSolutionList<IkReal> ikfast_solution_set;
@@ -131,10 +131,10 @@ inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap
   }
 
   // Check the output
-  int num_sol = sols.size() / ikfast_dof;
+  std::size_t num_sol = sols.size() / ikfast_dof;
   IKSolutions solution_set;
   solution_set.reserve(sols.size());
-  for (int i = 0; i < num_sol; i++)
+  for (std::size_t i = 0; i < num_sol; i++)
   {
     Eigen::Map<Eigen::VectorXd> eigen_sol(sols.data() + ikfast_dof * i, static_cast<Eigen::Index>(ikfast_dof));
     if (eigen_sol.array().allFinite())

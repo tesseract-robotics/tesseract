@@ -1,0 +1,187 @@
+<?xml version="1.0"?>
+<robot name="kuka_liwa_7" xmlns:xacro="http://wiki.ros.org/xacro">
+    <!-- link list -->
+    <link name="link_0">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/visual/link_0.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/collision/link_0.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="link_1">
+      <visual>
+        <origin xyz="0 0 0.0075" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/visual/link_1.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0.0075" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/collision/link_1.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="link_2">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/visual/link_2.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/collision/link_2.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="link_3">
+      <visual>
+        <origin xyz="0 0 -0.026" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/visual/link_3.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 -0.026" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/collision/link_3.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="link_4">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/visual/link_4.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/collision/link_4.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="link_5">
+      <visual>
+        <origin xyz="0 0 -0.026" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/visual/link_5.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 -0.026" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/collision/link_5.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="link_6">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/visual/link_6.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/collision/link_6.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="link_7">
+      <visual>
+        <origin xyz="0 0 -0.0005" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/visual/link_7.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 -0.0005" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/urdf/iiwa7/collision/link_7.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="link_ee"/>
+    <link name="ikfast_tcp_link"/>
+    <!-- end of link list -->
+    <!-- joint list -->
+    <joint name="joint_1" type="revolute">
+      <origin xyz="0 0 0.15" rpy="0 0 0"/>
+      <parent link="link_0"/>
+      <child link="link_1"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0" lower="-2.9671" upper="2.9671" velocity="10" />
+    </joint>
+    <joint name="joint_2" type="revolute">
+      <origin xyz="0 0 0.19" rpy="1.5708 0 3.1416"/>
+      <parent link="link_1"/>
+      <child link="link_2"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0" lower="-2.0944" upper="2.0944" velocity="10" />
+    </joint>
+    <joint name="joint_3" type="revolute">
+      <parent link="link_2"/>
+      <child link="link_3"/>
+      <origin xyz="0 0.21 0" rpy="1.5708 0 3.1416"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0" lower="-2.9671" upper="2.9671" velocity="10" />
+    </joint>
+    <joint name="joint_4" type="revolute">
+      <parent link="link_3"/>
+      <child link="link_4"/>
+      <origin xyz="0 0 0.19" rpy="1.5708 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0" lower="-2.0944" upper="2.0944" velocity="10" />
+    </joint>
+    <joint name="joint_5" type="revolute">
+      <parent link="link_4"/>
+      <child link="link_5"/>
+      <origin xyz="0 0.21 0" rpy="-1.5708 3.1416 0"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0" lower="-2.9496" upper="2.9496" velocity="10" />
+    </joint>
+    <joint name="joint_6" type="revolute">
+      <parent link="link_5"/>
+      <child link="link_6"/>
+      <origin xyz="0 0.06070 0.19" rpy="1.5708 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0" lower="-2.0944" upper="2.0944" velocity="10" />
+    </joint>
+    <joint name="joint_7" type="revolute">
+      <parent link="link_6"/>
+      <child link="link_7"/>
+      <origin xyz="0 0.081 0.06070" rpy="-1.5708 3.1416 0"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="0" lower="-3.0543" upper="3.0543" velocity="10" />
+    </joint>
+    <joint name="joint_ee" type="fixed">
+      <parent link="link_7"/>
+      <child link="link_ee"/>
+      <origin xyz="0 0 0.045" rpy="0 0 0"/>
+    </joint>
+    <joint name="to_ikfast_tcp_link" type="fixed">
+        <origin xyz="0.0 0.0 0.02485" rpy="0.0 0.0 0.0"/>
+        <parent link="link_ee"/>
+        <child link="ikfast_tcp_link"/>
+    </joint>
+    <!-- end of joint list -->
+    <!-- ROS base_link to KUKA $ROBROOT coordinate system transform -->
+    <link name="base"/>
+    <joint name="link_0-base" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <parent link="link_0"/>
+      <child link="base"/>
+    </joint>
+</robot>
