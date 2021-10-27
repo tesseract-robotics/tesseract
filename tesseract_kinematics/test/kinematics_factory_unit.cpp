@@ -187,6 +187,8 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi.class_name = "KDLFwdKin";
     factory.addFwdKinPlugin("manipulator", "KDLFwdKin", pi);
     EXPECT_EQ(factory.getFwdKinPlugins().size(), 1);
+
+    map = factory.getFwdKinPlugins();
     EXPECT_TRUE(map.find("manipulator") != map.end());
     EXPECT_TRUE(map.at("manipulator").plugins.find("KDLFwdKin") != map.at("manipulator").plugins.end());
     EXPECT_EQ(map.find("manipulator")->second.plugins.size(), 1);
@@ -196,6 +198,8 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi2.class_name = "KDLFwdKin";
     factory.addFwdKinPlugin("manipulator", "default", pi2);
     EXPECT_EQ(factory.getFwdKinPlugins().size(), 1);
+
+    map = factory.getFwdKinPlugins();
     EXPECT_TRUE(map.find("manipulator") != map.end());
     EXPECT_TRUE(map.at("manipulator").plugins.find("default") != map.at("manipulator").plugins.end());
     EXPECT_EQ(map.find("manipulator")->second.plugins.size(), 2);
@@ -204,6 +208,8 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_EQ(factory.getDefaultFwdKinPlugin("manipulator"), "default");
 
     factory.removeFwdKinPlugin("manipulator", "default");
+
+    map = factory.getFwdKinPlugins();
     EXPECT_TRUE(map.find("manipulator") != map.end());
     EXPECT_EQ(factory.getFwdKinPlugins().size(), 1);
     EXPECT_EQ(map.find("manipulator")->second.plugins.size(), 1);
@@ -219,6 +225,8 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi.class_name = "KDLInvKin";
     factory.addInvKinPlugin("manipulator", "KDLInvKin", pi);
     EXPECT_EQ(factory.getInvKinPlugins().size(), 1);
+
+    map = factory.getInvKinPlugins();
     EXPECT_TRUE(map.find("manipulator") != map.end());
     EXPECT_TRUE(map.at("manipulator").plugins.find("KDLInvKin") != map.at("manipulator").plugins.end());
     EXPECT_EQ(map.find("manipulator")->second.plugins.size(), 1);
@@ -228,6 +236,8 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi2.class_name = "KDLInvKin";
     factory.addInvKinPlugin("manipulator", "default", pi2);
     EXPECT_EQ(factory.getInvKinPlugins().size(), 1);
+
+    map = factory.getInvKinPlugins();
     EXPECT_TRUE(map.find("manipulator") != map.end());
     EXPECT_TRUE(map.at("manipulator").plugins.find("default") != map.at("manipulator").plugins.end());
     EXPECT_EQ(map.find("manipulator")->second.plugins.size(), 2);
@@ -236,6 +246,8 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_EQ(factory.getDefaultInvKinPlugin("manipulator"), "default");
 
     factory.removeInvKinPlugin("manipulator", "default");
+
+    map = factory.getInvKinPlugins();
     EXPECT_TRUE(map.find("manipulator") != map.end());
     EXPECT_EQ(factory.getInvKinPlugins().size(), 1);
     EXPECT_EQ(map.find("manipulator")->second.plugins.size(), 1);

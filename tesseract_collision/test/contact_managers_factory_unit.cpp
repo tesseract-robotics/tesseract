@@ -226,6 +226,8 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi.class_name = "TestDiscreteManagerFactory";
     factory.addDiscreteContactManagerPlugin("TestDiscreteManager", pi);
     EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 1);
+
+    map = factory.getDiscreteContactManagerPlugins();
     EXPECT_TRUE(map.find("TestDiscreteManager") != map.end());
     EXPECT_EQ(factory.getDefaultDiscreteContactManagerPlugin(), "TestDiscreteManager");
 
@@ -233,12 +235,15 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi2.class_name = "Test2DiscreteManagerFactory";
     factory.addDiscreteContactManagerPlugin("Test2DiscreteManager", pi2);
     EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 2);
+
+    map = factory.getDiscreteContactManagerPlugins();
     EXPECT_TRUE(map.find("Test2DiscreteManager") != map.end());
     EXPECT_EQ(factory.getDefaultDiscreteContactManagerPlugin(), "Test2DiscreteManager");
     factory.setDefaultDiscreteContactManagerPlugin("TestDiscreteManager");
     EXPECT_EQ(factory.getDefaultDiscreteContactManagerPlugin(), "TestDiscreteManager");
 
     factory.removeDiscreteContactManagerPlugin("TestDiscreteManager");
+    map = factory.getDiscreteContactManagerPlugins();
     EXPECT_TRUE(map.find("Test2DiscreteManager") != map.end());
     EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 1);
     // The default was removed so it should now be the first solver
@@ -257,6 +262,8 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi.class_name = "TestContinuousManagerFactory";
     factory.addContinuousContactManagerPlugin("TestContinuousManager", pi);
     EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 1);
+
+    map = factory.getContinuousContactManagerPlugins();
     EXPECT_TRUE(map.find("TestContinuousManager") != map.end());
     EXPECT_EQ(factory.getDefaultContinuousContactManagerPlugin(), "TestContinuousManager");
 
@@ -264,12 +271,16 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi2.class_name = "Test2ContinuousManagerFactory";
     factory.addContinuousContactManagerPlugin("Test2ContinuousManager", pi2);
     EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 2);
+
+    map = factory.getContinuousContactManagerPlugins();
     EXPECT_TRUE(map.find("Test2ContinuousManager") != map.end());
     EXPECT_EQ(factory.getDefaultContinuousContactManagerPlugin(), "Test2ContinuousManager");
     factory.setDefaultContinuousContactManagerPlugin("TestContinuousManager");
     EXPECT_EQ(factory.getDefaultContinuousContactManagerPlugin(), "TestContinuousManager");
 
     factory.removeContinuousContactManagerPlugin("TestContinuousManager");
+
+    map = factory.getContinuousContactManagerPlugins();
     EXPECT_TRUE(map.find("Test2ContinuousManager") != map.end());
     EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 1);
     // The default was removed so it should now be the first solver
