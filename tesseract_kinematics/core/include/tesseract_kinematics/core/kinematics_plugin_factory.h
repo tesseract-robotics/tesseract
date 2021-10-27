@@ -132,7 +132,7 @@ public:
    * @brief Get the plugin search paths
    * @return The search paths
    */
-  const std::set<std::string>& getSearchPaths() const;
+  std::set<std::string> getSearchPaths() const;
 
   /**
    * @brief Add a library to search for plugin name
@@ -144,7 +144,7 @@ public:
    * @brief Get the plugin search libraries
    * @return The search libraries
    */
-  const std::set<std::string>& getSearchLibraries() const;
+  std::set<std::string> getSearchLibraries() const;
 
   /**
    * @brief Add a forward kinematics plugin to the manager
@@ -160,7 +160,7 @@ public:
    * @brief Get the map of forward kinematic plugins
    * @return A map of plugins
    */
-  const std::map<std::string, tesseract_common::PluginInfoContainer>& getFwdKinPlugins() const;
+  std::map<std::string, tesseract_common::PluginInfoContainer> getFwdKinPlugins() const;
 
   /**
    * @brief remove forward kinematics plugin from the manager
@@ -198,7 +198,7 @@ public:
    * @brief Get the map of inverse kinematic plugins
    * @return A map of plugins
    */
-  const std::map<std::string, tesseract_common::PluginInfoContainer>& getInvKinPlugins() const;
+  std::map<std::string, tesseract_common::PluginInfoContainer> getInvKinPlugins() const;
 
   /**
    * @brief remove inverse kinematics plugin from the manager

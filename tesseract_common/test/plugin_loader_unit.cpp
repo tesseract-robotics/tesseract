@@ -34,7 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
 {
-  putenv("UNITTESTENV=a:b:c");
+  std::string env_var = "UNITTESTENV=a:b:c";
+  putenv(env_var.data());
   std::set<std::string> s = tesseract_common::parseEnvironmentVariableList("UNITTESTENV");
   std::vector<std::string> v(s.begin(), s.end());
   EXPECT_EQ(v[0], "a");

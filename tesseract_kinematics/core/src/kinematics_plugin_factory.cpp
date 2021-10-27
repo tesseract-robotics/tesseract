@@ -77,17 +77,14 @@ KinematicsPluginFactory::~KinematicsPluginFactory() = default;
 
 void KinematicsPluginFactory::addSearchPath(const std::string& path) { plugin_loader_.search_paths.insert(path); }
 
-const std::set<std::string>& KinematicsPluginFactory::getSearchPaths() const { return plugin_loader_.search_paths; }
+std::set<std::string> KinematicsPluginFactory::getSearchPaths() const { return plugin_loader_.search_paths; }
 
 void KinematicsPluginFactory::addSearchLibrary(const std::string& library_name)
 {
   plugin_loader_.search_libraries.insert(library_name);
 }
 
-const std::set<std::string>& KinematicsPluginFactory::getSearchLibraries() const
-{
-  return plugin_loader_.search_libraries;
-}
+std::set<std::string> KinematicsPluginFactory::getSearchLibraries() const { return plugin_loader_.search_libraries; }
 
 void KinematicsPluginFactory::addFwdKinPlugin(const std::string& group_name,
                                               const std::string& solver_name,
@@ -96,7 +93,7 @@ void KinematicsPluginFactory::addFwdKinPlugin(const std::string& group_name,
   fwd_plugin_info_[group_name].plugins[solver_name] = std::move(plugin_info);
 }
 
-const std::map<std::string, tesseract_common::PluginInfoContainer>& KinematicsPluginFactory::getFwdKinPlugins() const
+std::map<std::string, tesseract_common::PluginInfoContainer> KinematicsPluginFactory::getFwdKinPlugins() const
 {
   return fwd_plugin_info_;
 }
@@ -156,7 +153,7 @@ void KinematicsPluginFactory::addInvKinPlugin(const std::string& group_name,
   inv_plugin_info_[group_name].plugins[solver_name] = std::move(plugin_info);
 }
 
-const std::map<std::string, tesseract_common::PluginInfoContainer>& KinematicsPluginFactory::getInvKinPlugins() const
+std::map<std::string, tesseract_common::PluginInfoContainer> KinematicsPluginFactory::getInvKinPlugins() const
 {
   return inv_plugin_info_;
 }

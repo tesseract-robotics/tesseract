@@ -45,7 +45,7 @@ void runContactManagersFactoryTest(const tesseract_common::fs::path& config_path
   const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
 
   {
-    const std::set<std::string>& sp = factory.getSearchPaths();
+    std::set<std::string> sp = factory.getSearchPaths();
     EXPECT_EQ(sp.size(), 2);
 
     for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
@@ -55,7 +55,7 @@ void runContactManagersFactoryTest(const tesseract_common::fs::path& config_path
   }
 
   {
-    const std::set<std::string>& sl = factory.getSearchLibraries();
+    std::set<std::string> sl = factory.getSearchLibraries();
     EXPECT_EQ(sl.size(), 2);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
@@ -160,7 +160,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
   const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
 
   {
-    const std::set<std::string>& sp = factory.getSearchPaths();
+    std::set<std::string> sp = factory.getSearchPaths();
     EXPECT_EQ(sp.size(), 2);
 
     for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
@@ -170,7 +170,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
   }
 
   {
-    const std::set<std::string>& sl = factory.getSearchLibraries();
+    std::set<std::string> sl = factory.getSearchLibraries();
     EXPECT_EQ(sl.size(), 2);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
@@ -219,7 +219,7 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   EXPECT_EQ(factory.getSearchLibraries().size(), 3);
 
   {
-    const tesseract_common::PluginInfoMap& map = factory.getDiscreteContactManagerPlugins();
+    tesseract_common::PluginInfoMap map = factory.getDiscreteContactManagerPlugins();
     EXPECT_TRUE(map.find("NotFound") == map.end());
 
     tesseract_common::PluginInfo pi;
@@ -250,7 +250,7 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   }
 
   {
-    const tesseract_common::PluginInfoMap& map = factory.getContinuousContactManagerPlugins();
+    tesseract_common::PluginInfoMap map = factory.getContinuousContactManagerPlugins();
     EXPECT_TRUE(map.find("NotFound") == map.end());
 
     tesseract_common::PluginInfo pi;

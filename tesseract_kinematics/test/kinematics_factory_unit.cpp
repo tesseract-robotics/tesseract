@@ -68,7 +68,7 @@ void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
   const YAML::Node& inv_kin_plugins = plugin_info["inv_kin_plugins"];
 
   {
-    const std::set<std::string>& sp = factory.getSearchPaths();
+    std::set<std::string> sp = factory.getSearchPaths();
     EXPECT_EQ(sp.size(), 2);
 
     for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
@@ -78,7 +78,7 @@ void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
   }
 
   {
-    const std::set<std::string>& sl = factory.getSearchLibraries();
+    std::set<std::string> sl = factory.getSearchLibraries();
     EXPECT_EQ(sl.size(), 4);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
@@ -180,7 +180,7 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   EXPECT_EQ(factory.getSearchLibraries().size(), 5);
 
   {
-    const std::map<std::string, tesseract_common::PluginInfoContainer>& map = factory.getFwdKinPlugins();
+    std::map<std::string, tesseract_common::PluginInfoContainer> map = factory.getFwdKinPlugins();
     EXPECT_TRUE(map.find("manipulator") == map.end());
 
     tesseract_common::PluginInfo pi;
@@ -212,7 +212,7 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   }
 
   {
-    const std::map<std::string, tesseract_common::PluginInfoContainer>& map = factory.getInvKinPlugins();
+    std::map<std::string, tesseract_common::PluginInfoContainer> map = factory.getInvKinPlugins();
     EXPECT_TRUE(map.find("manipulator") == map.end());
 
     tesseract_common::PluginInfo pi;

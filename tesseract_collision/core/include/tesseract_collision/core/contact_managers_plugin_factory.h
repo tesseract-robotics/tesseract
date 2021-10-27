@@ -116,7 +116,7 @@ public:
    * @brief Get the plugin search paths
    * @return The search paths
    */
-  const std::set<std::string>& getSearchPaths() const;
+  std::set<std::string> getSearchPaths() const;
 
   /**
    * @brief Add a library to search for plugin name
@@ -128,7 +128,7 @@ public:
    * @brief Get the plugin search libraries
    * @return The search libraries
    */
-  const std::set<std::string>& getSearchLibraries() const;
+  std::set<std::string> getSearchLibraries() const;
 
   /**
    * @brief Add a discrete contact manager plugin
@@ -141,7 +141,7 @@ public:
    * @brief Get the map of discrete contact manager plugin
    * @return A map of plugins
    */
-  const tesseract_common::PluginInfoMap& getDiscreteContactManagerPlugins() const;
+  tesseract_common::PluginInfoMap getDiscreteContactManagerPlugins() const;
 
   /**
    * @brief Remove discrete contact manager plugin
@@ -172,7 +172,7 @@ public:
    * @brief Get the map of continuous contact manager plugin
    * @return A map of plugins
    */
-  const tesseract_common::PluginInfoMap& getContinuousContactManagerPlugins() const;
+  tesseract_common::PluginInfoMap getContinuousContactManagerPlugins() const;
 
   /**
    * @brief Remove continuous contact manager plugin
