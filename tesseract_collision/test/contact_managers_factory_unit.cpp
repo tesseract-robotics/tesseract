@@ -84,6 +84,28 @@ void runContactManagersFactoryTest(const tesseract_common::fs::path& config_path
 
   factory.saveConfig(tesseract_common::fs::path(tesseract_common::getTempPath()) / "contact_manager_plugins_export."
                                                                                    "yaml");
+
+  // Failures
+  {
+    DiscreteContactManager::UPtr cm = factory.createDiscreteContactManager("DoesNotExist");
+    EXPECT_TRUE(cm == nullptr);
+  }
+  {
+    ContinuousContactManager::UPtr cm = factory.createContinuousContactManager("DoesNotExist");
+    EXPECT_TRUE(cm == nullptr);
+  }
+  {
+    tesseract_common::PluginInfo plugin_info;
+    plugin_info.class_name = "DoesNotExistFactory";
+    DiscreteContactManager::UPtr cm = factory.createDiscreteContactManager("DoesNotExist", plugin_info);
+    EXPECT_TRUE(cm == nullptr);
+  }
+  {
+    tesseract_common::PluginInfo plugin_info;
+    plugin_info.class_name = "DoesNotExistFactory";
+    ContinuousContactManager::UPtr cm = factory.createContinuousContactManager("DoesNotExist", plugin_info);
+    EXPECT_TRUE(cm == nullptr);
+  }
 }
 
 TEST(TesseractContactManagersFactoryUnit, LoadAndExportPluginTest)  // NOLINT
@@ -103,6 +125,77 @@ TEST(TesseractContactManagersFactoryUnit, LoadAndExportPluginTest)  // NOLINT
   runContactManagersFactoryTest(export_config_path);
 }
 
+TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
+{
+  std::string config = R"(contact_manager_plugins:
+                            search_paths:
+                              - /usr/local/lib
+                            search_libraries:
+                              - tesseract_collision_bullet_factories
+                              - tesseract_collision_fcl_factories
+                            discrete_plugins:
+                              BulletDiscreteBVHManager:
+                                class: BulletDiscreteBVHManagerFactory
+                                default: true
+                              BulletDiscreteSimpleManager:
+                                class: BulletDiscreteSimpleManagerFactory
+                              FCLDiscreteBVHManager:
+                                class: FCLDiscreteBVHManagerFactory
+                            continuous_plugins:
+                              BulletCastBVHManager:
+                                class: BulletCastBVHManagerFactory
+                                default: true
+                              BulletCastSimpleManager:
+                                class: BulletCastSimpleManagerFactory)";
+
+  ContactManagersPluginFactory factory(config);
+  YAML::Node plugin_config = YAML::Load(config);
+
+  const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
+  const YAML::Node& search_paths = plugin_info["search_paths"];
+  const YAML::Node& search_libraries = plugin_info["search_libraries"];
+  const YAML::Node& discrete_plugins = plugin_info["discrete_plugins"];
+  const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"];
+
+  {
+    const std::set<std::string>& sp = factory.getSearchPaths();
+    EXPECT_EQ(sp.size(), 2);
+
+    for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
+    {
+      EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
+    }
+  }
+
+  {
+    const std::set<std::string>& sl = factory.getSearchLibraries();
+    EXPECT_EQ(sl.size(), 2);
+
+    for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
+    {
+      EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
+    }
+  }
+
+  EXPECT_EQ(discrete_plugins.size(), 3);
+  for (auto cm_it = discrete_plugins.begin(); cm_it != discrete_plugins.end(); ++cm_it)
+  {
+    auto name = cm_it->first.as<std::string>();
+
+    DiscreteContactManager::UPtr cm = factory.createDiscreteContactManager(name);
+    EXPECT_TRUE(cm != nullptr);
+  }
+
+  EXPECT_EQ(continuous_plugins.size(), 2);
+  for (auto cm_it = continuous_plugins.begin(); cm_it != continuous_plugins.end(); ++cm_it)
+  {
+    auto name = cm_it->first.as<std::string>();
+
+    ContinuousContactManager::UPtr cm = factory.createContinuousContactManager(name);
+    EXPECT_TRUE(cm != nullptr);
+  }
+}
+
 TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
 {
   ContactManagersPluginFactory factory;
@@ -112,6 +205,8 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   EXPECT_EQ(factory.getSearchLibraries().size(), 2);
   EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 0);
   EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 0);
+  EXPECT_ANY_THROW(factory.getDefaultDiscreteContactManagerPlugin());
+  EXPECT_ANY_THROW(factory.getDefaultContinuousContactManagerPlugin());
 
   factory.addSearchPath("/usr/local/lib");
   EXPECT_EQ(factory.getSearchPaths().size(), 2);
@@ -147,6 +242,10 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 1);
     // The default was removed so it should now be the first solver
     EXPECT_EQ(factory.getDefaultDiscreteContactManagerPlugin(), "Test2DiscreteManager");
+
+    // Failures
+    EXPECT_ANY_THROW(factory.removeDiscreteContactManagerPlugin("DoesNotExist"));
+    EXPECT_ANY_THROW(factory.setDefaultDiscreteContactManagerPlugin("DoesNotExist"));
   }
 
   {
@@ -175,6 +274,10 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 1);
     // The default was removed so it should now be the first solver
     EXPECT_EQ(factory.getDefaultContinuousContactManagerPlugin(), "Test2ContinuousManager");
+
+    // Failures
+    EXPECT_ANY_THROW(factory.removeContinuousContactManagerPlugin("DoesNotExist"));
+    EXPECT_ANY_THROW(factory.setDefaultContinuousContactManagerPlugin("DoesNotExist"));
   }
 }
 

@@ -92,3 +92,4 @@ add_gtest(${PROJECT_NAME}_sphere_sphere_cast_unit collision_sphere_sphere_cast_u
 add_gtest(${PROJECT_NAME}_octomap_octomap_unit collision_octomap_octomap_unit.cpp)
 add_gtest(${PROJECT_NAME}_collision_margin_data_unit collision_margin_data_unit.cpp)
 add_gtest(${PROJECT_NAME}_factory_unit contact_managers_factory_unit.cpp)
+add_gtest(${PROJECT_NAME}_core_unit collision_core_unit.cpp)

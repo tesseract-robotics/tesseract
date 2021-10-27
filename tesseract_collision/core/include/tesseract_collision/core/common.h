@@ -57,7 +57,7 @@ ObjectPairKey getObjectPairKey(const std::string& obj1, const std::string& obj2)
  */
 std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string>& active_links,
                                                    const std::vector<std::string>& static_links,
-                                                   const IsContactAllowedFn& acm);
+                                                   const IsContactAllowedFn& acm = nullptr);
 
 /**
  * @brief This will check if a link is active provided a list. If the list is empty the link is considered active.
