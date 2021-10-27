@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_common/utils.h>
 
-TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)
+TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
 {
   std::vector<std::string> active_links{ "link_1", "link_2", "link_3" };
   std::vector<std::string> static_links{ "base_link", "part_link" };
@@ -50,7 +50,7 @@ TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)
   EXPECT_TRUE(tesseract_common::isIdentical<tesseract_collision::ObjectPairKey>(pairs, check_pairs, false));
 }
 
-TEST(TesseractCoreUnit, isContactAllowedUnit)
+TEST(TesseractCoreUnit, isContactAllowedUnit)  // NOLINT
 {
   auto acm = [](const std::string& s1, const std::string& s2) {
     return (tesseract_collision::getObjectPairKey("base_link", "link_1") ==
@@ -62,7 +62,7 @@ TEST(TesseractCoreUnit, isContactAllowedUnit)
   EXPECT_TRUE(tesseract_collision::isContactAllowed("base_link", "link_1", acm, true));
 }
 
-TEST(TesseractCoreUnit, scaleVerticesUnit)
+TEST(TesseractCoreUnit, scaleVerticesUnit)  // NOLINT
 {
   tesseract_common::VectorVector3d base_vertices;
   base_vertices.push_back(Eigen::Vector3d(0, 0, 0));
@@ -107,7 +107,7 @@ TEST(TesseractCoreUnit, scaleVerticesUnit)
   EXPECT_TRUE(test_vertices[7].isApprox(Eigen::Vector3d(10, 10, 0)));
 }
 
-TEST(TesseractCoreUnit, ContactResultsUnit)
+TEST(TesseractCoreUnit, ContactResultsUnit)  // NOLINT
 {
   tesseract_collision::ContactResult results;
 
@@ -186,7 +186,7 @@ TEST(TesseractCoreUnit, ContactResultsUnit)
   EXPECT_EQ(results.single_contact_point, false);
 }
 
-TEST(TesseractCoreUnit, CollisionCheckConfigUnit)
+TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
 {
   tesseract_collision::ContactRequest request;
   tesseract_collision::CollisionCheckConfig config(
