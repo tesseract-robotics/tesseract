@@ -1621,12 +1621,22 @@ bool Environment::applyAddKinematicsInformationCommand(const AddKinematicsInform
       kinematics_factory_.addSearchLibrary(search_library);
 
     for (const auto& group : info.fwd_plugin_infos)
-      for (const auto& solver : group.second)
+    {
+      for (const auto& solver : group.second.plugins)
         kinematics_factory_.addFwdKinPlugin(group.first, solver.first, solver.second);
 
+      if (!group.second.default_plugin.empty())
+        kinematics_factory_.setDefaultFwdKinPlugin(group.first, group.second.default_plugin);
+    }
+
     for (const auto& group : info.inv_plugin_infos)
-      for (const auto& solver : group.second)
+    {
+      for (const auto& solver : group.second.plugins)
         kinematics_factory_.addInvKinPlugin(group.first, solver.first, solver.second);
+
+      if (!group.second.default_plugin.empty())
+        kinematics_factory_.setDefaultInvKinPlugin(group.first, group.second.default_plugin);
+    }
   }
 
   ++revision_;
@@ -1649,11 +1659,17 @@ bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManag
     for (const auto& search_library : info.search_libraries)
       contact_managers_factory_.addSearchLibrary(search_library);
 
-    for (const auto& cm : info.discrete_plugin_infos)
+    for (const auto& cm : info.discrete_plugin_infos.plugins)
       contact_managers_factory_.addDiscreteContactManagerPlugin(cm.first, cm.second);
 
-    for (const auto& cm : info.continuous_plugin_infos)
+    if (!info.discrete_plugin_infos.default_plugin.empty())
+      contact_managers_factory_.setDefaultDiscreteContactManagerPlugin(info.discrete_plugin_infos.default_plugin);
+
+    for (const auto& cm : info.continuous_plugin_infos.plugins)
       contact_managers_factory_.addContinuousContactManagerPlugin(cm.first, cm.second);
+
+    if (!info.continuous_plugin_infos.default_plugin.empty())
+      contact_managers_factory_.setDefaultContinuousContactManagerPlugin(info.continuous_plugin_infos.default_plugin);
   }
 
   std::string discrete_default = contact_managers_factory_.getDefaultDiscreteContactManagerPlugin();

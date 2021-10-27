@@ -160,7 +160,7 @@ public:
    * @brief Get the map of forward kinematic plugins
    * @return A map of plugins
    */
-  const std::map<std::string, tesseract_common::PluginInfoMap>& getFwdKinPlugins() const;
+  const std::map<std::string, tesseract_common::PluginInfoContainer>& getFwdKinPlugins() const;
 
   /**
    * @brief remove forward kinematics plugin from the manager
@@ -198,7 +198,7 @@ public:
    * @brief Get the map of inverse kinematic plugins
    * @return A map of plugins
    */
-  const std::map<std::string, tesseract_common::PluginInfoMap>& getInvKinPlugins() const;
+  const std::map<std::string, tesseract_common::PluginInfoContainer>& getInvKinPlugins() const;
 
   /**
    * @brief remove inverse kinematics plugin from the manager
@@ -274,7 +274,7 @@ public:
    * @brief Save the plugin information to a yaml config file
    * @param file_path The file path
    */
-  void saveConfig(const boost::filesystem::path& file_path) const;
+  void saveConfig(const tesseract_common::fs::path& file_path) const;
 
   /**
    * @brief Get the plugin information config as a yaml node
@@ -285,8 +285,8 @@ public:
 private:
   mutable std::map<std::string, FwdKinFactory::Ptr> fwd_kin_factories_;
   mutable std::map<std::string, InvKinFactory::Ptr> inv_kin_factories_;
-  std::map<std::string, tesseract_common::PluginInfoMap> fwd_plugin_info_;
-  std::map<std::string, tesseract_common::PluginInfoMap> inv_plugin_info_;
+  std::map<std::string, tesseract_common::PluginInfoContainer> fwd_plugin_info_;
+  std::map<std::string, tesseract_common::PluginInfoContainer> inv_plugin_info_;
   tesseract_common::PluginLoader plugin_loader_;
 };
 

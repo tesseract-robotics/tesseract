@@ -237,8 +237,8 @@ public:
 private:
   mutable std::map<std::string, DiscreteContactManagerFactory::Ptr> discrete_factories_;
   mutable std::map<std::string, ContinuousContactManagerFactory::Ptr> continuous_factories_;
-  tesseract_common::PluginInfoMap discrete_plugin_info_;
-  tesseract_common::PluginInfoMap continuous_plugin_info_;
+  tesseract_common::PluginInfoContainer discrete_plugin_info_;
+  tesseract_common::PluginInfoContainer continuous_plugin_info_;
   tesseract_common::PluginLoader plugin_loader_;
 };
 }  // namespace tesseract_collision

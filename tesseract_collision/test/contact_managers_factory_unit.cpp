@@ -41,8 +41,8 @@ void runContactManagersFactoryTest(const tesseract_common::fs::path& config_path
   const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
   const YAML::Node& search_paths = plugin_info["search_paths"];
   const YAML::Node& search_libraries = plugin_info["search_libraries"];
-  const YAML::Node& discrete_plugins = plugin_info["discrete_plugins"];
-  const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"];
+  const YAML::Node& discrete_plugins = plugin_info["discrete_plugins"]["plugins"];
+  const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
 
   {
     const std::set<std::string>& sp = factory.getSearchPaths();
@@ -134,19 +134,21 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
                               - tesseract_collision_bullet_factories
                               - tesseract_collision_fcl_factories
                             discrete_plugins:
-                              BulletDiscreteBVHManager:
-                                class: BulletDiscreteBVHManagerFactory
-                                default: true
-                              BulletDiscreteSimpleManager:
-                                class: BulletDiscreteSimpleManagerFactory
-                              FCLDiscreteBVHManager:
-                                class: FCLDiscreteBVHManagerFactory
+                              default: BulletDiscreteBVHManager
+                              plugins:
+                                BulletDiscreteBVHManager:
+                                  class: BulletDiscreteBVHManagerFactory
+                                BulletDiscreteSimpleManager:
+                                  class: BulletDiscreteSimpleManagerFactory
+                                FCLDiscreteBVHManager:
+                                  class: FCLDiscreteBVHManagerFactory
                             continuous_plugins:
-                              BulletCastBVHManager:
-                                class: BulletCastBVHManagerFactory
-                                default: true
-                              BulletCastSimpleManager:
-                                class: BulletCastSimpleManagerFactory)";
+                              default: BulletCastBVHManager
+                              plugins:
+                                BulletCastBVHManager:
+                                  class: BulletCastBVHManagerFactory
+                                BulletCastSimpleManager:
+                                  class: BulletCastSimpleManagerFactory)";
 
   ContactManagersPluginFactory factory(config);
   YAML::Node plugin_config = YAML::Load(config);
@@ -154,8 +156,8 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
   const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
   const YAML::Node& search_paths = plugin_info["search_paths"];
   const YAML::Node& search_libraries = plugin_info["search_libraries"];
-  const YAML::Node& discrete_plugins = plugin_info["discrete_plugins"];
-  const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"];
+  const YAML::Node& discrete_plugins = plugin_info["discrete_plugins"]["plugins"];
+  const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
 
   {
     const std::set<std::string>& sp = factory.getSearchPaths();
@@ -229,7 +231,6 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
 
     tesseract_common::PluginInfo pi2;
     pi2.class_name = "Test2DiscreteManagerFactory";
-    pi2.is_default = true;
     factory.addDiscreteContactManagerPlugin("Test2DiscreteManager", pi2);
     EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 2);
     EXPECT_TRUE(map.find("Test2DiscreteManager") != map.end());
@@ -261,7 +262,6 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
 
     tesseract_common::PluginInfo pi2;
     pi2.class_name = "Test2ContinuousManagerFactory";
-    pi2.is_default = true;
     factory.addContinuousContactManagerPlugin("Test2ContinuousManager", pi2);
     EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 2);
     EXPECT_TRUE(map.find("Test2ContinuousManager") != map.end());

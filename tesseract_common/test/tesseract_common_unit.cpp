@@ -1046,13 +1046,13 @@ TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "KDLFwdKin";
-    kpi.fwd_plugin_infos["manipulator"] = { std::make_pair("KDLFwdKin", pi) };
+    kpi.fwd_plugin_infos["manipulator"].plugins = { std::make_pair("KDLFwdKin", pi) };
   }
 
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "KDLInvKin";
-    kpi.inv_plugin_infos["manipulator"] = { std::make_pair("KDLInvKin", pi) };
+    kpi.inv_plugin_infos["manipulator"].plugins = { std::make_pair("KDLInvKin", pi) };
   }
 
   EXPECT_FALSE(kpi_insert.empty());
@@ -1062,6 +1062,36 @@ TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
 
   kpi.clear();
   EXPECT_TRUE(kpi.empty());
+}
+
+TEST(TesseractCommonUnit, ContactManagersPluginInfoUnit)  // NOLINT
+{
+  tesseract_common::ContactManagersPluginInfo cmpi;
+  EXPECT_TRUE(cmpi.empty());
+
+  tesseract_common::ContactManagersPluginInfo cmpi_insert;
+  cmpi_insert.search_paths.insert("/usr/local/lib");
+  cmpi_insert.search_libraries.insert("tesseract_collision");
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "DiscretePluginFactory";
+    cmpi.discrete_plugin_infos.plugins = { std::make_pair("DiscretePlugin", pi) };
+  }
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "ContinuousPluginFactory";
+    cmpi.continuous_plugin_infos.plugins = { std::make_pair("ContinuousPlugin", pi) };
+  }
+
+  EXPECT_FALSE(cmpi_insert.empty());
+
+  cmpi.insert(cmpi_insert);
+  EXPECT_FALSE(cmpi.empty());
+
+  cmpi.clear();
+  EXPECT_TRUE(cmpi.empty());
 }
 
 TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT

@@ -5,17 +5,19 @@ contact_manager_plugins:
     - tesseract_collision_bullet_factories
     - tesseract_collision_fcl_factories
   discrete_plugins:
-    BulletDiscreteBVHManager:
-      class: BulletDiscreteBVHManagerFactory
-      default: true
-    BulletDiscreteSimpleManager:
-      class: BulletDiscreteSimpleManagerFactory
-    FCLDiscreteBVHManager:
-      class: FCLDiscreteBVHManagerFactory
+    default: BulletDiscreteBVHManager
+    plugins:
+      BulletDiscreteBVHManager:
+        class: BulletDiscreteBVHManagerFactory
+      BulletDiscreteSimpleManager:
+        class: BulletDiscreteSimpleManagerFactory
+      FCLDiscreteBVHManager:
+        class: FCLDiscreteBVHManagerFactory
   continuous_plugins:
-    BulletCastBVHManager:
-      class: BulletCastBVHManagerFactory
-      default: true
-    BulletCastSimpleManager:
-      class: BulletCastSimpleManagerFactory
+    default: BulletCastBVHManager
+    plugins:
+      BulletCastBVHManager:
+        class: BulletCastBVHManagerFactory
+      BulletCastSimpleManager:
+        class: BulletCastSimpleManagerFactory
 

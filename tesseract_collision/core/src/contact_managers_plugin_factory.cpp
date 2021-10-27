@@ -98,107 +98,99 @@ const std::set<std::string>& ContactManagersPluginFactory::getSearchLibraries() 
 void ContactManagersPluginFactory::addDiscreteContactManagerPlugin(const std::string& name,
                                                                    tesseract_common::PluginInfo plugin_info)
 {
-  discrete_plugin_info_[name] = std::move(plugin_info);
+  discrete_plugin_info_.plugins[name] = std::move(plugin_info);
 }
 
 const tesseract_common::PluginInfoMap& ContactManagersPluginFactory::getDiscreteContactManagerPlugins() const
 {
-  return discrete_plugin_info_;
+  return discrete_plugin_info_.plugins;
 }
 
 void ContactManagersPluginFactory::removeDiscreteContactManagerPlugin(const std::string& name)
 {
-  auto cm_it = discrete_plugin_info_.find(name);
-  if (cm_it == discrete_plugin_info_.end())
+  auto cm_it = discrete_plugin_info_.plugins.find(name);
+  if (cm_it == discrete_plugin_info_.plugins.end())
     throw std::runtime_error("ContactManagersPluginFactory, tried to remove discrete contact manager '" + name +
                              "' that does not exist!");
 
-  discrete_plugin_info_.erase(cm_it);
+  discrete_plugin_info_.plugins.erase(cm_it);
+
+  if (discrete_plugin_info_.default_plugin == name)
+    discrete_plugin_info_.default_plugin.clear();
 }
 
 void ContactManagersPluginFactory::setDefaultDiscreteContactManagerPlugin(const std::string& name)
 {
-  auto cm_it = discrete_plugin_info_.find(name);
-  if (cm_it == discrete_plugin_info_.end())
+  auto cm_it = discrete_plugin_info_.plugins.find(name);
+  if (cm_it == discrete_plugin_info_.plugins.end())
     throw std::runtime_error("ContactManagersPluginFactory, tried to set default discrete contact manager '" + name +
                              "' that does not exist!");
 
-  for (auto& cm : discrete_plugin_info_)
-    cm.second.is_default = false;
-
-  cm_it->second.is_default = true;
+  discrete_plugin_info_.default_plugin = name;
 }
 
 std::string ContactManagersPluginFactory::getDefaultDiscreteContactManagerPlugin() const
 {
-  if (discrete_plugin_info_.empty())
+  if (discrete_plugin_info_.plugins.empty())
     throw std::runtime_error("ContactManagersPluginFactory, tried to get default discrete contact manager but none "
                              "exist!");
 
-  for (const auto& cm : discrete_plugin_info_)
-  {
-    if (cm.second.is_default)
-      return cm.first;
-  }
+  if (discrete_plugin_info_.default_plugin.empty())
+    return discrete_plugin_info_.plugins.begin()->first;
 
-  // If one is not explicitly set as the default use the first one.
-  return discrete_plugin_info_.begin()->first;
+  return discrete_plugin_info_.default_plugin;
 }
 
 void ContactManagersPluginFactory::addContinuousContactManagerPlugin(const std::string& name,
                                                                      tesseract_common::PluginInfo plugin_info)
 {
-  continuous_plugin_info_[name] = std::move(plugin_info);
+  continuous_plugin_info_.plugins[name] = std::move(plugin_info);
 }
 
 const tesseract_common::PluginInfoMap& ContactManagersPluginFactory::getContinuousContactManagerPlugins() const
 {
-  return continuous_plugin_info_;
+  return continuous_plugin_info_.plugins;
 }
 
 void ContactManagersPluginFactory::removeContinuousContactManagerPlugin(const std::string& name)
 {
-  auto cm_it = continuous_plugin_info_.find(name);
-  if (cm_it == continuous_plugin_info_.end())
+  auto cm_it = continuous_plugin_info_.plugins.find(name);
+  if (cm_it == continuous_plugin_info_.plugins.end())
     throw std::runtime_error("ContactManagersPluginFactory, tried to remove continuous contact manager '" + name +
                              "' that does not exist!");
 
-  continuous_plugin_info_.erase(cm_it);
+  continuous_plugin_info_.plugins.erase(cm_it);
+
+  if (continuous_plugin_info_.default_plugin == name)
+    continuous_plugin_info_.default_plugin.clear();
 }
 
 void ContactManagersPluginFactory::setDefaultContinuousContactManagerPlugin(const std::string& name)
 {
-  auto cm_it = continuous_plugin_info_.find(name);
-  if (cm_it == continuous_plugin_info_.end())
+  auto cm_it = continuous_plugin_info_.plugins.find(name);
+  if (cm_it == continuous_plugin_info_.plugins.end())
     throw std::runtime_error("ContactManagersPluginFactory, tried to set default continuous contact manager '" + name +
                              "' that does not exist!");
 
-  for (auto& cm : continuous_plugin_info_)
-    cm.second.is_default = false;
-
-  cm_it->second.is_default = true;
+  continuous_plugin_info_.default_plugin = name;
 }
 
 std::string ContactManagersPluginFactory::getDefaultContinuousContactManagerPlugin() const
 {
-  if (continuous_plugin_info_.empty())
+  if (continuous_plugin_info_.plugins.empty())
     throw std::runtime_error("ContactManagersPluginFactory, tried to get default continuous contact manager but none "
                              "exist!");
 
-  for (const auto& cm : continuous_plugin_info_)
-  {
-    if (cm.second.is_default)
-      return cm.first;
-  }
+  if (continuous_plugin_info_.default_plugin.empty())
+    return continuous_plugin_info_.plugins.begin()->first;
 
-  // If one is not explicitly set as the default use the first one.
-  return continuous_plugin_info_.begin()->first;
+  return continuous_plugin_info_.default_plugin;
 }
 
 DiscreteContactManager::UPtr ContactManagersPluginFactory::createDiscreteContactManager(const std::string& name) const
 {
-  auto cm_it = discrete_plugin_info_.find(name);
-  if (cm_it == discrete_plugin_info_.end())
+  auto cm_it = discrete_plugin_info_.plugins.find(name);
+  if (cm_it == discrete_plugin_info_.plugins.end())
   {
     CONSOLE_BRIDGE_logWarn("ContactManagersPluginFactory, tried to get discrete contact manager '%s' that does not "
                            "exist!",
@@ -238,8 +230,8 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
 ContinuousContactManager::UPtr
 ContactManagersPluginFactory::createContinuousContactManager(const std::string& name) const
 {
-  auto cm_it = continuous_plugin_info_.find(name);
-  if (cm_it == continuous_plugin_info_.end())
+  auto cm_it = continuous_plugin_info_.plugins.find(name);
+  if (cm_it == continuous_plugin_info_.plugins.end())
   {
     CONSOLE_BRIDGE_logWarn("ContactManagersPluginFactory, tried to get continuous contact manager '%s' that does not "
                            "exist!",

@@ -90,15 +90,19 @@ struct PluginInfo
   /** @brief The plugin class name */
   std::string class_name;
 
-  /** @brief Indicate if this is the default plugin */
-  bool is_default{ false };
-
   /** @brief The plugin config data */
   YAML::Node config;
 };
 
 /** @brief A map of PluginInfo to user defined name */
 using PluginInfoMap = std::map<std::string, PluginInfo>;
+
+struct PluginInfoContainer
+{
+  std::string default_plugin;
+  PluginInfoMap plugins;
+  void clear();
+};
 
 /** @brief The kinematics plugin information structure */
 struct KinematicsPluginInfo
@@ -110,10 +114,10 @@ struct KinematicsPluginInfo
   std::set<std::string> search_libraries;
 
   /** @brief A map of group name to forward kinematics plugin information */
-  std::map<std::string, tesseract_common::PluginInfoMap> fwd_plugin_infos;
+  std::map<std::string, tesseract_common::PluginInfoContainer> fwd_plugin_infos;
 
   /** @brief A map of group name to inverse kinematics plugin information */
-  std::map<std::string, tesseract_common::PluginInfoMap> inv_plugin_infos;
+  std::map<std::string, tesseract_common::PluginInfoContainer> inv_plugin_infos;
 
   /** @brief Insert the content of an other KinematicsPluginInfo */
   void insert(const KinematicsPluginInfo& other);
@@ -138,10 +142,10 @@ struct ContactManagersPluginInfo
   std::set<std::string> search_libraries;
 
   /** @brief A map of name to discrete contact manager plugin information */
-  tesseract_common::PluginInfoMap discrete_plugin_infos;
+  tesseract_common::PluginInfoContainer discrete_plugin_infos;
 
   /** @brief A map of name to continuous contact manager plugin information */
-  tesseract_common::PluginInfoMap continuous_plugin_infos;
+  tesseract_common::PluginInfoContainer continuous_plugin_infos;
 
   /** @brief Insert the content of an other ContactManagersPluginInfo */
   void insert(const ContactManagersPluginInfo& other);
