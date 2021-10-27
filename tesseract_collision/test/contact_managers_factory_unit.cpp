@@ -207,8 +207,8 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   EXPECT_EQ(factory.getSearchLibraries().size(), 2);
   EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 0);
   EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 0);
-  EXPECT_ANY_THROW(factory.getDefaultDiscreteContactManagerPlugin());
-  EXPECT_ANY_THROW(factory.getDefaultContinuousContactManagerPlugin());
+  EXPECT_ANY_THROW(factory.getDefaultDiscreteContactManagerPlugin());    // NOLINT
+  EXPECT_ANY_THROW(factory.getDefaultContinuousContactManagerPlugin());  // NOLINT
 
   factory.addSearchPath("/usr/local/lib");
   EXPECT_EQ(factory.getSearchPaths().size(), 2);
@@ -245,8 +245,8 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_EQ(factory.getDefaultDiscreteContactManagerPlugin(), "Test2DiscreteManager");
 
     // Failures
-    EXPECT_ANY_THROW(factory.removeDiscreteContactManagerPlugin("DoesNotExist"));
-    EXPECT_ANY_THROW(factory.setDefaultDiscreteContactManagerPlugin("DoesNotExist"));
+    EXPECT_ANY_THROW(factory.removeDiscreteContactManagerPlugin("DoesNotExist"));      // NOLINT
+    EXPECT_ANY_THROW(factory.setDefaultDiscreteContactManagerPlugin("DoesNotExist"));  // NOLINT
   }
 
   {
@@ -276,8 +276,8 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_EQ(factory.getDefaultContinuousContactManagerPlugin(), "Test2ContinuousManager");
 
     // Failures
-    EXPECT_ANY_THROW(factory.removeContinuousContactManagerPlugin("DoesNotExist"));
-    EXPECT_ANY_THROW(factory.setDefaultContinuousContactManagerPlugin("DoesNotExist"));
+    EXPECT_ANY_THROW(factory.removeContinuousContactManagerPlugin("DoesNotExist"));      // NOLINT
+    EXPECT_ANY_THROW(factory.setDefaultContinuousContactManagerPlugin("DoesNotExist"));  // NOLINT
   }
 }
 

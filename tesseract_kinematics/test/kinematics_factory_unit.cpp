@@ -1146,11 +1146,11 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
 
   {  // KDLFwdKinChain missing config
     YAML::Node config = YAML::Load(yaml_string);
-    auto plugin = config["kinematic_plugins"]["fwd_kin_plugins"]["manipulator"]["KDLFwdKinChain"];
+    auto plugin = config["kinematic_plugins"]["fwd_kin_plugins"]["manipulator"]["plugins"]["KDLFwdKinChain"];
     plugin.remove("config");
 
     KinematicsPluginFactory factory(config);
-    auto kin = factory.createInvKin("manipulator", "KDLFwdKinChain", *scene_graph, scene_state);
+    auto kin = factory.createFwdKin("manipulator", "KDLFwdKinChain", *scene_graph, scene_state);
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainLMA missing config
@@ -1177,7 +1177,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     plugin["config"].remove("base_link");
 
     KinematicsPluginFactory factory(config);
-    auto kin = factory.createInvKin("manipulator", "KDLFwdKinChain", *scene_graph, scene_state);
+    auto kin = factory.createFwdKin("manipulator", "KDLFwdKinChain", *scene_graph, scene_state);
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainLMA missing base_link
@@ -1204,7 +1204,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     plugin["config"].remove("tip_link");
 
     KinematicsPluginFactory factory(config);
-    auto kin = factory.createInvKin("manipulator", "KDLFwdKinChain", *scene_graph, scene_state);
+    auto kin = factory.createFwdKin("manipulator", "KDLFwdKinChain", *scene_graph, scene_state);
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainLMA missing tip_link
