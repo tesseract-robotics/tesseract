@@ -369,10 +369,11 @@ Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::Manipulator
   if (manip_info.tcp_offset.index() != 0)
     return std::get<1>(manip_info.tcp_offset);
 
-  // Check if the tcp offset name is a link in the scene, if so return Identity
+  // Check if the tcp offset name is a link in the scene, if so throw an exception
   const std::string& tcp_offset_name = std::get<0>(manip_info.tcp_offset);
   if (state_solver_->hasLinkName(tcp_offset_name))
-    return Eigen::Isometry3d::Identity();
+    throw std::runtime_error("The tcp offset name '" + tcp_offset_name +
+                             "' should not be an existing link in the scene. Assign it as the tcp_frame instead!");
 
   // Check Manipulator Manager for TCP
   if (kinematics_information_.hasGroupTCP(manip_info.manipulator, tcp_offset_name))
@@ -392,7 +393,7 @@ Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::Manipulator
     }
   }
 
-  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "' setting to Identity!");
+  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "'!");
 }
 
 void Environment::addFindTCPOffsetCallback(const FindTCPOffsetCallbackFn& fn)
