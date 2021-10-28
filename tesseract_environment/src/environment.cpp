@@ -27,9 +27,6 @@
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/utils.h>
 #include <tesseract_collision/core/common.h>
-#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
-#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
-#include <tesseract_collision/fcl/fcl_discrete_managers.h>
 #include <tesseract_srdf/utils.h>
 #include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
 
@@ -39,11 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-Environment::Environment(bool register_default_contact_managers)
-  : register_default_contact_managers_(register_default_contact_managers)
-{
-}
-
 bool Environment::initHelper(const Commands& commands)
 {
   if (commands.empty())
@@ -76,10 +68,6 @@ bool Environment::initHelper(const Commands& commands)
   init_revision_ = revision_;
 
   environmentChanged();
-
-  // Register Default Managers, must be called after initialized after initialized_ is set to true
-  if (register_default_contact_managers_)
-    registerDefaultContactManagersHelper();
 
   return initialized_;
 }
@@ -265,6 +253,7 @@ Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& s
 
   if (srdf_model)
   {
+    commands.push_back(std::make_shared<AddContactManagersPluginInfoCommand>(srdf_model->contact_managers_plugin_info));
     commands.push_back(std::make_shared<AddKinematicsInformationCommand>(srdf_model->kinematics_information));
 
     // Check srdf for collision margin data
@@ -639,16 +628,22 @@ tesseract_srdf::GroupNames Environment::getGroupNames() const
   return kinematics_information_.group_names;
 }
 
+tesseract_common::ContactManagersPluginInfo Environment::getContactManagersPluginInfo() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return contact_managers_plugin_info_;
+}
+
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   return setActiveDiscreteContactManagerHelper(name);
 }
 
-tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManager(const std::string& name) const
+tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContactManager(const std::string& name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  tesseract_collision::DiscreteContactManager::Ptr manager = getDiscreteContactManagerHelper(name);
+  tesseract_collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
     CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
@@ -664,7 +659,7 @@ bool Environment::setActiveContinuousContactManager(const std::string& name)
   return setActiveContinuousContactManagerHelper(name);
 }
 
-tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManager() const
+tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContactManager() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   if (!discrete_manager_)
@@ -672,7 +667,7 @@ tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContact
   return discrete_manager_->clone();
 }
 
-tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousContactManager() const
+tesseract_collision::ContinuousContactManager::UPtr Environment::getContinuousContactManager() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   if (!continuous_manager_)
@@ -680,11 +675,11 @@ tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousCon
   return continuous_manager_->clone();
 }
 
-tesseract_collision::ContinuousContactManager::Ptr
+tesseract_collision::ContinuousContactManager::UPtr
 Environment::getContinuousContactManager(const std::string& name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  tesseract_collision::ContinuousContactManager::Ptr manager = getContinuousContactManagerHelper(name);
+  tesseract_collision::ContinuousContactManager::UPtr manager = getContinuousContactManagerHelper(name);
   if (manager == nullptr)
   {
     CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
@@ -700,69 +695,20 @@ tesseract_common::CollisionMarginData Environment::getCollisionMarginData() cons
   return collision_margin_data_;
 }
 
-bool Environment::registerDiscreteContactManager(
-    const std::string& name,
-    tesseract_collision::DiscreteContactManagerFactoryCreateMethod create_function)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  return discrete_factory_.registar(name, std::move(create_function));
-}
-
-bool Environment::registerContinuousContactManager(
-    const std::string& name,
-    tesseract_collision::ContinuousContactManagerFactoryCreateMethod create_function)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  return continuous_factory_.registar(name, std::move(create_function));
-}
-
-bool Environment::registerDefaultContactManagers()
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-
-  if (!initialized_)
-    return false;
-
-  return registerDefaultContactManagersHelper();
-}
-
-bool Environment::registerDefaultContactManagersHelper()
-{
-  using namespace tesseract_collision;
-
-  bool success = true;
-  // Register contact manager
-  success &= discrete_factory_.registar(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
-                                        &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
-
-  success &= discrete_factory_.registar(tesseract_collision_fcl::FCLDiscreteBVHManager::name(),
-                                        &tesseract_collision_fcl::FCLDiscreteBVHManager::create);
-
-  success &= continuous_factory_.registar(tesseract_collision_bullet::BulletCastBVHManager::name(),
-                                          &tesseract_collision_bullet::BulletCastBVHManager::create);
-
-  // Set Active contact manager
-  success &= setActiveDiscreteContactManagerHelper(tesseract_collision_bullet::BulletDiscreteBVHManager::name());
-  success &= setActiveContinuousContactManagerHelper(tesseract_collision_bullet::BulletCastBVHManager::name());
-
-  return success;
-}
-
 bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
 {
-  tesseract_collision::DiscreteContactManager::Ptr manager = getDiscreteContactManagerHelper(name);
+  tesseract_collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
     std::string msg = "\n  Discrete manager with " + name + " does not exist in factory!\n";
     msg += "    Available Managers:\n";
-    for (const auto& m : discrete_factory_.getAvailableManagers())
-      msg += "      " + m + "\n";
+    for (const auto& m : contact_managers_factory_.getDiscreteContactManagerPlugins())
+      msg += "      " + m.first + "\n";
 
     CONSOLE_BRIDGE_logError(msg.c_str());
     return false;
   }
 
-  discrete_manager_name_ = name;
   discrete_manager_ = std::move(manager);
 
   // Update the current state information since the contact manager has been created/set
@@ -773,20 +719,19 @@ bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
 
 bool Environment::setActiveContinuousContactManagerHelper(const std::string& name)
 {
-  tesseract_collision::ContinuousContactManager::Ptr manager = getContinuousContactManagerHelper(name);
+  tesseract_collision::ContinuousContactManager::UPtr manager = getContinuousContactManagerHelper(name);
 
   if (manager == nullptr)
   {
     std::string msg = "\n  Continuous manager with " + name + " does not exist in factory!\n";
     msg += "    Available Managers:\n";
-    for (const auto& m : continuous_factory_.getAvailableManagers())
-      msg += "      " + m + "\n";
+    for (const auto& m : contact_managers_factory_.getContinuousContactManagerPlugins())
+      msg += "      " + m.first + "\n";
 
     CONSOLE_BRIDGE_logError(msg.c_str());
     return false;
   }
 
-  continuous_manager_name_ = name;
   continuous_manager_ = std::move(manager);
 
   // Update the current state information since the contact manager has been created/set
@@ -795,10 +740,11 @@ bool Environment::setActiveContinuousContactManagerHelper(const std::string& nam
   return true;
 }
 
-tesseract_collision::DiscreteContactManager::Ptr
+tesseract_collision::DiscreteContactManager::UPtr
 Environment::getDiscreteContactManagerHelper(const std::string& name) const
 {
-  tesseract_collision::DiscreteContactManager::Ptr manager = discrete_factory_.create(name);
+  tesseract_collision::DiscreteContactManager::UPtr manager =
+      contact_managers_factory_.createDiscreteContactManager(name);
   if (manager == nullptr)
     return nullptr;
 
@@ -824,10 +770,11 @@ Environment::getDiscreteContactManagerHelper(const std::string& name) const
   return manager;
 }
 
-tesseract_collision::ContinuousContactManager::Ptr
+tesseract_collision::ContinuousContactManager::UPtr
 Environment::getContinuousContactManagerHelper(const std::string& name) const
 {
-  tesseract_collision::ContinuousContactManager::Ptr manager = continuous_factory_.create(name);
+  tesseract_collision::ContinuousContactManager::UPtr manager =
+      contact_managers_factory_.createContinuousContactManager(name);
 
   if (manager == nullptr)
     return nullptr;
@@ -929,9 +876,9 @@ bool Environment::removeLinkHelper(const std::string& name)
   return true;
 }
 
-Environment::Ptr Environment::clone() const
+Environment::UPtr Environment::clone() const
 {
-  auto cloned_env = std::make_shared<Environment>();
+  auto cloned_env = std::make_unique<Environment>();
 
   std::shared_lock<std::shared_mutex> lock(mutex_);
 
@@ -975,10 +922,8 @@ Environment::Ptr Environment::clone() const
     cloned_env->continuous_manager_->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn_);
   }
 
-  cloned_env->discrete_manager_name_ = discrete_manager_name_;
-  cloned_env->continuous_manager_name_ = continuous_manager_name_;
-  cloned_env->discrete_factory_ = discrete_factory_;
-  cloned_env->continuous_factory_ = continuous_factory_;
+  cloned_env->contact_managers_plugin_info_ = contact_managers_plugin_info_;
+  cloned_env->contact_managers_factory_ = contact_managers_factory_;
 
   return cloned_env;
 }
@@ -1108,6 +1053,24 @@ bool Environment::applyCommandsHelper(const Commands& commands)
       {
         auto cmd = std::static_pointer_cast<const ChangeCollisionMarginsCommand>(command);
         success &= applyChangeCollisionMarginsCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO:
+      {
+        auto cmd = std::static_pointer_cast<const AddContactManagersPluginInfoCommand>(command);
+        success &= applyAddContactManagersPluginInfoCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER:
+      {
+        auto cmd = std::static_pointer_cast<const SetActiveContinuousContactManagerCommand>(command);
+        success &= applySetActiveContinuousContactManagerCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::SET_ACTIVE_DISCRETE_CONTACT_MANAGER:
+      {
+        auto cmd = std::static_pointer_cast<const SetActiveDiscreteContactManagerCommand>(command);
+        success &= applySetActiveDiscreteContactManagerCommand(cmd);
         break;
       }
       // LCOV_EXCL_START
@@ -1658,13 +1621,86 @@ bool Environment::applyAddKinematicsInformationCommand(const AddKinematicsInform
       kinematics_factory_.addSearchLibrary(search_library);
 
     for (const auto& group : info.fwd_plugin_infos)
-      for (const auto& solver : group.second)
+    {
+      for (const auto& solver : group.second.plugins)
         kinematics_factory_.addFwdKinPlugin(group.first, solver.first, solver.second);
 
+      if (!group.second.default_plugin.empty())
+        kinematics_factory_.setDefaultFwdKinPlugin(group.first, group.second.default_plugin);
+    }
+
     for (const auto& group : info.inv_plugin_infos)
-      for (const auto& solver : group.second)
+    {
+      for (const auto& solver : group.second.plugins)
         kinematics_factory_.addInvKinPlugin(group.first, solver.first, solver.second);
+
+      if (!group.second.default_plugin.empty())
+        kinematics_factory_.setDefaultInvKinPlugin(group.first, group.second.default_plugin);
+    }
   }
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManagersPluginInfoCommand::ConstPtr& cmd)
+{
+  const auto& info = cmd->getContactManagersPluginInfo();
+
+  if (!info.empty())
+  {
+    contact_managers_plugin_info_.insert(info);
+
+    for (const auto& search_path : info.search_paths)
+      contact_managers_factory_.addSearchPath(search_path);
+
+    for (const auto& search_library : info.search_libraries)
+      contact_managers_factory_.addSearchLibrary(search_library);
+
+    for (const auto& cm : info.discrete_plugin_infos.plugins)
+      contact_managers_factory_.addDiscreteContactManagerPlugin(cm.first, cm.second);
+
+    if (!info.discrete_plugin_infos.default_plugin.empty())
+      contact_managers_factory_.setDefaultDiscreteContactManagerPlugin(info.discrete_plugin_infos.default_plugin);
+
+    for (const auto& cm : info.continuous_plugin_infos.plugins)
+      contact_managers_factory_.addContinuousContactManagerPlugin(cm.first, cm.second);
+
+    if (!info.continuous_plugin_infos.default_plugin.empty())
+      contact_managers_factory_.setDefaultContinuousContactManagerPlugin(info.continuous_plugin_infos.default_plugin);
+  }
+
+  std::string discrete_default = contact_managers_factory_.getDefaultDiscreteContactManagerPlugin();
+  if (discrete_manager_ == nullptr || discrete_manager_->getName() != discrete_default)
+    setActiveDiscreteContactManagerHelper(discrete_default);
+
+  std::string continuous_default = contact_managers_factory_.getDefaultContinuousContactManagerPlugin();
+  if (continuous_manager_ == nullptr || continuous_manager_->getName() != continuous_default)
+    setActiveContinuousContactManagerHelper(continuous_default);
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applySetActiveContinuousContactManagerCommand(
+    const SetActiveContinuousContactManagerCommand::ConstPtr& cmd)
+{
+  setActiveContinuousContactManagerHelper(cmd->getName());
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applySetActiveDiscreteContactManagerCommand(
+    const SetActiveDiscreteContactManagerCommand::ConstPtr& cmd)
+{
+  setActiveDiscreteContactManagerHelper(cmd->getName());
 
   ++revision_;
   commands_.push_back(cmd);

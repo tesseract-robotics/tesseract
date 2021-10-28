@@ -29,6 +29,7 @@
 #define TESSERACT_ENVIRONMENT_COMMANDS_H
 
 #include <tesseract_environment/commands/add_allowed_collision_command.h>
+#include <tesseract_environment/commands/add_contact_managers_plugin_info_command.h>
 #include <tesseract_environment/commands/add_link_command.h>
 #include <tesseract_environment/commands/add_kinematics_information_command.h>
 #include <tesseract_environment/commands/add_scene_graph_command.h>
@@ -47,6 +48,8 @@
 #include <tesseract_environment/commands/remove_link_command.h>
 #include <tesseract_environment/commands/replace_joint_command.h>
 #include <tesseract_environment/commands/change_collision_margins_command.h>
+#include <tesseract_environment/commands/set_active_continuous_contact_manager_command.h>
+#include <tesseract_environment/commands/set_active_discrete_contact_manager_command.h>
 
 #ifdef SWIG
 
@@ -71,6 +74,9 @@
 %shared_ptr(tesseract_environment::ChangeJointVelocityLimitsCommand)
 %shared_ptr(tesseract_environment::ChangeJointAccelerationLimitsCommand)
 %shared_ptr(tesseract_environment::ChangeCollisionMarginsCommand)
+%shared_ptr(tesseract_environment::AddContactManagersPluginInfoCommand)
+%shared_ptr(tesseract_environment::SetActiveContinuousContactManagerCommand)
+%shared_ptr(tesseract_environment::SetActiveDiscreteContactManagerCommand)
 
 %shared_factory(
   tesseract_environment::Command,
@@ -92,7 +98,10 @@
   tesseract_environment::ChangeJointPositionLimitsCommand,
   tesseract_environment::ChangeJointVelocityLimitsCommand,
   tesseract_environment::ChangeJointAccelerationLimitsCommand,
-  tesseract_environment::ChangeCollisionMarginsCommand
+  tesseract_environment::ChangeCollisionMarginsCommand,
+  tesseract_environment::AddContactManagersPluginInfoCommand,
+  tesseract_environment::SetActiveContinuousContactManagerCommand,
+  tesseract_environment::SetActiveDiscreteContactManagerCommand
 )
 
 %template(Commands) std::vector<tesseract_environment::Command::ConstPtr>;

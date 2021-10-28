@@ -46,7 +46,9 @@ namespace tesseract_geometry
 class ConvexMesh : public PolygonMesh
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   using Ptr = std::shared_ptr<ConvexMesh>;
   using ConstPtr = std::shared_ptr<const ConvexMesh>;

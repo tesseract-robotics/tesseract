@@ -14,10 +14,12 @@
   <depend>tesseract_common</depend>
   <build_depend>ros_industrial_cmake_boilerplate</build_depend>
 
-  <depend>bullet</depend>
-  <depend>bullet-extras</depend>
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>
+
+  <depend>yaml-cpp</depend>
+  <depend>bullet</depend>
+  <depend>bullet-extras</depend>
   <depend>fcl</depend>
   <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_support</depend>

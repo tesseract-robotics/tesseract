@@ -48,6 +48,8 @@ public:
 
   using Ptr = std::shared_ptr<DiscreteContactManager>;
   using ConstPtr = std::shared_ptr<const DiscreteContactManager>;
+  using UPtr = std::unique_ptr<DiscreteContactManager>;
+  using ConstUPtr = std::unique_ptr<const DiscreteContactManager>;
 
   DiscreteContactManager() = default;
   virtual ~DiscreteContactManager() = default;
@@ -57,12 +59,18 @@ public:
   DiscreteContactManager& operator=(DiscreteContactManager&&) = delete;
 
   /**
+   * @brief Get the name of the contact manager
+   * @return The name
+   */
+  virtual std::string getName() const = 0;
+
+  /**
    * @brief Clone the manager
    *
    * This is to be used for multi threaded application. A user should
    * make a clone for each thread.
    */
-  virtual std::shared_ptr<DiscreteContactManager> clone() const = 0;
+  virtual DiscreteContactManager::UPtr clone() const = 0;
 
   /**
    * @brief Add a object to the checker

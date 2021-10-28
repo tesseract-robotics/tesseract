@@ -1,7 +1,7 @@
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_contact_checker.h"
 

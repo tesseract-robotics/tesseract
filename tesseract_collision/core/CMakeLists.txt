@@ -1,24 +1,27 @@
 # Create interface for core
-add_library(${PROJECT_NAME}_core INTERFACE)
+add_library(${PROJECT_NAME}_core src/common.cpp src/types.cpp src/contact_managers_plugin_factory.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
-  INTERFACE Eigen3::Eigen
-            tesseract::tesseract_common
-            tesseract::tesseract_geometry
-            Boost::boost
-            Boost::system)
-target_compile_options(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
+  PUBLIC Eigen3::Eigen
+         tesseract::tesseract_common
+         tesseract::tesseract_geometry
+         Boost::boost
+         Boost::system
+         yaml-cpp)
+target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(${PROJECT_NAME}_core
+                           PRIVATE TESSERACT_CONTACT_MANAGERS_PLUGIN_PATH="${TESSERACT_CONTACT_MANAGERS_PLUGIN_PATH}")
 target_clang_tidy(${PROJECT_NAME}_core ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME}_core INTERFACE VERSION ${TESSERACT_CXX_VERSION})
+target_cxx_version(${PROJECT_NAME}_core PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_core
-  INTERFACE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-target_include_directories(${PROJECT_NAME}_core INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                          "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_core PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                                       "$<INSTALL_INTERFACE:include>")
 
 # Create test suite interface
 add_library(${PROJECT_NAME}_test_suite INTERFACE)

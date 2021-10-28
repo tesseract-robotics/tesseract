@@ -41,11 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/plugin_loader.h>
 #include <tesseract_common/types.h>
 
-namespace tesseract_common
-{
-class PluginLoader;
-}
-
 namespace tesseract_kinematics
 {
 /** @brief Forward declare Plugin Factory */
@@ -119,7 +114,7 @@ public:
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  KinematicsPluginFactory(const boost::filesystem::path& config);
+  KinematicsPluginFactory(const tesseract_common::fs::path& config);
 
   /**
    * @brief Load plugins from string
@@ -137,7 +132,7 @@ public:
    * @brief Get the plugin search paths
    * @return The search paths
    */
-  const std::set<std::string>& getSearchPaths() const;
+  std::set<std::string> getSearchPaths() const;
 
   /**
    * @brief Add a library to search for plugin name
@@ -149,7 +144,7 @@ public:
    * @brief Get the plugin search libraries
    * @return The search libraries
    */
-  const std::set<std::string>& getSearchLibraries() const;
+  std::set<std::string> getSearchLibraries() const;
 
   /**
    * @brief Add a forward kinematics plugin to the manager
@@ -165,7 +160,7 @@ public:
    * @brief Get the map of forward kinematic plugins
    * @return A map of plugins
    */
-  const std::map<std::string, tesseract_common::PluginInfoMap>& getFwdKinPlugins() const;
+  std::map<std::string, tesseract_common::PluginInfoContainer> getFwdKinPlugins() const;
 
   /**
    * @brief remove forward kinematics plugin from the manager
@@ -203,7 +198,7 @@ public:
    * @brief Get the map of inverse kinematic plugins
    * @return A map of plugins
    */
-  const std::map<std::string, tesseract_common::PluginInfoMap>& getInvKinPlugins() const;
+  std::map<std::string, tesseract_common::PluginInfoContainer> getInvKinPlugins() const;
 
   /**
    * @brief remove inverse kinematics plugin from the manager
@@ -279,7 +274,7 @@ public:
    * @brief Save the plugin information to a yaml config file
    * @param file_path The file path
    */
-  void saveConfig(const boost::filesystem::path& file_path) const;
+  void saveConfig(const tesseract_common::fs::path& file_path) const;
 
   /**
    * @brief Get the plugin information config as a yaml node
@@ -290,8 +285,8 @@ public:
 private:
   mutable std::map<std::string, FwdKinFactory::Ptr> fwd_kin_factories_;
   mutable std::map<std::string, InvKinFactory::Ptr> inv_kin_factories_;
-  std::map<std::string, tesseract_common::PluginInfoMap> fwd_plugin_info_;
-  std::map<std::string, tesseract_common::PluginInfoMap> inv_plugin_info_;
+  std::map<std::string, tesseract_common::PluginInfoContainer> fwd_plugin_info_;
+  std::map<std::string, tesseract_common::PluginInfoContainer> inv_plugin_info_;
   tesseract_common::PluginLoader plugin_loader_;
 };
 

@@ -32,6 +32,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/plugin_loader.h>
 #include "test_plugin_base.h"
 
+TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
+{
+  std::string env_var = "UNITTESTENV=a:b:c";
+  putenv(env_var.data());
+  std::set<std::string> s = tesseract_common::parseEnvironmentVariableList("UNITTESTENV");
+  std::vector<std::string> v(s.begin(), s.end());
+  EXPECT_EQ(v[0], "a");
+  EXPECT_EQ(v[1], "b");
+  EXPECT_EQ(v[2], "c");
+}
+
 TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
 {
   using tesseract_common::ClassLoader;
@@ -118,9 +129,11 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     plugin_loader.search_paths.insert("does_not_exist");
     plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
 
-    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
-    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
-    EXPECT_TRUE(plugin == nullptr);
+    {
+      EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
+      auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+      EXPECT_TRUE(plugin == nullptr);
+    }
   }
 
   {
@@ -128,9 +141,19 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     plugin_loader.search_system_folders = false;
     plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
 
-    EXPECT_FALSE(plugin_loader.isPluginAvailable("does_not_exist"));
-    auto plugin = plugin_loader.instantiate<TestPluginBase>("does_not_exist");
-    EXPECT_TRUE(plugin == nullptr);
+    {
+      EXPECT_FALSE(plugin_loader.isPluginAvailable("does_not_exist"));
+      auto plugin = plugin_loader.instantiate<TestPluginBase>("does_not_exist");
+      EXPECT_TRUE(plugin == nullptr);
+    }
+
+    plugin_loader.search_system_folders = true;
+
+    {
+      EXPECT_FALSE(plugin_loader.isPluginAvailable("does_not_exist"));
+      auto plugin = plugin_loader.instantiate<TestPluginBase>("does_not_exist");
+      EXPECT_TRUE(plugin == nullptr);
+    }
   }
 
   {
@@ -138,9 +161,19 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     plugin_loader.search_system_folders = false;
     plugin_loader.search_libraries.insert("does_not_exist");
 
-    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
-    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
-    EXPECT_TRUE(plugin == nullptr);
+    {
+      EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
+      auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+      EXPECT_TRUE(plugin == nullptr);
+    }
+
+    plugin_loader.search_system_folders = true;
+
+    {
+      EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
+      auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+      EXPECT_TRUE(plugin == nullptr);
+    }
   }
 
   {

@@ -133,32 +133,7 @@ struct ContactResult
   ContactResult() = default;
 
   /** @brief reset to default values */
-  void clear()
-  {
-    distance = std::numeric_limits<double>::max();
-    nearest_points[0].setZero();
-    nearest_points[1].setZero();
-    nearest_points_local[0].setZero();
-    nearest_points_local[1].setZero();
-    transform[0] = Eigen::Isometry3d::Identity();
-    transform[1] = Eigen::Isometry3d::Identity();
-    link_names[0] = "";
-    link_names[1] = "";
-    shape_id[0] = -1;
-    shape_id[1] = -1;
-    subshape_id[0] = -1;
-    subshape_id[1] = -1;
-    type_id[0] = 0;
-    type_id[1] = 0;
-    normal.setZero();
-    cc_time[0] = -1;
-    cc_time[1] = -1;
-    cc_type[0] = ContinuousCollisionType::CCType_None;
-    cc_type[1] = ContinuousCollisionType::CCType_None;
-    cc_transform[0] = Eigen::Isometry3d::Identity();
-    cc_transform[1] = Eigen::Isometry3d::Identity();
-    single_contact_point = false;
-  }
+  void clear();
 };
 
 #ifndef SWIG
@@ -196,34 +171,15 @@ struct ContactRequest
   /** @brief This provides a user defined function approve/reject contact results */
   IsContactResultValidFn is_valid = nullptr;
 
-  ContactRequest(ContactTestType type = ContactTestType::ALL) : type(type) {}
+  ContactRequest(ContactTestType type = ContactTestType::ALL);
 };
 
-inline std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v)
-{
-  v.clear();
-  v.reserve(m.size());
-  for (const auto& mv : m)
-    std::move(mv.second.begin(), mv.second.end(), std::back_inserter(v));
+std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v);
 
-  return v.size();
-}
-
-inline std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v)
-{
-  v.clear();
-  v.reserve(m.size());
-  for (const auto& mv : m)
-    std::copy(mv.second.begin(), mv.second.end(), std::back_inserter(v));
-
-  return v.size();
-}
+std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v);
 
 // Need to mark deprecated
-inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
-{
-  return flattenMoveResults(std::move(m), v);
-}
+std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v);
 
 #ifndef SWIG
 /**
@@ -239,14 +195,7 @@ struct ContactTestData
                   CollisionMarginData collision_margin_data,
                   IsContactAllowedFn fn,
                   ContactRequest req,
-                  ContactResultMap& res)
-    : active(&active)
-    , collision_margin_data(std::move(collision_margin_data))
-    , fn(std::move(fn))
-    , req(std::move(req))
-    , res(&res)
-  {
-  }
+                  ContactResultMap& res);
 
   /** @brief A vector of active links */
   const std::vector<std::string>* active = nullptr;
@@ -260,7 +209,7 @@ struct ContactTestData
   /** @brief The type of contact request data */
   ContactRequest req;
 
-  /** @brief Destance query results information */
+  /** @brief Distance query results information */
   ContactResultMap* res = nullptr;
 
   /** @brief Indicate if search is finished */
@@ -299,13 +248,7 @@ struct CollisionCheckConfig
   CollisionCheckConfig(double default_margin = 0,
                        ContactRequest request = ContactRequest(),
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
-                       double longest_valid_segment_length = 0.005)
-    : collision_margin_data(default_margin)
-    , contact_request(std::move(request))
-    , type(type)
-    , longest_valid_segment_length(longest_valid_segment_length)
-  {
-  }
+                       double longest_valid_segment_length = 0.005);
 
   /** @brief Identify how the collision margin data should be applied to the contact manager */
   CollisionMarginOverrideType collision_margin_override_type{ CollisionMarginOverrideType::NONE };
