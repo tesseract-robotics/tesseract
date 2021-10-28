@@ -309,6 +309,12 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
     EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
   }
 
+  // Test getting contact managers
+  {
+    EXPECT_EQ(env->getDiscreteContactManager("BulletDiscreteSimpleManager")->getName(), "BulletDiscreteSimpleManager");
+    EXPECT_EQ(env->getContinuousContactManager("BulletCastSimpleManager")->getName(), "BulletCastSimpleManager");
+  }
+
   // Failed
   EXPECT_TRUE(env->getDiscreteContactManager("does_not_exist") == nullptr);
   EXPECT_TRUE(env->getContinuousContactManager("does_not_exist") == nullptr);
@@ -421,6 +427,13 @@ TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
     EXPECT_FALSE(env->isInitialized());
   }
 
+  {  // Test bad URDF file path
+    auto env = std::make_shared<Environment>();
+    tesseract_common::fs::path urdf_path("/usr/tmp/doesnotexist.urdf");
+    EXPECT_FALSE(env->init(urdf_path, rl));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
   {  // Test Empty URDF String with srdf
     auto env = std::make_shared<Environment>();
     std::string urdf_string;
@@ -429,11 +442,27 @@ TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
     EXPECT_FALSE(env->isInitialized());
   }
 
+  {  // Test bad URDF file path with srdf
+    auto env = std::make_shared<Environment>();
+    tesseract_common::fs::path urdf_path("/usr/tmp/doesnotexist.urdf");
+    tesseract_common::fs::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
+    EXPECT_FALSE(env->init(urdf_path, srdf_path, rl));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
   {  // Test URDF String with empty srdf
     auto env = std::make_shared<Environment>();
     std::string urdf_string = getSceneGraphString();
     std::string srdf_string;
     EXPECT_FALSE(env->init(urdf_string, srdf_string, rl));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
+  {  // Test URDF file path with bad srdf path
+    auto env = std::make_shared<Environment>();
+    tesseract_common::fs::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
+    tesseract_common::fs::path srdf_path("/usr/tmp/doesnotexist.srdf");
+    EXPECT_FALSE(env->init(urdf_path, srdf_path, rl));
     EXPECT_FALSE(env->isInitialized());
   }
 }
