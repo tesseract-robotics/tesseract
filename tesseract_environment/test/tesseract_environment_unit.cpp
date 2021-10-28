@@ -228,6 +228,24 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
   EXPECT_EQ(group_names.size(), 1);
   EXPECT_EQ(*(group_names.begin()), "manipulator");
 
+  // Check Group Joint Names
+  std::vector<std::string> joint_names = env->getGroupJointNames("manipulator");
+  std::vector<std::string> target_joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                                  "joint_a5", "joint_a6", "joint_a7" };
+  EXPECT_TRUE(tesseract_common::isIdentical(joint_names, target_joint_names));
+
+  // Check Get Joint Group
+  auto jg = env->getJointGroup("manipulator");
+  EXPECT_TRUE(jg != nullptr);
+
+  EXPECT_ANY_THROW(env->getJointGroup("does_not_exist"));  // NOLINT
+
+  // Check Get Joint Group
+  auto kg = env->getKinematicGroup("manipulator");
+  EXPECT_TRUE(kg != nullptr);
+
+  EXPECT_ANY_THROW(env->getKinematicGroup("does_not_exist"));  // NOLINT
+
   // Check Kinematics Information
   tesseract_srdf::KinematicsInformation kin_info = env->getKinematicsInformation();
   EXPECT_EQ(kin_info.group_names.size(), 1);
@@ -240,6 +258,8 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
     EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastBVHManager");
     EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteBVHManager");
     EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastBVHManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getCollisionObjects().size(), 8);
+    EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
   }
   {
     env->setActiveDiscreteContactManager("BulletDiscreteSimpleManager");
@@ -249,6 +269,19 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
     EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastSimpleManager");
     EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteSimpleManager");
     EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastSimpleManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getCollisionObjects().size(), 8);
+    EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
+  }
+  {
+    env->setActiveDiscreteContactManager("does_not_exist");
+    env->setActiveContinuousContactManager("does_not_exist");
+    tesseract_common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
+    EXPECT_EQ(cm_info.discrete_plugin_infos.default_plugin, "BulletDiscreteSimpleManager");
+    EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastSimpleManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteSimpleManager");
+    EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastSimpleManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getCollisionObjects().size(), 8);
+    EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
   }
   {
     env->setActiveDiscreteContactManager("BulletDiscreteBVHManager");
@@ -258,6 +291,8 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
     EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastBVHManager");
     EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteBVHManager");
     EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastBVHManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getCollisionObjects().size(), 8);
+    EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
   }
 
   // Failed
@@ -1305,6 +1340,9 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
     EXPECT_TRUE(env->getLinkVisibility(link_name));
   }
 
+  // Get current timestamp
+  auto d1 = env->getCurrentStateTimestamp();
+
   // Set the initial state of the robot
   std::unordered_map<std::string, double> joint_states;
   joint_states["joint_a1"] = 0.0;
@@ -1315,6 +1353,11 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   joint_states["joint_a6"] = 0.0;
   joint_states["joint_a7"] = 0.0;
   env->setState(joint_states);
+
+  // Get new timestamp
+  auto d2 = env->getCurrentStateTimestamp();
+
+  EXPECT_TRUE(d2.count() > d1.count());
 
   SceneState state = env->getState();
   for (auto& joint_state : joint_states)

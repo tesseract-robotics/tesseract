@@ -751,7 +751,7 @@ Environment::getDiscreteContactManagerHelper(const std::string& name) const
     return nullptr;
 
   manager->setIsContactAllowedFn(is_contact_allowed_fn_);
-  if (initialized_)
+  if (scene_graph_ != nullptr)
   {
     for (const auto& link : scene_graph_->getLinks())
     {
@@ -782,7 +782,7 @@ Environment::getContinuousContactManagerHelper(const std::string& name) const
     return nullptr;
 
   manager->setIsContactAllowedFn(is_contact_allowed_fn_);
-  if (initialized_)
+  if (scene_graph_ != nullptr)
   {
     for (const auto& link : scene_graph_->getLinks())
     {
