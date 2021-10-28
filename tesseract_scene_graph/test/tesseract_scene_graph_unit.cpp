@@ -1052,11 +1052,13 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
 
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4" };
   std::vector<std::string> link_names{ "base_link", "link_1", "link_2", "link_3", "link_4", "link_5" };
+  std::vector<std::string> static_link_names{ "base_link", "link_1" };
   std::vector<std::string> active_link_names{ "link_2", "link_3", "link_4", "link_5" };
   {
     KDLTreeData data = parseSceneGraph(g);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
@@ -1086,6 +1088,7 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
     KDLTreeData data = parseSceneGraph(*g_clone);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
@@ -1113,6 +1116,9 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
                                             "right_joint_2", "right_joint_3", "right_joint_4" };
   std::vector<std::string> link_names{ "world",        "left_link_2",  "left_link_3",  "left_link_4", "left_link_5",
                                        "right_link_2", "right_link_3", "right_link_4", "right_link_5" };
+
+  std::vector<std::string> static_link_names{ "world", "left_link_2", "right_link_2" };
+
   std::vector<std::string> active_link_names{ "left_link_3",  "left_link_4",  "left_link_5",
                                               "right_link_3", "right_link_4", "right_link_5" };
 
@@ -1129,6 +1135,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
     KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, sub_joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
@@ -1159,6 +1166,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
     KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, sub_joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
