@@ -709,6 +709,7 @@ bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
     return false;
   }
 
+  contact_managers_plugin_info_.discrete_plugin_infos.default_plugin = name;
   discrete_manager_ = std::move(manager);
 
   // Update the current state information since the contact manager has been created/set
@@ -732,6 +733,7 @@ bool Environment::setActiveContinuousContactManagerHelper(const std::string& nam
     return false;
   }
 
+  contact_managers_plugin_info_.continuous_plugin_infos.default_plugin = name;
   continuous_manager_ = std::move(manager);
 
   // Update the current state information since the contact manager has been created/set
