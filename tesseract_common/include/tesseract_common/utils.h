@@ -137,8 +137,8 @@ Eigen::Vector3d calcRotationalError2(const Eigen::Ref<const Eigen::Matrix3d>& R)
 Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2);
 
 /**
- * @brief This computes a random color with alpha set to 1
- * @return A random color
+ * @brief This computes a random color RGBA [0, 1] with alpha set to 1
+ * @return A random RGBA color
  */
 Eigen::Vector4d computeRandomColor();
 
