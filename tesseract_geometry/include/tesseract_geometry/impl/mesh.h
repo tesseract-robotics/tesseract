@@ -88,9 +88,7 @@ public:
                   GeometryType::MESH)
   {
     if ((getFaceCount() * 4) != getFaces()->size())
-    {
-      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));
-    }
+      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
   }
 
   /**
@@ -129,9 +127,7 @@ public:
                   GeometryType::MESH)
   {
     if ((getFaceCount() * 4) != getFaces()->size())
-    {
-      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));
-    }
+      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
   }
 
   ~Mesh() override = default;
