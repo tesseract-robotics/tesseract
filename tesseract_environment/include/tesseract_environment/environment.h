@@ -209,7 +209,7 @@ public:
    *
    * If manipulator information tcp is defined as a string it does the following
    *    - First check if manipulator info is empty or already an Isometry3d, if so return identity
-   *    - Next if not, it checks if the tcp offset name is a link in the environment if so it return identity
+   *    - Next if not, it checks if the tcp offset name is a link in the environment if so throw an exception.
    *    - Next if not found, it looks up the tcp name in the SRDF kinematics information
    *    - Next if not found, it leverages the user defined callbacks to try an locate the tcp information.
    *    - Next throw an exception, because no tcp information was located.

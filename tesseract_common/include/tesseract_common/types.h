@@ -85,6 +85,7 @@ struct PairHash
 LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2);
 
 /** @brief The Plugin Information struct */
+// NOLINTNEXTLINE
 struct PluginInfo
 {
   /** @brief The plugin class name */

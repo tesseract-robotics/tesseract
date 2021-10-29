@@ -45,8 +45,10 @@ struct convert<tesseract_common::PluginInfo>
   {
     Node node;
     node["class"] = rhs.class_name;
+
     if (!rhs.config.IsNull())
       node["config"] = rhs.config;
+
     return node;
   }
 
@@ -58,7 +60,7 @@ struct convert<tesseract_common::PluginInfo>
 
     rhs.class_name = node["class"].as<std::string>();
 
-    if (node["config"])
+    if (node["config"] != nullptr)
       rhs.config = node["config"];
 
     return true;
@@ -75,17 +77,16 @@ struct convert<tesseract_common::PluginInfoContainer>
       node["default"] = rhs.default_plugin;
 
     node["plugins"] = rhs.plugins;
-    ;
 
     return node;
   }
 
   static bool decode(const Node& node, tesseract_common::PluginInfoContainer& rhs)
   {
-    if (node["default"])
+    if (node["default"] != nullptr)
       rhs.default_plugin = node["default"].as<std::string>();
 
-    if (!node["plugins"])
+    if (node["plugins"] == nullptr)
       throw std::runtime_error("PluginInfoContainer, missing 'plugins' entry!");
 
     const Node& plugins = node["plugins"];
@@ -98,7 +99,7 @@ struct convert<tesseract_common::PluginInfoContainer>
     }
     catch (const std::exception& e)
     {
-      throw std::runtime_error(std::string("ContactManagersPluginFactory: Constructor failed to cast 'plugins' to "
+      throw std::runtime_error(std::string("PluginInfoContainer: Constructor failed to cast 'plugins' to "
                                            "tesseract_common::PluginInfoMap! Details: ") +
                                e.what());
     }
@@ -165,7 +166,7 @@ struct convert<Eigen::Isometry3d>
     out.translation().z() = p["z"].as<double>();
 
     const YAML::Node& o = node["orientation"];
-    if (o["x"] && o["y"] && o["z"] && o["w"])
+    if (o["x"] && o["y"] && o["z"] && o["w"])  // NOLINT
     {
       Eigen::Quaterniond quat;
       quat.x() = o["x"].as<double>();
@@ -175,11 +176,11 @@ struct convert<Eigen::Isometry3d>
 
       out.linear() = quat.toRotationMatrix();
     }
-    else if (o["r"] && o["p"] && o["y"])
+    else if (o["r"] && o["p"] && o["y"])  // NOLINT
     {
-      double r = o["r"].as<double>();
-      double p = o["p"].as<double>();
-      double y = o["y"].as<double>();
+      auto r = o["r"].as<double>();
+      auto p = o["p"].as<double>();
+      auto y = o["y"].as<double>();
 
       Eigen::AngleAxisd rollAngle(r, Eigen::Vector3d::UnitX());
       Eigen::AngleAxisd pitchAngle(p, Eigen::Vector3d::UnitY());
@@ -216,7 +217,7 @@ struct convert<Eigen::VectorXd>
     if (!node.IsSequence())
       return false;
 
-    rhs.resize(node.size());
+    rhs.resize(static_cast<Eigen::Index>(node.size()));
     for (long i = 0; i < node.size(); ++i)
       rhs(i) = node[i].as<double>();
 

@@ -641,15 +641,35 @@ inline void runActiveLinkNamesIIWATest(const tesseract_kinematics::KinematicGrou
   std::vector<std::string> target_active_link_names = { "link_1", "link_2", "link_3", "link_4",
                                                         "link_5", "link_6", "link_7", "tool0" };
 
+  std::vector<std::string> target_static_link_names = { "base_link", "base" };
+
   std::vector<std::string> target_link_names = target_active_link_names;
-  target_link_names.emplace_back("base_link");
-  target_link_names.emplace_back("base");
+  target_link_names.insert(target_link_names.end(), target_static_link_names.begin(), target_static_link_names.end());
 
-  std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-  runStringVectorEqualTest(link_names, target_active_link_names);
+  for (const auto& l : target_active_link_names)
+  {
+    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+  }
 
-  link_names = kin_group.getLinkNames();
-  runStringVectorEqualTest(link_names, target_link_names);
+  for (const auto& l : target_link_names)
+  {
+    EXPECT_TRUE(kin_group.hasLinkName(l));
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
+    runStringVectorEqualTest(link_names, target_active_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
+    runStringVectorEqualTest(link_names, target_static_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getLinkNames();
+    runStringVectorEqualTest(link_names, target_link_names);
+  }
 }
 
 inline void runActiveLinkNamesABBTest(const tesseract_kinematics::KinematicGroup& kin_group)
@@ -661,14 +681,36 @@ inline void runActiveLinkNamesABBTest(const tesseract_kinematics::KinematicGroup
 
   std::vector<std::string> target_active_link_names = { "link_1", "link_2", "link_3", "link_4",
                                                         "link_5", "link_6", "tool0" };
+
+  std::vector<std::string> target_static_link_names = { "base_link" };
+
   std::vector<std::string> target_link_names = target_active_link_names;
-  target_link_names.emplace_back("base_link");
+  target_link_names.insert(target_link_names.end(), target_static_link_names.begin(), target_static_link_names.end());
 
-  std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-  runStringVectorEqualTest(link_names, target_active_link_names);
+  for (const auto& l : target_active_link_names)
+  {
+    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+  }
 
-  link_names = kin_group.getLinkNames();
-  runStringVectorEqualTest(link_names, target_link_names);
+  for (const auto& l : target_link_names)
+  {
+    EXPECT_TRUE(kin_group.hasLinkName(l));
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
+    runStringVectorEqualTest(link_names, target_active_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
+    runStringVectorEqualTest(link_names, target_static_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getLinkNames();
+    runStringVectorEqualTest(link_names, target_link_names);
+  }
 }
 
 inline void runActiveLinkNamesURTest(const tesseract_kinematics::KinematicGroup& kin_group)
@@ -681,14 +723,36 @@ inline void runActiveLinkNamesURTest(const tesseract_kinematics::KinematicGroup&
   std::vector<std::string> target_active_link_names = { "shoulder_link", "upper_arm_link", "forearm_link",
                                                         "wrist_1_link",  "wrist_2_link",   "wrist_3_link",
                                                         "tool0" };
+
+  std::vector<std::string> target_static_link_names = { "base_link" };
+
   std::vector<std::string> target_link_names = target_active_link_names;
-  target_link_names.emplace_back("base_link");
+  target_link_names.insert(target_link_names.end(), target_static_link_names.begin(), target_static_link_names.end());
 
-  std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-  runStringVectorEqualTest(link_names, target_active_link_names);
+  for (const auto& l : target_active_link_names)
+  {
+    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+  }
 
-  link_names = kin_group.getLinkNames();
-  runStringVectorEqualTest(link_names, target_link_names);
+  for (const auto& l : target_link_names)
+  {
+    EXPECT_TRUE(kin_group.hasLinkName(l));
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
+    runStringVectorEqualTest(link_names, target_active_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
+    runStringVectorEqualTest(link_names, target_static_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getLinkNames();
+    runStringVectorEqualTest(link_names, target_link_names);
+  }
 }
 
 inline void runKinGroupJacobianABBOnPositionerTest(tesseract_kinematics::KinematicGroup& kin_group)
@@ -747,14 +811,36 @@ inline void runActiveLinkNamesABBOnPositionerTest(const tesseract_kinematics::Ki
 
   std::vector<std::string> target_active_link_names = { "positioner_tool0", "base_link", "base",   "link_1", "link_2",
                                                         "link_3",           "link_4",    "link_5", "link_6", "tool0" };
+
+  std::vector<std::string> target_static_link_names = { "positioner_base_link" };
+
   std::vector<std::string> target_link_names = target_active_link_names;
-  target_link_names.emplace_back("positioner_base_link");
+  target_link_names.insert(target_link_names.end(), target_static_link_names.begin(), target_static_link_names.end());
 
-  std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-  runStringVectorEqualTest(link_names, target_active_link_names);
+  for (const auto& l : target_active_link_names)
+  {
+    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+  }
 
-  link_names = kin_group.getLinkNames();
-  runStringVectorEqualTest(link_names, target_link_names);
+  for (const auto& l : target_link_names)
+  {
+    EXPECT_TRUE(kin_group.hasLinkName(l));
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
+    runStringVectorEqualTest(link_names, target_active_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
+    runStringVectorEqualTest(link_names, target_static_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getLinkNames();
+    runStringVectorEqualTest(link_names, target_link_names);
+  }
 }
 
 inline void runKinGroupJacobianABBExternalPositionerTest(tesseract_kinematics::KinematicGroup& kin_group)
@@ -815,17 +901,36 @@ inline void runActiveLinkNamesABBExternalPositionerTest(const tesseract_kinemati
   std::vector<std::string> target_active_link_names = {
     "positioner_tool0", "positioner_link_1", "link_1", "link_2", "link_3", "link_4", "link_5", "link_6", "tool0"
   };
+
+  std::vector<std::string> target_static_link_names = { "world", "base_link", "base", "positioner_base_link" };
+
   std::vector<std::string> target_link_names = target_active_link_names;
-  target_link_names.emplace_back("world");
-  target_link_names.emplace_back("base_link");
-  target_link_names.emplace_back("base");
-  target_link_names.emplace_back("positioner_base_link");
+  target_link_names.insert(target_link_names.end(), target_static_link_names.begin(), target_static_link_names.end());
 
-  std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-  runStringVectorEqualTest(link_names, target_active_link_names);
+  for (const auto& l : target_active_link_names)
+  {
+    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+  }
 
-  link_names = kin_group.getLinkNames();
-  runStringVectorEqualTest(link_names, target_link_names);
+  for (const auto& l : target_link_names)
+  {
+    EXPECT_TRUE(kin_group.hasLinkName(l));
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
+    runStringVectorEqualTest(link_names, target_active_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
+    runStringVectorEqualTest(link_names, target_static_link_names);
+  }
+
+  {
+    std::vector<std::string> link_names = kin_group.getLinkNames();
+    runStringVectorEqualTest(link_names, target_link_names);
+  }
 }
 
 inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactory& factory,

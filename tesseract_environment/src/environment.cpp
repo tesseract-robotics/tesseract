@@ -369,10 +369,11 @@ Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::Manipulator
   if (manip_info.tcp_offset.index() != 0)
     return std::get<1>(manip_info.tcp_offset);
 
-  // Check if the tcp offset name is a link in the scene, if so return Identity
+  // Check if the tcp offset name is a link in the scene, if so throw an exception
   const std::string& tcp_offset_name = std::get<0>(manip_info.tcp_offset);
   if (state_solver_->hasLinkName(tcp_offset_name))
-    return Eigen::Isometry3d::Identity();
+    throw std::runtime_error("The tcp offset name '" + tcp_offset_name +
+                             "' should not be an existing link in the scene. Assign it as the tcp_frame instead!");
 
   // Check Manipulator Manager for TCP
   if (kinematics_information_.hasGroupTCP(manip_info.manipulator, tcp_offset_name))
@@ -392,7 +393,7 @@ Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::Manipulator
     }
   }
 
-  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "' setting to Identity!");
+  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "'!");
 }
 
 void Environment::addFindTCPOffsetCallback(const FindTCPOffsetCallbackFn& fn)
@@ -709,6 +710,7 @@ bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
     return false;
   }
 
+  contact_managers_plugin_info_.discrete_plugin_infos.default_plugin = name;
   discrete_manager_ = std::move(manager);
 
   // Update the current state information since the contact manager has been created/set
@@ -732,6 +734,7 @@ bool Environment::setActiveContinuousContactManagerHelper(const std::string& nam
     return false;
   }
 
+  contact_managers_plugin_info_.continuous_plugin_infos.default_plugin = name;
   continuous_manager_ = std::move(manager);
 
   // Update the current state information since the contact manager has been created/set
@@ -749,7 +752,7 @@ Environment::getDiscreteContactManagerHelper(const std::string& name) const
     return nullptr;
 
   manager->setIsContactAllowedFn(is_contact_allowed_fn_);
-  if (initialized_)
+  if (scene_graph_ != nullptr)
   {
     for (const auto& link : scene_graph_->getLinks())
     {
@@ -780,7 +783,7 @@ Environment::getContinuousContactManagerHelper(const std::string& name) const
     return nullptr;
 
   manager->setIsContactAllowedFn(is_contact_allowed_fn_);
-  if (initialized_)
+  if (scene_graph_ != nullptr)
   {
     for (const auto& link : scene_graph_->getLinks())
     {

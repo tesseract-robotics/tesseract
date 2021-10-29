@@ -60,6 +60,8 @@ std::enable_if_t<std::is_polymorphic<E>::value> my_rethrow_if_nested(const E& e)
     p->rethrow_nested();
 }
 
+// LCOV_EXCL_START
+// These are tested in both tesseract_kinematics and tesseract_state_solver
 void twistChangeRefPoint(Eigen::Ref<Eigen::VectorXd> twist, const Eigen::Ref<const Eigen::Vector3d>& ref_point)
 {
   twist(0) += twist(4) * ref_point(2) - twist(5) * ref_point(1);
@@ -86,6 +88,7 @@ void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::R
   for (int i = 0; i < jacobian.cols(); i++)
     twistChangeRefPoint(jacobian.col(i), ref_point);
 }
+// LCOV_EXCL_STOP
 
 Eigen::VectorXd concat(const Eigen::VectorXd& a, const Eigen::VectorXd& b)
 {
