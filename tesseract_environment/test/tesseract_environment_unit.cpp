@@ -2468,6 +2468,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   {
     tesseract_collision::CollisionCheckConfig config;
     config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 3);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
     std::vector<tesseract_collision::ContactResultMap> contacts;
     EXPECT_TRUE(
         tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
@@ -2477,6 +2490,18 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   {
     tesseract_collision::CollisionCheckConfig config;
     config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 3);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
     std::vector<tesseract_collision::ContactResultMap> contacts;
     EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
     EXPECT_EQ(contacts.size(), 3);
@@ -2509,6 +2534,20 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   {
     tesseract_collision::CollisionCheckConfig config;
     config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 4);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 3);
+    EXPECT_EQ(contacts[3].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
     std::vector<tesseract_collision::ContactResultMap> contacts;
     EXPECT_TRUE(tesseract_environment::checkTrajectory(
         contacts, *continuous_manager, *state_solver, joint_names, traj, config));
@@ -2530,9 +2569,80 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   {
     tesseract_collision::CollisionCheckConfig config;
     config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 4);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 3);
+    EXPECT_EQ(contacts[3].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
     std::vector<tesseract_collision::ContactResultMap> contacts;
     EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
     EXPECT_EQ(contacts.size(), 135);
+  }
+
+  // Failures
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *discrete_manager, *state_solver, joint_names, traj, config));  // NOLINT
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_ANY_THROW(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));  // NOLINT
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *discrete_manager, *state_solver, joint_names, tesseract_common::TrajArray(), config));  // NOLINT
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *discrete_manager, *joint_group, tesseract_common::TrajArray(), config));  // NOLINT
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));  // NOLINT
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_ANY_THROW(
+        tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));  // NOLINT
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, tesseract_common::TrajArray(), config));  // NOLINT
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *joint_group, tesseract_common::TrajArray(), config));  // NOLINT
   }
 }
 

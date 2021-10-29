@@ -140,7 +140,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     throw std::runtime_error("checkTrajectory was given an CollisionEvaluatorType that is inconsistent with the "
                              "ContactManager type");
 
-  if (traj.rows() == 1)
+  if (traj.rows() < 2)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with a trajectory that only has one "
                              "state.");
 
@@ -266,7 +266,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     throw std::runtime_error("checkTrajectory was given an CollisionEvaluatorType that is inconsistent with the "
                              "ContactManager type");
 
-  if (traj.rows() == 1)
+  if (traj.rows() < 2)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with a trajectory that only has one "
                              "state.");
 
@@ -393,6 +393,9 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     throw std::runtime_error("checkTrajectory was given an CollisionEvaluatorType that is inconsistent with the "
                              "ContactManager type");
 
+  if (traj.rows() == 0)
+    throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
+
   if (traj.rows() == 1)
   {
     tesseract_scene_graph::SceneState state = state_solver.getState(joint_names, traj.row(0));
@@ -512,6 +515,9 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       config.type != tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE)
     throw std::runtime_error("checkTrajectory was given an CollisionEvaluatorType that is inconsistent with the "
                              "ContactManager type");
+
+  if (traj.rows() == 0)
+    throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
 
   if (traj.rows() == 1)
   {
