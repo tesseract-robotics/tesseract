@@ -54,15 +54,15 @@ bool Environment::initHelper(const Commands& commands)
       std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0))->getSceneGraph()->getName());
   scene_graph_const_ = scene_graph_;
 
+  is_contact_allowed_fn_ = [this](const std::string& l1, const std::string& l2) {
+    return scene_graph_->isCollisionAllowed(l1, l2);
+  };
+
   if (!applyCommandsHelper(commands))
   {
     CONSOLE_BRIDGE_logError("When initializing environment from command history, it failed to apply a command!");
     return false;
   }
-
-  is_contact_allowed_fn_ = [this](const std::string& l1, const std::string& l2) {
-    return scene_graph_->isCollisionAllowed(l1, l2);
-  };
 
   initialized_ = true;
   init_revision_ = revision_;

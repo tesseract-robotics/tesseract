@@ -265,6 +265,10 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
   EXPECT_EQ(group_names_ki[0], "manipulator");
   EXPECT_EQ(group_names_ki[1], "manipulator_joint_group");
 
+  // Check allowed collision matrix is not nullptr
+  EXPECT_TRUE(env->getDiscreteContactManager()->getIsContactAllowedFn() != nullptr);
+  EXPECT_TRUE(env->getContinuousContactManager()->getIsContactAllowedFn() != nullptr);
+
   // Get active contact managers
   {
     tesseract_common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
