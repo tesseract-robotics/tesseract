@@ -381,6 +381,9 @@ Environment::Ptr getEnvironmentURDFOnly(EnvironmentInitType init_type)
     EXPECT_TRUE(env->getSceneGraph()->getLinkVisibility(link->getName()));
   }
 
+  EXPECT_TRUE(env->getDiscreteContactManager() == nullptr);
+  EXPECT_TRUE(env->getContinuousContactManager() == nullptr);
+
   return env;
 }
 
@@ -2382,6 +2385,155 @@ TEST(TesseractEnvironmentUnit, getActiveLinkNamesRecursiveUnit)  // NOLINT
   getActiveLinkNamesRecursive(active_links, *env->getSceneGraph(), env->getRootLinkName(), false);
   std::vector<std::string> target_active_links = env->getActiveLinkNames();
   EXPECT_TRUE(tesseract_common::isIdentical(active_links, target_active_links, false));
+}
+
+TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
+{
+  // Get the environment
+  auto env = getEnvironment();
+
+  // Add sphere to environment
+  Link link_sphere("sphere_attached");
+
+  Visual::Ptr visual = std::make_shared<Visual>();
+  visual->origin = Eigen::Isometry3d::Identity();
+  visual->origin.translation() = Eigen::Vector3d(0.5, 0, 0.55);
+  visual->geometry = std::make_shared<tesseract_geometry::Sphere>(0.15);
+  link_sphere.visual.push_back(visual);
+
+  Collision::Ptr collision = std::make_shared<Collision>();
+  collision->origin = visual->origin;
+  collision->geometry = visual->geometry;
+  link_sphere.collision.push_back(collision);
+
+  Joint joint_sphere("joint_sphere_attached");
+  joint_sphere.parent_link_name = "base_link";
+  joint_sphere.child_link_name = link_sphere.getName();
+  joint_sphere.type = JointType::FIXED;
+
+  auto cmd = std::make_shared<tesseract_environment::AddLinkCommand>(link_sphere, joint_sphere);
+
+  EXPECT_TRUE(env->applyCommand(cmd));
+
+  // Set the robot initial state
+  std::vector<std::string> joint_names;
+  joint_names.push_back("joint_a1");
+  joint_names.push_back("joint_a2");
+  joint_names.push_back("joint_a3");
+  joint_names.push_back("joint_a4");
+  joint_names.push_back("joint_a5");
+  joint_names.push_back("joint_a6");
+  joint_names.push_back("joint_a7");
+
+  Eigen::VectorXd joint_start_pos(7);
+  joint_start_pos(0) = -0.4;
+  joint_start_pos(1) = 0.2762;
+  joint_start_pos(2) = 0.0;
+  joint_start_pos(3) = -1.3348;
+  joint_start_pos(4) = 0.0;
+  joint_start_pos(5) = 1.4959;
+  joint_start_pos(6) = 0.0;
+
+  Eigen::VectorXd joint_end_pos(7);
+  joint_end_pos(0) = 0.4;
+  joint_end_pos(1) = 0.2762;
+  joint_end_pos(2) = 0.0;
+  joint_end_pos(3) = -1.3348;
+  joint_end_pos(4) = 0.0;
+  joint_end_pos(5) = 1.4959;
+  joint_end_pos(6) = 0.0;
+
+  tesseract_common::TrajArray traj(5, joint_start_pos.size());
+
+  for (int i = 0; i < joint_start_pos.size(); ++i)
+    traj.col(i) = Eigen::VectorXd::LinSpaced(5, joint_start_pos(i), joint_end_pos(i));
+
+  auto discrete_manager = env->getDiscreteContactManager();
+  auto continuous_manager = env->getContinuousContactManager();
+  auto state_solver = env->getStateSolver();
+  auto joint_group = env->getJointGroup("manipulator");
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 3);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 134);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 3);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 134);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 4);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 3);
+    EXPECT_EQ(contacts[3].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 135);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 4);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 3);
+    EXPECT_EQ(contacts[3].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 135);
+  }
 }
 
 int main(int argc, char** argv)
