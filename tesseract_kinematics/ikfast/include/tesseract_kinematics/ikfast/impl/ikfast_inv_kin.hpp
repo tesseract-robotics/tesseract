@@ -89,7 +89,7 @@ inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap
   // ordering
   const Eigen::Matrix<IkReal, 3, 3, Eigen::RowMajor> rotation = ikfast_tcp.rotation();
 
-  std::size_t ikfast_dof = static_cast<std::size_t>(numJoints());
+  auto ikfast_dof = static_cast<std::size_t>(numJoints());
 
   // Call IK (TODO: Make a better solution list class? One that uses vector instead of list)
   ikfast::IkSolutionList<IkReal> ikfast_solution_set;
@@ -115,10 +115,9 @@ inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap
 
     sols.insert(
         end(sols), std::make_move_iterator(ikfast_output.begin()), std::make_move_iterator(ikfast_output.end()));
-    return;
   };
 
-  if (free_joint_states_.size() > 0)
+  if (!free_joint_states_.empty())
   {
     for (auto j_combo : free_joint_states_)
     {
@@ -154,8 +153,8 @@ inline std::string IKFastInvKin::getWorkingFrame() const { return base_link_name
 inline std::vector<std::string> IKFastInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 inline std::string IKFastInvKin::getSolverName() const { return solver_name_; }
 
-std::vector<std::vector<double>>
-IKFastInvKin::generateAllFreeJointStateCombinations(const std::vector<std::vector<double>> free_joint_samples)
+inline std::vector<std::vector<double>>
+IKFastInvKin::generateAllFreeJointStateCombinations(const std::vector<std::vector<double>>& free_joint_samples)
 {
   std::vector<std::vector<double>> free_joint_states;
   std::vector<std::size_t> curr_joint_indices(free_joint_samples.size(), 0);

@@ -130,7 +130,7 @@ public:
    * @return
    */
   static std::vector<std::vector<double>>
-  generateAllFreeJointStateCombinations(const std::vector<std::vector<double>> free_joint_samples);
+  generateAllFreeJointStateCombinations(const std::vector<std::vector<double>>& free_joint_samples);
 
 protected:
   std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */

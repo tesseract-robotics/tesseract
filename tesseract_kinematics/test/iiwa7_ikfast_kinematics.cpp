@@ -23,11 +23,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-iiwa7Kinematics::iiwa7Kinematics(const std::string base_link_name,
-                                 const std::string tip_link_name,
-                                 const std::vector<std::string> joint_names,
-                                 const std::string solver_name,
-                                 const std::vector<std::vector<double>> free_joint_combos)
+iiwa7Kinematics::iiwa7Kinematics(std::string base_link_name,
+                                 std::string tip_link_name,
+                                 std::vector<std::string> joint_names,
+                                 std::string solver_name,
+                                 std::vector<std::vector<double> > free_joint_combos)
   : IKFastInvKin(base_link_name, tip_link_name, joint_names, solver_name, free_joint_combos)
 {
 }
