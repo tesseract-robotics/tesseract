@@ -52,6 +52,7 @@ inline bool checkKinematics(const KinematicGroup& manip, double tol = 1e-3)
   Eigen::VectorXd seed_angles(manip.numJoints());
   Eigen::VectorXd joint_angles2(manip.numJoints());
   std::string tip_link = manip.getAllPossibleTipLinkNames().at(0);
+  std::string working_frame = manip.getAllValidWorkingFrames().at(0);
   seed_angles.setZero();
   joint_angles2.setZero();
 
@@ -60,12 +61,14 @@ inline bool checkKinematics(const KinematicGroup& manip, double tol = 1e-3)
   {
     joint_angles2[t] = M_PI / 2;
 
-    test1 = manip.calcFwdKin(joint_angles2).at(tip_link);
-    KinGroupIKInput ik_input(test1, manip.getBaseLinkName(), tip_link);
+    auto poses1 = manip.calcFwdKin(joint_angles2);
+    test1 = poses1.at(working_frame).inverse() * poses1.at(tip_link);
+    KinGroupIKInput ik_input(test1, working_frame, tip_link);
     IKSolutions sols = manip.calcInvKin({ ik_input }, seed_angles);
     for (const auto& sol : sols)
     {
-      test2 = manip.calcFwdKin(sol).at(tip_link);
+      auto poses2 = manip.calcFwdKin(sol);
+      test2 = poses2.at(working_frame).inverse() * poses2.at(tip_link);
 
       if ((test1.translation() - test2.translation()).norm() > tol)
       {
