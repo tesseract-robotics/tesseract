@@ -46,14 +46,14 @@ namespace tesseract_kinematics
 inline IKFastInvKin::IKFastInvKin(std::string base_link_name,
                                   std::string tip_link_name,
                                   std::vector<std::string> joint_names,
-                                  std::string solver_name)
+                                  std::string solver_name,
+                                  std::vector<std::vector<double>> free_joint_states)
   : base_link_name_(std::move(base_link_name))
   , tip_link_name_(std::move(tip_link_name))
   , joint_names_(std::move(joint_names))
   , solver_name_(std::move(solver_name))
+  , free_joint_states_(std::move(free_joint_states))
 {
-  if (joint_names_.size() != 6)
-    throw std::runtime_error("OPWInvKin, only support six joints!");
 }
 
 inline InverseKinematics::UPtr IKFastInvKin::clone() const { return std::make_unique<IKFastInvKin>(*this); }
@@ -66,6 +66,7 @@ inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
   tip_link_name_ = other.tip_link_name_;
   joint_names_ = other.joint_names_;
   solver_name_ = other.solver_name_;
+  free_joint_states_ = other.free_joint_states_;
 
   return *this;
 }
@@ -88,36 +89,53 @@ inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap
   // ordering
   const Eigen::Matrix<IkReal, 3, 3, Eigen::RowMajor> rotation = ikfast_tcp.rotation();
 
+  auto ikfast_dof = static_cast<std::size_t>(numJoints());
+
   // Call IK (TODO: Make a better solution list class? One that uses vector instead of list)
   ikfast::IkSolutionList<IkReal> ikfast_solution_set;
-  ComputeIk(translation.data(), rotation.data(), nullptr, ikfast_solution_set);
+  std::vector<double> sols;
 
-  // Unpack the solutions into the output vector
-  const std::size_t n_sols = ikfast_solution_set.GetNumSolutions();
-  const auto ikfast_dof = static_cast<std::size_t>(numJoints());
+  // Lambda to add all possible solutions for a given combination of free joints, or nullptr if no free joints
+  auto addSols = [&](const double* pfree) {
+    ComputeIk(translation.data(), rotation.data(), pfree, ikfast_solution_set);
 
-  std::vector<IkReal> ikfast_output;
-  ikfast_output.resize(n_sols * ikfast_dof);
+    // Unpack the solutions into the output vector
+    const auto n_sols = ikfast_solution_set.GetNumSolutions();
 
-  for (std::size_t i = 0; i < n_sols; ++i)
+    std::vector<IkReal> ikfast_output;
+    ikfast_output.resize(n_sols * ikfast_dof);
+
+    for (std::size_t i = 0; i < n_sols; ++i)
+    {
+      // This actually walks the list EVERY time from the start of i.
+      const auto& sol = ikfast_solution_set.GetSolution(i);
+      auto* out = ikfast_output.data() + i * ikfast_dof;
+      sol.GetSolution(out, pfree);
+    }
+
+    sols.insert(
+        end(sols), std::make_move_iterator(ikfast_output.begin()), std::make_move_iterator(ikfast_output.end()));
+  };
+
+  if (!free_joint_states_.empty())
   {
-    // This actually walks the list EVERY time from the start of i.
-    const auto& sol = ikfast_solution_set.GetSolution(i);
-    auto* out = ikfast_output.data() + i * ikfast_dof;
-    sol.GetSolution(out, nullptr);
+    for (auto j_combo : free_joint_states_)
+    {
+      addSols(j_combo.data());
+    }
+  }
+  else
+  {
+    addSols(nullptr);
   }
 
-  std::vector<double> sols;
-  sols.insert(end(sols), std::make_move_iterator(ikfast_output.begin()), std::make_move_iterator(ikfast_output.end()));
-
   // Check the output
-  int num_sol = static_cast<int>(sols.size() / ikfast_dof);
+  std::size_t num_sol = sols.size() / ikfast_dof;
   IKSolutions solution_set;
   solution_set.reserve(sols.size());
-  for (int i = 0; i < num_sol; i++)
+  for (std::size_t i = 0; i < num_sol; i++)
   {
-    Eigen::Map<Eigen::VectorXd> eigen_sol(sols.data() + static_cast<Eigen::Index>(ikfast_dof) * i,
-                                          static_cast<Eigen::Index>(ikfast_dof));
+    Eigen::Map<Eigen::VectorXd> eigen_sol(sols.data() + ikfast_dof * i, static_cast<Eigen::Index>(ikfast_dof));
     if (eigen_sol.array().allFinite())
     {
       harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
@@ -134,6 +152,30 @@ inline std::string IKFastInvKin::getBaseLinkName() const { return base_link_name
 inline std::string IKFastInvKin::getWorkingFrame() const { return base_link_name_; }
 inline std::vector<std::string> IKFastInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 inline std::string IKFastInvKin::getSolverName() const { return solver_name_; }
+
+inline std::vector<std::vector<double>>
+IKFastInvKin::generateAllFreeJointStateCombinations(const std::vector<std::vector<double>>& free_joint_samples)
+{
+  std::vector<std::vector<double>> free_joint_states;
+  std::vector<std::size_t> curr_joint_indices(free_joint_samples.size(), 0);
+  while (curr_joint_indices.front() < free_joint_samples.front().size())
+  {
+    std::vector<double> curr_joint_values;
+    for (std::size_t i = 0; i < curr_joint_indices.size(); ++i)
+      curr_joint_values.push_back(free_joint_samples[i][curr_joint_indices[i]]);
+    free_joint_states.push_back(curr_joint_values);
+    curr_joint_indices.back()++;
+    for (std::size_t i = curr_joint_indices.size() - 1; i > 0; --i)
+    {
+      if (curr_joint_indices[i] == free_joint_samples[i].size())
+      {
+        curr_joint_indices[i] = 0;
+        curr_joint_indices[i - 1]++;
+      }
+    }
+  }
+  return free_joint_states;
+}
 
 }  // namespace tesseract_kinematics
 

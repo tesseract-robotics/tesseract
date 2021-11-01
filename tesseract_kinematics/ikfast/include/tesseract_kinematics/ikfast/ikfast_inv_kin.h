@@ -107,7 +107,8 @@ public:
   IKFastInvKin(std::string base_link_name,
                std::string tip_link_name,
                std::vector<std::string> joint_names,
-               std::string solver_name = IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
+               std::string solver_name = IKFAST_INV_KIN_CHAIN_SOLVER_NAME,
+               std::vector<std::vector<double>> free_joint_states = {});
 
   IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                          const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
@@ -120,11 +121,25 @@ public:
   std::string getSolverName() const override;
   InverseKinematics::UPtr clone() const override;
 
+  /**
+   * @brief Generates all possible combinations of joint states and stores it to the free_joint_states_ class member
+   * Example: Given 2 free joints, wanting to sample the first joint at 0, 1, and 2 and the second joint at 3 and 4
+   * the input would be [[0, 1, 2][3,4]] and it would generate [[0,3][0,4][1,3][1,4][2,3][2,4]]
+   * @param free_joint_samples A vector of vectors in which the lower level vectors each represent all of a single
+   * joint's possible positions to be sampled
+   * @return
+   */
+  static std::vector<std::vector<double>>
+  generateAllFreeJointStateCombinations(const std::vector<std::vector<double>>& free_joint_samples);
+
 protected:
   std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name_;            /**< @brief Link name of last kink in the kinematic object */
   std::vector<std::string> joint_names_; /**< @brief Joint names for the kinematic object */
   std::string solver_name_{ IKFAST_INV_KIN_CHAIN_SOLVER_NAME }; /**< @brief Name of this solver */
+  /**< @brief combinations of free joints to sample when computing IK
+   * Example: Given 3 free joints, a valid input would be [[0,0,0][0,0,1][-1,0,1][0,2,0]] */
+  std::vector<std::vector<double>> free_joint_states_;
 };
 
 }  // namespace tesseract_kinematics
