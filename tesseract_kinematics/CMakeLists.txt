@@ -84,7 +84,6 @@ if(TESSERACT_BUILD_UR)
 endif()
 
 # Add compiler definition to core so it can find all plugins produced
-message("Plugins: ${KINEMATICS_PLUGINS}")
 string(
   REPLACE ";"
           ":"
