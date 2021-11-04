@@ -91,7 +91,6 @@ if(TESSERACT_BUILD_VHACD)
 endif()
 
 # Add compiler definition to core so it can find all plugins produced
-message("Plugins: ${CONTACT_MANAGERS_PLUGINS}")
 string(
   REPLACE ";"
           ":"
@@ -102,7 +101,6 @@ target_compile_definitions(${PROJECT_NAME}_core
 
 # Testing
 if(TESSERACT_ENABLE_TESTING AND TESSERACT_BUILD_FCL)
-  message(AUTHOR_WARNING "COLLISION CMAKE VERSION: ${CMAKE_VERSION}")
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
