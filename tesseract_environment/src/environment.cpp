@@ -302,6 +302,15 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
   if (it == kinematics_information_.group_names.end())
     throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
 
+  std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex_);
+  auto cache_it = group_joint_names_cache_.find(group_name);
+  if (cache_it != group_joint_names_cache_.end())
+  {
+    CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache hit!", group_name.c_str());
+    return cache_it->second;
+  }
+
+  CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache miss!", group_name.c_str());
   auto chain_it = kinematics_information_.chain_groups.find(group_name);
   if (chain_it != kinematics_information_.chain_groups.end())
   {
@@ -311,12 +320,16 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
     tesseract_scene_graph::ShortestPath path =
         scene_graph_const_->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
 
+    group_joint_names_cache_[group_name] = path.active_joints;
     return path.active_joints;
   }
 
   auto joint_it = kinematics_information_.joint_groups.find(group_name);
   if (joint_it != kinematics_information_.joint_groups.end())
+  {
+    group_joint_names_cache_[group_name] = joint_it->second;
     return joint_it->second;
+  }
 
   auto link_it = kinematics_information_.link_groups.find(group_name);
   if (link_it != kinematics_information_.link_groups.end())
@@ -325,25 +338,48 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
   throw std::runtime_error("Environment, failed to get group '" + group_name + "' joint names!");
 }
 
-tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& name) const
+tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& group_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<std::string> joint_names = getGroupJointNames(name);
-  return getJointGroup(name, joint_names);
+
+  std::unique_lock<std::shared_mutex> cache_lock(joint_group_cache_mutex_);
+  auto it = joint_group_cache_.find(group_name);
+  if (it != joint_group_cache_.end())
+  {
+    CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache hit!", group_name.c_str());
+    return std::make_unique<tesseract_kinematics::JointGroup>(*it->second);
+  }
+
+  CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache miss!", group_name.c_str());
+  // Store copy in cache and return
+  std::vector<std::string> joint_names = getGroupJointNames(group_name);
+  tesseract_kinematics::JointGroup::UPtr jg = getJointGroup(group_name, joint_names);
+  joint_group_cache_[group_name] = std::make_unique<tesseract_kinematics::JointGroup>(*jg);
+
+  return jg;
 }
 
-tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& group_name,
+tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& name,
                                                                   const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::make_unique<tesseract_kinematics::JointGroup>(
-      group_name, joint_names, *scene_graph_const_, current_state_);
+  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph_const_, current_state_);
 }
 
 tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const std::string& group_name,
                                                                           std::string ik_solver_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
+
+  std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex_);
+  auto it = kinematic_group_cache_.find(group_name);
+  if (it != kinematic_group_cache_.end())
+  {
+    CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache hit!", group_name.c_str());
+    return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
+  }
+
+  CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache miss!", group_name.c_str());
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
 
   if (ik_solver_name.empty())
@@ -356,8 +392,13 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
   if (inv_kin == nullptr)
     return nullptr;
 
-  return std::make_unique<tesseract_kinematics::KinematicGroup>(
+  // Store copy in cache and return
+  auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
       group_name, joint_names, std::move(inv_kin), *scene_graph_const_, current_state_);
+
+  kinematic_group_cache_[group_name] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+
+  return kg;
 }
 
 // NOLINTNEXTLINE
@@ -846,6 +887,15 @@ void Environment::environmentChanged()
   if (continuous_manager_ != nullptr)
     continuous_manager_->setActiveCollisionObjects(active_link_names);
 
+  {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
+    std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
+    std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
+    std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
+    joint_group_cache_.clear();
+    kinematic_group_cache_.clear();
+    group_joint_names_cache_.clear();
+  }
+
   currentStateChanged();
 }
 
@@ -884,6 +934,9 @@ Environment::UPtr Environment::clone() const
   auto cloned_env = std::make_unique<Environment>();
 
   std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
+  std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
+  std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
 
   if (!initialized_)
     return cloned_env;
@@ -907,6 +960,17 @@ Environment::UPtr Environment::clone() const
   cloned_env->kinematics_factory_ = kinematics_factory_;
   cloned_env->find_tcp_cb_ = find_tcp_cb_;
   cloned_env->collision_margin_data_ = collision_margin_data_;
+
+  // Copy cache
+  cloned_env->joint_group_cache_.reserve(joint_group_cache_.size());
+  for (const auto& c : joint_group_cache_)
+    cloned_env->joint_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::JointGroup>(*c.second));
+
+  cloned_env->kinematic_group_cache_.reserve(kinematic_group_cache_.size());
+  for (const auto& c : kinematic_group_cache_)
+    cloned_env->kinematic_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::KinematicGroup>(*c.second));
+
+  cloned_env->group_joint_names_cache_ = group_joint_names_cache_;
 
   // NOLINTNEXTLINE
   cloned_env->is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,

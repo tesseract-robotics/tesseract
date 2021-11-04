@@ -518,6 +518,27 @@ protected:
   /** @brief The continuous contact manager object */
   tesseract_collision::ContinuousContactManager::UPtr continuous_manager_;
 
+  /**
+   *  @brief A cache of group joint names to provide faster access
+   *  @details This will cleared when environment changes
+   */
+  mutable std::unordered_map<std::string, std::vector<std::string>> group_joint_names_cache_;
+  mutable std::shared_mutex group_joint_names_cache_mutex_;
+
+  /**
+   *  @brief A cache of joint groups to provide faster access
+   *  @details This will cleared when environment changes
+   */
+  mutable std::unordered_map<std::string, tesseract_kinematics::JointGroup::UPtr> joint_group_cache_;
+  mutable std::shared_mutex joint_group_cache_mutex_;
+
+  /**
+   *  @brief A cache of kinematic groups to provide faster access
+   *  @details This will cleared when environment changes
+   */
+  mutable std::unordered_map<std::string, tesseract_kinematics::KinematicGroup::UPtr> kinematic_group_cache_;
+  mutable std::shared_mutex kinematic_group_cache_mutex_;
+
   /** @brief The environment can be accessed from multiple threads, need use mutex throughout */
   mutable std::shared_mutex mutex_;
 
