@@ -1,20 +1,20 @@
 # Tesseract
 
-[![codecov](https://codecov.io/gh/ros-industrial/tesseract/branch/master/graph/badge.svg?token=nh4aHZzgpR)](https://codecov.io/gh/ros-industrial/tesseract)
+[![codecov](https://codecov.io/gh/tesseract-robotics/tesseract/branch/master/graph/badge.svg?token=nh4aHZzgpR)](https://codecov.io/gh/tesseract-robotics/tesseract)
 
-[![Python](https://img.shields.io/badge/python-2.7+|3.6+-blue.svg)](https://github.com/ros-industrial-consortium/tesseract_python)
+[![Python](https://img.shields.io/badge/python-2.7+|3.6+-blue.svg)](https://github.com/tesseract-robotics/tesseract_python)
 
 Platform             | CI Status
 ---------------------|:---------
-Linux (Focal)        | [![Build Status](https://github.com/ros-industrial/tesseract/workflows/Focal-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
-Linux (Bionic)       | [![Build Status](https://github.com/ros-industrial/tesseract/workflows/Bionic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
-Windows              | [![Build Status](https://github.com/ros-industrial/tesseract/workflows/Windows-Noetic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
-Lint  (Clang-Format) | [![Build Status](https://github.com/ros-industrial/tesseract/workflows/Clang-Format/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
-Lint  (CMake-Format) | [![Build Status](https://github.com/ros-industrial/tesseract/workflows/CMake-Format/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
-Lint  (Clang-Tidy)   | [![Build Status](https://github.com/ros-industrial/tesseract/workflows/Clang-Tidy/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
-Lint  (CodeCov)      | [![Build Status](https://github.com/ros-industrial/tesseract/workflows/CodeCov/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+Linux (Focal)        | [![Build Status](https://github.com/tesseract-robotics/tesseract/workflows/Focal-Build/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions)
+Linux (Bionic)       | [![Build Status](https://github.com/tesseract-robotics/tesseract/workflows/Bionic-Build/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions)
+Windows              | [![Build Status](https://github.com/tesseract-robotics/tesseract/workflows/Windows-Noetic-Build/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions)
+Lint  (Clang-Format) | [![Build Status](https://github.com/tesseract-robotics/tesseract/workflows/Clang-Format/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions)
+Lint  (CMake-Format) | [![Build Status](https://github.com/tesseract-robotics/tesseract/workflows/CMake-Format/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions)
+Lint  (Clang-Tidy)   | [![Build Status](https://github.com/tesseract-robotics/tesseract/workflows/Clang-Tidy/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions)
+Lint  (CodeCov)      | [![Build Status](https://github.com/tesseract-robotics/tesseract/workflows/CodeCov/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions)
 
-[![Github Issues](https://img.shields.io/github/issues/ros-industrial/tesseract.svg)](http://github.com/ros-industrial-consortium/tesseract/issues)
+[![Github Issues](https://img.shields.io/github/issues/tesseract-robotics/tesseract.svg)](http://github.com/tesseract-robotics/tesseract/issues)
 
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![license - bsd 2 clause](https://img.shields.io/:license-BSD%202--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
@@ -42,16 +42,16 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 
 ## Related Repositories
 
-* [Tesseract Planning](https://github.com/ros-industrial/tesseract_planning)
-* [Tesseract Python](https://github.com/ros-industrial-consortium/tesseract_python)
-* [Tesseract ROS](https://github.com/ros-industrial-consortium/tesseract_ros)
-* [Tesseract Documentation](https://github.com/ros-industrial-consortium/tesseract_docs)
+* [Tesseract Planning](https://github.com/tesseract-robotics/tesseract_planning)
+* [Tesseract Python](https://github.com/tesseract-robotics/tesseract_python)
+* [Tesseract ROS](https://github.com/tesseract-robotics/tesseract_ros)
+* [Tesseract Documentation](https://github.com/tesseract-robotics/tesseract_docs)
 
 ## Documentation
 
 * [Wiki](https://tesseract-docs.readthedocs.io)
-* [Doxygen](https://ros-industrial.github.io/tesseract/)
-* [Benchmark](https://ros-industrial.github.io/tesseract/dev/bench)
+* [Doxygen](https://tesseract-robotics.github.io/tesseract/)
+* [Benchmark](https://tesseract-robotics.github.io/tesseract/dev/bench)
 
 ## Evolution
 
@@ -66,7 +66,7 @@ How to create:
 
 Warning: These packages are under heavy development and are subject to change.
 
-See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66)
+See [issue #66](https://github.com/tesseract-robotics/tesseract/issues/66)
 
 ## Build Instructions
 
@@ -168,7 +168,7 @@ Tesseract currently leverages Compiler Warnigs, Clang Tidy and Code Coverage. Al
   - readability-rary-objects
 
 ## Documentation and Tutorials
-Documentation and tutorials for Tesseract are located at https://github.com/ros-industrial-consortium/tesseract_docs.git
+Documentation and tutorials for Tesseract are located at https://github.com/tesseract-robotics/tesseract_docs.git
 
 ## Debugging Windows Build
 
