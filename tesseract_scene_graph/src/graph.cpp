@@ -908,7 +908,7 @@ ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::str
   UGraph::vertex_iterator vi, vend;
   for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
   {
-    CONSOLE_BRIDGE_logDebug("distance(%s) = %d, parent(%s) = %s",
+    CONSOLE_BRIDGE_logDebug("distance(%s) = %f, parent(%s) = %s",
                             boost::get(boost::vertex_link, graph)[*vi]->getName().c_str(),
                             distance_map[*vi],
                             boost::get(boost::vertex_link, graph)[*vi]->getName().c_str(),
