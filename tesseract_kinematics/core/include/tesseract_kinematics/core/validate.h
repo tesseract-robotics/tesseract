@@ -51,41 +51,49 @@ inline bool checkKinematics(const KinematicGroup& manip, double tol = 1e-3)
   Eigen::Isometry3d test2;
   Eigen::VectorXd seed_angles(manip.numJoints());
   Eigen::VectorXd joint_angles2(manip.numJoints());
-  std::string tip_link = manip.getAllPossibleTipLinkNames().at(0);
-  std::string working_frame = manip.getAllValidWorkingFrames().at(0);
-  seed_angles.setZero();
-  joint_angles2.setZero();
-
+  std::vector<std::string> tip_links = manip.getAllPossibleTipLinkNames();
+  std::vector<std::string> working_frames = manip.getAllValidWorkingFrames();
   const int nj = static_cast<int>(manip.numJoints());
-  for (int t = 0; t < nj; ++t)
+
+  for (const auto& tip_link : tip_links)
   {
-    joint_angles2[t] = M_PI / 2;
-
-    auto poses1 = manip.calcFwdKin(joint_angles2);
-    test1 = poses1.at(working_frame).inverse() * poses1.at(tip_link);
-    KinGroupIKInput ik_input(test1, working_frame, tip_link);
-    IKSolutions sols = manip.calcInvKin({ ik_input }, seed_angles);
-    for (const auto& sol : sols)
+    for (const auto& working_frame : working_frames)
     {
-      auto poses2 = manip.calcFwdKin(sol);
-      test2 = poses2.at(working_frame).inverse() * poses2.at(tip_link);
+      seed_angles.setZero();
+      joint_angles2.setZero();
 
-      if ((test1.translation() - test2.translation()).norm() > tol)
+      for (int t = 0; t < nj; ++t)
       {
-        CONSOLE_BRIDGE_logError("checkKinematics: Manipulator translation norm is greater than tolerance %f!", tol);
-        return false;
-      }
+        joint_angles2[t] = M_PI / 2;
 
-      if (Eigen::Quaterniond(test1.linear()).angularDistance(Eigen::Quaterniond(test2.linear())) > tol)
-      {
-        CONSOLE_BRIDGE_logError("checkKinematics: Manipulator orientation angular distance is greater than tolerance "
-                                "%f!",
-                                tol);
-        return false;
+        auto poses1 = manip.calcFwdKin(joint_angles2);
+        test1 = poses1.at(working_frame).inverse() * poses1.at(tip_link);
+        KinGroupIKInput ik_input(test1, working_frame, tip_link);
+        IKSolutions sols = manip.calcInvKin({ ik_input }, seed_angles);
+        for (const auto& sol : sols)
+        {
+          auto poses2 = manip.calcFwdKin(sol);
+          test2 = poses2.at(working_frame).inverse() * poses2.at(tip_link);
+
+          if ((test1.translation() - test2.translation()).norm() > tol)
+          {
+            CONSOLE_BRIDGE_logError("checkKinematics: Manipulator translation norm is greater than tolerance %f!", tol);
+            return false;
+          }
+
+          if (Eigen::Quaterniond(test1.linear()).angularDistance(Eigen::Quaterniond(test2.linear())) > tol)
+          {
+            CONSOLE_BRIDGE_logError("checkKinematics: Manipulator orientation angular distance is greater than "
+                                    "tolerance "
+                                    "%f!",
+                                    tol);
+            return false;
+          }
+        }
+
+        joint_angles2[t] = 0;
       }
     }
-
-    joint_angles2[t] = 0;
   }
 
   return true;
