@@ -155,7 +155,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   EXPECT_EQ(kin_group.getJointNames(), joint_names);
   EXPECT_EQ(kin_group.getAllPossibleTipLinkNames().size(), 1);
   EXPECT_EQ(kin_group.getAllPossibleTipLinkNames()[0], tip_link_name);
-  EXPECT_EQ(kin_group.getAllValidWorkingFrames().size(), 12);
+  EXPECT_EQ(kin_group.getAllValidWorkingFrames().size(), 1);
   EXPECT_EQ(kin_group.getAllValidWorkingFrames()[0], base_link_name);
 
   // Check KinematicGroup copy
@@ -169,7 +169,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   EXPECT_EQ(kin_group_copy.getJointNames(), joint_names);
   EXPECT_EQ(kin_group_copy.getAllPossibleTipLinkNames().size(), 1);
   EXPECT_EQ(kin_group_copy.getAllPossibleTipLinkNames()[0], tip_link_name);
-  EXPECT_EQ(kin_group_copy.getAllValidWorkingFrames().size(), 12);
+  EXPECT_EQ(kin_group_copy.getAllValidWorkingFrames().size(), 1);
   EXPECT_EQ(kin_group_copy.getAllValidWorkingFrames()[0], base_link_name);
 
   // Check cloned

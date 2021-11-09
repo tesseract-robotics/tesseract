@@ -90,6 +90,9 @@ JointGroup::JointGroup(std::string name,
         break;
     }
   }
+
+  if (static_link_names_.size() + active_link_names.size() != scene_graph.getLinks().size())
+    throw std::runtime_error("JointGroup: Static link names are not correct!");
 }
 
 JointGroup::JointGroup(const JointGroup& other) { *this = other; }

@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
 #include <algorithm>
+#include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
@@ -55,6 +56,13 @@ inline bool checkKinematics(const KinematicGroup& manip, double tol = 1e-3)
   std::vector<std::string> working_frames = manip.getAllValidWorkingFrames();
   const int nj = static_cast<int>(manip.numJoints());
 
+  std::vector<std::vector<double>> passed_data;
+  std::vector<std::vector<double>> failed_data;
+  int translation_failures{ 0 };
+  int angular_failures{ 0 };
+  double translation_max{ 0 };
+  double angular_max{ 0 };
+
   for (const auto& tip_link : tip_links)
   {
     for (const auto& working_frame : working_frames)
@@ -64,7 +72,7 @@ inline bool checkKinematics(const KinematicGroup& manip, double tol = 1e-3)
 
       for (int t = 0; t < nj; ++t)
       {
-        joint_angles2[t] = M_PI / 2;
+        joint_angles2[t] = M_PI_4;
 
         auto poses1 = manip.calcFwdKin(joint_angles2);
         test1 = poses1.at(working_frame).inverse() * poses1.at(tip_link);
@@ -75,25 +83,93 @@ inline bool checkKinematics(const KinematicGroup& manip, double tol = 1e-3)
           auto poses2 = manip.calcFwdKin(sol);
           test2 = poses2.at(working_frame).inverse() * poses2.at(tip_link);
 
-          if ((test1.translation() - test2.translation()).norm() > tol)
+          double translation_distance = (test1.translation() - test2.translation()).norm();
+          double angular_distance =
+              Eigen::Quaterniond(test1.linear()).angularDistance(Eigen::Quaterniond(test2.linear()));
+          if (translation_distance > tol || angular_distance > tol)
           {
-            CONSOLE_BRIDGE_logError("checkKinematics: Manipulator translation norm is greater than tolerance %f!", tol);
-            return false;
-          }
+            if (translation_distance > tol)
+              ++translation_failures;
 
-          if (Eigen::Quaterniond(test1.linear()).angularDistance(Eigen::Quaterniond(test2.linear())) > tol)
+            if (angular_distance > tol)
+              ++angular_failures;
+
+            if (angular_distance > angular_max)
+              angular_max = angular_distance;
+
+            if (translation_distance > translation_max)
+              translation_max = translation_distance;
+
+            std::vector<double> data{ translation_distance, tol, angular_distance, tol };
+            for (Eigen::Index i = 0; i < sol.rows(); ++i)
+              data.push_back(sol(i));
+
+            failed_data.push_back(data);
+          }
+          else
           {
-            CONSOLE_BRIDGE_logError("checkKinematics: Manipulator orientation angular distance is greater than "
-                                    "tolerance "
-                                    "%f!",
-                                    tol);
-            return false;
+            std::vector<double> data{ translation_distance, tol, angular_distance, tol };
+            for (Eigen::Index i = 0; i < sol.rows(); ++i)
+              data.push_back(sol(i));
+
+            passed_data.push_back(data);
           }
         }
 
         joint_angles2[t] = 0;
       }
     }
+  }
+
+  if (!failed_data.empty())
+  {
+    CONSOLE_BRIDGE_logError("checkKinematics failed %d out of %d\n           Translation failures %d out of %d (max: "
+                            "%f)\n           Angular failures %d out of %d (max: %f)",
+                            failed_data.size(),
+                            (failed_data.size() + passed_data.size()),
+                            translation_failures,
+                            failed_data.size(),
+                            translation_max,
+                            angular_failures,
+                            failed_data.size(),
+                            angular_max);
+    std::stringstream msg;
+    msg << std::endl;
+    msg << "*****************************" << std::endl;
+    msg << "******** Failed Data ********" << std::endl;
+    msg << "*****************************" << std::endl;
+
+    std::string header = "Trans. Dist. (m), tol, Angle Dist. (rad), tol";
+    for (const auto& jn : manip.getJointNames())
+      header += ", " + jn;
+
+    msg << header << std::endl;
+    for (const auto& d : failed_data)
+    {
+      for (const auto& val : d)
+        msg << val << ", ";
+      msg << std::endl;
+    }
+
+    msg << "*****************************" << std::endl;
+    msg << "******** Passed Data ********" << std::endl;
+    msg << "*****************************" << std::endl;
+    if (passed_data.empty())
+    {
+      msg << "No Data!" << std::endl;
+    }
+    else
+    {
+      for (const auto& d : passed_data)
+      {
+        for (const auto& val : d)
+          msg << val << ", ";
+        msg << std::endl;
+      }
+    }
+
+    CONSOLE_BRIDGE_logError("%s", msg.str().c_str());
+    return false;
   }
 
   return true;
