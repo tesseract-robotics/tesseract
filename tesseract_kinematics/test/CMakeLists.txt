@@ -33,14 +33,9 @@ endif()
 
 include(GoogleTest)
 
-add_library(abb_irb2400_ikfast_kinematics abb_irb2400_ikfast_solver.cpp abb_irb2400_ikfast_kinematics.cpp)
+add_library(abb_irb2400_ikfast_kinematics abb_irb2400_ikfast_kinematics.cpp)
 target_link_libraries(abb_irb2400_ikfast_kinematics PUBLIC ${PROJECT_NAME}_ikfast ${LAPACK_LIBRARIES})
-target_compile_definitions(
-  abb_irb2400_ikfast_kinematics
-  PUBLIC -DIKFAST_NO_MAIN
-         -DIKFAST_CLIBRARY
-         -DIKFAST_HAS_LIBRARY
-         ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(abb_irb2400_ikfast_kinematics PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_compile_options(abb_irb2400_ikfast_kinematics PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_options(abb_irb2400_ikfast_kinematics PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_include_directories(abb_irb2400_ikfast_kinematics PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
@@ -48,14 +43,9 @@ target_include_directories(abb_irb2400_ikfast_kinematics PUBLIC "$<BUILD_INTERFA
 target_include_directories(abb_irb2400_ikfast_kinematics SYSTEM PUBLIC ${LAPACK_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 add_dependencies(abb_irb2400_ikfast_kinematics ${PROJECT_NAME}_ikfast)
 
-add_library(iiwa7_ikfast_kinematics iiwa7_ikfast_solver.cpp iiwa7_ikfast_kinematics.cpp)
+add_library(iiwa7_ikfast_kinematics iiwa7_ikfast_kinematics.cpp)
 target_link_libraries(iiwa7_ikfast_kinematics PUBLIC ${PROJECT_NAME}_ikfast ${LAPACK_LIBRARIES})
-target_compile_definitions(
-  iiwa7_ikfast_kinematics
-  PUBLIC -DIKFAST_NO_MAIN
-         -DIKFAST_CLIBRARY
-         -DIKFAST_HAS_LIBRARY
-         ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(iiwa7_ikfast_kinematics PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_compile_options(iiwa7_ikfast_kinematics PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_options(iiwa7_ikfast_kinematics PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_include_directories(iiwa7_ikfast_kinematics PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"

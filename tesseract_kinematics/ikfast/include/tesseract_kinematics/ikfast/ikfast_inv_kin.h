@@ -41,7 +41,7 @@ static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
  * @brief IKFast Inverse Kinematics Implmentation.
  *
  * This along with the ikfast_inv_kin.hpp is to be used with a generated ikfast to create a tesseract implementation.
- * Once you have created your ikfast solver of your robot all you need is to create header similiar to what is shown
+ * Once you have created your ikfast solver of your robot all you need is to create header similar to what is shown
  * below:
  *
  * Header File: fanuc_p50ib_15_inv_kinematics.h
@@ -49,17 +49,16 @@ static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
  * #include <Eigen/Geometry>
  * #include <vector>
  * #include <tesseract_kinematics/ikfast/ikfast_inv_kin.h>
- * #include <tesseract_kinematics/core/forward_kinematics.h>
-
+ *
  * namespace fanuc_p50ib_15_ikfast_wrapper
  * {
  * class FanucP50iBInvKinematics : public tesseract_kinematics::IKFastInvKin
  * {
  * public:
- *   FanucP50iBInvKinematics(const std::string name,
- *                           const std::string base_link_name,
+ *   FanucP50iBInvKinematics(const std::string base_link_name,
  *                           const std::string tip_link_name,
- *                           const std::vector<std::string> joint_names)
+ *                           const std::vector<std::string> joint_names,
+ *                           const std::string name)
  * };
  *
  * Cpp File:
@@ -70,15 +69,15 @@ static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
  *
  * namespace fanuc_p50ib_15_ikfast_wrapper
  * {
- *   FanucP50iBInvKinematics::FanucP50iBInvKinematics(const std::string name,
- *                                                    const std::string base_link_name,
+ *   FanucP50iBInvKinematics::FanucP50iBInvKinematics(const std::string base_link_name,
  *                                                    const std::string tip_link_name,
- *                                                    const std::vector<std::string> joint_names)
- *   : FanucP50iBInvKinematics(name, base_link_name, tip_link_name, joint_names, joint_limits)
+ *                                                    const std::vector<std::string> joint_names
+ *                                                    const std::string name)
+ *   : FanucP50iBInvKinematics(base_link_name, tip_link_name, joint_names, name, joint_limits)
  *   {}
  * }
  *
-*/
+ */
 class IKFastInvKin : public InverseKinematics
 {
 public:
@@ -143,7 +142,5 @@ protected:
 };
 
 }  // namespace tesseract_kinematics
-
-#include <tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp>
 
 #endif  // TESSERACT_KINEMATICS_IKFAST_INV_KIN_H
