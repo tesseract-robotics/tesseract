@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/chainjnttojacsolver.hpp>
 #include <unordered_map>
 #include <console_bridge/console.h>
+#include <mutex>
 
 #include <tesseract_scene_graph/graph.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -70,8 +71,8 @@ public:
   ~KDLFwdKinChain() override = default;
   KDLFwdKinChain(const KDLFwdKinChain& other);
   KDLFwdKinChain& operator=(const KDLFwdKinChain& other);
-  KDLFwdKinChain(KDLFwdKinChain&&) = default;
-  KDLFwdKinChain& operator=(KDLFwdKinChain&&) = default;
+  KDLFwdKinChain(KDLFwdKinChain&&) = delete;
+  KDLFwdKinChain& operator=(KDLFwdKinChain&&) = delete;
 
   /**
    * @brief Initializes Forward Kinematics as chain
@@ -115,6 +116,7 @@ private:
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
   std::string solver_name_{ KDL_FWD_KIN_CHAIN_SOLVER_NAME };   /**< @brief Name of this solver */
+  mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
   /** @brief calcFwdKin helper function */
   tesseract_common::TransformMap calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
