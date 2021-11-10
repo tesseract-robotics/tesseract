@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.6 (2021-11-10)
+------------------
 * Update ikfast plugin
 * Add determinant check and make kdl solvers thread safe (`#664 <https://github.com/ros-industrial-consortium/tesseract/issues/664>`_)
 * Fix Kinematic Group working frames

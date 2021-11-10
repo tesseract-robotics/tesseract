@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.6 (2021-11-10)
+------------------
 * Update ikfast plugin
 * Update tesseract_collision benchmarks
 * Contributors: Levi-Armstrong
