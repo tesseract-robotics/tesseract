@@ -2,7 +2,6 @@
 #define TESSERACT_KINEMATICS_ABB_IRB2400_IKFAST_KINEMATICS_H
 
 #include <Eigen/Geometry>
-#include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/ikfast/ikfast_inv_kin.h>
 #include <vector>
 

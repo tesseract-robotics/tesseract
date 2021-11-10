@@ -18,6 +18,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp>
+#include "abb_irb2400_ikfast_solver.hpp"
 #include "abb_irb2400_ikfast_kinematics.h"
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
