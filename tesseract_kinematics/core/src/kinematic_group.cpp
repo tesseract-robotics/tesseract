@@ -116,6 +116,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   {
     assert(std::find(working_frames_.begin(), working_frames_.end(), tip_link_pose.working_frame) !=
            working_frames_.end());
+    assert(std::abs(1.0 - tip_link_pose.pose.matrix().determinant()) < 1e-6);
 
     // The IK Solvers tip link and working frame
     std::string ik_solver_tip_link = inv_tip_links_map_.at(tip_link_pose.tip_link_name);

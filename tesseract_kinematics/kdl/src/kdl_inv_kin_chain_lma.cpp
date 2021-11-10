@@ -79,6 +79,7 @@ IKSolutions KDLInvKinChainLMA::calcInvKinHelper(const Eigen::Isometry3d& pose,
                                                 const Eigen::Ref<const Eigen::VectorXd>& seed,
                                                 int /*segment_num*/) const
 {
+  assert(std::abs(1.0 - pose.matrix().determinant()) < 1e-6);
   KDL::JntArray kdl_seed, kdl_solution;
   EigenToKDL(seed, kdl_seed);
   kdl_solution.resize(static_cast<unsigned>(seed.size()));
@@ -87,7 +88,11 @@ IKSolutions KDLInvKinChainLMA::calcInvKinHelper(const Eigen::Isometry3d& pose,
   // run IK solver
   KDL::Frame kdl_pose;
   EigenToKDL(pose, kdl_pose);
-  int status = ik_solver_->CartToJnt(kdl_seed, kdl_pose, kdl_solution);
+  int status{ -1 };
+  {
+    std::lock_guard<std::mutex> guard(mutex_);
+    status = ik_solver_->CartToJnt(kdl_seed, kdl_pose, kdl_solution);
+  }
   if (status < 0)
   {
     // LCOV_EXCL_START

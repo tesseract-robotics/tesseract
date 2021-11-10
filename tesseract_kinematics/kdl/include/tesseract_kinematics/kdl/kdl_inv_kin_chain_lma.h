@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/chainiksolverpos_lma.hpp>
 #include <unordered_map>
 #include <console_bridge/console.h>
+#include <mutex>
 
 #include <tesseract_scene_graph/graph.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -108,6 +109,7 @@ private:
   KDLChainData kdl_data_;                                        /**< @brief KDL data parsed from Scene Graph */
   std::unique_ptr<KDL::ChainIkSolverPos_LMA> ik_solver_;         /**< @brief KDL Inverse kinematic solver */
   std::string solver_name_{ KDL_INV_KIN_CHAIN_LMA_SOLVER_NAME }; /**< @brief Name of this solver */
+  mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
   /** @brief calcFwdKin helper function */
   IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose,

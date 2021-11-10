@@ -238,6 +238,7 @@ IKSolutions ROPInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link
                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());  // NOLINT
+  assert(std::abs(1.0 - tip_link_poses.at(manip_tip_link_).matrix().determinant()) < 1e-6);
 
   return calcInvKinHelper(tip_link_poses, seed);  // NOLINT
 }
