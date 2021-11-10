@@ -2,6 +2,12 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update ikfast plugin
+* Update tesseract_collision benchmarks
+* Contributors: Levi-Armstrong
+
 0.5.0 (2021-07-02)
 ------------------
 * Add convex decomposition support (`#609 <https://github.com/ros-industrial-consortium/tesseract/issues/609>`_)

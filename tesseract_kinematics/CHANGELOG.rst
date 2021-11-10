@@ -2,6 +2,13 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update ikfast plugin
+* Add determinant check and make kdl solvers thread safe (`#664 <https://github.com/ros-industrial-consortium/tesseract/issues/664>`_)
+* Fix Kinematic Group working frames
+* Contributors: Levi Armstrong, Levi-Armstrong
+
 0.5.0 (2021-07-02)
 ------------------
 * Add convex decomposition support (`#609 <https://github.com/ros-industrial-consortium/tesseract/issues/609>`_)

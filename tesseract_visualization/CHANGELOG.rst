@@ -2,6 +2,9 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.0 (2021-07-02)
 ------------------
 * fix error so that initial state has dt=0 (`#604 <https://github.com/ros-industrial-consortium/tesseract/issues/604>`_)
