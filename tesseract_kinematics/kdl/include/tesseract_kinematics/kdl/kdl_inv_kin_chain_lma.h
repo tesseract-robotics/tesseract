@@ -67,8 +67,8 @@ public:
   ~KDLInvKinChainLMA() override = default;
   KDLInvKinChainLMA(const KDLInvKinChainLMA& other);
   KDLInvKinChainLMA& operator=(const KDLInvKinChainLMA& other);
-  KDLInvKinChainLMA(KDLInvKinChainLMA&&) = default;
-  KDLInvKinChainLMA& operator=(KDLInvKinChainLMA&&) = default;
+  KDLInvKinChainLMA(KDLInvKinChainLMA&&) = delete;
+  KDLInvKinChainLMA& operator=(KDLInvKinChainLMA&&) = delete;
 
   /**
    * @brief Construct Inverse Kinematics as chain

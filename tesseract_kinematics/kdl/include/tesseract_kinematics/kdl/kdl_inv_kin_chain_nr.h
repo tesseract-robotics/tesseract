@@ -68,8 +68,8 @@ public:
   ~KDLInvKinChainNR() override = default;
   KDLInvKinChainNR(const KDLInvKinChainNR& other);
   KDLInvKinChainNR& operator=(const KDLInvKinChainNR& other);
-  KDLInvKinChainNR(KDLInvKinChainNR&&) = default;
-  KDLInvKinChainNR& operator=(KDLInvKinChainNR&&) = default;
+  KDLInvKinChainNR(KDLInvKinChainNR&&) = delete;
+  KDLInvKinChainNR& operator=(KDLInvKinChainNR&&) = delete;
 
   /**
    * @brief Construct KDL Forward Kinematics

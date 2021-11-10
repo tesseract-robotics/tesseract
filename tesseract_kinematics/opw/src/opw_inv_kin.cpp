@@ -68,9 +68,9 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
 IKSolutions OPWInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                                   const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  assert(tip_link_poses.size() == 1);
-  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
-  assert(std::abs(1.0 - tip_link_poses.at(tip_link_name_).matrix().determinant()) < 1e-6);
+  assert(tip_link_poses.size() == 1);                                                       // NOLINT
+  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());                      // NOLINT
+  assert(std::abs(1.0 - tip_link_poses.at(tip_link_name_).matrix().determinant()) < 1e-6);  // NOLINT
 
   opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, tip_link_poses.at(tip_link_name_));
 

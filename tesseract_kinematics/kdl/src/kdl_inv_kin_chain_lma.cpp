@@ -79,7 +79,7 @@ IKSolutions KDLInvKinChainLMA::calcInvKinHelper(const Eigen::Isometry3d& pose,
                                                 const Eigen::Ref<const Eigen::VectorXd>& seed,
                                                 int /*segment_num*/) const
 {
-  assert(std::abs(1.0 - pose.matrix().determinant()) < 1e-6);
+  assert(std::abs(1.0 - pose.matrix().determinant()) < 1e-6);  // NOLINT
   KDL::JntArray kdl_seed, kdl_solution;
   EigenToKDL(seed, kdl_seed);
   kdl_solution.resize(static_cast<unsigned>(seed.size()));

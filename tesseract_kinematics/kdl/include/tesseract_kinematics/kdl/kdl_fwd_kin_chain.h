@@ -71,8 +71,8 @@ public:
   ~KDLFwdKinChain() override = default;
   KDLFwdKinChain(const KDLFwdKinChain& other);
   KDLFwdKinChain& operator=(const KDLFwdKinChain& other);
-  KDLFwdKinChain(KDLFwdKinChain&&) = default;
-  KDLFwdKinChain& operator=(KDLFwdKinChain&&) = default;
+  KDLFwdKinChain(KDLFwdKinChain&&) = delete;
+  KDLFwdKinChain& operator=(KDLFwdKinChain&&) = delete;
 
   /**
    * @brief Initializes Forward Kinematics as chain
