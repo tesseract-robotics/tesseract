@@ -566,10 +566,10 @@ void runAddandRemoveLinkTest()
   EXPECT_TRUE(scene_graph->addLink(link_1, joint_1));
   EXPECT_TRUE(state_solver.addLink(link_1, joint_1));
 
-  KDLStateSolver base_state_solver(*scene_graph);
+  auto base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   SceneState state = state_solver.getState();
@@ -583,10 +583,10 @@ void runAddandRemoveLinkTest()
   EXPECT_TRUE(scene_graph->addLink(link_2, joint_2));
   EXPECT_TRUE(state_solver.addLink(link_2, joint_2));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
@@ -603,10 +603,10 @@ void runAddandRemoveLinkTest()
   EXPECT_TRUE(scene_graph->removeLink(link_name1, true));
   EXPECT_TRUE(state_solver.removeLink(link_name1));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
@@ -623,20 +623,20 @@ void runAddandRemoveLinkTest()
   // Test against double removing
 
   EXPECT_FALSE(state_solver.removeLink(link_name1));
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   EXPECT_FALSE(state_solver.removeLink(link_name2));
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   EXPECT_FALSE(state_solver.removeJoint(joint_name1));
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   EXPECT_FALSE(state_solver.removeJoint(joint_name2));
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   /////////////////////////////////////////////////////////////////////////////////////
 
@@ -645,10 +645,10 @@ void runAddandRemoveLinkTest()
   EXPECT_TRUE(scene_graph->addLink(link_1, joint_1));
   EXPECT_TRUE(state_solver.addLink(link_1, joint_1));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
@@ -662,10 +662,10 @@ void runAddandRemoveLinkTest()
   EXPECT_TRUE(scene_graph->addLink(link_2, joint_2));
   EXPECT_TRUE(state_solver.addLink(link_2, joint_2));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
@@ -682,10 +682,10 @@ void runAddandRemoveLinkTest()
   EXPECT_TRUE(scene_graph->removeJoint(joint_name1, true));
   EXPECT_TRUE(state_solver.removeJoint(joint_name1));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
@@ -700,20 +700,20 @@ void runAddandRemoveLinkTest()
   scene_graph->saveDOT(tesseract_common::getTempPath() + "state_solver_after_remove_link_unit2.dot");
 
   EXPECT_FALSE(state_solver.removeLink(link_name1));
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   EXPECT_FALSE(state_solver.removeLink(link_name2));
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   EXPECT_FALSE(state_solver.removeJoint(joint_name1));
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   EXPECT_FALSE(state_solver.removeJoint(joint_name2));
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 }
 
 template <typename S>
@@ -734,10 +734,10 @@ void runAddSceneGraphTest()
   EXPECT_FALSE(scene_graph->insertSceneGraph(*subgraph, joint_1_empty));
   EXPECT_FALSE(state_solver.insertSceneGraph(*subgraph, joint_1_empty));
 
-  KDLStateSolver base_state_solver(*scene_graph);
+  auto base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   subgraph = getSubSceneGraph();
 
@@ -751,10 +751,10 @@ void runAddSceneGraphTest()
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, joint));
   EXPECT_TRUE(state_solver.insertSceneGraph(*subgraph, joint));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   SceneState state = state_solver.getState();
@@ -767,10 +767,10 @@ void runAddSceneGraphTest()
   EXPECT_FALSE(scene_graph->insertSceneGraph(*subgraph, joint));
   EXPECT_FALSE(state_solver.insertSceneGraph(*subgraph, joint));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   // Add subgraph with prefix
   std::string prefix = "prefix_";
@@ -782,10 +782,10 @@ void runAddSceneGraphTest()
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, prefix_joint, prefix));
   EXPECT_TRUE(state_solver.insertSceneGraph(*subgraph, prefix_joint, prefix));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
@@ -804,10 +804,10 @@ void runAddSceneGraphTest()
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, prefix_joint2, prefix));
   EXPECT_TRUE(state_solver.insertSceneGraph(*subgraph, prefix_joint2, prefix));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   joint_names = state_solver.getActiveJointNames();
 
@@ -837,10 +837,10 @@ void runChangeJointOriginTest()
   EXPECT_TRUE(scene_graph->addLink(link_1, joint_1));
   EXPECT_TRUE(state_solver.addLink(link_1, joint_1));
 
-  KDLStateSolver base_state_solver(*scene_graph);
+  auto base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   SceneState state = state_solver.getState();
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
@@ -855,10 +855,10 @@ void runChangeJointOriginTest()
   EXPECT_TRUE(scene_graph->changeJointOrigin(joint_name1, new_origin));
   EXPECT_TRUE(state_solver.changeJointOrigin(joint_name1, new_origin));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   // Check that the origin got updated
   state = state_solver.getState();
@@ -896,10 +896,10 @@ void runMoveJointTest()
   EXPECT_TRUE(scene_graph->addLink(link_1, joint_1));
   EXPECT_TRUE(state_solver.addLink(link_1, joint_1));
 
-  KDLStateSolver base_state_solver(*scene_graph);
+  auto base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   SceneState state = state_solver.getState();
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
@@ -909,9 +909,9 @@ void runMoveJointTest()
   EXPECT_TRUE(scene_graph->addLink(link_2, joint_2));
   EXPECT_TRUE(state_solver.addLink(link_2, joint_2));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
 
   std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
@@ -929,10 +929,10 @@ void runMoveJointTest()
   EXPECT_TRUE(scene_graph->moveJoint(joint_name1, "tool0"));
   EXPECT_TRUE(state_solver.moveJoint(joint_name1, "tool0"));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
@@ -976,10 +976,10 @@ void runMoveLinkTest()
   EXPECT_TRUE(scene_graph->addLink(link_1, joint_1));
   EXPECT_TRUE(state_solver.addLink(link_1, joint_1));
 
-  KDLStateSolver base_state_solver(*scene_graph);
+  auto base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   SceneState state = state_solver.getState();
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
@@ -989,10 +989,10 @@ void runMoveLinkTest()
   EXPECT_TRUE(scene_graph->addLink(link_2, joint_2));
   EXPECT_TRUE(state_solver.addLink(link_2, joint_2));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
@@ -1014,10 +1014,10 @@ void runMoveLinkTest()
   EXPECT_TRUE(scene_graph->moveLink(move_link_joint));
   EXPECT_TRUE(state_solver.moveLink(move_link_joint));
 
-  base_state_solver = KDLStateSolver(*scene_graph);
+  base_state_solver = std::make_shared<KDLStateSolver>(*scene_graph);
 
-  runCompareStateSolver(base_state_solver, state_solver);
-  runCompareStateSolverLimits(*scene_graph, base_state_solver);
+  runCompareStateSolver(*base_state_solver, state_solver);
+  runCompareStateSolverLimits(*scene_graph, *base_state_solver);
 
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();

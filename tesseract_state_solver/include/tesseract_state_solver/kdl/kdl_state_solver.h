@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl/jntarray.hpp>
 #include <kdl/treejnttojacsolver.hpp>
+#include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_state_solver/state_solver.h>
@@ -49,8 +50,8 @@ public:
   ~KDLStateSolver() override = default;
   KDLStateSolver(const KDLStateSolver& other);
   KDLStateSolver& operator=(const KDLStateSolver& other);
-  KDLStateSolver(KDLStateSolver&&) = default;
-  KDLStateSolver& operator=(KDLStateSolver&&) = default;
+  KDLStateSolver(KDLStateSolver&&) = delete;
+  KDLStateSolver& operator=(KDLStateSolver&&) = delete;
 
   StateSolver::UPtr clone() const override;
 
@@ -100,9 +101,10 @@ private:
   KDLTreeData data_;                                           /**< KDL tree data */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;        /**< KDL Jacobian Solver */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
-  std::vector<int> joint_qnr_;               /**< The kdl segment number corrisponding to joint in joint names */
+  std::vector<int> joint_qnr_;               /**< The kdl segment number corresponding to joint in joint names */
   KDL::JntArray kdl_jnt_array_;              /**< The kdl joint array */
   tesseract_common::KinematicLimits limits_; /**< The kinematic limits */
+  mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
   void calculateTransforms(SceneState& state,
                            const KDL::JntArray& q_in,

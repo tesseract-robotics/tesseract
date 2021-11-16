@@ -308,6 +308,7 @@ void KDLStateSolver::calculateTransforms(SceneState& state,
                                          const KDL::SegmentMap::const_iterator& it,
                                          const Eigen::Isometry3d& parent_frame) const
 {
+  std::lock_guard<std::mutex> guard(mutex_);
   calculateTransformsHelper(state, q_in, it, parent_frame);  // NOLINT
 }
 
