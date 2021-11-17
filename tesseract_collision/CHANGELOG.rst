@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix linking issue when building repo alongside debian releae
+* Contributors: Levi Armstrong
+
 0.6.6 (2021-11-10)
 ------------------
 * Update ikfast plugin

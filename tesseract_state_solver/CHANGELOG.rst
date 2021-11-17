@@ -2,6 +2,11 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix thread safety issue in kdl state solver
+* Contributors: Levi Armstrong
+
 0.6.6 (2021-11-10)
 ------------------
 
