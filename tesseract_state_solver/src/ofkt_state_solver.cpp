@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-/** @brief Everytime a vertex is visited for the first time add a new node to the tree */
+/** @brief Every time a vertex is visited for the first time add a new node to the tree */
 struct ofkt_builder : public boost::dfs_visitor<>
 {
   ofkt_builder(OFKTStateSolver& tree, std::vector<JointLimits::ConstPtr>& new_joints_limits, std::string prefix = "")
@@ -130,7 +130,7 @@ void OFKTStateSolver::cloneHelper(OFKTStateSolver& cloned, const OFKTNode* node)
     }
     else
     {
-      throw std::runtime_error("Unsupport OFKTNode type!");
+      throw std::runtime_error("Unsupported OFKTNode type!");
     }
 
     cloneHelper(cloned, child);
@@ -618,7 +618,7 @@ bool OFKTStateSolver::changeJointPositionLimits(const std::string& name, double 
   auto it = nodes_.find(name);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' postionerlimits which does not exist!",
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
                             name.c_str());
     return false;
   }
@@ -636,7 +636,7 @@ bool OFKTStateSolver::changeJointVelocityLimits(const std::string& name, double 
   auto it = nodes_.find(name);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' postionerlimits which does not exist!",
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
                             name.c_str());
     return false;
   }
@@ -653,7 +653,7 @@ bool OFKTStateSolver::changeJointAccelerationLimits(const std::string& name, dou
   auto it = nodes_.find(name);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' postionerlimits which does not exist!",
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
                             name.c_str());
     return false;
   }

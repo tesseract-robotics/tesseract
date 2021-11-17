@@ -25,7 +25,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereMeshUnit)  /
   test_suite::runTest(checker, tesseract_common::getTempPath() + "BulletDiscreteBVHCollisionOctomapSphereMeshUnit.ply");
 }
 
-// TODO: There is an issue with fcl octomap collision type. Either with tesseract implementation or fcl
+// TODO: There is an issue with fcl octomap collision type. Either with Tesseract implementation or fcl
 // TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereMeshUnit)
 //{
 //  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
@@ -33,7 +33,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereMeshUnit)  /
 //  // TODO: There appears to be an issue in fcl for octomap::OcTree.
 //}
 
-/** @brief This is to test the shape id and subshape id of the contact results. */
+/** @brief This is to test the shape id and sub-shape id of the contact results. */
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

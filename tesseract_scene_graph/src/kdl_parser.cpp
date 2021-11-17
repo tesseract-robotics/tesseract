@@ -160,7 +160,7 @@ KDL::RigidBodyInertia convert(const Inertial::ConstPtr& inertial)
 }
 
 /**
- * @brief Everytime a vertex is visited for the first time add a new
+ * @brief Every time a vertex is visited for the first time add a new
  *        segment to the KDL Tree;
  */
 struct kdl_tree_builder : public boost::dfs_visitor<>
@@ -231,7 +231,7 @@ protected:
 };
 
 /**
- * @brief Everytime a vertex is visited for the first time add a new
+ * @brief Every time a vertex is visited for the first time add a new
  *        segment to the KDL Tree;
  */
 struct kdl_sub_tree_builder : public boost::dfs_visitor<>
@@ -450,7 +450,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
                                 .vertex_index_map(prop_index_map));
 
   if (data.tree.getNrOfJoints() != joint_names.size())
-    throw std::runtime_error("parseSubSceneGraph: failed to generate subtree given the provided joint names.");
+    throw std::runtime_error("parseSubSceneGraph: failed to generate sub-tree given the provided joint names.");
 
   return data;
 }
