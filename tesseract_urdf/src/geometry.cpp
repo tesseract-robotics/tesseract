@@ -1,6 +1,6 @@
 /**
  * @file geometry.cpp
- * @brief Parse geometry from xml string
+ * @brief Parse geometry from XML string
  *
  * @author Levi Armstrong
  * @date September 1, 2019
@@ -57,7 +57,7 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
 
   const tinyxml2::XMLElement* geometry = xml_element->FirstChildElement();
   if (geometry == nullptr)
-    std::throw_with_nested(std::runtime_error("Geometry: Error missing 'geometry' elemment!"));
+    std::throw_with_nested(std::runtime_error("Geometry: Error missing 'geometry' element!"));
 
   std::string geometry_type;
   tinyxml2::XMLError status = tesseract_common::QueryStringValue(geometry, geometry_type);

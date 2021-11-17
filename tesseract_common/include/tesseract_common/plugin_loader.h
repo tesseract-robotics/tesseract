@@ -45,8 +45,8 @@ namespace tesseract_common
  * plugins.
  *
  * The plugin must be exported using the macro TESSERACT_ADD_PLUGIN.
- * In the example below, the first parameter is the derived object and the second is the assinged symbol name which is
- * used for looding Example: TESSERACT_ADD_PLUGIN(my_namespace::MyPlugin, plugin)
+ * In the example below, the first parameter is the derived object and the second is the assigned symbol name which is
+ * used for loading Example: TESSERACT_ADD_PLUGIN(my_namespace::MyPlugin, plugin)
  *
  *   PluginLoader loader;
  *   loader.search_libraries.insert("my_plugin"); // libmy_plugin.so
@@ -61,7 +61,7 @@ public:
   /** @brief A list of paths to search for plugins */
   std::set<std::string> search_paths;
 
-  /** @brief A list of library names without the prefix or sufix that contain plugins*/
+  /** @brief A list of library names without the prefix or suffix that contain plugins*/
   std::set<std::string> search_libraries;
 
   /** @brief The environment variable containing plugin search paths */
@@ -69,7 +69,7 @@ public:
 
   /**
    * @brief The environment variable containing plugins
-   * @details The plugins are store ins the following formate.
+   * @details The plugins are store ins the following format.
    * The library name does not contain prefix or suffix
    *   Format: library_name:library_name1:library_name2
    */
@@ -78,7 +78,7 @@ public:
   /**
    * @brief Instantiate a plugin with the provided name
    * @param plugin_name The plugin name to find
-   * @return A instantiation of the plugin, if nullptr it failed to create plugin
+   * @return A instantiate of the plugin, if nullptr it failed to create plugin
    */
   template <class PluginBase>
   std::shared_ptr<PluginBase> instantiate(const std::string& plugin_name) const;

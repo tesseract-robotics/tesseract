@@ -511,7 +511,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
-  {  // invalide c3
+  {  // invalid c3
     YAML::Node config = YAML::Load(yaml_string);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["c3"] = "abcd";
@@ -667,7 +667,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin != nullptr);
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
   }
-  {  // Test loading custom UR paramters
+  {  // Test loading custom UR parameters
     KinematicsPluginFactory factory(YAML::Load(yaml_params_string));
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin != nullptr);
@@ -826,7 +826,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "URInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
-  {  // invalide d6
+  {  // invalid d6
     YAML::Node config = YAML::Load(yaml_params_string);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"]["d6"] = "abcd";

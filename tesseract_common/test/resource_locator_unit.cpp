@@ -64,7 +64,7 @@ TEST(TesseractSceneGraphResourceUnit, SimpleResourceLocatorUnit)  // NOLINT
   tesseract_common::Resource::Ptr resource_empty = locator->locateResource("");
   EXPECT_TRUE(resource_empty == nullptr);
 
-  tesseract_common::Resource::Ptr resource_does_not_exist = locator->locateResource("package://tesseract_commong/"
+  tesseract_common::Resource::Ptr resource_does_not_exist = locator->locateResource("package://tesseract_common/"
                                                                                     "does_not_exist.txt");
   EXPECT_TRUE(resource_does_not_exist != nullptr);
   EXPECT_TRUE(resource_does_not_exist->getResourceContents().empty());
