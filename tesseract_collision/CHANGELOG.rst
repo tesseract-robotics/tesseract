@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.7 (2021-11-16)
+------------------
 * Fix linking issue when building repo alongside debian releae
 * Contributors: Levi Armstrong
 
