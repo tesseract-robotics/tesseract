@@ -216,6 +216,40 @@ TEST(TesseractCollisionUnit, CollisionMarginDataUnit)  // NOLINT
     EXPECT_EQ(data.getPairCollisionMargins().size(), 1);
   }
 
+  {  // Test Apply Override Modify
+    double default_margin = 0.0254;
+    double pair_margin = 0.5;
+    CollisionMarginData data(default_margin);
+    data.setPairCollisionMargin("link_1", "link_2", pair_margin);
+
+    CollisionMarginData override_data(default_margin * 3);
+    override_data.setPairCollisionMargin("link_1", "link_3", pair_margin * 3);
+    data.apply(override_data, CollisionMarginOverrideType::MODIFY);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin * 3, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), pair_margin * 3, tol);
+    EXPECT_NEAR(data.getPairCollisionMargin("link_1", "link_2"), pair_margin, tol);
+    EXPECT_NEAR(data.getPairCollisionMargin("link_1", "link_3"), pair_margin * 3, tol);
+    EXPECT_EQ(data.getPairCollisionMargins().size(), 2);
+  }
+
+  {  // Test Apply Override Modify with pair that already exists
+    double default_margin = 0.0254;
+    double pair_margin = 0.5;
+    CollisionMarginData data(default_margin);
+    data.setPairCollisionMargin("link_1", "link_2", pair_margin);
+
+    pair_margin = pair_margin * 3;
+    CollisionMarginData override_data(default_margin * 3);
+    override_data.setPairCollisionMargin("link_1", "link_2", pair_margin);
+    override_data.setPairCollisionMargin("link_1", "link_3", pair_margin * 3);
+    data.apply(override_data, CollisionMarginOverrideType::MODIFY);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin * 3, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), pair_margin * 3, tol);
+    EXPECT_NEAR(data.getPairCollisionMargin("link_1", "link_2"), pair_margin, tol);
+    EXPECT_NEAR(data.getPairCollisionMargin("link_1", "link_3"), pair_margin * 3, tol);
+    EXPECT_EQ(data.getPairCollisionMargins().size(), 2);
+  }
+
   {  // Test Apply Override Modify Pair
     double default_margin = 0.0254;
     double pair_margin = 0.5;

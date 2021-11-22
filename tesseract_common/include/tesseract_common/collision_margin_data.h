@@ -47,6 +47,12 @@ enum class CollisionMarginOverrideType
   NONE,
   /** @brief Replace the contact manager's CollisionMarginData */
   REPLACE,
+  /**
+   * @brief Modify the contact managers default margin and pair margins
+   * @details This will preserve existing pairs not being modified by the provided margin data.
+   * If a pair already exist it will be updated with the provided margin data.
+   */
+  MODIFY,
   /** @brief Override the contact managers default margin only */
   OVERRIDE_DEFAULT_MARGIN,
   /** @brief Override the contact managers pair margin only. This does not preserve any existing pair margin data */
@@ -170,7 +176,7 @@ public:
 
   /**
    * @brief Scale all margins by input value
-   * @param scale Value by which all margins are multipled
+   * @param scale Value by which all margins are multiplied
    */
   void scaleMargins(const double& scale)
   {
@@ -192,6 +198,16 @@ public:
       case CollisionMarginOverrideType::REPLACE:
       {
         *this = collision_margin_data;
+        break;
+      }
+      case CollisionMarginOverrideType::MODIFY:
+      {
+        default_collision_margin_ = collision_margin_data.default_collision_margin_;
+
+        for (const auto& p : collision_margin_data.lookup_table_)
+          lookup_table_[p.first] = p.second;
+
+        updateMaxCollisionMargin();
         break;
       }
       case CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN:
