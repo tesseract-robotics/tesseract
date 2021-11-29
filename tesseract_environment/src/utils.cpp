@@ -68,11 +68,21 @@ bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& 
                             const tesseract_common::TransformMap& state1,
                             const tesseract_collision::CollisionCheckConfig& config)
 {
+  manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+  return checkTrajectorySegment(contacts, manager, state0, state1, config.contact_request);
+}
+
+bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                            tesseract_collision::ContinuousContactManager& manager,
+                            const tesseract_common::TransformMap& state0,
+                            const tesseract_common::TransformMap& state1,
+                            const tesseract_collision::ContactRequest& contact_request)
+{
   for (const auto& link_name : manager.getActiveCollisionObjects())
     manager.setCollisionObjectsTransform(link_name, state0.at(link_name), state1.at(link_name));
 
   tesseract_collision::ContactResultMap collisions;
-  manager.contactTest(collisions, config.contact_request);
+  manager.contactTest(collisions, contact_request);
 
   if (!collisions.empty())
   {
@@ -100,12 +110,21 @@ bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& co
                           const tesseract_common::TransformMap& state,
                           const tesseract_collision::CollisionCheckConfig& config)
 {
+  manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+  return checkTrajectoryState(contacts, manager, state, config.contact_request);
+}
+
+bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                          tesseract_collision::DiscreteContactManager& manager,
+                          const tesseract_common::TransformMap& state,
+                          const tesseract_collision::ContactRequest& contact_request)
+{
   tesseract_collision::ContactResultMap collisions;
 
   for (const auto& link_name : manager.getActiveCollisionObjects())
     manager.setCollisionObjectsTransform(link_name, state.at(link_name));
 
-  manager.contactTest(collisions, config.contact_request);
+  manager.contactTest(collisions, contact_request);
 
   if (!collisions.empty())
   {
@@ -144,6 +163,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     throw std::runtime_error("checkTrajectory was given continuous contact manager with a trajectory that only has one "
                              "state.");
 
+  manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+
   bool found = false;
   if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
   {
@@ -162,7 +183,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         {
           tesseract_scene_graph::SceneState state0 = state_solver.getState(joint_names, subtraj.row(iSubStep));
           tesseract_scene_graph::SceneState state1 = state_solver.getState(joint_names, subtraj.row(iSubStep + 1));
-          if (checkTrajectorySegment(contacts, manager, state0.link_transforms, state1.link_transforms, config))
+          if (checkTrajectorySegment(
+                  contacts, manager, state0.link_transforms, state1.link_transforms, config.contact_request))
           {
             found = true;
             if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -194,7 +216,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       {
         tesseract_scene_graph::SceneState state0 = state_solver.getState(joint_names, traj.row(iStep));
         tesseract_scene_graph::SceneState state1 = state_solver.getState(joint_names, traj.row(iStep + 1));
-        if (checkTrajectorySegment(contacts, manager, state0.link_transforms, state1.link_transforms, config))
+        if (checkTrajectorySegment(
+                contacts, manager, state0.link_transforms, state1.link_transforms, config.contact_request))
         {
           found = true;
           if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -227,7 +250,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       tesseract_scene_graph::SceneState state0 = state_solver.getState(joint_names, traj.row(iStep));
       tesseract_scene_graph::SceneState state1 = state_solver.getState(joint_names, traj.row(iStep + 1));
 
-      if (checkTrajectorySegment(contacts, manager, state0.link_transforms, state1.link_transforms, config))
+      if (checkTrajectorySegment(
+              contacts, manager, state0.link_transforms, state1.link_transforms, config.contact_request))
       {
         found = true;
         if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -270,6 +294,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     throw std::runtime_error("checkTrajectory was given continuous contact manager with a trajectory that only has one "
                              "state.");
 
+  manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+
   bool found = false;
   if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
   {
@@ -288,7 +314,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         {
           tesseract_common::TransformMap state0 = manip.calcFwdKin(subtraj.row(iSubStep));
           tesseract_common::TransformMap state1 = manip.calcFwdKin(subtraj.row(iSubStep + 1));
-          if (checkTrajectorySegment(contacts, manager, state0, state1, config))
+          if (checkTrajectorySegment(contacts, manager, state0, state1, config.contact_request))
           {
             found = true;
             if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -320,7 +346,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       {
         tesseract_common::TransformMap state0 = manip.calcFwdKin(traj.row(iStep));
         tesseract_common::TransformMap state1 = manip.calcFwdKin(traj.row(iStep + 1));
-        if (checkTrajectorySegment(contacts, manager, state0, state1, config))
+        if (checkTrajectorySegment(contacts, manager, state0, state1, config.contact_request))
         {
           found = true;
           if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -353,7 +379,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       tesseract_common::TransformMap state0 = manip.calcFwdKin(traj.row(iStep));
       tesseract_common::TransformMap state1 = manip.calcFwdKin(traj.row(iStep + 1));
 
-      if (checkTrajectorySegment(contacts, manager, state0, state1, config))
+      if (checkTrajectorySegment(contacts, manager, state0, state1, config.contact_request))
       {
         found = true;
         if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -396,10 +422,12 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   if (traj.rows() == 0)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
 
+  manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+
   if (traj.rows() == 1)
   {
     tesseract_scene_graph::SceneState state = state_solver.getState(joint_names, traj.row(0));
-    return checkTrajectoryState(contacts, manager, state.link_transforms, config);
+    return checkTrajectoryState(contacts, manager, state.link_transforms, config.contact_request);
   }
 
   bool found = false;
@@ -422,7 +450,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         for (int iSubStep = 0; iSubStep < subtraj.rows() - 1; ++iSubStep)
         {
           tesseract_scene_graph::SceneState state = state_solver.getState(joint_names, subtraj.row(iSubStep));
-          if (checkTrajectoryState(contacts, manager, state.link_transforms, config))
+          if (checkTrajectoryState(contacts, manager, state.link_transforms, config.contact_request))
           {
             found = true;
             if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -451,7 +479,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       else
       {
         tesseract_scene_graph::SceneState state = state_solver.getState(joint_names, traj.row(iStep));
-        if (checkTrajectoryState(contacts, manager, state.link_transforms, config))
+        if (checkTrajectoryState(contacts, manager, state.link_transforms, config.contact_request))
         {
           found = true;
           if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -480,7 +508,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     for (int iStep = 0; iStep < traj.rows(); ++iStep)
     {
       tesseract_scene_graph::SceneState state = state_solver.getState(joint_names, traj.row(iStep));
-      if (checkTrajectoryState(contacts, manager, state.link_transforms, config))
+      if (checkTrajectoryState(contacts, manager, state.link_transforms, config.contact_request))
       {
         found = true;
         if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -519,10 +547,12 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   if (traj.rows() == 0)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
 
+  manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+
   if (traj.rows() == 1)
   {
     tesseract_common::TransformMap state = manip.calcFwdKin(traj.row(0));
-    return checkTrajectoryState(contacts, manager, state, config);
+    return checkTrajectoryState(contacts, manager, state, config.contact_request);
   }
 
   bool found = false;
@@ -545,7 +575,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         for (int iSubStep = 0; iSubStep < subtraj.rows() - 1; ++iSubStep)
         {
           tesseract_common::TransformMap state = manip.calcFwdKin(subtraj.row(iSubStep));
-          if (checkTrajectoryState(contacts, manager, state, config))
+          if (checkTrajectoryState(contacts, manager, state, config.contact_request))
           {
             found = true;
             if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -574,7 +604,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       else
       {
         tesseract_common::TransformMap state = manip.calcFwdKin(traj.row(iStep));
-        if (checkTrajectoryState(contacts, manager, state, config))
+        if (checkTrajectoryState(contacts, manager, state, config.contact_request))
         {
           found = true;
           if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
@@ -603,7 +633,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     for (int iStep = 0; iStep < traj.rows(); ++iStep)
     {
       tesseract_common::TransformMap state = manip.calcFwdKin(traj.row(iStep));
-      if (checkTrajectoryState(contacts, manager, state, config))
+      if (checkTrajectoryState(contacts, manager, state, config.contact_request))
       {
         found = true;
         if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
