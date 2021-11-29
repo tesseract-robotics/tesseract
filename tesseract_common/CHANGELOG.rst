@@ -2,6 +2,14 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add contact margin data override type MODIFY (`#669 <https://github.com/tesseract-robotics/tesseract/issues/669>`_)
+  * Add contact margin data override type MODIFY
+  * Add unit test for type MODIFY
+* Fix spelling errors
+* Contributors: Levi Armstrong
+
 0.6.7 (2021-11-16)
 ------------------
 

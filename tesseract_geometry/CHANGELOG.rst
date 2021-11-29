@@ -2,6 +2,11 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix spelling errors
+* Contributors: Levi Armstrong
+
 0.6.7 (2021-11-16)
 ------------------
 
