@@ -96,7 +96,8 @@ CollisionCheckConfig::CollisionCheckConfig(double default_margin,
                                            ContactRequest request,
                                            CollisionEvaluatorType type,
                                            double longest_valid_segment_length)
-  : collision_margin_data(default_margin)
+  : collision_margin_override_type(CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN)
+  , collision_margin_data(default_margin)
   , contact_request(std::move(request))
   , type(type)
   , longest_valid_segment_length(longest_valid_segment_length)

@@ -245,7 +245,8 @@ enum class CollisionEvaluatorType
  */
 struct CollisionCheckConfig
 {
-  CollisionCheckConfig(double default_margin = 0,
+  CollisionCheckConfig() = default;
+  CollisionCheckConfig(double default_margin,
                        ContactRequest request = ContactRequest(),
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
                        double longest_valid_segment_length = 0.005);
@@ -257,7 +258,7 @@ struct CollisionCheckConfig
   /** @brief ContactRequest that will be used for this check. Default test type: FIRST*/
   ContactRequest contact_request;
   /** @brief Specifies the type of collision check to be performed. Default: DISCRETE */
-  CollisionEvaluatorType type;
+  CollisionEvaluatorType type{ CollisionEvaluatorType::DISCRETE };
   /** @brief Longest valid segment to use if type supports lvs. Default: 0.005*/
   double longest_valid_segment_length{ 0.005 };
 };
