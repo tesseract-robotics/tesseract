@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.9 (2021-11-29)
+------------------
 * Fix CollisionCheckConfig to set collision_margin_override_type for constructor
 * Contributors: Levi Armstrong
 
