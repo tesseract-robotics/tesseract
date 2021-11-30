@@ -2,6 +2,9 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.6.8 (2021-11-29)
 ------------------
 * Fix spelling errors
