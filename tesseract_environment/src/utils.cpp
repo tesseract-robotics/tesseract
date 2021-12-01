@@ -24,6 +24,7 @@
  * limitations under the License.
  */
 
+#include <tesseract_collision/core/utils.h>
 #include <tesseract_environment/utils.h>
 
 namespace tesseract_environment
@@ -69,6 +70,7 @@ bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& 
                             const tesseract_collision::CollisionCheckConfig& config)
 {
   manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+  applyIsContactAllowedFnOverride(manager, config.acm, config.acm_override_type);
   return checkTrajectorySegment(contacts, manager, state0, state1, config.contact_request);
 }
 
@@ -111,6 +113,7 @@ bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& co
                           const tesseract_collision::CollisionCheckConfig& config)
 {
   manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+  applyIsContactAllowedFnOverride(manager, config.acm, config.acm_override_type);
   return checkTrajectoryState(contacts, manager, state, config.contact_request);
 }
 
@@ -164,6 +167,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
                              "state.");
 
   manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+  applyIsContactAllowedFnOverride(manager, config.acm, config.acm_override_type);
 
   bool found = false;
   if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
@@ -295,6 +299,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
                              "state.");
 
   manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+  applyIsContactAllowedFnOverride(manager, config.acm, config.acm_override_type);
 
   bool found = false;
   if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
@@ -423,6 +428,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
 
   manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+  applyIsContactAllowedFnOverride(manager, config.acm, config.acm_override_type);
 
   if (traj.rows() == 1)
   {
@@ -548,6 +554,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
 
   manager.setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+  applyIsContactAllowedFnOverride(manager, config.acm, config.acm_override_type);
 
   if (traj.rows() == 1)
   {
