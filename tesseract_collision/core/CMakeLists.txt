@@ -1,5 +1,10 @@
 # Create interface for core
-add_library(${PROJECT_NAME}_core src/common.cpp src/types.cpp src/contact_managers_plugin_factory.cpp)
+add_library(
+  ${PROJECT_NAME}_core
+  src/common.cpp
+  src/types.cpp
+  src/contact_managers_plugin_factory.cpp
+  src/utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen
