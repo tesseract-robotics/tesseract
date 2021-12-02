@@ -69,9 +69,9 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
 
   // ASSIGN
   {
-    config.acm.addAllowedCollision("allowed_link_1a", "allowed_link_2a", "Unit test");
-    config.acm_override_type = ACMOverrideType::ASSIGN;
-    manager->applyCollisionCheckConfig(config);
+    config.contact_manager_config.acm.addAllowedCollision("allowed_link_1a", "allowed_link_2a", "Unit test");
+    config.contact_manager_config.acm_override_type = ACMOverrideType::ASSIGN;
+    manager->applyContactManagerConfig(config.contact_manager_config);
     auto fn = manager->getIsContactAllowedFn();
     EXPECT_TRUE(fn("allowed_link_1a", "allowed_link_2a"));
   }
@@ -79,9 +79,9 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
   // NONE
   {
     // Manager currently allows: a
-    config.acm.addAllowedCollision("allowed_link_1b", "allowed_link_2b", "Unit test");
-    config.acm_override_type = ACMOverrideType::NONE;
-    manager->applyCollisionCheckConfig(config);
+    config.contact_manager_config.acm.addAllowedCollision("allowed_link_1b", "allowed_link_2b", "Unit test");
+    config.contact_manager_config.acm_override_type = ACMOverrideType::NONE;
+    manager->applyContactManagerConfig(config.contact_manager_config);
     auto fn = manager->getIsContactAllowedFn();
     EXPECT_FALSE(fn("allowed_link_1b", "allowed_link_2b"));
   }
@@ -89,9 +89,9 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
   // OR
   {
     // Manager currently allows: a
-    config.acm.addAllowedCollision("allowed_link_1c", "allowed_link_2c", "Unit test");
-    config.acm_override_type = ACMOverrideType::OR;
-    manager->applyCollisionCheckConfig(config);
+    config.contact_manager_config.acm.addAllowedCollision("allowed_link_1c", "allowed_link_2c", "Unit test");
+    config.contact_manager_config.acm_override_type = ACMOverrideType::OR;
+    manager->applyContactManagerConfig(config.contact_manager_config);
     auto fn = manager->getIsContactAllowedFn();
     EXPECT_TRUE(fn("allowed_link_1a", "allowed_link_2a"));
     EXPECT_TRUE(fn("allowed_link_1c", "allowed_link_2c"));
@@ -100,16 +100,16 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
   // AND
   {
     // Manager currently allows: a, c
-    config.acm.removeAllowedCollision("allowed_link_1a", "allowed_link_2a");
-    config.acm_override_type = ACMOverrideType::AND;
-    manager->applyCollisionCheckConfig(config);
+    config.contact_manager_config.acm.removeAllowedCollision("allowed_link_1a", "allowed_link_2a");
+    config.contact_manager_config.acm_override_type = ACMOverrideType::AND;
+    manager->applyContactManagerConfig(config.contact_manager_config);
     auto fn = manager->getIsContactAllowedFn();
     EXPECT_FALSE(fn("allowed_link_1a", "allowed_link_2a"));
     EXPECT_TRUE(fn("allowed_link_1c", "allowed_link_2c"));
   }
 }
 
-TEST(TesseractEnvironmentUtils, applyCollisionCheckConfig)  // NOLINT
+TEST(TesseractEnvironmentUtils, applyContactManagerConfig)  // NOLINT
 {
   auto scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -127,7 +127,7 @@ TEST(TesseractEnvironmentUtils, applyCollisionCheckConfig)  // NOLINT
   mCollisionCheckConfig.contact_request.type = tesseract_collision::ContactTestType::FIRST;
   mCollisionCheckConfig.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
   tesseract_collision::CollisionMarginData margin_data(0.0);
-  mCollisionCheckConfig.collision_margin_data = margin_data;
+  mCollisionCheckConfig.contact_manager_config.collision_margin_data = margin_data;
 
   checkIsAllowedFnOverride<DiscreteContactManager>(env->getDiscreteContactManager());
   checkIsAllowedFnOverride<ContinuousContactManager>(env->getContinuousContactManager());
@@ -171,28 +171,28 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     // Not in collision
     {
       std::vector<tesseract_collision::ContactResultMap> contacts;
-      manager->applyCollisionCheckConfig(config);
+      manager->applyContactManagerConfig(config.contact_manager_config);
       EXPECT_FALSE(checkTrajectoryState(contacts, *manager, tmap, config.contact_request));
       EXPECT_TRUE(contacts.empty());
     }
-    // In collision if manager->applyCollisionCheckConfig works correctly
+    // In collision if manager->applyContactManagerConfig works correctly
     {
-      config.collision_margin_data.setDefaultCollisionMargin(0.1);
+      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.1);
       std::vector<tesseract_collision::ContactResultMap> contacts;
-      manager->applyCollisionCheckConfig(config);
+      manager->applyContactManagerConfig(config.contact_manager_config);
       EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config.contact_request));
       EXPECT_FALSE(contacts.empty());
     }
     // Not collision if checkTrajectoryState applies the config
     {
-      config.collision_margin_data.setDefaultCollisionMargin(0.0);
+      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.0);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       EXPECT_FALSE(checkTrajectoryState(contacts, *manager, tmap, config));
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if checkTrajectoryState applies the config
     {
-      config.collision_margin_data.setDefaultCollisionMargin(0.1);
+      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.1);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config));
       EXPECT_FALSE(contacts.empty());
@@ -220,28 +220,28 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     // Not in collision
     {
       std::vector<tesseract_collision::ContactResultMap> contacts;
-      manager->applyCollisionCheckConfig(config);
+      manager->applyContactManagerConfig(config.contact_manager_config);
       EXPECT_FALSE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
       EXPECT_TRUE(contacts.empty());
     }
-    // In collision if manager->applyCollisionCheckConfig works correctly
+    // In collision if manager->applyContactManagerConfig works correctly
     {
-      config.collision_margin_data.setDefaultCollisionMargin(0.1);
+      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.1);
       std::vector<tesseract_collision::ContactResultMap> contacts;
-      manager->applyCollisionCheckConfig(config);
+      manager->applyContactManagerConfig(config.contact_manager_config);
       EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
       EXPECT_FALSE(contacts.empty());
     }
     // Not collision if checkTrajectoryState applies the config
     {
-      config.collision_margin_data.setDefaultCollisionMargin(0.0);
+      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.0);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       EXPECT_FALSE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config));
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if checkTrajectoryState applies the config
     {
-      config.collision_margin_data.setDefaultCollisionMargin(0.1);
+      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.1);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config));
       EXPECT_FALSE(contacts.empty());
