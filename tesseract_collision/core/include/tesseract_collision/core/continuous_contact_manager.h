@@ -267,7 +267,7 @@ public:
    * @brief Applies settings in the config
    * @param config Settings to be applies
    */
-  virtual void applyCollisionCheckConfig(const CollisionCheckConfig& config);
+  virtual void applyContactManagerConfig(const ContactManagerConfig& config);
 };
 
 }  // namespace tesseract_collision

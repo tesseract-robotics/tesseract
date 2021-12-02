@@ -255,6 +255,27 @@ enum class ACMOverrideType
 };
 
 /**
+ * @brief Contains parameters used to configure a contact manager before a series of contact checks.
+ *
+ * It should not contain information that is usually specific to a single contactTest such as CollisionObjectTransforms
+ * or specific to the way contactTests are carried out such as LVS parameters
+ */
+struct ContactManagerConfig
+{
+  ContactManagerConfig() = default;
+  ContactManagerConfig(double default_margin);
+
+  /** @brief Identify how the collision margin data should be applied to the contact manager */
+  CollisionMarginOverrideType collision_margin_override_type{ CollisionMarginOverrideType::NONE };
+  /** @brief Stores information about how the margins allowed between collision objects*/
+  CollisionMarginData collision_margin_data;
+  /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
+  tesseract_common::AllowedCollisionMatrix acm;
+  /** @brief Specifies how to combine the IsContactAllowedFn from acm with the one preset in the contact manager */
+  ACMOverrideType acm_override_type{ ACMOverrideType::OR };
+};
+
+/**
  * @brief This is a high level structure containing common information that collision checking utilities need. The goal
  * of this config is to allow all collision checking utilities and planners to use the same datastructure
  */
@@ -266,14 +287,9 @@ struct CollisionCheckConfig
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
                        double longest_valid_segment_length = 0.005);
 
-  /** @brief Identify how the collision margin data should be applied to the contact manager */
-  CollisionMarginOverrideType collision_margin_override_type{ CollisionMarginOverrideType::NONE };
-  /** @brief Stores information about how the margins allowed between collision objects*/
-  CollisionMarginData collision_margin_data;
-  /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
-  tesseract_common::AllowedCollisionMatrix acm;
-  /** @brief Specifies how to combine the IsContactAllowedFn from acm with the one preset in the contact manager */
-  ACMOverrideType acm_override_type{ ACMOverrideType::OR };
+  /** @brief Used to configure the contact manager prior to a series of checks */
+  ContactManagerConfig contact_manager_config;
+
   /** @brief ContactRequest that will be used for this check. Default test type: FIRST*/
   ContactRequest contact_request;
   /** @brief Specifies the type of collision check to be performed. Default: DISCRETE */
