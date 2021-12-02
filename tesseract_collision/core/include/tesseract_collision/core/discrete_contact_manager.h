@@ -213,6 +213,12 @@ public:
    * @param request The contact request data
    */
   virtual void contactTest(ContactResultMap& collisions, const ContactRequest& request) = 0;
+
+  /**
+   * @brief Applies settings in the config
+   * @param config Settings to be applies
+   */
+  virtual void applyCollisionCheckConfig(const CollisionCheckConfig& config);
 };
 
 }  // namespace tesseract_collision
