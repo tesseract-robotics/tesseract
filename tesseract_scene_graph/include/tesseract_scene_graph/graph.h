@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
-#include <tesseract_scene_graph/allowed_collision_matrix.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 
 #ifdef SWIG
 
@@ -392,13 +392,13 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
+  tesseract_common::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixPtr
    */
-  AllowedCollisionMatrix::Ptr getAllowedCollisionMatrix();
+  tesseract_common::AllowedCollisionMatrix::Ptr getAllowedCollisionMatrix();
 
   /**
    * @brief Get the source link (parent link) for a joint
@@ -576,7 +576,7 @@ protected:
 private:
   std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>> link_map_;
   std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>> joint_map_;
-  AllowedCollisionMatrix::Ptr acm_;
+  tesseract_common::AllowedCollisionMatrix::Ptr acm_;
 
   struct cycle_detector : public boost::dfs_visitor<>
   {

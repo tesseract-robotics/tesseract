@@ -538,7 +538,7 @@ bool Environment::getLinkVisibility(const std::string& name) const
   return scene_graph_->getLinkVisibility(name);
 }
 
-tesseract_scene_graph::AllowedCollisionMatrix::ConstPtr Environment::getAllowedCollisionMatrix() const
+tesseract_common::AllowedCollisionMatrix::ConstPtr Environment::getAllowedCollisionMatrix() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return scene_graph_->getAllowedCollisionMatrix();

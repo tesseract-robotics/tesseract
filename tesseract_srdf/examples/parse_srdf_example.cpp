@@ -1,6 +1,6 @@
 #include <console_bridge/console.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/utils.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_srdf/utils.h>
@@ -153,8 +153,8 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:4: Add allowed collision matrix to scene graph
 
   // documentation:start:5: Get info about allowed collision matrix
-  AllowedCollisionMatrix::ConstPtr acm = g.getAllowedCollisionMatrix();
-  const AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
+  tesseract_common::AllowedCollisionMatrix::ConstPtr acm = g.getAllowedCollisionMatrix();
+  const tesseract_common::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
   CONSOLE_BRIDGE_logInform("ACM Number of entries: %d", acm_entries.size());
   // documentation:end:5: Get info about allowed collision matrix
 }

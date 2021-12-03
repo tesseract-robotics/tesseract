@@ -33,16 +33,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_srdf/disabled_collisions.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/allowed_collision_matrix.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 
 namespace tesseract_srdf
 {
-tesseract_scene_graph::AllowedCollisionMatrix
-parseDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph,
-                        const tinyxml2::XMLElement* srdf_xml,
-                        const std::array<int, 3>& /*version*/)
+tesseract_common::AllowedCollisionMatrix parseDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                                                 const tinyxml2::XMLElement* srdf_xml,
+                                                                 const std::array<int, 3>& /*version*/)
 {
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
 
   for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("disable_collisions");
        xml_element != nullptr;

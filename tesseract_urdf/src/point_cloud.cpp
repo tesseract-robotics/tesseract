@@ -34,7 +34,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/point_cloud.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_common/resource_locator.h>
 
 tesseract_geometry::Octree::Ptr tesseract_urdf::parsePointCloud(const tinyxml2::XMLElement* xml_element,

@@ -528,7 +528,7 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   std::string l2 = "link_6";
   std::string r = "Unit Test";
 
-  AllowedCollisionMatrix::ConstPtr acm = env->getAllowedCollisionMatrix();
+  tesseract_common::AllowedCollisionMatrix::ConstPtr acm = env->getAllowedCollisionMatrix();
   EXPECT_TRUE(acm->isCollisionAllowed(l1, "base_link"));
   EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_2"));
   EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_3"));

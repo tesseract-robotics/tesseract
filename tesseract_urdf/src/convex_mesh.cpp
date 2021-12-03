@@ -34,7 +34,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/convex_mesh.h>
 #include <tesseract_urdf/mesh_writer.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_geometry/impl/mesh.h>
 #include <tesseract_collision/bullet/convex_hull_utils.h>

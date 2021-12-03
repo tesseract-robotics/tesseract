@@ -39,8 +39,11 @@ class XMLElement;
 namespace tesseract_scene_graph
 {
 class SceneGraph;
+}
+namespace tesseract_common
+{
 class AllowedCollisionMatrix;
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract_common
 
 namespace tesseract_srdf
 {
@@ -51,10 +54,9 @@ namespace tesseract_srdf
  * @param version The srdf version number
  * @return Allowed Collision Matrix
  */
-tesseract_scene_graph::AllowedCollisionMatrix
-parseDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph,
-                        const tinyxml2::XMLElement* srdf_xml,
-                        const std::array<int, 3>& version);
+tesseract_common::AllowedCollisionMatrix parseDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                                                 const tinyxml2::XMLElement* srdf_xml,
+                                                                 const std::array<int, 3>& version);
 
 }  // namespace tesseract_srdf
 
