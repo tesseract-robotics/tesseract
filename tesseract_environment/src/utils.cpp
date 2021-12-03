@@ -115,6 +115,14 @@ bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& co
   return checkTrajectoryState(contacts, manager, state, config.contact_request);
 }
 
+/**
+ * @brief Check a state in a trajectory for collisions. Return true if in collision
+ * @param contacts Collision results
+ * @param manager Contact manager used for checking
+ * @param state State to be checked
+ * @param contact_request Contact request used for the collision check
+ * @return True if the state is in collision. False if collision free
+ */
 bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contacts,
                           tesseract_collision::DiscreteContactManager& manager,
                           const tesseract_common::TransformMap& state,
