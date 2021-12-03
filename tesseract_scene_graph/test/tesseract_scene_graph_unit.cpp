@@ -11,7 +11,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/kdl_parser.h>
 #include <tesseract_scene_graph/scene_state.h>
 
@@ -1187,7 +1186,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 /// Testing AllowedCollisionMatrix
 TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)  // NOLINT
 {
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
 
   acm.addAllowedCollision("link1", "link2", "test");
   // collision between link1 and link2 should be allowed
@@ -1204,7 +1203,7 @@ TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)  // NOLINT
   acm.clearAllowedCollisions();
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
 
-  tesseract_scene_graph::AllowedCollisionMatrix acm2;
+  tesseract_common::AllowedCollisionMatrix acm2;
   acm.addAllowedCollision("link1", "link2", "test");
   acm2.addAllowedCollision("link1", "link2", "test");
   acm2.addAllowedCollision("link1", "link3", "test");
@@ -1249,7 +1248,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
   tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
@@ -1289,7 +1288,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)
 {
   // Test inserting graph into empty graph
   tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
@@ -1326,7 +1325,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUni
 {
   // Test inserting graph into empty graph
   tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
@@ -1375,7 +1374,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
 {
   // Test inserting graph into empty graph
   tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);

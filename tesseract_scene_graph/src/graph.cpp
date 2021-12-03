@@ -58,7 +58,7 @@ struct ugraph_vertex_copier
   mutable typename boost::property_map<UGraph, boost::vertex_all_t>::type vertex_all_map2;
 };
 
-SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<AllowedCollisionMatrix>())
+SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<tesseract_common::AllowedCollisionMatrix>())
 {
   boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);
 }
@@ -610,9 +610,9 @@ bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::st
   return acm_->isCollisionAllowed(link_name1, link_name2);
 }
 
-AllowedCollisionMatrix::ConstPtr SceneGraph::getAllowedCollisionMatrix() const { return acm_; }
+tesseract_common::AllowedCollisionMatrix::ConstPtr SceneGraph::getAllowedCollisionMatrix() const { return acm_; }
 
-AllowedCollisionMatrix::Ptr SceneGraph::getAllowedCollisionMatrix() { return acm_; }
+tesseract_common::AllowedCollisionMatrix::Ptr SceneGraph::getAllowedCollisionMatrix() { return acm_; }
 
 Link::ConstPtr SceneGraph::getSourceLink(const std::string& joint_name) const
 {
@@ -953,12 +953,13 @@ tesseract_scene_graph::Joint clone_prefix(const tesseract_scene_graph::Joint::Co
   return ret;
 }
 
-AllowedCollisionMatrix::Ptr clone_prefix(const AllowedCollisionMatrix::ConstPtr& acm, const std::string& prefix)
+tesseract_common::AllowedCollisionMatrix::Ptr
+clone_prefix(const tesseract_common::AllowedCollisionMatrix::ConstPtr& acm, const std::string& prefix)
 {
   if (prefix.empty())
-    return std::make_shared<AllowedCollisionMatrix>(*acm);
+    return std::make_shared<tesseract_common::AllowedCollisionMatrix>(*acm);
 
-  auto new_acm = std::make_shared<AllowedCollisionMatrix>();
+  auto new_acm = std::make_shared<tesseract_common::AllowedCollisionMatrix>();
   for (const auto& entry : acm->getAllAllowedCollisions())
     new_acm->addAllowedCollision(prefix + entry.first.first, prefix + entry.first.second, entry.second);
 

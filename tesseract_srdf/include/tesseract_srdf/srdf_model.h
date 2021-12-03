@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_srdf/kinematics_information.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/allowed_collision_matrix.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/collision_margin_data.h>
 
@@ -104,7 +104,7 @@ public:
   tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info;
 
   /** @brief The allowed collision matrix */
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
 
   /** @brief Collision margin data */
   tesseract_common::CollisionMarginData::Ptr collision_margin_data;

@@ -4,12 +4,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-#include <tesseract_scene_graph/utils.h>
+#include <tesseract_common/utils.h>
 
 /// Testing getAllowedCollisions
 TEST(TesseractSceneGraphUnit, TestGetAllowedCollisions)  // NOLINT
 {
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
 
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link4", "link3", "test");
@@ -22,7 +22,7 @@ TEST(TesseractSceneGraphUnit, TestGetAllowedCollisions)  // NOLINT
 
   // Removing duplicates: Expect link1, link2, link3, link4, cause_duplicate
   {
-    auto results = tesseract_scene_graph::getAllowedCollisions(link_names, acm.getAllAllowedCollisions());
+    auto results = tesseract_common::getAllowedCollisions(link_names, acm.getAllAllowedCollisions());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link1") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link2") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link3") != results.end());
@@ -35,7 +35,7 @@ TEST(TesseractSceneGraphUnit, TestGetAllowedCollisions)  // NOLINT
   }
   // Not removing duplicates: Expect link1, link2, link3, link4, cause_duplicate, link1
   {
-    auto results = tesseract_scene_graph::getAllowedCollisions(link_names, acm.getAllAllowedCollisions(), false);
+    auto results = tesseract_common::getAllowedCollisions(link_names, acm.getAllAllowedCollisions(), false);
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link1") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link2") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link3") != results.end());

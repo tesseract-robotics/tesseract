@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/types.h>
 
 namespace tesseract_common
@@ -373,6 +374,17 @@ bool toNumeric(const std::string& s, FloatType& value)
   value = out;
   return true;
 }
+
+/**
+ * @brief Gets allowed collisions for a set of link names.
+ * @param link_names Vector of link names for which we want the allowed collisions
+ * @param acm_entries Entries in the ACM. Get this with AllowedCollisionMatrix::getAllAllowedCollisions()
+ * @param remove_duplicates If true, duplicates will be removed. Default: true
+ * @return vector of links that are allowed to collide with links given
+ */
+std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& link_names,
+                                              const AllowedCollisionEntries& acm_entries,
+                                              bool remove_duplicates = true);
 
 }  // namespace tesseract_common
 #endif  // TESSERACT_COMMON_UTILS_H

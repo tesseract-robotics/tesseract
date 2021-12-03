@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/urdf_parser.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_urdf/joint.h>
 #include <tesseract_urdf/link.h>
 #include <tesseract_urdf/material.h>

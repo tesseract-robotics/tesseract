@@ -40,7 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_state_solver/mutable_state_solver.h>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_srdf/srdf_model.h>
@@ -318,7 +317,7 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  tesseract_scene_graph::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
+  tesseract_common::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get a vector of joint names in the environment

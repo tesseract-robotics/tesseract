@@ -40,12 +40,7 @@ set(COVERAGE_EXCLUDE
     /*/gtest/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
-add_library(
-  ${PROJECT_NAME}
-  src/graph.cpp
-  src/utils.cpp
-  src/kdl_parser.cpp
-  src/scene_state.cpp)
+add_library(${PROJECT_NAME} src/graph.cpp src/kdl_parser.cpp src/scene_state.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Boost::boost

@@ -7,7 +7,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <tinyxml2.h>
 #include <console_bridge/console.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_common/utils.h>
