@@ -191,7 +191,7 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
   tesseract_collision::ContactRequest request;
   tesseract_collision::CollisionCheckConfig config(
       5, request, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE, 0.5);
-  EXPECT_NEAR(config.contact_manager_config.collision_margin_data.getDefaultCollisionMargin(), 5, 1e-6);
+  EXPECT_NEAR(config.contact_manager_config.margin_data.getDefaultCollisionMargin(), 5, 1e-6);
   EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE);
   EXPECT_NEAR(config.longest_valid_segment_length, 0.5, 1e-6);
 }

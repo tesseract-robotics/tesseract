@@ -121,7 +121,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentCollisionTest)  // NOLINT
   mCollisionCheckConfig.contact_request.type = tesseract_collision::ContactTestType::FIRST;
   mCollisionCheckConfig.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
   tesseract_collision::CollisionMarginData margin_data(0.0);
-  mCollisionCheckConfig.contact_manager_config.collision_margin_data = margin_data;
+  mCollisionCheckConfig.contact_manager_config.margin_data = margin_data;
 
   // Setup collision checker
   DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
@@ -134,7 +134,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentCollisionTest)  // NOLINT
   }
 
   manager->setCollisionObjectsTransform("link_n1", Eigen::Isometry3d::Identity());
-  manager->setCollisionMarginData(mCollisionCheckConfig.contact_manager_config.collision_margin_data);
+  manager->setCollisionMarginData(mCollisionCheckConfig.contact_manager_config.margin_data);
 
   // Check for collisions
   tesseract_collision::ContactResultMap collision;

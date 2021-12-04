@@ -31,7 +31,7 @@ namespace tesseract_collision
 {
 void ContinuousContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
 {
-  setCollisionMarginData(config.collision_margin_data, config.collision_margin_override_type);
+  setCollisionMarginData(config.margin_data, config.margin_data_override_type);
   applyIsContactAllowedFnOverride(*this, config.acm, config.acm_override_type);
 }
 }  // namespace tesseract_collision

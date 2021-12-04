@@ -93,8 +93,7 @@ ContactTestData::ContactTestData(const std::vector<std::string>& active,
 }
 
 ContactManagerConfig::ContactManagerConfig(double default_margin)
-  : collision_margin_override_type(CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN)
-  , collision_margin_data(default_margin)
+  : margin_data_override_type(CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN), margin_data(default_margin)
 {
 }
 
