@@ -127,7 +127,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfig)  // NOLINT
   mCollisionCheckConfig.contact_request.type = tesseract_collision::ContactTestType::FIRST;
   mCollisionCheckConfig.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
   tesseract_collision::CollisionMarginData margin_data(0.0);
-  mCollisionCheckConfig.contact_manager_config.collision_margin_data = margin_data;
+  mCollisionCheckConfig.contact_manager_config.margin_data = margin_data;
 
   checkIsAllowedFnOverride<DiscreteContactManager>(env->getDiscreteContactManager());
   checkIsAllowedFnOverride<ContinuousContactManager>(env->getContinuousContactManager());
@@ -151,8 +151,8 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
   default_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
   default_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
   tesseract_collision::CollisionMarginData margin_data(0.0);
-  default_config.contact_manager_config.collision_margin_data = margin_data;
-  default_config.contact_manager_config.collision_margin_override_type =
+  default_config.contact_manager_config.margin_data = margin_data;
+  default_config.contact_manager_config.margin_data_override_type =
       tesseract_common::CollisionMarginOverrideType::REPLACE;
 
   // Check Discrete
@@ -177,7 +177,7 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     }
     // In collision if manager->applyContactManagerConfig works correctly
     {
-      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.1);
+      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       manager->applyContactManagerConfig(config.contact_manager_config);
       EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config.contact_request));
@@ -185,14 +185,14 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     }
     // Not collision if checkTrajectoryState applies the config
     {
-      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.0);
+      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.0);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       EXPECT_FALSE(checkTrajectoryState(contacts, *manager, tmap, config));
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if checkTrajectoryState applies the config
     {
-      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.1);
+      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config));
       EXPECT_FALSE(contacts.empty());
@@ -226,7 +226,7 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     }
     // In collision if manager->applyContactManagerConfig works correctly
     {
-      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.1);
+      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       manager->applyContactManagerConfig(config.contact_manager_config);
       EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
@@ -234,14 +234,14 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     }
     // Not collision if checkTrajectoryState applies the config
     {
-      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.0);
+      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.0);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       EXPECT_FALSE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config));
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if checkTrajectoryState applies the config
     {
-      config.contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.1);
+      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
       std::vector<tesseract_collision::ContactResultMap> contacts;
       EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config));
       EXPECT_FALSE(contacts.empty());

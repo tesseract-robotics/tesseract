@@ -266,9 +266,9 @@ struct ContactManagerConfig
   ContactManagerConfig(double default_margin);
 
   /** @brief Identify how the collision margin data should be applied to the contact manager */
-  CollisionMarginOverrideType collision_margin_override_type{ CollisionMarginOverrideType::NONE };
+  CollisionMarginOverrideType margin_data_override_type{ CollisionMarginOverrideType::NONE };
   /** @brief Stores information about how the margins allowed between collision objects*/
-  CollisionMarginData collision_margin_data;
+  CollisionMarginData margin_data;
   /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
   tesseract_common::AllowedCollisionMatrix acm;
   /** @brief Specifies how to combine the IsContactAllowedFn from acm with the one preset in the contact manager */
