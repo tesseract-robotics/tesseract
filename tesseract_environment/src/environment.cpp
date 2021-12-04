@@ -877,6 +877,13 @@ void Environment::currentStateChanged()
       }
     }
   }
+
+  {  // Clear JointGroup and KinematicGroup
+    std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
+    std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
+    joint_group_cache_.clear();
+    kinematic_group_cache_.clear();
+  }
 }
 
 void Environment::environmentChanged()
@@ -889,10 +896,6 @@ void Environment::environmentChanged()
 
   {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
     std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
-    std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
-    std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
-    joint_group_cache_.clear();
-    kinematic_group_cache_.clear();
     group_joint_names_cache_.clear();
   }
 
