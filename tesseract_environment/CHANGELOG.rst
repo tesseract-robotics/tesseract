@@ -2,6 +2,19 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Rename member variables of ContactManagerConfig
+* Fix KinematicGroup and JointGroup cache to clear on current state changed
+* Add ContactManagerConfig inside CollisionCheckConfig
+  This separates the up front setup things for the contact manager from things specific to the contactTest or the way the contact manager should be called.
+* Add unit test for checkTrajectoryState and checkTrajectorySegment
+* Add applyCollisionCheckConfig to contact managers
+* Add AllowedCollisionMatrix to CollisionCheckConfig
+* Move AllowedCollisionMatrix into tesseract_common
+* Correctly set the collision margin data in the environment utilities
+* Contributors: Levi Armstrong, Matthew Powelson
+
 0.6.9 (2021-11-29)
 ------------------
 

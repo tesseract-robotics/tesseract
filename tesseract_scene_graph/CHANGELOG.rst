@@ -2,6 +2,11 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move AllowedCollisionMatrix into tesseract_common
+* Contributors: Matthew Powelson
+
 0.6.9 (2021-11-29)
 ------------------
 

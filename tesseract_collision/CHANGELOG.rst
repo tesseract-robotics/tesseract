@@ -2,6 +2,16 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Rename member variables of ContactManagerConfig
+* Add ContactManagerConfig inside CollisionCheckConfig
+  This separates the up front setup things for the contact manager from things specific to the contactTest or the way the contact manager should be called.
+* Add applyCollisionCheckConfig to contact managers
+* Add AllowedCollisionMatrix to CollisionCheckConfig
+* Move AllowedCollisionMatrix into tesseract_common
+* Contributors: Levi Armstrong, Matthew Powelson
+
 0.6.9 (2021-11-29)
 ------------------
 * Fix CollisionCheckConfig to set collision_margin_override_type for constructor
