@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.0 (2021-12-04)
+------------------
 * Rename member variables of ContactManagerConfig
 * Fix KinematicGroup and JointGroup cache to clear on current state changed
 * Add ContactManagerConfig inside CollisionCheckConfig

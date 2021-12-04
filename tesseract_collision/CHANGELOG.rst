@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.0 (2021-12-04)
+------------------
 * Rename member variables of ContactManagerConfig
 * Add ContactManagerConfig inside CollisionCheckConfig
   This separates the up front setup things for the contact manager from things specific to the contactTest or the way the contact manager should be called.
