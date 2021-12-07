@@ -34,6 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 
+static const std::vector<Eigen::Index> REDUNDANT_CAPABLE_JOINTS{ 0, 1, 2, 3, 4, 5 };
+
 namespace tesseract_kinematics
 {
 OPWInvKin::OPWInvKin(opw_kinematics::Parameters<double> params,
@@ -84,7 +86,7 @@ IKSolutions OPWInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link
       Eigen::Map<Eigen::VectorXd> eigen_sol(sol.data(), static_cast<Eigen::Index>(sol.size()));
 
       // Harmonize between [-PI, PI]
-      harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
+      harmonizeTowardZero<double>(eigen_sol, REDUNDANT_CAPABLE_JOINTS);  // Modifies 'sol' in place
 
       // Add solution
       solution_set.push_back(eigen_sol);

@@ -38,6 +38,8 @@
 #include <tesseract_kinematics/ur/ur_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 
+static const std::vector<Eigen::Index> REDUNDANT_CAPABLE_JOINTS{ 0, 1, 2, 3, 4, 5 };
+
 namespace tesseract_kinematics
 {
 // LCOV_EXCL_START
@@ -273,7 +275,7 @@ IKSolutions URInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_
     Eigen::Map<Eigen::VectorXd> eigen_sol(sols[i].data(), static_cast<Eigen::Index>(sols[i].size()));
 
     // Harmonize between [-PI, PI]
-    harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
+    harmonizeTowardZero<double>(eigen_sol, REDUNDANT_CAPABLE_JOINTS);  // Modifies 'sol' in place
 
     // Add solution
     solution_set.push_back(eigen_sol);

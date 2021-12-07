@@ -336,67 +336,6 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
   return manip;
 }
 
-///**
-// * @brief Create a kinematics map from the srdf model
-// * @param scene_graph Tesseract Scene Graph
-// * @param kinematics_information Tesseract Kinematics Information
-// * @return Kinematics map between group name and kinematics object
-// */
-// template <class Chain_T, class Tree_T>
-// ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
-//                                                 const tesseract_srdf::KinematicsInformation& kinematics_information)
-//{
-//  ForwardKinematicsConstPtrMap manipulators;
-//  for (const auto& group : kinematics_information.chain_groups)
-//  {
-//    if (!group.second.empty())
-//    {
-//      if (manipulators.find(group.first) == manipulators.end())
-//      {
-//        std::shared_ptr<Chain_T> manip{ std::make_shared<Chain_T>() };
-//        if (!manip->init(scene_graph, group.second, group.first))
-//        {
-//          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
-//        }
-//        else
-//        {
-//          manipulators.insert(std::make_pair(group.first, manip));
-//        }
-//      }
-//    }
-//  }
-
-//  for (const auto& group : kinematics_information.joint_groups)
-//  {
-//    if (!group.second.empty())
-//    {
-//      if (manipulators.find(group.first) == manipulators.end())
-//      {
-//        std::shared_ptr<Tree_T> manip{ std::make_shared<Tree_T>() };
-//        if (!manip->init(scene_graph, group.second, group.first))
-//        {
-//          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
-//        }
-//        else
-//        {
-//          manipulators.insert(std::make_pair(group.first, manip));
-//        }
-//      }
-//    }
-//  }
-
-//  for (const auto& group : kinematics_information.link_groups)
-//  {
-//    // TODO: Need to add other options
-//    if (!group.second.empty())
-//    {
-//      CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
-//    }
-//  }
-
-//  return manipulators;
-//}
-
 /**
  * @brief This a recursive function for calculating all permutations of the redundant solutions.
  * @details This should not be used directly, use getRedundantSolutions function.
@@ -535,12 +474,32 @@ inline bool isValid(const std::array<FloatType, 6>& qs)
  * @param dof The length of the float array
  */
 template <typename FloatType>
+DEPRECATED("Use redundancy version")
 inline void harmonizeTowardZero(Eigen::Ref<VectorX<FloatType>> qs)
 {
   const static auto pi = FloatType(M_PI);
   const static auto two_pi = FloatType(2.0 * M_PI);
 
   for (Eigen::Index i = 0; i < qs.rows(); ++i)
+  {
+    FloatType diff = std::fmod(qs[i] + pi, two_pi);
+    qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);
+  }
+}
+
+/**
+ * @brief This take an array of floats and modifies them in place to be between [-PI, PI]
+ * @param qs A pointer to a float array
+ * @param dof The length of the float array
+ */
+template <typename FloatType>
+inline void harmonizeTowardZero(Eigen::Ref<VectorX<FloatType>> qs,
+                                const std::vector<Eigen::Index>& redundancy_capable_joints)
+{
+  const static auto pi = FloatType(M_PI);
+  const static auto two_pi = FloatType(2.0 * M_PI);
+
+  for (const auto& i : redundancy_capable_joints)
   {
     FloatType diff = std::fmod(qs[i] + pi, two_pi);
     qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);
