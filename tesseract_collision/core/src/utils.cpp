@@ -49,27 +49,4 @@ IsContactAllowedFn combineContactAllowedFn(const IsContactAllowedFn& original,
       return original;
   }
 }
-
-void applyIsContactAllowedFnOverride(tesseract_collision::ContinuousContactManager& manager,
-                                     const tesseract_common::AllowedCollisionMatrix& acm,
-                                     ACMOverrideType type)
-{
-  IsContactAllowedFn original = manager.getIsContactAllowedFn();
-  IsContactAllowedFn override = [acm](const std::string& str1, const std::string& str2) {
-    return acm.isCollisionAllowed(str1, str2);
-  };
-  manager.setIsContactAllowedFn(combineContactAllowedFn(original, override, type));
-}
-
-void applyIsContactAllowedFnOverride(tesseract_collision::DiscreteContactManager& manager,
-                                     const tesseract_common::AllowedCollisionMatrix& acm,
-                                     ACMOverrideType type)
-{
-  IsContactAllowedFn original = manager.getIsContactAllowedFn();
-  IsContactAllowedFn override = [acm](const std::string& str1, const std::string& str2) {
-    return acm.isCollisionAllowed(str1, str2);
-  };
-  manager.setIsContactAllowedFn(combineContactAllowedFn(original, override, type));
-}
-
 }  // namespace tesseract_collision

@@ -33,5 +33,6 @@ void DiscreteContactManager::applyContactManagerConfig(const ContactManagerConfi
 {
   setCollisionMarginData(config.margin_data, config.margin_data_override_type);
   applyIsContactAllowedFnOverride(*this, config.acm, config.acm_override_type);
+  applyModifyObjectEnabled(*this, config.modify_object_enabled);
 }
 }  // namespace tesseract_collision

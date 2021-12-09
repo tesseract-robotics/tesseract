@@ -259,6 +259,9 @@ enum class ACMOverrideType
  *
  * It should not contain information that is usually specific to a single contactTest such as CollisionObjectTransforms
  * or specific to the way contactTests are carried out such as LVS parameters
+ *
+ * @note Active links were not added to this config since this config could be shared by multiple manipulators, and
+ * those are set based on which one is being checked
  */
 struct ContactManagerConfig
 {
@@ -269,10 +272,15 @@ struct ContactManagerConfig
   CollisionMarginOverrideType margin_data_override_type{ CollisionMarginOverrideType::NONE };
   /** @brief Stores information about how the margins allowed between collision objects*/
   CollisionMarginData margin_data;
+
   /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
   tesseract_common::AllowedCollisionMatrix acm;
   /** @brief Specifies how to combine the IsContactAllowedFn from acm with the one preset in the contact manager */
   ACMOverrideType acm_override_type{ ACMOverrideType::OR };
+
+  /** @brief Each key is an object name. Objects will be enabled/disabled based on the value. Objects that aren't in the
+   * map are unmodified from the defaults*/
+  std::unordered_map<std::string, bool> modify_object_enabled;
 };
 
 /**
