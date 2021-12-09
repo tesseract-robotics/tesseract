@@ -109,7 +109,7 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
   }
 }
 
-TEST(TesseractEnvironmentUtils, applyContactManagerConfig)  // NOLINT
+TEST(TesseractEnvironmentUtils, applyContactManagerConfigIsAllowed)  // NOLINT
 {
   auto scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -131,6 +131,130 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfig)  // NOLINT
 
   checkIsAllowedFnOverride<DiscreteContactManager>(env->getDiscreteContactManager());
   checkIsAllowedFnOverride<ContinuousContactManager>(env->getContinuousContactManager());
+}
+
+TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLINT
+{
+  auto scene_graph = getSceneGraph();
+  EXPECT_TRUE(scene_graph != nullptr);
+
+  auto srdf = getSRDFModel(*scene_graph);
+  EXPECT_TRUE(srdf != nullptr);
+
+  auto env = std::make_shared<Environment>();
+  bool success = env->init(*scene_graph, srdf);
+  EXPECT_TRUE(success);
+
+  // Setup CollisionCheckConfig
+  CollisionCheckConfig default_config;
+  default_config.longest_valid_segment_length = 0.1;
+  default_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+  default_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+  tesseract_collision::CollisionMarginData margin_data(0.0);
+  default_config.contact_manager_config.margin_data = margin_data;
+  default_config.contact_manager_config.margin_data_override_type =
+      tesseract_common::CollisionMarginOverrideType::REPLACE;
+
+  // Check Discrete
+  {
+    auto config = default_config;
+    DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
+    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    manager->setActiveCollisionObjects(active_links);
+
+    // Put the boxes 0.1m in collision
+    tesseract_common::TransformMap tmap;
+    tmap["boxbot_link"] = Eigen::Isometry3d::Identity();
+    tmap["test_box_link"] = Eigen::Isometry3d::Identity();
+    tmap["test_box_link"].translate(Eigen::Vector3d(0.9, 0, 0));
+
+    // In collision by default
+    {
+      std::vector<tesseract_collision::ContactResultMap> contacts;
+      EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config));
+      EXPECT_FALSE(contacts.empty());
+    }
+
+    // Not in collision if link disabled
+    {
+      std::vector<tesseract_collision::ContactResultMap> contacts;
+      config.contact_manager_config.modify_object_enabled["boxbot_link"] = false;
+      manager->applyContactManagerConfig(config.contact_manager_config);
+      EXPECT_FALSE(checkTrajectoryState(contacts, *manager, tmap, config));
+      EXPECT_TRUE(contacts.empty());
+    }
+
+    // Re-enable it. Now in collision again
+    {
+      std::vector<tesseract_collision::ContactResultMap> contacts;
+      config.contact_manager_config.modify_object_enabled["boxbot_link"] = true;
+      manager->applyContactManagerConfig(config.contact_manager_config);
+      EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config));
+      EXPECT_FALSE(contacts.empty());
+    }
+
+    // Disable a link that doesn't exist. Still in collision
+    {
+      std::vector<tesseract_collision::ContactResultMap> contacts;
+      config.contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
+      manager->applyContactManagerConfig(config.contact_manager_config);
+      EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config));
+      EXPECT_FALSE(contacts.empty());
+    }
+  }
+
+  // Check Continuous
+  {
+    auto config = default_config;
+    ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
+    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    manager->setActiveCollisionObjects(active_links);
+
+    // Put the swept volume of the boxes 0.1m in collision
+    tesseract_common::TransformMap tmap1;
+    tmap1["boxbot_link"] = Eigen::Isometry3d::Identity();
+    tmap1["test_box_link"] = Eigen::Isometry3d::Identity();
+    tmap1["test_box_link"].translate(Eigen::Vector3d(0.9, 2, 0));
+
+    tesseract_common::TransformMap tmap2;
+    tmap2["boxbot_link"] = Eigen::Isometry3d::Identity();
+    tmap2["test_box_link"] = Eigen::Isometry3d::Identity();
+    tmap2["test_box_link"].translate(Eigen::Vector3d(0.9, -2, 0));
+
+    {
+      std::vector<tesseract_collision::ContactResultMap> contacts;
+      // In collision by default
+      EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
+      EXPECT_FALSE(contacts.empty());
+    }
+
+    // Not in collision if link disabled
+    {
+      std::vector<tesseract_collision::ContactResultMap> contacts;
+      config.contact_manager_config.modify_object_enabled["boxbot_link"] = false;
+      manager->applyContactManagerConfig(config.contact_manager_config);
+      EXPECT_FALSE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
+      EXPECT_TRUE(contacts.empty());
+    }
+
+    // Re-enable it. Now in collision again
+    {
+      std::vector<tesseract_collision::ContactResultMap> contacts;
+      config.contact_manager_config.modify_object_enabled["boxbot_link"] = true;
+      manager->applyContactManagerConfig(config.contact_manager_config);
+      EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
+      EXPECT_FALSE(contacts.empty());
+    }
+
+    // Disable a link that doesn't exist. Still in collision
+    {
+      std::vector<tesseract_collision::ContactResultMap> contacts;
+      config.contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
+      manager->applyContactManagerConfig(config.contact_manager_config);
+      EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
+      EXPECT_FALSE(contacts.empty());
+    }
+  }
 }
 
 TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT

@@ -51,19 +51,36 @@ IsContactAllowedFn combineContactAllowedFn(const IsContactAllowedFn& original,
  * @param acm ACM used to create IsContactAllowedFn
  * @param type Determines how the two IsContactAllowedFns are combined
  */
-void applyIsContactAllowedFnOverride(tesseract_collision::ContinuousContactManager& manager,
-                                     const tesseract_common::AllowedCollisionMatrix& acm,
-                                     ACMOverrideType type = ACMOverrideType::OR);
-/**
- * @brief Applies ACM to contact manager using override type
- * @param manager Manager whose IsContactAllowedFn will be overwritten
- * @param acm ACM used to create IsContactAllowedFn
- * @param type Determines how the two IsContactAllowedFns are combined
- */
-void applyIsContactAllowedFnOverride(tesseract_collision::DiscreteContactManager& manager,
-                                     const tesseract_common::AllowedCollisionMatrix& acm,
-                                     ACMOverrideType type = ACMOverrideType::OR);
+template <typename ManagerType>
+inline void applyIsContactAllowedFnOverride(ManagerType& manager,
+                                            const tesseract_common::AllowedCollisionMatrix& acm,
+                                            ACMOverrideType type)
+{
+  IsContactAllowedFn original = manager.getIsContactAllowedFn();
+  IsContactAllowedFn override = [acm](const std::string& str1, const std::string& str2) {
+    return acm.isCollisionAllowed(str1, str2);
+  };
+  manager.setIsContactAllowedFn(combineContactAllowedFn(original, override, type));
+}
 
+/**
+ * @brief Loops over the map and for every object string either enables or disables it based on the value (true=enable,
+ * false=disable)
+ * @param manager Manager that will be modified
+ * @param modify_object_enabled Map of [key]:value = [object name]:disable or enable
+ */
+template <typename ManagerType>
+inline void applyModifyObjectEnabled(ManagerType& manager,
+                                     const std::unordered_map<std::string, bool>& modify_object_enabled)
+{
+  for (const auto& entry : modify_object_enabled)
+  {
+    if (entry.second)
+      manager.enableCollisionObject(entry.first);
+    else
+      manager.disableCollisionObject(entry.first);
+  }
+}
 }  // namespace tesseract_collision
 
 #endif  // TESSERACT_COLLISION_TYPES_H
