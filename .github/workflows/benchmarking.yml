@@ -2,6 +2,8 @@ name: Benchmarking
 
 on:
   push:
+    branches:
+      - master
 
 jobs:
   industrial_ci:
