@@ -74,7 +74,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
         geom, &tesseract_urdf::parseOctomap, str, "octomap", resource_locator, 2, true));
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
-    EXPECT_EQ(geom->calcNumSubShapes(), 944);
+    EXPECT_EQ(geom->calcNumSubShapes(), 1000);
     EXPECT_NEAR(geom->getOctree()->getResolution(), 0.1, 1e-5);
   }
 
