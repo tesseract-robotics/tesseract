@@ -35,10 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 // must be above the machine epsilon
 #ifdef BT_USE_DOUBLE_PRECISION
 #define REL_ERROR2 btScalar(1.0e-12)
-static btScalar gGjkEpaPenetrationTolerance = 1.0e-12;
+static const btScalar gGjkEpaPenetrationTolerance = 1.0e-12;
 #else
 #define REL_ERROR2 btScalar(1.0e-6)
-static btScalar gGjkEpaPenetrationTolerance = 0.001f;
+static const btScalar gGjkEpaPenetrationTolerance = 0.001f;
 #endif
 
 namespace tesseract_collision::tesseract_collision_bullet
@@ -144,7 +144,7 @@ struct btSimplex
   int last{ -1 };         //!< index of last added point
 };
 
-static btVector3 ccd_vec3_origin(0, 0, 0);
+static const btVector3 ccd_vec3_origin(0, 0, 0);
 
 inline void btSimplexInit(btSimplex* s) { s->last = -1; }
 

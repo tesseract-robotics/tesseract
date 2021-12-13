@@ -132,4 +132,5 @@ InverseKinematics::UPtr OPWInvKinFactory::create(const std::string& solver_name,
 }
 }  // namespace tesseract_kinematics
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_PLUGIN(tesseract_kinematics::OPWInvKinFactory, OPWInvKinFactory);
