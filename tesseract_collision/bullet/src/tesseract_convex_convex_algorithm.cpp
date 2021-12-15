@@ -861,7 +861,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
   }
 }
 
-bool disableCcd = false;
+static const bool disableCcd = false;
 btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject* body0,
                                                                btCollisionObject* body1,
                                                                const btDispatcherInfo& dispatchInfo,

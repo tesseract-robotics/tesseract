@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/types.h>
 #include <tesseract_kinematics/core/kinematic_group.h>
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
+#include <tesseract_kinematics/core/validate.h>
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
@@ -495,6 +496,8 @@ inline void runInvKinTest(const tesseract_kinematics::KinematicGroup& kin_group,
     Eigen::Quaterniond rot_result(result.rotation());
     EXPECT_TRUE(rot_pose.isApprox(rot_result, 1e-3));
   }
+
+  EXPECT_TRUE(checkKinematics(kin_group));
 }
 
 inline void runFwdKinIIWATest(tesseract_kinematics::ForwardKinematics& kin)

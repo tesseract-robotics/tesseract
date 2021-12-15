@@ -4,7 +4,8 @@ add_library(
   src/rep_inv_kin.cpp
   src/joint_group.cpp
   src/kinematic_group.cpp
-  src/kinematics_plugin_factory.cpp)
+  src/kinematics_plugin_factory.cpp
+  src/validate.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen

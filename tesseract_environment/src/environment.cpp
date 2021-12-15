@@ -29,6 +29,7 @@
 #include <tesseract_collision/core/common.h>
 #include <tesseract_srdf/utils.h>
 #include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
+#include <tesseract_kinematics/core/validate.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <queue>
@@ -397,6 +398,14 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
       group_name, joint_names, std::move(inv_kin), *scene_graph_const_, current_state_);
 
   kinematic_group_cache_[group_name] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+
+#ifndef NDEBUG
+  if (!tesseract_kinematics::checkKinematics(*kg))
+  {
+    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that inverse kinematics solution for a pose do not "
+                            "match forward kinematics solution. Did you change the URDF recently?");
+  }
+#endif
 
   return kg;
 }
