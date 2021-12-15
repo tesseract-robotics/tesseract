@@ -69,8 +69,7 @@ jobs:
             suffix=
           tags: |
             type=ref,event=branch,prefix=${{ env.ROS_DISTRO }}-
-            type=pep440,pattern={{version}},prefix=${{ env.ROS_DISTRO }}-
-            type=pep440,pattern={{major}}.{{minor}},prefix=${{ env.ROS_DISTRO }}-
+            type=semver,pattern={{major}}.{{minor}},prefix=${{ env.ROS_DISTRO }}-
 
       - name: Set build type
         run: |
