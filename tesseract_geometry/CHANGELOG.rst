@@ -2,6 +2,15 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move checkKinematics to getKinematicGroup and add support for clang-tidy-12 (`#682 <https://github.com/tesseract-robotics/tesseract/issues/682>`_)
+  * Move checkKinematics to getKinematicGroup and add support for clang-tidy-12
+  * Reduce the number of checks perform in checkKinematics
+  * Leverage checkKinematics in unit tests
+* Improve creating octree from point cloud using lazy_eval (`#680 <https://github.com/tesseract-robotics/tesseract/issues/680>`_)
+* Contributors: Levi Armstrong
+
 0.7.0 (2021-12-04)
 ------------------
 

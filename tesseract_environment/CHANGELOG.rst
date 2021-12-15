@@ -2,6 +2,15 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move checkKinematics to getKinematicGroup and add support for clang-tidy-12 (`#682 <https://github.com/tesseract-robotics/tesseract/issues/682>`_)
+  * Move checkKinematics to getKinematicGroup and add support for clang-tidy-12
+  * Reduce the number of checks perform in checkKinematics
+  * Leverage checkKinematics in unit tests
+* Add modify_object_enabled to ContactManagerConfig
+* Contributors: Levi Armstrong, Matthew Powelson
+
 0.7.0 (2021-12-04)
 ------------------
 * Rename member variables of ContactManagerConfig

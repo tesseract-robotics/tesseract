@@ -2,6 +2,11 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve creating octree from point cloud using lazy_eval (`#680 <https://github.com/tesseract-robotics/tesseract/issues/680>`_)
+* Contributors: Levi Armstrong
+
 0.7.0 (2021-12-04)
 ------------------
 * Move AllowedCollisionMatrix into tesseract_common
