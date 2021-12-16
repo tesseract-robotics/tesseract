@@ -12,14 +12,14 @@ macro(add_benchmark benchmark_name benchmark_file)
   target_link_libraries(
     ${benchmark_name}
     benchmark::benchmark
-    ${PROJECT_NAME}_core
-    ${PROJECT_NAME}_ofkt
+    ${PROJECT_NAME}
     tesseract::tesseract_urdf
     tesseract::tesseract_support
     console_bridge
     ${Boost_LIBRARIES})
   target_include_directories(${benchmark_name} PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   add_run_benchmark_target(${benchmark_name})
+  add_dependencies(${benchmark_name} ${PROJECT_NAME})
 endmacro()
 
 add_benchmark(${PROJECT_NAME}_clone_benchmark environment_clone_benchmarks.cpp)
