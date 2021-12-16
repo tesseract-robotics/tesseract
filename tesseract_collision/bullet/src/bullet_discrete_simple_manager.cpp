@@ -166,6 +166,15 @@ bool BulletDiscreteSimpleManager::disableCollisionObject(const std::string& name
   return false;
 }
 
+bool BulletDiscreteSimpleManager::isCollisionObjectEnabled(const std::string& name) const
+{
+  auto it = link2cow_.find(name);
+  if (it != link2cow_.end())
+    return it->second->m_enabled;
+
+  return false;
+}
+
 void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
 {
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
