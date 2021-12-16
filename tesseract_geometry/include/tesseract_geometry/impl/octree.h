@@ -176,6 +176,7 @@ private:
     return true;
   }
 
+  // NOLINTNEXTLINE(misc-no-recursion)
   static void pruneRecurs(octomap::OcTree& octree,
                           octomap::OcTreeNode* node,
                           unsigned int depth,

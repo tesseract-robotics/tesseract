@@ -167,7 +167,7 @@ Eigen::Vector4d computeRandomColor()
   return c;
 }
 
-void printNestedException(const std::exception& e, int level)
+void printNestedException(const std::exception& e, int level)  // NOLINT(misc-no-recursion)
 {
   std::cerr << std::string(static_cast<unsigned>(2 * level), ' ') << "exception: " << e.what() << std::endl;
   try
@@ -203,13 +203,7 @@ bool isNumeric(const std::string& s)
 
 bool isNumeric(const std::vector<std::string>& sv)
 {
-  for (const auto& s : sv)
-  {
-    if (!isNumeric(s))
-      return false;
-  }
-
-  return true;
+  return std::all_of(sv.cbegin(), sv.cend(), [](const std::string& s) { return isNumeric(s); });
 }
 
 Eigen::VectorXd generateRandomNumber(const Eigen::Ref<const Eigen::MatrixX2d>& limits)

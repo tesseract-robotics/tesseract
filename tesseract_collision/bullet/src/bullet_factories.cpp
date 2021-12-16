@@ -58,11 +58,15 @@ ContinuousContactManager::UPtr BulletCastSimpleManagerFactory::create(const std:
 
 }  // namespace tesseract_collision::tesseract_collision_bullet
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletDiscreteBVHManagerFactory,
                      BulletDiscreteBVHManagerFactory);
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletDiscreteSimpleManagerFactory,
                      BulletDiscreteSimpleManagerFactory);
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletCastBVHManagerFactory,
                      BulletCastBVHManagerFactory);
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletCastSimpleManagerFactory,
                      BulletCastSimpleManagerFactory);

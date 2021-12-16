@@ -49,6 +49,7 @@ namespace tesseract_common
 static std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
 #else
 /** @brief Random number generator */
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 inline std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
 #endif
 

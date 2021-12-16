@@ -45,6 +45,7 @@ macro(add_gtest test_name test_file)
     ${test_name}
     PRIVATE GTest::GTest
             GTest::Main
+            ${PROJECT_NAME}_core
             ${PROJECT_NAME}_test_suite
             ${PROJECT_NAME}_bullet
             ${PROJECT_NAME}_fcl

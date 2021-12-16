@@ -5,6 +5,9 @@ on:
     branches:
       - master
 
+  # allow manually starting this workflow
+  workflow_dispatch:
+
 jobs:
   industrial_ci:
     name: ${{ matrix.env.CI_NAME }}

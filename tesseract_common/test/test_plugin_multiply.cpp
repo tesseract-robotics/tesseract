@@ -29,4 +29,5 @@
 
 double tesseract_common::TestPluginMultiply::multiply(double x, double y) { return x * y; }
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_PLUGIN(tesseract_common::TestPluginMultiply, plugin)
