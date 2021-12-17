@@ -150,6 +150,15 @@ bool FCLDiscreteBVHManager::disableCollisionObject(const std::string& name)
   return false;
 }
 
+bool FCLDiscreteBVHManager::isCollisionObjectEnabled(const std::string& name) const
+{
+  auto it = link2cow_.find(name);
+  if (it != link2cow_.end())
+    return it->second->m_enabled;
+
+  return false;
+}
+
 void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
 {
   auto it = link2cow_.find(name);
