@@ -18,7 +18,14 @@ if(WIN32) # This was required for windows to find things in tesseract_ext before
 endif()
 
 find_library(CONVEX_DECOMPOSITION_LIBRARY ConvexDecomposition HINTS ${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS})
+if(NOT CONVEX_DECOMPOSITION_LIBRARY)
+  message(FATAL_ERROR "ConvexDecomposition not found! Install libbullet-extras.")
+endif()
+
 find_library(HACD_LIBRARY HACD HINTS ${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS})
+if(NOT HACD_LIBRARY)
+  message(FATAL_ERROR "HACD not found! Install libbullet-extras.")
+endif()
 
 # Create target for Bullet implementation
 add_library(
