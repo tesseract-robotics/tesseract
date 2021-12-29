@@ -116,7 +116,10 @@ tesseract_geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract_geometry::Mes
   std::shared_ptr<tesseract_common::VectorVector3d> ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
   std::shared_ptr<Eigen::VectorXi> ch_faces = std::make_shared<Eigen::VectorXi>();
   int ch_num_faces = createConvexHull(*ch_vertices, *ch_faces, *mesh.getVertices());
-  return std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces);
+  auto convex_mesh =
+      std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces, mesh.getResource());
+  convex_mesh->setCreationMethod(tesseract_geometry::ConvexMesh::MESH);
+  return convex_mesh;
 }
 
 }  // namespace tesseract_collision
