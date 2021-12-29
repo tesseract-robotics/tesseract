@@ -163,12 +163,7 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
     if (version < 2 && !visual)
     {
       for (const auto& mesh : meshes)
-      {
-        auto ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
-        auto ch_faces = std::make_shared<Eigen::VectorXi>();
-        int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, *(mesh->getVertices()));
-        geometries.push_back(std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces));
-      }
+        geometries.push_back(tesseract_collision::makeConvexMesh(*mesh));
     }
     else
     {

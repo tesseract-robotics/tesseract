@@ -53,6 +53,13 @@ public:
   using Ptr = std::shared_ptr<ConvexMesh>;
   using ConstPtr = std::shared_ptr<const ConvexMesh>;
 
+  enum CreationMethod
+  {
+    DEFAULT,
+    MESH,
+    CONVERTED
+  };
+
   /**
    * @brief Convex Mesh geometry
    * @param vertices A vector of vertices associated with the mesh
@@ -133,12 +140,27 @@ public:
   ConvexMesh(ConvexMesh&&) = delete;
   ConvexMesh& operator=(ConvexMesh&&) = delete;
 
+  /**
+   * @brief Get how the convex hull was created
+   * @note This used when writing back out to urdf
+   * @return The CreationMethod
+   */
+  CreationMethod getCreationMethod() const { return creation_method_; }
+
+  /**
+   * @brief Set the method used to create the convex mesh
+   * @note This used when writing back out to urdf
+   * @param value The CreationMethod
+   */
+  void setCreationMethod(CreationMethod method) { creation_method_ = method; }
+
   Geometry::Ptr clone() const override
   {
     return std::make_shared<ConvexMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
   }
 
 private:
+  CreationMethod creation_method_{ DEFAULT };
 };
 
 }  // namespace tesseract_geometry

@@ -98,7 +98,11 @@ tesseract_urdf::parseConvexMesh(const tinyxml2::XMLElement* xml_element,
           tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
               locator.locateResource(filename), scale, true, false);
       for (auto& mesh : temp_meshes)
-        meshes.push_back(tesseract_collision::makeConvexMesh(*mesh));
+      {
+        auto convex_mesh = tesseract_collision::makeConvexMesh(*mesh);
+        convex_mesh->setCreationMethod(tesseract_geometry::ConvexMesh::CONVERTED);
+        meshes.push_back(convex_mesh);
+      }
     }
   }
 
