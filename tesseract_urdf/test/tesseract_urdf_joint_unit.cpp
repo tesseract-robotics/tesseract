@@ -478,6 +478,8 @@ TEST(TesseractURDFUnit, write_joint)  // NOLINT
     joint->type = tesseract_scene_graph::JointType::REVOLUTE;
     joint->axis = Eigen::Vector3d::UnitY();
     joint->limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    joint->limits->lower = 1.0;
+    joint->limits->upper = 2.0;
     joint->safety = std::make_shared<tesseract_scene_graph::JointSafety>();
     joint->calibration = std::make_shared<tesseract_scene_graph::JointCalibration>();
     joint->mimic = std::make_shared<tesseract_scene_graph::JointMimic>();
@@ -492,6 +494,7 @@ TEST(TesseractURDFUnit, write_joint)  // NOLINT
     joint->type = tesseract_scene_graph::JointType::CONTINUOUS;
     joint->axis = Eigen::Vector3d::UnitZ();
     joint->limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    joint->limits->acceleration = 1.0;
     std::string text;
     EXPECT_EQ(0, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
     EXPECT_NE(text, "");
@@ -501,6 +504,8 @@ TEST(TesseractURDFUnit, write_joint)  // NOLINT
     tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
     joint->type = tesseract_scene_graph::JointType::PRISMATIC;
     joint->limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    joint->limits->lower = 1.0;
+    joint->limits->upper = 2.0;
     joint->axis = Eigen::Vector3d::Ones();
     std::string text;
     EXPECT_EQ(0, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));

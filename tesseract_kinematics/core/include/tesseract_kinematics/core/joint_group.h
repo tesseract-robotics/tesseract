@@ -204,6 +204,7 @@ protected:
   tesseract_scene_graph::SceneState state_;
   tesseract_scene_graph::StateSolver::UPtr state_solver_;
   std::vector<std::string> joint_names_;
+  std::vector<std::string> link_names_;
   std::vector<std::string> static_link_names_;
   tesseract_common::TransformMap static_link_transforms_;
   tesseract_common::KinematicLimits limits_;

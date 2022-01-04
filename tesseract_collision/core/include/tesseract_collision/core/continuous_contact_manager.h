@@ -48,6 +48,8 @@ public:
 
   using Ptr = std::shared_ptr<ContinuousContactManager>;
   using ConstPtr = std::shared_ptr<const ContinuousContactManager>;
+  using UPtr = std::unique_ptr<ContinuousContactManager>;
+  using ConstUPtr = std::unique_ptr<const ContinuousContactManager>;
 
   ContinuousContactManager() = default;
   virtual ~ContinuousContactManager() = default;
@@ -57,12 +59,18 @@ public:
   ContinuousContactManager& operator=(ContinuousContactManager&&) = delete;
 
   /**
+   * @brief Get the name of the contact manager
+   * @return The name
+   */
+  virtual std::string getName() const = 0;
+
+  /**
    * @brief Clone the manager
    *
    * This is to be used for multi threaded application. A user should
    * make a clone for each thread.
    */
-  virtual std::shared_ptr<ContinuousContactManager> clone() const = 0;
+  virtual ContinuousContactManager::UPtr clone() const = 0;
 
   /**
    * @brief Add a collision object to the checker
@@ -127,6 +135,13 @@ public:
    * @param name The name of the object
    */
   virtual bool disableCollisionObject(const std::string& name) = 0;
+
+  /**
+   * @brief Check if collision object is enabled
+   * @param name The name of the object
+   * @return True if enabled, otherwise false
+   */
+  virtual bool isCollisionObjectEnabled(const std::string& name) const = 0;
 
   /**
    * @brief Set a single static collision object's tansforms
@@ -254,6 +269,12 @@ public:
    * @param type The type of contact test
    */
   virtual void contactTest(ContactResultMap& collisions, const ContactRequest& request) = 0;
+
+  /**
+   * @brief Applies settings in the config
+   * @param config Settings to be applies
+   */
+  virtual void applyContactManagerConfig(const ContactManagerConfig& config);
 };
 
 }  // namespace tesseract_collision

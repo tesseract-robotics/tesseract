@@ -3,18 +3,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <vector>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_urdf/urdf_parser.h>
-#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
-#include <tesseract_collision/fcl/fcl_discrete_managers.h>
-#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_geometry/impl/box.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
+#include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_environment/commands.h>
 #include <tesseract_environment/environment.h>
+#include <tesseract_environment/utils.h>
 
 using namespace tesseract_scene_graph;
 using namespace tesseract_srdf;
@@ -48,11 +48,13 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-Eigen::Isometry3d tcpCallback(const tesseract_common::ManipulatorInfo&)
+Eigen::Isometry3d tcpCallback(const tesseract_common::ManipulatorInfo& mi)
 {
-  Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
-  tcp.translation() = Eigen::Vector3d(0, 0, 0.1);
-  return tcp;
+  const std::string& tcp_offset_name = std::get<0>(mi.tcp_offset);
+  if (tcp_offset_name == "laser")
+    return Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1);
+
+  throw std::runtime_error("TCPCallback failed to find tcp!");
 }
 
 SceneGraph::UPtr getSceneGraph()
@@ -72,6 +74,26 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
   srdf->initFile(scene_graph, path, locator);
 
   return srdf;
+}
+
+std::string getSceneGraphString()
+{
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+
+  std::ifstream f(path);
+  std::ostringstream ss;
+  ss << f.rdbuf();
+  return ss.str();
+}
+
+std::string getSRDFModelString()
+{
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
+
+  std::ifstream f(path);
+  std::ostringstream ss;
+  ss << f.rdbuf();
+  return ss.str();
 }
 
 SceneGraph::Ptr getSubSceneGraph()
@@ -126,29 +148,16 @@ void runGetLinkTransformsTest(Environment& env)
   }
 }
 
-enum class EnvRegisterMethod
+enum class EnvironmentInitType
 {
-  MANUAL_REGISTAR = 0,
-  ON_CONSTRUCTION = 1,
-  CALL_DEFAULT_REGISTAR = 2
+  OBJECT,
+  STRING,
+  FILEPATH
 };
 
-Environment::Ptr getEnvironment(EnvRegisterMethod register_contact_managers = EnvRegisterMethod::MANUAL_REGISTAR)
+Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitType::OBJECT)
 {
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
-  EXPECT_TRUE(scene_graph != nullptr);
-
-  // Check to make sure all links are enabled
-  for (const auto& link : scene_graph->getLinks())
-  {
-    EXPECT_TRUE(scene_graph->getLinkCollisionEnabled(link->getName()));
-    EXPECT_TRUE(scene_graph->getLinkVisibility(link->getName()));
-  }
-
-  auto srdf = getSRDFModel(*scene_graph);
-  EXPECT_TRUE(srdf != nullptr);
-
-  auto env = std::make_shared<Environment>(register_contact_managers == EnvRegisterMethod::ON_CONSTRUCTION);
+  auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
   EXPECT_EQ(0, env->getRevision());
   EXPECT_EQ(0, env->getCommandHistory().size());
@@ -156,17 +165,55 @@ Environment::Ptr getEnvironment(EnvRegisterMethod register_contact_managers = En
   EXPECT_FALSE(env->isInitialized());
   EXPECT_TRUE(env->clone() != nullptr);
 
-  bool success = env->init(*scene_graph, srdf);
+  bool success = false;
+  switch (init_type)
+  {
+    case EnvironmentInitType::OBJECT:
+    {
+      tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
+      EXPECT_TRUE(scene_graph != nullptr);
+
+      // Check to make sure all links are enabled
+      for (const auto& link : scene_graph->getLinks())
+      {
+        EXPECT_TRUE(scene_graph->getLinkCollisionEnabled(link->getName()));
+        EXPECT_TRUE(scene_graph->getLinkVisibility(link->getName()));
+      }
+
+      auto srdf = getSRDFModel(*scene_graph);
+      EXPECT_TRUE(srdf != nullptr);
+
+      success = env->init(*scene_graph, srdf);
+      EXPECT_TRUE(env->getResourceLocator() == nullptr);
+      env->setResourceLocator(std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      EXPECT_TRUE(env->getResourceLocator() != nullptr);
+      break;
+    }
+    case EnvironmentInitType::STRING:
+    {
+      std::string urdf_string = getSceneGraphString();
+      std::string srdf_string = getSRDFModelString();
+      success = env->init(
+          urdf_string, srdf_string, std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      EXPECT_TRUE(env->getResourceLocator() != nullptr);
+      break;
+    }
+    case EnvironmentInitType::FILEPATH:
+    {
+      tesseract_common::fs::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
+      tesseract_common::fs::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
+
+      success =
+          env->init(urdf_path, srdf_path, std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      EXPECT_TRUE(env->getResourceLocator() != nullptr);
+      break;
+    }
+  }
+
   Environment::ConstPtr env_const = env;
   EXPECT_TRUE(success);
-  EXPECT_EQ(2, env->getRevision());
+  EXPECT_EQ(3, env->getRevision());
   EXPECT_TRUE(env->isInitialized());
-  //  EXPECT_TRUE(env->getManipulatorManager() != nullptr);
-  //  EXPECT_TRUE(env_const->getManipulatorManager() != nullptr);
-  EXPECT_TRUE(env->getResourceLocator() == nullptr);
-
-  env->setResourceLocator(std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
-  EXPECT_TRUE(env->getResourceLocator() != nullptr);
 
   // Check to make sure all links are enabled
   for (const auto& link : env->getSceneGraph()->getLinks())
@@ -175,86 +222,262 @@ Environment::Ptr getEnvironment(EnvRegisterMethod register_contact_managers = En
     EXPECT_TRUE(env->getSceneGraph()->getLinkVisibility(link->getName()));
   }
 
-  if (register_contact_managers == EnvRegisterMethod::MANUAL_REGISTAR)
-  {
-    // No contact managers should exist
-    EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()) ==
-                nullptr);
-    EXPECT_TRUE(env->getContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()) == nullptr);
-
-    EXPECT_TRUE(env->getDiscreteContactManager() == nullptr);
-    EXPECT_TRUE(env->getContinuousContactManager() == nullptr);
-
-    // Register contact manager
-    EXPECT_TRUE(env->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
-                                                    &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
-    EXPECT_TRUE(env->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
-                                                      &tesseract_collision_bullet::BulletCastBVHManager::create));
-
-    // Set active contact manager to one that does not exist
-    EXPECT_FALSE(env->setActiveDiscreteContactManager("does_not_exist"));
-    EXPECT_FALSE(env->setActiveContinuousContactManager("does_not_exist"));
-
-    // Set Active contact manager
-    EXPECT_TRUE(env->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()));
-    EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
-
-    // Contact managers should exist now
-    EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()) !=
-                nullptr);
-    EXPECT_TRUE(env->getContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()) != nullptr);
-
-    EXPECT_TRUE(env->getDiscreteContactManager() != nullptr);
-    EXPECT_TRUE(env->getContinuousContactManager() != nullptr);
-  }
-  else
-  {
-    if (register_contact_managers == EnvRegisterMethod::CALL_DEFAULT_REGISTAR)
-      env->registerDefaultContactManagers();
-
-    // Contact managers should exist
-    EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()) !=
-                nullptr);
-    EXPECT_TRUE(env->getContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()) != nullptr);
-    EXPECT_TRUE(env->getDiscreteContactManager(tesseract_collision_fcl::FCLDiscreteBVHManager::name()) != nullptr);
-
-    EXPECT_TRUE(env->getDiscreteContactManager() != nullptr);
-    EXPECT_TRUE(env->getContinuousContactManager() != nullptr);
-  }
-
   EXPECT_EQ(env->getFindTCPOffsetCallbacks().size(), 0);
   env->addFindTCPOffsetCallback(tcpCallback);
   EXPECT_EQ(env->getFindTCPOffsetCallbacks().size(), 1);
 
+  // Check Group Names
+  tesseract_srdf::GroupNames group_names = env->getGroupNames();
+  std::vector<std::string> group_names_v(group_names.begin(), group_names.end());
+  EXPECT_EQ(group_names_v.size(), 2);
+  EXPECT_EQ(group_names_v[0], "manipulator");
+  EXPECT_EQ(group_names_v[1], "manipulator_joint_group");
+
+  // Check Group Joint Names
+  std::vector<std::string> target_joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                                  "joint_a5", "joint_a6", "joint_a7" };
+  {
+    std::vector<std::string> joint_names = env->getGroupJointNames("manipulator");
+    EXPECT_TRUE(tesseract_common::isIdentical(joint_names, target_joint_names));
+  }
+
+  {
+    std::vector<std::string> joint_names = env->getGroupJointNames("manipulator_joint_group");
+    EXPECT_TRUE(tesseract_common::isIdentical(joint_names, target_joint_names));
+  }
+
+  // Check Get Joint Group
+  auto jg = env->getJointGroup("manipulator");
+  EXPECT_TRUE(jg != nullptr);
+
+  EXPECT_ANY_THROW(env->getJointGroup("does_not_exist"));  // NOLINT
+
+  // Check Get Joint Group
+  auto kg = env->getKinematicGroup("manipulator");
+  EXPECT_TRUE(kg != nullptr);
+
+  EXPECT_ANY_THROW(env->getKinematicGroup("does_not_exist"));  // NOLINT
+
+  // Check Kinematics Information
+  tesseract_srdf::KinematicsInformation kin_info = env->getKinematicsInformation();
+  std::vector<std::string> group_names_ki(kin_info.group_names.begin(), kin_info.group_names.end());
+  EXPECT_EQ(group_names_ki.size(), 2);
+  EXPECT_EQ(group_names_ki[0], "manipulator");
+  EXPECT_EQ(group_names_ki[1], "manipulator_joint_group");
+
+  // Check allowed collision matrix is not nullptr
+  EXPECT_TRUE(env->getDiscreteContactManager()->getIsContactAllowedFn() != nullptr);
+  EXPECT_TRUE(env->getContinuousContactManager()->getIsContactAllowedFn() != nullptr);
+
+  // Get active contact managers
+  {
+    tesseract_common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
+    EXPECT_EQ(cm_info.discrete_plugin_infos.default_plugin, "BulletDiscreteBVHManager");
+    EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastBVHManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteBVHManager");
+    EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastBVHManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getCollisionObjects().size(), 8);
+    EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
+  }
+  {
+    env->setActiveDiscreteContactManager("BulletDiscreteSimpleManager");
+    env->setActiveContinuousContactManager("BulletCastSimpleManager");
+    tesseract_common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
+    EXPECT_EQ(cm_info.discrete_plugin_infos.default_plugin, "BulletDiscreteSimpleManager");
+    EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastSimpleManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteSimpleManager");
+    EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastSimpleManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getCollisionObjects().size(), 8);
+    EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
+  }
+  {
+    env->setActiveDiscreteContactManager("does_not_exist");
+    env->setActiveContinuousContactManager("does_not_exist");
+    tesseract_common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
+    EXPECT_EQ(cm_info.discrete_plugin_infos.default_plugin, "BulletDiscreteSimpleManager");
+    EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastSimpleManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteSimpleManager");
+    EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastSimpleManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getCollisionObjects().size(), 8);
+    EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
+  }
+  {
+    env->setActiveDiscreteContactManager("BulletDiscreteBVHManager");
+    env->setActiveContinuousContactManager("BulletCastBVHManager");
+    tesseract_common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
+    EXPECT_EQ(cm_info.discrete_plugin_infos.default_plugin, "BulletDiscreteBVHManager");
+    EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastBVHManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteBVHManager");
+    EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastBVHManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getCollisionObjects().size(), 8);
+    EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
+  }
+
+  // Test getting contact managers
+  {
+    EXPECT_EQ(env->getDiscreteContactManager("BulletDiscreteSimpleManager")->getName(), "BulletDiscreteSimpleManager");
+    EXPECT_EQ(env->getContinuousContactManager("BulletCastSimpleManager")->getName(), "BulletCastSimpleManager");
+  }
+
+  // Failed
+  EXPECT_TRUE(env->getDiscreteContactManager("does_not_exist") == nullptr);
+  EXPECT_TRUE(env->getContinuousContactManager("does_not_exist") == nullptr);
+
   return env;
 }
 
-TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
+Environment::Ptr getEnvironmentURDFOnly(EnvironmentInitType init_type)
 {
   auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
   EXPECT_EQ(0, env->getRevision());
+  EXPECT_EQ(0, env->getCommandHistory().size());
   EXPECT_FALSE(env->reset());
   EXPECT_FALSE(env->isInitialized());
   EXPECT_TRUE(env->clone() != nullptr);
 
-  // Test Empty commands
-  Commands commands;
-  EXPECT_FALSE(env->init(commands));
-  EXPECT_FALSE(env->isInitialized());
+  bool success = false;
+  switch (init_type)
+  {
+    case EnvironmentInitType::OBJECT:
+    {
+      tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
+      EXPECT_TRUE(scene_graph != nullptr);
 
-  // Test scene graph is not first command
-  commands.clear();
-  auto cmd = std::make_shared<MoveJointCommand>("joint_name", "parent_link");
-  commands.push_back(cmd);
-  EXPECT_FALSE(env->init(commands));
-  EXPECT_FALSE(env->isInitialized());
+      // Check to make sure all links are enabled
+      for (const auto& link : scene_graph->getLinks())
+      {
+        EXPECT_TRUE(scene_graph->getLinkCollisionEnabled(link->getName()));
+        EXPECT_TRUE(scene_graph->getLinkVisibility(link->getName()));
+      }
+
+      success = env->init(*scene_graph);
+      EXPECT_TRUE(env->getResourceLocator() == nullptr);
+      env->setResourceLocator(std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      EXPECT_TRUE(env->getResourceLocator() != nullptr);
+      break;
+    }
+    case EnvironmentInitType::STRING:
+    {
+      std::string urdf_string = getSceneGraphString();
+      success = env->init(urdf_string, std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      EXPECT_TRUE(env->getResourceLocator() != nullptr);
+      break;
+    }
+    case EnvironmentInitType::FILEPATH:
+    {
+      tesseract_common::fs::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
+      success = env->init(urdf_path, std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      EXPECT_TRUE(env->getResourceLocator() != nullptr);
+      break;
+    }
+  }
+
+  Environment::ConstPtr env_const = env;
+  EXPECT_TRUE(success);
+  EXPECT_EQ(1, env->getRevision());
+  EXPECT_TRUE(env->isInitialized());
+
+  // Check to make sure all links are enabled
+  for (const auto& link : env->getSceneGraph()->getLinks())
+  {
+    EXPECT_TRUE(env->getSceneGraph()->getLinkCollisionEnabled(link->getName()));
+    EXPECT_TRUE(env->getSceneGraph()->getLinkVisibility(link->getName()));
+  }
+
+  EXPECT_TRUE(env->getDiscreteContactManager() == nullptr);
+  EXPECT_TRUE(env->getContinuousContactManager() == nullptr);
+
+  return env;
+}
+
+TEST(TesseractEnvironmentUnit, EnvInitURDFOnlyUnit)  // NOLINT
+{
+  getEnvironmentURDFOnly(EnvironmentInitType::OBJECT);
+  getEnvironmentURDFOnly(EnvironmentInitType::STRING);
+  getEnvironmentURDFOnly(EnvironmentInitType::FILEPATH);
+}
+
+TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
+{
+  auto rl = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  {
+    auto env = std::make_shared<Environment>();
+    EXPECT_TRUE(env != nullptr);
+    EXPECT_EQ(0, env->getRevision());
+    EXPECT_FALSE(env->reset());
+    EXPECT_FALSE(env->isInitialized());
+    EXPECT_TRUE(env->clone() != nullptr);
+  }
+
+  {  // Test Empty commands
+    Commands commands;
+    auto env = std::make_shared<Environment>();
+
+    EXPECT_FALSE(env->init(commands));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
+  {  // Test scene graph is not first command
+    Commands commands;
+    auto env = std::make_shared<Environment>();
+    auto cmd = std::make_shared<MoveJointCommand>("joint_name", "parent_link");
+    commands.push_back(cmd);
+    EXPECT_FALSE(env->init(commands));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
+  {  // Test Empty URDF String
+    auto env = std::make_shared<Environment>();
+    std::string urdf_string;
+    EXPECT_FALSE(env->init(urdf_string, rl));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
+  {  // Test bad URDF file path
+    auto env = std::make_shared<Environment>();
+    tesseract_common::fs::path urdf_path("/usr/tmp/doesnotexist.urdf");
+    EXPECT_FALSE(env->init(urdf_path, rl));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
+  {  // Test Empty URDF String with srdf
+    auto env = std::make_shared<Environment>();
+    std::string urdf_string;
+    std::string srdf_string = getSRDFModelString();
+    EXPECT_FALSE(env->init(urdf_string, srdf_string, rl));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
+  {  // Test bad URDF file path with srdf
+    auto env = std::make_shared<Environment>();
+    tesseract_common::fs::path urdf_path("/usr/tmp/doesnotexist.urdf");
+    tesseract_common::fs::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
+    EXPECT_FALSE(env->init(urdf_path, srdf_path, rl));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
+  {  // Test URDF String with empty srdf
+    auto env = std::make_shared<Environment>();
+    std::string urdf_string = getSceneGraphString();
+    std::string srdf_string;
+    EXPECT_FALSE(env->init(urdf_string, srdf_string, rl));
+    EXPECT_FALSE(env->isInitialized());
+  }
+
+  {  // Test URDF file path with bad srdf path
+    auto env = std::make_shared<Environment>();
+    tesseract_common::fs::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
+    tesseract_common::fs::path srdf_path("/usr/tmp/doesnotexist.srdf");
+    EXPECT_FALSE(env->init(urdf_path, srdf_path, rl));
+    EXPECT_FALSE(env->isInitialized());
+  }
 }
 
 TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
 {
   {  // Get the environment
-    auto env = getEnvironment();
+    auto env = getEnvironment(EnvironmentInitType::OBJECT);
 
     // Test after clone if active list correct
     tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
@@ -267,8 +490,8 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
   }
 
-  {  // Get the environment with registered default contact managers
-    auto env = getEnvironment(EnvRegisterMethod::ON_CONSTRUCTION);
+  {  // Get the environment
+    auto env = getEnvironment(EnvironmentInitType::STRING);
 
     // Test after clone if active list correct
     tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
@@ -281,8 +504,8 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
   }
 
-  {  // Get the environment with registered default contact managers function
-    auto env = getEnvironment(EnvRegisterMethod::CALL_DEFAULT_REGISTAR);
+  {  // Get the environment
+    auto env = getEnvironment(EnvironmentInitType::FILEPATH);
 
     // Test after clone if active list correct
     tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
@@ -293,75 +516,6 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     tesseract_collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
     const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
     EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
-  }
-}
-
-void runFindTCPTest()
-{
-  // Get the environment
-  auto env = getEnvironment();
-
-  // Add link to tip of kinematic chain
-  Eigen::Isometry3d tcp_link_tf = Eigen::Isometry3d::Identity();
-  tcp_link_tf.translation() = Eigen::Vector3d(0, 0, 0.35);
-  Link tcp_link("tcp_link");
-  Joint tcp_joint("tcp_joint");
-  tcp_joint.parent_link_name = "tool0";
-  tcp_joint.child_link_name = "tcp_link";
-  tcp_joint.parent_to_joint_origin_transform = tcp_link_tf;
-  tcp_joint.type = JointType::FIXED;
-  env->applyCommand(std::make_shared<AddLinkCommand>(tcp_link, tcp_joint));
-
-  // Add external tcp
-  Eigen::Isometry3d external_tcp_link_tf = Eigen::Isometry3d::Identity();
-  external_tcp_link_tf.translation() = Eigen::Vector3d(1, 0, 1);
-  Link external_tcp_link("external_tcp_link");
-  Joint external_tcp_joint("external_tcp_joint");
-  external_tcp_joint.parent_link_name = "base_link";
-  external_tcp_joint.child_link_name = "external_tcp_link";
-  external_tcp_joint.parent_to_joint_origin_transform = external_tcp_link_tf;
-  external_tcp_joint.type = JointType::FIXED;
-  env->applyCommand(std::make_shared<AddLinkCommand>(external_tcp_link, external_tcp_joint));
-
-  {  // Should return the solution form the provided callback
-    Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
-    tcp.translation() = Eigen::Vector3d(0, 0, 0.1);
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown", tcp);
-    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
-    EXPECT_TRUE(std::get<Eigen::Isometry3d>(manip_info.tcp_offset).isApprox(found_tcp, 1e-6));
-  }
-
-  {  // Empty tcp should return identity
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "", "");
-
-    Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
-    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
-    EXPECT_TRUE(tcp.isApprox(found_tcp, 1e-6));
-  }
-
-  {  // The tcp is a link attached to the tip of the kinematic chain
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", "tcp_link");
-    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
-    EXPECT_TRUE(tcp_link_tf.isApprox(found_tcp, 1e-6));
-  }
-
-  {  // The tcp is external link name
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", "external_tcp_link");
-    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
-    EXPECT_TRUE(external_tcp_link_tf.isApprox(found_tcp, 1e-6));
-  }
-
-  {  // If the manipulator has a tcp transform then it should be returned
-    Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
-    tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
-    tesseract_common::ManipulatorInfo manip_info("manipulator", "", "", tcp);
-    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
-    EXPECT_TRUE(std::get<Eigen::Isometry3d>(manip_info.tcp_offset).isApprox(found_tcp, 1e-6));
-  }
-
-  {  // If the manipulator does not exist it should throw an exception
-    tesseract_common::ManipulatorInfo manip_info("missing_manipulator", "unknown", "unknown");
-    EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
 }
 
@@ -374,7 +528,7 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   std::string l2 = "link_6";
   std::string r = "Unit Test";
 
-  AllowedCollisionMatrix::ConstPtr acm = env->getAllowedCollisionMatrix();
+  tesseract_common::AllowedCollisionMatrix::ConstPtr acm = env->getAllowedCollisionMatrix();
   EXPECT_TRUE(acm->isCollisionAllowed(l1, "base_link"));
   EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_2"));
   EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_3"));
@@ -382,8 +536,8 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_5"));
   EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_6"));
   EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_7"));
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   // Remove allowed collision
   auto cmd_remove = std::make_shared<RemoveAllowedCollisionCommand>(l1, l2);
@@ -394,8 +548,8 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_TRUE(env->applyCommand(cmd_remove));
 
   EXPECT_FALSE(acm->isCollisionAllowed(l1, l2));
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
   EXPECT_EQ(env->getCommandHistory().back(), cmd_remove);
 
   // Add allowed collision back
@@ -408,8 +562,8 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_TRUE(env->applyCommand(cmd_add));
 
   EXPECT_TRUE(acm->isCollisionAllowed(l1, l2));
-  EXPECT_EQ(env->getRevision(), 4);
-  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
   EXPECT_EQ(env->getCommandHistory().back(), cmd_add);
 
   // Remove allowed collision
@@ -426,8 +580,8 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_5"));
   EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_6"));
   EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_7"));
-  EXPECT_EQ(env->getRevision(), 5);
-  EXPECT_EQ(env->getCommandHistory().size(), 5);
+  EXPECT_EQ(env->getRevision(), 6);
+  EXPECT_EQ(env->getCommandHistory().size(), 6);
   EXPECT_EQ(env->getCommandHistory().back(), cmd_remove_link);
 }
 
@@ -464,8 +618,8 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     EXPECT_TRUE(env->applyCommand(cmd));
   }
 
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
   EXPECT_TRUE(env->getDiscreteContactManager()->hasCollisionObject(link_name1));
   EXPECT_FALSE(env->getDiscreteContactManager()->hasCollisionObject(link_name2));
   EXPECT_TRUE(env->getContinuousContactManager()->hasCollisionObject(link_name1));
@@ -489,8 +643,8 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     EXPECT_TRUE(env->applyCommand(cmd));
   }
 
-  EXPECT_EQ(env->getRevision(), 4);
-  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
 
   link_names = env->getLinkNames();
   joint_names = env->getJointNames();
@@ -511,8 +665,8 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     EXPECT_TRUE(env->applyCommand(cmd));
   }
 
-  EXPECT_EQ(env->getRevision(), 5);
-  EXPECT_EQ(env->getCommandHistory().size(), 5);
+  EXPECT_EQ(env->getRevision(), 6);
+  EXPECT_EQ(env->getCommandHistory().size(), 6);
   EXPECT_FALSE(env->getDiscreteContactManager()->hasCollisionObject(link_name1));
   EXPECT_FALSE(env->getDiscreteContactManager()->hasCollisionObject(link_name2));
   EXPECT_FALSE(env->getContinuousContactManager()->hasCollisionObject(link_name1));
@@ -542,8 +696,8 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     EXPECT_EQ(cmd->getLinkName(), link_name1);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
-  EXPECT_EQ(env->getRevision(), 5);
-  EXPECT_EQ(env->getCommandHistory().size(), 5);
+  EXPECT_EQ(env->getRevision(), 6);
+  EXPECT_EQ(env->getCommandHistory().size(), 6);
 
   {
     auto cmd = std::make_shared<RemoveLinkCommand>(link_name2);
@@ -552,8 +706,8 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     EXPECT_EQ(cmd->getLinkName(), link_name2);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
-  EXPECT_EQ(env->getRevision(), 5);
-  EXPECT_EQ(env->getCommandHistory().size(), 5);
+  EXPECT_EQ(env->getRevision(), 6);
+  EXPECT_EQ(env->getCommandHistory().size(), 6);
 
   {
     auto cmd = std::make_shared<RemoveJointCommand>(joint_name1);
@@ -562,8 +716,8 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     EXPECT_EQ(cmd->getJointName(), joint_name1);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
-  EXPECT_EQ(env->getRevision(), 5);
-  EXPECT_EQ(env->getCommandHistory().size(), 5);
+  EXPECT_EQ(env->getRevision(), 6);
+  EXPECT_EQ(env->getCommandHistory().size(), 6);
 
   {
     auto cmd = std::make_shared<RemoveJointCommand>("joint_" + link_name1);
@@ -572,8 +726,8 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     EXPECT_EQ(cmd->getJointName(), "joint_" + link_name1);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
-  EXPECT_EQ(env->getRevision(), 5);
-  EXPECT_EQ(env->getCommandHistory().size(), 5);
+  EXPECT_EQ(env->getRevision(), 6);
+  EXPECT_EQ(env->getCommandHistory().size(), 6);
 }
 
 TEST(TesseractEnvironmentUnit, EnvAddKinematicsInformationCommandUnit)  // NOLINT
@@ -596,8 +750,8 @@ TEST(TesseractEnvironmentUnit, EnvAddKinematicsInformationCommandUnit)  // NOLIN
   EXPECT_TRUE(kin_info2.group_states == kin_info.group_states);
   EXPECT_TRUE(env->applyCommand(cmd));
 
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
 }
 
 TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
@@ -616,8 +770,8 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
     EXPECT_FALSE(env->applyCommand(cmd));
   }
 
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   Joint joint_1("provided_subgraph_joint");
   joint_1.parent_link_name = "base_link";
@@ -632,8 +786,8 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
     EXPECT_FALSE(env->applyCommand(cmd));
   }
 
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   subgraph = getSubSceneGraph();
 
@@ -649,8 +803,8 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
     EXPECT_TRUE(env->applyCommand(cmd));
   }
 
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
   EXPECT_TRUE(env->getDiscreteContactManager()->hasCollisionObject(link_name1));
   EXPECT_FALSE(env->getDiscreteContactManager()->hasCollisionObject(link_name2));
   EXPECT_TRUE(env->getContinuousContactManager()->hasCollisionObject(link_name1));
@@ -671,8 +825,8 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
     EXPECT_FALSE(env->applyCommand(cmd));
   }
 
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
 
   // Add subgraph with prefix
   {
@@ -683,8 +837,8 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
     EXPECT_TRUE(env->applyCommand(cmd));
   }
 
-  EXPECT_EQ(env->getRevision(), 4);
-  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
 
   state = env->getState();
   EXPECT_TRUE(env->getJoint("prefix_subgraph_joint") != nullptr);
@@ -706,8 +860,8 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
     EXPECT_TRUE(env->applyCommand(cmd));
   }
 
-  EXPECT_EQ(env->getRevision(), 5);
-  EXPECT_EQ(env->getCommandHistory().size(), 5);
+  EXPECT_EQ(env->getRevision(), 6);
+  EXPECT_EQ(env->getCommandHistory().size(), 6);
 
   state = env->getState();
   EXPECT_TRUE(env->getJoint("provided_subgraph_joint") != nullptr);
@@ -721,8 +875,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointLimitsCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   {
     JointLimits::ConstPtr limits = env->getJointLimits("not_in_graph");
@@ -854,8 +1008,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   const std::string link_name1 = "link_n1";
   const std::string joint_name1 = "joint_n1";
@@ -868,8 +1022,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link_1, joint_1));
   tesseract_scene_graph::SceneState state = env->getState();
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
@@ -886,8 +1040,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
   EXPECT_TRUE(env->applyCommand(cmd));
   EXPECT_EQ(env->getCommandHistory().back(), cmd);
 
-  EXPECT_EQ(env->getRevision(), 4);
-  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
 
   // Check that the origin got updated
   state = env->getState();
@@ -902,8 +1056,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkOriginCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   std::string link_name = "base_link";
   Eigen::Isometry3d new_origin = Eigen::Isometry3d::Identity();
@@ -921,8 +1075,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledCommandUnit)  // NOL
   // Get the environment
   /** @todo update contact manager to have function to check collision object enabled state */
   auto env = getEnvironment();
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   std::string link_name = "link_1";
   EXPECT_TRUE(env->getSceneGraph()->getLinkCollisionEnabled(link_name));
@@ -937,8 +1091,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledCommandUnit)  // NOL
     EXPECT_EQ(env->getCommandHistory().back(), cmd);
   }
 
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
   EXPECT_FALSE(env->getSceneGraph()->getLinkCollisionEnabled(link_name));
 
   {  // Enable Link collision
@@ -951,8 +1105,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledCommandUnit)  // NOL
     EXPECT_EQ(env->getCommandHistory().back(), cmd);
   }
 
-  EXPECT_EQ(env->getRevision(), 4);
-  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
   EXPECT_TRUE(env->getSceneGraph()->getLinkCollisionEnabled(link_name));
 }
 
@@ -961,8 +1115,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkVisibilityCommandUnit)  // NOLINT
   // Get the environment
   /** @todo update contact manager to have function to check collision object enabled state */
   auto env = getEnvironment();
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   std::string link_name = "link_1";
   EXPECT_TRUE(env->getSceneGraph()->getLinkVisibility(link_name));
@@ -975,9 +1129,49 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkVisibilityCommandUnit)  // NOLINT
   EXPECT_TRUE(env->applyCommand(cmd));
   EXPECT_EQ(env->getCommandHistory().back(), cmd);
 
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_FALSE(env->getSceneGraph()->getLinkVisibility(link_name));
+}
+
+TEST(TesseractEnvironmentUnit, EnvSetActiveContinuousContactManagerCommandUnit)  // NOLINT
+{
+  // Get the environment
+  /** @todo update contact manager to have function to check collision object enabled state */
+  auto env = getEnvironment();
   EXPECT_EQ(env->getRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 3);
-  EXPECT_FALSE(env->getSceneGraph()->getLinkVisibility(link_name));
+
+  auto cmd = std::make_shared<SetActiveContinuousContactManagerCommand>("BulletCastSimpleManager");
+  EXPECT_TRUE(cmd != nullptr);
+  EXPECT_EQ(cmd->getType(), CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER);
+  EXPECT_EQ(cmd->getName(), "BulletCastSimpleManager");
+  EXPECT_TRUE(env->applyCommand(cmd));
+  EXPECT_EQ(env->getCommandHistory().back(), cmd);
+
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastSimpleManager");
+}
+
+TEST(TesseractEnvironmentUnit, EnvSetActiveDiscreteContactManagerCommandUnit)  // NOLINT
+{
+  // Get the environment
+  /** @todo update contact manager to have function to check collision object enabled state */
+  auto env = getEnvironment();
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
+
+  auto cmd = std::make_shared<SetActiveDiscreteContactManagerCommand>("BulletDiscreteSimpleManager");
+  EXPECT_TRUE(cmd != nullptr);
+  EXPECT_EQ(cmd->getType(), CommandType::SET_ACTIVE_DISCRETE_CONTACT_MANAGER);
+  EXPECT_EQ(cmd->getName(), "BulletDiscreteSimpleManager");
+  EXPECT_TRUE(env->applyCommand(cmd));
+  EXPECT_EQ(env->getCommandHistory().back(), cmd);
+
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteSimpleManager");
 }
 
 TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
@@ -988,8 +1182,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
     double margin = 0.1;
 
     auto env = getEnvironment();
-    EXPECT_EQ(env->getRevision(), 2);
-    EXPECT_EQ(env->getCommandHistory().size(), 2);
+    EXPECT_EQ(env->getRevision(), 3);
+    EXPECT_EQ(env->getCommandHistory().size(), 3);
     EXPECT_NEAR(
         env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
         0.0,
@@ -1012,8 +1206,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
     EXPECT_EQ(cmd->getCollisionMarginOverrideType(), tesseract_common::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN);
     EXPECT_TRUE(env->applyCommand(cmd));
 
-    EXPECT_EQ(env->getRevision(), 3);
-    EXPECT_EQ(env->getCommandHistory().size(), 3);
+    EXPECT_EQ(env->getRevision(), 4);
+    EXPECT_EQ(env->getCommandHistory().size(), 4);
     EXPECT_EQ(env->getCommandHistory().back(), cmd);
     EXPECT_NEAR(
         env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
@@ -1040,8 +1234,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
               tesseract_common::CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN);
     EXPECT_TRUE(env->applyCommand(cmd));
 
-    EXPECT_EQ(env->getRevision(), 4);
-    EXPECT_EQ(env->getCommandHistory().size(), 4);
+    EXPECT_EQ(env->getRevision(), 5);
+    EXPECT_EQ(env->getCommandHistory().size(), 5);
     EXPECT_EQ(env->getCommandHistory().back(), cmd);
     // Link1 and Link2 should be reset
     EXPECT_NEAR(
@@ -1064,8 +1258,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
 
   {  // OVERRIDE_DEFAULT_MARGIN Unit Test
     auto env = getEnvironment();
-    EXPECT_EQ(env->getRevision(), 2);
-    EXPECT_EQ(env->getCommandHistory().size(), 2);
+    EXPECT_EQ(env->getRevision(), 3);
+    EXPECT_EQ(env->getCommandHistory().size(), 3);
     EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
     EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
 
@@ -1081,8 +1275,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
               tesseract_common::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN);
     EXPECT_TRUE(env->applyCommand(cmd));
 
-    EXPECT_EQ(env->getRevision(), 3);
-    EXPECT_EQ(env->getCommandHistory().size(), 3);
+    EXPECT_EQ(env->getRevision(), 4);
+    EXPECT_EQ(env->getCommandHistory().size(), 4);
     EXPECT_EQ(env->getCommandHistory().back(), cmd);
     EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
     EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
@@ -1093,8 +1287,8 @@ TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   const std::string link_name1 = "link_n1";
   const std::string link_name2 = "link_n2";
@@ -1116,16 +1310,16 @@ TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link_1, joint_1));
   tesseract_scene_graph::SceneState state = env->getState();
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
 
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link_2, joint_2));
-  EXPECT_EQ(env->getRevision(), 4);
-  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
 
   std::vector<std::string> link_names = env->getLinkNames();
   std::vector<std::string> joint_names = env->getJointNames();
@@ -1173,8 +1367,8 @@ TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
-  EXPECT_EQ(env->getRevision(), 2);
-  EXPECT_EQ(env->getCommandHistory().size(), 2);
+  EXPECT_EQ(env->getRevision(), 3);
+  EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   const std::string link_name1 = "link_n1";
   const std::string link_name2 = "link_n2";
@@ -1196,16 +1390,16 @@ TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link_1, joint_1));
   tesseract_scene_graph::SceneState state = env->getState();
-  EXPECT_EQ(env->getRevision(), 3);
-  EXPECT_EQ(env->getCommandHistory().size(), 3);
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
 
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link_2, joint_2));
-  EXPECT_EQ(env->getRevision(), 4);
-  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
 
   std::vector<std::string> link_names = env->getLinkNames();
   std::vector<std::string> joint_names = env->getJointNames();
@@ -1267,6 +1461,9 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
     EXPECT_TRUE(env->getLinkVisibility(link_name));
   }
 
+  // Get current timestamp
+  auto d1 = env->getCurrentStateTimestamp();
+
   // Set the initial state of the robot
   std::unordered_map<std::string, double> joint_states;
   joint_states["joint_a1"] = 0.0;
@@ -1277,6 +1474,11 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   joint_states["joint_a6"] = 0.0;
   joint_states["joint_a7"] = 0.0;
   env->setState(joint_states);
+
+  // Get new timestamp
+  auto d2 = env->getCurrentStateTimestamp();
+
+  EXPECT_TRUE(d2.count() > d1.count());
 
   SceneState state = env->getState();
   for (auto& joint_state : joint_states)
@@ -2143,10 +2345,420 @@ TEST(TesseractEnvironmentUnit, EnvSetState2)  // NOLINT
   }
 }
 
-// TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
-//{
-//  runFindTCPTest();
-//}
+TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
+{
+  // Get the environment
+  auto env = getEnvironment();
+
+  {  // Should return the solution form the provided callback
+    Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
+    tcp.translation() = Eigen::Vector3d(0, 0, 0.1);
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown", tcp);
+    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
+    EXPECT_TRUE(std::get<Eigen::Isometry3d>(manip_info.tcp_offset).isApprox(found_tcp, 1e-6));
+  }
+
+  {  // If the manipulator has a tcp transform then it should be returned
+    Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
+    tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "", "");
+    manip_info.tcp_offset = "laser";
+    Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
+    EXPECT_TRUE(found_tcp.isApprox(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1), 1e-6));
+  }
+
+  {  // The tcp offset name is a link in the environment so it should throw an exception
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown");
+    manip_info.tcp_offset = "tool0";
+    EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
+  }
+
+  {  // If the tcp offset name does not exist it should throw an exception
+    tesseract_common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown");
+    manip_info.tcp_offset = "unknown";
+    EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
+  }
+}
+
+TEST(TesseractEnvironmentUnit, getActiveLinkNamesRecursiveUnit)  // NOLINT
+{
+  // Get the environment
+  auto env = getEnvironment();
+
+  std::vector<std::string> active_links;
+  getActiveLinkNamesRecursive(active_links, *env->getSceneGraph(), env->getRootLinkName(), false);
+  std::vector<std::string> target_active_links = env->getActiveLinkNames();
+  EXPECT_TRUE(tesseract_common::isIdentical(active_links, target_active_links, false));
+}
+
+TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
+{
+  // Get the environment
+  auto env = getEnvironment();
+
+  // Add sphere to environment
+  Link link_sphere("sphere_attached");
+
+  Visual::Ptr visual = std::make_shared<Visual>();
+  visual->origin = Eigen::Isometry3d::Identity();
+  visual->origin.translation() = Eigen::Vector3d(0.5, 0, 0.55);
+  visual->geometry = std::make_shared<tesseract_geometry::Sphere>(0.15);
+  link_sphere.visual.push_back(visual);
+
+  Collision::Ptr collision = std::make_shared<Collision>();
+  collision->origin = visual->origin;
+  collision->geometry = visual->geometry;
+  link_sphere.collision.push_back(collision);
+
+  Joint joint_sphere("joint_sphere_attached");
+  joint_sphere.parent_link_name = "base_link";
+  joint_sphere.child_link_name = link_sphere.getName();
+  joint_sphere.type = JointType::FIXED;
+
+  auto cmd = std::make_shared<tesseract_environment::AddLinkCommand>(link_sphere, joint_sphere);
+
+  EXPECT_TRUE(env->applyCommand(cmd));
+
+  // Set the robot initial state
+  std::vector<std::string> joint_names;
+  joint_names.emplace_back("joint_a1");
+  joint_names.emplace_back("joint_a2");
+  joint_names.emplace_back("joint_a3");
+  joint_names.emplace_back("joint_a4");
+  joint_names.emplace_back("joint_a5");
+  joint_names.emplace_back("joint_a6");
+  joint_names.emplace_back("joint_a7");
+
+  Eigen::VectorXd joint_start_pos(7);
+  joint_start_pos(0) = -0.4;
+  joint_start_pos(1) = 0.2762;
+  joint_start_pos(2) = 0.0;
+  joint_start_pos(3) = -1.3348;
+  joint_start_pos(4) = 0.0;
+  joint_start_pos(5) = 1.4959;
+  joint_start_pos(6) = 0.0;
+
+  Eigen::VectorXd joint_end_pos(7);
+  joint_end_pos(0) = 0.4;
+  joint_end_pos(1) = 0.2762;
+  joint_end_pos(2) = 0.0;
+  joint_end_pos(3) = -1.3348;
+  joint_end_pos(4) = 0.0;
+  joint_end_pos(5) = 1.4959;
+  joint_end_pos(6) = 0.0;
+
+  tesseract_common::TrajArray traj(5, joint_start_pos.size());
+
+  for (int i = 0; i < joint_start_pos.size(); ++i)
+    traj.col(i) = Eigen::VectorXd::LinSpaced(5, joint_start_pos(i), joint_end_pos(i));
+
+  auto discrete_manager = env->getDiscreteContactManager();
+  auto continuous_manager = env->getContinuousContactManager();
+  auto state_solver = env->getStateSolver();
+  auto joint_group = env->getJointGroup("manipulator");
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 3);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 1);
+    EXPECT_EQ(contacts[0].size(), 1);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_FALSE(tesseract_environment::checkTrajectory(
+        contacts, *discrete_manager, *state_solver, joint_names, joint_start_pos.transpose(), config));
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 3);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 1);
+    EXPECT_EQ(contacts[0].size(), 1);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 134);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 3);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 1);
+    EXPECT_EQ(contacts[0].size(), 1);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_FALSE(tesseract_environment::checkTrajectory(
+        contacts, *discrete_manager, *joint_group, joint_start_pos.transpose(), config));
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 3);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 1);
+    EXPECT_EQ(contacts[0].size(), 1);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 134);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 4);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 3);
+    EXPECT_EQ(contacts[3].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 1);
+    EXPECT_EQ(contacts[0].size(), 1);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 4);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 3);
+    EXPECT_EQ(contacts[3].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 1);
+    EXPECT_EQ(contacts[0].size(), 1);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_EQ(contacts.size(), 135);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 4);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 3);
+    EXPECT_EQ(contacts[3].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 1);
+    EXPECT_EQ(contacts[0].size(), 1);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 4);
+    EXPECT_EQ(contacts[0].size(), 2);
+    EXPECT_EQ(contacts[1].size(), 2);
+    EXPECT_EQ(contacts[2].size(), 3);
+    EXPECT_EQ(contacts[3].size(), 2);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+    config.longest_valid_segment_length = std::numeric_limits<double>::max();
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 1);
+    EXPECT_EQ(contacts[0].size(), 1);
+  }
+
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    EXPECT_TRUE(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
+    EXPECT_EQ(contacts.size(), 135);
+  }
+
+  // Failures
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(
+        tesseract_environment::checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(contacts, *discrete_manager, *joint_group, traj, config));
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *discrete_manager, *state_solver, joint_names, tesseract_common::TrajArray(), config));
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *discrete_manager, *joint_group, tesseract_common::TrajArray(), config));
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(contacts, *continuous_manager, *joint_group, traj, config));
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *state_solver, joint_names, tesseract_common::TrajArray(), config));
+  }
+  {
+    tesseract_collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::CONTINUOUS;
+    std::vector<tesseract_collision::ContactResultMap> contacts;
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(tesseract_environment::checkTrajectory(
+        contacts, *continuous_manager, *joint_group, tesseract_common::TrajArray(), config));
+  }
+}
 
 int main(int argc, char** argv)
 {

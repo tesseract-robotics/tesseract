@@ -36,12 +36,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/commands.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract_collision/core/discrete_contact_manager_factory.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_collision/core/continuous_contact_manager_factory.h>
+#include <tesseract_collision/core/contact_managers_plugin_factory.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_state_solver/mutable_state_solver.h>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_srdf/srdf_model.h>
@@ -78,12 +76,8 @@ public:
   using UPtr = std::unique_ptr<Environment>;
   using ConstUPtr = std::unique_ptr<const Environment>;
 
-  /**
-   * @brief Default constructor
-   * @param register_default_contact_managers Indicate if the default contact managers should be registered
-   */
-  Environment(bool register_default_contact_managers = true);
-
+  /** @brief Default constructor */
+  Environment() = default;
   virtual ~Environment() = default;
   Environment(const Environment&) = delete;
   Environment& operator=(const Environment&) = delete;
@@ -127,7 +121,7 @@ public:
    * @brief Clone the environment
    * @return A clone of the environment
    */
-  Environment::Ptr clone() const;
+  Environment::UPtr clone() const;
 
   /**
    * @brief reset to initialized state
@@ -214,7 +208,7 @@ public:
    *
    * If manipulator information tcp is defined as a string it does the following
    *    - First check if manipulator info is empty or already an Isometry3d, if so return identity
-   *    - Next if not, it checks if the tcp offset name is a link in the environment if so it return identity
+   *    - Next if not, it checks if the tcp offset name is a link in the environment if so throw an exception.
    *    - Next if not found, it looks up the tcp name in the SRDF kinematics information
    *    - Next if not found, it leverages the user defined callbacks to try an locate the tcp information.
    *    - Next throw an exception, because no tcp information was located.
@@ -323,7 +317,7 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  tesseract_scene_graph::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
+  tesseract_common::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get a vector of joint names in the environment
@@ -431,6 +425,12 @@ public:
   tesseract_srdf::GroupNames getGroupNames() const;
 
   /**
+   * @brief Get the contact managers plugin information
+   * @return The contact managers plugin information
+   */
+  tesseract_common::ContactManagersPluginInfo getContactManagersPluginInfo() const;
+
+  /**
    * @brief Set the active discrete contact manager
    * @param name The name used to register the contact manager
    * @return True of name exists in DiscreteContactManagerFactory
@@ -438,10 +438,10 @@ public:
   bool setActiveDiscreteContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active discrete contact manager */
-  tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager() const;
+  tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManager() const;
 
   /** @brief Get a copy of the environments available discrete contact manager by name */
-  tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager(const std::string& name) const;
+  tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManager(const std::string& name) const;
 
   /**
    * @brief Set the active continuous contact manager
@@ -451,38 +451,13 @@ public:
   bool setActiveContinuousContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active continuous contact manager */
-  tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager() const;
+  tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManager() const;
 
   /** @brief Get a copy of the environments available continuous contact manager by name */
-  tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager(const std::string& name) const;
+  tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManager(const std::string& name) const;
 
   /** @brief Get the environment collision margin data */
   tesseract_common::CollisionMarginData getCollisionMarginData() const;
-
-  /**
-   * @brief Set the discrete contact manager
-   *
-   * This method should clear the contents of the manager and reload it with the objects
-   * in the environment.
-   */
-  bool registerDiscreteContactManager(const std::string& name,
-                                      tesseract_collision::DiscreteContactManagerFactoryCreateMethod create_function);
-
-  /**
-   * @brief Set the discrete contact manager
-   *
-   * This method should clear the contents of the manager and reload it with the objects
-   * in the environment.
-   */
-  bool
-  registerContinuousContactManager(const std::string& name,
-                                   tesseract_collision::ContinuousContactManagerFactoryCreateMethod create_function);
-
-  /**
-   * @brief Register Default Contact Managers
-   * @return True if successful, otherwise false
-   */
-  bool registerDefaultContactManagers();
 
 protected:
   /** @brief Identifies if the object has been initialized */
@@ -524,32 +499,44 @@ protected:
   /** @brief A vector of user defined callbacks for locating tool center point */
   std::vector<FindTCPOffsetCallbackFn> find_tcp_cb_;
 
-  /** @brief This indicates that the default collision checker 'Bullet' should be registered */
-  bool register_default_contact_managers_{ true };
-
   /** @brief Used when initialized by URDF_STRING, URDF_STRING_SRDF_STRING, URDF_PATH, and URDF_PATH_SRDF_PATH */
   tesseract_common::ResourceLocator::ConstPtr resource_locator_;
+
+  /** @brief The contact manager information */
+  tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info_;
+
+  /** @brief The contact managers factory */
+  tesseract_collision::ContactManagersPluginFactory contact_managers_factory_;
 
   /** @brief The collision margin data */
   tesseract_collision::CollisionMarginData collision_margin_data_;
 
   /** @brief The discrete contact manager object */
-  tesseract_collision::DiscreteContactManager::Ptr discrete_manager_;
+  tesseract_collision::DiscreteContactManager::UPtr discrete_manager_;
 
   /** @brief The continuous contact manager object */
-  tesseract_collision::ContinuousContactManager::Ptr continuous_manager_;
+  tesseract_collision::ContinuousContactManager::UPtr continuous_manager_;
 
-  /** @brief Name of active discrete contact manager */
-  std::string discrete_manager_name_;
+  /**
+   *  @brief A cache of group joint names to provide faster access
+   *  @details This will cleared when environment changes
+   */
+  mutable std::unordered_map<std::string, std::vector<std::string>> group_joint_names_cache_;
+  mutable std::shared_mutex group_joint_names_cache_mutex_;
 
-  /** @brief Name of active continuous contact manager */
-  std::string continuous_manager_name_;
+  /**
+   *  @brief A cache of joint groups to provide faster access
+   *  @details This will cleared when environment changes
+   */
+  mutable std::unordered_map<std::string, tesseract_kinematics::JointGroup::UPtr> joint_group_cache_;
+  mutable std::shared_mutex joint_group_cache_mutex_;
 
-  /** @brief Discrete contact manager factory */
-  tesseract_collision::DiscreteContactManagerFactory discrete_factory_;
-
-  /** @brief Continuous contact manager factory */
-  tesseract_collision::ContinuousContactManagerFactory continuous_factory_;
+  /**
+   *  @brief A cache of kinematic groups to provide faster access
+   *  @details This will cleared when environment changes
+   */
+  mutable std::unordered_map<std::string, tesseract_kinematics::KinematicGroup::UPtr> kinematic_group_cache_;
+  mutable std::shared_mutex kinematic_group_cache_mutex_;
 
   /** @brief The environment can be accessed from multiple threads, need use mutex throughout */
   mutable std::shared_mutex mutex_;
@@ -567,13 +554,12 @@ private:
                                  tesseract_common::VectorIsometry3d& shape_poses,
                                  const tesseract_scene_graph::Link& link);
 
-  bool registerDefaultContactManagersHelper();
   bool setActiveDiscreteContactManagerHelper(const std::string& name);
   bool setActiveContinuousContactManagerHelper(const std::string& name);
 
-  tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManagerHelper(const std::string& name) const;
+  tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManagerHelper(const std::string& name) const;
 
-  tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManagerHelper(const std::string& name) const;
+  tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManagerHelper(const std::string& name) const;
 
   bool initHelper(const Commands& commands);
   static Commands getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -602,6 +588,9 @@ private:
   bool applyChangeJointAccelerationLimitsCommand(const ChangeJointAccelerationLimitsCommand::ConstPtr& cmd);
   bool applyAddKinematicsInformationCommand(const AddKinematicsInformationCommand::ConstPtr& cmd);
   bool applyChangeCollisionMarginsCommand(const ChangeCollisionMarginsCommand::ConstPtr& cmd);
+  bool applyAddContactManagersPluginInfoCommand(const AddContactManagersPluginInfoCommand::ConstPtr& cmd);
+  bool applySetActiveContinuousContactManagerCommand(const SetActiveContinuousContactManagerCommand::ConstPtr& cmd);
+  bool applySetActiveDiscreteContactManagerCommand(const SetActiveDiscreteContactManagerCommand::ConstPtr& cmd);
 };
 }  // namespace tesseract_environment
 

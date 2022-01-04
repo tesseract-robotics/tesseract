@@ -15,6 +15,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_common/any.h>
 #include <tesseract_common/kinematic_limits.h>
+#include <tesseract_common/yaml_utils.h>
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
@@ -1046,13 +1047,13 @@ TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "KDLFwdKin";
-    kpi.fwd_plugin_infos["manipulator"] = { std::make_pair("KDLFwdKin", pi) };
+    kpi.fwd_plugin_infos["manipulator"].plugins = { std::make_pair("KDLFwdKin", pi) };
   }
 
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "KDLInvKin";
-    kpi.inv_plugin_infos["manipulator"] = { std::make_pair("KDLInvKin", pi) };
+    kpi.inv_plugin_infos["manipulator"].plugins = { std::make_pair("KDLInvKin", pi) };
   }
 
   EXPECT_FALSE(kpi_insert.empty());
@@ -1062,6 +1063,498 @@ TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
 
   kpi.clear();
   EXPECT_TRUE(kpi.empty());
+}
+
+TEST(TesseractCommonUnit, ContactManagersPluginInfoUnit)  // NOLINT
+{
+  tesseract_common::ContactManagersPluginInfo cmpi;
+  EXPECT_TRUE(cmpi.empty());
+
+  tesseract_common::ContactManagersPluginInfo cmpi_insert;
+  cmpi_insert.search_paths.insert("/usr/local/lib");
+  cmpi_insert.search_libraries.insert("tesseract_collision");
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "DiscretePluginFactory";
+    cmpi.discrete_plugin_infos.plugins = { std::make_pair("DiscretePlugin", pi) };
+  }
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "ContinuousPluginFactory";
+    cmpi.continuous_plugin_infos.plugins = { std::make_pair("ContinuousPlugin", pi) };
+  }
+
+  EXPECT_FALSE(cmpi_insert.empty());
+
+  cmpi.insert(cmpi_insert);
+  EXPECT_FALSE(cmpi.empty());
+
+  cmpi.clear();
+  EXPECT_TRUE(cmpi.empty());
+}
+
+TEST(TesseractContactManagersFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
+{
+  std::string yaml_string = R"(kinematic_plugins:
+                                 search_paths:
+                                   - /usr/local/lib
+                                 search_libraries:
+                                   - tesseract_kinematics_kdl_factories
+                                 fwd_kin_plugins:
+                                   iiwa_manipulator:
+                                     default: KDLFwdKinChain
+                                     plugins:
+                                       KDLFwdKinChain:
+                                         class: KDLFwdKinChainFactory
+                                         config:
+                                           base_link: base_link
+                                           tip_link: tool0
+                                 inv_kin_plugins:
+                                   iiwa_manipulator:
+                                     default: KDLInvKinChainLMA
+                                     plugins:
+                                       KDLInvKinChainLMA:
+                                         class: KDLInvKinChainLMAFactory
+                                         config:
+                                           base_link: base_link
+                                           tip_link: tool0
+                                       KDLInvKinChainNR:
+                                         class: KDLInvKinChainNRFactory
+                                         config:
+                                           base_link: base_link
+                                           tip_link: tool0)";
+
+  {  // Success
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
+    auto cmpi = config.as<tesseract_common::KinematicsPluginInfo>();
+
+    const YAML::Node& plugin_info = plugin_config["kinematic_plugins"];
+    const YAML::Node& search_paths = plugin_info["search_paths"];
+    const YAML::Node& search_libraries = plugin_info["search_libraries"];
+    const YAML::Node& fwd_kin_default_plugin = plugin_info["fwd_kin_plugins"]["iiwa_manipulator"]["default"];
+    const YAML::Node& fwd_kin_plugins = plugin_info["fwd_kin_plugins"]["iiwa_manipulator"]["plugins"];
+    const YAML::Node& inv_kin_default_plugin = plugin_info["inv_kin_plugins"]["iiwa_manipulator"]["default"];
+    const YAML::Node& inv_kin_plugins = plugin_info["inv_kin_plugins"]["iiwa_manipulator"]["plugins"];
+
+    {
+      std::set<std::string> sp = cmpi.search_paths;
+      EXPECT_EQ(sp.size(), 1);
+
+      for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
+      {
+        EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
+      }
+    }
+
+    {
+      std::set<std::string> sl = cmpi.search_libraries;
+      EXPECT_EQ(sl.size(), 1);
+
+      for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
+      {
+        EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
+      }
+    }
+
+    EXPECT_EQ(fwd_kin_default_plugin.as<std::string>(), cmpi.fwd_plugin_infos["iiwa_manipulator"].default_plugin);
+    EXPECT_EQ(fwd_kin_plugins.size(), cmpi.fwd_plugin_infos["iiwa_manipulator"].plugins.size());
+
+    EXPECT_EQ(inv_kin_default_plugin.as<std::string>(), cmpi.inv_plugin_infos["iiwa_manipulator"].default_plugin);
+    EXPECT_EQ(inv_kin_plugins.size(), cmpi.inv_plugin_infos["iiwa_manipulator"].plugins.size());
+  }
+
+  {  // search_paths failure
+    std::string yaml_string = R"(kinematic_plugins:
+                                   search_paths:
+                                     failure: issue
+                                   search_libraries:
+                                     - tesseract_kinematics_kdl_factories
+                                   fwd_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLFwdKinChain
+                                       plugins:
+                                         KDLFwdKinChain:
+                                           class: KDLFwdKinChainFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0
+                                   inv_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLInvKinChainLMA
+                                       plugins:
+                                         KDLInvKinChainLMA:
+                                           class: KDLInvKinChainLMAFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0
+                                         KDLInvKinChainNR:
+                                           class: KDLInvKinChainNRFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0)";
+
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+  }
+
+  {  // search_libraries failure
+    std::string yaml_string = R"(kinematic_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     failure: issue
+                                   fwd_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLFwdKinChain
+                                       plugins:
+                                         KDLFwdKinChain:
+                                           class: KDLFwdKinChainFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0
+                                   inv_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLInvKinChainLMA
+                                       plugins:
+                                         KDLInvKinChainLMA:
+                                           class: KDLInvKinChainLMAFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0
+                                         KDLInvKinChainNR:
+                                           class: KDLInvKinChainNRFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0)";
+
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+  }
+
+  {  // missing fwd plugins failure
+    std::string yaml_string = R"(kinematic_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_kinematics_kdl_factories
+                                   fwd_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLFwdKinChain
+                                   inv_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLInvKinChainLMA
+                                       plugins:
+                                         KDLInvKinChainLMA:
+                                           class: KDLInvKinChainLMAFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0
+                                         KDLInvKinChainNR:
+                                           class: KDLInvKinChainNRFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0)";
+
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+  }
+
+  {  // fwd plugins is not map failure
+
+    std::string yaml_string = R"(kinematic_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_kinematics_kdl_factories
+                                   fwd_kin_plugins:
+                                     iiwa_manipulator:
+                                       - tesseract_collision_bullet_factories
+                                       - tesseract_collision_fcl_factories
+                                   inv_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLInvKinChainLMA
+                                       plugins:
+                                         KDLInvKinChainLMA:
+                                           class: KDLInvKinChainLMAFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0
+                                         KDLInvKinChainNR:
+                                           class: KDLInvKinChainNRFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0)";
+
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+  }
+
+  {  // missing inv plugins failure
+    std::string yaml_string = R"(kinematic_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_kinematics_kdl_factories
+                                   fwd_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLFwdKinChain
+                                       plugins:
+                                         KDLFwdKinChain:
+                                           class: KDLFwdKinChainFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0
+                                   inv_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLInvKinChainLMA)";
+
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+  }
+
+  {  // inv plugins is not map failure
+    std::string yaml_string = R"(kinematic_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_kinematics_kdl_factories
+                                   fwd_kin_plugins:
+                                     iiwa_manipulator:
+                                       default: KDLFwdKinChain
+                                       plugins:
+                                         KDLFwdKinChain:
+                                           class: KDLFwdKinChainFactory
+                                           config:
+                                             base_link: base_link
+                                             tip_link: tool0
+                                   inv_kin_plugins:
+                                     iiwa_manipulator:
+                                       - tesseract_collision_bullet_factories
+                                       - tesseract_collision_fcl_factories)";
+
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+  }
+}
+
+TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
+{
+  std::string yaml_string = R"(contact_manager_plugins:
+                                 search_paths:
+                                   - /usr/local/lib
+                                 search_libraries:
+                                   - tesseract_collision_bullet_factories
+                                   - tesseract_collision_fcl_factories
+                                 discrete_plugins:
+                                   default: BulletDiscreteBVHManager
+                                   plugins:
+                                     BulletDiscreteBVHManager:
+                                       class: BulletDiscreteBVHManagerFactory
+                                     BulletDiscreteSimpleManager:
+                                       class: BulletDiscreteSimpleManagerFactory
+                                     FCLDiscreteBVHManager:
+                                       class: FCLDiscreteBVHManagerFactory
+                                 continuous_plugins:
+                                   default: BulletCastBVHManager
+                                   plugins:
+                                     BulletCastBVHManager:
+                                       class: BulletCastBVHManagerFactory
+                                     BulletCastSimpleManager:
+                                       class: BulletCastSimpleManagerFactory)";
+
+  {  // Success
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
+    auto cmpi = config.as<tesseract_common::ContactManagersPluginInfo>();
+
+    const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
+    const YAML::Node& search_paths = plugin_info["search_paths"];
+    const YAML::Node& search_libraries = plugin_info["search_libraries"];
+    const YAML::Node& discrete_default_plugin = plugin_info["discrete_plugins"]["default"];
+    const YAML::Node& discrete_plugins = plugin_info["discrete_plugins"]["plugins"];
+    const YAML::Node& continuous_default_plugin = plugin_info["continuous_plugins"]["default"];
+    const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
+
+    {
+      std::set<std::string> sp = cmpi.search_paths;
+      EXPECT_EQ(sp.size(), 1);
+
+      for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
+      {
+        EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
+      }
+    }
+
+    {
+      std::set<std::string> sl = cmpi.search_libraries;
+      EXPECT_EQ(sl.size(), 2);
+
+      for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
+      {
+        EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
+      }
+    }
+
+    EXPECT_EQ(discrete_default_plugin.as<std::string>(), cmpi.discrete_plugin_infos.default_plugin);
+    EXPECT_EQ(discrete_plugins.size(), cmpi.discrete_plugin_infos.plugins.size());
+
+    EXPECT_EQ(continuous_default_plugin.as<std::string>(), cmpi.continuous_plugin_infos.default_plugin);
+    EXPECT_EQ(continuous_plugins.size(), cmpi.continuous_plugin_infos.plugins.size());
+  }
+
+  {  // search_paths failure
+    std::string yaml_string = R"(contact_manager_plugins:
+                                   search_paths:
+                                     failure: issue
+                                   search_libraries:
+                                     - tesseract_collision_bullet_factories
+                                     - tesseract_collision_fcl_factories
+                                   discrete_plugins:
+                                     default: BulletDiscreteBVHManager
+                                     plugins:
+                                       BulletDiscreteBVHManager:
+                                         class: BulletDiscreteBVHManagerFactory
+                                       BulletDiscreteSimpleManager:
+                                         class: BulletDiscreteSimpleManagerFactory
+                                       FCLDiscreteBVHManager:
+                                         class: FCLDiscreteBVHManagerFactory
+                                   continuous_plugins:
+                                     default: BulletCastBVHManager
+                                     plugins:
+                                       BulletCastBVHManager:
+                                         class: BulletCastBVHManagerFactory
+                                       BulletCastSimpleManager:
+                                         class: BulletCastSimpleManagerFactory)";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+  }
+
+  {  // search_libraries failure
+    std::string yaml_string = R"(contact_manager_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     failure: issue
+                                   discrete_plugins:
+                                     default: BulletDiscreteBVHManager
+                                     plugins:
+                                       BulletDiscreteBVHManager:
+                                         class: BulletDiscreteBVHManagerFactory
+                                       BulletDiscreteSimpleManager:
+                                         class: BulletDiscreteSimpleManagerFactory
+                                       FCLDiscreteBVHManager:
+                                         class: FCLDiscreteBVHManagerFactory
+                                   continuous_plugins:
+                                     default: BulletCastBVHManager
+                                     plugins:
+                                       BulletCastBVHManager:
+                                         class: BulletCastBVHManagerFactory
+                                       BulletCastSimpleManager:
+                                         class: BulletCastSimpleManagerFactory)";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+  }
+
+  {  // missing discrete plugins failure
+    std::string yaml_string = R"(contact_manager_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_collision_bullet_factories
+                                     - tesseract_collision_fcl_factories
+                                   discrete_plugins:
+                                     default: BulletDiscreteBVHManager
+                                   continuous_plugins:
+                                     default: BulletCastBVHManager
+                                     plugins:
+                                       BulletCastBVHManager:
+                                         class: BulletCastBVHManagerFactory
+                                       BulletCastSimpleManager:
+                                         class: BulletCastSimpleManagerFactory)";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+  }
+
+  {  // discrete plugins is not map failure
+    std::string yaml_string = R"(contact_manager_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_collision_bullet_factories
+                                     - tesseract_collision_fcl_factories
+                                   discrete_plugins:
+                                     - tesseract_collision_bullet_factories
+                                     - tesseract_collision_fcl_factories
+                                   continuous_plugins:
+                                     default: BulletCastBVHManager
+                                     plugins:
+                                       BulletCastBVHManager:
+                                         class: BulletCastBVHManagerFactory
+                                       BulletCastSimpleManager:
+                                         class: BulletCastSimpleManagerFactory)";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+  }
+
+  {  // missing continuous plugins failure
+    std::string yaml_string = R"(contact_manager_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_collision_bullet_factories
+                                     - tesseract_collision_fcl_factories
+                                   discrete_plugins:
+                                     default: BulletDiscreteBVHManager
+                                     plugins:
+                                       BulletDiscreteBVHManager:
+                                         class: BulletDiscreteBVHManagerFactory
+                                       BulletDiscreteSimpleManager:
+                                         class: BulletDiscreteSimpleManagerFactory
+                                       FCLDiscreteBVHManager:
+                                         class: FCLDiscreteBVHManagerFactory
+                                   continuous_plugins:
+                                     default: BulletCastBVHManager)";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+  }
+
+  {  // continuous plugins is not map failure
+    std::string yaml_string = R"(contact_manager_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_collision_bullet_factories
+                                     - tesseract_collision_fcl_factories
+                                   discrete_plugins:
+                                     default: BulletDiscreteBVHManager
+                                     plugins:
+                                       BulletDiscreteBVHManager:
+                                         class: BulletDiscreteBVHManagerFactory
+                                       BulletDiscreteSimpleManager:
+                                         class: BulletDiscreteSimpleManagerFactory
+                                       FCLDiscreteBVHManager:
+                                         class: FCLDiscreteBVHManagerFactory
+                                   continuous_plugins:
+                                     - tesseract_collision_bullet_factories
+                                     - tesseract_collision_fcl_factories)";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+  }
 }
 
 TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT
@@ -1093,7 +1586,7 @@ TEST(TesseractCommonUnit, calcRotationalError)  // NOLINT
   EXPECT_NEAR(rot_err.norm(), M_PI_2, 1e-6);
   EXPECT_TRUE(rot_err.normalized().isApprox(-Eigen::Vector3d::UnitZ(), 1e-6));
 
-  // Test lessthan than -PI
+  // Test less than than -PI
   pi_rot = identity * Eigen::AngleAxisd(-3 * M_PI_2, Eigen::Vector3d::UnitZ());
   rot_err = tesseract_common::calcRotationalError(pi_rot.rotation());
   EXPECT_NEAR(rot_err.norm(), M_PI_2, 1e-6);
@@ -1287,6 +1780,66 @@ TEST(TesseractCommonUnit, calcRotationalError2)  // NOLINT
       EXPECT_NEAR(pi_rot_delta.norm(), 0.002, 1e-6);
     }
   }
+}
+
+/** @brief Tests calcTransformError */
+TEST(TesseractCommonUnit, calcTransformError)  // NOLINT
+{
+  Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
+
+  {  // X-Axis
+    Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitX());
+    Eigen::VectorXd err = tesseract_common::calcTransformError(identity, pi_rot);
+    EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d(M_PI_2, 0, 0)));
+  }
+
+  {  // Y-Axis
+    Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY());
+    Eigen::VectorXd err = tesseract_common::calcTransformError(identity, pi_rot);
+    EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d(0, M_PI_2, 0)));
+  }
+
+  {  // Z-Axis
+    Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ());
+    Eigen::VectorXd err = tesseract_common::calcTransformError(identity, pi_rot);
+    EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d(0, 0, M_PI_2)));
+  }
+
+  {  // Translation
+    Eigen::Isometry3d pi_rot = identity * Eigen::Translation3d(1, 2, 3);
+    Eigen::VectorXd err = tesseract_common::calcTransformError(identity, pi_rot);
+    EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d(1, 2, 3)));
+    EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d::Zero()));
+  }
+}
+
+/** @brief Tests calcTransformError */
+TEST(TesseractCommonUnit, computeRandomColor)  // NOLINT
+{
+  Eigen::Vector4d color = tesseract_common::computeRandomColor();
+  EXPECT_FALSE(color(0) < 0);
+  EXPECT_FALSE(color(1) < 0);
+  EXPECT_FALSE(color(2) < 0);
+  EXPECT_FALSE(color(3) < 0);
+  EXPECT_FALSE(color(0) > 1);
+  EXPECT_FALSE(color(1) > 1);
+  EXPECT_FALSE(color(2) > 1);
+  EXPECT_FALSE(color(3) > 1);
+}
+
+/** @brief Tests calcTransformError */
+TEST(TesseractCommonUnit, concat)  // NOLINT
+{
+  Eigen::Vector3d a(1, 2, 3);
+  Eigen::Vector3d b(4, 5, 6);
+
+  Eigen::VectorXd c = tesseract_common::concat(a, b);
+  EXPECT_EQ(c.rows(), a.rows() + b.rows());
+  EXPECT_TRUE(c.head(3).isApprox(a));
+  EXPECT_TRUE(c.tail(3).isApprox(b));
 }
 
 int main(int argc, char** argv)

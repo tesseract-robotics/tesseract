@@ -28,6 +28,12 @@
 
 namespace tesseract_common
 {
+void PluginInfoContainer::clear()
+{
+  default_plugin.clear();
+  plugins.clear();
+}
+
 void KinematicsPluginInfo::insert(const KinematicsPluginInfo& other)
 {
   search_paths.insert(other.search_paths.begin(), other.search_paths.end());
@@ -47,6 +53,36 @@ void KinematicsPluginInfo::clear()
 bool KinematicsPluginInfo::empty() const
 {
   return (search_paths.empty() && search_libraries.empty() && fwd_plugin_infos.empty() && inv_plugin_infos.empty());
+}
+
+void ContactManagersPluginInfo::insert(const ContactManagersPluginInfo& other)
+{
+  search_paths.insert(other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
+  discrete_plugin_infos.plugins.insert(other.discrete_plugin_infos.plugins.begin(),
+                                       other.discrete_plugin_infos.plugins.end());
+  continuous_plugin_infos.plugins.insert(other.continuous_plugin_infos.plugins.begin(),
+                                         other.continuous_plugin_infos.plugins.end());
+
+  if (!other.discrete_plugin_infos.default_plugin.empty())
+    discrete_plugin_infos.default_plugin = other.discrete_plugin_infos.default_plugin;
+
+  if (!other.continuous_plugin_infos.default_plugin.empty())
+    continuous_plugin_infos.default_plugin = other.continuous_plugin_infos.default_plugin;
+}
+
+void ContactManagersPluginInfo::clear()
+{
+  search_paths.clear();
+  search_libraries.clear();
+  discrete_plugin_infos.clear();
+  continuous_plugin_infos.clear();
+}
+
+bool ContactManagersPluginInfo::empty() const
+{
+  return (search_paths.empty() && search_libraries.empty() && discrete_plugin_infos.plugins.empty() &&
+          continuous_plugin_infos.plugins.empty());
 }
 
 std::size_t PairHash::operator()(const LinkNamesPair& pair) const

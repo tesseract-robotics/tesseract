@@ -121,6 +121,36 @@ TEST(TesseractGeometryUnit, Plane)  // NOLINT
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getD(), 1, 1e-5);
 }
 
+TEST(TesseractGeometryUnit, PolygonMesh)  // NOLINT
+{
+  auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
+  vertices->emplace_back(1, 1, 0);
+  vertices->emplace_back(1, -1, 0);
+  vertices->emplace_back(-1, -1, 0);
+  vertices->emplace_back(1, -1, 0);
+
+  auto faces = std::make_shared<Eigen::VectorXi>();
+  faces->resize(5);
+  (*faces)(0) = 4;
+  (*faces)(1) = 0;
+  (*faces)(2) = 1;
+  (*faces)(3) = 2;
+  (*faces)(4) = 3;
+
+  using T = tesseract_geometry::PolygonMesh;
+  auto geom = std::make_shared<T>(vertices, faces);
+  EXPECT_TRUE(geom->getVertices() != nullptr);
+  EXPECT_TRUE(geom->getFaces() != nullptr);
+  EXPECT_TRUE(geom->getVertexCount() == 4);
+  EXPECT_TRUE(geom->getFaceCount() == 1);
+
+  auto geom_clone = geom->clone();
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 1);
+}
+
 TEST(TesseractGeometryUnit, ConvexMesh)  // NOLINT
 {
   auto vertices = std::make_shared<tesseract_common::VectorVector3d>();

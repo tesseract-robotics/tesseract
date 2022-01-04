@@ -27,19 +27,19 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
-#include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
+
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <Eigen/Geometry>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/mesh.h>
-#include <tesseract_urdf/mesh_writer.h>
-#include <tesseract_scene_graph/utils.h>
-#include <tesseract_common/resource_locator.h>
-#include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_geometry/impl/mesh.h>
+#include <tesseract_geometry/mesh_parser.h>
+#include <tesseract_urdf/mesh.h>
+#include <tesseract_common/resource_locator.h>
+#include <tesseract_urdf/utils.h>
 
 std::vector<tesseract_geometry::Mesh::Ptr> tesseract_urdf::parseMesh(const tinyxml2::XMLElement* xml_element,
                                                                      const tesseract_common::ResourceLocator& locator,
@@ -94,28 +94,30 @@ std::vector<tesseract_geometry::Mesh::Ptr> tesseract_urdf::parseMesh(const tinyx
 
 tinyxml2::XMLElement* tesseract_urdf::writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
                                                 tinyxml2::XMLDocument& doc,
-                                                const std::string& directory,
+                                                const std::string& package_path,
                                                 const std::string& filename)
 {
   if (mesh == nullptr)
     std::throw_with_nested(std::runtime_error("Mesh is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("mesh");
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   try
   {
-    writeMeshToFile(mesh, directory + filename);
+    writeMeshToFile(mesh, trailingSlash(package_path) + noLeadingSlash(filename));
   }
   catch (...)
   {
-    std::throw_with_nested(std::runtime_error("Failed to write convex mesh to file: " + directory + filename));
+    std::throw_with_nested(std::runtime_error("Failed to write mesh to file: " + package_path + filename));
   }
-  xml_element->SetAttribute("filename", filename.c_str());
+  xml_element->SetAttribute("filename", makeURDFFilePath(package_path, filename).c_str());
 
-  std::string scale_string = std::to_string(mesh->getScale().x()) + " " + std::to_string(mesh->getScale().y()) + " " +
-                             std::to_string(mesh->getScale().z());
-  xml_element->SetAttribute("scale", scale_string.c_str());
-
-  xml_element->SetAttribute("convert", false);
+  if (!mesh->getScale().isOnes(std::numeric_limits<double>::epsilon()))
+  {
+    std::stringstream scale_string;
+    scale_string << mesh->getScale().format(eigen_format);
+    xml_element->SetAttribute("scale", scale_string.str().c_str());
+  }
 
   return xml_element;
 }

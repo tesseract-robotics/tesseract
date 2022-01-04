@@ -52,7 +52,7 @@ void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
                                  bool active);
 
 /**
- * @brief Should perform a continuous collision check between two states.
+ * @brief Should perform a continuous collision check between two states configuring the manager with the config
  * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
  * @param manager A continuous contact manager
  * @param state0 First environment state
@@ -67,7 +67,23 @@ bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& 
                             const tesseract_collision::CollisionCheckConfig& config);
 
 /**
- * @brief Should perform a discrete collision check a state.
+ * @brief Should perform a continuous collision check between two states only passing along the contact_request to the
+ * manager
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
+ * @param manager A continuous contact manager
+ * @param state0 First environment state
+ * @param state1 Second environment state
+ * @param contact_request Contact request passed to the manager
+ * @return True if collision was found, otherwise false.
+ */
+bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                            tesseract_collision::ContinuousContactManager& manager,
+                            const tesseract_common::TransformMap& state0,
+                            const tesseract_common::TransformMap& state1,
+                            const tesseract_collision::ContactRequest& contact_request);
+
+/**
+ * @brief Should perform a discrete collision check a state first configuring manager with config
  * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
  * @param manager A discrete contact manager
  * @param state First environment state
@@ -78,6 +94,19 @@ bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& co
                           tesseract_collision::DiscreteContactManager& manager,
                           const tesseract_common::TransformMap& state,
                           const tesseract_collision::CollisionCheckConfig& config);
+
+/**
+ * @brief Should perform a discrete collision check a state only passing contact_request to the manager
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
+ * @param manager A discrete contact manager
+ * @param state First environment state
+ * @param contact_request Contact request passed to the manager
+ * @return True if collision was found, otherwise false.
+ */
+bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                          tesseract_collision::DiscreteContactManager& manager,
+                          const tesseract_common::TransformMap& state,
+                          const tesseract_collision::ContactRequest& contact_request);
 
 /**
  * @brief Should perform a continuous collision check over the trajectory and stop on first collision.

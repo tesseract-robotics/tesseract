@@ -40,6 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/types.h>
 #include <tesseract_common/collision_margin_data.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
@@ -133,32 +134,7 @@ struct ContactResult
   ContactResult() = default;
 
   /** @brief reset to default values */
-  void clear()
-  {
-    distance = std::numeric_limits<double>::max();
-    nearest_points[0].setZero();
-    nearest_points[1].setZero();
-    nearest_points_local[0].setZero();
-    nearest_points_local[1].setZero();
-    transform[0] = Eigen::Isometry3d::Identity();
-    transform[1] = Eigen::Isometry3d::Identity();
-    link_names[0] = "";
-    link_names[1] = "";
-    shape_id[0] = -1;
-    shape_id[1] = -1;
-    subshape_id[0] = -1;
-    subshape_id[1] = -1;
-    type_id[0] = 0;
-    type_id[1] = 0;
-    normal.setZero();
-    cc_time[0] = -1;
-    cc_time[1] = -1;
-    cc_type[0] = ContinuousCollisionType::CCType_None;
-    cc_type[1] = ContinuousCollisionType::CCType_None;
-    cc_transform[0] = Eigen::Isometry3d::Identity();
-    cc_transform[1] = Eigen::Isometry3d::Identity();
-    single_contact_point = false;
-  }
+  void clear();
 };
 
 #ifndef SWIG
@@ -196,34 +172,15 @@ struct ContactRequest
   /** @brief This provides a user defined function approve/reject contact results */
   IsContactResultValidFn is_valid = nullptr;
 
-  ContactRequest(ContactTestType type = ContactTestType::ALL) : type(type) {}
+  ContactRequest(ContactTestType type = ContactTestType::ALL);
 };
 
-inline std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v)
-{
-  v.clear();
-  v.reserve(m.size());
-  for (const auto& mv : m)
-    std::move(mv.second.begin(), mv.second.end(), std::back_inserter(v));
+std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v);
 
-  return v.size();
-}
-
-inline std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v)
-{
-  v.clear();
-  v.reserve(m.size());
-  for (const auto& mv : m)
-    std::copy(mv.second.begin(), mv.second.end(), std::back_inserter(v));
-
-  return v.size();
-}
+std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v);
 
 // Need to mark deprecated
-inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
-{
-  return flattenMoveResults(std::move(m), v);
-}
+std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v);
 
 #ifndef SWIG
 /**
@@ -239,14 +196,7 @@ struct ContactTestData
                   CollisionMarginData collision_margin_data,
                   IsContactAllowedFn fn,
                   ContactRequest req,
-                  ContactResultMap& res)
-    : active(&active)
-    , collision_margin_data(std::move(collision_margin_data))
-    , fn(std::move(fn))
-    , req(std::move(req))
-    , res(&res)
-  {
-  }
+                  ContactResultMap& res);
 
   /** @brief A vector of active links */
   const std::vector<std::string>* active = nullptr;
@@ -260,7 +210,7 @@ struct ContactTestData
   /** @brief The type of contact request data */
   ContactRequest req;
 
-  /** @brief Destance query results information */
+  /** @brief Distance query results information */
   ContactResultMap* res = nullptr;
 
   /** @brief Indicate if search is finished */
@@ -290,31 +240,68 @@ enum class CollisionEvaluatorType
   LVS_CONTINUOUS
 };
 
+/** @brief Identifies how the provided AllowedCollisionMatrix should be applied relative to the isAllowedFn in the
+ * contact manager */
+enum class ACMOverrideType
+{
+  /** @brief Do not apply AllowedCollisionMatrix */
+  NONE,
+  /** @brief Replace the current IsContactAllowedFn with one generated from the ACM provided */
+  ASSIGN,
+  /** @brief New IsContactAllowedFn combines the contact manager fn and the ACM generated fn with and AND */
+  AND,
+  /** @brief New IsContactAllowedFn combines the contact manager fn and the ACM generated fn with and OR */
+  OR,
+};
+
+/**
+ * @brief Contains parameters used to configure a contact manager before a series of contact checks.
+ *
+ * It should not contain information that is usually specific to a single contactTest such as CollisionObjectTransforms
+ * or specific to the way contactTests are carried out such as LVS parameters
+ *
+ * @note Active links were not added to this config since this config could be shared by multiple manipulators, and
+ * those are set based on which one is being checked
+ */
+struct ContactManagerConfig
+{
+  ContactManagerConfig() = default;
+  ContactManagerConfig(double default_margin);
+
+  /** @brief Identify how the collision margin data should be applied to the contact manager */
+  CollisionMarginOverrideType margin_data_override_type{ CollisionMarginOverrideType::NONE };
+  /** @brief Stores information about how the margins allowed between collision objects*/
+  CollisionMarginData margin_data;
+
+  /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
+  tesseract_common::AllowedCollisionMatrix acm;
+  /** @brief Specifies how to combine the IsContactAllowedFn from acm with the one preset in the contact manager */
+  ACMOverrideType acm_override_type{ ACMOverrideType::OR };
+
+  /** @brief Each key is an object name. Objects will be enabled/disabled based on the value. Objects that aren't in the
+   * map are unmodified from the defaults*/
+  std::unordered_map<std::string, bool> modify_object_enabled;
+};
+
 /**
  * @brief This is a high level structure containing common information that collision checking utilities need. The goal
  * of this config is to allow all collision checking utilities and planners to use the same datastructure
  */
 struct CollisionCheckConfig
 {
-  CollisionCheckConfig(double default_margin = 0,
+  CollisionCheckConfig() = default;
+  CollisionCheckConfig(double default_margin,
                        ContactRequest request = ContactRequest(),
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
-                       double longest_valid_segment_length = 0.005)
-    : collision_margin_data(default_margin)
-    , contact_request(std::move(request))
-    , type(type)
-    , longest_valid_segment_length(longest_valid_segment_length)
-  {
-  }
+                       double longest_valid_segment_length = 0.005);
 
-  /** @brief Identify how the collision margin data should be applied to the contact manager */
-  CollisionMarginOverrideType collision_margin_override_type{ CollisionMarginOverrideType::NONE };
-  /** @brief Stores information about how the margins allowed between collision objects*/
-  CollisionMarginData collision_margin_data;
+  /** @brief Used to configure the contact manager prior to a series of checks */
+  ContactManagerConfig contact_manager_config;
+
   /** @brief ContactRequest that will be used for this check. Default test type: FIRST*/
   ContactRequest contact_request;
   /** @brief Specifies the type of collision check to be performed. Default: DISCRETE */
-  CollisionEvaluatorType type;
+  CollisionEvaluatorType type{ CollisionEvaluatorType::DISCRETE };
   /** @brief Longest valid segment to use if type supports lvs. Default: 0.005*/
   double longest_valid_segment_length{ 0.005 };
 };

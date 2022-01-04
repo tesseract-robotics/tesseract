@@ -70,7 +70,11 @@ public:
     auto ot = std::make_shared<octomap::OcTree>(resolution);
 
     for (auto& point : point_cloud.points)
-      ot->updateNode(point.x, point.y, point.z, true);
+      ot->updateNode(point.x, point.y, point.z, true, true);
+
+    // Per the documentation for overload updateNode above with lazy_eval enabled this must be called after all points
+    // are added
+    ot->updateInnerOccupancy();
 
     if (prune)
     {
@@ -172,6 +176,7 @@ private:
     return true;
   }
 
+  // NOLINTNEXTLINE(misc-no-recursion)
   static void pruneRecurs(octomap::OcTree& octree,
                           octomap::OcTreeNode* node,
                           unsigned int depth,

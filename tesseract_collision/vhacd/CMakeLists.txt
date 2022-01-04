@@ -12,8 +12,10 @@ if(NOT
     WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
 endif()
 
-include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
-link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
+if(WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
+  include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+  link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
+endif()
 
 # Third party vhacd
 include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/vhacd_common.cmake")

@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     std::function<void(benchmark::State&, DiscreteBenchmarkInfo, int)> BM_CLONE_FUNC = BM_CLONE;
     for (const auto& num_link : num_links)
     {
-      std::string name = "BM_CLONE_" + checker->name() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+      std::string name = "BM_CLONE_" + checker->getName() + "_ACTIVE_OBJ_" + std::to_string(num_link);
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_CLONE_FUNC,
                                    DiscreteBenchmarkInfo(checker,
@@ -57,12 +57,12 @@ int main(int argc, char** argv)
   {
     for (const auto& test_type : test_types)
     {
-      // Loop over all primative combinations
+      // Loop over all primitive combinations
       for (const auto& type1 : geometry_types)
       {
         for (const auto& type2 : geometry_types)
         {
-          std::string name = "BM_CONTACT_TEST_0_" + checker->name() + "_" +
+          std::string name = "BM_CONTACT_TEST_0_" + checker->getName() + "_" +
                              ContactTestTypeStrings[static_cast<std::size_t>(test_type)] + "_" +
                              GeometryTypeStrings[type1] + "_" + GeometryTypeStrings[type2];
           benchmark::RegisterBenchmark(name.c_str(),
@@ -83,13 +83,13 @@ int main(int argc, char** argv)
   {
     for (const auto& test_type : test_types)
     {
-      // Loop over all primative combinations
+      // Loop over all primitive combinations
       for (const auto& type1 : geometry_types)
       {
         for (const auto& type2 : geometry_types)
         {
           auto tf = Eigen::Isometry3d::Identity();
-          std::string name = "BM_CONTACT_TEST_1_" + checker->name() + "_" +
+          std::string name = "BM_CONTACT_TEST_1_" + checker->getName() + "_" +
                              ContactTestTypeStrings[static_cast<std::size_t>(test_type)] + "_" +
                              GeometryTypeStrings[type1] + "_" + GeometryTypeStrings[type2];
           benchmark::RegisterBenchmark(name.c_str(),
@@ -111,13 +111,13 @@ int main(int argc, char** argv)
   {
     for (const auto& test_type : test_types)
     {
-      // Loop over all primative combinations
+      // Loop over all primitive combinations
       for (const auto& type1 : geometry_types)
       {
         for (const auto& type2 : geometry_types)
         {
           auto tf = Eigen::Isometry3d::Identity();
-          std::string name = "BM_CONTACT_TEST_2_" + checker->name() + "_" +
+          std::string name = "BM_CONTACT_TEST_2_" + checker->getName() + "_" +
                              ContactTestTypeStrings[static_cast<std::size_t>(test_type)] + "_" +
                              GeometryTypeStrings[type1] + "_" + GeometryTypeStrings[type2];
           benchmark::RegisterBenchmark(name.c_str(),
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
     {
       auto tf = Eigen::Isometry3d::Identity();
       std::string name =
-          "BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE_" + checker->name() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+          "BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE_" + checker->getName() + "_ACTIVE_OBJ_" + std::to_string(num_link);
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE_FUNC,
                                    DiscreteBenchmarkInfo(checker,
@@ -176,7 +176,7 @@ int main(int argc, char** argv)
     {
       auto tf = Eigen::Isometry3d::Identity();
       std::string name =
-          "BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR_" + checker->name() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+          "BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR_" + checker->getName() + "_ACTIVE_OBJ_" + std::to_string(num_link);
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR_FUNC,
                                    DiscreteBenchmarkInfo(checker,
@@ -199,7 +199,7 @@ int main(int argc, char** argv)
     {
       auto tf = Eigen::Isometry3d::Identity();
       std::string name =
-          "BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_" + checker->name() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+          "BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_" + checker->getName() + "_ACTIVE_OBJ_" + std::to_string(num_link);
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_FUNC,
                                    DiscreteBenchmarkInfo(checker,
@@ -226,7 +226,7 @@ int main(int argc, char** argv)
     {
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
-          "BM_LARGE_DATASET_MULTILINK_" + checker->name() + "_CONVEX_MESH_EDGE_SIZE_" + std::to_string(edge_size);
+          "BM_LARGE_DATASET_MULTILINK_" + checker->getName() + "_CONVEX_MESH_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_LARGE_DATASET_MULTILINK_FUNC,
                                    clone,
@@ -239,7 +239,7 @@ int main(int argc, char** argv)
     {
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
-          "BM_LARGE_DATASET_MULTILINK_" + checker->name() + "_PRIMATIVE_EDGE_SIZE_" + std::to_string(edge_size);
+          "BM_LARGE_DATASET_MULTILINK_" + checker->getName() + "_PRIMATIVE_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(
           name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::SPHERE)
           ->UseRealTime()
@@ -249,7 +249,7 @@ int main(int argc, char** argv)
     {
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
-          "BM_LARGE_DATASET_MULTILINK_" + checker->name() + "_DETAILED_MESH_EDGE_SIZE_" + std::to_string(edge_size);
+          "BM_LARGE_DATASET_MULTILINK_" + checker->getName() + "_DETAILED_MESH_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(
           name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::MESH)
           ->UseRealTime()
@@ -262,7 +262,7 @@ int main(int argc, char** argv)
     {
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
-          "BM_LARGE_DATASET_SINGLELINK_" + checker->name() + "_CONVEX_MESH_EDGE_SIZE_" + std::to_string(edge_size);
+          "BM_LARGE_DATASET_SINGLELINK_" + checker->getName() + "_CONVEX_MESH_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_LARGE_DATASET_SINGLELINK_FUNC,
                                    clone,
@@ -275,7 +275,7 @@ int main(int argc, char** argv)
     {
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
-          "BM_LARGE_DATASET_SINGLELINK_" + checker->name() + "_PRIMATIVE_EDGE_SIZE_" + std::to_string(edge_size);
+          "BM_LARGE_DATASET_SINGLELINK_" + checker->getName() + "_PRIMATIVE_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(
           name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::SPHERE)
           ->UseRealTime()
@@ -285,7 +285,7 @@ int main(int argc, char** argv)
     {
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
-          "BM_LARGE_DATASET_SINGLELINK_" + checker->name() + "_DETAILED_MESH_EDGE_SIZE_" + std::to_string(edge_size);
+          "BM_LARGE_DATASET_SINGLELINK_" + checker->getName() + "_DETAILED_MESH_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(
           name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::MESH)
           ->UseRealTime()

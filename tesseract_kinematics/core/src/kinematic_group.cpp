@@ -64,17 +64,19 @@ KinematicGroup::KinematicGroup(std::string name,
   std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
   std::string working_frame = inv_kin_->getWorkingFrame();
 
-  std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(working_frame);
-  std::list<std::string> working_frames;
-  working_frames.push_back(working_frame);
-  std::copy(child_link_names.begin(), child_link_names.end(), std::back_inserter(working_frames));
-
   auto it = std::find(active_link_names.begin(), active_link_names.end(), working_frame);
   if (it == active_link_names.end())
-    std::copy(static_link_names_.begin(), static_link_names_.end(), std::back_inserter(working_frames));
-
-  working_frames_.reserve(working_frames.size());
-  working_frames_.insert(working_frames_.end(), working_frames.begin(), working_frames.end());
+  {
+    working_frames_.reserve(static_link_names_.size());
+    std::copy(static_link_names_.begin(), static_link_names_.end(), std::back_inserter(working_frames_));
+  }
+  else
+  {
+    std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(working_frame);
+    working_frames_.reserve(child_link_names.size() + 1);
+    working_frames_.push_back(working_frame);
+    std::copy(child_link_names.begin(), child_link_names.end(), std::back_inserter(working_frames_));
+  }
 
   for (const auto& tip_link : inv_kin_->getTipLinkNames())
   {
@@ -85,6 +87,9 @@ KinematicGroup::KinematicGroup(std::string name,
 
   inv_to_fwd_base_ = state_.link_transforms.at(inv_kin_->getBaseLinkName()).inverse() *
                      state_.link_transforms.at(state_solver_->getBaseLinkName());
+
+  if (static_link_names_.size() + active_link_names.size() != scene_graph.getLinks().size())
+    throw std::runtime_error("KinematicGroup: Static link names are not correct!");
 }
 
 KinematicGroup::KinematicGroup(const KinematicGroup& other) : JointGroup(other) { *this = other; }
@@ -111,6 +116,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   {
     assert(std::find(working_frames_.begin(), working_frames_.end(), tip_link_pose.working_frame) !=
            working_frames_.end());
+    assert(std::abs(1.0 - tip_link_pose.pose.matrix().determinant()) < 1e-6);  // NOLINT
 
     // The IK Solvers tip link and working frame
     std::string ik_solver_tip_link = inv_tip_links_map_.at(tip_link_pose.tip_link_name);

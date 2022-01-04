@@ -82,44 +82,17 @@ KDLFwdKinChain::calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joi
   KDL::JntArray kdl_joints;
   EigenToKDL(joint_angles, kdl_joints);
 
-  unsigned int j = 0;
-  tesseract_common::TransformMap all_poses;
-  const KDL::Segment& segment = kdl_data_.robot_chain.getSegment(j);
   KDL::Frame kdl_pose;
-  if (segment.getJoint().getType() != KDL::Joint::None)
   {
-    kdl_pose = segment.pose(kdl_joints(j));
-    j++;
-  }
-  else
-  {
-    kdl_pose = segment.pose(0.0);
+    std::lock_guard<std::mutex> guard(mutex_);
+    fk_solver_->JntToCart(kdl_joints, kdl_pose);
   }
 
   Eigen::Isometry3d pose;
   KDLToEigen(kdl_pose, pose);
-  all_poses[segment.getName()] = pose;
-
-  for (unsigned int i = 1; i < kdl_data_.robot_chain.getNrOfSegments(); i++)
-  {
-    const KDL::Segment& segment = kdl_data_.robot_chain.getSegment(i);
-    if (segment.getJoint().getType() != KDL::Joint::None)
-    {
-      kdl_pose = kdl_pose * segment.pose(kdl_joints(j));
-      j++;
-    }
-    else
-    {
-      kdl_pose = kdl_pose * segment.pose(0.0);
-    }
-
-    Eigen::Isometry3d pose;
-    KDLToEigen(kdl_pose, pose);
-    all_poses[segment.getName()] = pose;
-  }
 
   tesseract_common::TransformMap poses;
-  poses[kdl_data_.tip_link_name] = all_poses[kdl_data_.tip_link_name];
+  poses[kdl_data_.tip_link_name] = pose;
 
   return poses;
 }
@@ -140,7 +113,13 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
 
   // compute jacobian
   jacobian.resize(static_cast<unsigned>(joint_angles.size()));
-  if (jac_solver_->JntToJac(kdl_joints, jacobian, segment_num) < 0)
+  int success{ -1 };
+  {
+    std::lock_guard<std::mutex> guard(mutex_);
+    success = jac_solver_->JntToJac(kdl_joints, jacobian, segment_num);
+  }
+
+  if (success < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to calculate jacobian");
     return false;

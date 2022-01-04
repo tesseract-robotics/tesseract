@@ -2,6 +2,58 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2021-12-15)
+------------------
+
+0.7.3 (2021-12-15)
+------------------
+
+0.7.2 (2021-12-15)
+------------------
+
+0.7.1 (2021-12-15)
+------------------
+* Move checkKinematics to getKinematicGroup and add support for clang-tidy-12 (`#682 <https://github.com/tesseract-robotics/tesseract/issues/682>`_)
+  * Move checkKinematics to getKinematicGroup and add support for clang-tidy-12
+  * Reduce the number of checks perform in checkKinematics
+  * Leverage checkKinematics in unit tests
+* Add modify_object_enabled to ContactManagerConfig
+* Contributors: Levi Armstrong, Matthew Powelson
+
+0.7.0 (2021-12-04)
+------------------
+* Rename member variables of ContactManagerConfig
+* Add ContactManagerConfig inside CollisionCheckConfig
+  This separates the up front setup things for the contact manager from things specific to the contactTest or the way the contact manager should be called.
+* Add applyCollisionCheckConfig to contact managers
+* Add AllowedCollisionMatrix to CollisionCheckConfig
+* Move AllowedCollisionMatrix into tesseract_common
+* Contributors: Levi Armstrong, Matthew Powelson
+
+0.6.9 (2021-11-29)
+------------------
+* Fix CollisionCheckConfig to set collision_margin_override_type for constructor
+* Contributors: Levi Armstrong
+
+0.6.8 (2021-11-29)
+------------------
+* Add contact margin data override type MODIFY (`#669 <https://github.com/tesseract-robotics/tesseract/issues/669>`_)
+  * Add contact margin data override type MODIFY
+  * Add unit test for type MODIFY
+* Fix spelling errors
+* Contributors: Levi Armstrong
+
+0.6.7 (2021-11-16)
+------------------
+* Fix linking issue when building repo alongside debian releae
+* Contributors: Levi Armstrong
+
+0.6.6 (2021-11-10)
+------------------
+* Update ikfast plugin
+* Update tesseract_collision benchmarks
+* Contributors: Levi-Armstrong
+
 0.5.0 (2021-07-02)
 ------------------
 * Add convex decomposition support (`#609 <https://github.com/ros-industrial-consortium/tesseract/issues/609>`_)

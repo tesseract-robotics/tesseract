@@ -46,7 +46,9 @@ namespace tesseract_geometry
 class SDFMesh : public PolygonMesh
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   using Ptr = std::shared_ptr<SDFMesh>;
   using ConstPtr = std::shared_ptr<const SDFMesh>;
@@ -84,9 +86,7 @@ public:
                   GeometryType::SDF_MESH)
   {
     if ((getFaceCount() * 4) != getFaces()->size())
-    {
-      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));
-    }
+      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
   }
 
   /**
@@ -125,9 +125,7 @@ public:
                   GeometryType::SDF_MESH)
   {
     if ((getFaceCount() * 4) != getFaces()->size())
-    {
-      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));
-    }
+      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
   }
 
   ~SDFMesh() override = default;

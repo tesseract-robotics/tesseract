@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: '0 5 * * *'
 
+  # allow manually starting this workflow
+  workflow_dispatch:
+
 jobs:
   industrial_ci:
     if: contains(github.event.pull_request.labels.*.name, 'check-tesseract-ros') || github.event.schedule == true

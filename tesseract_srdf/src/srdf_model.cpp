@@ -172,26 +172,6 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
 
   try
   {
-    acm = parseDisabledCollisions(scene_graph, srdf_xml, version);
-  }
-  catch (...)
-  {
-    std::throw_with_nested(
-        std::runtime_error("SRDF: Error parsing srdf disabled collisions for robot '" + name + "'!"));
-  }
-
-  try
-  {
-    collision_margin_data = parseCollisionMargins(scene_graph, srdf_xml, version);
-  }
-  catch (...)
-  {
-    std::throw_with_nested(
-        std::runtime_error("SRDF: Error parsing srdf collision margin data for robot '" + name + "'!"));
-  }
-
-  try
-  {
     for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("kinematics_plugin_config");
          xml_element != nullptr;
          xml_element = xml_element->NextSiblingElement("kinematics_plugin_config"))
@@ -234,6 +214,75 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
   {
     std::throw_with_nested(
         std::runtime_error("SRDF: Error parsing srdf kinematics plugin config for robot '" + name + "'!"));
+  }
+
+  try
+  {
+    acm = parseDisabledCollisions(scene_graph, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(
+        std::runtime_error("SRDF: Error parsing srdf disabled collisions for robot '" + name + "'!"));
+  }
+
+  try
+  {
+    collision_margin_data = parseCollisionMargins(scene_graph, srdf_xml, version);
+  }
+  catch (...)
+  {
+    std::throw_with_nested(
+        std::runtime_error("SRDF: Error parsing srdf collision margin data for robot '" + name + "'!"));
+  }
+
+  try
+  {
+    for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("contact_managers_plugin_config");
+         xml_element != nullptr;
+         xml_element = xml_element->NextSiblingElement("contact_managers_plugin_config"))
+    {
+      std::string filename;
+      tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
+      if (status != tinyxml2::XML_SUCCESS)
+        std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: Missing or failed to parse "
+                                                  "'filename' "
+                                                  "attribute."));
+
+      tesseract_common::Resource::Ptr cm_plugin_resource = locator.locateResource(filename);
+      if (cm_plugin_resource == nullptr)
+        std::throw_with_nested(
+            std::runtime_error("contact_managers_plugin_config: Failed to locate resource '" + filename + "'."));
+
+      tesseract_common::fs::path cm_plugin_file_path(cm_plugin_resource->getFilePath());
+      if (!tesseract_common::fs::exists(cm_plugin_file_path))
+        std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: Contact managers plugins file does "
+                                                  "not exist: "
+                                                  "'" +
+                                                  cm_plugin_file_path.string() + "'."));
+
+      YAML::Node config;
+      try
+      {
+        config = YAML::LoadFile(cm_plugin_file_path.string());
+      }
+      catch (...)
+      {
+        std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: YAML failed to parse contact "
+                                                  "managers plugins "
+                                                  "file '" +
+                                                  cm_plugin_file_path.string() + "'."));
+      }
+
+      const YAML::Node& cm_plugin_info = config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
+      auto info = cm_plugin_info.as<tesseract_common::ContactManagersPluginInfo>();
+      contact_managers_plugin_info.insert(info);
+    }
+  }
+  catch (...)
+  {
+    std::throw_with_nested(
+        std::runtime_error("SRDF: Error parsing srdf contact managers plugin config for robot '" + name + "'!"));
   }
 }
 
@@ -330,6 +379,18 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group_tcps);
   }
 
+  if (!kinematics_information.kinematics_plugin_info.empty())
+  {
+    tesseract_common::fs::path p(file_path);
+    std::ofstream fout(p.parent_path().append("kinematics_plugin_config.yaml").string());
+    YAML::Node config;
+    config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY] = kinematics_information.kinematics_plugin_info;
+    fout << config;
+    tinyxml2::XMLElement* xml_kin_plugin_entry = doc.NewElement("kinematics_plugin_config");
+    xml_kin_plugin_entry->SetAttribute("filename", "kinematics_plugin_config.yaml");
+    xml_root->InsertEndChild(xml_kin_plugin_entry);
+  }
+
   for (const auto& entry : acm.getAllAllowedCollisions())
   {
     tinyxml2::XMLElement* xml_acm_entry = doc.NewElement("disable_collisions");
@@ -355,15 +416,15 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     }
   }
 
-  if (!kinematics_information.kinematics_plugin_info.empty())
+  if (!contact_managers_plugin_info.empty())
   {
     tesseract_common::fs::path p(file_path);
-    std::ofstream fout(p.parent_path().append("kinematics_plugin_config.yaml").string());
+    std::ofstream fout(p.parent_path().append("contact_managers_plugin_config.yaml").string());
     YAML::Node config;
-    config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY] = kinematics_information.kinematics_plugin_info;
+    config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY] = contact_managers_plugin_info;
     fout << config;
-    tinyxml2::XMLElement* xml_kin_plugin_entry = doc.NewElement("kinematics_plugin_config");
-    xml_kin_plugin_entry->SetAttribute("filename", "kinematics_plugin_config.yaml");
+    tinyxml2::XMLElement* xml_kin_plugin_entry = doc.NewElement("contact_managers_plugin_config");
+    xml_kin_plugin_entry->SetAttribute("filename", "contact_managers_plugin_config.yaml");
     xml_root->InsertEndChild(xml_kin_plugin_entry);
   }
 
@@ -382,8 +443,9 @@ void SRDFModel::clear()
 {
   name = "undefined";
   version = { { 1, 0, 0 } };
-  acm.clearAllowedCollisions();
   kinematics_information.clear();
+  contact_managers_plugin_info.clear();
+  acm.clearAllowedCollisions();
   collision_margin_data = nullptr;
 }
 

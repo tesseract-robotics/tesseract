@@ -86,7 +86,7 @@ public:
       }
       case Success:
       {
-        return "Sucessful";
+        return "Successful";
       }
       case Failure:
       {

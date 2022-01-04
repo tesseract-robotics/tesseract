@@ -27,17 +27,17 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
-#include <tesseract_common/utils.h>
+
 #include <Eigen/Geometry>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/link.h>
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_scene_graph/link.h>
 #include <tesseract_urdf/collision.h>
-#include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/geometry.h>
+#include <tesseract_urdf/origin.h>
 
 std::vector<tesseract_scene_graph::Collision::Ptr>
 tesseract_urdf::parseCollision(const tinyxml2::XMLElement* xml_element,
@@ -111,7 +111,7 @@ tesseract_urdf::parseCollision(const tinyxml2::XMLElement* xml_element,
 tinyxml2::XMLElement*
 tesseract_urdf::writeCollision(const std::shared_ptr<const tesseract_scene_graph::Collision>& collision,
                                tinyxml2::XMLDocument& doc,
-                               const std::string& directory,
+                               const std::string& package_path,
                                const std::string& link_name,
                                const int id = -1)
 {
@@ -123,15 +123,30 @@ tesseract_urdf::writeCollision(const std::shared_ptr<const tesseract_scene_graph
   if (!collision->name.empty())
     xml_element->SetAttribute("name", collision->name.c_str());
 
-  tinyxml2::XMLElement* xml_origin = writeOrigin(collision->origin, doc);
-  xml_element->InsertEndChild(xml_origin);
+  if (!collision->origin.matrix().isIdentity(std::numeric_limits<double>::epsilon()))
+  {
+    tinyxml2::XMLElement* xml_origin = writeOrigin(collision->origin, doc);
+    xml_element->InsertEndChild(xml_origin);
+  }
+
+  // Construct filename, without extension (could be .ply or .bt)
+  std::string filename = link_name;
+  if (!collision->name.empty())
+    filename = filename + "_" + collision->name;
+  else
+    filename = filename + "_collision";
+
+  // If a package path was specified, save in a collision sub-directory
+  if (!package_path.empty())
+    filename = "collision/" + filename;
+
+  // If there is more than one collision object for this link, append the id
+  if (id >= 0)
+    filename = filename + "_" + std::to_string(id);
 
   try
   {
-    std::string filename = "collision/" + link_name + "_collision";
-    if (id >= 0)
-      filename += "_" + std::to_string(id);
-    tinyxml2::XMLElement* xml_geometry = writeGeometry(collision->geometry, doc, directory, filename);
+    tinyxml2::XMLElement* xml_geometry = writeGeometry(collision->geometry, doc, package_path, filename);
     xml_element->InsertEndChild(xml_geometry);
   }
   catch (...)

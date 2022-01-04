@@ -59,6 +59,7 @@ JointGroup::JointGroup(std::string name,
   std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
   for (const auto& link : scene_graph.getLinks())
   {
+    link_names_.push_back(link->getName());
     auto it = std::find(active_link_names.begin(), active_link_names.end(), link->getName());
     if (it == active_link_names.end())
     {
@@ -89,6 +90,9 @@ JointGroup::JointGroup(std::string name,
         break;
     }
   }
+
+  if (static_link_names_.size() + active_link_names.size() != scene_graph.getLinks().size())
+    throw std::runtime_error("JointGroup: Static link names are not correct!");
 }
 
 JointGroup::JointGroup(const JointGroup& other) { *this = other; }
@@ -99,6 +103,7 @@ JointGroup& JointGroup::operator=(const JointGroup& other)
   state_ = other.state_;
   state_solver_ = other.state_solver_->clone();
   joint_names_ = other.joint_names_;
+  link_names_ = other.link_names_;
   static_link_names_ = other.static_link_names_;
   static_link_transforms_ = other.static_link_transforms_;
   limits_ = other.limits_;
@@ -250,18 +255,21 @@ bool JointGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
 
 std::vector<std::string> JointGroup::getJointNames() const { return joint_names_; }
 
-std::vector<std::string> JointGroup::getLinkNames() const { return state_solver_->getLinkNames(); }
+std::vector<std::string> JointGroup::getLinkNames() const { return link_names_; }
 
 std::vector<std::string> JointGroup::getActiveLinkNames() const { return state_solver_->getActiveLinkNames(); }
 
-std::vector<std::string> JointGroup::getStaticLinkNames() const { return state_solver_->getStaticLinkNames(); }
+std::vector<std::string> JointGroup::getStaticLinkNames() const { return static_link_names_; }
 
 bool JointGroup::isActiveLinkName(const std::string& link_name) const
 {
   return state_solver_->isActiveLinkName(link_name);
 }
 
-bool JointGroup::hasLinkName(const std::string& link_name) const { return state_solver_->hasLinkName(link_name); }
+bool JointGroup::hasLinkName(const std::string& link_name) const
+{
+  return (std::find(link_names_.begin(), link_names_.end(), link_name) != link_names_.end());
+}
 
 tesseract_common::KinematicLimits JointGroup::getLimits() const { return limits_; }
 

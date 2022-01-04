@@ -34,6 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 
+static const std::vector<Eigen::Index> REDUNDANT_CAPABLE_JOINTS{ 0, 1, 2, 3, 4, 5 };
+
 namespace tesseract_kinematics
 {
 OPWInvKin::OPWInvKin(opw_kinematics::Parameters<double> params,
@@ -68,8 +70,9 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
 IKSolutions OPWInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                                   const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  assert(tip_link_poses.size() == 1);
-  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
+  assert(tip_link_poses.size() == 1);                                                       // NOLINT
+  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());                      // NOLINT
+  assert(std::abs(1.0 - tip_link_poses.at(tip_link_name_).matrix().determinant()) < 1e-6);  // NOLINT
 
   opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, tip_link_poses.at(tip_link_name_));
 
@@ -83,7 +86,7 @@ IKSolutions OPWInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link
       Eigen::Map<Eigen::VectorXd> eigen_sol(sol.data(), static_cast<Eigen::Index>(sol.size()));
 
       // Harmonize between [-PI, PI]
-      harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
+      harmonizeTowardZero<double>(eigen_sol, REDUNDANT_CAPABLE_JOINTS);  // Modifies 'sol' in place
 
       // Add solution
       solution_set.push_back(eigen_sol);

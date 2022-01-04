@@ -90,7 +90,7 @@ private:
 };
 
 #ifndef SWIG
-static auto DEFAULT_TESSERACT_MATERIAL = std::make_shared<Material>("default_tesseract_material");
+static const auto DEFAULT_TESSERACT_MATERIAL = std::make_shared<Material>("default_tesseract_material");
 #endif  // SWIG
 
 class Inertial

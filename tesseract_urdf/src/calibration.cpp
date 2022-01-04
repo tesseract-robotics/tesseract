@@ -26,13 +26,15 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <stdexcept>
+
+#include <console_bridge/console.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/calibration.h>
 #include <tesseract_scene_graph/joint.h>
+#include <tesseract_urdf/calibration.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_scene_graph::JointCalibration::Ptr tesseract_urdf::parseCalibration(const tinyxml2::XMLElement* xml_element,
                                                                               int /*version*/)
@@ -66,7 +68,7 @@ tesseract_urdf::writeCalibration(const std::shared_ptr<const tesseract_scene_gra
   if (calibration == nullptr)
     std::throw_with_nested(std::runtime_error("Calibration is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("calibration");
-  xml_element->SetAttribute("rising", calibration->rising);
-  xml_element->SetAttribute("falling", calibration->falling);
+  xml_element->SetAttribute("rising", toString(calibration->rising).c_str());
+  xml_element->SetAttribute("falling", toString(calibration->falling).c_str());
   return xml_element;
 }

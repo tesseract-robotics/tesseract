@@ -584,7 +584,7 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   }
   else
   {
-    bool castShapeIsFirst = (cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter) ? true : false;
+    bool castShapeIsFirst = (cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter);
     btVector3 normalWorldFromCast = -(castShapeIsFirst ? 1 : -1) * cp.m_normalWorldOnB;
     const btCollisionObjectWrapper* firstColObjWrap = (castShapeIsFirst ? colObj0Wrap : colObj1Wrap);
     const btTransform& first_tf_inv = (castShapeIsFirst ? tf0_inv : tf1_inv);

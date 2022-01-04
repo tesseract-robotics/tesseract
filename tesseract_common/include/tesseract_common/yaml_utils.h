@@ -45,9 +45,10 @@ struct convert<tesseract_common::PluginInfo>
   {
     Node node;
     node["class"] = rhs.class_name;
-    node["default"] = rhs.is_default;
+
     if (!rhs.config.IsNull())
       node["config"] = rhs.config;
+
     return node;
   }
 
@@ -59,11 +60,49 @@ struct convert<tesseract_common::PluginInfo>
 
     rhs.class_name = node["class"].as<std::string>();
 
-    if (node["default"])
-      rhs.is_default = node["default"].as<bool>();
-
-    if (node["config"])
+    if (node["config"] != nullptr)
       rhs.config = node["config"];
+
+    return true;
+  }
+};
+
+template <>
+struct convert<tesseract_common::PluginInfoContainer>
+{
+  static Node encode(const tesseract_common::PluginInfoContainer& rhs)
+  {
+    Node node;
+    if (!rhs.default_plugin.empty())
+      node["default"] = rhs.default_plugin;
+
+    node["plugins"] = rhs.plugins;
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_common::PluginInfoContainer& rhs)
+  {
+    if (node["default"] != nullptr)
+      rhs.default_plugin = node["default"].as<std::string>();
+
+    if (node["plugins"] == nullptr)
+      throw std::runtime_error("PluginInfoContainer, missing 'plugins' entry!");
+
+    const Node& plugins = node["plugins"];
+    if (!plugins.IsMap())
+      throw std::runtime_error("PluginInfoContainer, 'plugins' should contain a map of plugins!");
+
+    try
+    {
+      rhs.plugins = plugins.as<tesseract_common::PluginInfoMap>();
+    }
+    catch (const std::exception& e)
+    {
+      throw std::runtime_error(std::string("PluginInfoContainer: Constructor failed to cast 'plugins' to "
+                                           "tesseract_common::PluginInfoMap! Details: ") +
+                               e.what());
+    }
 
     return true;
   }
@@ -127,7 +166,7 @@ struct convert<Eigen::Isometry3d>
     out.translation().z() = p["z"].as<double>();
 
     const YAML::Node& o = node["orientation"];
-    if (o["x"] && o["y"] && o["z"] && o["w"])
+    if (o["x"] && o["y"] && o["z"] && o["w"])  // NOLINT
     {
       Eigen::Quaterniond quat;
       quat.x() = o["x"].as<double>();
@@ -137,11 +176,11 @@ struct convert<Eigen::Isometry3d>
 
       out.linear() = quat.toRotationMatrix();
     }
-    else if (o["r"] && o["p"] && o["y"])
+    else if (o["r"] && o["p"] && o["y"])  // NOLINT
     {
-      double r = o["r"].as<double>();
-      double p = o["p"].as<double>();
-      double y = o["y"].as<double>();
+      auto r = o["r"].as<double>();
+      auto p = o["p"].as<double>();
+      auto y = o["y"].as<double>();
 
       Eigen::AngleAxisd rollAngle(r, Eigen::Vector3d::UnitX());
       Eigen::AngleAxisd pitchAngle(p, Eigen::Vector3d::UnitY());
@@ -178,7 +217,7 @@ struct convert<Eigen::VectorXd>
     if (!node.IsSequence())
       return false;
 
-    rhs.resize(node.size());
+    rhs.resize(static_cast<Eigen::Index>(node.size()));
     for (long i = 0; i < node.size(); ++i)
       rhs(i) = node[i].as<double>();
 
@@ -284,13 +323,13 @@ struct convert<tesseract_common::KinematicsPluginInfo>
 
       try
       {
-        rhs.fwd_plugin_infos = fwd_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoMap>>();
+        rhs.fwd_plugin_infos = fwd_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoContainer>>();
       }
       catch (const std::exception& e)
       {
         throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + FWD_KIN_PLUGINS_KEY +
                                  "' to std::map<std::string, "
-                                 "tesseract_common::PluginInfoMap>! Details: " +
+                                 "tesseract_common::PluginInfoContainer>! Details: " +
                                  e.what());
       }
     }
@@ -302,14 +341,117 @@ struct convert<tesseract_common::KinematicsPluginInfo>
 
       try
       {
-        rhs.inv_plugin_infos = inv_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoMap>>();
+        rhs.inv_plugin_infos = inv_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoContainer>>();
       }
       catch (const std::exception& e)
       {
         throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + INV_KIN_PLUGINS_KEY +
                                  "' to std::map<std::string, "
-                                 "tesseract_common::PluginInfoMap>! Details: " +
+                                 "tesseract_common::PluginInfoContainer>! Details: " +
                                  e.what());
+      }
+    }
+
+    return true;
+  }
+};
+
+template <>
+struct convert<tesseract_common::ContactManagersPluginInfo>
+{
+  static Node encode(const tesseract_common::ContactManagersPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string DISCRETE_PLUGINS_KEY{ "discrete_plugins" };
+    const std::string CONTINUOUS_PLUGINS_KEY{ "continuous_plugins" };
+
+    YAML::Node contact_manager_plugins;
+    if (!rhs.search_paths.empty())
+      contact_manager_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
+
+    if (!rhs.search_libraries.empty())
+      contact_manager_plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+
+    if (!rhs.discrete_plugin_infos.plugins.empty())
+      contact_manager_plugins[DISCRETE_PLUGINS_KEY] = rhs.discrete_plugin_infos;
+
+    if (!rhs.discrete_plugin_infos.plugins.empty())
+      contact_manager_plugins[CONTINUOUS_PLUGINS_KEY] = rhs.continuous_plugin_infos;
+
+    return contact_manager_plugins;
+  }
+
+  static bool decode(const Node& node, tesseract_common::ContactManagersPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string DISCRETE_PLUGINS_KEY{ "discrete_plugins" };
+    const std::string CONTINUOUS_PLUGINS_KEY{ "continuous_plugins" };
+
+    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
+    {
+      std::set<std::string> sp;
+      try
+      {
+        sp = search_paths.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + SEARCH_PATHS_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_paths.insert(sp.begin(), sp.end());
+    }
+
+    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
+    {
+      std::set<std::string> sl;
+      try
+      {
+        sl = search_libraries.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_libraries.insert(sl.begin(), sl.end());
+    }
+
+    if (const YAML::Node& discrete_plugins = node[DISCRETE_PLUGINS_KEY])
+    {
+      if (!discrete_plugins.IsMap())
+        throw std::runtime_error(DISCRETE_PLUGINS_KEY + ", should contain a map of contact manager names to plugins!");
+
+      try
+      {
+        rhs.discrete_plugin_infos = discrete_plugins.as<tesseract_common::PluginInfoContainer>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + DISCRETE_PLUGINS_KEY +
+                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+      }
+    }
+
+    if (const YAML::Node& continuous_plugins = node[CONTINUOUS_PLUGINS_KEY])
+    {
+      if (!continuous_plugins.IsMap())
+        throw std::runtime_error(CONTINUOUS_PLUGINS_KEY + ", should contain a map of names to plugins!");
+
+      try
+      {
+        rhs.continuous_plugin_infos = continuous_plugins.as<tesseract_common::PluginInfoContainer>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + CONTINUOUS_PLUGINS_KEY +
+                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
       }
     }
 

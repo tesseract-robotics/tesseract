@@ -27,11 +27,9 @@
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/utils.h>
 #include <tesseract_collision/core/common.h>
-#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
-#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
-#include <tesseract_collision/fcl/fcl_discrete_managers.h>
 #include <tesseract_srdf/utils.h>
 #include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
+#include <tesseract_kinematics/core/validate.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <queue>
@@ -39,11 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-Environment::Environment(bool register_default_contact_managers)
-  : register_default_contact_managers_(register_default_contact_managers)
-{
-}
-
 bool Environment::initHelper(const Commands& commands)
 {
   if (commands.empty())
@@ -62,24 +55,20 @@ bool Environment::initHelper(const Commands& commands)
       std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0))->getSceneGraph()->getName());
   scene_graph_const_ = scene_graph_;
 
+  is_contact_allowed_fn_ = [this](const std::string& l1, const std::string& l2) {
+    return scene_graph_->isCollisionAllowed(l1, l2);
+  };
+
   if (!applyCommandsHelper(commands))
   {
     CONSOLE_BRIDGE_logError("When initializing environment from command history, it failed to apply a command!");
     return false;
   }
 
-  is_contact_allowed_fn_ = [this](const std::string& l1, const std::string& l2) {
-    return scene_graph_->isCollisionAllowed(l1, l2);
-  };
-
   initialized_ = true;
   init_revision_ = revision_;
 
   environmentChanged();
-
-  // Register Default Managers, must be called after initialized after initialized_ is set to true
-  if (register_default_contact_managers_)
-    registerDefaultContactManagersHelper();
 
   return initialized_;
 }
@@ -265,6 +254,7 @@ Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& s
 
   if (srdf_model)
   {
+    commands.push_back(std::make_shared<AddContactManagersPluginInfoCommand>(srdf_model->contact_managers_plugin_info));
     commands.push_back(std::make_shared<AddKinematicsInformationCommand>(srdf_model->kinematics_information));
 
     // Check srdf for collision margin data
@@ -313,6 +303,15 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
   if (it == kinematics_information_.group_names.end())
     throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
 
+  std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex_);
+  auto cache_it = group_joint_names_cache_.find(group_name);
+  if (cache_it != group_joint_names_cache_.end())
+  {
+    CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache hit!", group_name.c_str());
+    return cache_it->second;
+  }
+
+  CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache miss!", group_name.c_str());
   auto chain_it = kinematics_information_.chain_groups.find(group_name);
   if (chain_it != kinematics_information_.chain_groups.end())
   {
@@ -322,12 +321,16 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
     tesseract_scene_graph::ShortestPath path =
         scene_graph_const_->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
 
+    group_joint_names_cache_[group_name] = path.active_joints;
     return path.active_joints;
   }
 
   auto joint_it = kinematics_information_.joint_groups.find(group_name);
   if (joint_it != kinematics_information_.joint_groups.end())
+  {
+    group_joint_names_cache_[group_name] = joint_it->second;
     return joint_it->second;
+  }
 
   auto link_it = kinematics_information_.link_groups.find(group_name);
   if (link_it != kinematics_information_.link_groups.end())
@@ -336,25 +339,48 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
   throw std::runtime_error("Environment, failed to get group '" + group_name + "' joint names!");
 }
 
-tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& name) const
+tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& group_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<std::string> joint_names = getGroupJointNames(name);
-  return getJointGroup(name, joint_names);
+
+  std::unique_lock<std::shared_mutex> cache_lock(joint_group_cache_mutex_);
+  auto it = joint_group_cache_.find(group_name);
+  if (it != joint_group_cache_.end())
+  {
+    CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache hit!", group_name.c_str());
+    return std::make_unique<tesseract_kinematics::JointGroup>(*it->second);
+  }
+
+  CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache miss!", group_name.c_str());
+  // Store copy in cache and return
+  std::vector<std::string> joint_names = getGroupJointNames(group_name);
+  tesseract_kinematics::JointGroup::UPtr jg = getJointGroup(group_name, joint_names);
+  joint_group_cache_[group_name] = std::make_unique<tesseract_kinematics::JointGroup>(*jg);
+
+  return jg;
 }
 
-tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& group_name,
+tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& name,
                                                                   const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::make_unique<tesseract_kinematics::JointGroup>(
-      group_name, joint_names, *scene_graph_const_, current_state_);
+  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph_const_, current_state_);
 }
 
 tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const std::string& group_name,
                                                                           std::string ik_solver_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
+
+  std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex_);
+  auto it = kinematic_group_cache_.find(group_name);
+  if (it != kinematic_group_cache_.end())
+  {
+    CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache hit!", group_name.c_str());
+    return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
+  }
+
+  CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache miss!", group_name.c_str());
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
 
   if (ik_solver_name.empty())
@@ -367,8 +393,21 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
   if (inv_kin == nullptr)
     return nullptr;
 
-  return std::make_unique<tesseract_kinematics::KinematicGroup>(
+  // Store copy in cache and return
+  auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
       group_name, joint_names, std::move(inv_kin), *scene_graph_const_, current_state_);
+
+  kinematic_group_cache_[group_name] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+
+#ifndef NDEBUG
+  if (!tesseract_kinematics::checkKinematics(*kg))
+  {
+    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that inverse kinematics solution for a pose do not "
+                            "match forward kinematics solution. Did you change the URDF recently?");
+  }
+#endif
+
+  return kg;
 }
 
 // NOLINTNEXTLINE
@@ -380,10 +419,11 @@ Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::Manipulator
   if (manip_info.tcp_offset.index() != 0)
     return std::get<1>(manip_info.tcp_offset);
 
-  // Check if the tcp offset name is a link in the scene, if so return Identity
+  // Check if the tcp offset name is a link in the scene, if so throw an exception
   const std::string& tcp_offset_name = std::get<0>(manip_info.tcp_offset);
   if (state_solver_->hasLinkName(tcp_offset_name))
-    return Eigen::Isometry3d::Identity();
+    throw std::runtime_error("The tcp offset name '" + tcp_offset_name +
+                             "' should not be an existing link in the scene. Assign it as the tcp_frame instead!");
 
   // Check Manipulator Manager for TCP
   if (kinematics_information_.hasGroupTCP(manip_info.manipulator, tcp_offset_name))
@@ -403,7 +443,7 @@ Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::Manipulator
     }
   }
 
-  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "' setting to Identity!");
+  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "'!");
 }
 
 void Environment::addFindTCPOffsetCallback(const FindTCPOffsetCallbackFn& fn)
@@ -507,7 +547,7 @@ bool Environment::getLinkVisibility(const std::string& name) const
   return scene_graph_->getLinkVisibility(name);
 }
 
-tesseract_scene_graph::AllowedCollisionMatrix::ConstPtr Environment::getAllowedCollisionMatrix() const
+tesseract_common::AllowedCollisionMatrix::ConstPtr Environment::getAllowedCollisionMatrix() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return scene_graph_->getAllowedCollisionMatrix();
@@ -639,16 +679,22 @@ tesseract_srdf::GroupNames Environment::getGroupNames() const
   return kinematics_information_.group_names;
 }
 
+tesseract_common::ContactManagersPluginInfo Environment::getContactManagersPluginInfo() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return contact_managers_plugin_info_;
+}
+
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   return setActiveDiscreteContactManagerHelper(name);
 }
 
-tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManager(const std::string& name) const
+tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContactManager(const std::string& name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  tesseract_collision::DiscreteContactManager::Ptr manager = getDiscreteContactManagerHelper(name);
+  tesseract_collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
     CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
@@ -664,7 +710,7 @@ bool Environment::setActiveContinuousContactManager(const std::string& name)
   return setActiveContinuousContactManagerHelper(name);
 }
 
-tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManager() const
+tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContactManager() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   if (!discrete_manager_)
@@ -672,7 +718,7 @@ tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContact
   return discrete_manager_->clone();
 }
 
-tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousContactManager() const
+tesseract_collision::ContinuousContactManager::UPtr Environment::getContinuousContactManager() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   if (!continuous_manager_)
@@ -680,11 +726,11 @@ tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousCon
   return continuous_manager_->clone();
 }
 
-tesseract_collision::ContinuousContactManager::Ptr
+tesseract_collision::ContinuousContactManager::UPtr
 Environment::getContinuousContactManager(const std::string& name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  tesseract_collision::ContinuousContactManager::Ptr manager = getContinuousContactManagerHelper(name);
+  tesseract_collision::ContinuousContactManager::UPtr manager = getContinuousContactManagerHelper(name);
   if (manager == nullptr)
   {
     CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
@@ -700,69 +746,21 @@ tesseract_common::CollisionMarginData Environment::getCollisionMarginData() cons
   return collision_margin_data_;
 }
 
-bool Environment::registerDiscreteContactManager(
-    const std::string& name,
-    tesseract_collision::DiscreteContactManagerFactoryCreateMethod create_function)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  return discrete_factory_.registar(name, std::move(create_function));
-}
-
-bool Environment::registerContinuousContactManager(
-    const std::string& name,
-    tesseract_collision::ContinuousContactManagerFactoryCreateMethod create_function)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  return continuous_factory_.registar(name, std::move(create_function));
-}
-
-bool Environment::registerDefaultContactManagers()
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-
-  if (!initialized_)
-    return false;
-
-  return registerDefaultContactManagersHelper();
-}
-
-bool Environment::registerDefaultContactManagersHelper()
-{
-  using namespace tesseract_collision;
-
-  bool success = true;
-  // Register contact manager
-  success &= discrete_factory_.registar(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
-                                        &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
-
-  success &= discrete_factory_.registar(tesseract_collision_fcl::FCLDiscreteBVHManager::name(),
-                                        &tesseract_collision_fcl::FCLDiscreteBVHManager::create);
-
-  success &= continuous_factory_.registar(tesseract_collision_bullet::BulletCastBVHManager::name(),
-                                          &tesseract_collision_bullet::BulletCastBVHManager::create);
-
-  // Set Active contact manager
-  success &= setActiveDiscreteContactManagerHelper(tesseract_collision_bullet::BulletDiscreteBVHManager::name());
-  success &= setActiveContinuousContactManagerHelper(tesseract_collision_bullet::BulletCastBVHManager::name());
-
-  return success;
-}
-
 bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
 {
-  tesseract_collision::DiscreteContactManager::Ptr manager = getDiscreteContactManagerHelper(name);
+  tesseract_collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
     std::string msg = "\n  Discrete manager with " + name + " does not exist in factory!\n";
     msg += "    Available Managers:\n";
-    for (const auto& m : discrete_factory_.getAvailableManagers())
-      msg += "      " + m + "\n";
+    for (const auto& m : contact_managers_factory_.getDiscreteContactManagerPlugins())
+      msg += "      " + m.first + "\n";
 
     CONSOLE_BRIDGE_logError(msg.c_str());
     return false;
   }
 
-  discrete_manager_name_ = name;
+  contact_managers_plugin_info_.discrete_plugin_infos.default_plugin = name;
   discrete_manager_ = std::move(manager);
 
   // Update the current state information since the contact manager has been created/set
@@ -773,20 +771,20 @@ bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
 
 bool Environment::setActiveContinuousContactManagerHelper(const std::string& name)
 {
-  tesseract_collision::ContinuousContactManager::Ptr manager = getContinuousContactManagerHelper(name);
+  tesseract_collision::ContinuousContactManager::UPtr manager = getContinuousContactManagerHelper(name);
 
   if (manager == nullptr)
   {
     std::string msg = "\n  Continuous manager with " + name + " does not exist in factory!\n";
     msg += "    Available Managers:\n";
-    for (const auto& m : continuous_factory_.getAvailableManagers())
-      msg += "      " + m + "\n";
+    for (const auto& m : contact_managers_factory_.getContinuousContactManagerPlugins())
+      msg += "      " + m.first + "\n";
 
     CONSOLE_BRIDGE_logError(msg.c_str());
     return false;
   }
 
-  continuous_manager_name_ = name;
+  contact_managers_plugin_info_.continuous_plugin_infos.default_plugin = name;
   continuous_manager_ = std::move(manager);
 
   // Update the current state information since the contact manager has been created/set
@@ -795,15 +793,16 @@ bool Environment::setActiveContinuousContactManagerHelper(const std::string& nam
   return true;
 }
 
-tesseract_collision::DiscreteContactManager::Ptr
+tesseract_collision::DiscreteContactManager::UPtr
 Environment::getDiscreteContactManagerHelper(const std::string& name) const
 {
-  tesseract_collision::DiscreteContactManager::Ptr manager = discrete_factory_.create(name);
+  tesseract_collision::DiscreteContactManager::UPtr manager =
+      contact_managers_factory_.createDiscreteContactManager(name);
   if (manager == nullptr)
     return nullptr;
 
   manager->setIsContactAllowedFn(is_contact_allowed_fn_);
-  if (initialized_)
+  if (scene_graph_ != nullptr)
   {
     for (const auto& link : scene_graph_->getLinks())
     {
@@ -824,16 +823,17 @@ Environment::getDiscreteContactManagerHelper(const std::string& name) const
   return manager;
 }
 
-tesseract_collision::ContinuousContactManager::Ptr
+tesseract_collision::ContinuousContactManager::UPtr
 Environment::getContinuousContactManagerHelper(const std::string& name) const
 {
-  tesseract_collision::ContinuousContactManager::Ptr manager = continuous_factory_.create(name);
+  tesseract_collision::ContinuousContactManager::UPtr manager =
+      contact_managers_factory_.createContinuousContactManager(name);
 
   if (manager == nullptr)
     return nullptr;
 
   manager->setIsContactAllowedFn(is_contact_allowed_fn_);
-  if (initialized_)
+  if (scene_graph_ != nullptr)
   {
     for (const auto& link : scene_graph_->getLinks())
     {
@@ -886,6 +886,13 @@ void Environment::currentStateChanged()
       }
     }
   }
+
+  {  // Clear JointGroup and KinematicGroup
+    std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
+    std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
+    joint_group_cache_.clear();
+    kinematic_group_cache_.clear();
+  }
 }
 
 void Environment::environmentChanged()
@@ -895,6 +902,11 @@ void Environment::environmentChanged()
     discrete_manager_->setActiveCollisionObjects(active_link_names);
   if (continuous_manager_ != nullptr)
     continuous_manager_->setActiveCollisionObjects(active_link_names);
+
+  {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
+    std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
+    group_joint_names_cache_.clear();
+  }
 
   currentStateChanged();
 }
@@ -929,11 +941,14 @@ bool Environment::removeLinkHelper(const std::string& name)
   return true;
 }
 
-Environment::Ptr Environment::clone() const
+Environment::UPtr Environment::clone() const
 {
-  auto cloned_env = std::make_shared<Environment>();
+  auto cloned_env = std::make_unique<Environment>();
 
   std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
+  std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
+  std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
 
   if (!initialized_)
     return cloned_env;
@@ -958,6 +973,17 @@ Environment::Ptr Environment::clone() const
   cloned_env->find_tcp_cb_ = find_tcp_cb_;
   cloned_env->collision_margin_data_ = collision_margin_data_;
 
+  // Copy cache
+  cloned_env->joint_group_cache_.reserve(joint_group_cache_.size());
+  for (const auto& c : joint_group_cache_)
+    cloned_env->joint_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::JointGroup>(*c.second));
+
+  cloned_env->kinematic_group_cache_.reserve(kinematic_group_cache_.size());
+  for (const auto& c : kinematic_group_cache_)
+    cloned_env->kinematic_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::KinematicGroup>(*c.second));
+
+  cloned_env->group_joint_names_cache_ = group_joint_names_cache_;
+
   // NOLINTNEXTLINE
   cloned_env->is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
                                                  cloned_env->scene_graph_,
@@ -975,10 +1001,8 @@ Environment::Ptr Environment::clone() const
     cloned_env->continuous_manager_->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn_);
   }
 
-  cloned_env->discrete_manager_name_ = discrete_manager_name_;
-  cloned_env->continuous_manager_name_ = continuous_manager_name_;
-  cloned_env->discrete_factory_ = discrete_factory_;
-  cloned_env->continuous_factory_ = continuous_factory_;
+  cloned_env->contact_managers_plugin_info_ = contact_managers_plugin_info_;
+  cloned_env->contact_managers_factory_ = contact_managers_factory_;
 
   return cloned_env;
 }
@@ -1108,6 +1132,24 @@ bool Environment::applyCommandsHelper(const Commands& commands)
       {
         auto cmd = std::static_pointer_cast<const ChangeCollisionMarginsCommand>(command);
         success &= applyChangeCollisionMarginsCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO:
+      {
+        auto cmd = std::static_pointer_cast<const AddContactManagersPluginInfoCommand>(command);
+        success &= applyAddContactManagersPluginInfoCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER:
+      {
+        auto cmd = std::static_pointer_cast<const SetActiveContinuousContactManagerCommand>(command);
+        success &= applySetActiveContinuousContactManagerCommand(cmd);
+        break;
+      }
+      case tesseract_environment::CommandType::SET_ACTIVE_DISCRETE_CONTACT_MANAGER:
+      {
+        auto cmd = std::static_pointer_cast<const SetActiveDiscreteContactManagerCommand>(command);
+        success &= applySetActiveDiscreteContactManagerCommand(cmd);
         break;
       }
       // LCOV_EXCL_START
@@ -1658,13 +1700,86 @@ bool Environment::applyAddKinematicsInformationCommand(const AddKinematicsInform
       kinematics_factory_.addSearchLibrary(search_library);
 
     for (const auto& group : info.fwd_plugin_infos)
-      for (const auto& solver : group.second)
+    {
+      for (const auto& solver : group.second.plugins)
         kinematics_factory_.addFwdKinPlugin(group.first, solver.first, solver.second);
 
+      if (!group.second.default_plugin.empty())
+        kinematics_factory_.setDefaultFwdKinPlugin(group.first, group.second.default_plugin);
+    }
+
     for (const auto& group : info.inv_plugin_infos)
-      for (const auto& solver : group.second)
+    {
+      for (const auto& solver : group.second.plugins)
         kinematics_factory_.addInvKinPlugin(group.first, solver.first, solver.second);
+
+      if (!group.second.default_plugin.empty())
+        kinematics_factory_.setDefaultInvKinPlugin(group.first, group.second.default_plugin);
+    }
   }
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManagersPluginInfoCommand::ConstPtr& cmd)
+{
+  const auto& info = cmd->getContactManagersPluginInfo();
+
+  if (!info.empty())
+  {
+    contact_managers_plugin_info_.insert(info);
+
+    for (const auto& search_path : info.search_paths)
+      contact_managers_factory_.addSearchPath(search_path);
+
+    for (const auto& search_library : info.search_libraries)
+      contact_managers_factory_.addSearchLibrary(search_library);
+
+    for (const auto& cm : info.discrete_plugin_infos.plugins)
+      contact_managers_factory_.addDiscreteContactManagerPlugin(cm.first, cm.second);
+
+    if (!info.discrete_plugin_infos.default_plugin.empty())
+      contact_managers_factory_.setDefaultDiscreteContactManagerPlugin(info.discrete_plugin_infos.default_plugin);
+
+    for (const auto& cm : info.continuous_plugin_infos.plugins)
+      contact_managers_factory_.addContinuousContactManagerPlugin(cm.first, cm.second);
+
+    if (!info.continuous_plugin_infos.default_plugin.empty())
+      contact_managers_factory_.setDefaultContinuousContactManagerPlugin(info.continuous_plugin_infos.default_plugin);
+  }
+
+  std::string discrete_default = contact_managers_factory_.getDefaultDiscreteContactManagerPlugin();
+  if (discrete_manager_ == nullptr || discrete_manager_->getName() != discrete_default)
+    setActiveDiscreteContactManagerHelper(discrete_default);
+
+  std::string continuous_default = contact_managers_factory_.getDefaultContinuousContactManagerPlugin();
+  if (continuous_manager_ == nullptr || continuous_manager_->getName() != continuous_default)
+    setActiveContinuousContactManagerHelper(continuous_default);
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applySetActiveContinuousContactManagerCommand(
+    const SetActiveContinuousContactManagerCommand::ConstPtr& cmd)
+{
+  setActiveContinuousContactManagerHelper(cmd->getName());
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applySetActiveDiscreteContactManagerCommand(
+    const SetActiveDiscreteContactManagerCommand::ConstPtr& cmd)
+{
+  setActiveDiscreteContactManagerHelper(cmd->getName());
 
   ++revision_;
   commands_.push_back(cmd);

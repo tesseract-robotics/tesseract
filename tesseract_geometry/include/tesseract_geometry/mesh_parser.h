@@ -118,7 +118,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
       }
       else
       {
-        CONSOLE_BRIDGE_logDebug("Mesh had a face with less than three verticies: %s", resource->getUrl().c_str());
+        CONSOLE_BRIDGE_logDebug("Mesh had a face with less than three vertices: %s", resource->getUrl().c_str());
       }
     }
 
@@ -323,7 +323,7 @@ std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
  * @brief Create a mesh using assimp from file path
  * @param path The file path to the mesh
  * @param scale Perform an axis scaling
- * @param trianglulate If true the mesh will be trianglulated. This should be done for visual meshes.
+ * @param triangulate If true the mesh will be triangulated. This should be done for visual meshes.
  *        In the case of collision meshes do not triangulate convex hull meshes.
  * @param flatten If true all meshes will be condensed into a single mesh. This should only be used for visual meshes,
  * do not flatten collision meshes.
@@ -380,7 +380,7 @@ std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
   }
 
   // Assimp enforces Y_UP convention by rotating models with different conventions.
-  // However, that behaviour is confusing and doesn't match the ROS convention
+  // However, that behavior is confusing and doesn't match the ROS convention
   // where the Z axis is pointing up.
   // Hopefully this doesn't undo legit use of the root node transformation...
   // Note that this is also what RViz does internally.
@@ -405,7 +405,7 @@ std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
  * @brief Create a mesh using assimp from resource
  * @param resource The located resource
  * @param scale Perform an axis scaling
- * @param trianglulate If true the mesh will be trianglulated. This should be done for visual meshes.
+ * @param triangulate If true the mesh will be triangulated. This should be done for visual meshes.
  *        In the case of collision meshes do not triangulate convex hull meshes.
  * @param flatten If true all meshes will be condensed into a single mesh. This should only be used for visual meshes,
  * do not flatten collision meshes.
@@ -496,7 +496,7 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
   }
 
   // Assimp enforces Y_UP convention by rotating models with different conventions.
-  // However, that behaviour is confusing and doesn't match the ROS convention
+  // However, that behavior is confusing and doesn't match the ROS convention
   // where the Z axis is pointing up.
   // Hopefully this doesn't undo legit use of the root node transformation...
   // Note that this is also what RViz does internally.
@@ -522,7 +522,7 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
  * @param bytes Byte array
  * @param bytes_len The length of bytes
  * @param scale Perform an axis scaling
- * @param trianglulate If true the mesh will be trianglulated. This should be done for visual meshes.
+ * @param triangulate If true the mesh will be triangulated. This should be done for visual meshes.
  *        In the case of collision meshes do not triangulate convex hull meshes.
  * @param flatten If true all meshes will be condensed into a single mesh. This should only be used for visual meshes,
  * do not flatten collision meshes.

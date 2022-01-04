@@ -2,6 +2,41 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2021-12-15)
+------------------
+
+0.7.3 (2021-12-15)
+------------------
+
+0.7.2 (2021-12-15)
+------------------
+
+0.7.1 (2021-12-15)
+------------------
+* Move checkKinematics to getKinematicGroup and add support for clang-tidy-12 (`#682 <https://github.com/tesseract-robotics/tesseract/issues/682>`_)
+  * Move checkKinematics to getKinematicGroup and add support for clang-tidy-12
+  * Reduce the number of checks perform in checkKinematics
+  * Leverage checkKinematics in unit tests
+* Improve creating octree from point cloud using lazy_eval (`#680 <https://github.com/tesseract-robotics/tesseract/issues/680>`_)
+* Contributors: Levi Armstrong
+
+0.7.0 (2021-12-04)
+------------------
+
+0.6.9 (2021-11-29)
+------------------
+
+0.6.8 (2021-11-29)
+------------------
+* Fix spelling errors
+* Contributors: Levi Armstrong
+
+0.6.7 (2021-11-16)
+------------------
+
+0.6.6 (2021-11-10)
+------------------
+
 0.5.0 (2021-07-02)
 ------------------
 

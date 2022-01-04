@@ -148,11 +148,11 @@ namespace boost
 // Taken from pagmo to address the same issue
 // NOTE: in some earlier versions of Boost (i.e., at least up to 1.67)
 // the is_virtual_base_of type trait, used by the Boost serialization library, fails
-// with a compile time error if a class is declared final. Thus, we provide a specialised
+// with a compile time error if a class is declared final. Thus, we provide a specialized
 // implementation of this type trait to work around the issue. See:
 // https://www.boost.org/doc/libs/1_52_0/libs/type_traits/doc/html/boost_typetraits/reference/is_virtual_base_of.html
 // https://stackoverflow.com/questions/18982064/boost-serialization-of-base-class-of-final-subclass-error
-// We never use virtual inheritance, thus the specialisation is always false.
+// We never use virtual inheritance, thus the specialization is always false.
 template <typename T>
 struct is_virtual_base_of<tesseract_common::detail_any::AnyInnerBase, tesseract_common::detail_any::AnyInner<T>>
   : false_type

@@ -11,7 +11,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/kdl_parser.h>
 #include <tesseract_scene_graph/scene_state.h>
 
@@ -1052,11 +1051,13 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
 
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4" };
   std::vector<std::string> link_names{ "base_link", "link_1", "link_2", "link_3", "link_4", "link_5" };
+  std::vector<std::string> static_link_names{ "base_link", "link_1" };
   std::vector<std::string> active_link_names{ "link_2", "link_3", "link_4", "link_5" };
   {
     KDLTreeData data = parseSceneGraph(g);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
@@ -1086,6 +1087,7 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
     KDLTreeData data = parseSceneGraph(*g_clone);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
@@ -1113,6 +1115,9 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
                                             "right_joint_2", "right_joint_3", "right_joint_4" };
   std::vector<std::string> link_names{ "world",        "left_link_2",  "left_link_3",  "left_link_4", "left_link_5",
                                        "right_link_2", "right_link_3", "right_link_4", "right_link_5" };
+
+  std::vector<std::string> static_link_names{ "world", "left_link_2", "right_link_2" };
+
   std::vector<std::string> active_link_names{ "left_link_3",  "left_link_4",  "left_link_5",
                                               "right_link_3", "right_link_4", "right_link_5" };
 
@@ -1129,6 +1134,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
     KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, sub_joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
@@ -1159,6 +1165,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
     KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values);
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, sub_joint_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
 
@@ -1179,7 +1186,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 /// Testing AllowedCollisionMatrix
 TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)  // NOLINT
 {
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
 
   acm.addAllowedCollision("link1", "link2", "test");
   // collision between link1 and link2 should be allowed
@@ -1196,7 +1203,7 @@ TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)  // NOLINT
   acm.clearAllowedCollisions();
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
 
-  tesseract_scene_graph::AllowedCollisionMatrix acm2;
+  tesseract_common::AllowedCollisionMatrix acm2;
   acm.addAllowedCollision("link1", "link2", "test");
   acm2.addAllowedCollision("link1", "link2", "test");
   acm2.addAllowedCollision("link1", "link3", "test");
@@ -1241,7 +1248,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
   tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
@@ -1281,7 +1288,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)
 {
   // Test inserting graph into empty graph
   tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
@@ -1318,7 +1325,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUni
 {
   // Test inserting graph into empty graph
   tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
@@ -1367,7 +1374,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
 {
   // Test inserting graph into empty graph
   tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);

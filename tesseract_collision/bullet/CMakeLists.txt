@@ -12,11 +12,20 @@ if(NOT
     WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
 endif()
 
-include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
-link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
+if(WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
+  include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+  link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
+endif()
 
 find_library(CONVEX_DECOMPOSITION_LIBRARY ConvexDecomposition HINTS ${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS})
+if(NOT CONVEX_DECOMPOSITION_LIBRARY)
+  message(FATAL_ERROR "ConvexDecomposition not found! Install libbullet-extras-dev.")
+endif()
+
 find_library(HACD_LIBRARY HACD HINTS ${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS})
+if(NOT HACD_LIBRARY)
+  message(FATAL_ERROR "HACD not found! Install libbullet-extras-dev.")
+endif()
 
 # Create target for Bullet implementation
 add_library(
@@ -54,6 +63,25 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME}_bullet PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                          "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+
+# Create target for Bullet implementation
+add_library(${PROJECT_NAME}_bullet_factories src/bullet_factories.cpp)
+target_link_libraries(${PROJECT_NAME}_bullet_factories PUBLIC ${PROJECT_NAME}_bullet)
+target_compile_options(${PROJECT_NAME}_bullet_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+target_compile_options(${PROJECT_NAME}_bullet_factories PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(${PROJECT_NAME}_bullet_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS}
+                                                                   ${BULLET_DEFINITIONS})
+target_clang_tidy(${PROJECT_NAME}_bullet_factories ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_bullet_factories PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(
+  ${PROJECT_NAME}_bullet_factories
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+target_include_directories(
+  ${PROJECT_NAME}_bullet_factories PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                          "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_bullet_factories SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
 # Convex decomposition libraries
 add_library(${PROJECT_NAME}_hacd_convex_decomposition src/convex_decomposition_hacd.cpp)
@@ -109,6 +137,9 @@ if(NOT MSVC)
   install_targets(TARGETS create_convex_hull)
 endif()
 
+# Add factory library so contact_managers_factory can find these factories by defauult
+set(CONTACT_MANAGERS_PLUGINS ${CONTACT_MANAGERS_PLUGINS} "${PROJECT_NAME}_bullet_factories" PARENT_SCOPE)
+
 # Mark cpp header files for installation
 install(
   DIRECTORY include/${PROJECT_NAME}
@@ -119,4 +150,8 @@ install(
   PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
-install_targets(TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_hacd_convex_decomposition)
+install_targets(
+  TARGETS
+  ${PROJECT_NAME}_bullet
+  ${PROJECT_NAME}_bullet_factories
+  ${PROJECT_NAME}_hacd_convex_decomposition)

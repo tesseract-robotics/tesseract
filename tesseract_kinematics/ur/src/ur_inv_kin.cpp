@@ -38,6 +38,8 @@
 #include <tesseract_kinematics/ur/ur_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 
+static const std::vector<Eigen::Index> REDUNDANT_CAPABLE_JOINTS{ 0, 1, 2, 3, 4, 5 };
+
 namespace tesseract_kinematics
 {
 // LCOV_EXCL_START
@@ -255,6 +257,7 @@ IKSolutions URInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_
 {
   assert(tip_link_poses.size() == 1);
   assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
+  assert(std::abs(1.0 - tip_link_poses.at(tip_link_name_).matrix().determinant()) < 1e-6);  // NOLINT
 
   Eigen::Isometry3d base_offset = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitZ());
   Eigen::Isometry3d corrected_pose = base_offset.inverse() * tip_link_poses.at(tip_link_name_);
@@ -272,7 +275,7 @@ IKSolutions URInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_
     Eigen::Map<Eigen::VectorXd> eigen_sol(sols[i].data(), static_cast<Eigen::Index>(sols[i].size()));
 
     // Harmonize between [-PI, PI]
-    harmonizeTowardZero<double>(eigen_sol);  // Modifies 'sol' in place
+    harmonizeTowardZero<double>(eigen_sol, REDUNDANT_CAPABLE_JOINTS);  // Modifies 'sol' in place
 
     // Add solution
     solution_set.push_back(eigen_sol);

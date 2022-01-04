@@ -49,6 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fcl/narrowphase/distance-inl.h>
 #include <memory>
 #include <set>
+#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>

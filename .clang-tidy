@@ -18,6 +18,7 @@ Checks: >
     -cppcoreguidelines-non-private-member-variables-in-classes,
     misc-*,
     -misc-non-private-member-variables-in-classes,
+    -misc-no-recursion,
     modernize-*,
     -modernize-use-trailing-return-type,
     -modernize-use-nodiscard,
@@ -26,7 +27,8 @@ Checks: >
     -readability-braces-around-statements,
     -readability-named-parameter,
     -readability-magic-numbers,
-    -readability-isolate-declaration
+    -readability-isolate-declaration,
+    -readability-function-cognitive-complexity
 WarningsAsErrors: >
     -*,
     clang-diagnostic-*,
@@ -46,6 +48,7 @@ WarningsAsErrors: >
     -cppcoreguidelines-non-private-member-variables-in-classes,
     misc-*,
     -misc-non-private-member-variables-in-classes,
+    -misc-no-recursion,
     modernize-*,
     -modernize-use-trailing-return-type,
     -modernize-use-nodiscard,
@@ -54,7 +57,8 @@ WarningsAsErrors: >
     -readability-braces-around-statements,
     -readability-named-parameter,
     -readability-magic-numbers,
-    -readability-isolate-declaration
+    -readability-isolate-declaration,
+    -readability-function-cognitive-complexity
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 FormatStyle:     none

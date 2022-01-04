@@ -60,6 +60,8 @@ std::enable_if_t<std::is_polymorphic<E>::value> my_rethrow_if_nested(const E& e)
     p->rethrow_nested();
 }
 
+// LCOV_EXCL_START
+// These are tested in both tesseract_kinematics and tesseract_state_solver
 void twistChangeRefPoint(Eigen::Ref<Eigen::VectorXd> twist, const Eigen::Ref<const Eigen::Vector3d>& ref_point)
 {
   twist(0) += twist(4) * ref_point(2) - twist(5) * ref_point(1);
@@ -86,6 +88,7 @@ void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::R
   for (int i = 0; i < jacobian.cols(); i++)
     twistChangeRefPoint(jacobian.col(i), ref_point);
 }
+// LCOV_EXCL_STOP
 
 Eigen::VectorXd concat(const Eigen::VectorXd& a, const Eigen::VectorXd& b)
 {
@@ -164,7 +167,7 @@ Eigen::Vector4d computeRandomColor()
   return c;
 }
 
-void printNestedException(const std::exception& e, int level)
+void printNestedException(const std::exception& e, int level)  // NOLINT(misc-no-recursion)
 {
   std::cerr << std::string(static_cast<unsigned>(2 * level), ' ') << "exception: " << e.what() << std::endl;
   try
@@ -200,13 +203,7 @@ bool isNumeric(const std::string& s)
 
 bool isNumeric(const std::vector<std::string>& sv)
 {
-  for (const auto& s : sv)
-  {
-    if (!isNumeric(s))
-      return false;
-  }
-
-  return true;
+  return std::all_of(sv.cbegin(), sv.cend(), [](const std::string& s) { return isNumeric(s); });
 }
 
 Eigen::VectorXd generateRandomNumber(const Eigen::Ref<const Eigen::MatrixX2d>& limits)
@@ -402,6 +399,31 @@ bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
     return true;
 
   return (diff_abs <= (max_rel_diff * a1.abs().max(a2.abs()))).all();
+}
+
+std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& link_names,
+                                              const AllowedCollisionEntries& acm_entries,
+                                              bool remove_duplicates)
+{
+  std::vector<std::string> results;
+  results.reserve(acm_entries.size());
+
+  for (const auto& entry : acm_entries)
+  {
+    const std::string link_1 = entry.first.first;
+    const std::string link_2 = entry.first.second;
+
+    // If the first entry is one of the links we were looking for
+    if (std::find(link_names.begin(), link_names.end(), link_1) != link_names.end())
+      // If it hasn't already been added or remove_duplicates is disabled
+      if (!remove_duplicates || (std::find(results.begin(), results.end(), link_2) == results.end()))
+        results.push_back(link_2);
+
+    if (std::find(link_names.begin(), link_names.end(), link_2) != link_names.end())
+      if (!remove_duplicates || (std::find(results.begin(), results.end(), link_1) == results.end()))
+        results.push_back(link_1);
+  }
+  return results;
 }
 
 }  // namespace tesseract_common

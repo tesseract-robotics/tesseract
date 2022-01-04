@@ -27,15 +27,17 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+
 #include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_geometry/impl/octree.h>
 #include <tesseract_urdf/octomap.h>
 #include <tesseract_urdf/octree.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_geometry/impl/octree.h>
+#include <tesseract_urdf/utils.h>
 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
 #include <tesseract_urdf/point_cloud.h>
@@ -97,7 +99,7 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctomap(const tinyxml2::XML
 
 tinyxml2::XMLElement* tesseract_urdf::writeOctomap(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
                                                    tinyxml2::XMLDocument& doc,
-                                                   const std::string& directory,
+                                                   const std::string& package_path,
                                                    const std::string& filename)
 {
   if (octree == nullptr)
@@ -119,15 +121,13 @@ tinyxml2::XMLElement* tesseract_urdf::writeOctomap(const std::shared_ptr<const t
 
   try
   {
-    tinyxml2::XMLElement* xml_octree = writeOctree(octree, doc, directory, filename);
+    tinyxml2::XMLElement* xml_octree = writeOctree(octree, doc, package_path, filename);
     xml_element->InsertEndChild(xml_octree);
   }
   catch (...)
   {
     std::throw_with_nested(std::runtime_error("Octomap: Could not write octree to file"));
   }
-
-  // @dmerz - optionally write to .pcd file?
 
   return xml_element;
 }

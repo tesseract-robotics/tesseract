@@ -64,9 +64,17 @@ parseLink(const tinyxml2::XMLElement* xml_element,
           std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
           int version);
 
+/**
+ * @brief writeLink Write a link to URDF XML
+ * @param link Link object to be written
+ * @param doc XML Document to which element will belong
+ * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
+ * set, geometry will be saved with absolute paths.
+ * @return XML element representing link in URDF format
+ */
 tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_graph::Link>& link,
                                 tinyxml2::XMLDocument& doc,
-                                const std::string& directory);
+                                const std::string& package_path);
 
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_LINK_H

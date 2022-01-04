@@ -99,7 +99,7 @@ void ROPInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
                      std::string solver_name)
 {
   if (solver_name.empty())
-    throw std::runtime_error("Solver name nust not be empty.");
+    throw std::runtime_error("Solver name must not be empty.");
 
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
@@ -108,7 +108,7 @@ void ROPInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
     throw std::runtime_error("Provided manipulator is a nullptr");
 
   if (!(manipulator_reach > 0))
-    throw std::runtime_error("Manipulator reach is not greather than zero");
+    throw std::runtime_error("Manipulator reach is not greater than zero");
 
   if (positioner == nullptr)
     throw std::runtime_error("Provided positioner is a nullptr");
@@ -119,7 +119,7 @@ void ROPInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
   for (long i = 0; i < positioner_sample_resolution.size(); ++i)
   {
     if (!(positioner_sample_resolution(i) > 0))
-      throw std::runtime_error("Positioner sample resolution is not greather than zero");
+      throw std::runtime_error("Positioner sample resolution is not greater than zero");
   }
 
   // Check if the manipulator base link is the child of the positioner tip link.
@@ -237,7 +237,8 @@ void ROPInvKin::ikAt(IKSolutions& solutions,
 IKSolutions ROPInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());  // NOLINT
+  assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());                      // NOLINT
+  assert(std::abs(1.0 - tip_link_poses.at(manip_tip_link_).matrix().determinant()) < 1e-6);  // NOLINT
 
   return calcInvKinHelper(tip_link_poses, seed);  // NOLINT
 }

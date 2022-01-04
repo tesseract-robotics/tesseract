@@ -63,9 +63,20 @@ parseGeometry(const tinyxml2::XMLElement* xml_element,
               bool visual,
               int version);
 
+/**
+ * @brief writeGeometry Write geometry to URDF XML
+ * @param geometry Geometry to be written
+ * @param doc XML Document to which xml will belong
+ * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
+ * set, geometry will be saved with absolute paths.
+ * @param filename The desired filename.  The extension will be added according to geometry type.  If package_path is
+ * set, this should be relative to the package (e.g. "collision/link1_geometry").  If package_path is not set, this
+ * should be an absolute path (e.g. "/tmp/link1_geometry")
+ * @return xml element representing the geometry in URDF format.
+ */
 tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract_geometry::Geometry>& geometry,
                                     tinyxml2::XMLDocument& doc,
-                                    const std::string& directory,
+                                    const std::string& package_path,
                                     const std::string& filename);
 
 }  // namespace tesseract_urdf

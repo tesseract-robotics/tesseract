@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <unordered_map>
 #include <console_bridge/console.h>
+#include <mutex>
 
 #include <tesseract_scene_graph/graph.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -67,8 +68,8 @@ public:
   ~KDLInvKinChainNR() override = default;
   KDLInvKinChainNR(const KDLInvKinChainNR& other);
   KDLInvKinChainNR& operator=(const KDLInvKinChainNR& other);
-  KDLInvKinChainNR(KDLInvKinChainNR&&) = default;
-  KDLInvKinChainNR& operator=(KDLInvKinChainNR&&) = default;
+  KDLInvKinChainNR(KDLInvKinChainNR&&) = delete;
+  KDLInvKinChainNR& operator=(KDLInvKinChainNR&&) = delete;
 
   /**
    * @brief Construct KDL Forward Kinematics
@@ -111,6 +112,7 @@ private:
   std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;   /**< @brief KDL Inverse kinematic velocity solver */
   std::unique_ptr<KDL::ChainIkSolverPos_NR> ik_solver_;         /**< @brief KDL Inverse kinematic solver */
   std::string solver_name_{ KDL_INV_KIN_CHAIN_NR_SOLVER_NAME }; /**< @brief Name of this solver */
+  mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
   /** @brief calcFwdKin helper function */
   IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose,

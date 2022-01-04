@@ -15,13 +15,12 @@ jobs:
     env:
       CI_NAME: CodeCov
       OS_NAME: ubuntu
-      OS_CODE_NAME: bionic
-      ROS_DISTRO: melodic
+      OS_CODE_NAME: focal
+      ROS_DISTRO: noetic
       ROS_REPO: main
       UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
       ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow"
-      DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
-      CCACHE_DIR: "/home/runner/work/tesseract/tesseract/CodeCov/.ccache"
+      DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
       UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
       TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CODE_COVERAGE=ON -DTESSERACT_WARNINGS_AS_ERRORS=OFF"
       AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_urdf --make-args ccov-all
@@ -37,22 +36,6 @@ jobs:
           sudo apt clean
           docker rmi $(docker image ls -aq)
           df -h
-
-      - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        shell: cmake -P {0}
-        run: |
-          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-          message("::set-output name=timestamp::${current_date}")
-
-      - name: ccache cache files
-        continue-on-error: true
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.CI_NAME }}/.ccache
-          key: ${{ env.CI_NAME }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            ${{ env.CI_NAME }}-ccache-
 
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{env}}

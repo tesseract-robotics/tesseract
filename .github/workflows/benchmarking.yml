@@ -2,6 +2,11 @@ name: Benchmarking
 
 on:
   push:
+    branches:
+      - master
+
+  # allow manually starting this workflow
+  workflow_dispatch:
 
 jobs:
   industrial_ci:

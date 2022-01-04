@@ -53,14 +53,11 @@ target_link_libraries(
   PUBLIC Eigen3::Eigen
          tesseract::tesseract_common
          tesseract::tesseract_collision_core
-         tesseract::tesseract_collision_bullet
-         tesseract::tesseract_collision_fcl
          tesseract::tesseract_scene_graph
          tesseract::tesseract_state_solver_ofkt
          tesseract::tesseract_srdf
          tesseract::tesseract_urdf
-         tesseract::tesseract_kinematics_kdl
-         tesseract::tesseract_kinematics_opw)
+         tesseract::tesseract_kinematics_core)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})

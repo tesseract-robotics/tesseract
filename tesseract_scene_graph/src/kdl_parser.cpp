@@ -160,7 +160,7 @@ KDL::RigidBodyInertia convert(const Inertial::ConstPtr& inertial)
 }
 
 /**
- * @brief Everytime a vertex is visited for the first time add a new
+ * @brief Every time a vertex is visited for the first time add a new
  *        segment to the KDL Tree;
  */
 struct kdl_tree_builder : public boost::dfs_visitor<>
@@ -231,7 +231,7 @@ protected:
 };
 
 /**
- * @brief Everytime a vertex is visited for the first time add a new
+ * @brief Every time a vertex is visited for the first time add a new
  *        segment to the KDL Tree;
  */
 struct kdl_sub_tree_builder : public boost::dfs_visitor<>
@@ -264,8 +264,12 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
       std::size_t num_v = boost::num_vertices(graph);
       std::size_t num_e = boost::num_edges(graph);
       data_.link_names.reserve(num_v);
+      data_.static_link_names.reserve(num_v);
       data_.active_link_names.reserve(num_v);
       data_.active_joint_names.reserve(num_e);
+
+      data_.link_names.push_back(link->getName());
+      data_.static_link_names.push_back(link->getName());
       return;
     }
 
@@ -298,10 +302,10 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
                                               segment_transforms_[parent_link_name],
                                               KDL::RigidBodyInertia(0));
         data_.tree.addSegment(world_sgm, data_.base_link_name);
-        data_.link_names.push_back(data_.base_link_name);
       }
       link_names_.push_back(parent_link_name);
       link_names_.push_back(link->getName());
+      data_.static_link_names.push_back(parent_link_name);
       data_.link_names.push_back(parent_link_name);
       data_.link_names.push_back(link->getName());
       data_.active_link_names.push_back(link->getName());
@@ -324,6 +328,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
       {
         data_.link_names.push_back(parent_link_name);
         link_names_.push_back(parent_link_name);
+        data_.static_link_names.push_back(parent_link_name);
 
         KDL::Frame new_tree_parent_to_joint =
             segment_transforms_[data_.base_link_name].Inverse() * segment_transforms_[parent_joint->parent_link_name];
@@ -354,6 +359,8 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
       auto active_it = std::find(data_.active_link_names.begin(), data_.active_link_names.end(), parent_link_name);
       if (active_it != data_.active_link_names.end() || kdl_jnt.getType() != KDL::Joint::None)
         data_.active_link_names.push_back(link->getName());
+      else
+        data_.static_link_names.push_back(link->getName());
 
       if (kdl_jnt.getType() != KDL::Joint::None)
         data_.active_joint_names.push_back(parent_joint->getName());
@@ -443,7 +450,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
                                 .vertex_index_map(prop_index_map));
 
   if (data.tree.getNrOfJoints() != joint_names.size())
-    throw std::runtime_error("parseSubSceneGraph: failed to generate subtree given the provided joint names.");
+    throw std::runtime_error("parseSubSceneGraph: failed to generate sub-tree given the provided joint names.");
 
   return data;
 }

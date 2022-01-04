@@ -5,6 +5,9 @@ on:
     branches:
       - master
 
+  # allow manually starting this workflow
+  workflow_dispatch:
+
 jobs:
   deploy_documentation:
     runs-on: ubuntu-18.04

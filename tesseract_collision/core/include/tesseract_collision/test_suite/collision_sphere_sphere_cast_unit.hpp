@@ -47,7 +47,9 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   obj1_poses.push_back(sphere_pose);
 
   checker.addCollisionObject("sphere_link", 0, obj1_shapes, obj1_poses, false);
+  EXPECT_FALSE(checker.isCollisionObjectEnabled("sphere_link"));
   checker.enableCollisionObject("sphere_link");
+  EXPECT_TRUE(checker.isCollisionObjectEnabled("sphere_link"));
 
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
@@ -62,7 +64,9 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   obj2_poses.push_back(thin_box_pose);
 
   checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses);
+  EXPECT_TRUE(checker.isCollisionObjectEnabled("thin_box_link"));
   checker.disableCollisionObject("thin_box_link");
+  EXPECT_FALSE(checker.isCollisionObjectEnabled("thin_box_link"));
 
   /////////////////////////////////////////////////////////////////
   // Add second sphere to checker. If use_convex_mesh = true
@@ -99,6 +103,7 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   obj3_poses.push_back(sphere1_pose);
 
   checker.addCollisionObject("sphere1_link", 0, obj3_shapes, obj3_poses);
+  EXPECT_TRUE(checker.isCollisionObjectEnabled("sphere1_link"));
 
   /////////////////////////////////////////////
   // Add box and remove
@@ -125,6 +130,7 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   EXPECT_FALSE(checker.removeCollisionObject("link_does_not_exist"));
   EXPECT_FALSE(checker.enableCollisionObject("link_does_not_exist"));
   EXPECT_FALSE(checker.disableCollisionObject("link_does_not_exist"));
+  EXPECT_FALSE(checker.isCollisionObjectEnabled("link_does_not_exist"));
 
   /////////////////////////////////////////////
   // Try to add empty Collision Object
