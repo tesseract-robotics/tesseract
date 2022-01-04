@@ -23,7 +23,7 @@ jobs:
       CLANG_FORMAT_VERSION: 8
       DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - name: Free Disk Space
         run: |
