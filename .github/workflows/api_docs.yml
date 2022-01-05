@@ -12,7 +12,7 @@ jobs:
   deploy_documentation:
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - name: Build Doxygen Documentation
         uses: mattnotmitt/doxygen-action@v1

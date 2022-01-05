@@ -47,7 +47,7 @@ jobs:
              DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"}
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - name: Free Disk Space
         continue-on-error: true

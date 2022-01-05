@@ -31,7 +31,7 @@ jobs:
              AFTER_SCRIPT: 'cp -r $target_ws/build/tesseract_collision/test/benchmarks/*.json /root/benchmarks/ && cp -r $target_ws/build/tesseract_environment/test/benchmarks/*.json /root/benchmarks/'}
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - name: Prepare ccache timestamp
         id: ccache_cache_timestamp
