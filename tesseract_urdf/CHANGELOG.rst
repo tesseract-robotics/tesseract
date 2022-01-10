@@ -2,6 +2,12 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add creation method to convex mesh
+* URDF Writer: Small Bug Fixes
+* Contributors: David Merz, Jr, Levi Armstrong
+
 0.7.4 (2021-12-15)
 ------------------
 

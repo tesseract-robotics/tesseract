@@ -2,6 +2,13 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add creation method to convex mesh
+* Produce cmake error if libraries provided by libbullet-extras are not… (`#688 <https://github.com/tesseract-robotics/tesseract/issues/688>`_)
+* Add ability to check if collision object is enabled (`#687 <https://github.com/tesseract-robotics/tesseract/issues/687>`_)
+* Contributors: Levi Armstrong
+
 0.7.4 (2021-12-15)
 ------------------
 

@@ -2,6 +2,11 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add creation method to convex mesh
+* Contributors: Levi Armstrong
+
 0.7.4 (2021-12-15)
 ------------------
 
