@@ -373,14 +373,15 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
   std::shared_lock<std::shared_mutex> lock(mutex_);
 
   std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex_);
-  auto it = kinematic_group_cache_.find(group_name);
+  std::string group_plus_ik_name = group_name + "_" + ik_solver_name;
+  auto it = kinematic_group_cache_.find(group_plus_ik_name);
   if (it != kinematic_group_cache_.end())
   {
-    CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache hit!", group_name.c_str());
+    CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache hit!", group_plus_ik_name.c_str());
     return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
   }
 
-  CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache miss!", group_name.c_str());
+  CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache miss!", group_plus_ik_name.c_str());
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
 
   if (ik_solver_name.empty())
@@ -397,7 +398,7 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
   auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
       group_name, joint_names, std::move(inv_kin), *scene_graph_const_, current_state_);
 
-  kinematic_group_cache_[group_name] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+  kinematic_group_cache_[group_plus_ik_name] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
 
 #ifndef NDEBUG
   if (!tesseract_kinematics::checkKinematics(*kg))
