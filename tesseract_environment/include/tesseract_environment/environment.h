@@ -533,18 +533,21 @@ protected:
 
   struct kinematic_group_pair_hash
   {
-      std::size_t operator () (const std::pair<std::string,std::string> &p) const
-      {
-          std::string combined = p.first + p.second;
-          return std::hash<std::string>{}(combined);
-      }
+    std::size_t operator()(const std::pair<std::string, std::string>& p) const
+    {
+      std::string combined = p.first + p.second;
+      return std::hash<std::string>{}(combined);
+    }
   };
 
   /**
    *  @brief A cache of kinematic groups to provide faster access
    *  @details This will cleared when environment changes
    */
-  mutable std::unordered_map<std::pair<std::string, std::string>, tesseract_kinematics::KinematicGroup::UPtr, kinematic_group_pair_hash> kinematic_group_cache_;
+  mutable std::unordered_map<std::pair<std::string, std::string>,
+                             tesseract_kinematics::KinematicGroup::UPtr,
+                             kinematic_group_pair_hash>
+      kinematic_group_cache_;
   mutable std::shared_mutex kinematic_group_cache_mutex_;
 
   /** @brief The environment can be accessed from multiple threads, need use mutex throughout */

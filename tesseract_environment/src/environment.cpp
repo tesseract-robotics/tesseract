@@ -377,11 +377,13 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
   auto it = kinematic_group_cache_.find(key);
   if (it != kinematic_group_cache_.end())
   {
-    CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s, %s) cache hit!", group_name.c_str(), ik_solver_name.c_str());
+    CONSOLE_BRIDGE_logDebug(
+        "Environment, getKinematicGroup(%s, %s) cache hit!", group_name.c_str(), ik_solver_name.c_str());
     return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
   }
 
-  CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s, %s) cache miss!", group_name.c_str(), ik_solver_name.c_str());
+  CONSOLE_BRIDGE_logDebug(
+      "Environment, getKinematicGroup(%s, %s) cache miss!", group_name.c_str(), ik_solver_name.c_str());
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
 
   if (ik_solver_name.empty())
