@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.5 (2022-01-10)
+------------------
 * Updated environment benchmark (`#694 <https://github.com/tesseract-robotics/tesseract/issues/694>`_)
 * Update library names in benchmarks (`#681 <https://github.com/tesseract-robotics/tesseract/issues/681>`_)
 * Contributors: Matthew Powelson, Michael Ripperger

@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.5 (2022-01-10)
+------------------
 * Add -Wdeprecated-declarations to push pop macros
 * Contributors: Levi Armstrong
 
