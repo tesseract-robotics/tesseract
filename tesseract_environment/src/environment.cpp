@@ -981,7 +981,6 @@ Environment::UPtr Environment::clone() const
   for (const auto& c : joint_group_cache_)
     cloned_env->joint_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::JointGroup>(*c.second));
 
-  cloned_env->kinematic_group_cache_.reserve(kinematic_group_cache_.size());
   for (const auto& c : kinematic_group_cache_)
     cloned_env->kinematic_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::KinematicGroup>(*c.second));
 

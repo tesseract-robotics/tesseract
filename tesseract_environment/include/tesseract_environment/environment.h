@@ -531,22 +531,11 @@ protected:
   mutable std::unordered_map<std::string, tesseract_kinematics::JointGroup::UPtr> joint_group_cache_;
   mutable std::shared_mutex joint_group_cache_mutex_;
 
-  struct kinematic_group_pair_hash
-  {
-    std::size_t operator()(const std::pair<std::string, std::string>& p) const
-    {
-      std::string combined = p.first + p.second;
-      return std::hash<std::string>{}(combined);
-    }
-  };
-
   /**
    *  @brief A cache of kinematic groups to provide faster access
    *  @details This will cleared when environment changes
    */
-  mutable std::unordered_map<std::pair<std::string, std::string>,
-                             tesseract_kinematics::KinematicGroup::UPtr,
-                             kinematic_group_pair_hash>
+  mutable std::map<std::pair<std::string, std::string>, tesseract_kinematics::KinematicGroup::UPtr>
       kinematic_group_cache_;
   mutable std::shared_mutex kinematic_group_cache_mutex_;
 
