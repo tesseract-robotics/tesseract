@@ -29,8 +29,8 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tinyxml2
@@ -64,14 +64,19 @@ parseVisual(const tinyxml2::XMLElement* xml_element,
             int version);
 
 /**
- * @brief writeVisual - call once per visual geometry
- * @param visuals
- * @param doc
- * @return
+ * @brief writeVisual Write one visual geometry object to URDF XML
+ * @param visual Visual object to be written
+ * @param doc XML Document to which XML will belong
+ * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
+ * set, geometry will be saved with absolute paths.
+ * @param link_name Name of link to which collision object is attached
+ * @param id If set, this ID will be appended to the geometry name for distinguishing between multiple geometries on
+ * the same link.
+ * @return An XML element representing the collision object in URDF format.
  */
 tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract_scene_graph::Visual>& visual,
                                   tinyxml2::XMLDocument& doc,
-                                  const std::string& directory,
+                                  const std::string& package_path,
                                   const std::string& link_name,
                                   int id);
 

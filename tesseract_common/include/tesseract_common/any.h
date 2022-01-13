@@ -259,5 +259,11 @@ private:
 
 }  // namespace tesseract_common
 
+#ifdef SWIG
+%template(Instructions) std::vector<tesseract_common::Any>;
+#else
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::detail_any::AnyInnerBase)
 BOOST_CLASS_TRACKING(tesseract_common::Any, boost::serialization::track_never);
+#endif  // SWIG
+
 #endif  // TESSERACT_COMMON_ANY_H

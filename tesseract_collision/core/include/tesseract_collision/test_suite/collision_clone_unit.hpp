@@ -26,6 +26,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj1_poses.push_back(sphere_pose);
 
   checker.addCollisionObject("sphere_link", 0, obj1_shapes, obj1_poses);
+  EXPECT_TRUE(checker.isCollisionObjectEnabled("sphere_link"));
 
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
@@ -40,6 +41,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj2_poses.push_back(thin_box_pose);
 
   checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses, false);
+  EXPECT_FALSE(checker.isCollisionObjectEnabled("thin_box_link"));
 
   /////////////////////////////////////////////////////////////////
   // Add second sphere to checker. If use_convex_mesh = true
@@ -56,6 +58,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj3_poses.push_back(sphere1_pose);
 
   checker.addCollisionObject("sphere1_link", 0, obj3_shapes, obj3_poses);
+  EXPECT_TRUE(checker.isCollisionObjectEnabled("sphere1_link"));
 
   /////////////////////////////////////////////
   // Add box and remove
@@ -72,6 +75,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   checker.addCollisionObject("remove_box_link", 0, obj4_shapes, obj4_poses);
   EXPECT_TRUE(checker.getCollisionObjects().size() == 4);
   EXPECT_TRUE(checker.hasCollisionObject("remove_box_link"));
+  EXPECT_TRUE(checker.isCollisionObjectEnabled("remove_box_link"));
   checker.removeCollisionObject("remove_box_link");
   EXPECT_FALSE(checker.hasCollisionObject("remove_box_link"));
 
@@ -81,6 +85,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   EXPECT_FALSE(checker.removeCollisionObject("link_does_not_exist"));
   EXPECT_FALSE(checker.enableCollisionObject("link_does_not_exist"));
   EXPECT_FALSE(checker.disableCollisionObject("link_does_not_exist"));
+  EXPECT_FALSE(checker.isCollisionObjectEnabled("link_does_not_exist"));
 
   /////////////////////////////////////////////
   // Try to add empty Collision Object
@@ -116,6 +121,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
+  EXPECT_FALSE(checker.isCollisionObjectEnabled("thin_box_link"));
 
   // Test when object is inside another
   tesseract_common::TransformMap location;
@@ -148,6 +154,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   if (cloned_result_vector[0].link_names[0] != "sphere_link")
     cloned_idx = { 1, 0, -1 };
 
+  EXPECT_FALSE(cloned_checker->isCollisionObjectEnabled("thin_box_link"));
   EXPECT_TRUE(!result_vector.empty() && !cloned_result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, cloned_result_vector[0].distance, dist_tol);
   EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0],

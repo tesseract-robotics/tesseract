@@ -137,6 +137,13 @@ public:
   virtual bool disableCollisionObject(const std::string& name) = 0;
 
   /**
+   * @brief Check if collision object is enabled
+   * @param name The name of the object
+   * @return True if enabled, otherwise false
+   */
+  virtual bool isCollisionObjectEnabled(const std::string& name) const = 0;
+
+  /**
    * @brief Set a single static collision object's tansforms
    * @param name The name of the object
    * @param pose The tranformation in world

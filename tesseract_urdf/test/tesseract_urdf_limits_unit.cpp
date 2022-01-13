@@ -1,5 +1,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <iostream>
+
 #include <gtest/gtest.h>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -121,7 +123,31 @@ TEST(TesseractURDFUnit, write_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr limits = std::make_shared<tesseract_scene_graph::JointLimits>();
     std::string text;
     EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointLimits::Ptr>(limits, &tesseract_urdf::writeLimits, text));
-    EXPECT_NE(text, "");
+    EXPECT_TRUE(text == R"(<limit effort="0" velocity="0"/>)");
+  }
+
+  {
+    tesseract_scene_graph::JointLimits::Ptr limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    limits->lower = 1.0;
+    limits->upper = 2.0;
+    limits->effort = 3.0;
+    limits->velocity = 4.0;
+    limits->acceleration = 2.0;
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointLimits::Ptr>(limits, &tesseract_urdf::writeLimits, text));
+    EXPECT_EQ(text, R"(<limit lower="1" upper="2" effort="3" velocity="4"/>)");
+  }
+
+  {
+    tesseract_scene_graph::JointLimits::Ptr limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    limits->lower = 1.0;
+    limits->upper = 2.0;
+    limits->effort = 3.0;
+    limits->velocity = 4.0;
+    limits->acceleration = 3.0;
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointLimits::Ptr>(limits, &tesseract_urdf::writeLimits, text));
+    EXPECT_EQ(text, R"(<limit lower="1" upper="2" effort="3" velocity="4" acceleration="3"/>)");
   }
 
   {

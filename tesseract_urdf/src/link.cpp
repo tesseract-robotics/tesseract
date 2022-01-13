@@ -27,16 +27,19 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+
+#include <boost/filesystem.hpp>
 #include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_common/resource_locator.h>
-#include <tesseract_urdf/link.h>
-#include <tesseract_urdf/inertial.h>
-#include <tesseract_urdf/visual.h>
 #include <tesseract_urdf/collision.h>
+#include <tesseract_urdf/inertial.h>
+#include <tesseract_urdf/link.h>
+#include <tesseract_urdf/utils.h>
+#include <tesseract_urdf/visual.h>
 
 tesseract_scene_graph::Link::Ptr
 tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
@@ -105,7 +108,7 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
 
 tinyxml2::XMLElement* tesseract_urdf::writeLink(const std::shared_ptr<const tesseract_scene_graph::Link>& link,
                                                 tinyxml2::XMLDocument& doc,
-                                                const std::string& directory)
+                                                const std::string& package_path)
 {
   if (link == nullptr)
     std::throw_with_nested(std::runtime_error("Link is nullptr and cannot be converted to XML"));
@@ -129,7 +132,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeLink(const std::shared_ptr<const tess
   {
     try
     {
-      tinyxml2::XMLElement* xml_visual = writeVisual(vis, doc, directory, link->getName(), id++);
+      boost::filesystem::create_directory(boost::filesystem::path(trailingSlash(package_path) + "visual/"));
+      tinyxml2::XMLElement* xml_visual = writeVisual(vis, doc, package_path, link->getName(), id++);
       xml_element->InsertEndChild(xml_visual);
     }
     catch (...)
@@ -146,7 +150,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeLink(const std::shared_ptr<const tess
   {
     try
     {
-      tinyxml2::XMLElement* xml_collision = writeCollision(col, doc, directory, link->getName(), id++);
+      boost::filesystem::create_directory(boost::filesystem::path(trailingSlash(package_path) + "collision/"));
+      tinyxml2::XMLElement* xml_collision = writeCollision(col, doc, package_path, link->getName(), id++);
       xml_element->InsertEndChild(xml_collision);
     }
     catch (...)

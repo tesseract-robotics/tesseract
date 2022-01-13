@@ -26,13 +26,15 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <stdexcept>
+
+#include <console_bridge/console.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/dynamics.h>
 #include <tesseract_scene_graph/joint.h>
+#include <tesseract_urdf/dynamics.h>
+#include <tesseract_urdf/utils.h>
 
 tesseract_scene_graph::JointDynamics::Ptr tesseract_urdf::parseDynamics(const tinyxml2::XMLElement* xml_element,
                                                                         int /*version*/)
@@ -68,8 +70,8 @@ tesseract_urdf::writeDynamics(const std::shared_ptr<const tesseract_scene_graph:
     std::throw_with_nested(std::runtime_error("Dynamics is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement("dynamics");
 
-  xml_element->SetAttribute("damping", dynamics->damping);
-  xml_element->SetAttribute("friction", dynamics->damping);
+  xml_element->SetAttribute("damping", toString(dynamics->damping).c_str());
+  xml_element->SetAttribute("friction", toString(dynamics->damping).c_str());
 
   return xml_element;
 }
