@@ -535,7 +535,8 @@ protected:
    *  @brief A cache of kinematic groups to provide faster access
    *  @details This will cleared when environment changes
    */
-  mutable std::unordered_map<std::string, tesseract_kinematics::KinematicGroup::UPtr> kinematic_group_cache_;
+  mutable std::map<std::pair<std::string, std::string>, tesseract_kinematics::KinematicGroup::UPtr>
+      kinematic_group_cache_;
   mutable std::shared_mutex kinematic_group_cache_mutex_;
 
   /** @brief The environment can be accessed from multiple threads, need use mutex throughout */

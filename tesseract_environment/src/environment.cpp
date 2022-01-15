@@ -373,14 +373,17 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
   std::shared_lock<std::shared_mutex> lock(mutex_);
 
   std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex_);
-  auto it = kinematic_group_cache_.find(group_name);
+  std::pair<std::string, std::string> key = std::make_pair(group_name, ik_solver_name);
+  auto it = kinematic_group_cache_.find(key);
   if (it != kinematic_group_cache_.end())
   {
-    CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache hit!", group_name.c_str());
+    CONSOLE_BRIDGE_logDebug(
+        "Environment, getKinematicGroup(%s, %s) cache hit!", group_name.c_str(), ik_solver_name.c_str());
     return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
   }
 
-  CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache miss!", group_name.c_str());
+  CONSOLE_BRIDGE_logDebug(
+      "Environment, getKinematicGroup(%s, %s) cache miss!", group_name.c_str(), ik_solver_name.c_str());
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
 
   if (ik_solver_name.empty())
@@ -397,7 +400,7 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
   auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
       group_name, joint_names, std::move(inv_kin), *scene_graph_const_, current_state_);
 
-  kinematic_group_cache_[group_name] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+  kinematic_group_cache_[key] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
 
 #ifndef NDEBUG
   if (!tesseract_kinematics::checkKinematics(*kg))
@@ -978,7 +981,6 @@ Environment::UPtr Environment::clone() const
   for (const auto& c : joint_group_cache_)
     cloned_env->joint_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::JointGroup>(*c.second));
 
-  cloned_env->kinematic_group_cache_.reserve(kinematic_group_cache_.size());
   for (const auto& c : kinematic_group_cache_)
     cloned_env->kinematic_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::KinematicGroup>(*c.second));
 
