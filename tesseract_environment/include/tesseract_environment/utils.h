@@ -53,7 +53,6 @@ void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
 
 /**
  * @brief Should perform a continuous collision check between two states configuring the manager with the config
- * @param contacts ContactMap associated with the trajectory segment
  * @param manager A continuous contact manager
  * @param state0 First environment state
  * @param state1 Second environment state
@@ -121,7 +120,8 @@ void processInterpolatedSubSegmentCollisionResults(tesseract_collision::ContactR
 
 /**
  * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
- * @param contacts A vector of ContactMap where each index corresponds to a timestep
+ * @param contacts A vector of ContactMap where each index corresponds to a segment in the trajectory. The length should
+ * be trajectory size minus one.
  * @param manager A continuous contact manager
  * @param state_solver The environment state solver
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
@@ -138,7 +138,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
 /**
  * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
- * @param contacts A vector of ContactMap where each index corresponds to a timestep
+ * @param contacts A vector of ContactMap where each index corresponds to a segment in the trajectory. The length should
+ * be trajectory size minus one.
  * @param manager A continuous contact manager
  * @param manip The kinematic joint group
  * @param traj The joint values at each time step
@@ -153,7 +154,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
 /**
  * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
- * @param contacts A vector of ContactMap where each index corresponds to a timestep
+ * @param contacts A vector of ContactMap where each index corresponds to a segment in the trajectory, except the last
+ * which is the end state. The length should be the same size as the input trajectory.
  * @param manager A continuous contact manager
  * @param state_solver The environment state solver
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
@@ -170,7 +172,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
 /**
  * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
- * @param contacts A vector of ContactMap where each index corresponds to a timestep
+ * @param contacts A vector of ContactMap where each index corresponds to a segment in the trajectory, except the last
+ * which is the end state. The length should be the same size as the input trajectory.
  * @param manager A continuous contact manager
  * @param manip The kinematic joint group
  * @param traj The joint values at each time step
