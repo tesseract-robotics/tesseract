@@ -57,7 +57,7 @@ void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
  * @param state0 First environment state
  * @param state1 Second environment state
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return Return the contact results map. If empty not contacts were found
+ * @return Return the contact results map. If empty no contacts were found
  */
 tesseract_collision::ContactResultMap checkTrajectorySegment(tesseract_collision::ContinuousContactManager& manager,
                                                              const tesseract_common::TransformMap& state0,
@@ -84,7 +84,7 @@ checkTrajectorySegment(tesseract_collision::ContinuousContactManager& manager,
  * @param manager A discrete contact manager
  * @param state First environment state
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return Return the contact results map. If empty not contacts were found
+ * @return Return the contact results map. If empty no contacts were found
  */
 tesseract_collision::ContactResultMap checkTrajectoryState(tesseract_collision::DiscreteContactManager& manager,
                                                            const tesseract_common::TransformMap& state,
@@ -95,7 +95,7 @@ tesseract_collision::ContactResultMap checkTrajectoryState(tesseract_collision::
  * @param manager A discrete contact manager
  * @param state First environment state
  * @param contact_request Contact request passed to the manager
- * @return Return the contact results map. If empty not contacts were found
+ * @return Return the contact results map. If empty no contacts were found
  */
 tesseract_collision::ContactResultMap checkTrajectoryState(tesseract_collision::DiscreteContactManager& manager,
                                                            const tesseract_common::TransformMap& state,
