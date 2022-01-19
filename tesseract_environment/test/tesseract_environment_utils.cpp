@@ -170,35 +170,31 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
     // In collision by default
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
-      EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config));
+      tesseract_collision::ContactResultMap contacts = checkTrajectoryState(*manager, tmap, config);
       EXPECT_FALSE(contacts.empty());
     }
 
     // Not in collision if link disabled
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       config.contact_manager_config.modify_object_enabled["boxbot_link"] = false;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_FALSE(checkTrajectoryState(contacts, *manager, tmap, config));
+      tesseract_collision::ContactResultMap contacts = checkTrajectoryState(*manager, tmap, config);
       EXPECT_TRUE(contacts.empty());
     }
 
     // Re-enable it. Now in collision again
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       config.contact_manager_config.modify_object_enabled["boxbot_link"] = true;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config));
+      tesseract_collision::ContactResultMap contacts = checkTrajectoryState(*manager, tmap, config);
       EXPECT_FALSE(contacts.empty());
     }
 
     // Disable a link that doesn't exist. Still in collision
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       config.contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config));
+      tesseract_collision::ContactResultMap contacts = checkTrajectoryState(*manager, tmap, config);
       EXPECT_FALSE(contacts.empty());
     }
   }
@@ -222,36 +218,36 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
     tmap2["test_box_link"].translate(Eigen::Vector3d(0.9, -2, 0));
 
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
+      tesseract_collision::ContactResultMap contacts =
+          checkTrajectorySegment(*manager, tmap1, tmap2, config.contact_request);
       // In collision by default
-      EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
       EXPECT_FALSE(contacts.empty());
     }
 
     // Not in collision if link disabled
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       config.contact_manager_config.modify_object_enabled["boxbot_link"] = false;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_FALSE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
+      tesseract_collision::ContactResultMap contacts =
+          checkTrajectorySegment(*manager, tmap1, tmap2, config.contact_request);
       EXPECT_TRUE(contacts.empty());
     }
 
     // Re-enable it. Now in collision again
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       config.contact_manager_config.modify_object_enabled["boxbot_link"] = true;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
+      tesseract_collision::ContactResultMap contacts =
+          checkTrajectorySegment(*manager, tmap1, tmap2, config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
 
     // Disable a link that doesn't exist. Still in collision
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       config.contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
+      tesseract_collision::ContactResultMap contacts =
+          checkTrajectorySegment(*manager, tmap1, tmap2, config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
   }
@@ -294,31 +290,27 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
 
     // Not in collision
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_FALSE(checkTrajectoryState(contacts, *manager, tmap, config.contact_request));
+      tesseract_collision::ContactResultMap contacts = checkTrajectoryState(*manager, tmap, config.contact_request);
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if manager->applyContactManagerConfig works correctly
     {
       config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config.contact_request));
+      tesseract_collision::ContactResultMap contacts = checkTrajectoryState(*manager, tmap, config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
     // Not collision if checkTrajectoryState applies the config
     {
       config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.0);
-      std::vector<tesseract_collision::ContactResultMap> contacts;
-      EXPECT_FALSE(checkTrajectoryState(contacts, *manager, tmap, config));
+      tesseract_collision::ContactResultMap contacts = checkTrajectoryState(*manager, tmap, config);
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if checkTrajectoryState applies the config
     {
       config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
-      std::vector<tesseract_collision::ContactResultMap> contacts;
-      EXPECT_TRUE(checkTrajectoryState(contacts, *manager, tmap, config));
+      tesseract_collision::ContactResultMap contacts = checkTrajectoryState(*manager, tmap, config);
       EXPECT_FALSE(contacts.empty());
     }
   }
@@ -343,31 +335,29 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
 
     // Not in collision
     {
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_FALSE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
+      tesseract_collision::ContactResultMap contacts =
+          checkTrajectorySegment(*manager, tmap1, tmap2, config.contact_request);
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if manager->applyContactManagerConfig works correctly
     {
       config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
-      std::vector<tesseract_collision::ContactResultMap> contacts;
       manager->applyContactManagerConfig(config.contact_manager_config);
-      EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request));
+      tesseract_collision::ContactResultMap contacts =
+          checkTrajectorySegment(*manager, tmap1, tmap2, config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
     // Not collision if checkTrajectoryState applies the config
     {
       config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.0);
-      std::vector<tesseract_collision::ContactResultMap> contacts;
-      EXPECT_FALSE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config));
+      tesseract_collision::ContactResultMap contacts = checkTrajectorySegment(*manager, tmap1, tmap2, config);
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if checkTrajectoryState applies the config
     {
       config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
-      std::vector<tesseract_collision::ContactResultMap> contacts;
-      EXPECT_TRUE(checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config));
+      tesseract_collision::ContactResultMap contacts = checkTrajectorySegment(*manager, tmap1, tmap2, config);
       EXPECT_FALSE(contacts.empty());
     }
   }
