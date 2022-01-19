@@ -2,6 +2,12 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix check trajectory which should return a vector same length as trajectory (`#698 <https://github.com/tesseract-robotics/tesseract/issues/698>`_)
+* Update Kinematics Cache To Include IK Solver (`#695 <https://github.com/tesseract-robotics/tesseract/issues/695>`_)
+* Contributors: Levi Armstrong, marrts
+
 0.7.5 (2022-01-10)
 ------------------
 * Updated environment benchmark (`#694 <https://github.com/tesseract-robotics/tesseract/issues/694>`_)

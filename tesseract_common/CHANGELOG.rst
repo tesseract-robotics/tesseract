@@ -2,6 +2,12 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* CPack Update (`#693 <https://github.com/tesseract-robotics/tesseract/issues/693>`_)
+* Add BOOST_SERIALIZATION_ASSUME_ABSTRACT to Any type erasure
+* Contributors: Levi Armstrong, Michael Ripperger
+
 0.7.5 (2022-01-10)
 ------------------
 * Add -Wdeprecated-declarations to push pop macros
