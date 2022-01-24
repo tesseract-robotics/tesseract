@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <array>
 #include <unordered_map>
 #include <functional>
-#include <boost/bind.hpp>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/types.h>
 #include <tesseract_common/collision_margin_data.h>
