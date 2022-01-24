@@ -87,9 +87,7 @@ struct AnyInnerBase
 private:
   friend class boost::serialization::access;
   template <class Archive>
-  void serialize(Archive& /*ar*/, const unsigned int /*version*/)
-  {
-  }
+  void serialize(Archive& /*ar*/, const unsigned int /*version*/);  // NOLINT
 };
 
 template <typename T>
@@ -130,7 +128,7 @@ struct AnyInner final : AnyInnerBase
 private:
   friend class boost::serialization::access;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int /*version*/)
+  void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
   {
     // If this line is removed a exception is thrown for unregistered cast need to too look into this.
     ar& boost::serialization::make_nvp("base", boost::serialization::base_object<AnyInnerBase>(*this));
@@ -179,33 +177,22 @@ public:
   {
   }
 
-  Any()  // NOLINT
-    : any_type_(nullptr)
-  {
-  }
+  Any();  // NOLINT
 
   // Destructor
   ~Any() = default;
 
   // Copy constructor
-  Any(const Any& other) : any_type_(other.any_type_->clone()) {}
+  Any(const Any& other);
 
   // Move ctor.
-  Any(Any&& other) noexcept { any_type_.swap(other.any_type_); }
+  Any(Any&& other) noexcept;
 
   // Move assignment.
-  Any& operator=(Any&& other) noexcept
-  {
-    any_type_.swap(other.any_type_);
-    return (*this);
-  }
+  Any& operator=(Any&& other) noexcept;
 
   // Copy assignment.
-  Any& operator=(const Any& other)
-  {
-    (*this) = Any(other);
-    return (*this);
-  }
+  Any& operator=(const Any& other);
 
   template <typename T, generic_ctor_enabler<T> = 0>
   Any& operator=(T&& other)
@@ -222,9 +209,9 @@ public:
     return any_type_->getType();
   }
 
-  bool operator==(const Any& rhs) const { return any_type_->operator==(*rhs.any_type_); }
+  bool operator==(const Any& rhs) const;
 
-  bool operator!=(const Any& rhs) const { return !operator==(rhs); }
+  bool operator!=(const Any& rhs) const;
 
   template <typename T>
   T& as()
@@ -249,10 +236,7 @@ public:
 private:
   friend class boost::serialization::access;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int /*version*/)
-  {
-    ar& boost::serialization::make_nvp("any_type", any_type_);
-  }
+  void serialize(Archive& ar, const unsigned int /*version*/);  // NOLINT
 
   std::unique_ptr<detail_any::AnyInnerBase> any_type_;
 };
