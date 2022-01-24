@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.1 (2022-01-24)
+------------------
 * Add any.cpp
 * Contributors: Levi Armstrong
 
