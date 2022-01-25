@@ -7,7 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 
 /// Testing getAllowedCollisions
-TEST(TesseractSceneGraphUnit, TestGetAllowedCollisions)  // NOLINT
+TEST(TesseractCommonUtilsUnit, TestGetAllowedCollisions)  // NOLINT
 {
   tesseract_common::AllowedCollisionMatrix acm;
 

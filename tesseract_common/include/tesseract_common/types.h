@@ -160,6 +160,29 @@ struct ContactManagersPluginInfo
   // Yaml Config key
   static inline const std::string CONFIG_KEY{ "contact_manager_plugins" };
 };
+
+/** @brief The CalibrationInfo struct */
+struct CalibrationInfo
+{
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  CalibrationInfo() = default;
+
+  /** @brief The joint origin calibration information */
+  tesseract_common::TransformMap joints;
+
+  /** @brief Insert the content of an other CalibrationInfo */
+  void insert(const CalibrationInfo& other);
+
+  /** @brief Clear the contents */
+  void clear();
+
+  /** @brief Check if structure is empty */
+  bool empty() const;
+
+  // Yaml Config key
+  static inline const std::string CONFIG_KEY{ "calibration" };
+};
 }  // namespace tesseract_common
 
 #endif  // TESSERACT_COMMON_TYPES_H

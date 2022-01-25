@@ -458,6 +458,54 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
     return true;
   }
 };
+
+template <>
+struct convert<tesseract_common::TransformMap>
+{
+  static Node encode(const tesseract_common::TransformMap& rhs)
+  {
+    Node node;
+    for (const auto& pair : rhs)
+      node[pair.first] = pair.second;
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_common::TransformMap& rhs)
+  {
+    if (!node.IsMap())
+      return false;
+
+    for (const auto& pair : node)
+      rhs[pair.first.as<std::string>()] = pair.second.as<Eigen::Isometry3d>();
+
+    return true;
+  }
+};
+
+template <>
+struct convert<tesseract_common::CalibrationInfo>
+{
+  static Node encode(const tesseract_common::CalibrationInfo& rhs)
+  {
+    Node node;
+    node["joints"] = rhs.joints;
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_common::CalibrationInfo& rhs)
+  {
+    const YAML::Node& joints_node = node["joints"];
+
+    if (!joints_node.IsMap())
+      return false;
+
+    rhs.joints = joints_node.as<tesseract_common::TransformMap>();
+
+    return true;
+  }
+};
 }  // namespace YAML
 
 #endif  // TESSERACT_COMMON_YAML_UTILS_H

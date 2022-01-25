@@ -1557,6 +1557,49 @@ TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  //
   }
 }
 
+TEST(TesseractCommonUnit, CalibrationInfoYamlUnit)  // NOLINT
+{
+  std::string yaml_string =
+      R"(calibration:
+           joints:
+             joint_1:
+               position:
+                 x: 1
+                 y: 2
+                 z: 3
+               orientation:
+                 x: 0
+                 y: 0
+                 z: 0
+                 w: 1
+             joint_2:
+               position:
+                 x: 4
+                 y: 5
+                 z: 6
+               orientation:
+                 x: 0
+                 y: 0
+                 z: 0
+                 w: 1)";
+
+  YAML::Node node = YAML::Load(yaml_string);
+  auto cal_info = node[tesseract_common::CalibrationInfo::CONFIG_KEY].as<tesseract_common::CalibrationInfo>();
+  EXPECT_FALSE(cal_info.empty());
+  EXPECT_TRUE(cal_info.joints.find("joint_1") != cal_info.joints.end());
+  EXPECT_TRUE(cal_info.joints.find("joint_2") != cal_info.joints.end());
+
+  tesseract_common::CalibrationInfo cal_insert;
+  EXPECT_TRUE(cal_insert.empty());
+  cal_insert.insert(cal_info);
+  EXPECT_FALSE(cal_insert.empty());
+  EXPECT_TRUE(cal_insert.joints.find("joint_1") != cal_insert.joints.end());
+  EXPECT_TRUE(cal_insert.joints.find("joint_2") != cal_insert.joints.end());
+
+  cal_info.clear();
+  EXPECT_TRUE(cal_info.empty());
+}
+
 TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT
 {
   tesseract_common::LinkNamesPair p1 = tesseract_common::makeOrderedLinkPair("link_1", "link_2");

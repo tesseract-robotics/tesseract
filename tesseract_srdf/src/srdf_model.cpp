@@ -218,6 +218,59 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
 
   try
   {
+    for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("calibration_config");
+         xml_element != nullptr;
+         xml_element = xml_element->NextSiblingElement("calibration_config"))
+    {
+      std::string filename;
+      tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
+      if (status != tinyxml2::XML_SUCCESS)
+        std::throw_with_nested(std::runtime_error("calibration_config: Missing or failed to parse 'filename' "
+                                                  "attribute."));
+
+      tesseract_common::Resource::Ptr cal_resource = locator.locateResource(filename);
+      if (cal_resource == nullptr)
+        std::throw_with_nested(std::runtime_error("calibration_config: Failed to locate resource '" + filename + "'."));
+
+      tesseract_common::fs::path cal_config_file_path(cal_resource->getFilePath());
+      if (!tesseract_common::fs::exists(cal_config_file_path))
+        std::throw_with_nested(std::runtime_error("calibration_config: Calibration config file does not exist: "
+                                                  "'" +
+                                                  cal_config_file_path.string() + "'."));
+
+      YAML::Node config;
+      try
+      {
+        config = YAML::LoadFile(cal_config_file_path.string());
+      }
+      catch (...)
+      {
+        std::throw_with_nested(std::runtime_error("calibration_config: YAML failed to parse calibration config "
+                                                  "file '" +
+                                                  cal_config_file_path.string() + "'."));
+      }
+
+      const YAML::Node& cal_info = config[tesseract_common::CalibrationInfo::CONFIG_KEY];
+      auto info = cal_info.as<tesseract_common::CalibrationInfo>();
+
+      // Check to make sure calibration joints exist
+      for (const auto& cal_joint : info.joints)
+      {
+        if (scene_graph.getJoint(cal_joint.first) == nullptr)
+          std::throw_with_nested(std::runtime_error("calibration_config: joint '" + cal_joint.first +
+                                                    "' does not exist for robot '" + name + "'!"));
+      }
+
+      calibration_info.insert(info);
+    }
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("SRDF: Error parsing srdf calibration config for robot '" + name + "'!"));
+  }
+
+  try
+  {
     acm = parseDisabledCollisions(scene_graph, srdf_xml, version);
   }
   catch (...)
@@ -389,6 +442,18 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     tinyxml2::XMLElement* xml_kin_plugin_entry = doc.NewElement("kinematics_plugin_config");
     xml_kin_plugin_entry->SetAttribute("filename", "kinematics_plugin_config.yaml");
     xml_root->InsertEndChild(xml_kin_plugin_entry);
+  }
+
+  if (!calibration_info.empty())
+  {
+    tesseract_common::fs::path p(file_path);
+    std::ofstream fout(p.parent_path().append("calibration_config.yaml").string());
+    YAML::Node config;
+    config[tesseract_common::CalibrationInfo::CONFIG_KEY] = calibration_info;
+    fout << config;
+    tinyxml2::XMLElement* xml_cal_info_entry = doc.NewElement("calibration_config");
+    xml_cal_info_entry->SetAttribute("filename", "calibration_config.yaml");
+    xml_root->InsertEndChild(xml_cal_info_entry);
   }
 
   for (const auto& entry : acm.getAllAllowedCollisions())
