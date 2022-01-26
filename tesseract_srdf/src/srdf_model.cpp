@@ -42,6 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/group_tool_center_points.h>
 #include <tesseract_srdf/disabled_collisions.h>
 #include <tesseract_srdf/collision_margins.h>
+#include <tesseract_srdf/configs.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_common/yaml_utils.h>
@@ -176,37 +177,7 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
          xml_element != nullptr;
          xml_element = xml_element->NextSiblingElement("kinematics_plugin_config"))
     {
-      std::string filename;
-      tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
-      if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: Missing or failed to parse 'filename' "
-                                                  "attribute."));
-
-      tesseract_common::Resource::Ptr kin_plugin_resource = locator.locateResource(filename);
-      if (kin_plugin_resource == nullptr)
-        std::throw_with_nested(
-            std::runtime_error("kinematics_plugin_config: Failed to locate resource '" + filename + "'."));
-
-      tesseract_common::fs::path kin_plugin_file_path(kin_plugin_resource->getFilePath());
-      if (!tesseract_common::fs::exists(kin_plugin_file_path))
-        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: Kinematics plugins file does not exist: "
-                                                  "'" +
-                                                  kin_plugin_file_path.string() + "'."));
-
-      YAML::Node config;
-      try
-      {
-        config = YAML::LoadFile(kin_plugin_file_path.string());
-      }
-      catch (...)
-      {
-        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: YAML failed to parse kinematics plugins "
-                                                  "file '" +
-                                                  kin_plugin_file_path.string() + "'."));
-      }
-
-      const YAML::Node& kin_plugin_info = config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
-      auto info = kin_plugin_info.as<tesseract_common::KinematicsPluginInfo>();
+      tesseract_common::KinematicsPluginInfo info = parseKinematicsPluginConfig(locator, xml_element, version);
       kinematics_information.kinematics_plugin_info.insert(info);
     }
   }
@@ -222,45 +193,7 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
          xml_element != nullptr;
          xml_element = xml_element->NextSiblingElement("calibration_config"))
     {
-      std::string filename;
-      tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
-      if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("calibration_config: Missing or failed to parse 'filename' "
-                                                  "attribute."));
-
-      tesseract_common::Resource::Ptr cal_resource = locator.locateResource(filename);
-      if (cal_resource == nullptr)
-        std::throw_with_nested(std::runtime_error("calibration_config: Failed to locate resource '" + filename + "'."));
-
-      tesseract_common::fs::path cal_config_file_path(cal_resource->getFilePath());
-      if (!tesseract_common::fs::exists(cal_config_file_path))
-        std::throw_with_nested(std::runtime_error("calibration_config: Calibration config file does not exist: "
-                                                  "'" +
-                                                  cal_config_file_path.string() + "'."));
-
-      YAML::Node config;
-      try
-      {
-        config = YAML::LoadFile(cal_config_file_path.string());
-      }
-      catch (...)
-      {
-        std::throw_with_nested(std::runtime_error("calibration_config: YAML failed to parse calibration config "
-                                                  "file '" +
-                                                  cal_config_file_path.string() + "'."));
-      }
-
-      const YAML::Node& cal_info = config[tesseract_common::CalibrationInfo::CONFIG_KEY];
-      auto info = cal_info.as<tesseract_common::CalibrationInfo>();
-
-      // Check to make sure calibration joints exist
-      for (const auto& cal_joint : info.joints)
-      {
-        if (scene_graph.getJoint(cal_joint.first) == nullptr)
-          std::throw_with_nested(std::runtime_error("calibration_config: joint '" + cal_joint.first +
-                                                    "' does not exist for robot '" + name + "'!"));
-      }
-
+      tesseract_common::CalibrationInfo info = parseCalibrationConfig(scene_graph, locator, xml_element, version);
       calibration_info.insert(info);
     }
   }
@@ -295,40 +228,8 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
          xml_element != nullptr;
          xml_element = xml_element->NextSiblingElement("contact_managers_plugin_config"))
     {
-      std::string filename;
-      tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
-      if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: Missing or failed to parse "
-                                                  "'filename' "
-                                                  "attribute."));
-
-      tesseract_common::Resource::Ptr cm_plugin_resource = locator.locateResource(filename);
-      if (cm_plugin_resource == nullptr)
-        std::throw_with_nested(
-            std::runtime_error("contact_managers_plugin_config: Failed to locate resource '" + filename + "'."));
-
-      tesseract_common::fs::path cm_plugin_file_path(cm_plugin_resource->getFilePath());
-      if (!tesseract_common::fs::exists(cm_plugin_file_path))
-        std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: Contact managers plugins file does "
-                                                  "not exist: "
-                                                  "'" +
-                                                  cm_plugin_file_path.string() + "'."));
-
-      YAML::Node config;
-      try
-      {
-        config = YAML::LoadFile(cm_plugin_file_path.string());
-      }
-      catch (...)
-      {
-        std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: YAML failed to parse contact "
-                                                  "managers plugins "
-                                                  "file '" +
-                                                  cm_plugin_file_path.string() + "'."));
-      }
-
-      const YAML::Node& cm_plugin_info = config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-      auto info = cm_plugin_info.as<tesseract_common::ContactManagersPluginInfo>();
+      tesseract_common::ContactManagersPluginInfo info =
+          parseContactManagersPluginConfig(locator, xml_element, version);
       contact_managers_plugin_info.insert(info);
     }
   }

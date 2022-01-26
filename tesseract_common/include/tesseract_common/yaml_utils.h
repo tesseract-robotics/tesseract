@@ -498,9 +498,6 @@ struct convert<tesseract_common::CalibrationInfo>
   {
     const YAML::Node& joints_node = node["joints"];
 
-    if (!joints_node.IsMap())
-      return false;
-
     rhs.joints = joints_node.as<tesseract_common::TransformMap>();
 
     return true;

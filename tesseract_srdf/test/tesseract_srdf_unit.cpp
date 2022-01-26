@@ -11,6 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_srdf/collision_margins.h>
+#include <tesseract_srdf/configs.h>
 #include <tesseract_srdf/disabled_collisions.h>
 #include <tesseract_srdf/group_states.h>
 #include <tesseract_srdf/group_tool_center_points.h>
@@ -1673,6 +1674,204 @@ TEST(TesseractSRDFUnit, AddRemoveGroupTCPUnit)  // NOLINT
   EXPECT_FALSE(info.hasGroupTCP("manipulator", "laser"));
   EXPECT_FALSE(info.hasGroupTCP("manipulator", "welder"));
   EXPECT_EQ(info.group_tcps.size(), 0);
+}
+
+TEST(TesseractSRDFUnit, ParseConfigFilePathUnit)  // NOLINT
+{
+  std::array<int, 3> version{ 1, 0, 0 };
+  tesseract_common::SimpleResourceLocator locator(locateResource);
+
+  {  // valid
+    std::string str =
+        R"(<contact_managers_plugin_config filename="package://tesseract_support/urdf/contact_manager_plugins.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("contact_managers_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::fs::path path = tesseract_srdf::parseConfigFilePath(locator, element, version);
+    EXPECT_TRUE(tesseract_common::fs::exists(path));
+  }
+
+  {  // failures (incorrect attribute)
+    std::string str =
+        R"(<contact_managers_plugin_config incorrect_attribute="package://tesseract_support/urdf/contact_manager_plugins.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("contact_managers_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    EXPECT_ANY_THROW(tesseract_srdf::parseConfigFilePath(locator, element, version));  // NOLINT
+  }
+
+  {  // failures (resource does not exist)
+    std::string str =
+        R"(<contact_managers_plugin_config filename="package://tesseract_support/urdf/does_not_exist.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("contact_managers_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    EXPECT_ANY_THROW(tesseract_srdf::parseConfigFilePath(locator, element, version));  // NOLINT
+  }
+
+  {  // failures (resource not found)
+    std::string str = R"(<contact_managers_plugin_config filename="does_not_exist.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("contact_managers_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    EXPECT_ANY_THROW(tesseract_srdf::parseConfigFilePath(locator, element, version));  // NOLINT
+  }
+}
+
+TEST(TesseractSRDFUnit, ParseContactManagersPluginConfigUnit)  // NOLINT
+{
+  std::array<int, 3> version{ 1, 0, 0 };
+  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_scene_graph::SceneGraph::Ptr g = getABBSceneGraph();
+
+  {  // valid
+    std::string str =
+        R"(<contact_managers_plugin_config filename="package://tesseract_support/urdf/contact_manager_plugins.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("contact_managers_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::ContactManagersPluginInfo info =
+        tesseract_srdf::parseContactManagersPluginConfig(locator, element, version);
+    EXPECT_FALSE(info.empty());
+  }
+
+  {  // failure
+    std::string str =
+        R"(<contact_managers_plugin_config filename="package://tesseract_support/urdf/does_not_exist.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("contact_managers_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    EXPECT_ANY_THROW(tesseract_srdf::parseContactManagersPluginConfig(locator, element, version));  // NOLINT
+  }
+
+  {  // failure
+    std::string str =
+        R"(<contact_managers_plugin_config filename="package://tesseract_support/urdf/malformed_config.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("contact_managers_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    EXPECT_ANY_THROW(tesseract_srdf::parseContactManagersPluginConfig(locator, element, version));  // NOLINT
+  }
+}
+
+TEST(TesseractSRDFUnit, ParseKinematicsPluginConfigUnit)  // NOLINT
+{
+  std::array<int, 3> version{ 1, 0, 0 };
+  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_scene_graph::SceneGraph::Ptr g = getABBSceneGraph();
+
+  {  // valid
+    std::string str =
+        R"(<kinematics_plugin_config filename="package://tesseract_support/urdf/abb_irb2400_plugins.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("kinematics_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::KinematicsPluginInfo info =
+        tesseract_srdf::parseKinematicsPluginConfig(locator, element, version);
+    EXPECT_FALSE(info.empty());
+  }
+
+  {  // failure
+    std::string str = R"(<kinematics_plugin_config filename="package://tesseract_support/urdf/does_not_exist.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("kinematics_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    EXPECT_ANY_THROW(tesseract_srdf::parseKinematicsPluginConfig(locator, element, version));  // NOLINT
+  }
+
+  {  // failure
+    std::string str =
+        R"(<kinematics_plugin_config filename="package://tesseract_support/urdf/malformed_config.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("kinematics_plugin_config");
+    EXPECT_TRUE(element != nullptr);
+
+    EXPECT_ANY_THROW(tesseract_srdf::parseKinematicsPluginConfig(locator, element, version));  // NOLINT
+  }
+}
+
+TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
+{
+  std::array<int, 3> version{ 1, 0, 0 };
+  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_scene_graph::SceneGraph::Ptr g = getABBSceneGraph();
+
+  {  // valid
+    std::string str =
+        R"(<calibration_config filename="package://tesseract_support/urdf/abb_irb2400_calibration.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("calibration_config");
+    EXPECT_TRUE(element != nullptr);
+
+    tesseract_common::CalibrationInfo info = tesseract_srdf::parseCalibrationConfig(*g, locator, element, version);
+    EXPECT_FALSE(info.empty());
+  }
+
+  {  // failure
+    std::string str = R"(<calibration_config filename="package://tesseract_support/urdf/does_not_exist.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("calibration_config");
+    EXPECT_TRUE(element != nullptr);
+
+    EXPECT_ANY_THROW(tesseract_srdf::parseCalibrationConfig(*g, locator, element, version));  // NOLINT
+  }
+
+  {  // failure
+    std::string str = R"(<calibration_config filename="package://tesseract_support/urdf/malformed_config.yaml"/>)";
+
+    tinyxml2::XMLDocument xml_doc;
+    EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+
+    tinyxml2::XMLElement* element = xml_doc.FirstChildElement("calibration_config");
+    EXPECT_TRUE(element != nullptr);
+
+    EXPECT_ANY_THROW(tesseract_srdf::parseCalibrationConfig(*g, locator, element, version));  // NOLINT
+  }
 }
 
 int main(int argc, char** argv)

@@ -168,7 +168,11 @@ struct CalibrationInfo
 
   CalibrationInfo() = default;
 
-  /** @brief The joint origin calibration information */
+  /**
+   *  @brief The joint origin calibration information
+   *  @details For each entry in \p joints the environment will apply a ChangeJointOriginCommand replacing the current
+   * joint origin with what is stored in the TransformMap
+   */
   tesseract_common::TransformMap joints;
 
   /** @brief Insert the content of an other CalibrationInfo */

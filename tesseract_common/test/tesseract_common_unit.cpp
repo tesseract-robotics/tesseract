@@ -1557,6 +1557,68 @@ TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  //
   }
 }
 
+TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
+{
+  std::string yaml_string =
+      R"(joints:
+           joint_1:
+             position:
+               x: 1
+               y: 2
+               z: 3
+             orientation:
+               x: 0
+               y: 0
+               z: 0
+               w: 1
+           joint_2:
+             position:
+               x: 4
+               y: 5
+               z: 6
+             orientation:
+               x: 0
+               y: 0
+               z: 0
+               w: 1)";
+
+  {  // valid string
+    YAML::Node node = YAML::Load(yaml_string);
+    auto trans_map = node["joints"].as<tesseract_common::TransformMap>();
+    EXPECT_EQ(trans_map.size(), 2);
+    EXPECT_FALSE(trans_map.empty());
+    EXPECT_TRUE(trans_map.find("joint_1") != trans_map.end());
+    EXPECT_TRUE(trans_map.find("joint_2") != trans_map.end());
+  }
+
+  std::string bad_yaml_string =
+      R"(joints:
+           - joint_1:
+               position:
+                 x: 1
+                 y: 2
+                 z: 3
+               orientation:
+                 x: 0
+                 y: 0
+                 z: 0
+                 w: 1
+           - joint_2:
+               position:
+                 x: 4
+                 y: 5
+                 z: 6
+               orientation:
+                 x: 0
+                 y: 0
+                 z: 0
+                 w: 1)";
+  {  // invalid string
+    YAML::Node node = YAML::Load(bad_yaml_string);
+    EXPECT_ANY_THROW(node["joints"].as<tesseract_common::TransformMap>());  // NOLINT
+  }
+}
+
 TEST(TesseractCommonUnit, CalibrationInfoYamlUnit)  // NOLINT
 {
   std::string yaml_string =
