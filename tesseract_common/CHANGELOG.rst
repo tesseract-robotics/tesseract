@@ -2,6 +2,13 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add ability to provide calibration information in the SRDF (`#703 <https://github.com/tesseract-robotics/tesseract/issues/703>`_)
+  * Add missing package tesseract_srdf in CI after script
+  * Add support for calibration info in SRDF
+* Contributors: Levi Armstrong
+
 0.8.1 (2022-01-24)
 ------------------
 * Add any.cpp

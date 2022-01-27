@@ -2,6 +2,13 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove unneeded boost bind include
+  Not needed since C++11 and this header puts placeholder objects in the
+  global namespace on system-installed Boost versions
+* Contributors: Josh Langsfeld
+
 0.8.1 (2022-01-24)
 ------------------
 
