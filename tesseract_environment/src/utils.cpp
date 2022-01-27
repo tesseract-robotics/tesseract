@@ -166,18 +166,28 @@ void processInterpolatedSubSegmentCollisionResults(tesseract_collision::ContactR
         if (std::find(manip_active_link_names.begin(), manip_active_link_names.end(), r.link_names[j]) !=
             manip_active_link_names.end())
         {
-          r.cc_time[j] = (r.cc_time[j] < 0) ?
-                             (static_cast<double>(sub_segment_index) * segment_dt) :
-                             (static_cast<double>(sub_segment_index) * segment_dt) + (r.cc_time[j] * segment_dt);
-          assert(r.cc_time[j] >= 0.0 && r.cc_time[j] <= 1.0);
-          if (sub_segment_index == 0 &&
-              (r.cc_type[j] == tesseract_collision::ContinuousCollisionType::CCType_Time0 || discrete))
-            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Time0;
-          else if (sub_segment_index == sub_segment_last_index &&
-                   (r.cc_type[j] == tesseract_collision::ContinuousCollisionType::CCType_Time1 || discrete))
-            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Time1;
+          // If the last index is zero then it checked a discrete point and it is unknown if
+          // it is CCType_Time0, CCType_Between, or CCType_Time1 so it is assigned CCType_None
+          if (sub_segment_last_index == 0)
+          {
+            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_None;
+          }
           else
-            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Between;
+          {
+            r.cc_time[j] = (r.cc_time[j] < 0) ?
+                               (static_cast<double>(sub_segment_index) * segment_dt) :
+                               (static_cast<double>(sub_segment_index) * segment_dt) + (r.cc_time[j] * segment_dt);
+            assert(r.cc_time[j] >= 0.0 && r.cc_time[j] <= 1.0);
+
+            if (sub_segment_index == 0 &&
+                (r.cc_type[j] == tesseract_collision::ContinuousCollisionType::CCType_Time0 || discrete))
+              r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Time0;
+            else if (sub_segment_index == sub_segment_last_index &&
+                     (r.cc_type[j] == tesseract_collision::ContinuousCollisionType::CCType_Time1 || discrete))
+              r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Time1;
+            else
+              r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Between;
+          }
 
           // If discrete set cc_transform for discrete continuous
           if (discrete)
