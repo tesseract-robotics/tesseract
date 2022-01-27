@@ -85,6 +85,12 @@ bool ContactManagersPluginInfo::empty() const
           continuous_plugin_infos.plugins.empty());
 }
 
+void CalibrationInfo::insert(const CalibrationInfo& other) { joints.insert(other.joints.begin(), other.joints.end()); }
+
+void CalibrationInfo::clear() { joints.clear(); }
+
+bool CalibrationInfo::empty() const { return joints.empty(); }
+
 std::size_t PairHash::operator()(const LinkNamesPair& pair) const
 {
   return std::hash<std::string>()(pair.first + pair.second);

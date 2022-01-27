@@ -108,6 +108,9 @@ public:
 
   /** @brief Collision margin data */
   tesseract_common::CollisionMarginData::Ptr collision_margin_data;
+
+  /** @brief The calibration information */
+  tesseract_common::CalibrationInfo calibration_info;
 };
 
 }  // namespace tesseract_srdf

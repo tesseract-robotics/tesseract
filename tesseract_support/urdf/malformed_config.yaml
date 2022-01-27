@@ -1,0 +1,7 @@
+<joint name="joint_2" type="revolute">
+  <origin rpy="0 0 0" xyz="0.1 0 0.615"/>
+  <parent link="link_1"/>
+  <child link="link_2"/>
+  <axis xyz="0 1 0"/>
+  <limit effort="0" lower="-1.7453" upper="1.9199" velocity="2.618"/>
+</joint>

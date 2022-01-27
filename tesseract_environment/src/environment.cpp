@@ -257,6 +257,10 @@ Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& s
     commands.push_back(std::make_shared<AddContactManagersPluginInfoCommand>(srdf_model->contact_managers_plugin_info));
     commands.push_back(std::make_shared<AddKinematicsInformationCommand>(srdf_model->kinematics_information));
 
+    // Apply calibration information
+    for (const auto& cal : srdf_model->calibration_info.joints)
+      commands.push_back(std::make_shared<ChangeJointOriginCommand>(cal.first, cal.second));
+
     // Check srdf for collision margin data
     if (srdf_model->collision_margin_data)
       commands.push_back(std::make_shared<ChangeCollisionMarginsCommand>(
