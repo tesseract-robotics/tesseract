@@ -12,14 +12,30 @@ if(NOT
     WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
 endif()
 
-if(WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
-  include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
-  link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
+# Some Bullet installations (vcpkg) use absolute paths instead of relative to BULLET_ROOT_DIR in the CMake vars
+set(BULLET_INCLUDE_DIRS_ABS "")
+set(BULLET_LIBRARY_DIRS_ABS "")
+if(NOT IS_ABSOLUTE "${BULLET_INCLUDE_DIR}")
+  foreach(dir IN LISTS BULLET_INCLUDE_DIRS)
+    list(APPEND BULLET_INCLUDE_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
+  endforeach()
+  foreach(dir IN LISTS BULLET_LIBRARY_DIRS)
+    list(APPEND BULLET_LIBRARY_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
+  endforeach()
+else()
+  set(BULLET_INCLUDE_DIRS_ABS ${BULLET_INCLUDE_DIRS})
+  set(BULLET_LIBRARY_DIRS_ABS ${BULLET_LIBRARY_DIRS})
 endif()
 
-find_library(HACD_LIBRARY HACD HINTS ${BULLET_LIBRARY_DIRS})
+if(WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
+  include_directories(BEFORE "${BULLET_INCLUDE_DIRS_ABS}")
+  link_directories(BEFORE "${BULLET_LIBRARY_DIRS_ABS}")
+endif()
+
+find_library(HACD_LIBRARY HACD HINTS ${BULLET_LIBRARY_DIRS_ABS})
 if(NOT HACD_LIBRARY)
-  message(WARNING "HACD not found! Convex decomposition library will not be built. Install libbullet-extras-dev on Linux.")
+  message(
+    WARNING "HACD not found! Convex decomposition library will not be built. Install libbullet-extras-dev on Linux.")
 endif()
 
 # Create target for Bullet implementation
@@ -57,7 +73,7 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME}_bullet PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                          "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC "${BULLET_INCLUDE_DIRS_ABS}")
 
 # Create target for Bullet implementation
 add_library(${PROJECT_NAME}_bullet_factories src/bullet_factories.cpp)
@@ -76,10 +92,10 @@ target_code_coverage(
 target_include_directories(
   ${PROJECT_NAME}_bullet_factories PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                           "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_bullet_factories SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+target_include_directories(${PROJECT_NAME}_bullet_factories SYSTEM PUBLIC "${BULLET_INCLUDE_DIRS_ABS}")
 
 # Convex decomposition libraries
-if (${HACD_LIBRARY})
+if(${HACD_LIBRARY})
   add_library(${PROJECT_NAME}_hacd_convex_decomposition src/convex_decomposition_hacd.cpp)
   target_link_libraries(
     ${PROJECT_NAME}_hacd_convex_decomposition
@@ -103,8 +119,7 @@ if (${HACD_LIBRARY})
   target_include_directories(
     ${PROJECT_NAME}_hacd_convex_decomposition PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                      "$<INSTALL_INTERFACE:include>")
-  target_include_directories(${PROJECT_NAME}_hacd_convex_decomposition SYSTEM
-                             PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+  target_include_directories(${PROJECT_NAME}_hacd_convex_decomposition SYSTEM PUBLIC "${BULLET_INCLUDE_DIRS_ABS}")
   install_targets(TARGETS ${PROJECT_NAME}_hacd_convex_decomposition)
 endif()
 
@@ -148,8 +163,4 @@ install(
   PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
-install_targets(
-  TARGETS
-  ${PROJECT_NAME}_bullet
-  ${PROJECT_NAME}_bullet_factories
-)
+install_targets(TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_bullet_factories)
