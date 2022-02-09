@@ -427,11 +427,12 @@ TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
   // Add disabled collisions
   auto& acm = srdf.acm;
   EXPECT_TRUE(acm.getAllAllowedCollisions().empty());
-  acm.addAllowedCollision("base_link", "link_1", "Adjacent");
+  acm.addAllowedCollision("link_1", "link_3", "Adjacent");
   acm.addAllowedCollision("link_1", "link_2", "Adjacent");
   acm.addAllowedCollision("link_2", "link_3", "Adjacent");
   acm.addAllowedCollision("link_3", "link_4", "Adjacent");
   acm.addAllowedCollision("link_4", "link_5", "Adjacent");
+  acm.addAllowedCollision("base_link", "link_1", "Adjacent");
   EXPECT_FALSE(acm.getAllAllowedCollisions().empty());
   srdf.saveToFile(tesseract_common::getTempPath() + "test.srdf");
 
