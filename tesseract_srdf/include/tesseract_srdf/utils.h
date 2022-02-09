@@ -26,6 +26,9 @@
 #ifndef TESSERACT_SRDF_UTILS_H
 #define TESSERACT_SRDF_UTILS_H
 
+#include <functional>
+#include <tesseract_common/allowed_collision_matrix.h>
+#include <tesseract_common/types.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_srdf/srdf_model.h>
 
@@ -38,5 +41,21 @@ namespace tesseract_srdf
  */
 void processSRDFAllowedCollisions(tesseract_scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model);
 
+/**
+ * @brief Used to sort a pair of strings alphabetically - first by the pair.first and then by pair.second
+ * @param pair1 First pair of strings
+ * @param pair2 Second pair of strings
+ * @return True if pair1 should go before pair2 (is closer to A)
+ */
+bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract_common::LinkNamesPair> pair1,
+                                   std::reference_wrapper<const tesseract_common::LinkNamesPair> pair2);
+
+/**
+ * @brief Returns an alphabetically sorted vector of ACM keys (the link pairs)
+ * @param allowed_collision_entries Entries to be sorted
+ * @return An alphabetically sorted vector of ACM keys (the link pairs)
+ */
+std::vector<std::reference_wrapper<const tesseract_common::LinkNamesPair>>
+getAlphabeticalACMKeys(const tesseract_common::AllowedCollisionEntries& allowed_collision_entries);
 }  // namespace tesseract_srdf
 #endif  // TESSERACT_SRDF_UTILS_H
