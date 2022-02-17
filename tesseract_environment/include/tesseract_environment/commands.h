@@ -68,7 +68,6 @@
 %shared_ptr(tesseract_environment::RemoveAllowedCollisionCommand)
 %shared_ptr(tesseract_environment::RemoveAllowedCollisionLinkCommand)
 %shared_ptr(tesseract_environment::AddSceneGraphCommand)
-%shared_ptr(tesseract_environment::AddSceneGraphCommand)
 %shared_ptr(tesseract_environment::AddKinematicsInformationCommand)
 %shared_ptr(tesseract_environment::ChangeJointPositionLimitsCommand)
 %shared_ptr(tesseract_environment::ChangeJointVelocityLimitsCommand)
@@ -104,7 +103,32 @@
   tesseract_environment::SetActiveDiscreteContactManagerCommand
 )
 
+%include "tesseract_environment/command.h"
+
 %template(Commands) std::vector<tesseract_environment::Command::ConstPtr>;
+
+%include "tesseract_environment/commands/add_allowed_collision_command.h"
+%include "tesseract_environment/commands/add_contact_managers_plugin_info_command.h"
+%include "tesseract_environment/commands/add_link_command.h"
+%include "tesseract_environment/commands/add_kinematics_information_command.h"
+%include "tesseract_environment/commands/add_scene_graph_command.h"
+%include "tesseract_environment/commands/change_joint_acceleration_limits_command.h"
+%include "tesseract_environment/commands/change_joint_origin_command.h"
+%include "tesseract_environment/commands/change_joint_position_limits_command.h"
+%include "tesseract_environment/commands/change_joint_velocity_limits_command.h"
+%include "tesseract_environment/commands/change_link_collision_enabled_command.h"
+%include "tesseract_environment/commands/change_link_origin_command.h"
+%include "tesseract_environment/commands/change_link_visibility_command.h"
+%include "tesseract_environment/commands/move_joint_command.h"
+%include "tesseract_environment/commands/move_link_command.h"
+%include "tesseract_environment/commands/remove_allowed_collision_command.h"
+%include "tesseract_environment/commands/remove_allowed_collision_link_command.h"
+%include "tesseract_environment/commands/remove_joint_command.h"
+%include "tesseract_environment/commands/remove_link_command.h"
+%include "tesseract_environment/commands/replace_joint_command.h"
+%include "tesseract_environment/commands/change_collision_margins_command.h"
+%include "tesseract_environment/commands/set_active_continuous_contact_manager_command.h"
+%include "tesseract_environment/commands/set_active_discrete_contact_manager_command.h"
 
 #endif  // SWIG
 

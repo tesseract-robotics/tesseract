@@ -35,6 +35,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::KinematicGroup)
+%wrap_unique_ptr(KinematicGroupUPtr,tesseract_kinematics::KinematicGroup)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 /**
@@ -54,6 +59,8 @@ struct KinGroupIKInput
     : pose(p), working_frame(std::move(wf)), tip_link_name(std::move(tl))
   {
   }
+
+  KinGroupIKInput() = default;
 
   /** @brief The desired inverse kinematic pose */
   Eigen::Isometry3d pose;
@@ -148,3 +155,7 @@ private:
 }  // namespace tesseract_kinematics
 
 #endif  // TESSERACT_KINEMATICS_KINEMATIC_GROUP_H
+
+#ifdef SWIG
+%tesseract_aligned_vector(KinGroupIKInputs,tesseract_kinematics::KinGroupIKInput)
+#endif // SWIG

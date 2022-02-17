@@ -136,6 +136,7 @@ public:
   Mesh(Mesh&&) = delete;
   Mesh& operator=(Mesh&&) = delete;
 
+#ifndef SWIG
   /**
    * @brief Get mesh Triangles
    * @return A vector of triangle indices
@@ -150,6 +151,7 @@ public:
    * @return Number of triangles
    */
   [[deprecated("Please use getFaceCount() instead")]] int getTriangleCount() const { return getFaceCount(); }
+#endif // SWIG
 
   Geometry::Ptr clone() const override
   {

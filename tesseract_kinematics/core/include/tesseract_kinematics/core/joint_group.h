@@ -30,6 +30,11 @@
 #include <tesseract_scene_graph/scene_state.h>
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::JointGroup)
+%wrap_unique_ptr(JointGroupUPtr,tesseract_kinematics::JointGroup)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 /**
