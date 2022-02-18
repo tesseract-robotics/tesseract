@@ -95,7 +95,7 @@ target_code_coverage(
 # PCL does not support c++11 on Xenial so cannot include point cloud parsing from urdf Boost version number is in XYYYZZ
 # format such that: (BOOST_VERSION % 100) is the sub-minor version ((BOOST_VERSION / 100) % 1000) is the minor version
 # (BOOST_VERSION / 100000) is the major version.
-if(Boost_VERSION VERSION_GREATER "106000")
+if(Boost_VERSION VERSION_GREATER "1.60.0")
   target_link_libraries(${PROJECT_NAME} PUBLIC ${PCL_LIBRARIES})
   target_compile_definitions(${PROJECT_NAME} PUBLIC TESSERACT_PARSE_POINT_CLOUDS="ON")
   foreach(DEF ${PCL_DEFINITIONS})
