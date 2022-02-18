@@ -138,5 +138,5 @@ namespace tesseract_scene_graph
 using AllowedCollisionMatrix [[deprecated("Please use tesseract_common::AllowedCollisionMatrix instead")]] =
     tesseract_common::AllowedCollisionMatrix;
 }
-#endif // SWIG
+#endif  // SWIG
 #endif  // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H

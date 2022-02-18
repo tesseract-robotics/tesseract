@@ -77,7 +77,7 @@ const static URParameters UR5eParameters(0.163, -0.425, -0.392, 0.127 + 0.138 - 
 /** @brief The UR3e kinematic parameters */
 const static URParameters UR3eParameters(0.152, -0.244, -0.213, 0.104 + 0.138 - 0.131, 0.085, 0.092);
 
-#endif // SWIG
+#endif  // SWIG
 
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_TYPES_H

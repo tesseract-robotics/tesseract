@@ -149,7 +149,7 @@ public:
    * @return Number of triangles
    */
   [[deprecated("Please use getFaceCount() instead")]] int getTriangleCount() const { return getFaceCount(); }
-#endif // SWIG
+#endif  // SWIG
 
   Geometry::Ptr clone() const override
   {

@@ -43,7 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 %shared_ptr(tesseract_collision::ContactManagersPluginFactory)
 %shared_ptr(tesseract_collision::DiscreteContactManagerFactory)
 %shared_ptr(tesseract_collision::ContinuousContactManagerFactory)
-#endif // SWIG
+#endif  // SWIG
 
 namespace tesseract_collision
 {

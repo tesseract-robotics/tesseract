@@ -191,6 +191,6 @@ struct CalibrationInfo
 
 #ifdef SWIG
 %template(PluginInfoMap) std::map<std::string, tesseract_common::PluginInfo>;
-#endif // SWIG
+#endif  // SWIG
 
 #endif  // TESSERACT_COMMON_TYPES_H

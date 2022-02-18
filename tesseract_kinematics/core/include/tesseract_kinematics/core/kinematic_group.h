@@ -80,7 +80,9 @@ struct KinGroupIKInput
 #ifndef SWIG
 using KinGroupIKInputs = tesseract_common::AlignedVector<KinGroupIKInput>;
 #else
+// clang-format off
 %tesseract_aligned_vector_using(KinGroupIKInputs,tesseract_kinematics::KinGroupIKInput)
+// clang-format on
 #endif
 
 class KinematicGroup : public JointGroup
@@ -161,4 +163,4 @@ private:
 
 #ifdef SWIG
 %tesseract_aligned_vector(KinGroupIKInputs,tesseract_kinematics::KinGroupIKInput)
-#endif // SWIG
+#endif  // SWIG

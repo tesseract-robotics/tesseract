@@ -167,7 +167,7 @@ public:
   {
     return getVertexCount();
   }
-#endif // SWIG
+#endif  // SWIG
 
   /**
    * @brief Get vertex count
