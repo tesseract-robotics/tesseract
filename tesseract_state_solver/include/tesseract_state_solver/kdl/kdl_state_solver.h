@@ -48,6 +48,8 @@ class KDLStateSolver : public StateSolver
 public:
   using Ptr = std::shared_ptr<KDLStateSolver>;
   using ConstPtr = std::shared_ptr<const KDLStateSolver>;
+  using UPtr = std::unique_ptr<KDLStateSolver>;
+  using ConstUPtr = std::unique_ptr<const KDLStateSolver>;
 
   KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph);
   KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, KDLTreeData data);

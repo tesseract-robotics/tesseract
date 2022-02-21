@@ -33,4 +33,33 @@ void processSRDFAllowedCollisions(tesseract_scene_graph::SceneGraph& scene_graph
     scene_graph.addAllowedCollision(pair.first.first, pair.first.second, pair.second);
 }
 
+bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract_common::LinkNamesPair> pair1,
+                                   std::reference_wrapper<const tesseract_common::LinkNamesPair> pair2)
+{
+  // Sort first by the first string
+  if (pair1.get().first != pair2.get().first)
+  {
+    return pair1.get().first < pair2.get().first;
+  }
+
+  // Then sort by the second
+  return pair1.get().second < pair2.get().second;
+}
+
+std::vector<std::reference_wrapper<const tesseract_common::LinkNamesPair>>
+getAlphabeticalACMKeys(const tesseract_common::AllowedCollisionEntries& allowed_collision_entries)
+{
+  std::vector<std::reference_wrapper<const tesseract_common::LinkNamesPair>> acm_keys;
+  acm_keys.reserve(allowed_collision_entries.size());
+  for (const auto& acm_pair : allowed_collision_entries)
+  {
+    acm_keys.push_back(std::ref(acm_pair.first));
+  }
+
+  // Sort the keys alphabetically
+  sort(acm_keys.begin(), acm_keys.end(), compareLinkPairAlphabetically);
+
+  return acm_keys;
+}
+
 }  // namespace tesseract_srdf

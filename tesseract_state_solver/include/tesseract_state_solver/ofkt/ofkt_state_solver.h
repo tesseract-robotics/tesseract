@@ -64,6 +64,8 @@ public:
 
   using Ptr = std::shared_ptr<OFKTStateSolver>;
   using ConstPtr = std::shared_ptr<const OFKTStateSolver>;
+  using UPtr = std::unique_ptr<OFKTStateSolver>;
+  using ConstUPtr = std::unique_ptr<const OFKTStateSolver>;
 
   OFKTStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
   OFKTStateSolver(const std::string& root_name);

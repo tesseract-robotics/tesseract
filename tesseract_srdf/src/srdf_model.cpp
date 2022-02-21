@@ -44,6 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/collision_margins.h>
 #include <tesseract_srdf/configs.h>
 #include <tesseract_srdf/srdf_model.h>
+#include <tesseract_srdf/utils.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_common/yaml_utils.h>
 
@@ -357,12 +358,15 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_cal_info_entry);
   }
 
-  for (const auto& entry : acm.getAllAllowedCollisions())
+  // Write the ACM
+  const auto allowed_collision_entries = acm.getAllAllowedCollisions();
+  auto acm_keys = getAlphabeticalACMKeys(allowed_collision_entries);
+  for (const auto& key : acm_keys)
   {
     tinyxml2::XMLElement* xml_acm_entry = doc.NewElement("disable_collisions");
-    xml_acm_entry->SetAttribute("link1", entry.first.first.c_str());
-    xml_acm_entry->SetAttribute("link2", entry.first.second.c_str());
-    xml_acm_entry->SetAttribute("reason", entry.second.c_str());
+    xml_acm_entry->SetAttribute("link1", key.get().first.c_str());
+    xml_acm_entry->SetAttribute("link2", key.get().second.c_str());
+    xml_acm_entry->SetAttribute("reason", allowed_collision_entries.at(key.get()).c_str());
     xml_root->InsertEndChild(xml_acm_entry);
   }
 
