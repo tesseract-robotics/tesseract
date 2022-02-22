@@ -2,8 +2,8 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.3 (2022-02-22)
+------------------
 * Fix Boost_VERSION in tesseract_urdf to check for Boost_VERSION_MACRO (`#717 <https://github.com/tesseract-robotics/tesseract/issues/717>`_)
   * Fix Boost_VERSION in tesseract_urdf to check for Boost_VERSION_MACRO
   * cmake-format

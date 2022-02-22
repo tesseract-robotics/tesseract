@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.3 (2022-02-22)
+------------------
 * Python patches for Feb 2022 update (`#716 <https://github.com/tesseract-robotics/tesseract/issues/716>`_)
 * Update UR Kinematics Parameters for e-series
   UR10eParameters, UR5eParameters and UR3eParameters values were slightly
