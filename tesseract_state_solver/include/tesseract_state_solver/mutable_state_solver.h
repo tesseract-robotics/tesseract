@@ -29,7 +29,8 @@
 #include <tesseract_state_solver/state_solver.h>
 
 #ifdef SWIG
-%shared_ptr(tesseract_state_solver::StateSolver)
+%shared_ptr(tesseract_scene_graph::MutableStateSolver)
+%wrap_unique_ptr(MutableStateSolverUPtr,tesseract_scene_graph::MutableStateSolver)
 #endif  // SWIG
 
 namespace tesseract_scene_graph

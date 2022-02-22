@@ -183,7 +183,8 @@ public:
 
   JointCalibration() = default;
   double reference_position{ 0 };
-  double rising{ 0 }, falling{ 0 };
+  double rising{ 0 };
+  double falling{ 0 };
 
   void clear()
   {

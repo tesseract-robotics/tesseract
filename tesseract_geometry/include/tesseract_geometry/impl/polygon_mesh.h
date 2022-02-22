@@ -158,6 +158,7 @@ public:
    */
   const std::shared_ptr<const Eigen::VectorXi>& getFaces() const { return faces_; }
 
+#ifndef SWIG
   /**
    * @brief Get vertex count
    * @return Number of vertices
@@ -166,6 +167,7 @@ public:
   {
     return getVertexCount();
   }
+#endif  // SWIG
 
   /**
    * @brief Get vertex count
@@ -201,7 +203,7 @@ public:
    *
    * @return The vertex normal vector
    */
-  std::shared_ptr<const tesseract_common::VectorVector3d> getNormals() const { return normals_; }
+  const std::shared_ptr<const tesseract_common::VectorVector3d>& getNormals() const { return normals_; }
 
   /**
    * @brief Get the vertex colors
@@ -210,7 +212,7 @@ public:
    *
    * @return Vertex colors
    */
-  std::shared_ptr<const tesseract_common::VectorVector4d> getVertexColors() const { return vertex_colors_; }
+  const std::shared_ptr<const tesseract_common::VectorVector4d>& getVertexColors() const { return vertex_colors_; }
 
   /**
    * @brief Get material data extracted from the mesh file
@@ -232,7 +234,7 @@ public:
    *
    * @return Vector of mesh textures
    */
-  std::shared_ptr<const std::vector<MeshTexture::Ptr>> getTextures() const { return mesh_textures_; }
+  const std::shared_ptr<const std::vector<MeshTexture::Ptr>>& getTextures() const { return mesh_textures_; }
 
   Geometry::Ptr clone() const override
   {

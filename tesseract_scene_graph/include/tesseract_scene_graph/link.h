@@ -104,7 +104,12 @@ public:
   Inertial() = default;
   Eigen::Isometry3d origin{ Eigen::Isometry3d::Identity() };
   double mass{ 0 };
-  double ixx{ 0 }, ixy{ 0 }, ixz{ 0 }, iyy{ 0 }, iyz{ 0 }, izz{ 0 };
+  double ixx{ 0 };
+  double ixy{ 0 };
+  double ixz{ 0 };
+  double iyy{ 0 };
+  double iyz{ 0 };
+  double izz{ 0 };
 
   void clear()
   {

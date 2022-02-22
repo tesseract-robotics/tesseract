@@ -58,7 +58,7 @@ void SRDFModel::initFile(const tesseract_scene_graph::SceneGraph& scene_graph,
   tesseract_common::Resource::Ptr resource = locator.locateResource(filename);
   std::string xml_string;
   std::fstream xml_file(filename.c_str(), std::fstream::in);
-  if (xml_file.is_open())
+  if (xml_file.is_open() && resource)
   {
     while (xml_file.good())
     {

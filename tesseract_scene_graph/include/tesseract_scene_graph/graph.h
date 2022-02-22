@@ -45,6 +45,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #ifdef SWIG
 
 %shared_ptr(tesseract_scene_graph::SceneGraph)
+%wrap_unique_ptr(SceneGraphUPtr,tesseract_scene_graph::SceneGraph)
 %template(LinkVector) std::vector<std::shared_ptr<tesseract_scene_graph::Link> >;
 %template(JointVector) std::vector<std::shared_ptr<tesseract_scene_graph::Joint> >;
 %template(LinkConstVector) std::vector<std::shared_ptr<tesseract_scene_graph::Link const> >;

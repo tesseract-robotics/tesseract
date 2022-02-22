@@ -42,9 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
 %shared_ptr(tesseract_kinematics::ForwardKinematics)
-%unique_ptr(tesseract_kinematics::ForwardKinematics)
-%template(ForwardKinematicsPtrMap) std::unordered_map<std::string, tesseract_kinematics::ForwardKinematics::Ptr>;
-%template(ForwardKinematicsConstPtrMap) std::unordered_map<std::string, tesseract_kinematics::ForwardKinematics::ConstPtr>;
+%wrap_unique_ptr(ForwardKinematicsUPtr,tesseract_kinematics::ForwardKinematics)
 #endif  // SWIG
 
 namespace tesseract_kinematics

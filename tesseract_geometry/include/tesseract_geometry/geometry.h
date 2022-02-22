@@ -50,10 +50,11 @@ enum GeometryType
   CONVEX_MESH,
   SDF_MESH,
   OCTREE,
+  POLYGON_MESH
 };
-static const std::vector<std::string> GeometryTypeStrings = {
-  "SPHERE", "CYLINDER", "CAPSULE", "CONE", "BOX", "PLANE", "MESH", "CONVEX_MESH", "SDF_MESH", "OCTREE"
-};
+static const std::vector<std::string> GeometryTypeStrings = { "SPHERE",   "CYLINDER", "CAPSULE",     "CONE",
+                                                              "BOX",      "PLANE",    "MESH",        "CONVEX_MESH",
+                                                              "SDF_MESH", "OCTREE",   "POLYGON_MESH" };
 
 #ifdef SWIG
 %nodefaultctor Geometry;

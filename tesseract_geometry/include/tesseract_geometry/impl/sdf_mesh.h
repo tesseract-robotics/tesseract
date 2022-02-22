@@ -134,6 +134,7 @@ public:
   SDFMesh(SDFMesh&&) = delete;
   SDFMesh& operator=(SDFMesh&&) = delete;
 
+#ifndef SWIG
   /**
    * @brief Get SDF mesh Triangles
    * @return A vector of triangle indices
@@ -148,6 +149,7 @@ public:
    * @return Number of triangles
    */
   [[deprecated("Please use getFaceCount() instead")]] int getTriangleCount() const { return getFaceCount(); }
+#endif  // SWIG
 
   Geometry::Ptr clone() const override
   {
