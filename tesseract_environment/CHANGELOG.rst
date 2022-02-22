@@ -2,6 +2,19 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Python patches for Feb 2022 update (`#716 <https://github.com/tesseract-robotics/tesseract/issues/716>`_)
+* A few fixes that were needed for Windows (`#708 <https://github.com/tesseract-robotics/tesseract/issues/708>`_)
+  * Make HACDConvexDecomposition library optional
+  Bullet extras are not easily obtained on Windows. If found, build library, otherwise ignore. Also the plain ConvexDecomposition library is looked for but never used and so removed entirely.
+  * Check if Bullet CMake variables are using absolute paths
+  For some reasons, the vcpkg ported version changes the config file to
+  use absolute paths instead of relative to BULLET_ROOT_DIR
+  * Add include for std::string
+  Co-authored-by: Levi Armstrong <levi.armstrong@gmail.com>
+* Contributors: John Wason, Josh Langsfeld
+
 0.8.2 (2022-01-27)
 ------------------
 * Add ability to provide calibration information in the SRDF (`#703 <https://github.com/tesseract-robotics/tesseract/issues/703>`_)

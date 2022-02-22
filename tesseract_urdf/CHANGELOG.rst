@@ -2,6 +2,14 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix Boost_VERSION in tesseract_urdf to check for Boost_VERSION_MACRO (`#717 <https://github.com/tesseract-robotics/tesseract/issues/717>`_)
+  * Fix Boost_VERSION in tesseract_urdf to check for Boost_VERSION_MACRO
+  * cmake-format
+* Modifying Boost_VERSION check to use semver
+* Contributors: John Wason, Kyle Staub
+
 0.8.2 (2022-01-27)
 ------------------
 

@@ -2,6 +2,12 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Python patches for Feb 2022 update (`#716 <https://github.com/tesseract-robotics/tesseract/issues/716>`_)
+* Add missing UPtr and ConstUPtr typedef for KDL and OFKT state solver (`#711 <https://github.com/tesseract-robotics/tesseract/issues/711>`_)
+* Contributors: John Wason, Levi Armstrong
+
 0.8.2 (2022-01-27)
 ------------------
 
