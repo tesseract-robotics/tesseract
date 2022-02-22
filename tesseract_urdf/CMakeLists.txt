@@ -96,9 +96,9 @@ target_code_coverage(
 # format such that: (BOOST_VERSION % 100) is the sub-minor version ((BOOST_VERSION / 100) % 1000) is the minor version
 # (BOOST_VERSION_MACRO / 100000) is the major version.
 if(Boost_VERSION_MACRO)
-set(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION_MACRO})
+  set(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION_MACRO})
 else(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION_MACRO})
-set(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION})
+  set(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION})
 endif()
 if(TESSERACT_Boost_VERSION_MACRO VERSION_GREATER "106000")
   target_link_libraries(${PROJECT_NAME} PUBLIC ${PCL_LIBRARIES})
