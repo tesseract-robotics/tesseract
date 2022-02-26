@@ -79,7 +79,9 @@ install(
   PATTERN ".svn" EXCLUDE)
 
 # ADD Examples
+if(TESSERACT_ENABLE_EXAMPLES)
 add_subdirectory(examples)
+endif()
 
 if(TESSERACT_ENABLE_TESTING)
   enable_testing()
