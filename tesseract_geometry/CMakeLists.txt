@@ -100,7 +100,7 @@ install(FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/Findassimp.cmake" DESTINATION lib
 
 # ADD Examples
 if(TESSERACT_ENABLE_EXAMPLES)
-add_subdirectory(examples)
+  add_subdirectory(examples)
 endif()
 
 if(TESSERACT_ENABLE_TESTING)
