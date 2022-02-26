@@ -142,7 +142,7 @@ install(FILES include/${PROJECT_NAME}/utils.h DESTINATION include/${PROJECT_NAME
 
 # ADD Examples
 if(TESSERACT_ENABLE_EXAMPLES)
-add_subdirectory(examples)
+  add_subdirectory(examples)
 endif()
 
 if(TESSERACT_ENABLE_TESTING)
