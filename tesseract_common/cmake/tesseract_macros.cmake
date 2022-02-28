@@ -16,6 +16,10 @@ macro(tesseract_variables)
     set(BUILD_SHARED_LIBS ON)
   endif()
 
+  if(NOT DEFINED TESSERACT_ENABLE_EXAMPLES)
+    set(TESSERACT_ENABLE_EXAMPLES ON)
+  endif()
+
   if(NOT DEFINED TESSERACT_ENABLE_CLANG_TIDY)
     set(TESSERACT_ENABLE_CLANG_TIDY OFF)
   endif()
