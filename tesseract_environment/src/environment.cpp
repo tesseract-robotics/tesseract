@@ -668,6 +668,13 @@ Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) co
   return current_state_.link_transforms.at(link_name);
 }
 
+Eigen::Isometry3d Environment::getRelativeLinkTransform(const std::string& from_link_name,
+                                                        const std::string& to_link_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return current_state_.link_transforms.at(from_link_name).inverse() * current_state_.link_transforms.at(to_link_name);
+}
+
 tesseract_scene_graph::StateSolver::UPtr Environment::getStateSolver() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);

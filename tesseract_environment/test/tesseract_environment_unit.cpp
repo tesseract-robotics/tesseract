@@ -146,6 +146,19 @@ void runGetLinkTransformsTest(Environment& env)
           env_state.link_transforms.at(link_names.at(i)).isApprox(env.getLinkTransform(link_names.at(i)), 1e-6));
     }
   }
+
+  // Check relative link transform
+  std::vector<std::string> link_names = env.getLinkNames();
+  SceneState env_state = env.getState();
+  for (const auto& link1 : link_names)
+  {
+    for (const auto& link2 : link_names)
+    {
+      Eigen::Isometry3d t1 = env_state.link_transforms.at(link1).inverse() * env_state.link_transforms.at(link2);
+      Eigen::Isometry3d t2 = env.getRelativeLinkTransform(link1, link2);
+      EXPECT_TRUE(t1.isApprox(t2, 1e-6));
+    }
+  }
 }
 
 enum class EnvironmentInitType

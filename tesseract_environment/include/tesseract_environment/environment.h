@@ -404,6 +404,14 @@ public:
   Eigen::Isometry3d getLinkTransform(const std::string& link_name) const;
 
   /**
+   * @brief Get transform between two links using the current state
+   * @param from_link_name The link name the transform should be relative to
+   * @param to_link_name The link name to get transform
+   * @return The relative transform = inv(Transform(from_link_name)) * Transform(to_link_name)
+   */
+  Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name, const std::string& to_link_name) const;
+
+  /**
    * @brief Returns a clone of the environments state solver
    *
    * The Environment::getState contains mutex's which is may not be needed in all motion planners. This allows the user
