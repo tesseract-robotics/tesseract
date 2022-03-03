@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.4 (2022-03-03)
+------------------
 * Set TESSERACT_ENABLE_EXAMPLES default to ON
 * Add TESSERACT_ENABLE_EXAMPLES compile option
 * Contributors: John Wason, Levi Armstrong

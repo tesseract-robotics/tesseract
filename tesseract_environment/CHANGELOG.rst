@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.4 (2022-03-03)
+------------------
 * Add method to environment to get relative link transform
 * Contributors: Levi Armstrong
 

@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.4 (2022-03-03)
+------------------
 * cmake format
 * Add TESSERACT_ENABLE_EXAMPLES compile option
 * Contributors: John Wason
