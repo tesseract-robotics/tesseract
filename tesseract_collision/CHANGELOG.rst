@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add TESSERACT_ENABLE_EXAMPLES compile option
+* Contributors: John Wason
+
 0.8.3 (2022-02-22)
 ------------------
 * Python patches for Feb 2022 update (`#716 <https://github.com/tesseract-robotics/tesseract/issues/716>`_)

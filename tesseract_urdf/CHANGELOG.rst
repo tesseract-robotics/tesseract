@@ -2,6 +2,12 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* cmake format
+* Add TESSERACT_ENABLE_EXAMPLES compile option
+* Contributors: John Wason
+
 0.8.3 (2022-02-22)
 ------------------
 * Fix Boost_VERSION in tesseract_urdf to check for Boost_VERSION_MACRO (`#717 <https://github.com/tesseract-robotics/tesseract/issues/717>`_)
