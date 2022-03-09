@@ -654,25 +654,20 @@ std::vector<std::string> Environment::getStaticLinkNames(const std::vector<std::
 tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  tesseract_common::VectorIsometry3d link_tfs;
-  link_tfs.reserve(current_state_.link_transforms.size());
-  for (const auto& link_name : state_solver_->getLinkNames())
-    link_tfs.push_back(current_state_.link_transforms.at(link_name));
-
-  return link_tfs;
+  return state_solver_->getLinkTransforms();
 }
 
 Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return current_state_.link_transforms.at(link_name);
+  return state_solver_->getLinkTransform(link_name);
 }
 
 Eigen::Isometry3d Environment::getRelativeLinkTransform(const std::string& from_link_name,
                                                         const std::string& to_link_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return current_state_.link_transforms.at(from_link_name).inverse() * current_state_.link_transforms.at(to_link_name);
+  return state_solver_->getRelativeLinkTransform(from_link_name, to_link_name);
 }
 
 tesseract_scene_graph::StateSolver::UPtr Environment::getStateSolver() const

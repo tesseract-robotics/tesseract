@@ -409,6 +409,27 @@ bool OFKTStateSolver::hasLinkName(const std::string& link_name) const
   return (std::find(link_names_.begin(), link_names_.end(), link_name) != link_names_.end());
 }
 
+tesseract_common::VectorIsometry3d OFKTStateSolver::getLinkTransforms() const
+{
+  tesseract_common::VectorIsometry3d link_tfs;
+  link_tfs.reserve(current_state_.link_transforms.size());
+  for (const auto& link_name : link_names_)
+    link_tfs.push_back(current_state_.link_transforms.at(link_name));
+
+  return link_tfs;
+}
+
+Eigen::Isometry3d OFKTStateSolver::getLinkTransform(const std::string& link_name) const
+{
+  return current_state_.link_transforms.at(link_name);
+}
+
+Eigen::Isometry3d OFKTStateSolver::getRelativeLinkTransform(const std::string& from_link_name,
+                                                            const std::string& to_link_name) const
+{
+  return current_state_.link_transforms.at(from_link_name).inverse() * current_state_.link_transforms.at(to_link_name);
+}
+
 tesseract_common::KinematicLimits OFKTStateSolver::getLimits() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);

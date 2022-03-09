@@ -220,6 +220,27 @@ bool KDLStateSolver::hasLinkName(const std::string& link_name) const
   return (std::find(data_.link_names.begin(), data_.link_names.end(), link_name) != data_.link_names.end());
 }
 
+tesseract_common::VectorIsometry3d KDLStateSolver::getLinkTransforms() const
+{
+  tesseract_common::VectorIsometry3d link_tfs;
+  link_tfs.reserve(current_state_.link_transforms.size());
+  for (const auto& link_name : data_.link_names)
+    link_tfs.push_back(current_state_.link_transforms.at(link_name));
+
+  return link_tfs;
+}
+
+Eigen::Isometry3d KDLStateSolver::getLinkTransform(const std::string& link_name) const
+{
+  return current_state_.link_transforms.at(link_name);
+}
+
+Eigen::Isometry3d KDLStateSolver::getRelativeLinkTransform(const std::string& from_link_name,
+                                                           const std::string& to_link_name) const
+{
+  return current_state_.link_transforms.at(from_link_name).inverse() * current_state_.link_transforms.at(to_link_name);
+}
+
 tesseract_common::KinematicLimits KDLStateSolver::getLimits() const { return limits_; }
 
 bool KDLStateSolver::processKDLData(const tesseract_scene_graph::SceneGraph& scene_graph)

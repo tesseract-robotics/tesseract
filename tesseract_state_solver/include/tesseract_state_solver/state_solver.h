@@ -196,6 +196,28 @@ public:
   virtual bool hasLinkName(const std::string& link_name) const = 0;
 
   /**
+   * @brief Get all of the links transforms
+   * @details Order should be the same as getLinkNames()
+   * @return Get a vector of transforms for all links.
+   */
+  virtual tesseract_common::VectorIsometry3d getLinkTransforms() const = 0;
+
+  /**
+   * @brief Get the transform corresponding to the link.
+   * @return Transform and is identity when no transform is available.
+   */
+  virtual Eigen::Isometry3d getLinkTransform(const std::string& link_name) const = 0;
+
+  /**
+   * @brief Get transform between two links using the current state
+   * @param from_link_name The link name the transform should be relative to
+   * @param to_link_name The link name to get transform
+   * @return The relative transform = inv(Transform(from_link_name)) * Transform(to_link_name)
+   */
+  virtual Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name,
+                                                     const std::string& to_link_name) const = 0;
+
+  /**
    * @brief Getter for kinematic limits
    * @return The kinematic limits
    */
