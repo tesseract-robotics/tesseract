@@ -100,6 +100,13 @@ public:
 
   bool hasLinkName(const std::string& link_name) const override final;
 
+  tesseract_common::VectorIsometry3d getLinkTransforms() const override final;
+
+  Eigen::Isometry3d getLinkTransform(const std::string& link_name) const override final;
+
+  Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name,
+                                             const std::string& to_link_name) const override final;
+
   tesseract_common::KinematicLimits getLimits() const override final;
 
 private:
