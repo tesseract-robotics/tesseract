@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/array.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/serialization.h>
+#include <tesseract_common/eigen_serialization.h>
 
 namespace boost::serialization
 {
@@ -165,57 +165,8 @@ void serialize(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, con
 
 }  // namespace boost::serialization
 
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-
-template void boost::serialization::save(boost::archive::xml_oarchive&,
-                                         const Eigen::VectorXd& g,
-                                         const unsigned int version);
-template void boost::serialization::load(boost::archive::xml_iarchive& ar,
-                                         Eigen::VectorXd& g,
-                                         const unsigned int version);
-template void boost::serialization::serialize(boost::archive::xml_oarchive& ar,
-                                              Eigen::VectorXd& g,
-                                              const unsigned int version);
-template void boost::serialization::serialize(boost::archive::xml_iarchive& ar,
-                                              Eigen::VectorXd& g,
-                                              const unsigned int version);
-
-template void boost::serialization::save(boost::archive::xml_oarchive&,
-                                         const Eigen::Isometry3d& g,
-                                         const unsigned int version);
-template void boost::serialization::load(boost::archive::xml_iarchive& ar,
-                                         Eigen::Isometry3d& g,
-                                         const unsigned int version);
-template void boost::serialization::serialize(boost::archive::xml_oarchive& ar,
-                                              Eigen::Isometry3d& g,
-                                              const unsigned int version);
-template void boost::serialization::serialize(boost::archive::xml_iarchive& ar,
-                                              Eigen::Isometry3d& g,
-                                              const unsigned int version);
-
-template void boost::serialization::save(boost::archive::xml_oarchive&,
-                                         const Eigen::MatrixX2d& g,
-                                         const unsigned int version);
-template void boost::serialization::load(boost::archive::xml_iarchive& ar,
-                                         Eigen::MatrixX2d& g,
-                                         const unsigned int version);
-template void boost::serialization::serialize(boost::archive::xml_oarchive& ar,
-                                              Eigen::MatrixX2d& g,
-                                              const unsigned int version);
-template void boost::serialization::serialize(boost::archive::xml_iarchive& ar,
-                                              Eigen::MatrixX2d& g,
-                                              const unsigned int version);
-
-template void boost::serialization::save(boost::archive::xml_oarchive&,
-                                         const std::variant<std::string, Eigen::Isometry3d>& g,
-                                         const unsigned int version);
-template void boost::serialization::load(boost::archive::xml_iarchive& ar,
-                                         std::variant<std::string, Eigen::Isometry3d>& g,
-                                         const unsigned int version);
-template void boost::serialization::serialize(boost::archive::xml_oarchive& ar,
-                                              std::variant<std::string, Eigen::Isometry3d>& g,
-                                              const unsigned int version);
-template void boost::serialization::serialize(boost::archive::xml_iarchive& ar,
-                                              std::variant<std::string, Eigen::Isometry3d>& g,
-                                              const unsigned int version);
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(Eigen::VectorXd)
+TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(Eigen::Isometry3d)
+TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(Eigen::MatrixX2d)
+TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(std::variant<std::string COMMA Eigen::Isometry3d>)

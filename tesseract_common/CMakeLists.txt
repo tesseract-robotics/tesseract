@@ -48,7 +48,7 @@ add_library(
   src/joint_state.cpp
   src/manipulator_info.cpp
   src/kinematic_limits.cpp
-  src/serialization.cpp
+  src/eigen_serialization.cpp
   src/utils.cpp
   src/resource_locator.cpp
   src/types.cpp)

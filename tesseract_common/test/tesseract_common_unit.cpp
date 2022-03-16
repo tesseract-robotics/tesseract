@@ -9,7 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_common/sfinae_utils.h>
 #include <tesseract_common/resource_locator.h>
-#include <tesseract_common/serialization.h>
+#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/joint_state.h>
 #include <tesseract_common/types.h>
