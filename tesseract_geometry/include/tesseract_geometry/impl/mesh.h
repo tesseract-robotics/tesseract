@@ -29,6 +29,8 @@
 #include <tesseract_common/macros.h>
 #include <tesseract_common/resource_locator.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -130,11 +132,8 @@ public:
       std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
   }
 
+  Mesh() = default;
   ~Mesh() override = default;
-  Mesh(const Mesh&) = delete;
-  Mesh& operator=(const Mesh&) = delete;
-  Mesh(Mesh&&) = delete;
-  Mesh& operator=(Mesh&&) = delete;
 
 #ifndef SWIG
   /**
@@ -183,8 +182,18 @@ public:
     }
     return ptr;
   }
+  bool operator==(const Mesh& rhs) const;
+  bool operator!=(const Mesh& rhs) const;
 
 private:
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_geometry
+
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Mesh, "Mesh")
+BOOST_CLASS_TRACKING(tesseract_geometry::Mesh, boost::serialization::track_never)
 #endif

@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 #include <octomap/octomap.h>
@@ -86,11 +88,8 @@ public:
   }
 #endif  // SWIG
 
+  Octree() = default;
   ~Octree() override = default;
-  Octree(const Octree&) = delete;
-  Octree& operator=(const Octree&) = delete;
-  Octree(Octree&&) = delete;
-  Octree& operator=(Octree&&) = delete;
 
 #ifndef SWIG
   const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
@@ -99,7 +98,9 @@ public:
 
   bool getPruned() const { return pruned_; }
 
-  Geometry::Ptr clone() const override { return std::make_shared<Octree>(octree_, sub_type_); }
+  Geometry::Ptr clone() const override final{ return std::make_shared<Octree>(octree_, sub_type_); }
+  bool operator==(const Octree& rhs) const;
+  bool operator!=(const Octree& rhs) const;
 
   /**
    * @brief Octrees are typically generated from 3D sensor data so this method
@@ -232,4 +233,8 @@ public:
 #endif  // SWIG
 };
 }  // namespace tesseract_geometry
+
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Octree, "Octree")
+BOOST_CLASS_TRACKING(tesseract_geometry::Octree, boost::serialization::track_never)
 #endif

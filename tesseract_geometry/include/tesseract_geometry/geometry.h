@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <memory>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -66,21 +68,29 @@ public:
   using Ptr = std::shared_ptr<Geometry>;
   using ConstPtr = std::shared_ptr<const Geometry>;
 
+  Geometry() = default;
   explicit Geometry(GeometryType type) : type_(type) {}
   virtual ~Geometry() = default;
-  Geometry(const Geometry&) = delete;
-  Geometry& operator=(const Geometry&) = delete;
-  Geometry(Geometry&&) = delete;
-  Geometry& operator=(Geometry&&) = delete;
+  Geometry(const Geometry&) = default;
+  Geometry& operator=(const Geometry&) = default;
+  Geometry(Geometry&&) = default;
+  Geometry& operator=(Geometry&&) = default;
 
   /** \brief Create a copy of this shape */
   virtual Geometry::Ptr clone() const = 0;
 
   GeometryType getType() const { return type_; }
 
+  bool operator==(const Geometry& rhs) const;
+  bool operator!=(const Geometry& rhs) const;
+
 private:
   /** \brief The type of the shape */
   GeometryType type_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 using Geometrys = std::vector<Geometry::Ptr>;
