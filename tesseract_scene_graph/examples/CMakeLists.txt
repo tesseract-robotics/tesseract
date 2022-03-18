@@ -5,7 +5,7 @@ target_link_libraries(
   ${PROJECT_NAME}_build_graph_example
   ${PROJECT_NAME}
   tesseract::tesseract_common
-  console_bridge)
+  console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_build_graph_example PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_clang_tidy(${PROJECT_NAME}_build_graph_example ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
