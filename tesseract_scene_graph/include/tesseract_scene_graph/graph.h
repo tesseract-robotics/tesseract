@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/properties.hpp>
 #include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/breadth_first_search.hpp>
+#include <boost/serialization/access.hpp>
 #include <string>
 #include <list>
 #include <unordered_map>

@@ -185,7 +185,7 @@ struct Serialization
       ia >> BOOST_SERIALIZATION_NVP(archive_type);
     }
 
-    return std::move(archive_type);
+    return archive_type;
   }
 };
 }  // namespace tesseract_common
