@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -42,24 +43,36 @@ public:
   using Ptr = std::shared_ptr<AddContactManagersPluginInfoCommand>;
   using ConstPtr = std::shared_ptr<const AddContactManagersPluginInfoCommand>;
 
+  AddContactManagersPluginInfoCommand() : Command(CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO){};
   /**
    * @brief Add contact manager plugins
    * @param contact_managers_plugin_info Contact managers plugin information
    */
   AddContactManagersPluginInfoCommand(tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info)
-    : contact_managers_plugin_info_(std::move(contact_managers_plugin_info))
+    : Command(CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO)
+    , contact_managers_plugin_info_(std::move(contact_managers_plugin_info))
   {
   }
 
-  CommandType getType() const final { return CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO; }
   const tesseract_common::ContactManagersPluginInfo& getContactManagersPluginInfo() const
   {
     return contact_managers_plugin_info_;
   }
 
+  bool operator==(const AddContactManagersPluginInfoCommand& rhs) const;
+  bool operator!=(const AddContactManagersPluginInfoCommand& rhs) const;
+
 private:
   tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddContactManagersPluginInfoCommand,
+                        "AddContactManagersPluginInfoCommand")
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_CONTACT_MANAGERS_PLUGIN_INFO_COMMAND_H

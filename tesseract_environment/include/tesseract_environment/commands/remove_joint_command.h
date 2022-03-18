@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -41,6 +42,8 @@ public:
   using Ptr = std::shared_ptr<RemoveJointCommand>;
   using ConstPtr = std::shared_ptr<const RemoveJointCommand>;
 
+  RemoveJointCommand() : Command(CommandType::REMOVE_JOINT){};
+
   /**
    * @brief Removes a joint from the environment
    *
@@ -48,14 +51,23 @@ public:
    *
    * @param name Name of the joint to be removed
    */
-  RemoveJointCommand(std::string joint_name) : joint_name_(std::move(joint_name)) {}
+  RemoveJointCommand(std::string joint_name) : Command(CommandType::REMOVE_JOINT), joint_name_(std::move(joint_name)) {}
 
-  CommandType getType() const final { return CommandType::REMOVE_JOINT; }
   const std::string& getJointName() const { return joint_name_; }
+
+  bool operator==(const RemoveJointCommand& rhs) const;
+  bool operator!=(const RemoveJointCommand& rhs) const;
 
 private:
   std::string joint_name_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
 
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::RemoveJointCommand, "RemoveJointCommand")
 #endif  // TESSERACT_ENVIRONMENT_REMOVE_JOINT_COMMAND_H

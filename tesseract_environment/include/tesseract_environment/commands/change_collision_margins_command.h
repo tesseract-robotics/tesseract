@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -47,37 +48,54 @@ public:
   using Ptr = std::shared_ptr<ChangeCollisionMarginsCommand>;
   using ConstPtr = std::shared_ptr<const ChangeCollisionMarginsCommand>;
 
+  ChangeCollisionMarginsCommand() : Command(CommandType::CHANGE_COLLISION_MARGINS){};
+
   ChangeCollisionMarginsCommand(
       double default_margin,
       CollisionMarginOverrideType override_type = CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN)
-    : collision_margin_data_(CollisionMarginData(default_margin)), collision_margin_override_(override_type)
+    : Command(CommandType::CHANGE_COLLISION_MARGINS)
+    , collision_margin_data_(CollisionMarginData(default_margin))
+    , collision_margin_override_(override_type)
   {
   }
 
   ChangeCollisionMarginsCommand(
       PairsCollisionMarginData pairs_margin,
       CollisionMarginOverrideType override_type = CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN)
-    : collision_margin_data_(CollisionMarginData(std::move(pairs_margin))), collision_margin_override_(override_type)
+    : Command(CommandType::CHANGE_COLLISION_MARGINS)
+    , collision_margin_data_(CollisionMarginData(std::move(pairs_margin)))
+    , collision_margin_override_(override_type)
   {
   }
 
   ChangeCollisionMarginsCommand(CollisionMarginData collision_margin_data,
                                 CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE)
-    : collision_margin_data_(std::move(collision_margin_data)), collision_margin_override_(override_type)
+    : Command(CommandType::CHANGE_COLLISION_MARGINS)
+    , collision_margin_data_(std::move(collision_margin_data))
+    , collision_margin_override_(override_type)
   {
   }
 
-  CommandType getType() const final { return CommandType::CHANGE_COLLISION_MARGINS; }
   tesseract_common::CollisionMarginData getCollisionMarginData() const { return collision_margin_data_; }
   tesseract_common::CollisionMarginOverrideType getCollisionMarginOverrideType() const
   {
     return collision_margin_override_;
   }
 
+  bool operator==(const ChangeCollisionMarginsCommand& rhs) const;
+  bool operator!=(const ChangeCollisionMarginsCommand& rhs) const;
+
 private:
   CollisionMarginData collision_margin_data_;
   CollisionMarginOverrideType collision_margin_override_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
 
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeCollisionMarginsCommand, "ChangeCollisionMarginsCommand")
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_COLLISION_MARGINS_COMMAND_H

@@ -30,6 +30,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -38,6 +39,7 @@ namespace tesseract_environment
 {
 enum class CommandType
 {
+  UNINITIALIZED = -1,
   ADD_LINK = 0,
   MOVE_LINK = 1,
   MOVE_JOINT = 2,
@@ -62,20 +64,39 @@ enum class CommandType
   SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER = 21
 };
 
+template <class Archive>
+void save(Archive& ar, const CommandType& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar, CommandType& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, CommandType& g, const unsigned int version);  // NOLINT
+
 class Command
 {
 public:
   using Ptr = std::shared_ptr<Command>;
   using ConstPtr = std::shared_ptr<const Command>;
 
-  Command() = default;
+  Command(CommandType type = CommandType::UNINITIALIZED) : type_(type){};
   virtual ~Command() = default;
   Command(const Command&) = default;
   Command& operator=(const Command&) = default;
   Command(Command&&) = default;
   Command& operator=(Command&&) = default;
 
-  virtual CommandType getType() const = 0;
+  CommandType getType() const { return type_; }
+
+  bool operator==(const Command& rhs) const;
+  bool operator!=(const Command& rhs) const;
+
+private:
+  CommandType type_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 using Commands = std::vector<Command::ConstPtr>;

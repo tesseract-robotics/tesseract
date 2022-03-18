@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 #include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -42,6 +43,8 @@ public:
   using Ptr = std::shared_ptr<AddAllowedCollisionCommand>;
   using ConstPtr = std::shared_ptr<const AddAllowedCollisionCommand>;
 
+  AddAllowedCollisionCommand() : Command(CommandType::ADD_ALLOWED_COLLISION){};
+
   /**
    * @brief Disable collision between two collision objects
    * @param link_name1 Collision object name
@@ -49,20 +52,32 @@ public:
    * @param reason The reason for disabling collison
    */
   AddAllowedCollisionCommand(std::string link_name1, std::string link_name2, std::string reason)
-    : link_name1_(std::move(link_name1)), link_name2_(std::move(link_name2)), reason_(std::move(reason))
+    : Command(CommandType::ADD_ALLOWED_COLLISION)
+    , link_name1_(std::move(link_name1))
+    , link_name2_(std::move(link_name2))
+    , reason_(std::move(reason))
   {
   }
 
-  CommandType getType() const final { return CommandType::ADD_ALLOWED_COLLISION; }
   const std::string& getLinkName1() const { return link_name1_; }
   const std::string& getLinkName2() const { return link_name2_; }
   const std::string& getReason() const { return reason_; }
+
+  bool operator==(const AddAllowedCollisionCommand& rhs) const;
+  bool operator!=(const AddAllowedCollisionCommand& rhs) const;
 
 private:
   std::string link_name1_;
   std::string link_name2_;
   std::string reason_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
 
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddAllowedCollisionCommand, "AddAllowedCollisionCommand")
 #endif  // TESSERACT_ENVIRONMENT_ADD_ALLOWED_COLLISION_COMMAND_H
