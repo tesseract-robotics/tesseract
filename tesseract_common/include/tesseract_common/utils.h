@@ -201,20 +201,58 @@ void trim(std::string& s);
  * @param vec1 Vector strings
  * @param vec2 Vector strings
  * @param ordered If true order is relavent, othwise if false order is not relavent
+ * @param equal_pred Binary predicate passed into std::equals to determine if an element is equal. Useful for vectors of
+ * pointers
+ * @param comp Binary function passed into std::sort. Only used it ordered == false. Useful for vectors of pointers
  */
 template <typename T>
-bool isIdentical(const std::vector<T>& vec1, const std::vector<T>& vec2, bool ordered = true)
+bool isIdentical(
+    const std::vector<T>& vec1,
+    const std::vector<T>& vec2,
+    bool ordered = true,
+    const std::function<bool(const T&, const T&)>& equal_pred = [](const T& v1, const T& v2) { return v1 == v2; },
+    const std::function<bool(const T&, const T&)>& comp = [](const T& v1, const T& v2) { return v1 < v2; })
 {
+  if (vec1.size() != vec2.size())
+    return false;
+
   if (ordered)
-    return std::equal(vec1.begin(), vec1.end(), vec2.begin());
+    return std::equal(vec1.begin(), vec1.end(), vec2.begin(), equal_pred);
 
   std::vector<T> v1 = vec1;
   std::vector<T> v2 = vec2;
-  std::sort(v1.begin(), v1.end());
-  std::sort(v2.begin(), v2.end());
-  return std::equal(v1.begin(), v1.end(), v2.begin());
+  std::sort(v1.begin(), v1.end(), comp);
+  std::sort(v2.begin(), v2.end(), comp);
+  return std::equal(v1.begin(), v1.end(), v2.begin(), equal_pred);
 }
 
+/**
+ * @brief Checks if 2 pointers point to objects that are ==
+ * @param p1 First pointer
+ * @param p2 Second pointer
+ * @return True if the objects are == or both pointers are nullptr
+ */
+template <typename T>
+bool pointersEqual(const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2)
+{
+  return (p1 && p2 && *p1 == *p2) || (!p1 && !p2);
+}
+/**
+ * @brief Comparison operator for the objects 2 points point to
+ * @param p1 First pointer
+ * @param p2 Second pointer
+ * @return True if *p1 < *p2 and neither is nullptr. Non-nullptr is considered > than nullptr
+ */
+template <typename T>
+bool pointersComparision(const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2)
+{
+  if (p1 && p2)
+    return *p1 < *p2;
+  if (p2)
+    return true;
+  // If p1 is nullptr or both are nullptr
+  return false;
+}
 /**
  * @brief Get Timestamp string
  * @return Timestamp string

@@ -39,6 +39,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -72,6 +73,7 @@ public:
   using Ptr = std::shared_ptr<Material>;
   using ConstPtr = std::shared_ptr<const Material>;
 
+  Material() = default;
   Material(std::string name) : name_(std::move(name)) { this->clear(); }
 
   const std::string& getName() const { return name_; }
@@ -84,9 +86,15 @@ public:
     color = Eigen::Vector4d(0.5, 0.5, 0.5, 1.0);
     texture_filename.clear();
   }
+  bool operator==(const Material& rhs) const;
+  bool operator!=(const Material& rhs) const;
 
 private:
   std::string name_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 #ifndef SWIG
@@ -117,6 +125,13 @@ public:
     mass = 0;
     ixx = ixy = ixz = iyy = iyz = izz = 0;
   }
+  bool operator==(const Inertial& rhs) const;
+  bool operator!=(const Inertial& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class Visual
@@ -142,6 +157,14 @@ public:
   }
 
   std::string name;
+
+  bool operator==(const Visual& rhs) const;
+  bool operator!=(const Visual& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class Collision
@@ -164,6 +187,14 @@ public:
   }
 
   std::string name;
+
+  bool operator==(const Collision& rhs) const;
+  bool operator!=(const Collision& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class Link
@@ -173,6 +204,7 @@ public:
   using ConstPtr = std::shared_ptr<const Link>;
 
   Link(std::string name) : name_(std::move(name)) { this->clear(); }
+  Link() = default;
   ~Link() = default;
   // Links are non-copyable as their name must be unique
   Link(const Link& other) = delete;
@@ -198,6 +230,9 @@ public:
     this->collision.clear();
     this->visual.clear();
   }
+
+  bool operator==(const Link& rhs) const;
+  bool operator!=(const Link& rhs) const;
 
 #ifndef SWIG
   /**
@@ -228,6 +263,9 @@ public:
 
 private:
   std::string name_;
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 }  // namespace tesseract_scene_graph
@@ -246,5 +284,13 @@ private:
   }
 }
 #endif
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Material, "Material")
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Inertial, "Inertial")
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Visual, "Visual")
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Collision, "Collision")
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Link, "Link")
 
 #endif  // TESSERACT_SCENE_GRAPH_LINK_H
