@@ -70,7 +70,11 @@ std::shared_ptr<ClassBase> ClassLoader::createSharedInstance(const std::string& 
     throw std::runtime_error("Failed to find symbol '" + symbol_name +
                              "' in library: " + decorate(library_name, library_directory));
 
+#if BOOST_VERSION >= 107600
+  boost::shared_ptr<ClassBase> plugin = boost::dll::import_symbol<ClassBase>(lib, symbol_name);
+#else
   boost::shared_ptr<ClassBase> plugin = boost::dll::import<ClassBase>(lib, symbol_name);
+#endif
   return std::shared_ptr<ClassBase>(plugin.get(), [plugin](ClassBase*) mutable { plugin.reset(); });
 }
 
