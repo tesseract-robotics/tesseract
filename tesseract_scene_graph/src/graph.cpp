@@ -1079,9 +1079,9 @@ bool SceneGraph::operator==(const SceneGraph& rhs) const
 
   bool equal = true;
   equal &= pointersEqual(acm_, rhs.acm_);
-  equal &= isIdentical<std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>>, std::pair<Link::Ptr, Vertex>>(
+  equal &= isIdenticalMap<std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>>, std::pair<Link::Ptr, Vertex>>(
       link_map_, rhs.link_map_, link_pair_equal);
-  equal &= isIdentical<std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>>, std::pair<Joint::Ptr, Edge>>(
+  equal &= isIdenticalMap<std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>>, std::pair<Joint::Ptr, Edge>>(
       joint_map_, rhs.joint_map_, joint_pair_equal);
 
   return equal;

@@ -33,7 +33,7 @@ include(GoogleTest)
 add_executable(${PROJECT_NAME}_serialization_unit tesseract_common_serialization_unit.cpp)
 target_link_libraries(${PROJECT_NAME}_serialization_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME}_serialization_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+                                                                  ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_serialization_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_serialization_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_serialization_unit PUBLIC VERSION ${TESSERACT_CXX_VERSION})

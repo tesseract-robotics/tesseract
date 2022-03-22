@@ -47,6 +47,15 @@ TEST(TesseractCommonSerializeUnit, AllowedCollisionMatrix)  // NOLINT
   tesseract_common::testSerialization<AllowedCollisionMatrix>(*object, "AllowedCollisionMatrix");
 }
 
+TEST(TesseractCommonSerializeUnit, CalibrationInfo)  // NOLINT
+{
+  auto object = std::make_shared<CalibrationInfo>();
+  tesseract_common::testSerialization<CalibrationInfo>(*object, "EmptyCalibrationInfo");
+  object->joints["test"].setIdentity();
+  object->joints["test"].translate(Eigen::Vector3d(2, 4, 8));
+  tesseract_common::testSerialization<CalibrationInfo>(*object, "CalibrationInfo");
+}
+
 TEST(TesseractCommonSerializeUnit, CollisionMarginData)  // NOLINT
 {
   auto object = std::make_shared<CollisionMarginData>();
@@ -56,6 +65,85 @@ TEST(TesseractCommonSerializeUnit, CollisionMarginData)  // NOLINT
   object->setPairCollisionMargin("link_4", "link3", 3.3);
   object->setPairCollisionMargin("link_5", "link2", -4.4);
   tesseract_common::testSerialization<CollisionMarginData>(*object, "CollisionMarginData");
+}
+
+TEST(TesseractCommonSerializeUnit, ContactManagersPluginInfo)  // NOLINT
+{
+  auto object = std::make_shared<ContactManagersPluginInfo>();
+  object->search_paths.insert("path 1");
+  object->search_paths.insert("path 2");
+  object->search_libraries.insert("search_libraries 1");
+  object->search_libraries.insert("search_libraries 2");
+  object->search_libraries.insert("search_libraries 3");
+
+  {
+    PluginInfoContainer container;
+    PluginInfo plugin;
+    plugin.class_name = "test_class_name";
+    plugin.config["test"] = "value";
+    object->discrete_plugin_infos.default_plugin = "test_string";
+    object->discrete_plugin_infos.plugins["plugin_key"] = plugin;
+  }
+  {
+    PluginInfoContainer container;
+    PluginInfo plugin;
+    plugin.class_name = "test_class_name 2";
+    plugin.config["test2"] = "value2";
+    object->continuous_plugin_infos.default_plugin = "test_string2";
+    object->continuous_plugin_infos.plugins["plugin_key2"] = plugin;
+  }
+
+  tesseract_common::testSerialization<ContactManagersPluginInfo>(*object, "ContactManagersPluginInfo");
+}
+
+TEST(TesseractCommonSerializeUnit, KinematicsPluginInfo)  // NOLINT
+{
+  auto object = std::make_shared<KinematicsPluginInfo>();
+  object->search_paths.insert("path 1");
+  object->search_paths.insert("path 2");
+  object->search_libraries.insert("search_libraries 1");
+  object->search_libraries.insert("search_libraries 2");
+  object->search_libraries.insert("search_libraries 3");
+
+  {
+    PluginInfo plugin;
+    plugin.class_name = "test_class_name";
+    plugin.config["test"] = "value";
+    object->fwd_plugin_infos["plugin 1"].default_plugin = "test_string";
+    object->fwd_plugin_infos["plugin 1"].plugins["plugin_key"] = plugin;
+    object->fwd_plugin_infos["plugin 2"].default_plugin = "test_string2";
+    object->fwd_plugin_infos["plugin 2"].plugins["plugin_key2"] = plugin;
+  }
+  {
+    PluginInfo plugin;
+    plugin.class_name = "test_class_name 2";
+    plugin.config["test2"] = "value2";
+    object->inv_plugin_infos["inv plugin 1"].default_plugin = "test_string3";
+    object->inv_plugin_infos["inv plugin 1"].plugins["plugin_key3"] = plugin;
+    object->inv_plugin_infos["inv plugin 2"].default_plugin = "test_string4";
+    object->inv_plugin_infos["inv plugin 2"].plugins["plugin_key4"] = plugin;
+  }
+
+  tesseract_common::testSerialization<KinematicsPluginInfo>(*object, "KinematicsPluginInfo");
+}
+
+TEST(TesseractCommonSerializeUnit, PluginInfo)  // NOLINT
+{
+  auto object = std::make_shared<PluginInfo>();
+  object->class_name = "test_class_name";
+  object->config["test"] = M_PI;
+  tesseract_common::testSerialization<PluginInfo>(*object, "PluginInfo");
+}
+
+TEST(TesseractCommonSerializeUnit, PluginInfoContainer)  // NOLINT
+{
+  auto object = std::make_shared<PluginInfoContainer>();
+  auto plugin = std::make_shared<PluginInfo>();
+  plugin->class_name = "test_class_name";
+  plugin->config["test"] = "value";
+  object->default_plugin = "test_string";
+  object->plugins["plugin_key"] = *plugin;
+  tesseract_common::testSerialization<PluginInfoContainer>(*object, "PluginInfoContainer");
 }
 
 int main(int argc, char** argv)

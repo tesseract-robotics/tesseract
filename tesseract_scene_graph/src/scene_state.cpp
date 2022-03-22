@@ -61,9 +61,9 @@ bool SceneState::operator==(const SceneState& rhs) const
 
   using namespace tesseract_common;
   bool equal = true;
-  equal &= isIdentical<std::unordered_map<std::string, double>, double>(joints, rhs.joints);
-  equal &= isIdentical<TransformMap, Eigen::Isometry3d>(link_transforms, rhs.link_transforms, isometry_equal);
-  equal &= isIdentical<TransformMap, Eigen::Isometry3d>(joint_transforms, rhs.joint_transforms, isometry_equal);
+  equal &= isIdenticalMap<std::unordered_map<std::string, double>, double>(joints, rhs.joints);
+  equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(link_transforms, rhs.link_transforms, isometry_equal);
+  equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(joint_transforms, rhs.joint_transforms, isometry_equal);
 
   return equal;
 }

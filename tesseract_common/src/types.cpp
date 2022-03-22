@@ -24,16 +24,107 @@
  * limitations under the License.
  */
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <memory>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_common/eigen_serialization.h>
+#include <tesseract_common/utils.h>
 #include <tesseract_common/types.h>
+#include <tesseract_common/yaml_utils.h>
 
 namespace tesseract_common
 {
+std::size_t PairHash::operator()(const LinkNamesPair& pair) const
+{
+  return std::hash<std::string>()(pair.first + pair.second);
+}
+
+LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
+{
+  if (link_name1 <= link_name2)
+    return std::make_pair(link_name1, link_name2);
+
+  return std::make_pair(link_name2, link_name1);
+}
+
+/*********************************************************/
+/******               PluginInfo                     *****/
+/*********************************************************/
+bool PluginInfo::operator==(const PluginInfo& rhs) const
+{
+  bool equal = true;
+  equal &= class_name == rhs.class_name;
+  equal &= isIdentical(config, rhs.config);
+
+  return equal;
+}
+bool PluginInfo::operator!=(const PluginInfo& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void PluginInfo::save(Archive& ar, const unsigned int /*version*/) const
+{
+  ar& BOOST_SERIALIZATION_NVP(class_name);
+  std::stringstream stream;
+  stream << config;
+  std::string config_string = stream.str();
+  ar& BOOST_SERIALIZATION_NVP(config_string);
+}
+
+template <class Archive>
+void PluginInfo::load(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(class_name);
+  std::string config_string;
+  ar& BOOST_SERIALIZATION_NVP(config_string);
+  config = YAML::Load(config_string);
+}
+
+template <class Archive>
+void PluginInfo::serialize(Archive& ar, const unsigned int version)
+{
+  boost::serialization::split_member(ar, *this, version);
+}
+
+/*********************************************************/
+/******           PluginInfoContainer                *****/
+/*********************************************************/
+
 void PluginInfoContainer::clear()
 {
   default_plugin.clear();
   plugins.clear();
 }
 
+bool PluginInfoContainer::operator==(const PluginInfoContainer& rhs) const
+{
+  bool equal = true;
+  equal &= default_plugin == rhs.default_plugin;
+  equal &= isIdenticalMap<PluginInfoMap, PluginInfo>(plugins, rhs.plugins);
+
+  return equal;
+}
+bool PluginInfoContainer::operator!=(const PluginInfoContainer& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void PluginInfoContainer::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(default_plugin);
+  ar& BOOST_SERIALIZATION_NVP(plugins);
+}
+
+/*********************************************************/
+/******           KinematicsPluginInfo               *****/
+/*********************************************************/
 void KinematicsPluginInfo::insert(const KinematicsPluginInfo& other)
 {
   search_paths.insert(other.search_paths.begin(), other.search_paths.end());
@@ -55,6 +146,30 @@ bool KinematicsPluginInfo::empty() const
   return (search_paths.empty() && search_libraries.empty() && fwd_plugin_infos.empty() && inv_plugin_infos.empty());
 }
 
+bool KinematicsPluginInfo::operator==(const KinematicsPluginInfo& rhs) const
+{
+  bool equal = true;
+  equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
+  equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
+  equal &= fwd_plugin_infos == rhs.fwd_plugin_infos;
+  equal &= inv_plugin_infos == rhs.inv_plugin_infos;
+
+  return equal;
+}
+bool KinematicsPluginInfo::operator!=(const KinematicsPluginInfo& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void KinematicsPluginInfo::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(search_paths);
+  ar& BOOST_SERIALIZATION_NVP(search_libraries);
+  ar& BOOST_SERIALIZATION_NVP(fwd_plugin_infos);
+  ar& BOOST_SERIALIZATION_NVP(inv_plugin_infos);
+}
+
+/*********************************************************/
+/******          ContactManagersPluginInfo           *****/
+/*********************************************************/
 void ContactManagersPluginInfo::insert(const ContactManagersPluginInfo& other)
 {
   search_paths.insert(other.search_paths.begin(), other.search_paths.end());
@@ -85,23 +200,64 @@ bool ContactManagersPluginInfo::empty() const
           continuous_plugin_infos.plugins.empty());
 }
 
+bool ContactManagersPluginInfo::operator==(const ContactManagersPluginInfo& rhs) const
+{
+  bool equal = true;
+  equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
+  equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
+  equal &= discrete_plugin_infos == rhs.discrete_plugin_infos;
+  equal &= continuous_plugin_infos == rhs.continuous_plugin_infos;
+
+  return equal;
+}
+bool ContactManagersPluginInfo::operator!=(const ContactManagersPluginInfo& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void ContactManagersPluginInfo::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(search_paths);
+  ar& BOOST_SERIALIZATION_NVP(search_libraries);
+  ar& BOOST_SERIALIZATION_NVP(discrete_plugin_infos);
+  ar& BOOST_SERIALIZATION_NVP(continuous_plugin_infos);
+}
+
+/*********************************************************/
+/******               CalibrationInfo                *****/
+/*********************************************************/
 void CalibrationInfo::insert(const CalibrationInfo& other) { joints.insert(other.joints.begin(), other.joints.end()); }
 
 void CalibrationInfo::clear() { joints.clear(); }
 
 bool CalibrationInfo::empty() const { return joints.empty(); }
 
-std::size_t PairHash::operator()(const LinkNamesPair& pair) const
+bool CalibrationInfo::operator==(const CalibrationInfo& rhs) const
 {
-  return std::hash<std::string>()(pair.first + pair.second);
-}
+  auto isometry_equal = [](const Eigen::Isometry3d& iso_1, const Eigen::Isometry3d& iso_2) {
+    return iso_1.isApprox(iso_2, 1e-5);
+  };
 
-LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
+  bool equal = true;
+  equal &= tesseract_common::isIdenticalMap<TransformMap, Eigen::Isometry3d>(joints, rhs.joints, isometry_equal);
+
+  return equal;
+}
+bool CalibrationInfo::operator!=(const CalibrationInfo& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void CalibrationInfo::serialize(Archive& ar, const unsigned int /*version*/)
 {
-  if (link_name1 <= link_name2)
-    return std::make_pair(link_name1, link_name2);
-
-  return std::make_pair(link_name2, link_name1);
+  ar& BOOST_SERIALIZATION_NVP(joints);
 }
-
 }  // namespace tesseract_common
+
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::PluginInfo)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::PluginInfo)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::PluginInfoContainer)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::PluginInfoContainer)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::KinematicsPluginInfo)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::KinematicsPluginInfo)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ContactManagersPluginInfo)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ContactManagersPluginInfo)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CalibrationInfo)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CalibrationInfo)

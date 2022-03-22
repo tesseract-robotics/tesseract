@@ -36,6 +36,37 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 
+namespace tesseract_common
+{
+/**
+ * @brief Converts a YAML::Node to a yaml string
+ * @param node Input node
+ * @return String containing the yaml
+ */
+inline std::string toYAMLString(const YAML::Node& node)
+{
+  std::stringstream stream;
+  stream << node;
+  return stream.str();
+}
+/**
+ * @brief Converts yaml string to a YAML::Node
+ * @param string Input string containing the yaml
+ * @return Resulting YAML::Node
+ */
+inline YAML::Node fromYAMLString(const std::string& string) { return YAML::Load(string); }
+/**
+ * @brief Checks if the YAML::Nodes are identical
+ * @details The == operator checks if they reference the same memory. This checks if they contain the same information
+ * @param node1 Input YAML::Node
+ * @param node2 Input YAML::Node
+ */
+inline bool isIdentical(const YAML::Node& node1, const YAML::Node& node2)
+{
+  return toYAMLString(node1) == toYAMLString(node2);
+}
+}  // namespace tesseract_common
+
 namespace YAML
 {
 template <>

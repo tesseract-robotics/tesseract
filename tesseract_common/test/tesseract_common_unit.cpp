@@ -719,6 +719,140 @@ TEST(TesseractCommonUnit, isIdenticalUnit)  // NOLINT
   EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, true));
 }
 
+TEST(TesseractCommonUnit, isIdenticalMapUnit)  // NOLINT
+{
+  std::map<std::string, int> v1;
+  v1["1"] = 1;
+  v1["2"] = 2;
+  std::map<std::string, int> v2;
+  bool equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  EXPECT_FALSE(equal);
+
+  v2["2"] = 2;
+  equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  EXPECT_FALSE(equal);
+
+  v2 = v1;
+  equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  EXPECT_TRUE(equal);
+
+  v1.clear();
+  equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  EXPECT_FALSE(equal);
+}
+
+TEST(TesseractCommonUnit, isIdenticalSetUnit)  // NOLINT
+{
+  std::set<int> v1;
+  std::set<int> v2;
+  bool equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  EXPECT_TRUE(equal);
+
+  v1.insert(1);
+  equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  EXPECT_FALSE(equal);
+
+  v2.insert(1);
+  v2.insert(2);
+  equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  EXPECT_FALSE(equal);
+
+  v1.insert(2);
+  equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  EXPECT_TRUE(equal);
+}
+
+TEST(TesseractCommonUnit, isIdenticalArrayUnit)  // NOLINT
+{
+  {
+    std::array<int, 4> v1 = { 1, 2, 3, 4 };
+    std::array<int, 4> v2 = { 1, 2, 3, 4 };
+    bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
+    EXPECT_TRUE(equal);
+  }
+  {
+    std::array<int, 4> v1 = { 1, 2, 3, 4 };
+    std::array<int, 4> v2 = { -1, 2, 3, 4 };
+    bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    std::array<int, 4> v1 = { 1, 2, 3, 4 };
+    std::array<int, 4> v2;
+    bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
+    EXPECT_FALSE(equal);
+  }
+}
+
+TEST(TesseractCommonUnit, pointersEqual)  // NOLINT
+{
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = std::make_shared<int>(2);
+    bool equal = tesseract_common::pointersEqual(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = nullptr;
+    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = nullptr;
+    auto p2 = std::make_shared<int>(2);
+    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = nullptr;
+    auto p2 = nullptr;
+    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    EXPECT_TRUE(equal);
+  }
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = std::make_shared<int>(1);
+    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    EXPECT_TRUE(equal);
+  }
+}
+
+TEST(TesseractCommonUnit, pointersComparison)  // NOLINT
+{
+  // True if p1 < p2
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = std::make_shared<int>(2);
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_TRUE(equal);
+  }
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = nullptr;
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = nullptr;
+    auto p2 = std::make_shared<int>(2);
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_TRUE(equal);
+  }
+  {
+    auto p1 = nullptr;
+    auto p2 = nullptr;
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = std::make_shared<int>(1);
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+}
+
 TEST(TesseractCommonUnit, getTimestampStringUnit)  // NOLINT
 {
   std::string s1 = tesseract_common::getTimestampString();

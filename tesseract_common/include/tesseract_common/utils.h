@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <array>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -233,7 +234,7 @@ bool isIdentical(
  * @return True if they are identical
  */
 template <typename KeyValueContainerType, typename ValueType>
-bool isIdentical(
+bool isIdenticalMap(
     const KeyValueContainerType& map_1,
     const KeyValueContainerType& map_2,
     const std::function<bool(const ValueType&, const ValueType&)>& value_eq =
@@ -250,6 +251,59 @@ bool isIdentical(
       return false;
     // Check if the value is the same
     if (!value_eq(cp->second, entry.second))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Checks if 2 sets are identical
+ * @param map_1 First map
+ * @param map_2 Second map
+ * @return True if they are identical
+ */
+template <typename ValueType>
+bool isIdenticalSet(
+    const std::set<ValueType>& set_1,
+    const std::set<ValueType>& set_2,
+    const std::function<bool(const ValueType&, const ValueType&)>& value_eq =
+        [](const ValueType& v1, const ValueType& v2) { return v1 == v2; })
+{
+  if (set_1.size() != set_2.size())
+    return false;
+
+  for (const auto& entry : set_1)
+  {
+    // Check if the key exists
+    const auto cp = set_2.find(entry);
+    if (cp == set_2.end())
+      return false;
+    // Check if the value is the same
+    if (!value_eq(*cp, entry))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Checks if 2 arrays are identical
+ * @param array_1 First array
+ * @param array_2 Second array
+ * @return True if they are identical
+ */
+template <typename ValueType, std::size_t Size>
+bool isIdenticalArray(
+    const std::array<ValueType, Size>& array_1,
+    const std::array<ValueType, Size>& array_2,
+    const std::function<bool(const ValueType&, const ValueType&)>& value_eq =
+        [](const ValueType& v1, const ValueType& v2) { return v1 == v2; })
+{
+  if (array_1.size() != array_2.size())
+    return false;
+
+  for (std::size_t idx = 0; idx < array_1.size(); idx++)
+  {
+    if (!value_eq(array_1[idx], array_2[idx]))
       return false;
   }
   return true;
@@ -273,7 +327,7 @@ bool pointersEqual(const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2)
  * @return True if *p1 < *p2 and neither is nullptr. Non-nullptr is considered > than nullptr
  */
 template <typename T>
-bool pointersComparision(const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2)
+bool pointersComparison(const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2)
 {
   if (p1 && p2)
     return *p1 < *p2;
