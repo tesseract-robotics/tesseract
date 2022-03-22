@@ -46,7 +46,7 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
   {
     // Check if the key exists
     auto cp = entries_2.find(entry.first);
-    if(cp == entries_2.end())
+    if (cp == entries_2.end())
       return false;
     // Check if the value is the same
     if (cp->second != entry.second)
@@ -74,4 +74,3 @@ void AllowedCollisionMatrix::serialize(Archive& ar, const unsigned int /*version
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AllowedCollisionMatrix)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AllowedCollisionMatrix)
-

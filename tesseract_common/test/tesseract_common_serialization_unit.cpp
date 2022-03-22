@@ -34,7 +34,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/collision_margin_data.h>
 
-
 using namespace tesseract_common;
 
 TEST(TesseractCommonSerializeUnit, AllowedCollisionMatrix)  // NOLINT

@@ -33,8 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/unit_test_utils.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_geometry/geometries.h>
+#include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/scene_state.h>
 
 using namespace tesseract_scene_graph;
 
@@ -153,6 +155,80 @@ TEST(TesseractSceneGraphSerializationUnit, Link)  // NOLINT
   object->collision.push_back(std::make_shared<Collision>());
   object->collision.push_back(col);
   tesseract_common::testSerialization<Link>(*object, "Link");
+}
+
+tesseract_scene_graph::SceneGraph createTestSceneGraph()
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g;
+
+  Link link_1("link_1");
+  Link link_2("link_2");
+  Link link_3("link_3");
+  Link link_4("link_4");
+  Link link_5("link_5");
+
+  EXPECT_TRUE(g.addLink(link_1));
+  EXPECT_TRUE(g.addLink(link_2));
+  EXPECT_TRUE(g.addLink(link_3));
+  EXPECT_TRUE(g.addLink(link_4));
+  EXPECT_TRUE(g.addLink(link_5));
+
+  Joint joint_1("joint_1");
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = "link_1";
+  joint_1.child_link_name = "link_2";
+  joint_1.type = JointType::FIXED;
+  EXPECT_TRUE(g.addJoint(joint_1));
+
+  Joint joint_2("joint_2");
+  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_2.parent_link_name = "link_2";
+  joint_2.child_link_name = "link_3";
+  joint_2.type = JointType::PLANAR;
+  joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  EXPECT_TRUE(g.addJoint(joint_2));
+
+  Joint joint_3("joint_3");
+  joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_3.parent_link_name = "link_3";
+  joint_3.child_link_name = "link_4";
+  joint_3.type = JointType::FLOATING;
+  EXPECT_TRUE(g.addJoint(joint_3));
+
+  Joint joint_4("joint_4");
+  joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_4.parent_link_name = "link_2";
+  joint_4.child_link_name = "link_5";
+  joint_4.type = JointType::REVOLUTE;
+  joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  EXPECT_TRUE(g.addJoint(joint_4));
+
+  g.addAllowedCollision("link_1", "link_2", "Adjacent");
+  g.addAllowedCollision("link_2", "link_3", "Adjacent");
+  g.addAllowedCollision("link_3", "link_5", "Adjacent");
+  g.addAllowedCollision("link_2", "link_5", "Adjacent");
+
+  return g;
+}
+
+TEST(TesseractSceneGraphSerializationUnit, SceneGraph)  // NOLINT
+{
+  auto object = createTestSceneGraph();
+  tesseract_common::testSerialization<SceneGraph>(object, "SceneGraph");
+}
+
+TEST(TesseractSceneGraphSerializationUnit, SceneState)  // NOLINT
+{
+  auto object = std::make_shared<SceneState>();
+  object->joints["j_1"] = 12.3;
+  object->joints["j_2"] = -12.3;
+  object->joints["j_3"] = 1.23;
+  object->link_transforms["link_transforms_key"].setIdentity();
+  object->link_transforms["link_transforms_key"].translate(Eigen::Vector3d(1, 2, 3));
+  object->joint_transforms["joint_transforms_key"].setIdentity();
+  object->joint_transforms["joint_transforms_key"].translate(Eigen::Vector3d(5, 6, 7));
+  tesseract_common::testSerialization<SceneState>(*object, "SceneState");
 }
 
 int main(int argc, char** argv)

@@ -555,6 +555,9 @@ public:
                         const tesseract_scene_graph::Joint& joint,
                         const std::string& prefix = "");
 
+  bool operator==(const SceneGraph& rhs) const;
+  bool operator!=(const SceneGraph& rhs) const;
+
 protected:
   /**
    * @brief Adds a link to the graph
@@ -723,6 +726,16 @@ private:
 
     return child_link_names;
   }
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const;  // NOLINT
+
+  template <class Archive>
+  void load(Archive& ar, const unsigned int version);  // NOLINT
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 inline std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
@@ -742,5 +755,9 @@ inline std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 }
 
 }  // namespace tesseract_scene_graph
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::SceneGraph, "SceneGraph")
 
 #endif  // TESSERACT_SCENE_GRAPH_GRAPH_H

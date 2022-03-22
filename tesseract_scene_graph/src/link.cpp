@@ -145,13 +145,12 @@ bool Link::operator==(const Link& rhs) const
 {
   using namespace tesseract_common;
   bool equal = true;
-  equal &= tesseract_common::pointersEqual(inertial,rhs.inertial);
-  equal &= isIdentical<Visual::Ptr>(
-      visual,
-      rhs.visual,
-      false,
-      tesseract_common::pointersEqual<Visual>,
-      [](const Visual::Ptr& v1, const Visual::Ptr& v2) { return v1->name < v2->name; });
+  equal &= tesseract_common::pointersEqual(inertial, rhs.inertial);
+  equal &= isIdentical<Visual::Ptr>(visual,
+                                    rhs.visual,
+                                    false,
+                                    tesseract_common::pointersEqual<Visual>,
+                                    [](const Visual::Ptr& v1, const Visual::Ptr& v2) { return v1->name < v2->name; });
   equal &= isIdentical<Collision::Ptr>(
       collision,
       rhs.collision,

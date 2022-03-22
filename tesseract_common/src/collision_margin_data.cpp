@@ -75,4 +75,3 @@ void CollisionMarginData::serialize(Archive& ar, const unsigned int /*version*/)
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CollisionMarginData)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CollisionMarginData)
-

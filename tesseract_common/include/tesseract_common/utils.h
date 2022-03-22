@@ -227,6 +227,35 @@ bool isIdentical(
 }
 
 /**
+ * @brief Checks if 2 maps are identical
+ * @param map_1 First map
+ * @param map_2 Second map
+ * @return True if they are identical
+ */
+template <typename KeyValueContainerType, typename ValueType>
+bool isIdentical(
+    const KeyValueContainerType& map_1,
+    const KeyValueContainerType& map_2,
+    const std::function<bool(const ValueType&, const ValueType&)>& value_eq =
+        [](const ValueType& v1, const ValueType& v2) { return v1 == v2; })
+{
+  if (map_1.size() != map_2.size())
+    return false;
+
+  for (const auto& entry : map_1)
+  {
+    // Check if the key exists
+    const auto cp = map_2.find(entry.first);
+    if (cp == map_2.end())
+      return false;
+    // Check if the value is the same
+    if (!value_eq(cp->second, entry.second))
+      return false;
+  }
+  return true;
+}
+
+/**
  * @brief Checks if 2 pointers point to objects that are ==
  * @param p1 First pointer
  * @param p2 Second pointer

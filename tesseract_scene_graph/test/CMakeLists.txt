@@ -104,7 +104,7 @@ target_link_libraries(
           tesseract::tesseract_support
           tesseract::tesseract_geometry)
 target_compile_options(${PROJECT_NAME}_serialization_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                         ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+                                                                  ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_clang_tidy(${PROJECT_NAME}_serialization_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_serialization_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
