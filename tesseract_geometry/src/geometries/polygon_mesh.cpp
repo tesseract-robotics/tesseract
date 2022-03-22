@@ -53,7 +53,7 @@ bool PolygonMesh::operator==(const PolygonMesh& rhs) const
 bool PolygonMesh::operator!=(const PolygonMesh& rhs) const { return !operator==(rhs); }
 
 template <class Archive>
-void PolygonMesh::serialize(Archive& ar, const unsigned int version)
+void PolygonMesh::serialize(Archive& ar, const unsigned int /*version*/)
 {
   ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Geometry);
   ar& BOOST_SERIALIZATION_NVP(vertices_);

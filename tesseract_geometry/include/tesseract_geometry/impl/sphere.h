@@ -58,7 +58,7 @@ public:
   bool operator!=(const Sphere& rhs) const;
 
 private:
-  double r_;
+  double r_{ 0 };
 
   friend class boost::serialization::access;
   template <class Archive>

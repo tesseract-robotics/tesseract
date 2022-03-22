@@ -95,7 +95,8 @@ public:
   AddLinkCommand(const tesseract_scene_graph::Link& link,
                  const tesseract_scene_graph::Joint& joint,
                  bool replace_allowed = false)
-    : link_(std::make_shared<tesseract_scene_graph::Link>(link.clone()))
+    : Command(CommandType::ADD_LINK)
+    , link_(std::make_shared<tesseract_scene_graph::Link>(link.clone()))
     , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
     , replace_allowed_(replace_allowed)
   {

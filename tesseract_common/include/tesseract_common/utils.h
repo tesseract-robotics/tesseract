@@ -331,10 +331,8 @@ bool pointersComparison(const std::shared_ptr<T>& p1, const std::shared_ptr<T>& 
 {
   if (p1 && p2)
     return *p1 < *p2;
-  if (p2)
-    return true;
-  // If p1 is nullptr or both are nullptr
-  return false;
+  // If p2 is !nullptr then return true. p1 or both are nullptr should be false
+  return p2 != nullptr;
 }
 /**
  * @brief Get Timestamp string

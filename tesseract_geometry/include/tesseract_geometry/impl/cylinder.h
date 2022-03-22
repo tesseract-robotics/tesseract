@@ -59,8 +59,8 @@ public:
   bool operator!=(const Cylinder& rhs) const;
 
 private:
-  double r_;
-  double l_;
+  double r_{ 0 };
+  double l_{ 0 };
 
   friend class boost::serialization::access;
   template <class Archive>

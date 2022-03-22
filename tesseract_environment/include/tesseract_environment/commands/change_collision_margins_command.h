@@ -87,7 +87,7 @@ public:
 
 private:
   CollisionMarginData collision_margin_data_;
-  CollisionMarginOverrideType collision_margin_override_;
+  CollisionMarginOverrideType collision_margin_override_{ CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN };
 
   friend class boost::serialization::access;
   template <class Archive>

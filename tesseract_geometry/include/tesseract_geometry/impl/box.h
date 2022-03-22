@@ -60,9 +60,9 @@ public:
   bool operator!=(const Box& rhs) const;
 
 private:
-  double x_;
-  double y_;
-  double z_;
+  double x_{ 0 };
+  double y_{ 0 };
+  double z_{ 0 };
 
   friend class boost::serialization::access;
   template <class Archive>

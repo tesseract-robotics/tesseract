@@ -65,18 +65,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 // Use this macro for serialization defined using the non-invasive free function method outside the class
 #define TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Type)                                                  \
   template void boost::serialization::serialize(                                                                       \
-      boost::archive::xml_oarchive& ar, Type& g, const unsigned int version);                                          \
+      boost::archive::xml_oarchive& ar, Type& g, const unsigned int version); /* NOLINT */                             \
   template void boost::serialization::serialize(                                                                       \
-      boost::archive::xml_iarchive& ar, Type& g, const unsigned int version);                                          \
+      boost::archive::xml_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */                             \
   template void boost::serialization::serialize(                                                                       \
-      boost::archive::binary_oarchive& ar, Type& g, const unsigned int version);                                       \
+      boost::archive::binary_oarchive& ar, Type& g, const unsigned int version); /* NOLINT */                          \
   template void boost::serialization::serialize(                                                                       \
-      boost::archive::binary_iarchive& ar, Type& g, const unsigned int version);                                       \
-  template void boost::serialization::save(boost::archive::xml_oarchive&, const Type& g, const unsigned int version);  \
-  template void boost::serialization::load(boost::archive::xml_iarchive& ar, Type& g, const unsigned int version);     \
+      boost::archive::binary_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */                          \
   template void boost::serialization::save(                                                                            \
-      boost::archive::binary_oarchive&, const Type& g, const unsigned int version);                                    \
-  template void boost::serialization::load(boost::archive::binary_iarchive& ar, Type& g, const unsigned int version);
+      boost::archive::xml_oarchive&, const Type& g, const unsigned int version); /* NOLINT */                          \
+  template void boost::serialization::load(                                                                            \
+      boost::archive::xml_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */                             \
+  template void boost::serialization::save(                                                                            \
+      boost::archive::binary_oarchive&, const Type& g, const unsigned int version); /* NOLINT */                       \
+  template void boost::serialization::load(                                                                            \
+      boost::archive::binary_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */
 
 namespace tesseract_common
 {

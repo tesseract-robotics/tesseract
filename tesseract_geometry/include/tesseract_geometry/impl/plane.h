@@ -61,10 +61,10 @@ public:
   bool operator!=(const Plane& rhs) const;
 
 private:
-  double a_;
-  double b_;
-  double c_;
-  double d_;
+  double a_{ 0 };
+  double b_{ 0 };
+  double c_{ 0 };
+  double d_{ 0 };
 
   friend class boost::serialization::access;
   template <class Archive>

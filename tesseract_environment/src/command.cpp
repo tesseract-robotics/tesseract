@@ -47,7 +47,7 @@ void save(Archive& ar, const CommandType& g, const unsigned int /*version*/)
 template <class Archive>
 void load(Archive& ar, CommandType& g, const unsigned int /*version*/)
 {
-  int value;
+  int value = 0;
   ar &= BOOST_SERIALIZATION_NVP(value);
   g = static_cast<CommandType>(value);
 }

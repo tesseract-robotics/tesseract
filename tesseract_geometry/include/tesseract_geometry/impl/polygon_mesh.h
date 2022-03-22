@@ -247,8 +247,8 @@ private:
   std::shared_ptr<const tesseract_common::VectorVector3d> vertices_;
   std::shared_ptr<const Eigen::VectorXi> faces_;
 
-  int vertex_count_;
-  int face_count_;
+  int vertex_count_{ 0 };
+  int face_count_{ 0 };
   tesseract_common::Resource::ConstPtr resource_;
   Eigen::Vector3d scale_;
   std::shared_ptr<const tesseract_common::VectorVector3d> normals_;

@@ -42,6 +42,7 @@ namespace tesseract_geometry
 {
 enum GeometryType
 {
+  UNINITIALIZED,
   SPHERE,
   CYLINDER,
   CAPSULE,
@@ -54,9 +55,9 @@ enum GeometryType
   OCTREE,
   POLYGON_MESH
 };
-static const std::vector<std::string> GeometryTypeStrings = { "SPHERE",   "CYLINDER", "CAPSULE",     "CONE",
-                                                              "BOX",      "PLANE",    "MESH",        "CONVEX_MESH",
-                                                              "SDF_MESH", "OCTREE",   "POLYGON_MESH" };
+static const std::vector<std::string> GeometryTypeStrings = { "UNINITIALIZED", "SPHERE",   "CYLINDER", "CAPSULE",
+                                                              "CONE",          "BOX",      "PLANE",    "MESH",
+                                                              "CONVEX_MESH",   "SDF_MESH", "OCTREE",   "POLYGON_MESH" };
 
 #ifdef SWIG
 %nodefaultctor Geometry;
@@ -68,8 +69,7 @@ public:
   using Ptr = std::shared_ptr<Geometry>;
   using ConstPtr = std::shared_ptr<const Geometry>;
 
-  Geometry() = default;
-  explicit Geometry(GeometryType type) : type_(type) {}
+  explicit Geometry(GeometryType type = GeometryType::UNINITIALIZED) : type_(type) {}
   virtual ~Geometry() = default;
   Geometry(const Geometry&) = default;
   Geometry& operator=(const Geometry&) = default;

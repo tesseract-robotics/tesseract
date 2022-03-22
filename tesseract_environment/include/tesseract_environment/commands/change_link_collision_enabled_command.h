@@ -61,8 +61,8 @@ public:
   bool operator!=(const ChangeLinkCollisionEnabledCommand& rhs) const;
 
 private:
-  std::string link_name_;
-  bool enabled_;
+  std::string link_name_{ "" };
+  bool enabled_{ false };
 
   friend class boost::serialization::access;
   template <class Archive>

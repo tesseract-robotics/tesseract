@@ -58,9 +58,9 @@ bool Octree::operator==(const Octree& rhs) const
        ++it)
   {
     const auto coord = it.getCoordinate();
-    const auto node = rhs.octree_->search(coord);
+    const auto* node = rhs.octree_->search(coord);
 
-    if (node)
+    if (node != nullptr)
     {
       equal &= almostEqualRelativeAndAbs(it->getValue(), node->getValue());
       equal &= almostEqualRelativeAndAbs(it->getOccupancy(), node->getOccupancy());

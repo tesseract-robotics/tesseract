@@ -138,8 +138,8 @@ public:
 
 private:
   std::shared_ptr<const octomap::OcTree> octree_;
-  SubType sub_type_;
-  double resolution_;
+  SubType sub_type_{ SubType::BOX };
+  double resolution_{ 0.01 };
   bool pruned_{ false };
   bool binary_octree_{ false };
 
