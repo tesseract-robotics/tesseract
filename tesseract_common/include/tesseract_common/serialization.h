@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 // Used to replace commas in these macros to avoid them being interpreted as multiple arguments
-// Example: TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(std::variant<std::string COMMA Eigen::Isometry3d>)
+// Example: TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(std::variant<std::string COMMA Eigen::Isometry3d>)
 #define COMMA ,
 
 // Use this macro for serialization defined using the invasive method inside the class
@@ -51,15 +51,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
   template void Type::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);                      \
   template void Type::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
 
-// Use this macro for serialization defined using the non-invasive method outside the class
+// Use this macro for serialization defined using the invasive method inside the class with custom load/save functions
 #define TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(Type)                                                       \
-  template void Type::load(boost::archive::xml_iarchive& ar, const unsigned int version);     \
-  template void Type::save(                                                                            \
-      boost::archive::binary_oarchive&, const unsigned int version) const;                                    \
+  template void Type::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);                         \
+  template void Type::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);                         \
+  template void Type::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);                      \
+  template void Type::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);                      \
+  template void Type::save(boost::archive::xml_oarchive&, const unsigned int version) const;                           \
+  template void Type::load(boost::archive::xml_iarchive& ar, const unsigned int version);                              \
+  template void Type::save(boost::archive::binary_oarchive&, const unsigned int version) const;                        \
   template void Type::load(boost::archive::binary_iarchive& ar, const unsigned int version);
 
 // Use this macro for serialization defined using the non-invasive free function method outside the class
-#define TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Type)                                                       \
+#define TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Type)                                                  \
   template void boost::serialization::serialize(                                                                       \
       boost::archive::xml_oarchive& ar, Type& g, const unsigned int version);                                          \
   template void boost::serialization::serialize(                                                                       \

@@ -66,6 +66,84 @@ void serialize(Archive& ar, Eigen::VectorXd& g, const unsigned int version)
   split_free(ar, g, version);
 }
 
+/*****************************/
+/****** Eigen::Vector3d ******/
+/*****************************/
+template <class Archive>
+void save(Archive& ar, const Eigen::Vector3d& g, const unsigned int /*version*/)
+{
+  long rows = g.rows();
+  ar& BOOST_SERIALIZATION_NVP(rows);
+  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows));
+}
+
+template <class Archive>
+void load(Archive& ar, Eigen::Vector3d& g, const unsigned int /*version*/)
+{
+  long rows{ 0 };
+  ar& BOOST_SERIALIZATION_NVP(rows);
+  g.resize(rows);
+  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows));
+}
+
+template <class Archive>
+void serialize(Archive& ar, Eigen::Vector3d& g, const unsigned int version)
+{
+  split_free(ar, g, version);
+}
+
+/*****************************/
+/****** Eigen::Vector4d ******/
+/*****************************/
+template <class Archive>
+void save(Archive& ar, const Eigen::Vector4d& g, const unsigned int /*version*/)
+{
+  long rows = g.rows();
+  ar& BOOST_SERIALIZATION_NVP(rows);
+  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows));
+}
+
+template <class Archive>
+void load(Archive& ar, Eigen::Vector4d& g, const unsigned int /*version*/)
+{
+  long rows{ 0 };
+  ar& BOOST_SERIALIZATION_NVP(rows);
+  g.resize(rows);
+  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows));
+}
+
+template <class Archive>
+void serialize(Archive& ar, Eigen::Vector4d& g, const unsigned int version)
+{
+  split_free(ar, g, version);
+}
+
+/*****************************/
+/****** Eigen::VectorXi ******/
+/*****************************/
+template <class Archive>
+void save(Archive& ar, const Eigen::VectorXi& g, const unsigned int /*version*/)
+{
+  long rows = g.rows();
+  ar& BOOST_SERIALIZATION_NVP(rows);
+  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows));
+}
+
+template <class Archive>
+void load(Archive& ar, Eigen::VectorXi& g, const unsigned int /*version*/)
+{
+  long rows{ 0 };
+  ar& BOOST_SERIALIZATION_NVP(rows);
+  g.resize(rows);
+  ar& boost::serialization::make_nvp("data", boost::serialization::make_array(g.data(), rows));
+}
+
+template <class Archive>
+void serialize(Archive& ar, Eigen::VectorXi& g, const unsigned int version)
+{
+  split_free(ar, g, version);
+}
+
 /*******************************/
 /****** Eigen::Isometry3d ******/
 /*******************************/
@@ -166,7 +244,10 @@ void serialize(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, con
 }  // namespace boost::serialization
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(Eigen::VectorXd)
-TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(Eigen::Isometry3d)
-TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(Eigen::MatrixX2d)
-TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(std::variant<std::string COMMA Eigen::Isometry3d>)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Eigen::VectorXd)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Eigen::Vector3d)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Eigen::Vector4d)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Eigen::VectorXi)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Eigen::Isometry3d)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Eigen::MatrixX2d)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(std::variant<std::string COMMA Eigen::Isometry3d>)

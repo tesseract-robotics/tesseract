@@ -66,8 +66,12 @@ public:
   }
 
   template <typename PointT>
-  Octree(const PointT& point_cloud, const double resolution, const SubType sub_type, const bool prune)
-    : Geometry(GeometryType::OCTREE), sub_type_(sub_type)
+  Octree(const PointT& point_cloud,
+         const double resolution,
+         const SubType sub_type,
+         const bool prune,
+         const bool binary = true)
+    : Geometry(GeometryType::OCTREE), sub_type_(sub_type), resolution_(resolution)
   {
     auto ot = std::make_shared<octomap::OcTree>(resolution);
 
@@ -77,6 +81,11 @@ public:
     // Per the documentation for overload updateNode above with lazy_eval enabled this must be called after all points
     // are added
     ot->updateInnerOccupancy();
+    if (binary)
+    {
+      ot->toMaxLikelihood();
+      binary_octree_ = binary;
+    }
 
     if (prune)
     {
@@ -98,7 +107,7 @@ public:
 
   bool getPruned() const { return pruned_; }
 
-  Geometry::Ptr clone() const override final{ return std::make_shared<Octree>(octree_, sub_type_); }
+  Geometry::Ptr clone() const override final { return std::make_shared<Octree>(octree_, sub_type_); }
   bool operator==(const Octree& rhs) const;
   bool operator!=(const Octree& rhs) const;
 
@@ -130,7 +139,9 @@ public:
 private:
   std::shared_ptr<const octomap::OcTree> octree_;
   SubType sub_type_;
+  double resolution_;
   bool pruned_{ false };
+  bool binary_octree_{ false };
 
   static bool isNodeCollapsible(octomap::OcTree& octree, octomap::OcTreeNode* node)
   {
@@ -206,6 +217,16 @@ private:
       }
     }
   }
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const;  // NOLINT
+
+  template <class Archive>
+  void load(Archive& ar, const unsigned int version);  // NOLINT
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 
 public:
 #ifndef SWIG

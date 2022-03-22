@@ -1,6 +1,6 @@
 /**
- * @file box.cpp
- * @brief Tesseract Box Geometry
+ * @file SDFMesh.cpp
+ * @brief Tesseract SDFMesh Geometry
  *
  * @author Levi Armstrong
  * @date March 16, 2022
@@ -31,31 +31,25 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
-#include <tesseract_geometry/impl/box.h>
+#include <tesseract_geometry/impl/sdf_mesh.h>
 
 namespace tesseract_geometry
 {
-bool Box::operator==(const Box& rhs) const
+bool SDFMesh::operator==(const SDFMesh& rhs) const
 {
   bool equal = true;
-  equal &= getType() == rhs.getType();
-  equal &= tesseract_common::almostEqualRelativeAndAbs(x_, rhs.x_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(y_, rhs.y_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(z_, rhs.z_);
+  equal &= Geometry::operator==(rhs);
   return equal;
 }
-bool Box::operator!=(const Box& rhs) const { return !operator==(rhs); }
+bool SDFMesh::operator!=(const SDFMesh& rhs) const { return !operator==(rhs); }
 
 template <class Archive>
-void Box::serialize(Archive& ar, const unsigned int /*version*/)
+void SDFMesh::serialize(Archive& ar, const unsigned int /*version*/)
 {
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Geometry);
-  ar& BOOST_SERIALIZATION_NVP(x_);
-  ar& BOOST_SERIALIZATION_NVP(y_);
-  ar& BOOST_SERIALIZATION_NVP(z_);
+  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(PolygonMesh);
 }
 }  // namespace tesseract_geometry
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::Box)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::Box)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::SDFMesh)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::SDFMesh)

@@ -62,26 +62,30 @@ set(COVERAGE_EXCLUDE
     /*/gtest/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
-add_library(${PROJECT_NAME} SHARED
-    src/geometry.cpp
-    src/geometries/box.cpp
-    src/geometries/capsule.cpp
-    src/geometries/cone.cpp
-    src/geometries/cylinder.cpp
-    src/geometries/plane.cpp
-    src/geometries/sphere.cpp
-    )
+add_library(
+  ${PROJECT_NAME} SHARED
+  src/geometry.cpp
+  src/geometries/box.cpp
+  src/geometries/capsule.cpp
+  src/geometries/cone.cpp
+  src/geometries/convex_mesh.cpp
+  src/geometries/cylinder.cpp
+  src/geometries/mesh.cpp
+  src/geometries/octree.cpp
+  src/geometries/plane.cpp
+  src/geometries/polygon_mesh.cpp
+  src/geometries/sdf_mesh.cpp
+  src/geometries/sphere.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
-            tesseract::tesseract_common
-            console_bridge::console_bridge
-            octomap
-            octomath
-            ${assimp_LIBRARIES})
+         tesseract::tesseract_common
+         console_bridge::console_bridge
+         octomap
+         octomath
+         ${assimp_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS}
-                                                     ${TESSERACT_ASSIMP_USE_PBRMATERIAL})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_ASSIMP_USE_PBRMATERIAL})
 target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -91,7 +95,7 @@ target_code_coverage(
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                     "$<INSTALL_INTERFACE:include>")
+                                                  "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE ${assimp_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})

@@ -61,6 +61,42 @@ template <class Archive>
 void serialize(Archive& ar, Eigen::VectorXd& g, const unsigned int version);  // NOLINT
 
 /*****************************/
+/****** Eigen::Vector3d ******/
+/*****************************/
+template <class Archive>
+void save(Archive& ar, const Eigen::Vector3d& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar, Eigen::Vector3d& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, Eigen::Vector3d& g, const unsigned int version);  // NOLINT
+
+/*****************************/
+/****** Eigen::Vector4d ******/
+/*****************************/
+template <class Archive>
+void save(Archive& ar, const Eigen::Vector4d& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar, Eigen::Vector4d& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, Eigen::Vector4d& g, const unsigned int version);  // NOLINT
+
+/*****************************/
+/****** Eigen::VectorXi ******/
+/*****************************/
+template <class Archive>
+void save(Archive& ar, const Eigen::VectorXi& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar, Eigen::VectorXi& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, Eigen::VectorXi& g, const unsigned int version);  // NOLINT
+
+/*****************************/
 /****** Eigen::VectorXd ******/
 /*****************************/
 
@@ -102,6 +138,9 @@ void serialize(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, con
 
 // Set the tracking to track_never for all Eigen types.
 BOOST_CLASS_TRACKING(Eigen::VectorXd, boost::serialization::track_never);
+BOOST_CLASS_TRACKING(Eigen::Vector3d, boost::serialization::track_never);
+BOOST_CLASS_TRACKING(Eigen::Vector4d, boost::serialization::track_never);
+BOOST_CLASS_TRACKING(Eigen::VectorXi, boost::serialization::track_never);
 BOOST_CLASS_TRACKING(Eigen::Isometry3d, boost::serialization::track_never);
 BOOST_CLASS_TRACKING(Eigen::MatrixX2d, boost::serialization::track_never);
 

@@ -29,8 +29,6 @@
 #include <tesseract_common/macros.h>
 #include <tesseract_common/resource_locator.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -89,6 +87,7 @@ public:
     , emissive_factor_(std::move(emissiveFactor))
   {
   }
+  MeshMaterial() = default;
 
   /**
    * @brief Get the base color of the mesh

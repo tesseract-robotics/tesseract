@@ -1,6 +1,6 @@
 /**
- * @file box.cpp
- * @brief Tesseract Box Geometry
+ * @file ConvexMesh.cpp
+ * @brief Tesseract ConvexMesh Geometry
  *
  * @author Levi Armstrong
  * @date March 16, 2022
@@ -31,31 +31,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
-#include <tesseract_geometry/impl/box.h>
+#include <tesseract_geometry/impl/convex_mesh.h>
 
 namespace tesseract_geometry
 {
-bool Box::operator==(const Box& rhs) const
+bool ConvexMesh::operator==(const ConvexMesh& rhs) const
 {
   bool equal = true;
-  equal &= getType() == rhs.getType();
-  equal &= tesseract_common::almostEqualRelativeAndAbs(x_, rhs.x_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(y_, rhs.y_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(z_, rhs.z_);
+  equal &= PolygonMesh::operator==(rhs);
+  equal &= creation_method_ == rhs.creation_method_;
   return equal;
 }
-bool Box::operator!=(const Box& rhs) const { return !operator==(rhs); }
+bool ConvexMesh::operator!=(const ConvexMesh& rhs) const { return !operator==(rhs); }
 
 template <class Archive>
-void Box::serialize(Archive& ar, const unsigned int /*version*/)
+void ConvexMesh::serialize(Archive& ar, const unsigned int /*version*/)
 {
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Geometry);
-  ar& BOOST_SERIALIZATION_NVP(x_);
-  ar& BOOST_SERIALIZATION_NVP(y_);
-  ar& BOOST_SERIALIZATION_NVP(z_);
+  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(PolygonMesh);
+  ar& BOOST_SERIALIZATION_NVP(creation_method_);
 }
 }  // namespace tesseract_geometry
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::Box)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::Box)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::ConvexMesh)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::ConvexMesh)
