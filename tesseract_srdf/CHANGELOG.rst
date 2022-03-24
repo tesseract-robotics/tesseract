@@ -2,6 +2,20 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add boost serialization for Environment commands and all underlying types (`#726 <https://github.com/tesseract-robotics/tesseract/issues/726>`_)
+  * Add serialization macros to tesseract_common
+  * Add serialization for tesseract_geometry primatives
+  * Add serialization for meshes and octree
+  * Add serialization for Link and Joint
+  * Add serialization for tesseract_common types
+  * Add serialization for SceneGraph and SceneState
+  * Add serialization for tesseract_srdf and tesseract_common types
+  * Add serialization for environment commands
+  * Fix bug in getCollisionObjectPairs
+* Contributors: Matthew Powelson
+
 0.8.4 (2022-03-03)
 ------------------
 * cmake format

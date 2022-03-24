@@ -2,6 +2,11 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add methods for getting link transform information from state solver
+* Contributors: Levi Armstrong
+
 0.8.4 (2022-03-03)
 ------------------
 
