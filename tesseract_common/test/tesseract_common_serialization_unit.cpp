@@ -26,6 +26,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/nvp.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/serialization.h>
@@ -33,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/collision_margin_data.h>
+#include <tesseract_common/atomic_serialization.h>
 
 using namespace tesseract_common;
 
@@ -144,6 +146,47 @@ TEST(TesseractCommonSerializeUnit, PluginInfoContainer)  // NOLINT
   object->default_plugin = "test_string";
   object->plugins["plugin_key"] = *plugin;
   tesseract_common::testSerialization<PluginInfoContainer>(*object, "PluginInfoContainer");
+}
+
+/** @brief Atomic do not have a copy constructor so must have implement one for your class */
+struct TestAtomic
+{
+  std::atomic<bool> value{ true };
+
+  TestAtomic() = default;
+  ~TestAtomic() = default;
+  TestAtomic(const TestAtomic& other) { *this = other; }
+  TestAtomic& operator=(const TestAtomic& other)
+  {
+    value = other.value.load();
+    return *this;
+  }
+  TestAtomic(TestAtomic&& other) noexcept { value = other.value.load(); }
+  TestAtomic& operator=(TestAtomic&& other) noexcept
+  {
+    value = other.value.load();
+    return *this;
+  }
+
+  bool operator==(const TestAtomic& rhs) const { return rhs.value.load() == value.load(); }
+  bool operator!=(const TestAtomic& rhs) const { return rhs.value.load() != value.load(); }
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
+  {
+    ar& BOOST_SERIALIZATION_NVP(value);
+  }
+};
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(TestAtomic)
+BOOST_CLASS_EXPORT_IMPLEMENT(TestAtomic)
+
+TEST(TesseractCommonSerializeUnit, StdAtomic)  // NOLINT
+{
+  TestAtomic object;
+  object.value = true;
+  tesseract_common::testSerialization<TestAtomic>(object, "TestAtomic");
 }
 
 int main(int argc, char** argv)
