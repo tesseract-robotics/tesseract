@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -46,22 +48,30 @@ public:
   using ConstPtr = std::shared_ptr<const Box>;
 
   Box(double x, double y, double z) : Geometry(GeometryType::BOX), x_(x), y_(y), z_(z) {}
+  Box() = default;
   ~Box() override = default;
-  Box(const Box&) = delete;
-  Box& operator=(const Box&) = delete;
-  Box(Box&&) = delete;
-  Box& operator=(Box&&) = delete;
 
   double getX() const { return x_; }
   double getY() const { return y_; }
   double getZ() const { return z_; }
 
-  Geometry::Ptr clone() const override { return std::make_shared<Box>(x_, y_, z_); }
+  Geometry::Ptr clone() const override final { return std::make_shared<Box>(x_, y_, z_); }
+  bool operator==(const Box& rhs) const;
+  bool operator!=(const Box& rhs) const;
 
 private:
-  double x_;
-  double y_;
-  double z_;
+  double x_{ 0 };
+  double y_{ 0 };
+  double z_{ 0 };
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
+
 }  // namespace tesseract_geometry
+
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Box, "Box")
+BOOST_CLASS_TRACKING(tesseract_geometry::Box, boost::serialization::track_never)
 #endif

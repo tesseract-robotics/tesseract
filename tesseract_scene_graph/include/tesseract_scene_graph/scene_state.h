@@ -32,6 +32,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <Eigen/Core>
 #include <unordered_map>
 #include <vector>
@@ -74,7 +75,18 @@ struct SceneState
   tesseract_common::TransformMap joint_transforms;
 
   Eigen::VectorXd getJointValues(const std::vector<std::string>& joint_names) const;
-};
 
+  bool operator==(const SceneState& rhs) const;
+  bool operator!=(const SceneState& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+};
 }  // namespace tesseract_scene_graph
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::SceneState, "SceneState")
 #endif  // TESSERACT_SCENE_GRAPH_SCENE_STATE_H

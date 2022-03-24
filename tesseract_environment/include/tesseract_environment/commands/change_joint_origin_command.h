@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -46,6 +47,8 @@ public:
   using Ptr = std::shared_ptr<ChangeJointOriginCommand>;
   using ConstPtr = std::shared_ptr<const ChangeJointOriginCommand>;
 
+  ChangeJointOriginCommand() : Command(CommandType::CHANGE_JOINT_ORIGIN){};
+
   /**
    * @brief Changes the origin associated with the joint
    *
@@ -55,18 +58,27 @@ public:
    * @param new_origin New transform to be set as the origin
    */
   ChangeJointOriginCommand(std::string joint_name, const Eigen::Isometry3d& origin)
-    : joint_name_(std::move(joint_name)), origin_(origin)
+    : Command(CommandType::CHANGE_JOINT_ORIGIN), joint_name_(std::move(joint_name)), origin_(origin)
   {
   }
 
-  CommandType getType() const final { return CommandType::CHANGE_JOINT_ORIGIN; }
   const std::string& getJointName() const { return joint_name_; }
   const Eigen::Isometry3d& getOrigin() const { return origin_; }
+
+  bool operator==(const ChangeJointOriginCommand& rhs) const;
+  bool operator!=(const ChangeJointOriginCommand& rhs) const;
 
 private:
   std::string joint_name_;
   Eigen::Isometry3d origin_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
 
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeJointOriginCommand, "ChangeJointOriginCommand")
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_ORIGIN_COMMAND_H

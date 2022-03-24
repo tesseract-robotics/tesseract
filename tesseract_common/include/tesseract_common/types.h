@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <vector>
@@ -93,6 +94,20 @@ struct PluginInfo
 
   /** @brief The plugin config data */
   YAML::Node config;
+
+  bool operator==(const PluginInfo& rhs) const;
+  bool operator!=(const PluginInfo& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const;  // NOLINT
+
+  template <class Archive>
+  void load(Archive& ar, const unsigned int version);  // NOLINT
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief A map of PluginInfo to user defined name */
@@ -103,6 +118,14 @@ struct PluginInfoContainer
   std::string default_plugin;
   PluginInfoMap plugins;
   void clear();
+
+  bool operator==(const PluginInfoContainer& rhs) const;
+  bool operator!=(const PluginInfoContainer& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief The kinematics plugin information structure */
@@ -131,6 +154,14 @@ struct KinematicsPluginInfo
 
   // Yaml Config key
   static inline const std::string CONFIG_KEY{ "kinematic_plugins" };
+
+  bool operator==(const KinematicsPluginInfo& rhs) const;
+  bool operator!=(const KinematicsPluginInfo& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief The contact managers plugin information structure */
@@ -159,6 +190,14 @@ struct ContactManagersPluginInfo
 
   // Yaml Config key
   static inline const std::string CONFIG_KEY{ "contact_manager_plugins" };
+
+  bool operator==(const ContactManagersPluginInfo& rhs) const;
+  bool operator!=(const ContactManagersPluginInfo& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief The CalibrationInfo struct */
@@ -186,11 +225,27 @@ struct CalibrationInfo
 
   // Yaml Config key
   static inline const std::string CONFIG_KEY{ "calibration" };
+
+  bool operator==(const CalibrationInfo& rhs) const;
+  bool operator!=(const CalibrationInfo& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_common
 
 #ifdef SWIG
 %template(PluginInfoMap) std::map<std::string, tesseract_common::PluginInfo>;
 #endif  // SWIG
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::PluginInfo, "PluginInfo")
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::PluginInfoContainer, "PluginInfoContainer")
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::KinematicsPluginInfo, "KinematicsPluginInfo")
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::ContactManagersPluginInfo, "ContactManagersPluginInfo")
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::CalibrationInfo, "CalibrationInfo")
 
 #endif  // TESSERACT_COMMON_TYPES_H

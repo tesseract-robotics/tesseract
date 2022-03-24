@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -46,18 +48,25 @@ public:
   using ConstPtr = std::shared_ptr<const Sphere>;
 
   explicit Sphere(double r) : Geometry(GeometryType::SPHERE), r_(r) {}
+  Sphere() = default;
   ~Sphere() override = default;
-  Sphere(const Sphere&) = delete;
-  Sphere& operator=(const Sphere&) = delete;
-  Sphere(Sphere&&) = delete;
-  Sphere& operator=(Sphere&&) = delete;
 
   double getRadius() const { return r_; }
 
-  Geometry::Ptr clone() const override { return std::make_shared<Sphere>(r_); }
+  Geometry::Ptr clone() const override final { return std::make_shared<Sphere>(r_); }
+  bool operator==(const Sphere& rhs) const;
+  bool operator!=(const Sphere& rhs) const;
 
 private:
-  double r_;
+  double r_{ 0 };
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_geometry
+
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Sphere, "Sphere")
+BOOST_CLASS_TRACKING(tesseract_geometry::Sphere, boost::serialization::track_never)
 #endif

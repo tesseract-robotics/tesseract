@@ -1,17 +1,13 @@
 /**
  * @file serialization.h
- * @brief Additional Boost serialization wrappers
- * @details Supports the following
- *            - Eigen::VectorXd
- *            - Eigen::Isometry3d
- *            - Eigen::MatrixX2d
+ * @brief Boost serialization macros and helpers
  *
  * @author Levi Armstrong
- * @date February 21, 2021
+ * @author Matthew Powelson
+ * @date March 16, 2022
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2021, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -34,69 +30,167 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <variant>
 #include <Eigen/Dense>
+#include <fstream>
+#include <sstream>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/tracking.hpp>
 #include <boost/serialization/tracking_enum.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace boost
+// Used to replace commas in these macros to avoid them being interpreted as multiple arguments
+// Example: TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(std::variant<std::string COMMA Eigen::Isometry3d>)
+#define COMMA ,
+
+// Use this macro for serialization defined using the invasive method inside the class
+#define TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(Type)                                                                 \
+  template void Type::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);                         \
+  template void Type::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);                         \
+  template void Type::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);                      \
+  template void Type::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
+
+// Use this macro for serialization defined using the invasive method inside the class with custom load/save functions
+#define TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(Type)                                                       \
+  template void Type::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);                         \
+  template void Type::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);                         \
+  template void Type::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);                      \
+  template void Type::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);                      \
+  template void Type::save(boost::archive::xml_oarchive&, const unsigned int version) const;                           \
+  template void Type::load(boost::archive::xml_iarchive& ar, const unsigned int version);                              \
+  template void Type::save(boost::archive::binary_oarchive&, const unsigned int version) const;                        \
+  template void Type::load(boost::archive::binary_iarchive& ar, const unsigned int version);
+
+// Use this macro for serialization defined using the non-invasive free function method outside the class
+#define TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(Type)                                                  \
+  template void boost::serialization::serialize(                                                                       \
+      boost::archive::xml_oarchive& ar, Type& g, const unsigned int version); /* NOLINT */                             \
+  template void boost::serialization::serialize(                                                                       \
+      boost::archive::xml_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */                             \
+  template void boost::serialization::serialize(                                                                       \
+      boost::archive::binary_oarchive& ar, Type& g, const unsigned int version); /* NOLINT */                          \
+  template void boost::serialization::serialize(                                                                       \
+      boost::archive::binary_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */                          \
+  template void boost::serialization::save(                                                                            \
+      boost::archive::xml_oarchive&, const Type& g, const unsigned int version); /* NOLINT */                          \
+  template void boost::serialization::load(                                                                            \
+      boost::archive::xml_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */                             \
+  template void boost::serialization::save(                                                                            \
+      boost::archive::binary_oarchive&, const Type& g, const unsigned int version); /* NOLINT */                       \
+  template void boost::serialization::load(                                                                            \
+      boost::archive::binary_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */
+
+namespace tesseract_common
 {
-namespace serialization
+struct Serialization
 {
-/*****************************/
-/****** Eigen::VectorXd ******/
-/*****************************/
-template <class Archive>
-void save(Archive& ar, const Eigen::VectorXd& g, const unsigned int version);  // NOLINT
+  template <typename SerializableType>
+  static std::string toArchiveStringXML(const SerializableType& archive_type, const std::string& name = "")
+  {
+    std::stringstream ss;
+    {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
+      boost::archive::xml_oarchive oa(ss);
 
-template <class Archive>
-void load(Archive& ar, Eigen::VectorXd& g, const unsigned int version);  // NOLINT
+      // Boost uses the same function for serialization and deserialization so it requires a non-const reference
+      // Because we are only serializing here it is safe to cast away const
+      if (name.empty())
+        oa << boost::serialization::make_nvp<SerializableType>("archive_type",
+                                                               const_cast<SerializableType&>(archive_type));  // NOLINT
+      else
+        oa << boost::serialization::make_nvp<SerializableType>(name.c_str(),
+                                                               const_cast<SerializableType&>(archive_type));  // NOLINT
+    }
 
-template <class Archive>
-void serialize(Archive& ar, Eigen::VectorXd& g, const unsigned int version);  // NOLINT
+    return ss.str();
+  }
 
-/*****************************/
-/****** Eigen::VectorXd ******/
-/*****************************/
+  template <typename SerializableType>
+  static bool toArchiveFileXML(const SerializableType& archive_type,
+                               const std::string& file_path,
+                               const std::string& name = "")
+  {
+    std::ofstream os(file_path);
+    {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
+      boost::archive::xml_oarchive oa(os);
+      // Boost uses the same function for serialization and deserialization so it requires a non-const reference
+      // Because we are only serializing here it is safe to cast away const
+      if (name.empty())
+        oa << boost::serialization::make_nvp<SerializableType>("archive_type",
+                                                               const_cast<SerializableType&>(archive_type));  // NOLINT
+      else
+        oa << boost::serialization::make_nvp<SerializableType>(name.c_str(),
+                                                               const_cast<SerializableType&>(archive_type));  // NOLINT
+    }
 
-template <class Archive>
-void save(Archive& ar, const Eigen::Isometry3d& g, const unsigned int version);  // NOLINT
+    return true;
+  }
 
-template <class Archive>
-void load(Archive& ar, Eigen::Isometry3d& g, const unsigned int version);  // NOLINT
+  template <typename SerializableType>
+  static bool toArchiveFileBinary(const SerializableType& archive_type,
+                                  const std::string& file_path,
+                                  const std::string& name = "")
+  {
+    std::ofstream os(file_path);
+    {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
+      boost::archive::binary_oarchive oa(os);
+      // Boost uses the same function for serialization and deserialization so it requires a non-const reference
+      // Because we are only serializing here it is safe to cast away const
+      if (name.empty())
+        oa << boost::serialization::make_nvp<SerializableType>("archive_type",
+                                                               const_cast<SerializableType&>(archive_type));  // NOLINT
+      else
+        oa << boost::serialization::make_nvp<SerializableType>(name.c_str(),
+                                                               const_cast<SerializableType&>(archive_type));  // NOLINT
+    }
 
-template <class Archive>
-void serialize(Archive& ar, Eigen::Isometry3d& g, const unsigned int version);  // NOLINT
+    return true;
+  }
 
-/*****************************/
-/****** Eigen::MatrixX2d *****/
-/*****************************/
-template <class Archive>
-void save(Archive& ar, const Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
+  template <typename SerializableType>
+  static SerializableType fromArchiveStringXML(const std::string& archive_xml)
+  {
+    SerializableType archive_type;
 
-template <class Archive>
-void load(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
+    {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
+      std::stringstream ss(archive_xml);
+      boost::archive::xml_iarchive ia(ss);
+      ia >> BOOST_SERIALIZATION_NVP(archive_type);
+    }
 
-template <class Archive>
-void serialize(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
+    return archive_type;
+  }
 
-/*********************************************************/
-/****** std::variant<std::string, Eigen::Isometry3d> *****/
-/*********************************************************/
-template <class Archive>
-void save(Archive& ar, const std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
+  template <typename SerializableType>
+  static SerializableType fromArchiveFileXML(const std::string& file_path)
+  {
+    SerializableType archive_type;
 
-template <class Archive>
-void load(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
+    {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
+      std::ifstream ifs(file_path);
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+      ia >> BOOST_SERIALIZATION_NVP(archive_type);
+    }
 
-template <class Archive>
-void serialize(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
+    return archive_type;
+  }
 
-}  // namespace serialization
-}  // namespace boost
+  template <typename SerializableType>
+  static SerializableType fromArchiveFileBinary(const std::string& file_path)
+  {
+    SerializableType archive_type;
 
-// Set the tracking to track_never for all Eigen types.
-BOOST_CLASS_TRACKING(Eigen::VectorXd, boost::serialization::track_never);
-BOOST_CLASS_TRACKING(Eigen::Isometry3d, boost::serialization::track_never);
-BOOST_CLASS_TRACKING(Eigen::MatrixX2d, boost::serialization::track_never);
+    {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
+      std::ifstream ifs(file_path);
+      assert(ifs.good());
+      boost::archive::binary_iarchive ia(ifs);
+      ia >> BOOST_SERIALIZATION_NVP(archive_type);
+    }
+
+    return archive_type;
+  }
+};
+}  // namespace tesseract_common
 
 #endif  // TESSERACT_COMMON_SERIALIZATION_H

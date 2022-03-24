@@ -44,11 +44,13 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 
 add_library(
   ${PROJECT_NAME}
+  src/allowed_collision_matrix.cpp
   src/any.cpp
+  src/collision_margin_data.cpp
   src/joint_state.cpp
   src/manipulator_info.cpp
   src/kinematic_limits.cpp
-  src/serialization.cpp
+  src/eigen_serialization.cpp
   src/utils.cpp
   src/resource_locator.cpp
   src/types.cpp)

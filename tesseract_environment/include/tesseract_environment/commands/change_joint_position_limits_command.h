@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -42,13 +43,16 @@ public:
   using Ptr = std::shared_ptr<ChangeJointPositionLimitsCommand>;
   using ConstPtr = std::shared_ptr<const ChangeJointPositionLimitsCommand>;
 
+  ChangeJointPositionLimitsCommand() : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS){};
+
   /**
    * @brief Changes the position limits associated with a joint
    * @param joint_name Name of the joint to be updated
    * @param limits New position limits to be set as the joint limits
    */
   ChangeJointPositionLimitsCommand(std::string joint_name, double lower, double upper)
-    : limits_({ std::make_pair(std::move(joint_name), std::make_pair(lower, upper)) })
+    : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS)
+    , limits_({ std::make_pair(std::move(joint_name), std::make_pair(lower, upper)) })
   {
     assert(upper > lower);
   }
@@ -59,17 +63,26 @@ public:
    * For each limit pair, first is the lower limit second is the upper limit
    */
   ChangeJointPositionLimitsCommand(std::unordered_map<std::string, std::pair<double, double>> limits)
-    : limits_(std::move(limits))
+    : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS), limits_(std::move(limits))
   {
     assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second.second > p.second.first; }));
   }
 
-  CommandType getType() const final { return CommandType::CHANGE_JOINT_POSITION_LIMITS; }
   const std::unordered_map<std::string, std::pair<double, double>>& getLimits() const { return limits_; }
+
+  bool operator==(const ChangeJointPositionLimitsCommand& rhs) const;
+  bool operator!=(const ChangeJointPositionLimitsCommand& rhs) const;
 
 private:
   std::unordered_map<std::string, std::pair<double, double>> limits_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
 
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeJointPositionLimitsCommand, "ChangeJointPositionLimitsCommand")
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_POSITION_LIMITS_COMMAND_H

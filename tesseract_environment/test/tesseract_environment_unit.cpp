@@ -1033,7 +1033,7 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
   joint_1.child_link_name = link_name1;
   joint_1.type = JointType::FIXED;
 
-  env->applyCommand(std::make_shared<AddLinkCommand>(link_1, joint_1));
+  EXPECT_TRUE(env->applyCommand(std::make_shared<AddLinkCommand>(link_1, joint_1)));
   tesseract_scene_graph::SceneState state = env->getState();
   EXPECT_EQ(env->getRevision(), 4);
   EXPECT_EQ(env->getCommandHistory().size(), 4);

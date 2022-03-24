@@ -87,6 +87,7 @@ public:
     , emissive_factor_(std::move(emissiveFactor))
   {
   }
+  MeshMaterial() = default;
 
   /**
    * @brief Get the base color of the mesh

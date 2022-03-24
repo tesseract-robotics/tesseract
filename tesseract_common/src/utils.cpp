@@ -41,8 +41,16 @@ template bool toNumeric<double>(const std::string&, double&);
 template bool toNumeric<float>(const std::string&, float&);
 template bool toNumeric<int>(const std::string&, int&);
 template bool toNumeric<long>(const std::string&, long&);
-template bool isIdentical<std::string>(const std::vector<std::string>&, const std::vector<std::string>&, bool);
-template bool isIdentical<Eigen::Index>(const std::vector<Eigen::Index>&, const std::vector<Eigen::Index>&, bool);
+template bool isIdentical<std::string>(const std::vector<std::string>&,
+                                       const std::vector<std::string>&,
+                                       bool,
+                                       const std::function<bool(const std::string&, const std::string&)>&,
+                                       const std::function<bool(const std::string&, const std::string&)>&);
+template bool isIdentical<Eigen::Index>(const std::vector<Eigen::Index>&,
+                                        const std::vector<Eigen::Index>&,
+                                        bool,
+                                        const std::function<bool(const Eigen::Index&, const Eigen::Index&)>&,
+                                        const std::function<bool(const Eigen::Index&, const Eigen::Index&)>&);
 
 // Similar to rethrow_if_nested
 // but does nothing instead of calling std::terminate
