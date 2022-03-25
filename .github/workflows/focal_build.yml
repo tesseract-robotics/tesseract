@@ -43,6 +43,7 @@ jobs:
           message("::set-output name=timestamp::${current_date}")
 
       - name: ccache cache files
+        if: ${{ env.PUSH_DOCKER_IMAGE != 'true' }}
         continue-on-error: true
         uses: actions/cache@v1.1.0
         with:
