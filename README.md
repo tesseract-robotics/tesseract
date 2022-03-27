@@ -25,7 +25,7 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 
 ## Dependencies
 [![ros_industrial_cmake_boilerplate](https://img.shields.io/badge/ros_industrial_cmake_boilerplate-0.2.14-brightgreen)](https://github.com/ros-industrial/ros_industrial_cmake_boilerplate/tree/0.2.14)  
-[![opw_kinematics](https://img.shields.io/badge/opw_kinematics-0.4.4-brightgreen)](https://github.com/Jmeyer1292/opw_kinematics/tree/0.4.4)
+[![opw_kinematics](https://img.shields.io/badge/opw_kinematics-0.4.-brightgreen)](https://github.com/Jmeyer1292/opw_kinematics/tree/0.4.4)
 
 ## Tesseract Setup Wizard and Visualization Tools
 
