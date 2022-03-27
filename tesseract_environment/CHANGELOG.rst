@@ -2,6 +2,27 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.7 (2022-03-24)
+------------------
+
+0.8.6 (2022-03-24)
+------------------
+
+0.8.5 (2022-03-24)
+------------------
+* Add boost serialization for Environment commands and all underlying types (`#726 <https://github.com/tesseract-robotics/tesseract/issues/726>`_)
+  * Add serialization macros to tesseract_common
+  * Add serialization for tesseract_geometry primatives
+  * Add serialization for meshes and octree
+  * Add serialization for Link and Joint
+  * Add serialization for tesseract_common types
+  * Add serialization for SceneGraph and SceneState
+  * Add serialization for tesseract_srdf and tesseract_common types
+  * Add serialization for environment commands
+  * Fix bug in getCollisionObjectPairs
+* Add methods for getting link transform information from state solver
+* Contributors: Levi Armstrong, Matthew Powelson
+
 0.8.4 (2022-03-03)
 ------------------
 * Add method to environment to get relative link transform

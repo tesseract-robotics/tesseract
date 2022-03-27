@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 #include <octomap/octomap.h>
@@ -64,8 +66,12 @@ public:
   }
 
   template <typename PointT>
-  Octree(const PointT& point_cloud, const double resolution, const SubType sub_type, const bool prune)
-    : Geometry(GeometryType::OCTREE), sub_type_(sub_type)
+  Octree(const PointT& point_cloud,
+         const double resolution,
+         const SubType sub_type,
+         const bool prune,
+         const bool binary = true)
+    : Geometry(GeometryType::OCTREE), sub_type_(sub_type), resolution_(resolution)
   {
     auto ot = std::make_shared<octomap::OcTree>(resolution);
 
@@ -75,6 +81,11 @@ public:
     // Per the documentation for overload updateNode above with lazy_eval enabled this must be called after all points
     // are added
     ot->updateInnerOccupancy();
+    if (binary)
+    {
+      ot->toMaxLikelihood();
+      binary_octree_ = binary;
+    }
 
     if (prune)
     {
@@ -86,11 +97,8 @@ public:
   }
 #endif  // SWIG
 
+  Octree() = default;
   ~Octree() override = default;
-  Octree(const Octree&) = delete;
-  Octree& operator=(const Octree&) = delete;
-  Octree(Octree&&) = delete;
-  Octree& operator=(Octree&&) = delete;
 
 #ifndef SWIG
   const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
@@ -99,7 +107,9 @@ public:
 
   bool getPruned() const { return pruned_; }
 
-  Geometry::Ptr clone() const override { return std::make_shared<Octree>(octree_, sub_type_); }
+  Geometry::Ptr clone() const override final { return std::make_shared<Octree>(octree_, sub_type_); }
+  bool operator==(const Octree& rhs) const;
+  bool operator!=(const Octree& rhs) const;
 
   /**
    * @brief Octrees are typically generated from 3D sensor data so this method
@@ -128,8 +138,10 @@ public:
 
 private:
   std::shared_ptr<const octomap::OcTree> octree_;
-  SubType sub_type_;
+  SubType sub_type_{ SubType::BOX };
+  double resolution_{ 0.01 };
   bool pruned_{ false };
+  bool binary_octree_{ false };
 
   static bool isNodeCollapsible(octomap::OcTree& octree, octomap::OcTreeNode* node)
   {
@@ -206,6 +218,16 @@ private:
     }
   }
 
+  friend class boost::serialization::access;
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const;  // NOLINT
+
+  template <class Archive>
+  void load(Archive& ar, const unsigned int version);  // NOLINT
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+
 public:
 #ifndef SWIG
   /**
@@ -232,4 +254,8 @@ public:
 #endif  // SWIG
 };
 }  // namespace tesseract_geometry
+
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Octree, "Octree")
+BOOST_CLASS_TRACKING(tesseract_geometry::Octree, boost::serialization::track_never)
 #endif

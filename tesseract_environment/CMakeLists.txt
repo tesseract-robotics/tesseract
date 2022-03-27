@@ -57,7 +57,8 @@ target_link_libraries(
          tesseract::tesseract_state_solver_ofkt
          tesseract::tesseract_srdf
          tesseract::tesseract_urdf
-         tesseract::tesseract_kinematics_core)
+         tesseract::tesseract_kinematics_core
+         ${PROJECT_NAME}_commands)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -71,7 +72,56 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
+# Create interface for core
+add_library(
+  ${PROJECT_NAME}_commands
+  src/command.cpp
+  src/commands/add_allowed_collision_command.cpp
+  src/commands/add_contact_managers_plugin_info_command
+  src/commands/add_kinematics_information_command.cpp
+  src/commands/add_link_command.cpp
+  src/commands/add_scene_graph_command.cpp
+  src/commands/change_collision_margins_command.cpp
+  src/commands/change_joint_acceleration_limits_command.cpp
+  src/commands/change_joint_origin_command.cpp
+  src/commands/change_joint_position_limits_command.cpp
+  src/commands/change_joint_velocity_limits_command.cpp
+  src/commands/change_link_collision_enabled_command.cpp
+  src/commands/change_link_origin_command.cpp
+  src/commands/change_link_visibility_command.cpp
+  src/commands/move_joint_command.cpp
+  src/commands/move_link_command.cpp
+  src/commands/remove_allowed_collision_command.cpp
+  src/commands/remove_allowed_collision_link_command.cpp
+  src/commands/remove_joint_command.cpp
+  src/commands/remove_link_command.cpp
+  src/commands/replace_joint_command.cpp
+  src/commands/set_active_continuous_contact_manager_command.cpp
+  src/commands/set_active_discrete_contact_manager_command.cpp)
+target_link_libraries(
+  ${PROJECT_NAME}_commands
+  PUBLIC Eigen3::Eigen
+         tesseract::tesseract_common
+         tesseract::tesseract_collision_core
+         tesseract::tesseract_scene_graph
+         tesseract::tesseract_state_solver_ofkt
+         tesseract::tesseract_srdf
+         tesseract::tesseract_urdf
+         tesseract::tesseract_kinematics_core)
+target_compile_options(${PROJECT_NAME}_commands PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+target_compile_options(${PROJECT_NAME}_commands PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(${PROJECT_NAME}_commands PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_clang_tidy(${PROJECT_NAME}_commands ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_commands PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(
+  ${PROJECT_NAME}_commands
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+target_include_directories(${PROJECT_NAME}_commands PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                                           "$<INSTALL_INTERFACE:include>")
+
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_commands)
 
 # Mark cpp header files for installation
 install(

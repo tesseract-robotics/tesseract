@@ -26,6 +26,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/array.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <unordered_map>
 #include <vector>
 #include <utility>
@@ -45,6 +47,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/configs.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_srdf/utils.h>
+#include <tesseract_common/serialization.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_common/yaml_utils.h>
 
@@ -419,4 +422,35 @@ void SRDFModel::clear()
   collision_margin_data = nullptr;
 }
 
+bool SRDFModel::operator==(const SRDFModel& rhs) const
+{
+  bool equal = true;
+  equal &= name == rhs.name;
+  equal &= tesseract_common::isIdenticalArray<int, 3>(version, rhs.version);
+  equal &= kinematics_information == rhs.kinematics_information;
+  equal &= contact_managers_plugin_info == rhs.contact_managers_plugin_info;
+  equal &= acm == rhs.acm;
+  equal &= tesseract_common::pointersEqual(collision_margin_data, rhs.collision_margin_data);
+  equal &= calibration_info == rhs.calibration_info;
+
+  return equal;
+}
+bool SRDFModel::operator!=(const SRDFModel& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void SRDFModel::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(name);
+  ar& BOOST_SERIALIZATION_NVP(version);
+  ar& BOOST_SERIALIZATION_NVP(kinematics_information);
+  ar& BOOST_SERIALIZATION_NVP(contact_managers_plugin_info);
+  ar& BOOST_SERIALIZATION_NVP(acm);
+  ar& BOOST_SERIALIZATION_NVP(collision_margin_data);
+  ar& BOOST_SERIALIZATION_NVP(calibration_info);
+}
+
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_srdf::SRDFModel)
+// This causes build failures for some reason, but it seems to work without it
+// BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_srdf::SRDFModel)
 }  // namespace tesseract_srdf

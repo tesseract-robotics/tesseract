@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -46,21 +48,27 @@ public:
   using ConstPtr = std::shared_ptr<const Capsule>;
 
   Capsule(double r, double l) : Geometry(GeometryType::CAPSULE), r_(r), l_(l) {}
+  Capsule() = default;
   ~Capsule() override = default;
-  Capsule(const Capsule&) = delete;
-  Capsule& operator=(const Capsule&) = delete;
-  Capsule(Capsule&&) = delete;
-  Capsule& operator=(Capsule&&) = delete;
 
   double getRadius() const { return r_; }
   double getLength() const { return l_; }
 
-  Geometry::Ptr clone() const override { return std::make_shared<Capsule>(r_, l_); }
+  Geometry::Ptr clone() const override final { return std::make_shared<Capsule>(r_, l_); }
+  bool operator==(const Capsule& rhs) const;
+  bool operator!=(const Capsule& rhs) const;
 
 private:
-  double r_;
-  double l_;
+  double r_{ 0 };
+  double l_{ 0 };
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_geometry
 
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Capsule, "Capsule")
+BOOST_CLASS_TRACKING(tesseract_geometry::Capsule, boost::serialization::track_never)
 #endif  // TESSERACT_GEOMETRY_CAPSULE_H

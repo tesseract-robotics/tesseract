@@ -62,7 +62,7 @@ std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string
     for (std::size_t j = i + 1; j < active_links.size(); ++j)
     {
       const std::string& l2 = active_links[j];
-      if (acm != nullptr && !acm(l1, l2))
+      if (acm == nullptr || (acm != nullptr && !acm(l1, l2)))
         clp.push_back(tesseract_collision::getObjectPairKey(l1, l2));
     }
   }
@@ -72,7 +72,7 @@ std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string
   {
     for (const auto& l2 : static_links)
     {
-      if (acm != nullptr && !acm(l1, l2))
+      if (acm == nullptr || (acm != nullptr && !acm(l1, l2)))
         clp.push_back(tesseract_collision::getObjectPairKey(l1, l2));
     }
   }

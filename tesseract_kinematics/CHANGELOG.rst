@@ -2,6 +2,15 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.7 (2022-03-24)
+------------------
+
+0.8.6 (2022-03-24)
+------------------
+
+0.8.5 (2022-03-24)
+------------------
+
 0.8.4 (2022-03-03)
 ------------------
 * Add overload method for calcInvKin to take single KinGroupIKInput

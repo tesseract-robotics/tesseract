@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -46,24 +48,31 @@ public:
   using ConstPtr = std::shared_ptr<const Plane>;
 
   Plane(double a, double b, double c, double d) : Geometry(GeometryType::PLANE), a_(a), b_(b), c_(c), d_(d) {}
+  Plane() = default;
   ~Plane() override = default;
-  Plane(const Plane&) = delete;
-  Plane& operator=(const Plane&) = delete;
-  Plane(Plane&&) = delete;
-  Plane& operator=(Plane&&) = delete;
 
   double getA() const { return a_; }
   double getB() const { return b_; }
   double getC() const { return c_; }
   double getD() const { return d_; }
 
-  Geometry::Ptr clone() const override { return std::make_shared<Plane>(a_, b_, c_, d_); }
+  Geometry::Ptr clone() const override final { return std::make_shared<Plane>(a_, b_, c_, d_); }
+  bool operator==(const Plane& rhs) const;
+  bool operator!=(const Plane& rhs) const;
 
 private:
-  double a_;
-  double b_;
-  double c_;
-  double d_;
+  double a_{ 0 };
+  double b_{ 0 };
+  double c_{ 0 };
+  double d_{ 0 };
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_geometry
+
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Plane, "Plane")
+BOOST_CLASS_TRACKING(tesseract_geometry::Plane, boost::serialization::track_never)
 #endif

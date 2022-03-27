@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -42,13 +43,15 @@ public:
   using Ptr = std::shared_ptr<ChangeJointVelocityLimitsCommand>;
   using ConstPtr = std::shared_ptr<const ChangeJointVelocityLimitsCommand>;
 
+  ChangeJointVelocityLimitsCommand() : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS){};
+
   /**
    * @brief Changes the velocity limits associated with a joint
    * @param joint_name Name of the joint to be updated
    * @param limits New velocity limits to be set as the joint limits
    */
   ChangeJointVelocityLimitsCommand(std::string joint_name, double limit)
-    : limits_({ std::make_pair(std::move(joint_name), limit) })
+    : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_({ std::make_pair(std::move(joint_name), limit) })
   {
     assert(limit > 0);
   }
@@ -57,17 +60,27 @@ public:
    * @brief Changes the velocity limits associated with a joint
    * @param limits A map of joint names to new velocity limits
    */
-  ChangeJointVelocityLimitsCommand(std::unordered_map<std::string, double> limits) : limits_(std::move(limits))
+  ChangeJointVelocityLimitsCommand(std::unordered_map<std::string, double> limits)
+    : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_(std::move(limits))
   {
     assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second > 0; }));
   }
 
-  CommandType getType() const final { return CommandType::CHANGE_JOINT_VELOCITY_LIMITS; }
   const std::unordered_map<std::string, double>& getLimits() const { return limits_; }
+
+  bool operator==(const ChangeJointVelocityLimitsCommand& rhs) const;
+  bool operator!=(const ChangeJointVelocityLimitsCommand& rhs) const;
 
 private:
   std::unordered_map<std::string, double> limits_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
 
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeJointVelocityLimitsCommand, "ChangeJointVelocityLimitsCommand")
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_VELOCITY_LIMITS_COMMAND_H

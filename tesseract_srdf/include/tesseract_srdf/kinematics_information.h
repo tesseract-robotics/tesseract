@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -138,7 +139,19 @@ struct KinematicsInformation
 
   /** @brief Check if group tool center point exists */
   bool hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const;
+
+  bool operator==(const KinematicsInformation& rhs) const;
+  bool operator!=(const KinematicsInformation& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 }  // namespace tesseract_srdf
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_srdf::KinematicsInformation, "KinematicsInformation")
 #endif  // TESSERACT_SRDF_KINEMATICS_INFORMATION_H

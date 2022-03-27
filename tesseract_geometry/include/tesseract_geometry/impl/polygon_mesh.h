@@ -28,10 +28,13 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/types.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_geometry/geometry.h>
@@ -140,11 +143,8 @@ public:
     vertex_count_ = static_cast<int>(vertices_->size());
   }
 
+  PolygonMesh() = default;
   ~PolygonMesh() override = default;
-  PolygonMesh(const PolygonMesh&) = delete;
-  PolygonMesh& operator=(const PolygonMesh&) = delete;
-  PolygonMesh(PolygonMesh&&) = delete;
-  PolygonMesh& operator=(PolygonMesh&&) = delete;
 
   /**
    * @brief Get Polygon mesh vertices
@@ -240,21 +240,28 @@ public:
   {
     return std::make_shared<PolygonMesh>(vertices_, faces_, face_count_, resource_, scale_);
   }
+  bool operator==(const PolygonMesh& rhs) const;
+  bool operator!=(const PolygonMesh& rhs) const;
 
 private:
   std::shared_ptr<const tesseract_common::VectorVector3d> vertices_;
   std::shared_ptr<const Eigen::VectorXi> faces_;
 
-  int vertex_count_;
-  int face_count_;
+  int vertex_count_{ 0 };
+  int face_count_{ 0 };
   tesseract_common::Resource::ConstPtr resource_;
   Eigen::Vector3d scale_;
   std::shared_ptr<const tesseract_common::VectorVector3d> normals_;
   std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors_;
   MeshMaterial::Ptr mesh_material_;
   std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 }  // namespace tesseract_geometry
-
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::PolygonMesh, "PolygonMesh")
 #endif  // POLYGON_MESH_H

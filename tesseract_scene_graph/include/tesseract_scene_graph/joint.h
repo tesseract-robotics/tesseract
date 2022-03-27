@@ -39,6 +39,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <string>
 #include <vector>
 #include <memory>
@@ -68,6 +69,7 @@ public:
   using ConstPtr = std::shared_ptr<const JointDynamics>;
 
   JointDynamics() = default;
+  JointDynamics(double damping, double friction) : damping(damping), friction(friction) {}
   double damping{ 0 };
   double friction{ 0 };
 
@@ -76,6 +78,13 @@ public:
     damping = 0;
     friction = 0;
   }
+  bool operator==(const JointDynamics& rhs) const;
+  bool operator!=(const JointDynamics& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class JointLimits
@@ -111,6 +120,13 @@ public:
        << " velocity=" << limits.velocity << " acceleration=" << limits.acceleration;
     return os;
   };
+  bool operator==(const JointLimits& rhs) const;
+  bool operator!=(const JointLimits& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /// \brief Parameters for Joint Safety Controllers
@@ -121,6 +137,13 @@ public:
   using ConstPtr = std::shared_ptr<const JointSafety>;
 
   JointSafety() = default;
+  JointSafety(double soft_upper_limit, double soft_lower_limit, double k_position, double k_velocity)
+    : soft_upper_limit(soft_upper_limit)
+    , soft_lower_limit(soft_lower_limit)
+    , k_position(k_position)
+    , k_velocity(k_velocity)
+  {
+  }
 
   ///
   /// IMPORTANT:  The safety controller support is very much PR2 specific, not intended for generic usage.
@@ -166,6 +189,8 @@ public:
     k_position = 0;
     k_velocity = 0;
   }
+  bool operator==(const JointSafety& rhs) const;
+  bool operator!=(const JointSafety& rhs) const;
 
   friend std::ostream& operator<<(std::ostream& os, const JointSafety& safety)
   {
@@ -173,6 +198,11 @@ public:
        << " k_position=" << safety.k_position << " k_velocity=" << safety.k_velocity;
     return os;
   };
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class JointCalibration
@@ -182,6 +212,10 @@ public:
   using ConstPtr = std::shared_ptr<const JointCalibration>;
 
   JointCalibration() = default;
+  JointCalibration(double reference_position, double rising, double falling)
+    : reference_position(reference_position), rising(rising), falling(falling)
+  {
+  }
   double reference_position{ 0 };
   double rising{ 0 };
   double falling{ 0 };
@@ -192,6 +226,8 @@ public:
     rising = 0;
     falling = 0;
   }
+  bool operator==(const JointCalibration& rhs) const;
+  bool operator!=(const JointCalibration& rhs) const;
 
   friend std::ostream& operator<<(std::ostream& os, const JointCalibration& calibration)
   {
@@ -199,6 +235,11 @@ public:
        << " falling=" << calibration.falling;
     return os;
   };
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class JointMimic
@@ -208,6 +249,10 @@ public:
   using ConstPtr = std::shared_ptr<const JointMimic>;
 
   JointMimic() = default;
+  JointMimic(double offset, double multiplier, std::string joint_name)
+    : offset(offset), multiplier(multiplier), joint_name(std::move(joint_name))
+  {
+  }
   double offset{ 0 };
   double multiplier{ 1.0 };
   std::string joint_name;
@@ -218,12 +263,19 @@ public:
     multiplier = 1.0;
     joint_name.clear();
   }
+  bool operator==(const JointMimic& rhs) const;
+  bool operator!=(const JointMimic& rhs) const;
 
   friend std::ostream& operator<<(std::ostream& os, const JointMimic& mimic)
   {
     os << "joint_name=" << mimic.joint_name << " offset=" << mimic.offset << " multiplier=" << mimic.multiplier;
     return os;
   };
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 enum class JointType
@@ -246,6 +298,7 @@ public:
   using ConstPtr = std::shared_ptr<const Joint>;
 
   Joint(std::string name) : name_(std::move(name)) { this->clear(); }
+  Joint() = default;
   ~Joint() = default;
   // Joints are non-copyable as their name must be unique
   Joint(const Joint& other) = delete;
@@ -348,10 +401,16 @@ public:
     }
     return ret;
   }
+  bool operator==(const Joint& rhs) const;
+  bool operator!=(const Joint& rhs) const;
 #endif  // SWIG
 
 private:
   std::string name_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 inline std::ostream& operator<<(std::ostream& os, const JointType& type)
@@ -412,5 +471,14 @@ inline std::ostream& operator<<(std::ostream& os, const JointType& type)
   }
 }
 #endif
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointDynamics, "JointDynamics")
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointLimits, "JointLimits")
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointSafety, "JointSafety")
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointCalibration, "JointCalibration")
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointMimic, "JointMimic")
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Joint, "Joint")
 
 #endif  // TESSERACT_SCENE_GRAPH_JOINT_H

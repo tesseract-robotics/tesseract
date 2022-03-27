@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
-#include <tesseract_common/serialization.h>
+#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/joint_state.h>
 
 namespace tesseract_common
@@ -68,7 +68,5 @@ void JointState::serialize(Archive& ar, const unsigned int /*version*/)  // NOLI
 
 }  // namespace tesseract_common
 
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-template void tesseract_common::JointState::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void tesseract_common::JointState::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointState)

@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -134,11 +136,8 @@ public:
   {
   }
 
+  ConvexMesh() = default;
   ~ConvexMesh() override = default;
-  ConvexMesh(const ConvexMesh&) = delete;
-  ConvexMesh& operator=(const ConvexMesh&) = delete;
-  ConvexMesh(ConvexMesh&&) = delete;
-  ConvexMesh& operator=(ConvexMesh&&) = delete;
 
   /**
    * @brief Get how the convex hull was created
@@ -158,11 +157,19 @@ public:
   {
     return std::make_shared<ConvexMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
   }
+  bool operator==(const ConvexMesh& rhs) const;
+  bool operator!=(const ConvexMesh& rhs) const;
 
 private:
   CreationMethod creation_method_{ DEFAULT };
-};
 
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+};
 }  // namespace tesseract_geometry
 
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::ConvexMesh, "ConvexMesh")
+BOOST_CLASS_TRACKING(tesseract_geometry::ConvexMesh, boost::serialization::track_never)
 #endif

@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -42,6 +43,7 @@ public:
   using Ptr = std::shared_ptr<AddSceneGraphCommand>;
   using ConstPtr = std::shared_ptr<const AddSceneGraphCommand>;
 
+  AddSceneGraphCommand() : Command(CommandType::ADD_SCENE_GRAPH){};
   /**
    * @brief Merge a graph into the current environment
    * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
@@ -53,7 +55,10 @@ public:
    * different names
    */
   AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph, std::string prefix = "")
-    : scene_graph_(scene_graph.clone()), joint_(nullptr), prefix_(std::move(prefix))
+    : Command(CommandType::ADD_SCENE_GRAPH)
+    , scene_graph_(scene_graph.clone())
+    , joint_(nullptr)
+    , prefix_(std::move(prefix))
   {
   }
 
@@ -70,22 +75,32 @@ public:
   AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph,
                        const tesseract_scene_graph::Joint& joint,
                        std::string prefix = "")
-    : scene_graph_(scene_graph.clone())
+    : Command(CommandType::ADD_SCENE_GRAPH)
+    , scene_graph_(scene_graph.clone())
     , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
     , prefix_(std::move(prefix))
   {
   }
 
-  CommandType getType() const final { return CommandType::ADD_SCENE_GRAPH; }
   const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const { return scene_graph_; }
   const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
   const std::string& getPrefix() const { return prefix_; }
+
+  bool operator==(const AddSceneGraphCommand& rhs) const;
+  bool operator!=(const AddSceneGraphCommand& rhs) const;
 
 private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;
   tesseract_scene_graph::Joint::ConstPtr joint_;
   std::string prefix_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddSceneGraphCommand, "AddSceneGraphCommand")
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_SCENE_GRAPH_COMMAND_H

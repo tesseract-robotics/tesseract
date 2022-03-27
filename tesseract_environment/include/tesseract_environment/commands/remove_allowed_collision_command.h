@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -41,24 +42,37 @@ public:
   using Ptr = std::shared_ptr<RemoveAllowedCollisionCommand>;
   using ConstPtr = std::shared_ptr<const RemoveAllowedCollisionCommand>;
 
+  RemoveAllowedCollisionCommand() : Command(CommandType::REMOVE_ALLOWED_COLLISION){};
+
   /**
    * @brief Remove disabled collision pair from allowed collision matrix
    * @param link_name1 Collision object name
    * @param link_name2 Collision object name
    */
   RemoveAllowedCollisionCommand(std::string link_name1, std::string link_name2)
-    : link_name1_(std::move(link_name1)), link_name2_(std::move(link_name2))
+    : Command(CommandType::REMOVE_ALLOWED_COLLISION)
+    , link_name1_(std::move(link_name1))
+    , link_name2_(std::move(link_name2))
   {
   }
 
-  CommandType getType() const final { return CommandType::REMOVE_ALLOWED_COLLISION; }
   const std::string& getLinkName1() const { return link_name1_; }
   const std::string& getLinkName2() const { return link_name2_; }
+
+  bool operator==(const RemoveAllowedCollisionCommand& rhs) const;
+  bool operator!=(const RemoveAllowedCollisionCommand& rhs) const;
 
 private:
   std::string link_name1_;
   std::string link_name2_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
 
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::RemoveAllowedCollisionCommand, "RemoveAllowedCollisionCommand")
 #endif  // TESSERACT_ENVIRONMENT_REMOVE_ALLOWED_COLLISION_COMMAND_H

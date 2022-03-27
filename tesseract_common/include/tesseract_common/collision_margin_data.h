@@ -30,6 +30,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <Eigen/Core>
 #include <string>
 #include <unordered_map>
@@ -237,31 +238,8 @@ public:
     }
   }
 
-  bool operator==(const CollisionMarginData& other) const
-  {
-    bool ret_val = true;
-    ret_val &=
-        (tesseract_common::almostEqualRelativeAndAbs(default_collision_margin_, other.default_collision_margin_, 1e-5));
-    ret_val &= (tesseract_common::almostEqualRelativeAndAbs(max_collision_margin_, other.max_collision_margin_, 1e-5));
-    ret_val &= (lookup_table_.size() == other.lookup_table_.size());
-    if (ret_val)
-    {
-      for (const auto& pair : lookup_table_)
-      {
-        auto cp = other.lookup_table_.find(pair.first);
-        ret_val = (cp != other.lookup_table_.end());
-        if (!ret_val)
-          break;
-
-        ret_val = tesseract_common::almostEqualRelativeAndAbs(pair.second, cp->second, 1e-5);
-        if (!ret_val)
-          break;
-      }
-    }
-    return ret_val;
-  }
-
-  bool operator!=(const CollisionMarginData& rhs) const { return !operator==(rhs); }
+  bool operator==(const CollisionMarginData& rhs) const;
+  bool operator!=(const CollisionMarginData& rhs) const;
 
 private:
   /** @brief Stores the collision margin used if no pair-specific one is set */
@@ -283,7 +261,13 @@ private:
         max_collision_margin_ = p.second;
     }
   }
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_common
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::CollisionMarginData, "CollisionMarginData")
 
 #endif  // TESSERACT_COMMON_COLLISION_MARGIN_DATA_H
