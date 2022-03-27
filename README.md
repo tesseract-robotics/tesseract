@@ -24,7 +24,7 @@ Lint  (CodeCov)      | [![Build Status](https://github.com/tesseract-robotics/te
 The planning framework (Tesseract) was designed to be light weight, limiting the number of dependencies, mainly only using standard libraries like, eigen, boost, orocos and to the packages below. The core packages are ROS agnostic and have full python support.
 
 ## Dependencies
-[![ros_industrial_cmake_boilerplate](https://img.shields.io/badge/ros_industrial_cmake_boilerplate-0.2.14-brightgreen)](https://github.com/ros-industrial/ros_industrial_cmake_boilerplate/tree/0.2.14)  
+[![ros_industrial_cmake_boilerplate](https://img.shields.io/badge/ros_industrial_cmake_boilerplate-0.2.15-brightgreen)](https://github.com/ros-industrial/ros_industrial_cmake_boilerplate/tree/0.2.15)  
 [![opw_kinematics](https://img.shields.io/badge/opw_kinematics-0.4.5-brightgreen)](https://github.com/Jmeyer1292/opw_kinematics/tree/0.4.5)
 
 ## Tesseract Setup Wizard and Visualization Tools
