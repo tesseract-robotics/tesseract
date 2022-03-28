@@ -3,8 +3,8 @@
  * @brief This holds a state of the scene
  *
  * It provides a way to look up the location of a link/joint in world coordinates system by link/joint name. It is
- * possible to get the joint transform using the child link transfrom of the joint, but they are both provided for
- * convience. Also the joint values used to calculated the link/joint transfroms is provided.
+ * possible to get the joint transform using the child link transform of the joint, but they are both provided for
+ * convenience. Also the joint values used to calculated the link/joint transforms is provided.
  *
  * @author Levi Armstrong
  * @date April 15, 2018
@@ -51,8 +51,8 @@ namespace tesseract_scene_graph
  * @brief This holds a state of the scene
  *
  * It provides a way to look up the location of a link/joint in world coordinates system by link/joint name. It is
- * possible to get the joint transform using the child link transfrom of the joint, but they are both provided for
- * convience. Also the joint values used to calculated the link/joint transfroms is provided.
+ * possible to get the joint transform using the child link transform of the joint, but they are both provided for
+ * convenience. Also the joint values used to calculated the link/joint transforms is provided.
  */
 struct SceneState
 {
