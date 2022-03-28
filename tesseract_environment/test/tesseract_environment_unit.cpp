@@ -51,7 +51,7 @@ std::string locateResource(const std::string& url)
 Eigen::Isometry3d tcpCallback(const tesseract_common::ManipulatorInfo& mi)
 {
   const std::string& tcp_offset_name = std::get<0>(mi.tcp_offset);
-  if (tcp_offset_name == "laser")
+  if (tcp_offset_name == "laser_callback")
     return Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1);
 
   throw std::runtime_error("TCPCallback failed to find tcp!");
@@ -2375,7 +2375,7 @@ TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
     tesseract_common::ManipulatorInfo manip_info("manipulator", "", "");
-    manip_info.tcp_offset = "laser";
+    manip_info.tcp_offset = "laser_callback";
     Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(found_tcp.isApprox(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1), 1e-6));
   }
