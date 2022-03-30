@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/commands.h>
+#include <tesseract_environment/events.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
@@ -230,6 +231,21 @@ public:
    * @return A vector of callback functions
    */
   std::vector<FindTCPOffsetCallbackFn> getFindTCPOffsetCallbacks() const;
+
+  /**
+   * @brief Add an event callback function
+   * @details When these get called they are protected by a unique lock internally so if the
+   * callback is a long event it can impact performance.
+   * @note These do not get cloned or serialized
+   * @param fn User defined callback function which gets called for different event triggers
+   */
+  void addEventCallback(const EventCallbackFn& fn);
+
+  /**
+   * @brief Get the current event callbacks stored in the environment
+   * @return A vector of callback functions
+   */
+  std::vector<EventCallbackFn> getEventCallbacks() const;
 
   /**
    * @brief Set resource locator for environment
@@ -468,6 +484,13 @@ public:
   /** @brief Get the environment collision margin data */
   tesseract_common::CollisionMarginData getCollisionMarginData() const;
 
+  /**
+   * @brief Lock the environment when wanting to make multiple reads
+   * @details This is useful when making multiple read function calls and don't want the data
+   * to get updated between function calls when there a multiple threads updating a single environment
+   */
+  std::shared_lock<std::shared_mutex> lockRead() const;
+
 protected:
   /** @brief Identifies if the object has been initialized */
   bool initialized_{ false };
@@ -507,6 +530,12 @@ protected:
 
   /** @brief A vector of user defined callbacks for locating tool center point */
   std::vector<FindTCPOffsetCallbackFn> find_tcp_cb_;
+
+  /**
+   * @brief A vector of user defined event callback functions
+   * @details This should not be cloned or serialized
+   */
+  std::vector<EventCallbackFn> event_cb_;
 
   /** @brief Used when initialized by URDF_STRING, URDF_STRING_SRDF_STRING, URDF_PATH, and URDF_PATH_SRDF_PATH */
   tesseract_common::ResourceLocator::ConstPtr resource_locator_;
