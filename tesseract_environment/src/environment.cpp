@@ -465,6 +465,18 @@ std::vector<FindTCPOffsetCallbackFn> Environment::getFindTCPOffsetCallbacks() co
   return find_tcp_cb_;
 }
 
+void Environment::addEventCallback(const EventCallbackFn& fn)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  event_cb_.push_back(fn);
+}
+
+std::vector<EventCallbackFn> Environment::getEventCallbacks() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return event_cb_;
+}
+
 void Environment::setResourceLocator(tesseract_common::ResourceLocator::ConstPtr locator)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
@@ -755,6 +767,11 @@ tesseract_common::CollisionMarginData Environment::getCollisionMarginData() cons
   return collision_margin_data_;
 }
 
+std::shared_lock<std::shared_mutex> Environment::lockRead() const
+{
+  return std::shared_lock<std::shared_mutex>(mutex_);
+}
+
 bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
 {
   tesseract_collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
@@ -902,6 +919,14 @@ void Environment::currentStateChanged()
     joint_group_cache_.clear();
     kinematic_group_cache_.clear();
   }
+
+  // Call the event callbacks
+  if (!event_cb_.empty())
+  {
+    SceneStateChangedEvent event(current_state_);
+    for (const auto& cb : event_cb_)
+      cb(event);
+  }
 }
 
 void Environment::environmentChanged()
@@ -915,6 +940,14 @@ void Environment::environmentChanged()
   {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
     std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
     group_joint_names_cache_.clear();
+  }
+
+  // Call the event callbacks
+  if (!event_cb_.empty())
+  {
+    CommandAppliedEvent event(commands_, revision_);
+    for (const auto& cb : event_cb_)
+      cb(event);
   }
 
   currentStateChanged();
