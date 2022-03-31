@@ -30,34 +30,36 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <cassert>
 #include <iostream>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/vector.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/types.h>
+#include <tesseract_common/utils.h>
 
 namespace tesseract_common
 {
-SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocatorFn locator_function)
-  : locator_function_(std::move(locator_function))
+bool ResourceLocator::operator==(const ResourceLocator& /*rhs*/) const { return true; }
+bool ResourceLocator::operator!=(const ResourceLocator& /*rhs*/) const { return false; }
+
+template <class Archive>
+void ResourceLocator::serialize(Archive& /*ar*/, const unsigned int /*version*/)
 {
-  assert(locator_function_);
 }
 
-tesseract_common::Resource::Ptr SimpleResourceLocator::locateResource(const std::string& url) const
+bool Resource::operator==(const Resource& /*rhs*/) const { return true; }
+bool Resource::operator!=(const Resource& /*rhs*/) const { return false; }
+
+template <class Archive>
+void Resource::serialize(Archive& /*ar*/, const unsigned int /*version*/)
 {
-  std::string filename = locator_function_(url);
-  if (!tesseract_common::fs::path(filename).is_complete())
-    return nullptr;
-  return std::make_shared<SimpleLocatedResource>(url, filename, std::make_shared<SimpleResourceLocator>(*this));
 }
 
-SimpleLocatedResource::SimpleLocatedResource(const std::string& url,
-                                             const std::string& filename,
-                                             const SimpleResourceLocator::ConstPtr& parent)
+SimpleLocatedResource::SimpleLocatedResource(std::string url, std::string filename, ResourceLocator::ConstPtr parent)
+  : url_(std::move(url)), filename_(std::move(filename)), parent_(std::move(parent))
 {
-  url_ = url;
-  filename_ = filename;
-  parent_ = parent;
 }
 
 bool SimpleLocatedResource::isFile() const { return true; }
@@ -99,7 +101,7 @@ std::shared_ptr<std::istream> SimpleLocatedResource::getResourceContentStream() 
 
 tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std::string& url) const
 {
-  if (parent_ == nullptr)
+  if (parent_ == nullptr || url.empty())
     return nullptr;
 
   tesseract_common::Resource::Ptr resource = parent_->locateResource(url);
@@ -119,16 +121,37 @@ tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std:
   return parent_->locateResource(new_url);
 }
 
-BytesResource::BytesResource(std::string url, std::vector<uint8_t> bytes)
+bool SimpleLocatedResource::operator==(const SimpleLocatedResource& rhs) const
 {
-  url_ = std::move(url);
-  bytes_ = std::move(bytes);
+  bool equal = true;
+  equal &= Resource::operator==(rhs);
+  equal &= url_ == rhs.url_;
+  equal &= filename_ == rhs.filename_;
+  equal &= tesseract_common::pointersEqual(parent_, rhs.parent_);
+  return equal;
 }
 
-BytesResource::BytesResource(std::string url, const uint8_t* bytes, size_t bytes_len)
+bool SimpleLocatedResource::operator!=(const SimpleLocatedResource& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void SimpleLocatedResource::serialize(Archive& ar, const unsigned int /*version*/)
 {
-  url_ = std::move(url);
-  bytes_ = std::vector<uint8_t>(bytes, bytes + bytes_len);  // NOLINT
+  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Resource);
+  ar& BOOST_SERIALIZATION_NVP(url_);
+  ar& BOOST_SERIALIZATION_NVP(filename_);
+  ar& BOOST_SERIALIZATION_NVP(parent_);
+}
+
+BytesResource::BytesResource(std::string url, std::vector<uint8_t> bytes, ResourceLocator::ConstPtr parent)
+  : url_(std::move(url)), bytes_(std::move(bytes)), parent_(std::move(parent))
+{
+}
+
+BytesResource::BytesResource(std::string url, const uint8_t* bytes, size_t bytes_len, ResourceLocator::ConstPtr parent)
+  : url_(std::move(url))
+  , bytes_(std::vector<uint8_t>(bytes, bytes + bytes_len))  // NOLINT
+  , parent_(std::move(parent))
+{
 }
 
 bool BytesResource::isFile() const { return false; }
@@ -143,6 +166,55 @@ std::shared_ptr<std::istream> BytesResource::getResourceContentStream() const
   return o;
 }
 
-Resource::Ptr BytesResource::locateResource(const std::string& /*url*/) const { return nullptr; }
+Resource::Ptr BytesResource::locateResource(const std::string& url) const
+{
+  if (parent_ == nullptr || url.empty())
+    return nullptr;
+
+  tesseract_common::Resource::Ptr resource = parent_->locateResource(url);
+  if (resource != nullptr)
+    return resource;
+
+  tesseract_common::fs::path path(url);
+  if (!path.is_relative())
+    return nullptr;
+
+  auto last_slash = url_.find_last_of('/');
+  if (last_slash == std::string::npos)
+    return nullptr;
+
+  std::string url_base_path = url_.substr(0, last_slash);
+  std::string new_url = url_base_path + "/" + path.filename().string();
+  return parent_->locateResource(new_url);
+}
+
+bool BytesResource::operator==(const BytesResource& rhs) const
+{
+  bool equal = true;
+  equal &= Resource::operator==(rhs);
+  equal &= url_ == rhs.url_;
+  equal &= bytes_ == rhs.bytes_;
+  equal &= tesseract_common::pointersEqual(parent_, rhs.parent_);
+  return equal;
+}
+
+bool BytesResource::operator!=(const BytesResource& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void BytesResource::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Resource);
+  ar& BOOST_SERIALIZATION_NVP(url_);
+  ar& BOOST_SERIALIZATION_NVP(bytes_);
+  ar& BOOST_SERIALIZATION_NVP(parent_);
+}
 
 }  // namespace tesseract_common
+
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ResourceLocator)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::Resource)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::SimpleLocatedResource)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::BytesResource)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::SimpleLocatedResource)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::BytesResource)

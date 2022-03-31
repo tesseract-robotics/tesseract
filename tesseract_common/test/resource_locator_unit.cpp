@@ -7,43 +7,54 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/types.h>
+#include <tesseract_common/unit_test_utils.h>
 
-std::string locateResource(const std::string& url)
+/** @brief Resource locator implementation using a provided function to locate file resources */
+class TestResourceLocator : public tesseract_common::ResourceLocator
 {
-  std::string mod_url = url;
-  if (url.find("package://tesseract_common") == 0)
+public:
+  using Ptr = std::shared_ptr<TestResourceLocator>;
+  using ConstPtr = std::shared_ptr<const TestResourceLocator>;
+
+  ~TestResourceLocator() override = default;
+
+  tesseract_common::Resource::Ptr locateResource(const std::string& url) const override final
   {
-    mod_url.erase(0, strlen("package://tesseract_common"));
-    size_t pos = mod_url.find('/');
-    if (pos == std::string::npos)
+    std::string mod_url = url;
+    if (url.find("package://tesseract_common") == 0)
     {
-      return std::string();
+      mod_url.erase(0, strlen("package://tesseract_common"));
+      size_t pos = mod_url.find('/');
+      if (pos == std::string::npos)
+        return nullptr;
+
+      std::string package = mod_url.substr(0, pos);
+      mod_url.erase(0, pos);
+
+      tesseract_common::fs::path file_path(__FILE__);
+      std::string package_path = file_path.parent_path().parent_path().string();
+
+      if (package_path.empty())
+        return nullptr;
+
+      mod_url = package_path + mod_url;
     }
 
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
+    if (!tesseract_common::fs::path(mod_url).is_complete())
+      return nullptr;
 
-    tesseract_common::fs::path file_path(__FILE__);
-    std::string package_path = file_path.parent_path().parent_path().string();
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
+    return std::make_shared<tesseract_common::SimpleLocatedResource>(
+        url, mod_url, std::make_shared<TestResourceLocator>(*this));
   }
+};
 
-  return mod_url;
-}
-
-TEST(TesseractSceneGraphResourceUnit, SimpleResourceLocatorUnit)  // NOLINT
+TEST(ResourceLocatorUnit, SimpleResourceLocatorUnit)  // NOLINT
 {
   using namespace tesseract_common;
   tesseract_common::fs::path file_path(__FILE__);
   tesseract_common::fs::path package_path = file_path.parent_path().parent_path();
 
-  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
+  ResourceLocator::Ptr locator = std::make_shared<TestResourceLocator>();
 
   Resource::Ptr resource = locator->locateResource("package://tesseract_common/package.xml");
   EXPECT_TRUE(resource != nullptr);
@@ -61,6 +72,9 @@ TEST(TesseractSceneGraphResourceUnit, SimpleResourceLocatorUnit)  // NOLINT
   EXPECT_FALSE(sub_resource->getResourceContents().empty());
   EXPECT_TRUE(sub_resource->getResourceContentStream() != nullptr);
 
+  tesseract_common::Resource::Ptr sub_resource_empty = sub_resource->locateResource("");
+  EXPECT_TRUE(sub_resource_empty == nullptr);
+
   tesseract_common::Resource::Ptr resource_empty = locator->locateResource("");
   EXPECT_TRUE(resource_empty == nullptr);
 
@@ -69,6 +83,56 @@ TEST(TesseractSceneGraphResourceUnit, SimpleResourceLocatorUnit)  // NOLINT
   EXPECT_TRUE(resource_does_not_exist != nullptr);
   EXPECT_TRUE(resource_does_not_exist->getResourceContents().empty());
   EXPECT_TRUE(resource_does_not_exist->getResourceContentStream() == nullptr);
+}
+
+TEST(ResourceLocatorUnit, ByteResourceUnit)  // NOLINT
+{
+  using namespace tesseract_common;
+  tesseract_common::fs::path file_path(__FILE__);
+  tesseract_common::fs::path package_path = file_path.parent_path().parent_path();
+
+  ResourceLocator::Ptr locator = std::make_shared<TestResourceLocator>();
+  Resource::Ptr resource = locator->locateResource("package://tesseract_common/package.xml");
+
+  auto byte_resource = std::make_shared<BytesResource>(
+      "package://tesseract_common/package.xml", std::vector<uint8_t>({ 1, 2, 3, 4 }), resource);
+  EXPECT_TRUE(byte_resource != nullptr);
+  EXPECT_FALSE(byte_resource->isFile());
+  EXPECT_EQ(byte_resource->getUrl(), "package://tesseract_common/package.xml");
+  EXPECT_TRUE(byte_resource->getFilePath().empty());
+  EXPECT_FALSE(byte_resource->getResourceContents().empty());
+  EXPECT_TRUE(byte_resource->getResourceContentStream() != nullptr);
+
+  Resource::Ptr sub_resource = byte_resource->locateResource("colcon.pkg");
+  EXPECT_TRUE(sub_resource != nullptr);
+  EXPECT_TRUE(sub_resource->isFile());
+  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common/colcon.pkg");
+  EXPECT_EQ(sub_resource->getFilePath(), (package_path / "colcon.pkg").string());
+  EXPECT_FALSE(sub_resource->getResourceContents().empty());
+  EXPECT_TRUE(sub_resource->getResourceContentStream() != nullptr);
+
+  tesseract_common::Resource::Ptr resource_empty = byte_resource->locateResource("");
+  EXPECT_TRUE(resource_empty == nullptr);
+
+  tesseract_common::Resource::Ptr resource_does_not_exist = byte_resource->locateResource("package://tesseract_common/"
+                                                                                          "does_not_exist.txt");
+  EXPECT_TRUE(resource_does_not_exist != nullptr);
+  EXPECT_TRUE(resource_does_not_exist->getResourceContents().empty());
+  EXPECT_TRUE(resource_does_not_exist->getResourceContentStream() == nullptr);
+}
+
+TEST(ResourceLocatorUnit, SimpleLocatedResourceSerializUnit)  // NOLINT
+{
+  using namespace tesseract_common;
+  SimpleLocatedResource resource("url", "file_path");
+  tesseract_common::testSerialization<SimpleLocatedResource>(resource, "SimpleLocatedResource");
+}
+
+TEST(ResourceLocatorUnit, BytesResourceSerializUnit)  // NOLINT
+{
+  using namespace tesseract_common;
+  BytesResource resource("url", { 1, 2, 3, 4, 5 });
+  tesseract_common::testSerialization<BytesResource>(resource, "BytesResource");
 }
 
 int main(int argc, char** argv)

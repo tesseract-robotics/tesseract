@@ -7,6 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/urdf_parser.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 
 using namespace tesseract_scene_graph;
 using namespace tesseract_urdf;
@@ -20,35 +21,6 @@ std::string toString(const ShortestPath& path)
 
 std::string toString(bool b) { return b ? "true" : "false"; }
 
-// documentation:start:1: Define a resource locator function
-std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://tesseract_support") == 0)
-  {
-    mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find('/');
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
-  }
-
-  return mod_url;
-}
-// documentation:end:1: Define a resource locator function
-
 int main(int /*argc*/, char** /*argv*/)
 {
   // documentation:start:2: Get the urdf file path
@@ -56,7 +28,7 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:2: Get the urdf file path
 
   // documentation:start:3: Create scene graph
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
   // documentation:end:3: Create scene graph
 

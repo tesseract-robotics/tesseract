@@ -46,43 +46,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_common/utils.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 
-namespace tesseract_kinematics
+namespace tesseract_kinematics::test_suite
 {
-namespace test_suite
-{
-inline std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://tesseract_support") == 0)
-  {
-    mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find('/');
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;  // "file://" + package_path + mod_url;
-  }
-
-  return mod_url;
-}
-
 inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphIIWA()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -90,7 +62,7 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphABBExternalPositione
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400_external_positioner.urdf";
 
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -98,7 +70,7 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphABBOnPositioner()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400_on_positioner.urdf";
 
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -106,7 +78,7 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphABB()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.urdf";
 
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -114,7 +86,7 @@ inline tesseract_scene_graph::SceneGraph::UPtr getSceneGraphIIWA7()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/iiwa7.urdf";
 
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -1077,6 +1049,5 @@ inline void runInvKinIIWATest(const tesseract_kinematics::KinematicsPluginFactor
   }
 }
 
-}  // namespace test_suite
-}  // namespace tesseract_kinematics
+}  // namespace tesseract_kinematics::test_suite
 #endif  // TESSERACT_KINEMATICS_KIN_TEST_SUITE_H

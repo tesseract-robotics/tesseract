@@ -6,11 +6,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/urdf_parser.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
 
 TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 {
-  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator resource_locator;
   {
     std::string str =
         R"(<robot name="test" extra="0 0 0">
@@ -246,7 +247,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
 TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
 {
-  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator resource_locator;
   {
     std::string str =
         R"(<robot name="test" extra="0 0 0">
@@ -412,7 +413,7 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
 
   std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   auto g = tesseract_urdf::parseURDFFile(urdf_file, locator);
 
   EXPECT_TRUE(g->getJoints().size() == 9);
