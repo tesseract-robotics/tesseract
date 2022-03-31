@@ -33,35 +33,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_geometry/mesh_parser.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 
 using namespace tesseract_geometry;
-
-std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://tesseract_support") == 0)
-  {
-    mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find('/');
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
-  }
-
-  return mod_url;
-}
 
 TEST(TesseractGeometrySerializeUnit, Box)  // NOLINT
 {
@@ -87,7 +61,7 @@ TEST(TesseractGeometrySerializeUnit, Cone)  // NOLINT
 TEST(TesseractGeometrySerializeUnit, ConvexMesh)  // NOLINT
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   tesseract_common::testSerialization<ConvexMesh>(*object.front(), "ConvexMesh");
@@ -105,7 +79,7 @@ TEST(TesseractGeometrySerializeUnit, Cylinder)  // NOLINT
 TEST(TesseractGeometrySerializeUnit, Mesh)  // NOLINT
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   tesseract_common::testSerialization<Mesh>(*object.front(), "Mesh");
@@ -156,7 +130,7 @@ TEST(TesseractGeometrySerializeUnit, Plane)  // NOLINT
 TEST(TesseractGeometrySerializeUnit, PolygonMesh)  // NOLINT
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::PolygonMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   tesseract_common::testSerialization<PolygonMesh>(*object.front(), "PolygonMesh");
@@ -166,7 +140,7 @@ TEST(TesseractGeometrySerializeUnit, PolygonMesh)  // NOLINT
 TEST(TesseractGeometrySerializeUnit, SDFMesh)  // NOLINT
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::SDFMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   tesseract_common::testSerialization<SDFMesh>(*object.front(), "SDFMesh");

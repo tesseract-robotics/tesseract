@@ -7,11 +7,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/octree.h>
 #include <tesseract_urdf/octomap.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
 
 TEST(TesseractURDFUnit, parse_octree)  // NOLINT
 {
-  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator resource_locator;
   //  {
   //    // Create octomap and add save it
   //    pcl::PointCloud<pcl::PointXYZ> full_cloud;

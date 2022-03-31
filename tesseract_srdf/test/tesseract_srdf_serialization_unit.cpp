@@ -34,37 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_srdf/kinematics_information.h>
 #include <tesseract_srdf/srdf_model.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 
 using namespace tesseract_common;
 using namespace tesseract_scene_graph;
 using namespace tesseract_srdf;
-
-std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://tesseract_support") == 0)
-  {
-    mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find('/');
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
-  }
-
-  return mod_url;
-}
 
 SceneGraph getSceneGraph()
 {
@@ -157,7 +131,7 @@ SceneGraph getSceneGraph()
 SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
 
   auto srdf = std::make_shared<SRDFModel>();
   srdf->initFile(scene_graph, path, locator);
@@ -175,7 +149,7 @@ TEST(TesseractSRDFSerializeUnit, KinematicsInformation)  // NOLINT
 
 TEST(TesseractSRDFSerializeUnit, SRDFModel)  // NOLINT
 {
-  SimpleResourceLocator locator(locateResource);
+  TesseractSupportResourceLocator locator;
   auto graph = getSceneGraph();
   auto srdf = getSRDFModel(graph);
 

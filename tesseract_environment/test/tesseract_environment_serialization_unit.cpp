@@ -37,51 +37,25 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/environment.h>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_srdf/srdf_model.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 
 using namespace tesseract_common;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_srdf;
 
-std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://tesseract_support") == 0)
-  {
-    mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find('/');
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
-  }
-
-  return mod_url;
-}
-
 SceneGraph::UPtr getSceneGraph()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
 SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
 
   auto srdf = std::make_shared<SRDFModel>();
   srdf->initFile(scene_graph, path, locator);
@@ -94,7 +68,7 @@ Environment::Ptr getEnvironment()
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   auto srdf = getSRDFModel(*scene_graph);
   env->init(*scene_graph, srdf);
-  env->setResourceLocator(std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+  env->setResourceLocator(std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
   return env;
 }
 

@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <functional>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -56,12 +57,7 @@ public:
   using Ptr = std::shared_ptr<ResourceLocator>;
   using ConstPtr = std::shared_ptr<const ResourceLocator>;
 
-  ResourceLocator() = default;
   virtual ~ResourceLocator() = default;
-  ResourceLocator(const ResourceLocator&) = default;
-  ResourceLocator& operator=(const ResourceLocator&) = default;
-  ResourceLocator(ResourceLocator&&) = default;
-  ResourceLocator& operator=(ResourceLocator&&) = default;
 
   /**
    * @brief Locate a resource based on a URL
@@ -70,6 +66,14 @@ public:
    * @return A shared pointer to a Resource instance, or nullptr if not found
    */
   virtual std::shared_ptr<Resource> locateResource(const std::string& url) const = 0;
+
+  bool operator==(const ResourceLocator& rhs) const;
+  bool operator!=(const ResourceLocator& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /**  @brief Represents resource data available from a file or url */
@@ -78,13 +82,6 @@ class Resource : public ResourceLocator
 public:
   using Ptr = std::shared_ptr<Resource>;
   using ConstPtr = std::shared_ptr<const Resource>;
-
-  Resource() = default;
-  ~Resource() override = default;
-  Resource(const Resource&) = default;
-  Resource& operator=(const Resource&) = default;
-  Resource(Resource&&) = default;
-  Resource& operator=(Resource&&) = default;
 
   /**
    * @brief Returns true if the located resource is a local file
@@ -120,45 +117,35 @@ public:
    * @return A std::istream shared pointer for the resource data
    */
   virtual std::shared_ptr<std::istream> getResourceContentStream() const = 0;
+
+  bool operator==(const Resource& rhs) const;
+  bool operator!=(const Resource& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 using SimpleResourceLocatorFn = std::function<std::string(const std::string&)>;
 
-/** @brief Resource locator implementation using a provided function to locate file resources */
-class SimpleResourceLocator : public ResourceLocator
-{
-public:
-  using Ptr = std::shared_ptr<SimpleResourceLocator>;
-  using ConstPtr = std::shared_ptr<const SimpleResourceLocator>;
-
-  /**
-   * @brief Construct a new Simple Resource Locator object
-   *
-   * @param locator_function Function to use to resolve resource file paths from URLs
-   */
-  SimpleResourceLocator(SimpleResourceLocatorFn locator_function);
-  ~SimpleResourceLocator() override = default;
-  SimpleResourceLocator(const SimpleResourceLocator&) = default;
-  SimpleResourceLocator& operator=(const SimpleResourceLocator&) = default;
-  SimpleResourceLocator(SimpleResourceLocator&&) = default;
-  SimpleResourceLocator& operator=(SimpleResourceLocator&&) = default;
-
-  tesseract_common::Resource::Ptr locateResource(const std::string& url) const override final;
-
-private:
-  SimpleResourceLocatorFn locator_function_;
-};
-
 /** @brief Resource implementation for a local file */
-class SimpleLocatedResource : public tesseract_common::Resource
+class SimpleLocatedResource : public Resource
 {
 public:
   using Ptr = std::shared_ptr<SimpleLocatedResource>;
   using ConstPtr = std::shared_ptr<const SimpleLocatedResource>;
 
-  SimpleLocatedResource(const std::string& url,
-                        const std::string& filename,
-                        const SimpleResourceLocator::ConstPtr& parent = nullptr);
+  /** @brief This is for boost serialization do not use directly */
+  SimpleLocatedResource() = default;
+
+  /**
+   * @brief A generic resource
+   * @param url The url to the resource
+   * @param filename The file path to the resource
+   * @param parent The locator used to locate the resource
+   */
+  SimpleLocatedResource(std::string url, std::string filename, ResourceLocator::ConstPtr parent = nullptr);
   ~SimpleLocatedResource() override = default;
   SimpleLocatedResource(const SimpleLocatedResource&) = default;
   SimpleLocatedResource& operator=(const SimpleLocatedResource&) = default;
@@ -177,17 +164,27 @@ public:
 
   Resource::Ptr locateResource(const std::string& url) const override final;
 
+  bool operator==(const SimpleLocatedResource& rhs) const;
+  bool operator!=(const SimpleLocatedResource& rhs) const;
+
 private:
   std::string url_;
   std::string filename_;
-  SimpleResourceLocator::ConstPtr parent_;
+  ResourceLocator::ConstPtr parent_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class BytesResource : public tesseract_common::Resource
 {
 public:
-  BytesResource(std::string url, std::vector<uint8_t> bytes);
-  BytesResource(std::string url, const uint8_t* bytes, size_t bytes_len);
+  /** @brief This is for boost serialization do not use directly */
+  BytesResource() = default;
+
+  BytesResource(std::string url, std::vector<uint8_t> bytes, ResourceLocator::ConstPtr parent = nullptr);
+  BytesResource(std::string url, const uint8_t* bytes, size_t bytes_len, ResourceLocator::ConstPtr parent = nullptr);
   ~BytesResource() override = default;
   BytesResource(const BytesResource&) = default;
   BytesResource& operator=(const BytesResource&) = default;
@@ -201,11 +198,24 @@ public:
   std::shared_ptr<std::istream> getResourceContentStream() const override final;
   Resource::Ptr locateResource(const std::string& url) const override final;
 
+  bool operator==(const BytesResource& rhs) const;
+  bool operator!=(const BytesResource& rhs) const;
+
 private:
   std::string url_;
   std::vector<uint8_t> bytes_;
+  ResourceLocator::ConstPtr parent_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 }  // namespace tesseract_common
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::SimpleLocatedResource, "SimpleLocatedResource")
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::BytesResource, "BytesResource")
 
 #endif  // TESSERACT_COMMON_RESOURCE_LOCATOR_H
