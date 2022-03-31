@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- Create links -->
+    <link name="world"/>
+    <link name="base_link"/>
+
+    <!--Import the lbr iiwa macro -->
+    <xacro:include filename="$(find tesseract_support)/urdf/lbr_iiwa_14_r820_macro.xacro"/>
+    <!-- Include robot -->
+    <xacro:kuka_lbr_iiwa_14_r820 prefix="iiwa_"/>
+
+    <!-- Include workcell (creates joint from world to workcell_base)-->
+    <xacro:include filename="$(find tesseract_support)/urdf/pick_and_place_environment.xacro"/>
+    <xacro:workcell parent_link="world" >
+        <origin xyz="0.0 0.0 0.77153" rpy="0 0 0"/>
+    </xacro:workcell >
+
+    <xacro:cabinet id="1" parent_link="workcell_base" >
+        <origin rpy="0 0 0" xyz="-0.3048 1.016 0.771525"/>
+    </xacro:cabinet >
+
+    <!-- Create joints -->
+    <joint name="workcell_base_to_base" type="fixed">
+      <parent link="workcell_base"/>
+      <child link="base_link"/>
+      <origin xyz="0 -0.0381 0.00953" rpy="0 0 1.5708"/>
+    </joint>
+
+    <!-- Create joints -->
+    <joint name="workcell_base_to_robot" type="fixed">
+      <parent link="base_link"/>
+      <child link="iiwa_base_link"/>
+      <origin xyz="0.0 0 0.0" rpy="0 0 0"/>
+    </joint>
+
+</robot>

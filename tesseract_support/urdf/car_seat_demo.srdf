@@ -1,0 +1,92 @@
+<?xml version="1.0" ?>
+<!--This does not replace URDF, and is not an extension of URDF.
+    This is a format for representing semantic information about the robot structure.
+    A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
+-->
+<robot name="car_seat_demo">
+    <!-- Manipulators -->
+    <group name="manipulator">
+        <chain base_link="rail" tip_link="end_effector" />
+    </group>
+
+    <!-- Groups kinematic plugins -->
+    <kinematics_plugin_config filename="package://tesseract_support/urdf/car_seat_demo_plugins.yaml"/>
+
+    <!--Contact Managers plugins -->
+    <contact_managers_plugin_config filename="package://tesseract_support/urdf/contact_manager_plugins.yaml"/>
+
+    <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <disable_collisions link1="base_link" link2="car" reason="Never" />
+    <disable_collisions link1="base_link" link2="carriage" reason="Adjacent" />
+    <disable_collisions link1="base_link" link2="cell_logo" reason="Never" />
+    <disable_collisions link1="base_link" link2="conveyor" reason="Never" />
+    <disable_collisions link1="base_link" link2="fence" reason="Never" />
+    <disable_collisions link1="base_link" link2="link_e" reason="Never" />
+    <disable_collisions link1="base_link" link2="link_l" reason="Never" />
+    <disable_collisions link1="base_link" link2="link_s" reason="Adjacent" />
+    <disable_collisions link1="base_link" link2="rail" reason="Default" />
+    <disable_collisions link1="car" link2="carriage" reason="Never" />
+    <disable_collisions link1="car" link2="cell_logo" reason="Adjacent" />
+    <disable_collisions link1="car" link2="conveyor" reason="Adjacent" />
+    <disable_collisions link1="car" link2="fence" reason="Adjacent" />
+    <disable_collisions link1="car" link2="link_l" reason="Never" />
+    <disable_collisions link1="car" link2="link_s" reason="Never" />
+    <disable_collisions link1="car" link2="rail" reason="Adjacent" />
+    <disable_collisions link1="carriage" link2="cell_logo" reason="Never" />
+    <disable_collisions link1="carriage" link2="conveyor" reason="Default" />
+    <disable_collisions link1="carriage" link2="fence" reason="Never" />
+    <disable_collisions link1="carriage" link2="link_e" reason="Never" />
+    <disable_collisions link1="carriage" link2="link_l" reason="Never" />
+    <disable_collisions link1="carriage" link2="link_s" reason="Never" />
+    <disable_collisions link1="carriage" link2="link_u" reason="Never" />
+    <disable_collisions link1="carriage" link2="rail" reason="Adjacent" />
+    <disable_collisions link1="cell_logo" link2="conveyor" reason="Adjacent" />
+    <disable_collisions link1="cell_logo" link2="end_effector" reason="Never" />
+    <disable_collisions link1="cell_logo" link2="fence" reason="Adjacent" />
+    <disable_collisions link1="cell_logo" link2="link_b" reason="Never" />
+    <disable_collisions link1="cell_logo" link2="link_e" reason="Never" />
+    <disable_collisions link1="cell_logo" link2="link_l" reason="Never" />
+    <disable_collisions link1="cell_logo" link2="link_r" reason="Never" />
+    <disable_collisions link1="cell_logo" link2="link_s" reason="Never" />
+    <disable_collisions link1="cell_logo" link2="link_t" reason="Never" />
+    <disable_collisions link1="cell_logo" link2="link_u" reason="Never" />
+    <disable_collisions link1="cell_logo" link2="rail" reason="Adjacent" />
+    <disable_collisions link1="conveyor" link2="fence" reason="Adjacent" />
+    <disable_collisions link1="conveyor" link2="link_l" reason="Never" />
+    <disable_collisions link1="conveyor" link2="link_s" reason="Never" />
+    <disable_collisions link1="conveyor" link2="rail" reason="Adjacent" />
+    <disable_collisions link1="end_effector" link2="fence" reason="Never" />
+    <disable_collisions link1="end_effector" link2="link_b" reason="Never" />
+    <disable_collisions link1="end_effector" link2="link_r" reason="Never" />
+    <disable_collisions link1="end_effector" link2="link_t" reason="Adjacent" />
+    <disable_collisions link1="fence" link2="link_b" reason="Never" />
+    <disable_collisions link1="fence" link2="link_e" reason="Never" />
+    <disable_collisions link1="fence" link2="link_l" reason="Never" />
+    <disable_collisions link1="fence" link2="link_r" reason="Never" />
+    <disable_collisions link1="fence" link2="link_s" reason="Never" />
+    <disable_collisions link1="fence" link2="link_t" reason="Never" />
+    <disable_collisions link1="fence" link2="link_u" reason="Never" />
+    <disable_collisions link1="fence" link2="rail" reason="Adjacent" />
+    <disable_collisions link1="link_b" link2="link_e" reason="Never" />
+    <disable_collisions link1="link_b" link2="link_l" reason="Never" />
+    <disable_collisions link1="link_b" link2="link_r" reason="Adjacent" />
+    <disable_collisions link1="link_b" link2="link_t" reason="Adjacent" />
+    <disable_collisions link1="link_b" link2="link_u" reason="Never" />
+    <disable_collisions link1="link_e" link2="link_l" reason="Adjacent" />
+    <disable_collisions link1="link_e" link2="link_r" reason="Never" />
+    <disable_collisions link1="link_e" link2="link_s" reason="Never" />
+    <disable_collisions link1="link_e" link2="link_t" reason="Never" />
+    <disable_collisions link1="link_e" link2="link_u" reason="Adjacent" />
+    <disable_collisions link1="link_e" link2="rail" reason="Never" />
+    <disable_collisions link1="link_l" link2="link_r" reason="Never" />
+    <disable_collisions link1="link_l" link2="link_s" reason="Adjacent" />
+    <disable_collisions link1="link_l" link2="link_t" reason="Never" />
+    <disable_collisions link1="link_l" link2="link_u" reason="Never" />
+    <disable_collisions link1="link_l" link2="rail" reason="Never" />
+    <disable_collisions link1="link_r" link2="link_s" reason="Never" />
+    <disable_collisions link1="link_r" link2="link_t" reason="Never" />
+    <disable_collisions link1="link_r" link2="link_u" reason="Adjacent" />
+    <disable_collisions link1="link_s" link2="link_u" reason="Never" />
+    <disable_collisions link1="link_s" link2="rail" reason="Never" />
+    <disable_collisions link1="link_t" link2="link_u" reason="Never" />
+</robot>

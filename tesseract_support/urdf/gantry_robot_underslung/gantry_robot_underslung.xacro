@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="gantry_robot_underslung" params="prefix">
+
+  <xacro:include filename="$(find tesseract_support)/urdf/gantry_robot_underslung/gudel_fp6_macro.xacro"/>
+  <xacro:include filename="$(find tesseract_support)/urdf/abb_irb2400.urdf" />
+
+  <xacro:gudel_fp6 prefix="${prefix}gantry_"/>
+
+  <joint name="${prefix}gantry_to_robot_base" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="${prefix}gantry_flange"/>
+    <child link="base_link"/>
+  </joint>
+</xacro:macro>
+</robot>
+

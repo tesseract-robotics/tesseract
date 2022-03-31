@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<robot name="online_planning_example" xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:include filename="$(find tesseract_support)/urdf/gantry_robot_underslung/gantry_robot_underslung.xacro"/>
+
+  <xacro:gantry_robot_underslung prefix=""/>
+  <link name="world" />
+  <joint name="world_to_gantry" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="world"/>
+    <child link="gantry_base"/>
+  </joint>
+
+  <!-- Add a zone that should be kept free of humans -->
+  <link name="robot_estop_zone">
+    <visual>
+      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="2" radius="2.0"/>
+      </geometry>
+      <material name="estop_red"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="2" radius="2.0"/>
+      </geometry>
+      <material name="estop_red"/>
+    </collision>
+  </link>
+  <joint name="estop_zone" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="gantry_flange"/>
+    <child link="robot_estop_zone"/>
+  </joint>
+
+  <!-- Add Floor -->
+  <xacro:property name="length" value="9.0"/>
+  <xacro:property name="width" value="8.0"/>
+  <link name="floor">
+    <visual>
+      <origin xyz="${length / 2 - 1} ${width / 2 - 1} 0.001" rpy="0 0 0"/>
+      <geometry>
+        <box size="${length} ${width} 0.001"/>
+      </geometry>
+      <material name="tesseract_white"/>
+    </visual>
+    <collision>
+      <origin xyz="${length / 2.0} ${width / 2.0} 0.1" rpy="0 0 0"/>
+      <geometry>
+        <box size="${length} ${width} 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_floor" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="world"/>
+    <child link="floor"/>
+  </joint>
+
+<!-- Add a "human" to the environment -->
+  <link name="human_x" />
+  <link name="human_y" />
+  <link name="human_estop_zone">
+    <visual>
+      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="2" radius="0.5"/>
+      </geometry>
+      <material name="estop_red"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="2" radius="0.5"/>
+      </geometry>
+      <material name="estop_red"/>
+    </collision>
+  </link>
+  <joint name="human_x_joint" type="prismatic">
+    <origin xyz="3 0 0" rpy="0 0 0"/>
+    <parent link="floor"/>
+    <child link="human_x"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-10.0" upper="10.0" effort="0" velocity="0.5"/>
+  </joint>
+  <joint name="human_y_joint" type="prismatic">
+    <origin xyz="0 4 0" rpy="0 0 0"/>
+    <parent link="human_x"/>
+    <child link="human_y"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-10.0" upper="10.0" effort="0" velocity="0.5"/>
+  </joint>
+  <joint name="human_estop_zone" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="human_y"/>
+    <child link="human_estop_zone"/>
+  </joint>
+
+  <!-- Add target point TODO: See if this is even used -->
+  <link name="target_x" />
+  <link name="target_y" />
+  <link name="target_z" />
+
+  <joint name="target_x_joint" type="prismatic">
+    <origin xyz="5 0 0" rpy="0 0 0"/>
+    <parent link="floor"/>
+    <child link="target_x"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-5.0" upper="1.0" effort="0" velocity="0.5"/>
+  </joint>
+  <joint name="target_y_joint" type="prismatic">
+    <origin xyz="0 3 0" rpy="0 0 0"/>
+    <parent link="target_x"/>
+    <child link="target_y"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.0" upper="3.0" effort="0" velocity="0.5"/>
+  </joint>
+  <joint name="target_z_joint" type="prismatic">
+    <origin xyz="0 0 0.5" rpy="0 0 0"/>
+    <parent link="target_y"/>
+    <child link="target_z"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.5" upper="0.5" effort="0" velocity="0.5"/>
+  </joint>
+</robot>

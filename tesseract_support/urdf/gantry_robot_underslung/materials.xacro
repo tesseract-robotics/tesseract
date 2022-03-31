@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<robot>
+  <material name="tesseract_black">
+    <color rgba="0.0 0.0 0.0 1.0"/>
+  </material>
+
+  <material name="tesseract_white">
+    <color rgba="1.0 1.0 1.0 1.0"/>
+  </material>
+
+  <material name="tesseract_red">
+    <color rgba="1.0 0.0 0.0 1.0"/>
+  </material>
+
+  <material name="tesseract_green">
+    <color rgba="0.0 1.0 0.0 1.0"/>
+  </material>
+
+  <material name="tesseract_blue">
+    <color rgba="0.0 0.0 1.0 1.0"/>
+  </material>
+
+  <material name="estop_red">
+    <color rgba="0.8 0 0 0.05"/>
+  </material>
+</robot>
