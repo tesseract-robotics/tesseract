@@ -2,8 +2,8 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.0 (2022-03-31)
+------------------
 * Make ResourceLocator serializable
 * Add tcp to iiwa srdf
 * Contributors: Levi Armstrong
