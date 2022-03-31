@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<robot name="gudel" xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:include filename="$(find tesseract_support)/urdf/gantry_robot_underslung/gudel_fp6_macro.xacro"/>
+  <xacro:gudel_fp6 prefix=""/>
+</robot>

@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<!--This does not replace URDF, and is not an extension of URDF.
+    This is a format for representing semantic information about the robot structure.
+    A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
+-->
+<robot name="robot">
+    <!-- Manipulators -->
+    <group name="manipulator">
+        <chain base_link="base_link" tip_link="iiwa_tool0" />
+    </group>
+
+    <!-- GROUP STATES -->
+    <group_state name="AllZero" group="manipulator">
+        <joint name="iiwa_joint_a1" value="0" />
+        <joint name="iiwa_joint_a2" value="0" />
+        <joint name="iiwa_joint_a3" value="0" />
+        <joint name="iiwa_joint_a4" value="0" />
+        <joint name="iiwa_joint_a5" value="0" />
+        <joint name="iiwa_joint_a6" value="0" />
+        <joint name="iiwa_joint_a7" value="0" />
+    </group_state>
+
+    <!-- Groups kinematic plugins -->
+    <kinematics_plugin_config filename="package://tesseract_support/urdf/pick_and_place_plan_plugins.yaml"/>
+
+    <!--Contact Managers plugins -->
+    <contact_managers_plugin_config filename="package://tesseract_support/urdf/contact_manager_plugins.yaml"/>
+
+    <!--DISABLE COLLISIONS By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <disable_collisions link1="cabinet_1" link2="iiwa_base_link" reason="Never" />
+    <disable_collisions link1="cabinet_1" link2="iiwa_link_1" reason="Never" />
+    <disable_collisions link1="cabinet_1" link2="iiwa_link_2" reason="Never" />
+    <disable_collisions link1="cabinet_1" link2="iiwa_link_3" reason="Never" />
+    <disable_collisions link1="cabinet_1" link2="iiwa_link_4" reason="Never" />
+    <disable_collisions link1="cabinet_1" link2="workcell_base" reason="Adjacent" />
+    <disable_collisions link1="iiwa_base_link" link2="iiwa_link_1" reason="Adjacent" />
+    <disable_collisions link1="iiwa_base_link" link2="iiwa_link_2" reason="Never" />
+    <disable_collisions link1="iiwa_base_link" link2="iiwa_link_3" reason="Never" />
+    <disable_collisions link1="iiwa_base_link" link2="iiwa_link_4" reason="Never" />
+    <disable_collisions link1="iiwa_base_link" link2="workcell_base" reason="Adjacent" />
+    <disable_collisions link1="iiwa_link_1" link2="iiwa_link_2" reason="Adjacent" />
+    <disable_collisions link1="iiwa_link_1" link2="iiwa_link_3" reason="Never" />
+    <disable_collisions link1="iiwa_link_1" link2="iiwa_link_4" reason="Never" />
+    <disable_collisions link1="iiwa_link_1" link2="iiwa_link_5" reason="Never" />
+    <disable_collisions link1="iiwa_link_1" link2="iiwa_link_6" reason="Never" />
+    <disable_collisions link1="iiwa_link_1" link2="iiwa_link_7" reason="Never" />
+    <disable_collisions link1="iiwa_link_1" link2="workcell_base" reason="Never" />
+    <disable_collisions link1="iiwa_link_2" link2="iiwa_link_3" reason="Adjacent" />
+    <disable_collisions link1="iiwa_link_2" link2="iiwa_link_4" reason="Never" />
+    <disable_collisions link1="iiwa_link_2" link2="iiwa_link_5" reason="Never" />
+    <disable_collisions link1="iiwa_link_2" link2="iiwa_link_6" reason="Never" />
+    <disable_collisions link1="iiwa_link_2" link2="iiwa_link_7" reason="Never" />
+    <disable_collisions link1="iiwa_link_2" link2="workcell_base" reason="Never" />
+    <disable_collisions link1="iiwa_link_3" link2="iiwa_link_4" reason="Adjacent" />
+    <disable_collisions link1="iiwa_link_3" link2="iiwa_link_5" reason="Never" />
+    <disable_collisions link1="iiwa_link_3" link2="iiwa_link_6" reason="Never" />
+    <disable_collisions link1="iiwa_link_3" link2="iiwa_link_7" reason="Never" />
+    <disable_collisions link1="iiwa_link_4" link2="iiwa_link_5" reason="Adjacent" />
+    <disable_collisions link1="iiwa_link_4" link2="iiwa_link_6" reason="Never" />
+    <disable_collisions link1="iiwa_link_4" link2="iiwa_link_7" reason="Never" />
+    <disable_collisions link1="iiwa_link_5" link2="iiwa_link_6" reason="Adjacent" />
+    <disable_collisions link1="iiwa_link_5" link2="iiwa_link_7" reason="Never" />
+    <disable_collisions link1="iiwa_link_5" link2="workcell_base" reason="Default" />
+    <disable_collisions link1="iiwa_link_6" link2="iiwa_link_7" reason="Adjacent" />
+    <disable_collisions link1="iiwa_link_6" link2="workcell_base" reason="Default" />
+    <disable_collisions link1="iiwa_link_7" link2="workcell_base" reason="Default" />
+</robot>

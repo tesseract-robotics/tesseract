@@ -33,7 +33,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/base_link.dae"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/visual/base_link.dae"/>
       </geometry>
       <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
@@ -41,7 +41,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/base_link.stl"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/collision/base_link.stl"/>
       </geometry>
       <material name="yellow">
         <color rgba="1 1 0 1"/>
@@ -52,7 +52,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_1.dae"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/visual/link_1.dae"/>
       </geometry>
       <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
@@ -61,7 +61,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_1.stl"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/collision/link_1.stl"/>
       </geometry>
     </collision>
   </link>
@@ -69,7 +69,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_2.dae"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/visual/link_2.dae"/>
       </geometry>
       <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
@@ -78,7 +78,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_2_whole.stl"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/collision/link_2_whole.stl"/>
       </geometry>
     </collision>
   </link>
@@ -86,7 +86,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_3.dae"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/visual/link_3.dae"/>
       </geometry>
       <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
@@ -95,7 +95,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_3.stl"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/collision/link_3.stl"/>
       </geometry>
     </collision>
   </link>
@@ -103,7 +103,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_4.dae"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/visual/link_4.dae"/>
       </geometry>
       <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
@@ -112,7 +112,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_4.stl"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/collision/link_4.stl"/>
       </geometry>
     </collision>
   </link>
@@ -120,7 +120,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_5.dae"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/visual/link_5.dae"/>
       </geometry>
       <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
@@ -129,7 +129,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_5.stl"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/collision/link_5.stl"/>
       </geometry>
     </collision>
   </link>
@@ -137,7 +137,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_6.dae"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/visual/link_6.dae"/>
       </geometry>
       <material name="">
         <color rgba="0.1882353 0.1960784 0.2039216 1"/>
@@ -146,7 +146,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_6.stl"/>
+        <mesh filename="package://tesseract_support/meshes/abb_irb2400/irb2400/collision/link_6.stl"/>
       </geometry>
     </collision>
   </link>

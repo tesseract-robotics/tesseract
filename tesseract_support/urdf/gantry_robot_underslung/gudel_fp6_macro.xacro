@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="gudel_fp6" params="prefix">
+
+    <xacro:include filename="$(find tesseract_support)/urdf/gantry_robot_underslung/materials.xacro"/>
+    <link name="${prefix}base">
+<!--      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/meshes/visual/base.ply"/>
+        </geometry>
+      </visual>-->
+
+    <!-- Rails -->
+    <visual>
+        <origin rpy="0 0 0" xyz="3.5 6.0 2.5"/>
+        <geometry>
+          <box size="9.0 0.5 0.5"/>
+        </geometry>
+        <material name="tesseract_red"/>
+    </visual>
+    <visual>
+        <origin rpy="0 0 0" xyz="3.5 0.0 2.5"/>
+        <geometry>
+          <box size="9.0 0.5 0.5"/>
+        </geometry>
+        <material name="tesseract_red"/>
+    </visual>
+    <!-- Columns -->
+    <visual>
+        <origin rpy="0 0 0" xyz="-0.5 0.0 1.25"/>
+        <geometry>
+          <box size="0.5 0.5 2.5"/>
+        </geometry>
+        <material name="tesseract_red"/>
+    </visual>
+    <visual>
+        <origin rpy="0 0 0" xyz="3.1 0.0 1.25"/>
+        <geometry>
+          <box size="0.5 0.5 2.5"/>
+        </geometry>
+        <material name="tesseract_red"/>
+    </visual>
+    <visual>
+        <origin rpy="0 0 0" xyz="6.7 0.0 1.25"/>
+        <geometry>
+          <box size="0.5 0.5 2.5"/>
+        </geometry>
+        <material name="tesseract_red"/>
+    </visual>
+    <visual>
+        <origin rpy="0 0 0" xyz="-0.5 6.0 1.25"/>
+        <geometry>
+          <box size="0.5 0.5 2.5"/>
+        </geometry>
+        <material name="tesseract_red"/>
+    </visual>
+    <visual>
+        <origin rpy="0 0 0" xyz="3.1 6.0 1.25"/>
+        <geometry>
+          <box size="0.5 0.5 2.5"/>
+        </geometry>
+        <material name="tesseract_red"/>
+    </visual>
+    <visual>
+        <origin rpy="0 0 0" xyz="6.7 6.0 1.25"/>
+        <geometry>
+          <box size="0.5 0.5 2.5"/>
+        </geometry>
+        <material name="tesseract_red"/>
+    </visual>
+
+    </link>
+   <link name="${prefix}axis_1">
+   <!--    <visual>
+           <origin xyz="0 0 0" rpy="0 0 0"/>
+           <geometry>
+             <mesh filename="package://tesseract_support/meshes/visual/axis1.ply"/>
+           </geometry>
+         </visual>-->
+    <visual>
+        <origin rpy="0 0 0" xyz="0.0 3.0 0.1"/>
+        <geometry>
+          <box size="0.75 7.0 0.75"/>
+        </geometry>
+        <material name="tesseract_green"/>
+    </visual>
+
+    </link>
+    <link name="${prefix}axis_2">
+<!--    <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://tesseract_support/meshes/visual/axis2.ply"/>
+        </geometry>
+      </visual>-->
+      <visual>
+          <origin rpy="0 0 0" xyz="0.0 0.0 0.1"/>
+          <geometry>
+            <box size="1.0 1.0 1.0"/>
+          </geometry>
+          <material name="tesseract_blue"/>
+      </visual>
+    </link>
+  <link name="${prefix}flange"/>
+
+  <joint name="${prefix}axis_1" type="prismatic">
+    <origin xyz="0.0 .0 2.4" rpy="0 0 0"/>
+    <parent link="${prefix}base"/>
+    <child link="${prefix}axis_1"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="0" upper="6.2" effort="0" velocity="0.2"/>
+  </joint>
+  <joint name="${prefix}axis_2" type="prismatic">
+    <origin xyz="0 1.1 0" rpy="0 0 1.57"/>
+    <parent link="${prefix}axis_1"/>
+    <child link="${prefix}axis_2"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="0" upper="4.2" effort="0" velocity="0.5"/>
+  </joint>
+  <joint name="${prefix}flange" type="fixed">
+    <origin xyz="-0.18 -0.2 -.4" rpy="3.14159 0 0"/>
+    <parent link="${prefix}axis_2"/>
+    <child link="${prefix}flange"/>
+  </joint>
+
+  </xacro:macro>
+</robot>

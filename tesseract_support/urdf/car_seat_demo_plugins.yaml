@@ -1,0 +1,17 @@
+kinematic_plugins:
+  search_libraries:
+    - tesseract_kinematics_kdl_factories
+  inv_kin_plugins:
+    manipulator:
+      default: KDLInvKinChainLMA
+      plugins:
+        KDLInvKinChainLMA:
+          class: KDLInvKinChainLMAFactory
+          config:
+            base_link: rail
+            tip_link: end_effector
+        KDLInvKinChainNR:
+          class: KDLInvKinChainNRFactory
+          config:
+            base_link: rail
+            tip_link: end_effector
