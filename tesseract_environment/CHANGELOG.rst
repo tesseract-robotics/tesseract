@@ -2,6 +2,14 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make ResourceLocator serializable
+* Add environment monitor interfaces
+* Add event callbacks to environment
+* Add tcp to iiwa srdf
+* Contributors: Levi Armstrong
+
 0.8.7 (2022-03-24)
 ------------------
 

@@ -2,6 +2,11 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make ResourceLocator serializable
+* Contributors: Levi Armstrong
+
 0.8.7 (2022-03-24)
 ------------------
 

@@ -2,6 +2,11 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix spelling
+* Contributors: Levi Armstrong
+
 0.8.7 (2022-03-24)
 ------------------
 
