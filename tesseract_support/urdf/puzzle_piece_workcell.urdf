@@ -22,13 +22,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/visual/base_link.dae"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/visual/base_link.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/collision/base_link.stl"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/collision/base_link.stl"/>
       </geometry>
     </collision>
   </link>
@@ -36,13 +36,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/visual/link_1.dae"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/visual/link_1.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/collision/link_1.stl"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/collision/link_1.stl"/>
       </geometry>
     </collision>
   </link>
@@ -50,13 +50,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/visual/link_2.dae"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/visual/link_2.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/collision/link_2.stl"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/collision/link_2.stl"/>
       </geometry>
     </collision>
   </link>
@@ -64,13 +64,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/visual/link_3.dae"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/visual/link_3.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/collision/link_3.stl"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/collision/link_3.stl"/>
       </geometry>
     </collision>
   </link>
@@ -78,13 +78,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/visual/link_4.dae"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/visual/link_4.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/collision/link_4.stl"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/collision/link_4.stl"/>
       </geometry>
     </collision>
   </link>
@@ -92,13 +92,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/visual/link_5.dae"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/visual/link_5.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/collision/link_5.stl"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/collision/link_5.stl"/>
       </geometry>
     </collision>
   </link>
@@ -106,13 +106,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/visual/link_6.dae"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/visual/link_6.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/collision/link_6.stl"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/collision/link_6.stl"/>
       </geometry>
     </collision>
   </link>
@@ -120,13 +120,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/visual/link_7.dae"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/visual/link_7.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/lbr_iiwa_14_r820/collision/link_7.stl"/>
+        <mesh filename="package://tesseract_support/meshes/lbr_iiwa_14_r820/collision/link_7.stl"/>
       </geometry>
     </collision>
   </link>
@@ -200,13 +200,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/puzzle_piece/grinder_visual.dae"/>
+        <mesh filename="package://tesseract_support/meshes/puzzle_piece/grinder_visual.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/puzzle_piece/grinder_collision.dae"/>
+        <mesh filename="package://tesseract_support/meshes/puzzle_piece/grinder_collision.dae"/>
       </geometry>
     </collision>
   </link>
@@ -221,14 +221,14 @@
   <link name="ee_base">
     <visual>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/puzzle_piece/puzzle_mount.stl"/>
+        <mesh filename="package://tesseract_support/meshes/puzzle_piece/puzzle_mount.stl"/>
       </geometry>
       &gt;
       
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/puzzle_piece/puzzle_mount.stl"/>
+        <mesh filename="package://tesseract_support/meshes/puzzle_piece/puzzle_mount.stl"/>
       </geometry>
     </collision>
   </link>
@@ -247,12 +247,12 @@
   <link name="part">
     <visual>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/puzzle_piece/puzzle_bent.dae"/>
+        <mesh filename="package://tesseract_support/meshes/puzzle_piece/puzzle_bent.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://tesseract_ros_examples/meshes/puzzle_piece/puzzle_bent.dae"/>
+        <mesh filename="package://tesseract_support/meshes/puzzle_piece/puzzle_bent.dae"/>
       </geometry>
     </collision>
   </link>
