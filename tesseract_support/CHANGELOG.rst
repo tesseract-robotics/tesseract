@@ -2,6 +2,12 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Generate urdf files
+* Consolidate all resources into tesseract_support
+* Contributors: Levi Armstrong
+
 0.9.0 (2022-03-31)
 ------------------
 * Make ResourceLocator serializable
