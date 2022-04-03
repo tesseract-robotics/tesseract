@@ -294,8 +294,11 @@ public:
   /** @brief Get the current state of the environment */
   tesseract_scene_graph::SceneState getState() const;
 
-  /** @brief Get the current state timestamp */
-  std::chrono::high_resolution_clock::duration getCurrentStateTimestamp() const;
+  /** @brief Last update time. Updated when any change to the environment occurs */
+  std::chrono::system_clock::time_point getTimestamp() const;
+
+  /** @brief Last update time to current state. Updated only when current state is updated */
+  std::chrono::system_clock::time_point getCurrentStateTimestamp() const;
 
   /**
    * @brief Get a link in the environment
@@ -519,8 +522,11 @@ protected:
   /** @brief Current state of the environment */
   tesseract_scene_graph::SceneState current_state_;
 
+  /** @brief Environment timestamp */
+  std::chrono::system_clock::time_point timestamp_{ std::chrono::system_clock::now() };
+
   /** @brief Current state timestamp */
-  std::chrono::high_resolution_clock::duration current_state_timestamp_{ 0 };
+  std::chrono::system_clock::time_point current_state_timestamp_{ std::chrono::system_clock::now() };
 
   /** @brief Tesseract State Solver */
   tesseract_scene_graph::MutableStateSolver::UPtr state_solver_;

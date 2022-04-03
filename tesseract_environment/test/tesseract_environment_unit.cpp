@@ -1439,6 +1439,7 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
 {
   // Get the environment
   auto env = getEnvironment();
+  auto timestamp1 = env->getTimestamp();
 
   // Check if visibility and collision enabled
   for (const auto& link_name : env->getLinkNames())
@@ -1448,7 +1449,7 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   }
 
   // Get current timestamp
-  auto d1 = env->getCurrentStateTimestamp();
+  auto current_state_timestamp1 = env->getCurrentStateTimestamp();
 
   // Set the initial state of the robot
   std::unordered_map<std::string, double> joint_states;
@@ -1462,9 +1463,11 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   env->setState(joint_states);
 
   // Get new timestamp
-  auto d2 = env->getCurrentStateTimestamp();
+  auto current_state_timestamp2 = env->getCurrentStateTimestamp();
+  auto timestamp2 = env->getTimestamp();
 
-  EXPECT_TRUE(d2.count() > d1.count());
+  EXPECT_TRUE(current_state_timestamp2 > current_state_timestamp1);
+  EXPECT_TRUE(timestamp2 > timestamp1);
 
   SceneState state = env->getState();
   for (auto& joint_state : joint_states)
@@ -1480,6 +1483,13 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   joint.type = JointType::FIXED;
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link, joint));
+
+  // Get new timestamp
+  auto current_state_timestamp3 = env->getCurrentStateTimestamp();
+  auto timestamp3 = env->getTimestamp();
+
+  EXPECT_TRUE(current_state_timestamp3 > current_state_timestamp2);
+  EXPECT_TRUE(timestamp3 > timestamp2);
 
   state = env->getState();
   for (auto& joint_state : joint_states)
@@ -2008,9 +2018,15 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
 
   auto cmd = std::make_shared<ChangeCollisionMarginsCommand>(collision_margin_data, overrid_type);
   env->applyCommand(cmd);
+  auto timestamp = env->getTimestamp();
+  auto current_state_timestamp = env->getCurrentStateTimestamp();
 
   // Clone the environment
   auto clone = env->clone();
+
+  // Timestamp should be identical after clone
+  EXPECT_TRUE(timestamp == clone->getTimestamp());
+  EXPECT_TRUE(current_state_timestamp == clone->getCurrentStateTimestamp());
 
   // Check the basics
   EXPECT_EQ(clone->getName(), env->getName());

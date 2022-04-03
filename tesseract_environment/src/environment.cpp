@@ -535,7 +535,13 @@ tesseract_scene_graph::SceneState Environment::getState() const
   return current_state_;
 }
 
-std::chrono::high_resolution_clock::duration Environment::getCurrentStateTimestamp() const
+std::chrono::system_clock::time_point Environment::getTimestamp() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return timestamp_;
+}
+
+std::chrono::system_clock::time_point Environment::getCurrentStateTimestamp() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return current_state_timestamp_;
@@ -893,7 +899,8 @@ void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& 
 
 void Environment::currentStateChanged()
 {
-  current_state_timestamp_ = std::chrono::high_resolution_clock::now().time_since_epoch();
+  timestamp_ = std::chrono::system_clock::now();
+  current_state_timestamp_ = timestamp_;
   current_state_ = state_solver_->getState();
   if (discrete_manager_ != nullptr)
     discrete_manager_->setCollisionObjectsTransform(current_state_.link_transforms);
@@ -931,6 +938,7 @@ void Environment::currentStateChanged()
 
 void Environment::environmentChanged()
 {
+  timestamp_ = std::chrono::system_clock::now();
   std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
   if (discrete_manager_ != nullptr)
     discrete_manager_->setActiveCollisionObjects(active_link_names);
@@ -1001,7 +1009,9 @@ Environment::UPtr Environment::clone() const
   cloned_env->commands_ = commands_;
   cloned_env->scene_graph_ = scene_graph_->clone();
   cloned_env->scene_graph_const_ = cloned_env->scene_graph_;
+  cloned_env->timestamp_ = timestamp_;
   cloned_env->current_state_ = current_state_;
+  cloned_env->current_state_timestamp_ = current_state_timestamp_;
 
   // There is not dynamic pointer cast for std::unique_ptr
   auto cloned_solver = state_solver_->clone();
