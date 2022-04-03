@@ -2,6 +2,11 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add timestamp to environment
+* Contributors: Levi Armstrong
+
 0.9.1 (2022-04-01)
 ------------------
 
