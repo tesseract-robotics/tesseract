@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <string>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
@@ -40,7 +41,7 @@ namespace tesseract_common
  * suffix based on the OS.
  *
  * The plugin must be exported using the macro TESSERACT_ADD_PLUGIN.
- * In the example below, the first parameter is the derived object and the second is the assinged symbol name which is
+ * In the example below, the first parameter is the derived object and the second is the assigned symbol name which is
  * used for looding Example: TESSERACT_ADD_PLUGIN(my_namespace::MyPlugin, plugin)
  *
  *   auto p = ClassLoader::createSharedInstance<my_namespace::MyPluginBase>("my_plugin", "plugin");
@@ -74,6 +75,27 @@ struct ClassLoader
                                       const std::string& library_directory = "");
 
   /**
+   * @brief Get a list of available symbols under the provided section
+   * @param section The section to search for available symbols
+   * @param library_name The library name to load which does not include the prefix 'lib' or suffix '.so'
+   * @param library_directory The library directory, if empty it will enable search system directories
+   * @return A list of symbols if they exist.
+   */
+  static inline std::vector<std::string> getAvailableSymbols(const std::string& section,
+                                                             const std::string& library_name,
+                                                             const std::string& library_directory = "");
+
+  /**
+   * @brief Get a list of available sections
+   * @param library_name The library name to load which does not include the prefix 'lib' or suffix '.so'
+   * @param library_directory The library directory, if empty it will enable search system directories
+   * @return A list of sections if they exist.
+   */
+  static inline std::vector<std::string> getAvailableSections(const std::string& library_name,
+                                                              const std::string& library_directory = "",
+                                                              bool include_hidden = false);
+
+  /**
    * @brief Give library name without prefix and suffix it will return the library name with the prefix and suffix
    *
    * * For instance, for a library_name like "boost" it returns :
@@ -90,9 +112,30 @@ struct ClassLoader
 };
 }  // namespace tesseract_common
 
-#define TESSERACT_ADD_PLUGIN(DERIVED_CLASS, ALIAS)                                                                     \
+// clang-format off
+#define TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, SECTION)                                                  \
   extern "C" BOOST_SYMBOL_EXPORT DERIVED_CLASS ALIAS;                                                                  \
+  BOOST_DLL_SECTION(SECTION, read) BOOST_DLL_SELECTANY                                                                 \
   DERIVED_CLASS ALIAS;
+
+#define TESSERACT_ADD_PLUGIN(DERIVED_CLASS, ALIAS)                                                                     \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, boostdll)
+
+#define TESSERACT_ADD_FWD_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, FwdKin)
+
+#define TESSERACT_ADD_INV_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, InvKin)
+
+#define TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                    \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, DiscColl)
+
+#define TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                  \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, ContColl)
+
+#define TESSERACT_ADD_VISUALIZATION_PLUGIN(DERIVED_CLASS, ALIAS)                                                       \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, Plotter)
+// clang-format on
 
 #include <tesseract_common/class_loader.hpp>
 

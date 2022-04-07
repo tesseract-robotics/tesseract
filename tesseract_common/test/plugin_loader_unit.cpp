@@ -52,6 +52,21 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
   const std::string symbol_name = "plugin";
 
   {
+    std::vector<std::string> sections = ClassLoader::getAvailableSections(lib_name, lib_dir);
+    EXPECT_EQ(sections.size(), 1);
+    EXPECT_EQ(sections.at(0), "boostdll");
+
+    sections = ClassLoader::getAvailableSections(lib_name, lib_dir, true);
+    EXPECT_TRUE(sections.size() > 1);
+  }
+
+  {
+    std::vector<std::string> symbols = ClassLoader::getAvailableSymbols("boostdll", lib_name, lib_dir);
+    EXPECT_EQ(symbols.size(), 1);
+    EXPECT_EQ(symbols.at(0), symbol_name);
+  }
+
+  {
     EXPECT_TRUE(ClassLoader::isClassAvailable(symbol_name, lib_name, lib_dir));
     auto plugin = ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, lib_name, lib_dir);
     EXPECT_TRUE(plugin != nullptr);
@@ -108,6 +123,17 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
     EXPECT_TRUE(plugin != nullptr);
     EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
+
+    std::vector<std::string> sections = plugin_loader.getAvailableSections();
+    EXPECT_EQ(sections.size(), 1);
+    EXPECT_EQ(sections.at(0), "boostdll");
+
+    sections = plugin_loader.getAvailableSections(true);
+    EXPECT_TRUE(sections.size() > 1);
+
+    std::vector<std::string> symbols = plugin_loader.getAvailablePlugins("boostdll");
+    EXPECT_EQ(symbols.size(), 1);
+    EXPECT_EQ(symbols.at(0), "plugin");
   }
 
 // For some reason on Ubuntu 18.04 it does not search the current directory when only the library name is provided
