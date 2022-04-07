@@ -120,21 +120,6 @@ struct ClassLoader
 
 #define TESSERACT_ADD_PLUGIN(DERIVED_CLASS, ALIAS)                                                                     \
   TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, boostdll)
-
-#define TESSERACT_ADD_FWD_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
-  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, FwdKin)
-
-#define TESSERACT_ADD_INV_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
-  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, InvKin)
-
-#define TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                    \
-  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, DiscColl)
-
-#define TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                  \
-  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, ContColl)
-
-#define TESSERACT_ADD_VISUALIZATION_PLUGIN(DERIVED_CLASS, ALIAS)                                                       \
-  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, Plotter)
 // clang-format on
 
 #include <tesseract_common/class_loader.hpp>

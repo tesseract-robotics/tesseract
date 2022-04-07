@@ -47,6 +47,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 %shared_ptr(tesseract_kinematics::InvKinFactory)
 #endif  // SWIG
 
+// clang-format off
+#define TESSERACT_ADD_FWD_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, FwdKin)
+
+#define TESSERACT_ADD_INV_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, InvKin)
+// clang-format on
+
 namespace tesseract_kinematics
 {
 /** @brief Forward declare Plugin Factory */

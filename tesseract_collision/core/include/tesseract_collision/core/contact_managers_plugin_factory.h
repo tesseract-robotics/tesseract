@@ -45,6 +45,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 %shared_ptr(tesseract_collision::ContinuousContactManagerFactory)
 #endif  // SWIG
 
+// clang-format off
+#define TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                    \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, DiscColl)
+
+#define TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                  \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, ContColl)
+// clang-format on
+
 namespace tesseract_collision
 {
 /** @brief Forward declare Plugin Factory */
