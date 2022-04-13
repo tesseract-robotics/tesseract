@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
@@ -89,6 +90,28 @@ public:
    * @return True if plugin is found
    */
   inline bool isPluginAvailable(const std::string& plugin_name) const;
+
+  /**
+   * @brief Get the available plugins for the provided PluginBase type
+   * @details This expects the Plugin base to have a static std::string SECTION_NAME which is used for looking up
+   * plugins
+   * @return A list of available plugins for the provided PluginBase type
+   */
+  template <class PluginBase>
+  std::vector<std::string> getAvailablePlugins() const;
+
+  /**
+   * @brief Get the available plugins under the provided section
+   * @param section The section name to get all available plugins
+   * @return A list of available plugins under the provided section
+   */
+  inline std::vector<std::string> getAvailablePlugins(const std::string& section) const;
+
+  /**
+   * @brief Get the available sections within the provided search libraries
+   * @return A list of available sections
+   */
+  inline std::vector<std::string> getAvailableSections(bool include_hidden = false) const;
 
   /**
    * @brief The number of plugins stored. The size of plugins variable

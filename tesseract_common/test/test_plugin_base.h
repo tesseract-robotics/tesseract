@@ -26,6 +26,8 @@
 #ifndef TESSERACT_COMMON_TEST_PLUGIN_BASE_H
 #define TESSERACT_COMMON_TEST_PLUGIN_BASE_H
 
+#include <string>
+
 namespace tesseract_common
 {
 class TestPluginBase
@@ -38,7 +40,12 @@ public:
   TestPluginBase(TestPluginBase&&) = default;
   TestPluginBase& operator=(TestPluginBase&&) = default;
   virtual double multiply(double x, double y) = 0;
+
+protected:
+  static const std::string SECTION_NAME;
+  friend class PluginLoader;
 };
+
 }  // namespace tesseract_common
 
 #endif  // TESSERACT_COMMON_TEST_PLUGIN_BASE_H

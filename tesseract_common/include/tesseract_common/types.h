@@ -95,6 +95,9 @@ struct PluginInfo
   /** @brief The plugin config data */
   YAML::Node config;
 
+  /** @brief Get the yaml config as a string */
+  std::string getConfigString() const;
+
   bool operator==(const PluginInfo& rhs) const;
   bool operator!=(const PluginInfo& rhs) const;
 

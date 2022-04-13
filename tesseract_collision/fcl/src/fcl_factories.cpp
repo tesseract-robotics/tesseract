@@ -38,5 +38,5 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManagerFactory::create(const std::str
 }  // namespace tesseract_collision::tesseract_collision_fcl
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_PLUGIN(tesseract_collision::tesseract_collision_fcl::FCLDiscreteBVHManagerFactory,
-                     FCLDiscreteBVHManagerFactory);
+TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(tesseract_collision::tesseract_collision_fcl::FCLDiscreteBVHManagerFactory,
+                                      FCLDiscreteBVHManagerFactory);

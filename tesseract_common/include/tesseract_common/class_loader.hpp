@@ -109,6 +109,89 @@ bool ClassLoader::isClassAvailable(const std::string& symbol_name,
   return lib.has(symbol_name);
 }
 
+std::vector<std::string> ClassLoader::getAvailableSymbols(const std::string& section,
+                                                          const std::string& library_name,
+                                                          const std::string& library_directory)
+{
+  boost::system::error_code ec;
+  boost::dll::shared_library lib;
+  if (library_directory.empty())
+  {
+    boost::filesystem::path sl(library_name);
+    boost::dll::load_mode::type mode =
+        boost::dll::load_mode::append_decorations | boost::dll::load_mode::search_system_folders;
+    lib = boost::dll::shared_library(sl, ec, mode);
+  }
+  else
+  {
+    boost::filesystem::path sl = boost::filesystem::path(library_directory) / library_name;
+    lib = boost::dll::shared_library(sl, ec, boost::dll::load_mode::append_decorations);
+  }
+
+  // Check if it failed to find or load library
+  if (ec)
+  {
+    CONSOLE_BRIDGE_logDebug("Failed to find or load library: %s with error: %s",
+                            decorate(library_name, library_directory).c_str(),
+                            ec.message().c_str());
+    return std::vector<std::string>();
+  }
+
+  // Class `library_info` can extract information from a library
+  boost::dll::library_info inf(lib.location());
+
+  // Getting symbols exported from he provided section
+  return inf.symbols(section);
+}
+
+std::vector<std::string> ClassLoader::getAvailableSections(const std::string& library_name,
+                                                           const std::string& library_directory,
+                                                           bool include_hidden)
+{
+  boost::system::error_code ec;
+  boost::dll::shared_library lib;
+  if (library_directory.empty())
+  {
+    boost::filesystem::path sl(library_name);
+    boost::dll::load_mode::type mode =
+        boost::dll::load_mode::append_decorations | boost::dll::load_mode::search_system_folders;
+    lib = boost::dll::shared_library(sl, ec, mode);
+  }
+  else
+  {
+    boost::filesystem::path sl = boost::filesystem::path(library_directory) / library_name;
+    lib = boost::dll::shared_library(sl, ec, boost::dll::load_mode::append_decorations);
+  }
+
+  // Check if it failed to find or load library
+  if (ec)
+  {
+    CONSOLE_BRIDGE_logDebug("Failed to find or load library: %s with error: %s",
+                            decorate(library_name, library_directory).c_str(),
+                            ec.message().c_str());
+    return std::vector<std::string>();
+  }
+
+  // Class `library_info` can extract information from a library
+  boost::dll::library_info inf(lib.location());
+
+  // Getting section from library
+  std::vector<std::string> sections = inf.sections();
+
+  auto search_fn = [include_hidden](const std::string& section) {
+    if (section.empty())
+      return true;
+
+    if (include_hidden)
+      return false;
+
+    return (section.substr(0, 1) == ".");
+  };
+
+  sections.erase(std::remove_if(sections.begin(), sections.end(), search_fn), sections.end());
+  return sections;
+}
+
 std::string ClassLoader::decorate(const std::string& library_name, const std::string& library_directory)
 {
   boost::filesystem::path sl;

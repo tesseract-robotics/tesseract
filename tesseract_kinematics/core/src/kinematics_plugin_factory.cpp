@@ -32,13 +32,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
 
-const std::string TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES";
-const std::string TESSERACT_KINEMATICS_PLUGINS_ENV = "TESSERACT_KINEMATICS_PLUGINS";
+static const std::string TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES";
+static const std::string TESSERACT_KINEMATICS_PLUGINS_ENV = "TESSERACT_KINEMATICS_PLUGINS";
 
 using tesseract_common::KinematicsPluginInfo;
 
 namespace tesseract_kinematics
 {
+const std::string InvKinFactory::SECTION_NAME = "InvKin";
+const std::string FwdKinFactory::SECTION_NAME = "FwdKin";
+
 KinematicsPluginFactory::KinematicsPluginFactory()
 {
   plugin_loader_.search_libraries_env = TESSERACT_KINEMATICS_PLUGINS_ENV;
