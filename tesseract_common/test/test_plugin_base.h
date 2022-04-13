@@ -46,7 +46,6 @@ protected:
   friend class PluginLoader;
 };
 
-const std::string TestPluginBase::SECTION_NAME = "TestBase";
 }  // namespace tesseract_common
 
 #endif  // TESSERACT_COMMON_TEST_PLUGIN_BASE_H

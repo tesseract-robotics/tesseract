@@ -32,6 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/plugin_loader.h>
 #include "test_plugin_base.h"
 
+const std::string tesseract_common::TestPluginBase::SECTION_NAME = "TestBase";
+
 TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
 {
   std::string env_var = "UNITTESTENV=a:b:c";
