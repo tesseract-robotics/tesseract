@@ -33,6 +33,10 @@
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <queue>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/binary_object.hpp>
+#include <boost/serialization/vector.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
@@ -815,6 +819,36 @@ std::shared_lock<std::shared_mutex> Environment::lockRead() const
 {
   return std::shared_lock<std::shared_mutex>(mutex_);
 }
+
+bool Environment::operator==(const Environment& rhs) const
+{
+  // No need to check everything mainly the items serialized
+  bool equal = true;
+  equal &= initialized_ == rhs.initialized_;
+  equal &= revision_ == rhs.revision_;
+  equal &= init_revision_ == rhs.init_revision_;
+  equal &= commands_.size() == rhs.commands_.size();
+  if (!equal)
+    return equal;
+
+  for (std::size_t i = 0; i < commands_.size(); ++i)
+  {
+    equal &= *(commands_[i]) == *(rhs.commands_[i]);
+    if (!equal)
+      return equal;
+  }
+
+  equal &= current_state_ == rhs.current_state_;
+  equal &= timestamp_ == rhs.timestamp_;
+  equal &= current_state_timestamp_ == rhs.current_state_timestamp_;
+
+  /** @todo uncomment after serialized */
+  //  equal &= is_contact_allowed_fn_ == rhs.is_contact_allowed_fn_;
+  //  equal &= find_tcp_cb_ == rhs.find_tcp_cb_;
+
+  return equal;
+}
+bool Environment::operator!=(const Environment& rhs) const { return !operator==(rhs); }
 
 bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
 {
@@ -1896,4 +1930,49 @@ bool Environment::applyChangeCollisionMarginsCommand(const ChangeCollisionMargin
   return true;
 }
 
+template <class Archive>
+void Environment::save(Archive& ar, const unsigned int /*version*/) const
+{
+  ar& BOOST_SERIALIZATION_NVP(resource_locator_);
+  ar& BOOST_SERIALIZATION_NVP(commands_);
+  ar& BOOST_SERIALIZATION_NVP(init_revision_);
+  ar& BOOST_SERIALIZATION_NVP(current_state_);
+  ar& boost::serialization::make_nvp("timestamp_",
+                                     boost::serialization::make_binary_object(&timestamp_, sizeof(timestamp_)));
+  ar& boost::serialization::make_nvp(
+      "current_state_timestamp_",
+      boost::serialization::make_binary_object(&current_state_timestamp_, sizeof(current_state_timestamp_)));
+}
+
+template <class Archive>
+void Environment::load(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(resource_locator_);
+
+  tesseract_environment::Commands commands;
+  ar& boost::serialization::make_nvp("commands_", commands);
+  init(commands);
+
+  ar& BOOST_SERIALIZATION_NVP(init_revision_);
+
+  tesseract_scene_graph::SceneState current_state;
+  ar& boost::serialization::make_nvp("current_state_", current_state);
+  setState(current_state.joints);
+
+  ar& boost::serialization::make_nvp("timestamp_",
+                                     boost::serialization::make_binary_object(&timestamp_, sizeof(timestamp_)));
+  ar& boost::serialization::make_nvp(
+      "current_state_timestamp_",
+      boost::serialization::make_binary_object(&current_state_timestamp_, sizeof(current_state_timestamp_)));
+}
+
+template <class Archive>
+void Environment::serialize(Archive& ar, const unsigned int version)
+{
+  boost::serialization::split_member(ar, *this, version);
+}
+
 }  // namespace tesseract_environment
+
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::Environment)
