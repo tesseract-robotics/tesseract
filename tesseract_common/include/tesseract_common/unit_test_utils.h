@@ -73,6 +73,45 @@ void testSerialization(const SerializableType& object, const std::string& typena
 }
 
 /**
+ * @brief Tests Boost serialization of shared pointer for a serializable type
+ * @details Serializes the type to XML file, binary file, and XML string. It then deserializes it and calls the equality
+ * operator on the results
+ * @param object Object to be serialized
+ * @param typename_string Prefix used for filepaths. Serialized files are put in /tmp/<typename_string>.<extension>
+ */
+template <typename SerializableType>
+void testSerializationPtr(const std::shared_ptr<SerializableType>& object, const std::string& typename_string)
+{
+  {  // Archive program to XML file
+    std::string file_path = tesseract_common::getTempPath() + typename_string + ".xml";
+    EXPECT_TRUE(
+        tesseract_common::Serialization::toArchiveFileXML<std::shared_ptr<SerializableType>>(object, file_path));
+
+    auto nobject = tesseract_common::Serialization::fromArchiveFileXML<std::shared_ptr<SerializableType>>(file_path);
+    EXPECT_FALSE(*object != *nobject);  // Using != because it call == for code coverage
+  }
+
+  {  // Archive program to binary file
+    std::string file_path = tesseract_common::getTempPath() + typename_string + ".binary";
+    EXPECT_TRUE(
+        tesseract_common::Serialization::toArchiveFileBinary<std::shared_ptr<SerializableType>>(object, file_path));
+
+    auto nobject = tesseract_common::Serialization::fromArchiveFileBinary<std::shared_ptr<SerializableType>>(file_path);
+    EXPECT_FALSE(*object != *nobject);  // Using != because it call == for code coverage
+  }
+
+  {  // Archive program to string
+    std::string object_string =
+        tesseract_common::Serialization::toArchiveStringXML<std::shared_ptr<SerializableType>>(object, typename_string);
+    EXPECT_FALSE(object_string.empty());
+
+    auto nobject =
+        tesseract_common::Serialization::fromArchiveStringXML<std::shared_ptr<SerializableType>>(object_string);
+    EXPECT_FALSE(*object != *nobject);  // Using != because it call == for code coverage
+  }
+}
+
+/**
  * @brief Tests Boost serialization for a serializable derived type
  * @details Serializes the type to XML file, binary file, and XML string using the base type. It then deserializes it,
  * casts it to the derived type, and calls the equality operator on the results

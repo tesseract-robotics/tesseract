@@ -494,11 +494,25 @@ public:
    */
   std::shared_lock<std::shared_mutex> lockRead() const;
 
+  /**
+   * @brief These operators are to facilitate checking serialization but may have value elsewhere
+   * @param rhs The environment to compare
+   * @return True if they are equal otherwise false
+   */
+  bool operator==(const Environment& rhs) const;
+  bool operator!=(const Environment& rhs) const;
+
 protected:
-  /** @brief Identifies if the object has been initialized */
+  /**
+   * @brief Identifies if the object has been initialized
+   * @note This is intentionally not serialized it will auto updated
+   */
   bool initialized_{ false };
 
-  /** @brief This increments when the scene graph is modified */
+  /**
+   * @brief This increments when the scene graph is modified
+   * @note This is intentionally not serialized it will auto updated
+   */
   int revision_{ 0 };
 
   /** @brief This is the revision number after initialization used when reset is called */
@@ -507,16 +521,28 @@ protected:
   /** @brief The history of commands applied to the environment after initialization */
   Commands commands_;
 
-  /** @brief Tesseract Scene Graph */
+  /**
+   * @brief Tesseract Scene Graph
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_scene_graph::SceneGraph::Ptr scene_graph_;
 
-  /** @brief Tesseract Scene Graph Const */
+  /**
+   * @brief Tesseract Scene Graph Const
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_;
 
-  /** @brief The kinematics information */
+  /**
+   * @brief The kinematics information
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_srdf::KinematicsInformation kinematics_information_;
 
-  /** @brief The kinematics factory */
+  /**
+   * @brief The kinematics factory
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_kinematics::KinematicsPluginFactory kinematics_factory_;
 
   /** @brief Current state of the environment */
@@ -528,13 +554,22 @@ protected:
   /** @brief Current state timestamp */
   std::chrono::system_clock::time_point current_state_timestamp_{ std::chrono::system_clock::now() };
 
-  /** @brief Tesseract State Solver */
+  /**
+   * @brief Tesseract State Solver
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_scene_graph::MutableStateSolver::UPtr state_solver_;
 
-  /** @brief The function used to determine if two objects are allowed in collision */
+  /**
+   * @brief The function used to determine if two objects are allowed in collision
+   * @todo This needs to be switched to class so it may be serialized
+   */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;
 
-  /** @brief A vector of user defined callbacks for locating tool center point */
+  /**
+   * @brief A vector of user defined callbacks for locating tool center point
+   * @todo This needs to be switched to class so it may be serialized
+   */
   std::vector<FindTCPOffsetCallbackFn> find_tcp_cb_;
 
   /**
@@ -546,38 +581,56 @@ protected:
   /** @brief Used when initialized by URDF_STRING, URDF_STRING_SRDF_STRING, URDF_PATH, and URDF_PATH_SRDF_PATH */
   tesseract_common::ResourceLocator::ConstPtr resource_locator_;
 
-  /** @brief The contact manager information */
+  /**
+   * @brief The contact manager information
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info_;
 
-  /** @brief The contact managers factory */
+  /**
+   * @brief The contact managers factory
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_collision::ContactManagersPluginFactory contact_managers_factory_;
 
-  /** @brief The collision margin data */
+  /**
+   * @brief The collision margin data
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_collision::CollisionMarginData collision_margin_data_;
 
-  /** @brief The discrete contact manager object */
+  /**
+   * @brief The discrete contact manager object
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_collision::DiscreteContactManager::UPtr discrete_manager_;
 
-  /** @brief The continuous contact manager object */
+  /**
+   * @brief The continuous contact manager object
+   * @note This is intentionally not serialized it will auto updated
+   */
   tesseract_collision::ContinuousContactManager::UPtr continuous_manager_;
 
   /**
-   *  @brief A cache of group joint names to provide faster access
-   *  @details This will cleared when environment changes
+   * @brief A cache of group joint names to provide faster access
+   * @details This will cleared when environment changes
+   * @note This is intentionally not serialized it will auto updated
    */
   mutable std::unordered_map<std::string, std::vector<std::string>> group_joint_names_cache_;
   mutable std::shared_mutex group_joint_names_cache_mutex_;
 
   /**
-   *  @brief A cache of joint groups to provide faster access
-   *  @details This will cleared when environment changes
+   * @brief A cache of joint groups to provide faster access
+   * @details This will cleared when environment changes
+   * @note This is intentionally not serialized it will auto updated
    */
   mutable std::unordered_map<std::string, tesseract_kinematics::JointGroup::UPtr> joint_group_cache_;
   mutable std::shared_mutex joint_group_cache_mutex_;
 
   /**
-   *  @brief A cache of kinematic groups to provide faster access
-   *  @details This will cleared when environment changes
+   * @brief A cache of kinematic groups to provide faster access
+   * @details This will cleared when environment changes
+   * @note This is intentionally not serialized it will auto updated
    */
   mutable std::map<std::pair<std::string, std::string>, tesseract_kinematics::KinematicGroup::UPtr>
       kinematic_group_cache_;
@@ -648,6 +701,16 @@ private:
   bool applyAddContactManagersPluginInfoCommand(const AddContactManagersPluginInfoCommand::ConstPtr& cmd);
   bool applySetActiveContinuousContactManagerCommand(const SetActiveContinuousContactManagerCommand::ConstPtr& cmd);
   bool applySetActiveDiscreteContactManagerCommand(const SetActiveDiscreteContactManagerCommand::ConstPtr& cmd);
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const;  // NOLINT
+
+  template <class Archive>
+  void load(Archive& ar, const unsigned int version);  // NOLINT
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_environment
 
