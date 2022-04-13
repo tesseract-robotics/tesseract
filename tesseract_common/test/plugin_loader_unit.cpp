@@ -54,14 +54,14 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
   {
     std::vector<std::string> sections = ClassLoader::getAvailableSections(lib_name, lib_dir);
     EXPECT_EQ(sections.size(), 1);
-    EXPECT_EQ(sections.at(0), "boostdll");
+    EXPECT_EQ(sections.at(0), "TestBase");
 
     sections = ClassLoader::getAvailableSections(lib_name, lib_dir, true);
     EXPECT_TRUE(sections.size() > 1);
   }
 
   {
-    std::vector<std::string> symbols = ClassLoader::getAvailableSymbols("boostdll", lib_name, lib_dir);
+    std::vector<std::string> symbols = ClassLoader::getAvailableSymbols("TestBase", lib_name, lib_dir);
     EXPECT_EQ(symbols.size(), 1);
     EXPECT_EQ(symbols.at(0), symbol_name);
   }
@@ -126,12 +126,16 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
 
     std::vector<std::string> sections = plugin_loader.getAvailableSections();
     EXPECT_EQ(sections.size(), 1);
-    EXPECT_EQ(sections.at(0), "boostdll");
+    EXPECT_EQ(sections.at(0), "TestBase");
 
     sections = plugin_loader.getAvailableSections(true);
     EXPECT_TRUE(sections.size() > 1);
 
-    std::vector<std::string> symbols = plugin_loader.getAvailablePlugins("boostdll");
+    std::vector<std::string> symbols = plugin_loader.getAvailablePlugins<TestPluginBase>();
+    EXPECT_EQ(symbols.size(), 1);
+    EXPECT_EQ(symbols.at(0), "plugin");
+
+    symbols = plugin_loader.getAvailablePlugins("TestBase");
     EXPECT_EQ(symbols.size(), 1);
     EXPECT_EQ(symbols.at(0), "plugin");
   }

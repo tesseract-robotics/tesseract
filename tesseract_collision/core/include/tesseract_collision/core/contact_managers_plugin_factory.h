@@ -73,6 +73,10 @@ public:
    * @return If failed to create, nullptr is returned.
    */
   virtual DiscreteContactManager::UPtr create(const std::string& name, const YAML::Node& config) const = 0;
+
+protected:
+  static const std::string SECTION_NAME;
+  friend class PluginLoader;
 };
 
 /** @brief Define a continuous contact manager plugin which the factory can create an instance */
@@ -90,6 +94,10 @@ public:
    * @return If failed to create, nullptr is returned.
    */
   virtual ContinuousContactManager::UPtr create(const std::string& solver_name, const YAML::Node& config) const = 0;
+
+protected:
+  static const std::string SECTION_NAME;
+  friend class PluginLoader;
 };
 
 class ContactManagersPluginFactory

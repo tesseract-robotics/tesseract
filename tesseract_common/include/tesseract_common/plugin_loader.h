@@ -92,6 +92,15 @@ public:
   inline bool isPluginAvailable(const std::string& plugin_name) const;
 
   /**
+   * @brief Get the available plugins for the provided PluginBase type
+   * @details This expects the Plugin base to have a static std::string SECTION_NAME which is used for looking up
+   * plugins
+   * @return A list of available plugins for the provided PluginBase type
+   */
+  template <class PluginBase>
+  std::vector<std::string> getAvailablePlugins() const;
+
+  /**
    * @brief Get the available plugins under the provided section
    * @param section The section name to get all available plugins
    * @return A list of available plugins under the provided section

@@ -82,6 +82,10 @@ public:
                                          const tesseract_scene_graph::SceneState& scene_state,
                                          const KinematicsPluginFactory& plugin_factory,
                                          const YAML::Node& config) const = 0;
+
+protected:
+  static const std::string SECTION_NAME;
+  friend class PluginLoader;
 };
 
 /** @brief Define a forward kinematics plugin which the factory can create an instance */
@@ -106,6 +110,10 @@ public:
                                          const tesseract_scene_graph::SceneState& scene_state,
                                          const KinematicsPluginFactory& plugin_factory,
                                          const YAML::Node& config) const = 0;
+
+protected:
+  static const std::string SECTION_NAME;
+  friend class PluginLoader;
 };
 
 class KinematicsPluginFactory

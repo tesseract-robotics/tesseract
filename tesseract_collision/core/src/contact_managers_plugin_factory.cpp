@@ -33,13 +33,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 
-const std::string TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES";
-const std::string TESSERACT_CONTACT_MANAGERS_PLUGINS_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGINS";
+static const std::string TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGIN_"
+                                                                             "DIRECTORIES";
+static const std::string TESSERACT_CONTACT_MANAGERS_PLUGINS_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGINS";
 
 using tesseract_common::ContactManagersPluginInfo;
 
 namespace tesseract_collision
 {
+const std::string DiscreteContactManagerFactory::SECTION_NAME = "DiscColl";
+const std::string ContinuousContactManagerFactory::SECTION_NAME = "ContColl";
+
 ContactManagersPluginFactory::ContactManagersPluginFactory()
 {
   plugin_loader_.search_libraries_env = TESSERACT_CONTACT_MANAGERS_PLUGINS_ENV;
