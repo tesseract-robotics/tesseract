@@ -75,8 +75,18 @@ bool Environment::initHelper(const Commands& commands)
 
 bool Environment::init(const Commands& commands)
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  return initHelper(commands);
+  bool success{ false };
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    success = initHelper(commands);
+  }
+
+  // Call the event callbacks
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  triggerEnvironmentChangedCallbacks();
+  triggerCurrentStateChangedCallbacks();
+
+  return success;
 }
 
 bool Environment::init(const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -203,17 +213,27 @@ bool Environment::init(const tesseract_common::fs::path& urdf_path,
 
 bool Environment::reset()
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
+  bool success{ false };
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
 
-  Commands init_command;
-  if (commands_.empty() || !initialized_)
-    return false;
+    Commands init_command;
+    if (commands_.empty() || !initialized_)
+      return false;
 
-  init_command.reserve(static_cast<std::size_t>(init_revision_));
-  for (std::size_t i = 0; i < static_cast<std::size_t>(init_revision_); ++i)
-    init_command.push_back(commands_[i]);
+    init_command.reserve(static_cast<std::size_t>(init_revision_));
+    for (std::size_t i = 0; i < static_cast<std::size_t>(init_revision_); ++i)
+      init_command.push_back(commands_[i]);
 
-  return initHelper(init_command);
+    success = initHelper(init_command);
+  }
+
+  // Call the event callbacks
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  triggerCurrentStateChangedCallbacks();
+  triggerEnvironmentChangedCallbacks();
+
+  return success;
 }
 
 void Environment::clear()
@@ -290,8 +310,16 @@ Commands Environment::getCommandHistory() const
 
 bool Environment::applyCommands(const Commands& commands)
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  return applyCommandsHelper(commands);
+  bool success{ false };
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    success = applyCommandsHelper(commands);
+  }
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  triggerEnvironmentChangedCallbacks();
+  triggerCurrentStateChangedCallbacks();
+
+  return success;
 }
 
 bool Environment::applyCommand(Command::ConstPtr command) { return applyCommands({ std::move(command) }); }
@@ -503,17 +531,27 @@ const std::string& Environment::getName() const
 
 void Environment::setState(const std::unordered_map<std::string, double>& joints)
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  state_solver_->setState(joints);
-  currentStateChanged();
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    state_solver_->setState(joints);
+    currentStateChanged();
+  }
+
+  std::shared_lock<std::shared_mutex> lock;
+  triggerCurrentStateChangedCallbacks();
 }
 
 void Environment::setState(const std::vector<std::string>& joint_names,
                            const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  state_solver_->setState(joint_names, joint_values);
-  currentStateChanged();
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    state_solver_->setState(joint_names, joint_values);
+    currentStateChanged();
+  }
+
+  std::shared_lock<std::shared_mutex> lock;
+  triggerCurrentStateChangedCallbacks();
 }
 
 tesseract_scene_graph::SceneState Environment::getState(const std::unordered_map<std::string, double>& joints) const
@@ -926,14 +964,6 @@ void Environment::currentStateChanged()
     joint_group_cache_.clear();
     kinematic_group_cache_.clear();
   }
-
-  // Call the event callbacks
-  if (!event_cb_.empty())
-  {
-    SceneStateChangedEvent event(current_state_);
-    for (const auto& cb : event_cb_)
-      cb(event);
-  }
 }
 
 void Environment::environmentChanged()
@@ -950,15 +980,27 @@ void Environment::environmentChanged()
     group_joint_names_cache_.clear();
   }
 
-  // Call the event callbacks
+  currentStateChanged();
+}
+
+void Environment::triggerCurrentStateChangedCallbacks()
+{
+  if (!event_cb_.empty())
+  {
+    SceneStateChangedEvent event(current_state_);
+    for (const auto& cb : event_cb_)
+      cb(event);
+  }
+}
+
+void Environment::triggerEnvironmentChangedCallbacks()
+{
   if (!event_cb_.empty())
   {
     CommandAppliedEvent event(commands_, revision_);
     for (const auto& cb : event_cb_)
       cb(event);
   }
-
-  currentStateChanged();
 }
 
 bool Environment::removeLinkHelper(const std::string& name)

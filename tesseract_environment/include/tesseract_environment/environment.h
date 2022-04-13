@@ -592,6 +592,18 @@ protected:
   /** This will notify the state solver that the environment has changed */
   void environmentChanged();
 
+  /**
+   * @brief @brief Passes a current state changed event to the callbacks
+   * @note This does not take a lock
+   */
+  void triggerCurrentStateChangedCallbacks();
+
+  /**
+   * @brief Passes a environment changed event to the callbacks
+   * @note This does not take a lock
+   */
+  void triggerEnvironmentChangedCallbacks();
+
 private:
   bool removeLinkHelper(const std::string& name);
 
