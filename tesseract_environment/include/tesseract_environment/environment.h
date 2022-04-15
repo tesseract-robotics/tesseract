@@ -237,15 +237,26 @@ public:
    * @details When these get called they are protected by a unique lock internally so if the
    * callback is a long event it can impact performance.
    * @note These do not get cloned or serialized
+   * @param hash The id associated with the callback to allow removal. It is recommended to use
+   * std::hash<Object*>{}(this) to associate the callback with the class it associated with.
    * @param fn User defined callback function which gets called for different event triggers
    */
-  void addEventCallback(const EventCallbackFn& fn);
+  void addEventCallback(std::size_t hash, const EventCallbackFn& fn);
+
+  /**
+   * @brief Remove event callbacks
+   * @param hash the id associated with the callback to be removed
+   */
+  void removeEventCallback(std::size_t hash);
+
+  /** @brief clear all event callbacks */
+  void clearEventCallbacks();
 
   /**
    * @brief Get the current event callbacks stored in the environment
-   * @return A vector of callback functions
+   * @return A map of callback functions
    */
-  std::vector<EventCallbackFn> getEventCallbacks() const;
+  std::map<std::size_t, EventCallbackFn> getEventCallbacks() const;
 
   /**
    * @brief Set resource locator for environment
@@ -573,10 +584,10 @@ protected:
   std::vector<FindTCPOffsetCallbackFn> find_tcp_cb_;
 
   /**
-   * @brief A vector of user defined event callback functions
+   * @brief A map of user defined event callback functions
    * @details This should not be cloned or serialized
    */
-  std::vector<EventCallbackFn> event_cb_;
+  std::map<std::size_t, EventCallbackFn> event_cb_;
 
   /** @brief Used when initialized by URDF_STRING, URDF_STRING_SRDF_STRING, URDF_PATH, and URDF_PATH_SRDF_PATH */
   tesseract_common::ResourceLocator::ConstPtr resource_locator_;
