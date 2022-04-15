@@ -66,7 +66,113 @@ void JointState::serialize(Archive& ar, const unsigned int /*version*/)  // NOLI
   ar& BOOST_SERIALIZATION_NVP(time);
 }
 
+JointTrajectory::JointTrajectory(std::string description) : description(std::move(description)) {}
+
+JointTrajectory::JointTrajectory(std::vector<JointState> states, std::string description)
+  : states(std::move(states)), description(std::move(description))
+{
+}
+
+bool JointTrajectory::operator==(const JointTrajectory& other) const
+{
+  bool ret_val = true;
+  ret_val &= (description == other.description);
+  ret_val &= (states == other.states);
+  return ret_val;
+}
+
+bool JointTrajectory::operator!=(const JointTrajectory& rhs) const { return !operator==(rhs); }
+
+///////////////
+// Iterators //
+///////////////
+JointTrajectory::iterator JointTrajectory::begin() { return states.begin(); }
+JointTrajectory::const_iterator JointTrajectory::begin() const { return states.begin(); }
+JointTrajectory::iterator JointTrajectory::end() { return states.end(); }
+JointTrajectory::const_iterator JointTrajectory::end() const { return states.end(); }
+JointTrajectory::reverse_iterator JointTrajectory::rbegin() { return states.rbegin(); }
+JointTrajectory::const_reverse_iterator JointTrajectory::rbegin() const { return states.rbegin(); }
+JointTrajectory::reverse_iterator JointTrajectory::rend() { return states.rend(); }
+JointTrajectory::const_reverse_iterator JointTrajectory::rend() const { return states.rend(); }
+JointTrajectory::const_iterator JointTrajectory::cbegin() const { return states.cbegin(); }
+JointTrajectory::const_iterator JointTrajectory::cend() const { return states.cend(); }
+JointTrajectory::const_reverse_iterator JointTrajectory::crbegin() const { return states.crbegin(); }
+JointTrajectory::const_reverse_iterator JointTrajectory::crend() const { return states.crend(); }
+
+//////////////
+// Capacity //
+//////////////
+bool JointTrajectory::empty() const { return states.empty(); }
+JointTrajectory::size_type JointTrajectory::size() const { return states.size(); }
+JointTrajectory::size_type JointTrajectory::max_size() const { return states.max_size(); }
+void JointTrajectory::reserve(size_type n) { states.reserve(n); }
+JointTrajectory::size_type JointTrajectory::capacity() const { return states.capacity(); }
+void JointTrajectory::shrink_to_fit() { states.shrink_to_fit(); }
+
+////////////////////
+// Element Access //
+////////////////////
+JointTrajectory::reference JointTrajectory::front() { return states.front(); }
+JointTrajectory::const_reference JointTrajectory::front() const { return states.front(); }
+JointTrajectory::reference JointTrajectory::back() { return states.back(); }
+JointTrajectory::const_reference JointTrajectory::back() const { return states.back(); }
+JointTrajectory::reference JointTrajectory::at(size_type n) { return states.at(n); }
+JointTrajectory::const_reference JointTrajectory::at(size_type n) const { return states.at(n); }
+JointTrajectory::pointer JointTrajectory::data() { return states.data(); }
+JointTrajectory::const_pointer JointTrajectory::data() const { return states.data(); }
+JointTrajectory::reference JointTrajectory::operator[](size_type pos) { return states[pos]; }
+JointTrajectory::const_reference JointTrajectory::operator[](size_type pos) const { return states[pos]; };
+
+///////////////
+// Modifiers //
+///////////////
+void JointTrajectory::clear() { states.clear(); }
+JointTrajectory::iterator JointTrajectory::insert(const_iterator p, const value_type& x) { return states.insert(p, x); }
+JointTrajectory::iterator JointTrajectory::insert(const_iterator p, value_type&& x) { return states.insert(p, x); }
+JointTrajectory::iterator JointTrajectory::insert(const_iterator p, std::initializer_list<value_type> l)
+{
+  return states.insert(p, l);
+}
+
+template <class... Args>
+JointTrajectory::iterator JointTrajectory::emplace(const_iterator pos, Args&&... args)
+{
+  return states.emplace(pos, std::forward<Args>(args)...);
+}
+
+JointTrajectory::iterator JointTrajectory::erase(const_iterator p) { return states.erase(p); }
+JointTrajectory::iterator JointTrajectory::erase(const_iterator first, const_iterator last)
+{
+  return states.erase(first, last);
+}
+void JointTrajectory::push_back(const value_type& x) { states.push_back(x); }
+void JointTrajectory::push_back(const value_type&& x) { states.push_back(x); }
+
+template <typename... Args>
+#if __cplusplus > 201402L
+JointTrajectory::reference JointTrajectory::emplace_back(Args&&... args)
+{
+  return states.emplace_back(std::forward<Args>(args)...);
+}
+#else
+void JointTrajectory::emplace_back(Args&&... args)
+{
+  container_.emplace_back(std::forward<Args>(args)...);
+}
+#endif
+
+void JointTrajectory::pop_back() { states.pop_back(); }
+void JointTrajectory::swap(std::vector<value_type>& other) { states.swap(other); }
+
+template <class Archive>
+void JointTrajectory::serialize(Archive& ar, const unsigned int version)  // NOLINT
+{
+  ar& BOOST_SERIALIZATION_NVP(states);
+  ar& BOOST_SERIALIZATION_NVP(description);
+}
+
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointState)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointTrajectory)
