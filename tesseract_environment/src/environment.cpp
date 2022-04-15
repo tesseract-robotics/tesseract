@@ -497,13 +497,25 @@ std::vector<FindTCPOffsetCallbackFn> Environment::getFindTCPOffsetCallbacks() co
   return find_tcp_cb_;
 }
 
-void Environment::addEventCallback(const EventCallbackFn& fn)
+void Environment::addEventCallback(std::size_t hash, const EventCallbackFn& fn)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  event_cb_.push_back(fn);
+  event_cb_[hash] = fn;
 }
 
-std::vector<EventCallbackFn> Environment::getEventCallbacks() const
+void Environment::removeEventCallback(std::size_t hash)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  event_cb_.erase(hash);
+}
+
+void Environment::clearEventCallbacks()
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  event_cb_.clear();
+}
+
+std::map<std::size_t, EventCallbackFn> Environment::getEventCallbacks() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return event_cb_;
@@ -1023,7 +1035,7 @@ void Environment::triggerCurrentStateChangedCallbacks()
   {
     SceneStateChangedEvent event(current_state_);
     for (const auto& cb : event_cb_)
-      cb(event);
+      cb.second(event);
   }
 }
 
@@ -1033,7 +1045,7 @@ void Environment::triggerEnvironmentChangedCallbacks()
   {
     CommandAppliedEvent event(commands_, revision_);
     for (const auto& cb : event_cb_)
-      cb(event);
+      cb.second(event);
   }
 }
 
