@@ -29,14 +29,68 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/nvp.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/serialization.h>
 #include <tesseract_common/unit_test_utils.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/collision_margin_data.h>
 #include <tesseract_common/atomic_serialization.h>
+#include <tesseract_common/joint_state.h>
+#include <tesseract_common/manipulator_info.h>
 
 using namespace tesseract_common;
+
+TEST(TesseractCommonSerializeUnit, KinematicLimits)  // NOLINT
+{
+  KinematicLimits limits;
+  limits.resize(3);
+  EXPECT_EQ(limits.joint_limits.rows(), 3);
+  EXPECT_EQ(limits.velocity_limits.rows(), 3);
+  EXPECT_EQ(limits.acceleration_limits.rows(), 3);
+
+  limits.joint_limits << -5, 5, -5, 5, -5, 5;
+  limits.velocity_limits = Eigen::VectorXd::Constant(3, 6);
+  limits.acceleration_limits = Eigen::VectorXd::Constant(3, 7);
+
+  tesseract_common::testSerialization<KinematicLimits>(limits, "KinematicLimits");
+}
+
+TEST(TesseractCommonSerializeUnit, ManipulatorInfo)  // NOLINT
+{
+  ManipulatorInfo manip_info("manipulator", "world", "tool0");
+  tesseract_common::testSerialization<ManipulatorInfo>(manip_info, "ManipulatorInfo");
+}
+
+TEST(TesseractCommonSerializeUnit, JointState)  // NOLINT
+{
+  JointState joint_state;
+  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
+  joint_state.position = Eigen::VectorXd::Constant(3, 5);
+  joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
+  joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
+  joint_state.effort = Eigen::VectorXd::Constant(3, 8);
+  joint_state.time = 100;
+
+  tesseract_common::testSerialization<JointState>(joint_state, "JointState");
+}
+
+TEST(TesseractCommonSerializeUnit, JointTrajectory)  // NOLINT
+{
+  JointState joint_state;
+  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
+  joint_state.position = Eigen::VectorXd::Constant(3, 5);
+  joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
+  joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
+  joint_state.effort = Eigen::VectorXd::Constant(3, 8);
+  joint_state.time = 100;
+
+  JointTrajectory trajectory;
+  trajectory.states.push_back(joint_state);
+  trajectory.description = "this is a test";
+
+  tesseract_common::testSerialization<JointTrajectory>(trajectory, "JointTrajectory");
+}
 
 TEST(TesseractCommonSerializeUnit, AllowedCollisionMatrix)  // NOLINT
 {
@@ -146,6 +200,225 @@ TEST(TesseractCommonSerializeUnit, PluginInfoContainer)  // NOLINT
   object->default_plugin = "test_string";
   object->plugins["plugin_key"] = *plugin;
   tesseract_common::testSerialization<PluginInfoContainer>(*object, "PluginInfoContainer");
+}
+
+TEST(TesseractCommonSerializeUnit, VectorXd)  // NOLINT
+{
+  {  // Serialize empty object
+    Eigen::VectorXd ev;
+    {
+      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXd nev;
+    {
+      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+  }
+
+  // Serialize to object which already has data
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
+
+    {
+      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXd nev = Eigen::VectorXd::Random(6);
+    {
+      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+
+  // Serialize to object which already has data and different size
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
+
+    {
+      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXd nev = Eigen::VectorXd::Random(3);
+    {
+      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+
+  // Default use case
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
+
+    {
+      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXd nev;
+    {
+      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+}
+
+TEST(TesseractCommonSerializeUnit, MatrixX2d)  // NOLINT
+{
+  {  // Serialize empty
+    Eigen::MatrixX2d em;
+
+    {
+      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(em);
+    }
+
+    Eigen::MatrixX2d nem;
+    {
+      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nem);
+    }
+
+    EXPECT_TRUE(em.isApprox(nem, 1e-5));
+  }
+
+  // Serialize to object which already has data
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
+
+    {
+      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(em);
+    }
+
+    Eigen::MatrixX2d nem = Eigen::MatrixX2d::Random(4, 2);
+    {
+      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nem);
+    }
+
+    EXPECT_TRUE(em.isApprox(nem, 1e-5));
+  }
+
+  // Serialize to object which already has data and different size
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
+
+    {
+      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(em);
+    }
+
+    Eigen::MatrixX2d nem = Eigen::MatrixX2d::Random(2, 2);
+    {
+      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nem);
+    }
+
+    EXPECT_TRUE(em.isApprox(nem, 1e-5));
+  }
+
+  // Default
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
+
+    {
+      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(em);
+    }
+
+    Eigen::MatrixX2d nem;
+    {
+      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nem);
+    }
+
+    EXPECT_TRUE(em.isApprox(nem, 1e-5));
+  }
+}
+
+TEST(TesseractCommonSerializeUnit, Isometry3d)  // NOLINT
+{
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::Isometry3d pose =
+        Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::Random().normalized());
+    pose.translation() = Eigen::Vector3d::Random();
+
+    {
+      std::ofstream os("/tmp/eigen_isometry3d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(pose);
+    }
+
+    Eigen::Isometry3d npose;
+    {
+      std::ifstream ifs("/tmp/eigen_isometry3d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(npose);
+    }
+
+    EXPECT_TRUE(pose.isApprox(npose, 1e-5));
+  }
 }
 
 /** @brief Atomic do not have a copy constructor so must have implement one for your class */
