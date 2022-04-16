@@ -32,6 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/plugin_loader.h>
 #include "test_plugin_base.h"
 
+const std::string tesseract_common::TestPluginBase::SECTION_NAME = "TestBase";
+
 TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
 {
   std::string env_var = "UNITTESTENV=a:b:c";
@@ -50,6 +52,21 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
   const std::string lib_name = "tesseract_common_test_plugin_multiply";
   const std::string lib_dir = std::string(TEST_PLUGIN_DIR);
   const std::string symbol_name = "plugin";
+
+  {
+    std::vector<std::string> sections = ClassLoader::getAvailableSections(lib_name, lib_dir);
+    EXPECT_EQ(sections.size(), 1);
+    EXPECT_EQ(sections.at(0), "TestBase");
+
+    sections = ClassLoader::getAvailableSections(lib_name, lib_dir, true);
+    EXPECT_TRUE(sections.size() > 1);
+  }
+
+  {
+    std::vector<std::string> symbols = ClassLoader::getAvailableSymbols("TestBase", lib_name, lib_dir);
+    EXPECT_EQ(symbols.size(), 1);
+    EXPECT_EQ(symbols.at(0), symbol_name);
+  }
 
   {
     EXPECT_TRUE(ClassLoader::isClassAvailable(symbol_name, lib_name, lib_dir));
@@ -108,6 +125,21 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
     EXPECT_TRUE(plugin != nullptr);
     EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
+
+    std::vector<std::string> sections = plugin_loader.getAvailableSections();
+    EXPECT_EQ(sections.size(), 1);
+    EXPECT_EQ(sections.at(0), "TestBase");
+
+    sections = plugin_loader.getAvailableSections(true);
+    EXPECT_TRUE(sections.size() > 1);
+
+    std::vector<std::string> symbols = plugin_loader.getAvailablePlugins<TestPluginBase>();
+    EXPECT_EQ(symbols.size(), 1);
+    EXPECT_EQ(symbols.at(0), "plugin");
+
+    symbols = plugin_loader.getAvailablePlugins("TestBase");
+    EXPECT_EQ(symbols.size(), 1);
+    EXPECT_EQ(symbols.at(0), "plugin");
   }
 
 // For some reason on Ubuntu 18.04 it does not search the current directory when only the library name is provided

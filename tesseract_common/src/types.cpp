@@ -60,6 +60,14 @@ LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::stri
 /*********************************************************/
 /******               PluginInfo                     *****/
 /*********************************************************/
+
+std::string PluginInfo::getConfigString() const
+{
+  std::stringstream stream;
+  stream << config;
+  return stream.str();
+}
+
 bool PluginInfo::operator==(const PluginInfo& rhs) const
 {
   bool equal = true;
@@ -74,9 +82,7 @@ template <class Archive>
 void PluginInfo::save(Archive& ar, const unsigned int /*version*/) const
 {
   ar& BOOST_SERIALIZATION_NVP(class_name);
-  std::stringstream stream;
-  stream << config;
-  std::string config_string = stream.str();
+  std::string config_string = getConfigString();
   ar& BOOST_SERIALIZATION_NVP(config_string);
 }
 

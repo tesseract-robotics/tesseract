@@ -162,6 +162,64 @@ bool PluginLoader::isPluginAvailable(const std::string& plugin_name) const
   return false;
 }
 
+template <class PluginBase>
+std::vector<std::string> PluginLoader::getAvailablePlugins() const
+{
+  return getAvailablePlugins(PluginBase::SECTION_NAME);
+}
+
+std::vector<std::string> PluginLoader::getAvailablePlugins(const std::string& section) const
+{
+  std::vector<std::string> plugins;
+
+  // Check for environment variable for plugin definitions
+  std::set<std::string> plugins_local = getAllSearchLibraries(search_libraries_env, search_libraries);
+  if (plugins_local.empty())
+  {
+    CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
+    return plugins;
+  }
+
+  // Check for environment variable to override default library
+  std::set<std::string> search_paths_local = getAllSearchPaths(search_paths_env, search_paths);
+  for (const auto& path : search_paths_local)
+  {
+    for (const auto& library : search_libraries)
+    {
+      std::vector<std::string> lib_plugins = ClassLoader::getAvailableSymbols(section, library, path);
+      plugins.insert(plugins.end(), lib_plugins.begin(), lib_plugins.end());
+    }
+  }
+
+  return plugins;
+}
+
+std::vector<std::string> PluginLoader::getAvailableSections(bool include_hidden) const
+{
+  std::vector<std::string> sections;
+
+  // Check for environment variable for plugin definitions
+  std::set<std::string> plugins_local = getAllSearchLibraries(search_libraries_env, search_libraries);
+  if (plugins_local.empty())
+  {
+    CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
+    return sections;
+  }
+
+  // Check for environment variable to override default library
+  std::set<std::string> search_paths_local = getAllSearchPaths(search_paths_env, search_paths);
+  for (const auto& path : search_paths_local)
+  {
+    for (const auto& library : search_libraries)
+    {
+      std::vector<std::string> lib_sections = ClassLoader::getAvailableSections(library, path, include_hidden);
+      sections.insert(sections.end(), lib_sections.begin(), lib_sections.end());
+    }
+  }
+
+  return sections;
+}
+
 int PluginLoader::count() const
 {
   return static_cast<int>(getAllSearchLibraries(search_libraries_env, search_libraries).size());

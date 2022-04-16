@@ -47,6 +47,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 %shared_ptr(tesseract_kinematics::InvKinFactory)
 #endif  // SWIG
 
+// clang-format off
+#define TESSERACT_ADD_FWD_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, FwdKin)
+
+#define TESSERACT_ADD_INV_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, InvKin)
+// clang-format on
+
 namespace tesseract_kinematics
 {
 /** @brief Forward declare Plugin Factory */
@@ -74,6 +82,10 @@ public:
                                          const tesseract_scene_graph::SceneState& scene_state,
                                          const KinematicsPluginFactory& plugin_factory,
                                          const YAML::Node& config) const = 0;
+
+protected:
+  static const std::string SECTION_NAME;
+  friend class PluginLoader;
 };
 
 /** @brief Define a forward kinematics plugin which the factory can create an instance */
@@ -98,6 +110,10 @@ public:
                                          const tesseract_scene_graph::SceneState& scene_state,
                                          const KinematicsPluginFactory& plugin_factory,
                                          const YAML::Node& config) const = 0;
+
+protected:
+  static const std::string SECTION_NAME;
+  friend class PluginLoader;
 };
 
 class KinematicsPluginFactory

@@ -33,6 +33,10 @@
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <queue>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/binary_object.hpp>
+#include <boost/serialization/vector.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
@@ -75,8 +79,18 @@ bool Environment::initHelper(const Commands& commands)
 
 bool Environment::init(const Commands& commands)
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  return initHelper(commands);
+  bool success{ false };
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    success = initHelper(commands);
+  }
+
+  // Call the event callbacks
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  triggerEnvironmentChangedCallbacks();
+  triggerCurrentStateChangedCallbacks();
+
+  return success;
 }
 
 bool Environment::init(const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -203,17 +217,27 @@ bool Environment::init(const tesseract_common::fs::path& urdf_path,
 
 bool Environment::reset()
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
+  bool success{ false };
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
 
-  Commands init_command;
-  if (commands_.empty() || !initialized_)
-    return false;
+    Commands init_command;
+    if (commands_.empty() || !initialized_)
+      return false;
 
-  init_command.reserve(static_cast<std::size_t>(init_revision_));
-  for (std::size_t i = 0; i < static_cast<std::size_t>(init_revision_); ++i)
-    init_command.push_back(commands_[i]);
+    init_command.reserve(static_cast<std::size_t>(init_revision_));
+    for (std::size_t i = 0; i < static_cast<std::size_t>(init_revision_); ++i)
+      init_command.push_back(commands_[i]);
 
-  return initHelper(init_command);
+    success = initHelper(init_command);
+  }
+
+  // Call the event callbacks
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  triggerCurrentStateChangedCallbacks();
+  triggerEnvironmentChangedCallbacks();
+
+  return success;
 }
 
 void Environment::clear()
@@ -290,8 +314,16 @@ Commands Environment::getCommandHistory() const
 
 bool Environment::applyCommands(const Commands& commands)
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  return applyCommandsHelper(commands);
+  bool success{ false };
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    success = applyCommandsHelper(commands);
+  }
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  triggerEnvironmentChangedCallbacks();
+  triggerCurrentStateChangedCallbacks();
+
+  return success;
 }
 
 bool Environment::applyCommand(Command::ConstPtr command) { return applyCommands({ std::move(command) }); }
@@ -465,13 +497,25 @@ std::vector<FindTCPOffsetCallbackFn> Environment::getFindTCPOffsetCallbacks() co
   return find_tcp_cb_;
 }
 
-void Environment::addEventCallback(const EventCallbackFn& fn)
+void Environment::addEventCallback(std::size_t hash, const EventCallbackFn& fn)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  event_cb_.push_back(fn);
+  event_cb_[hash] = fn;
 }
 
-std::vector<EventCallbackFn> Environment::getEventCallbacks() const
+void Environment::removeEventCallback(std::size_t hash)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  event_cb_.erase(hash);
+}
+
+void Environment::clearEventCallbacks()
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  event_cb_.clear();
+}
+
+std::map<std::size_t, EventCallbackFn> Environment::getEventCallbacks() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return event_cb_;
@@ -503,17 +547,27 @@ const std::string& Environment::getName() const
 
 void Environment::setState(const std::unordered_map<std::string, double>& joints)
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  state_solver_->setState(joints);
-  currentStateChanged();
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    state_solver_->setState(joints);
+    currentStateChanged();
+  }
+
+  std::shared_lock<std::shared_mutex> lock;
+  triggerCurrentStateChangedCallbacks();
 }
 
 void Environment::setState(const std::vector<std::string>& joint_names,
                            const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  state_solver_->setState(joint_names, joint_values);
-  currentStateChanged();
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    state_solver_->setState(joint_names, joint_values);
+    currentStateChanged();
+  }
+
+  std::shared_lock<std::shared_mutex> lock;
+  triggerCurrentStateChangedCallbacks();
 }
 
 tesseract_scene_graph::SceneState Environment::getState(const std::unordered_map<std::string, double>& joints) const
@@ -778,6 +832,36 @@ std::shared_lock<std::shared_mutex> Environment::lockRead() const
   return std::shared_lock<std::shared_mutex>(mutex_);
 }
 
+bool Environment::operator==(const Environment& rhs) const
+{
+  // No need to check everything mainly the items serialized
+  bool equal = true;
+  equal &= initialized_ == rhs.initialized_;
+  equal &= revision_ == rhs.revision_;
+  equal &= init_revision_ == rhs.init_revision_;
+  equal &= commands_.size() == rhs.commands_.size();
+  if (!equal)
+    return equal;
+
+  for (std::size_t i = 0; i < commands_.size(); ++i)
+  {
+    equal &= *(commands_[i]) == *(rhs.commands_[i]);
+    if (!equal)
+      return equal;
+  }
+
+  equal &= current_state_ == rhs.current_state_;
+  equal &= timestamp_ == rhs.timestamp_;
+  equal &= current_state_timestamp_ == rhs.current_state_timestamp_;
+
+  /** @todo uncomment after serialized */
+  //  equal &= is_contact_allowed_fn_ == rhs.is_contact_allowed_fn_;
+  //  equal &= find_tcp_cb_ == rhs.find_tcp_cb_;
+
+  return equal;
+}
+bool Environment::operator!=(const Environment& rhs) const { return !operator==(rhs); }
+
 bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
 {
   tesseract_collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
@@ -926,14 +1010,6 @@ void Environment::currentStateChanged()
     joint_group_cache_.clear();
     kinematic_group_cache_.clear();
   }
-
-  // Call the event callbacks
-  if (!event_cb_.empty())
-  {
-    SceneStateChangedEvent event(current_state_);
-    for (const auto& cb : event_cb_)
-      cb(event);
-  }
 }
 
 void Environment::environmentChanged()
@@ -950,15 +1026,27 @@ void Environment::environmentChanged()
     group_joint_names_cache_.clear();
   }
 
-  // Call the event callbacks
+  currentStateChanged();
+}
+
+void Environment::triggerCurrentStateChangedCallbacks()
+{
+  if (!event_cb_.empty())
+  {
+    SceneStateChangedEvent event(current_state_);
+    for (const auto& cb : event_cb_)
+      cb.second(event);
+  }
+}
+
+void Environment::triggerEnvironmentChangedCallbacks()
+{
   if (!event_cb_.empty())
   {
     CommandAppliedEvent event(commands_, revision_);
     for (const auto& cb : event_cb_)
-      cb(event);
+      cb.second(event);
   }
-
-  currentStateChanged();
 }
 
 bool Environment::removeLinkHelper(const std::string& name)
@@ -1854,4 +1942,49 @@ bool Environment::applyChangeCollisionMarginsCommand(const ChangeCollisionMargin
   return true;
 }
 
+template <class Archive>
+void Environment::save(Archive& ar, const unsigned int /*version*/) const
+{
+  ar& BOOST_SERIALIZATION_NVP(resource_locator_);
+  ar& BOOST_SERIALIZATION_NVP(commands_);
+  ar& BOOST_SERIALIZATION_NVP(init_revision_);
+  ar& BOOST_SERIALIZATION_NVP(current_state_);
+  ar& boost::serialization::make_nvp("timestamp_",
+                                     boost::serialization::make_binary_object(&timestamp_, sizeof(timestamp_)));
+  ar& boost::serialization::make_nvp(
+      "current_state_timestamp_",
+      boost::serialization::make_binary_object(&current_state_timestamp_, sizeof(current_state_timestamp_)));
+}
+
+template <class Archive>
+void Environment::load(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(resource_locator_);
+
+  tesseract_environment::Commands commands;
+  ar& boost::serialization::make_nvp("commands_", commands);
+  init(commands);
+
+  ar& BOOST_SERIALIZATION_NVP(init_revision_);
+
+  tesseract_scene_graph::SceneState current_state;
+  ar& boost::serialization::make_nvp("current_state_", current_state);
+  setState(current_state.joints);
+
+  ar& boost::serialization::make_nvp("timestamp_",
+                                     boost::serialization::make_binary_object(&timestamp_, sizeof(timestamp_)));
+  ar& boost::serialization::make_nvp(
+      "current_state_timestamp_",
+      boost::serialization::make_binary_object(&current_state_timestamp_, sizeof(current_state_timestamp_)));
+}
+
+template <class Archive>
+void Environment::serialize(Archive& ar, const unsigned int version)
+{
+  boost::serialization::split_member(ar, *this, version);
+}
+
 }  // namespace tesseract_environment
+
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::Environment)

@@ -43,6 +43,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 %shared_ptr(tesseract_visualization::Visualization)
 #endif  // SWIG
 
+// clang-format off
+#define TESSERACT_ADD_VISUALIZATION_PLUGIN(DERIVED_CLASS, ALIAS)                                                       \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, Plotter)
+// clang-format on
+
 namespace tesseract_visualization
 {
 /** @brief The Vizualization class */

@@ -72,6 +72,12 @@ Environment::Ptr getEnvironment()
   return env;
 }
 
+TEST(EnvironmentSerializeUnit, Environment)  // NOLINT
+{
+  Environment::Ptr env = getEnvironment();
+  testSerializationPtr<Environment>(env, "Environment");
+}
+
 TEST(EnvironmentCommandsSerializeUnit, AddAllowedCollisionCommand)  // NOLINT
 {
   auto object = std::make_shared<AddAllowedCollisionCommand>("link1", "link2", "description");
