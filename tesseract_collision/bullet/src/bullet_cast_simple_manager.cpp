@@ -134,7 +134,7 @@ bool BulletCastSimpleManager::removeCollisionObject(const std::string& name)
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
   {
-    cows_.erase(std::find(cows_.begin(), cows_.end(), it->second));
+    cows_.erase(std::find_if(cows_.begin(), cows_.end(), [&name](const auto& p) { return p->getName() == name; }));
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     link2cow_.erase(name);
     link2castcow_.erase(name);
