@@ -2,6 +2,14 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Enable ability to remove event callback
+* Add environment serialization
+* Updated plugin capability to support sections (`#741 <https://github.com/tesseract-robotics/tesseract/issues/741>`_)
+* Update triggering of event callbacks to take a shared lock
+* Contributors: Levi Armstrong
+
 0.9.2 (2022-04-03)
 ------------------
 * Add timestamp to environment

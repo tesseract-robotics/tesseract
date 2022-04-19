@@ -2,6 +2,14 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix invalid iterator in bullet_cast_simple_manager (`#746 <https://github.com/tesseract-robotics/tesseract/issues/746>`_)
+  * Fix invalid iterator in bullet_cast_simple_manager
+  * clang format
+* Updated plugin capability to support sections (`#741 <https://github.com/tesseract-robotics/tesseract/issues/741>`_)
+* Contributors: John Wason, Levi Armstrong
+
 0.9.2 (2022-04-03)
 ------------------
 

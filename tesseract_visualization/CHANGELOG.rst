@@ -2,6 +2,11 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updated plugin capability to support sections (`#741 <https://github.com/tesseract-robotics/tesseract/issues/741>`_)
+* Contributors: Levi Armstrong
+
 0.9.2 (2022-04-03)
 ------------------
 
