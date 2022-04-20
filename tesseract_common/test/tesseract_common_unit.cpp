@@ -471,7 +471,7 @@ TEST(TesseractCommonUnit, isIdenticalArrayUnit)  // NOLINT
   }
   {
     // Clang-tidy catches unitialized arrays anyway, but check it just in case the caller isn't running clang-tidy
-    std::array<int, 4> v1 = { 1, 2, 3, 4 };
+    std::array<int, 4> v1 = { 1, 2, 3, 6 };
     std::array<int, 4> v2;  // NOLINT
     bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
     EXPECT_FALSE(equal);
