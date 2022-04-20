@@ -222,7 +222,6 @@ void buildTestSceneGraph(tesseract_scene_graph::SceneGraph& g)
   joint_4.type = JointType::REVOLUTE;
   joint_4.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
   EXPECT_TRUE(g.addJoint(joint_4));
-
 }
 
 TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
@@ -408,7 +407,8 @@ TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
   EXPECT_FALSE(acm.getAllAllowedCollisions().empty());
   srdf.saveToFile(tesseract_common::getTempPath() + "test.srdf");
 
-  SceneGraph g; buildTestSceneGraph(g);
+  SceneGraph g;
+  buildTestSceneGraph(g);
 
   SRDFModel srdf_reload;
   srdf_reload.initFile(g, tesseract_common::getTempPath() + "test.srdf", locator);
@@ -511,7 +511,6 @@ TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
 class TempResourceLocator : public tesseract_common::ResourceLocator
 {
 public:
-  
   std::shared_ptr<tesseract_common::Resource> locateResource(const std::string& url) const override final
   {
     tesseract_common::fs::path mod_url(url);
@@ -523,7 +522,6 @@ public:
     return std::make_shared<tesseract_common::SimpleLocatedResource>(
         url, mod_url.string(), std::make_shared<TempResourceLocator>(*this));
   }
-
 };
 
 TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT

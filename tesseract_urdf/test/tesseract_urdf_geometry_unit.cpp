@@ -304,9 +304,10 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
         std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
 
     std::string text;
-    EXPECT_EQ(0,
-              writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom0")));
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_geometry::Geometry::Ptr>(
+            geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom0")));
     EXPECT_NE(text, "");
   }
 
@@ -320,9 +321,10 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
         std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
 
     std::string text;
-    EXPECT_EQ(0,
-              writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom1")));
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_geometry::Geometry::Ptr>(
+            geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom1")));
     EXPECT_NE(text, "");
   }
 
@@ -336,9 +338,10 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
         std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
 
     std::string text;
-    EXPECT_EQ(0,
-              writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom2")));
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_geometry::Geometry::Ptr>(
+            geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom2")));
     EXPECT_NE(text, "");
   }
 
@@ -346,9 +349,10 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     tesseract_geometry::Geometry::Ptr geometry = std::make_shared<tesseract_geometry::Octree>(
         std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::BOX);
     std::string text;
-    EXPECT_EQ(0,
-              writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom3")));
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_geometry::Geometry::Ptr>(
+            geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom3")));
     EXPECT_NE(text, "");
   }
 

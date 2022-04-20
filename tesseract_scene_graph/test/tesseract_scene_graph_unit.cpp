@@ -85,13 +85,13 @@ void createTestSceneGraph(tesseract_scene_graph::SceneGraph& g)
   g.addAllowedCollision("link_2", "link_3", "Adjacent");
   g.addAllowedCollision("link_3", "link_5", "Adjacent");
   g.addAllowedCollision("link_2", "link_5", "Adjacent");
-
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   // Check getAdjacentLinkNames Method
   std::vector<std::string> adjacent_links = g.getAdjacentLinkNames("link_3");
@@ -268,7 +268,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphClearUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   EXPECT_EQ(g.getLinks().size(), 5);
   EXPECT_EQ(g.getJoints().size(), 4);
@@ -284,7 +285,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphClearUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphRootLinkUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   EXPECT_EQ(g.getRoot(), "link_1");
   EXPECT_TRUE(g.setRoot("link_5"));
@@ -294,7 +296,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRootLinkUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphGetLinkJointUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   EXPECT_TRUE(g.getLink("link_1") != nullptr);
   EXPECT_TRUE(g.getJoint("joint_1") != nullptr);
@@ -306,7 +309,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphGetLinkJointUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddLinkJointPairUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   Link link_6("link_6");
   Joint joint_6("joint_5");
@@ -354,7 +358,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveLinkUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   {  // Remove Link
-    SceneGraph g; createTestSceneGraph(g);
+    SceneGraph g;
+    createTestSceneGraph(g);
     EXPECT_EQ(g.getLinks().size(), 5);
     EXPECT_EQ(g.getJoints().size(), 4);
     EXPECT_TRUE(g.removeLink("link_5"));
@@ -370,7 +375,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveLinkUnit)  // NOLINT
   {  // Make sure all inbound and outbound edges are removed
     /** @todo Doing this causes the test to fail but assign to new object works. Need to look into why */
     //  g = createTestSceneGraph();
-    SceneGraph g; createTestSceneGraph(g);
+    SceneGraph g;
+    createTestSceneGraph(g);
     EXPECT_EQ(g.getLinks().size(), 5);
     EXPECT_EQ(g.getJoints().size(), 4);
     EXPECT_TRUE(g.removeLink("link_2"));
@@ -382,7 +388,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveLinkUnit)  // NOLINT
   }
 
   {  // Try to remove link which does not exist
-    SceneGraph g; createTestSceneGraph(g);
+    SceneGraph g;
+    createTestSceneGraph(g);
     EXPECT_EQ(g.getLinks().size(), 5);
     EXPECT_EQ(g.getJoints().size(), 4);
     EXPECT_FALSE(g.removeLink("link_does_not_exist"));
@@ -394,7 +401,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveLinkUnit)  // NOLINT
   }
 
   {  // Make sure all children are removed if enabled
-    SceneGraph g; createTestSceneGraph(g);
+    SceneGraph g;
+    createTestSceneGraph(g);
     EXPECT_EQ(g.getLinks().size(), 5);
     EXPECT_EQ(g.getJoints().size(), 4);
     EXPECT_TRUE(g.removeLink("link_2", true));
@@ -409,7 +417,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveLinkUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveLinkUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   Joint::ConstPtr j = g.getJoint("joint_4");
   EXPECT_EQ(g.getLinks().size(), 5);
@@ -429,7 +438,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveLinkUnit)  // NOLINT
 
   // Parent link does not exist
   {
-    SceneGraph ng; createTestSceneGraph(ng);
+    SceneGraph ng;
+    createTestSceneGraph(ng);
     move_joint.parent_link_name = "link_does_not_exist";
     EXPECT_FALSE(ng.moveLink(move_joint));
 
@@ -439,7 +449,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveLinkUnit)  // NOLINT
 
   // Child link does not exist
   {
-    SceneGraph ng; createTestSceneGraph(ng);
+    SceneGraph ng;
+    createTestSceneGraph(ng);
     move_joint.child_link_name = "link_does_not_exist";
     EXPECT_FALSE(ng.moveLink(move_joint));
 
@@ -452,7 +463,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveAllowedCollisionUnit)  //
 {
   using namespace tesseract_scene_graph;
 
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 4);
   EXPECT_TRUE(g.isCollisionAllowed("link_1", "link_2"));
 
@@ -467,7 +479,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveAllowedCollisionUnit)  //
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointOriginUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   Joint::ConstPtr j = g.getJoint("joint_4");
   Eigen::Isometry3d origin = j->parent_to_joint_origin_transform;
@@ -488,7 +501,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointOriginUnit)  // NOLI
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointLimitsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   JointLimits::ConstPtr jl = g.getJointLimits("joint_4");
   EXPECT_TRUE(jl != nullptr);
@@ -520,7 +534,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointLimitsUnit)  // NOLI
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointPositionLimitsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   Joint::ConstPtr j = g.getJoint("joint_4");
   EXPECT_EQ(g.getLinks().size(), 5);
@@ -542,7 +557,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointPositionLimitsUnit) 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointVelocityLimitsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   Joint::ConstPtr j = g.getJoint("joint_4");
   EXPECT_EQ(g.getLinks().size(), 5);
@@ -563,7 +579,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointVelocityLimitsUnit) 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointAccelerationLimitsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   Joint::ConstPtr j = g.getJoint("joint_4");
   EXPECT_EQ(g.getLinks().size(), 5);
@@ -584,7 +601,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointAccelerationLimitsUn
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveJointUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   Joint::ConstPtr j = g.getJoint("joint_4");
   EXPECT_EQ(g.getLinks().size(), 5);
@@ -614,7 +632,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveJointUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddJointUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; createTestSceneGraph(g);
+  SceneGraph g;
+  createTestSceneGraph(g);
 
   Joint joint_6("joint_5");
   joint_6.parent_to_joint_origin_transform.translation()(0) = 1.25;
@@ -654,7 +673,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveJointUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   {
-    SceneGraph g; createTestSceneGraph(g);
+    SceneGraph g;
+    createTestSceneGraph(g);
 
     EXPECT_EQ(g.getLinks().size(), 5);
     EXPECT_EQ(g.getJoints().size(), 4);
@@ -666,7 +686,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveJointUnit)  // NOLINT
   }
 
   {  // Try to remove joint which does not exist
-    SceneGraph g; createTestSceneGraph(g);
+    SceneGraph g;
+    createTestSceneGraph(g);
     EXPECT_EQ(g.getLinks().size(), 5);
     EXPECT_EQ(g.getJoints().size(), 4);
     EXPECT_FALSE(g.removeJoint("joint_does_not_exist"));
@@ -678,7 +699,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveJointUnit)  // NOLINT
   }
 
   {  // Make sure all children are removed if enabled
-    SceneGraph g; createTestSceneGraph(g);
+    SceneGraph g;
+    createTestSceneGraph(g);
     EXPECT_EQ(g.getLinks().size(), 5);
     EXPECT_EQ(g.getJoints().size(), 4);
     EXPECT_TRUE(g.removeJoint("joint_2", true));
@@ -753,7 +775,6 @@ void buildTestSceneGraph(tesseract_scene_graph::SceneGraph& g)
   joint_4.type = JointType::REVOLUTE;
   joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
   EXPECT_TRUE(g.addJoint(joint_4));
-
 }
 
 void buildTestSceneGraphForSubTree(tesseract_scene_graph::SceneGraph& g)
@@ -822,7 +843,6 @@ void buildTestSceneGraphForSubTree(tesseract_scene_graph::SceneGraph& g)
     joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
     EXPECT_TRUE(g.addJoint(joint_4));
   }
-
 }
 
 void testSceneGraphKDLTree(KDL::Tree& tree)
@@ -950,7 +970,8 @@ void testSubSceneGraphKDLTree(tesseract_scene_graph::KDLTreeData& data,
 TEST(TesseractSceneGraphUnit, GetSourceLinkUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; buildTestSceneGraph(g);
+  SceneGraph g;
+  buildTestSceneGraph(g);
 
   for (int i = 1; i <= 3; ++i)
   {
@@ -967,7 +988,8 @@ TEST(TesseractSceneGraphUnit, GetSourceLinkUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, GetTargetLinkUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; buildTestSceneGraph(g);
+  SceneGraph g;
+  buildTestSceneGraph(g);
 
   for (int i = 1; i <= 3; ++i)
   {
@@ -984,7 +1006,8 @@ TEST(TesseractSceneGraphUnit, GetTargetLinkUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, GetInboundJointsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; buildTestSceneGraph(g);
+  SceneGraph g;
+  buildTestSceneGraph(g);
 
   for (int i = 2; i <= 4; ++i)
   {
@@ -1002,7 +1025,8 @@ TEST(TesseractSceneGraphUnit, GetInboundJointsUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, GetOutboundJointsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; buildTestSceneGraph(g);
+  SceneGraph g;
+  buildTestSceneGraph(g);
 
   for (int i = 1; i <= 3; ++i)
   {
@@ -1034,7 +1058,8 @@ TEST(TesseractSceneGraphUnit, GetOutboundJointsUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; buildTestSceneGraph(g);
+  SceneGraph g;
+  buildTestSceneGraph(g);
 
   // Check to make sure all links are enabled
   for (const auto& link : g.getLinks())
@@ -1102,7 +1127,8 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g; buildTestSceneGraphForSubTree(g);
+  SceneGraph g;
+  buildTestSceneGraphForSubTree(g);
   std::vector<std::string> joint_names{ "left_joint_1",  "left_joint_2",  "left_joint_3",  "left_joint_4",
                                         "right_joint_1", "right_joint_2", "right_joint_3", "right_joint_4" };
   std::vector<std::string> sub_joint_names{ "left_joint_2",  "left_joint_3",  "left_joint_4",
@@ -1241,7 +1267,8 @@ TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
-  tesseract_scene_graph::SceneGraph g; buildTestSceneGraph(g);
+  tesseract_scene_graph::SceneGraph g;
+  buildTestSceneGraph(g);
   tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
@@ -1281,14 +1308,16 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
-  tesseract_scene_graph::SceneGraph g; buildTestSceneGraph(g);
+  tesseract_scene_graph::SceneGraph g;
+  buildTestSceneGraph(g);
   tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
 
-  tesseract_scene_graph::SceneGraph ng; buildTestSceneGraph(ng);
+  tesseract_scene_graph::SceneGraph ng;
+  buildTestSceneGraph(ng);
   ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
 
@@ -1318,14 +1347,16 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
-  tesseract_scene_graph::SceneGraph g; buildTestSceneGraph(g);
+  tesseract_scene_graph::SceneGraph g;
+  buildTestSceneGraph(g);
   tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
 
-  tesseract_scene_graph::SceneGraph ng; buildTestSceneGraph(ng);
+  tesseract_scene_graph::SceneGraph ng;
+  buildTestSceneGraph(ng);
   ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
 
@@ -1367,7 +1398,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUni
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
-  tesseract_scene_graph::SceneGraph g; buildTestSceneGraph(g);
+  tesseract_scene_graph::SceneGraph g;
+  buildTestSceneGraph(g);
   tesseract_common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
@@ -1376,7 +1408,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
   EXPECT_TRUE(g.isCollisionAllowed("link1", "link2"));
   EXPECT_TRUE(g.isCollisionAllowed("link1", "link3"));
 
-  tesseract_scene_graph::SceneGraph ng; buildTestSceneGraph(ng);
+  tesseract_scene_graph::SceneGraph ng;
+  buildTestSceneGraph(ng);
   ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
   EXPECT_TRUE(ng.isCollisionAllowed("link1", "link2"));

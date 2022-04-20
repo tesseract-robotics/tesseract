@@ -111,9 +111,10 @@ TEST(TesseractURDFUnit, write_visual)  // NOLINT
   {  // trigger check for nullptr input
     tesseract_scene_graph::Visual::Ptr visual = nullptr;
     std::string text;
-    EXPECT_EQ(1,
-              writeTest<tesseract_scene_graph::Visual::Ptr>(
-                  visual, &tesseract_urdf::writeVisual, text, tesseract_common::getTempPath(), std::string("test"), -1));
+    EXPECT_EQ(
+        1,
+        writeTest<tesseract_scene_graph::Visual::Ptr>(
+            visual, &tesseract_urdf::writeVisual, text, tesseract_common::getTempPath(), std::string("test"), -1));
     EXPECT_EQ(text, "");
   }
 
@@ -123,9 +124,10 @@ TEST(TesseractURDFUnit, write_visual)  // NOLINT
     visual->origin = Eigen::Isometry3d::Identity();
     visual->geometry = nullptr;
     std::string text;
-    EXPECT_EQ(1,
-              writeTest<tesseract_scene_graph::Visual::Ptr>(
-                  visual, &tesseract_urdf::writeVisual, text, tesseract_common::getTempPath(), std::string("test"), -1));
+    EXPECT_EQ(
+        1,
+        writeTest<tesseract_scene_graph::Visual::Ptr>(
+            visual, &tesseract_urdf::writeVisual, text, tesseract_common::getTempPath(), std::string("test"), -1));
     EXPECT_EQ(text, "");
   }
 }

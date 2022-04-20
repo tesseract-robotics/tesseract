@@ -207,12 +207,12 @@ void createTestSceneGraph(tesseract_scene_graph::SceneGraph& g)
   g.addAllowedCollision("link_2", "link_3", "Adjacent");
   g.addAllowedCollision("link_3", "link_5", "Adjacent");
   g.addAllowedCollision("link_2", "link_5", "Adjacent");
-
 }
 
 TEST(TesseractSceneGraphSerializationUnit, SceneGraph)  // NOLINT
 {
-  SceneGraph object; createTestSceneGraph(object);
+  SceneGraph object;
+  createTestSceneGraph(object);
   tesseract_common::testSerialization<SceneGraph>(object, "SceneGraph");
 }
 

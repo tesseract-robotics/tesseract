@@ -13,11 +13,11 @@ static std::string getTempPkgPath()
 {
   std::string tmp = tesseract_common::getTempPath();
   std::string tmppkg = tmp + "tmppkg";
-    if (!tesseract_common::fs::is_directory(tmppkg) || !tesseract_common::fs::exists(tmppkg)) 
-    {
-      tesseract_common::fs::create_directory(tmppkg);
-    }
-    return tmppkg;
+  if (!tesseract_common::fs::is_directory(tmppkg) || !tesseract_common::fs::exists(tmppkg))
+  {
+    tesseract_common::fs::create_directory(tmppkg);
+  }
+  return tmppkg;
 }
 
 TEST(TesseractURDFUnit, parse_mesh)  // NOLINT

@@ -101,9 +101,10 @@ TEST(TesseractURDFUnit, write_collision)  // NOLINT
     collision->origin = Eigen::Isometry3d::Identity();
     collision->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
     std::string text;
-    EXPECT_EQ(0,
-              writeTest<tesseract_scene_graph::Collision::Ptr>(
-                  collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), 0));
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_scene_graph::Collision::Ptr>(
+            collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), 0));
     EXPECT_NE(text, "");
   }
 
@@ -111,8 +112,12 @@ TEST(TesseractURDFUnit, write_collision)  // NOLINT
     tesseract_scene_graph::Collision::Ptr collision = nullptr;
     std::string text;
     EXPECT_EQ(1,
-              writeTest<tesseract_scene_graph::Collision::Ptr>(
-                  collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), -1));
+              writeTest<tesseract_scene_graph::Collision::Ptr>(collision,
+                                                               &tesseract_urdf::writeCollision,
+                                                               text,
+                                                               tesseract_common::getTempPath(),
+                                                               std::string("test"),
+                                                               -1));
     EXPECT_EQ(text, "");
   }
 
@@ -123,8 +128,12 @@ TEST(TesseractURDFUnit, write_collision)  // NOLINT
     collision->geometry = nullptr;
     std::string text;
     EXPECT_EQ(1,
-              writeTest<tesseract_scene_graph::Collision::Ptr>(
-                  collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), -1));
+              writeTest<tesseract_scene_graph::Collision::Ptr>(collision,
+                                                               &tesseract_urdf::writeCollision,
+                                                               text,
+                                                               tesseract_common::getTempPath(),
+                                                               std::string("test"),
+                                                               -1));
     EXPECT_EQ(text, "");
   }
 }

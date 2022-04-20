@@ -371,8 +371,9 @@ TEST(TesseractURDFUnit, write_link)  // NOLINT
     link->visual.push_back(visual);
 
     std::string text;
-    EXPECT_EQ(
-        0, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
+    EXPECT_EQ(0,
+              writeTest<tesseract_scene_graph::Link::Ptr>(
+                  link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
     EXPECT_NE(text, "");
   }
 
@@ -389,8 +390,9 @@ TEST(TesseractURDFUnit, write_link)  // NOLINT
     link->visual.push_back(visual);
 
     std::string text;
-    EXPECT_EQ(
-        1, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Link::Ptr>(
+                  link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
     EXPECT_EQ(text, "");
   }
 
@@ -407,16 +409,18 @@ TEST(TesseractURDFUnit, write_link)  // NOLINT
     link->visual.push_back(nullptr);
 
     std::string text;
-    EXPECT_EQ(
-        1, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Link::Ptr>(
+                  link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
     EXPECT_EQ(text, "");
   }
 
   {
     tesseract_scene_graph::Link::Ptr link = nullptr;
     std::string text;
-    EXPECT_EQ(
-        1, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Link::Ptr>(
+                  link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
     EXPECT_EQ(text, "");
   }
 }

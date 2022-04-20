@@ -42,7 +42,6 @@ using namespace tesseract_srdf;
 
 void getSceneGraph(SceneGraph& g)
 {
-
   g.setName("kuka_lbr_iiwa_14_r820");
 
   Link base_link("base_link");
@@ -138,7 +137,8 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
 
 TEST(TesseractSRDFSerializeUnit, KinematicsInformation)  // NOLINT
 {
-  SceneGraph graph; getSceneGraph(graph);
+  SceneGraph graph;
+  getSceneGraph(graph);
   auto srdf = getSRDFModel(graph);
 
   tesseract_common::testSerialization<KinematicsInformation>(srdf->kinematics_information, "KinematicsInformation");
@@ -147,7 +147,8 @@ TEST(TesseractSRDFSerializeUnit, KinematicsInformation)  // NOLINT
 TEST(TesseractSRDFSerializeUnit, SRDFModel)  // NOLINT
 {
   TesseractSupportResourceLocator locator;
-  SceneGraph graph; getSceneGraph(graph);
+  SceneGraph graph;
+  getSceneGraph(graph);
   auto srdf = getSRDFModel(graph);
 
   tesseract_common::testSerialization<SRDFModel>(*srdf, "SRDFModel");
