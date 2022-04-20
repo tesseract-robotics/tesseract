@@ -192,7 +192,7 @@ TEST(TesseractURDFUnit, write_convex_mesh)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::ConvexMesh::Ptr>(
-                  convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("")));
+                  convex_mesh, &tesseract_urdf::writeConvexMesh, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_EQ(text, "");
   }
 
@@ -202,7 +202,7 @@ TEST(TesseractURDFUnit, write_convex_mesh)  // NOLINT
     EXPECT_EQ(
         1,
         writeTest<tesseract_geometry::ConvexMesh::Ptr>(
-            convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("convex1.ply")));
+            convex_mesh, &tesseract_urdf::writeConvexMesh, text, tesseract_common::getTempPath(), std::string("convex1.ply")));
     EXPECT_EQ(text, "");
   }
 }

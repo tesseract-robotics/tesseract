@@ -124,7 +124,7 @@ TEST(TesseractURDFUnit, write_mesh)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Mesh::Ptr>(
-                  mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("")));
+                  mesh, &tesseract_urdf::writeMesh, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_EQ(text, "");
   }
 
@@ -133,7 +133,7 @@ TEST(TesseractURDFUnit, write_mesh)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Mesh::Ptr>(
-                  mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("mesh1.ply")));
+                  mesh, &tesseract_urdf::writeMesh, text, tesseract_common::getTempPath(), std::string("mesh1.ply")));
     EXPECT_EQ(text, "");
   }
 }

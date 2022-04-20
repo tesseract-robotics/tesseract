@@ -104,7 +104,7 @@ TEST(TesseractURDFUnit, write_visual)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_scene_graph::Visual::Ptr>(
-                  visual, &tesseract_urdf::writeVisual, text, std::string("/tmp/"), std::string("test"), 0));
+                  visual, &tesseract_urdf::writeVisual, text, tesseract_common::getTempPath(), std::string("test"), 0));
     EXPECT_NE(text, "");
   }
 
@@ -113,7 +113,7 @@ TEST(TesseractURDFUnit, write_visual)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_scene_graph::Visual::Ptr>(
-                  visual, &tesseract_urdf::writeVisual, text, std::string("/tmp/"), std::string("test"), -1));
+                  visual, &tesseract_urdf::writeVisual, text, tesseract_common::getTempPath(), std::string("test"), -1));
     EXPECT_EQ(text, "");
   }
 
@@ -125,7 +125,7 @@ TEST(TesseractURDFUnit, write_visual)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_scene_graph::Visual::Ptr>(
-                  visual, &tesseract_urdf::writeVisual, text, std::string("/tmp/"), std::string("test"), -1));
+                  visual, &tesseract_urdf::writeVisual, text, tesseract_common::getTempPath(), std::string("test"), -1));
     EXPECT_EQ(text, "");
   }
 }

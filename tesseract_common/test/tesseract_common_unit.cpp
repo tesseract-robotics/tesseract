@@ -341,14 +341,14 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
 
   {
-    std::ofstream os("/tmp/any_type_boost.xml");
+    std::ofstream os(tesseract_common::getTempPath() + "any_type_boost.xml");
     boost::archive::xml_oarchive oa(os);
     oa << BOOST_SERIALIZATION_NVP(any_type);
   }
 
   tesseract_common::Any nany_type;
   {
-    std::ifstream ifs("/tmp/any_type_boost.xml");
+    std::ifstream ifs(tesseract_common::getTempPath() + "any_type_boost.xml");
     assert(ifs.good());
     boost::archive::xml_iarchive ia(ifs);
 

@@ -103,7 +103,7 @@ TEST(TesseractURDFUnit, write_collision)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_scene_graph::Collision::Ptr>(
-                  collision, &tesseract_urdf::writeCollision, text, std::string("/tmp/"), std::string("test"), 0));
+                  collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), 0));
     EXPECT_NE(text, "");
   }
 
@@ -112,7 +112,7 @@ TEST(TesseractURDFUnit, write_collision)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_scene_graph::Collision::Ptr>(
-                  collision, &tesseract_urdf::writeCollision, text, std::string("/tmp/"), std::string("test"), -1));
+                  collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), -1));
     EXPECT_EQ(text, "");
   }
 
@@ -124,7 +124,7 @@ TEST(TesseractURDFUnit, write_collision)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_scene_graph::Collision::Ptr>(
-                  collision, &tesseract_urdf::writeCollision, text, std::string("/tmp/"), std::string("test"), -1));
+                  collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), -1));
     EXPECT_EQ(text, "");
   }
 }

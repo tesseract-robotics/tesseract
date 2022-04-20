@@ -236,7 +236,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_EQ(text, "");
   }
 
@@ -245,7 +245,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_NE(text, "");
   }
 
@@ -254,7 +254,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_NE(text, "");
   }
 
@@ -263,7 +263,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_NE(text, "");
   }
 
@@ -272,7 +272,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_NE(text, "");
   }
 
@@ -281,7 +281,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_NE(text, "");
   }
 
@@ -290,7 +290,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_EQ(text, "");
   }
 
@@ -306,7 +306,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("geom0")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom0")));
     EXPECT_NE(text, "");
   }
 
@@ -322,7 +322,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("geom1")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom1")));
     EXPECT_NE(text, "");
   }
 
@@ -338,7 +338,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("geom2")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom2")));
     EXPECT_NE(text, "");
   }
 
@@ -348,7 +348,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Geometry::Ptr>(
-                  geometry, &tesseract_urdf::writeGeometry, text, std::string("/tmp/"), std::string("geom3")));
+                  geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom3")));
     EXPECT_NE(text, "");
   }
 
