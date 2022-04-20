@@ -507,6 +507,25 @@ TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
     EXPECT_ANY_THROW(srdf.initFile(*g, "/tmp/file_does_not_exist.srdf", locator));  // NOLINT
   }
 }
+
+class TempResourceLocator : public tesseract_common::ResourceLocator
+{
+public:
+  
+  std::shared_ptr<tesseract_common::Resource> locateResource(const std::string& url) const override final
+  {
+    tesseract_common::fs::path mod_url(url);
+    if (!mod_url.is_absolute())
+    {
+      mod_url = tesseract_common::fs::path(tesseract_common::getTempPath() + url);
+    }
+
+    return std::make_shared<tesseract_common::SimpleLocatedResource>(
+        url, mod_url.string(), std::make_shared<TempResourceLocator>(*this));
+  }
+
+};
+
 TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
@@ -514,7 +533,7 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   using namespace tesseract_common;
 
   SceneGraph::Ptr g = getABBSceneGraph(ABBConfig::ROBOT_ON_RAIL);
-  TesseractSupportResourceLocator locator;
+  TempResourceLocator locator;
 
   std::string xml_string =
       R"(<robot name="abb_irb2400" version="1.0.0">
