@@ -157,10 +157,9 @@ TEST(TesseractSceneGraphSerializationUnit, Link)  // NOLINT
   tesseract_common::testSerialization<Link>(*object, "Link");
 }
 
-tesseract_scene_graph::SceneGraph createTestSceneGraph()
+void createTestSceneGraph(tesseract_scene_graph::SceneGraph& g)
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g;
 
   Link link_1("link_1");
   Link link_2("link_2");
@@ -209,12 +208,11 @@ tesseract_scene_graph::SceneGraph createTestSceneGraph()
   g.addAllowedCollision("link_3", "link_5", "Adjacent");
   g.addAllowedCollision("link_2", "link_5", "Adjacent");
 
-  return g;
 }
 
 TEST(TesseractSceneGraphSerializationUnit, SceneGraph)  // NOLINT
 {
-  auto object = createTestSceneGraph();
+  SceneGraph object; createTestSceneGraph(object);
   tesseract_common::testSerialization<SceneGraph>(object, "SceneGraph");
 }
 

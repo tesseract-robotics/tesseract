@@ -403,7 +403,10 @@ bool SceneGraph::removeJoint(const std::string& name, bool recursive)
   else
   {
     if (getInboundJoints(found->second.first->child_link_name).size() == 1)
-      removeLink(found->second.first->child_link_name, true);
+    {
+      std::string child_link_name = found->second.first->child_link_name;
+      removeLink(child_link_name, true);
+    }
   }
 
   return true;

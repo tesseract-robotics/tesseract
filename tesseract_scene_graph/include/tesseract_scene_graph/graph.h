@@ -130,7 +130,9 @@ struct ShortestPath
 
 class SceneGraph
 #ifndef SWIG
-  : public Graph
+  : public Graph //, public boost::noncopyable This data structure 
+  // should be declared noncopyable, but serialization currently
+  // is creating copies
 #endif  // SWIG
 {
 public:
