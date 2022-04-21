@@ -168,9 +168,10 @@ tesseract_scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBCo
   return g;
 }
 
-void buildTestSceneGraph(tesseract_scene_graph::SceneGraph& g)
+tesseract_scene_graph::SceneGraph buildTestSceneGraph()
 {
   using namespace tesseract_scene_graph;
+  SceneGraph g;
 
   Link base_link("base_link");
   Link link_1("link_1");
@@ -222,6 +223,8 @@ void buildTestSceneGraph(tesseract_scene_graph::SceneGraph& g)
   joint_4.type = JointType::REVOLUTE;
   joint_4.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10);
   EXPECT_TRUE(g.addJoint(joint_4));
+
+  return g;
 }
 
 TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
@@ -407,8 +410,7 @@ TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
   EXPECT_FALSE(acm.getAllAllowedCollisions().empty());
   srdf.saveToFile(tesseract_common::getTempPath() + "test.srdf");
 
-  SceneGraph g;
-  buildTestSceneGraph(g);
+  SceneGraph g = buildTestSceneGraph();
 
   SRDFModel srdf_reload;
   srdf_reload.initFile(g, tesseract_common::getTempPath() + "test.srdf", locator);

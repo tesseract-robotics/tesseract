@@ -71,6 +71,29 @@ SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<tesserac
   boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);
 }
 
+SceneGraph::SceneGraph(SceneGraph&& other) : Graph(std::forward<Graph>(other)), link_map_(std::move(other.link_map_)),
+    joint_map_(std::move(other.joint_map_)), acm_(std::move(other.acm_))
+  {
+    {
+      link_map_.clear();
+      joint_map_.clear();
+      Graph::vertex_iterator i, iend;
+      for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i)
+      {
+        Link::Ptr link = boost::get(boost::vertex_link, *this)[*i];
+        link_map_[link->getName()] = std::make_pair(link, *i);
+      }
+    }
+    {
+      Graph::edge_iterator i, iend;
+      for (boost::tie(i, iend) = boost::edges(*this); i != iend; ++i)
+      {
+        Joint::Ptr joint = boost::get(boost::edge_joint, *this)[*i];
+        joint_map_[joint->getName()] = std::make_pair(joint, *i);
+      }
+    }
+  }
+
 SceneGraph::UPtr SceneGraph::clone() const
 {
   auto cloned_graph = std::make_unique<SceneGraph>();
