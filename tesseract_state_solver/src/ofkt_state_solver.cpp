@@ -879,7 +879,7 @@ bool OFKTStateSolver::initHelper(const tesseract_scene_graph::SceneGraph& scene_
 void OFKTStateSolver::moveLinkHelper(std::vector<JointLimits::ConstPtr>& new_joint_limits, const Joint& joint)
 {
   auto* old_node = link_map_[joint.child_link_name];
-  const std::string& old_joint_name = old_node->getJointName();
+  const std::string old_joint_name = old_node->getJointName();
   old_node->getParent()->removeChild(old_node);
 
   auto it = std::find(active_joint_names_.begin(), active_joint_names_.end(), old_joint_name);

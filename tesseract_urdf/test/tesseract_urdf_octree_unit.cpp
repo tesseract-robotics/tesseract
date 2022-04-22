@@ -175,7 +175,7 @@ TEST(TesseractURDFUnit, write_octree)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Octree::Ptr>(
-                  geom, &tesseract_urdf::writeOctree, text, std::string("/tmp/"), std::string("oct0.bt")));
+                  geom, &tesseract_urdf::writeOctree, text, tesseract_common::getTempPath(), std::string("oct0.bt")));
     EXPECT_NE(text, "");
   }
 
@@ -185,7 +185,7 @@ TEST(TesseractURDFUnit, write_octree)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Octree::Ptr>(
-                  geom, &tesseract_urdf::writeOctree, text, std::string("/tmp/"), std::string("")));
+                  geom, &tesseract_urdf::writeOctree, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_EQ(text, "");
   }
 
@@ -194,7 +194,7 @@ TEST(TesseractURDFUnit, write_octree)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Octree::Ptr>(
-                  geom, &tesseract_urdf::writeOctree, text, std::string("/tmp/"), std::string("oct2.bt")));
+                  geom, &tesseract_urdf::writeOctree, text, tesseract_common::getTempPath(), std::string("oct2.bt")));
     EXPECT_EQ(text, "");
   }
 }
@@ -207,7 +207,7 @@ TEST(TesseractURDFUnit, write_octomap)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Octree::Ptr>(
-                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("octo0.bt")));
+                  geom, &tesseract_urdf::writeOctomap, text, tesseract_common::getTempPath(), std::string("octo0.bt")));
     EXPECT_NE(text, "");
   }
 
@@ -217,7 +217,7 @@ TEST(TesseractURDFUnit, write_octomap)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Octree::Ptr>(
-                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("octo1.bt")));
+                  geom, &tesseract_urdf::writeOctomap, text, tesseract_common::getTempPath(), std::string("octo1.bt")));
     EXPECT_NE(text, "");
   }
 
@@ -227,7 +227,7 @@ TEST(TesseractURDFUnit, write_octomap)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Octree::Ptr>(
-                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("octo2.bt")));
+                  geom, &tesseract_urdf::writeOctomap, text, tesseract_common::getTempPath(), std::string("octo2.bt")));
     EXPECT_NE(text, "");
   }
 
@@ -237,7 +237,7 @@ TEST(TesseractURDFUnit, write_octomap)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Octree::Ptr>(
-                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("")));
+                  geom, &tesseract_urdf::writeOctomap, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_EQ(text, "");
   }
 
@@ -246,7 +246,7 @@ TEST(TesseractURDFUnit, write_octomap)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Octree::Ptr>(
-                  geom, &tesseract_urdf::writeOctomap, text, std::string("/tmp/"), std::string("oct2.bt")));
+                  geom, &tesseract_urdf::writeOctomap, text, tesseract_common::getTempPath(), std::string("oct2.bt")));
     EXPECT_EQ(text, "");
   }
 }

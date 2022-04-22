@@ -9,6 +9,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_support/tesseract_support_resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
 
+static std::string getTempPkgPath()
+{
+  std::string tmp = tesseract_common::getTempPath();
+  std::string tmppkg = tmp + "tmppkg";
+  if (!tesseract_common::fs::is_directory(tmppkg) || !tesseract_common::fs::exists(tmppkg))
+  {
+    tesseract_common::fs::create_directory(tmppkg);
+  }
+  return tmppkg;
+}
+
 TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
 {
   tesseract_common::TesseractSupportResourceLocator resource_locator;
@@ -109,8 +120,8 @@ TEST(TesseractURDFUnit, write_mesh)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::Mesh::Ptr>(
-                  mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("mesh0.ply")));
-    EXPECT_EQ(text, R"(<mesh filename="package://tmp/mesh0.ply"/>)");
+                  mesh, &tesseract_urdf::writeMesh, text, getTempPkgPath(), std::string("mesh0.ply")));
+    EXPECT_EQ(text, R"(<mesh filename="package://tmppkg/mesh0.ply"/>)");
   }
 
   {  // fail to write
@@ -124,7 +135,7 @@ TEST(TesseractURDFUnit, write_mesh)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Mesh::Ptr>(
-                  mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("")));
+                  mesh, &tesseract_urdf::writeMesh, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_EQ(text, "");
   }
 
@@ -133,7 +144,7 @@ TEST(TesseractURDFUnit, write_mesh)  // NOLINT
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Mesh::Ptr>(
-                  mesh, &tesseract_urdf::writeMesh, text, std::string("/tmp/"), std::string("mesh1.ply")));
+                  mesh, &tesseract_urdf::writeMesh, text, tesseract_common::getTempPath(), std::string("mesh1.ply")));
     EXPECT_EQ(text, "");
   }
 }
