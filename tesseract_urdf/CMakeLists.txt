@@ -128,6 +128,9 @@ if(TESSERACT_Boost_VERSION_MACRO VERSION_GREATER "106000")
       endif()
     endif()
   endforeach()
+  if(NOT TARGET pcl_common)
+    target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PCL_INCLUDE_DIRS})
+  endif()
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
