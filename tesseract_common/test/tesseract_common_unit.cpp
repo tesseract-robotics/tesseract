@@ -341,14 +341,14 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
 
   {
-    std::ofstream os("/tmp/any_type_boost.xml");
+    std::ofstream os(tesseract_common::getTempPath() + "any_type_boost.xml");
     boost::archive::xml_oarchive oa(os);
     oa << BOOST_SERIALIZATION_NVP(any_type);
   }
 
   tesseract_common::Any nany_type;
   {
-    std::ifstream ifs("/tmp/any_type_boost.xml");
+    std::ifstream ifs(tesseract_common::getTempPath() + "any_type_boost.xml");
     assert(ifs.good());
     boost::archive::xml_iarchive ia(ifs);
 
@@ -471,7 +471,7 @@ TEST(TesseractCommonUnit, isIdenticalArrayUnit)  // NOLINT
   }
   {
     // Clang-tidy catches unitialized arrays anyway, but check it just in case the caller isn't running clang-tidy
-    std::array<int, 4> v1 = { 1, 2, 3, 4 };
+    std::array<int, 4> v1 = { 1, 2, 3, 6 };
     std::array<int, 4> v2;  // NOLINT
     bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
     EXPECT_FALSE(equal);
