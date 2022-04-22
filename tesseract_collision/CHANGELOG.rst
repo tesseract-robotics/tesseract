@@ -2,6 +2,9 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.9.3 (2022-04-18)
 ------------------
 * Fix invalid iterator in bullet_cast_simple_manager (`#746 <https://github.com/tesseract-robotics/tesseract/issues/746>`_)
