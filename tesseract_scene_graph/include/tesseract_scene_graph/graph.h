@@ -130,7 +130,8 @@ struct ShortestPath
 
 class SceneGraph
 #ifndef SWIG
-  : public Graph, public boost::noncopyable
+  : public Graph,
+    public boost::noncopyable
 #endif  // SWIG
 {
 public:
@@ -148,8 +149,8 @@ public:
   SceneGraph(const SceneGraph& other) = delete;
   SceneGraph& operator=(const SceneGraph& other) = delete;
 
-  SceneGraph(SceneGraph&& other);
-  SceneGraph& operator=(SceneGraph&& other) = default;
+  SceneGraph(SceneGraph&& other) noexcept;
+  SceneGraph& operator=(SceneGraph&& other) noexcept;
 
   /**
    * @brief Clone the scene graph
