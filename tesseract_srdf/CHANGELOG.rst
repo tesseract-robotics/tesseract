@@ -2,8 +2,8 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.4 (2022-04-22)
+------------------
 * Windows fixes with passing unit tests (`#751 <https://github.com/tesseract-robotics/tesseract/issues/751>`_)
   * Fix bug in OFKTStateSolver::moveLinkHelper
   * Use binary ifstream ond ofstream in serialization.h
