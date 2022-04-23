@@ -2,6 +2,15 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.4 (2022-04-22)
+------------------
+* Windows fixes with passing unit tests (`#751 <https://github.com/tesseract-robotics/tesseract/issues/751>`_)
+  * Fix bug in OFKTStateSolver::moveLinkHelper
+  * Use binary ifstream ond ofstream in serialization.h
+  * Add c++17 flag to windows_noetic_build.yml
+  * Fix SceneGraph move constructor, restore modified unit tests
+* Contributors: John Wason
+
 0.9.3 (2022-04-18)
 ------------------
 
