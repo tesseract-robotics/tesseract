@@ -2,6 +2,9 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.4 (2022-04-22)
+------------------
+
 0.9.3 (2022-04-18)
 ------------------
 * Enable ability to remove event callback

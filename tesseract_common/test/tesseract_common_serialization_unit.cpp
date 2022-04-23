@@ -207,14 +207,14 @@ TEST(TesseractCommonSerializeUnit, VectorXd)  // NOLINT
   {  // Serialize empty object
     Eigen::VectorXd ev;
     {
-      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_xd_boost.xml");
       boost::archive::xml_oarchive oa(os);
       oa << BOOST_SERIALIZATION_NVP(ev);
     }
 
     Eigen::VectorXd nev;
     {
-      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_xd_boost.xml");
       assert(ifs.good());
       boost::archive::xml_iarchive ia(ifs);
 
@@ -229,14 +229,14 @@ TEST(TesseractCommonSerializeUnit, VectorXd)  // NOLINT
     Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
 
     {
-      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_xd_boost.xml");
       boost::archive::xml_oarchive oa(os);
       oa << BOOST_SERIALIZATION_NVP(ev);
     }
 
     Eigen::VectorXd nev = Eigen::VectorXd::Random(6);
     {
-      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_xd_boost.xml");
       assert(ifs.good());
       boost::archive::xml_iarchive ia(ifs);
 
@@ -253,14 +253,14 @@ TEST(TesseractCommonSerializeUnit, VectorXd)  // NOLINT
     Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
 
     {
-      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_xd_boost.xml");
       boost::archive::xml_oarchive oa(os);
       oa << BOOST_SERIALIZATION_NVP(ev);
     }
 
     Eigen::VectorXd nev = Eigen::VectorXd::Random(3);
     {
-      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_xd_boost.xml");
       assert(ifs.good());
       boost::archive::xml_iarchive ia(ifs);
 
@@ -277,14 +277,14 @@ TEST(TesseractCommonSerializeUnit, VectorXd)  // NOLINT
     Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
 
     {
-      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_xd_boost.xml");
       boost::archive::xml_oarchive oa(os);
       oa << BOOST_SERIALIZATION_NVP(ev);
     }
 
     Eigen::VectorXd nev;
     {
-      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_xd_boost.xml");
       assert(ifs.good());
       boost::archive::xml_iarchive ia(ifs);
 
@@ -302,14 +302,14 @@ TEST(TesseractCommonSerializeUnit, MatrixX2d)  // NOLINT
     Eigen::MatrixX2d em;
 
     {
-      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_matrix_x2d_boost.xml");
       boost::archive::xml_oarchive oa(os);
       oa << BOOST_SERIALIZATION_NVP(em);
     }
 
     Eigen::MatrixX2d nem;
     {
-      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_matrix_x2d_boost.xml");
       assert(ifs.good());
       boost::archive::xml_iarchive ia(ifs);
 
@@ -326,14 +326,14 @@ TEST(TesseractCommonSerializeUnit, MatrixX2d)  // NOLINT
     Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
 
     {
-      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_matrix_x2d_boost.xml");
       boost::archive::xml_oarchive oa(os);
       oa << BOOST_SERIALIZATION_NVP(em);
     }
 
     Eigen::MatrixX2d nem = Eigen::MatrixX2d::Random(4, 2);
     {
-      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_matrix_x2d_boost.xml");
       assert(ifs.good());
       boost::archive::xml_iarchive ia(ifs);
 
@@ -350,14 +350,14 @@ TEST(TesseractCommonSerializeUnit, MatrixX2d)  // NOLINT
     Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
 
     {
-      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_matrix_x2d_boost.xml");
       boost::archive::xml_oarchive oa(os);
       oa << BOOST_SERIALIZATION_NVP(em);
     }
 
     Eigen::MatrixX2d nem = Eigen::MatrixX2d::Random(2, 2);
     {
-      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_matrix_x2d_boost.xml");
       assert(ifs.good());
       boost::archive::xml_iarchive ia(ifs);
 
@@ -374,14 +374,14 @@ TEST(TesseractCommonSerializeUnit, MatrixX2d)  // NOLINT
     Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
 
     {
-      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_matrix_x2d_boost.xml");
       boost::archive::xml_oarchive oa(os);
       oa << BOOST_SERIALIZATION_NVP(em);
     }
 
     Eigen::MatrixX2d nem;
     {
-      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_matrix_x2d_boost.xml");
       assert(ifs.good());
       boost::archive::xml_iarchive ia(ifs);
 
@@ -402,14 +402,14 @@ TEST(TesseractCommonSerializeUnit, Isometry3d)  // NOLINT
     pose.translation() = Eigen::Vector3d::Random();
 
     {
-      std::ofstream os("/tmp/eigen_isometry3d_boost.xml");
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_isometry3d_boost.xml");
       boost::archive::xml_oarchive oa(os);
       oa << BOOST_SERIALIZATION_NVP(pose);
     }
 
     Eigen::Isometry3d npose;
     {
-      std::ifstream ifs("/tmp/eigen_isometry3d_boost.xml");
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_isometry3d_boost.xml");
       assert(ifs.good());
       boost::archive::xml_iarchive ia(ifs);
 

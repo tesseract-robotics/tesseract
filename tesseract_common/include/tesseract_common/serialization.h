@@ -131,7 +131,7 @@ struct Serialization
                                   const std::string& file_path,
                                   const std::string& name = "")
   {
-    std::ofstream os(file_path);
+    std::ofstream os(file_path, std::ios_base::binary);
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
       boost::archive::binary_oarchive oa(os);
       // Boost uses the same function for serialization and deserialization so it requires a non-const reference
@@ -182,7 +182,7 @@ struct Serialization
     SerializableType archive_type;
 
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
-      std::ifstream ifs(file_path);
+      std::ifstream ifs(file_path, std::ios_base::binary);
       assert(ifs.good());
       boost::archive::binary_iarchive ia(ifs);
       ia >> BOOST_SERIALIZATION_NVP(archive_type);
