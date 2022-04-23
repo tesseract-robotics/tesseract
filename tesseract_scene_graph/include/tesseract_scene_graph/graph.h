@@ -584,6 +584,9 @@ private:
   std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>> joint_map_;
   tesseract_common::AllowedCollisionMatrix::Ptr acm_;
 
+  /** @brief The rebuild the link and joint map by extraction information from the graph */
+  void rebuildLinkAndJointMaps();
+
   struct cycle_detector : public boost::dfs_visitor<>
   {
     cycle_detector(bool& ascyclic) : ascyclic_(ascyclic) {}
