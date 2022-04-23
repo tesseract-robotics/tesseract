@@ -69,7 +69,7 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
-}
+}  // namespace tesseract_common
 
 #ifdef SWIG
 %template(JointStates) std::vector<tesseract_common::JointState>;
@@ -77,7 +77,6 @@ private:
 
 namespace tesseract_common
 {
-
 /** @brief Represents a joint trajectory */
 class JointTrajectory
 {
