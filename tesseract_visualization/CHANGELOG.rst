@@ -2,6 +2,9 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.9.4 (2022-04-22)
 ------------------
 
