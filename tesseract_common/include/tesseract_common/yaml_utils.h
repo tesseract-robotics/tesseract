@@ -91,7 +91,7 @@ struct convert<tesseract_common::PluginInfo>
 
     rhs.class_name = node["class"].as<std::string>();
 
-    if (node["config"] != nullptr)
+    if (node["config"])  // NOLINT
       rhs.config = node["config"];
 
     return true;
@@ -114,10 +114,10 @@ struct convert<tesseract_common::PluginInfoContainer>
 
   static bool decode(const Node& node, tesseract_common::PluginInfoContainer& rhs)
   {
-    if (node["default"] != nullptr)
+    if (node["default"])  // NOLINT
       rhs.default_plugin = node["default"].as<std::string>();
 
-    if (node["plugins"] == nullptr)
+    if (!node["plugins"])  // NOLINT
       throw std::runtime_error("PluginInfoContainer, missing 'plugins' entry!");
 
     const Node& plugins = node["plugins"];
