@@ -35,8 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-struct JointState
+class JointState
 {
+public:
   JointState() = default;
   JointState(std::vector<std::string> joint_names, Eigen::VectorXd position);
 
@@ -68,9 +69,18 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
-/** @brief Represents a joint trajectory */
-struct JointTrajectory
+}  // namespace tesseract_common
+
+#ifdef SWIG
+%template(JointStates) std::vector<tesseract_common::JointState>;
+#endif
+
+namespace tesseract_common
 {
+/** @brief Represents a joint trajectory */
+class JointTrajectory
+{
+public:
   JointTrajectory(std::string description = "");
   JointTrajectory(std::vector<JointState> states, std::string description = "");
 
