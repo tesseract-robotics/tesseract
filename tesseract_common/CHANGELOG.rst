@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.5 (2022-04-24)
+------------------
 * yaml_utils.h nullptr comparison fixup (`#755 <https://github.com/tesseract-robotics/tesseract/issues/755>`_)
 * Fix JointTrajectory SWIG container (`#756 <https://github.com/tesseract-robotics/tesseract/issues/756>`_)
 * Contributors: John Wason
