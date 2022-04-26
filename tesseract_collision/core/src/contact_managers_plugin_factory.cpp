@@ -206,6 +206,15 @@ DiscreteContactManager::UPtr
 ContactManagersPluginFactory::createDiscreteContactManager(const std::string& name,
                                                            const tesseract_common::PluginInfo& plugin_info) const
 {
+  if (discrete_manager_create_callback_)
+  {
+    auto cm = discrete_manager_create_callback_(name, plugin_info.config);
+    if (cm)
+    {
+      return cm;
+    }
+  }
+
   try
   {
     auto it = discrete_factories_.find(plugin_info.class_name);
@@ -247,6 +256,15 @@ ContinuousContactManager::UPtr
 ContactManagersPluginFactory::createContinuousContactManager(const std::string& name,
                                                              const tesseract_common::PluginInfo& plugin_info) const
 {
+  if (continuous_manager_create_callback_)
+  {
+    auto cm = continuous_manager_create_callback_(name, plugin_info.config);
+    if (cm)
+    {
+      return cm;
+    }
+  }
+
   try
   {
     auto it = continuous_factories_.find(plugin_info.class_name);
@@ -289,5 +307,30 @@ YAML::Node ContactManagersPluginFactory::getConfig() const
 
   return config;
 }
+
+void ContactManagersPluginFactory::setGlobalCreateDiscreteContactManagerCallback(
+    const CreateDiscreteContactManagerCallbackFn& fn)
+{
+  discrete_manager_create_callback_ = fn;
+}
+
+void ContactManagersPluginFactory::clearGlobalCreateDiscreteContactManagerCallback()
+{
+  discrete_manager_create_callback_ = nullptr;
+}
+
+void ContactManagersPluginFactory::setGlobalCreateContinuousContactManagerCallback(
+    const CreateContinuousContactManagerCallbackFn& fn)
+{
+  continuous_manager_create_callback_ = fn;
+}
+
+void ContactManagersPluginFactory::clearGlobalCreateContinuousContactManagerCallback()
+{
+  continuous_manager_create_callback_ = nullptr;
+}
+
+CreateDiscreteContactManagerCallbackFn ContactManagersPluginFactory::discrete_manager_create_callback_;
+CreateContinuousContactManagerCallbackFn ContactManagersPluginFactory::continuous_manager_create_callback_;
 
 }  // namespace tesseract_collision

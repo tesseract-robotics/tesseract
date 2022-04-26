@@ -100,6 +100,11 @@ protected:
   friend class PluginLoader;
 };
 
+using CreateDiscreteContactManagerCallbackFn =
+    std::function<DiscreteContactManager::UPtr(const std::string&, const YAML::Node&)>;
+using CreateContinuousContactManagerCallbackFn =
+    std::function<ContinuousContactManager::UPtr(const std::string&, const YAML::Node&)>;
+
 class ContactManagersPluginFactory
 {
 public:
@@ -256,12 +261,44 @@ public:
    */
   YAML::Node getConfig() const;
 
+  /**
+   * @brief Set a global discrete contact manager create callback
+   *
+   * Callback function is called before plugins to allow explicit
+   * allocation of contact manager
+   *
+   * @param fn Contact manager create callback function
+   */
+  static void setGlobalCreateDiscreteContactManagerCallback(const CreateDiscreteContactManagerCallbackFn& fn);
+
+  /**
+   * @brief Clear the global discrete contact manager create callback
+   */
+  static void clearGlobalCreateDiscreteContactManagerCallback();
+
+  /**
+   * @brief Set a global continuous contact manager create callback
+   *
+   * Callback function is called before plugins to allow explicit
+   * allocation of contact manager
+   *
+   * @param fn Contact manager create callback function
+   */
+  static void setGlobalCreateContinuousContactManagerCallback(const CreateContinuousContactManagerCallbackFn& fn);
+
+  /**
+   * @brief Clear the global continuous contact manager create callback
+   */
+  static void clearGlobalCreateContinuousContactManagerCallback();
+
 private:
   mutable std::map<std::string, DiscreteContactManagerFactory::Ptr> discrete_factories_;
   mutable std::map<std::string, ContinuousContactManagerFactory::Ptr> continuous_factories_;
   tesseract_common::PluginInfoContainer discrete_plugin_info_;
   tesseract_common::PluginInfoContainer continuous_plugin_info_;
   tesseract_common::PluginLoader plugin_loader_;
+  static CreateDiscreteContactManagerCallbackFn discrete_manager_create_callback_;
+  static CreateContinuousContactManagerCallbackFn continuous_manager_create_callback_;
 };
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_CONTACT_MANAGERS_PLUGIN_FACTORY_H
