@@ -100,10 +100,10 @@ protected:
   friend class PluginLoader;
 };
 
-using CreateDiscreteContactManagerCallbackFn =
-    std::function<DiscreteContactManager::UPtr(const std::string&, const YAML::Node&)>;
-using CreateContinuousContactManagerCallbackFn =
-    std::function<ContinuousContactManager::UPtr(const std::string&, const YAML::Node&)>;
+using CreateDiscreteContactManagerFactoryCallbackFn =
+    std::function<DiscreteContactManagerFactory::Ptr(const std::string&)>;
+using CreateContinuousContactManagerFactoryCallbackFn =
+    std::function<ContinuousContactManagerFactory::Ptr(const std::string&)>;
 
 class ContactManagersPluginFactory
 {
@@ -262,34 +262,36 @@ public:
   YAML::Node getConfig() const;
 
   /**
-   * @brief Set a global discrete contact manager create callback
+   * @brief Set a global discrete contact manager factory create callback
    *
    * Callback function is called before plugins to allow explicit
-   * allocation of contact manager
+   * allocation of contact manager factory
    *
-   * @param fn Contact manager create callback function
+   * @param fn Contact manager factory create callback function
    */
-  static void setGlobalCreateDiscreteContactManagerCallback(const CreateDiscreteContactManagerCallbackFn& fn);
+  static void
+  setGlobalCreateDiscreteContactManagerFactoryCallback(const CreateDiscreteContactManagerFactoryCallbackFn& fn);
 
   /**
-   * @brief Clear the global discrete contact manager create callback
+   * @brief Clear the global discrete contact manager factory create callback
    */
-  static void clearGlobalCreateDiscreteContactManagerCallback();
+  static void clearGlobalCreateDiscreteContactManagerFactoryCallback();
 
   /**
-   * @brief Set a global continuous contact manager create callback
+   * @brief Set a global continuous contact manager factory create callback
    *
    * Callback function is called before plugins to allow explicit
-   * allocation of contact manager
+   * allocation of contact manager factory
    *
-   * @param fn Contact manager create callback function
+   * @param fn Contact manager create factory callback function
    */
-  static void setGlobalCreateContinuousContactManagerCallback(const CreateContinuousContactManagerCallbackFn& fn);
+  static void
+  setGlobalCreateContinuousContactManagerFactoryCallback(const CreateContinuousContactManagerFactoryCallbackFn& fn);
 
   /**
-   * @brief Clear the global continuous contact manager create callback
+   * @brief Clear the global continuous contact manager create factory callback
    */
-  static void clearGlobalCreateContinuousContactManagerCallback();
+  static void clearGlobalCreateContinuousContactManagerFactoryCallback();
 
 private:
   mutable std::map<std::string, DiscreteContactManagerFactory::Ptr> discrete_factories_;
@@ -297,8 +299,8 @@ private:
   tesseract_common::PluginInfoContainer discrete_plugin_info_;
   tesseract_common::PluginInfoContainer continuous_plugin_info_;
   tesseract_common::PluginLoader plugin_loader_;
-  static CreateDiscreteContactManagerCallbackFn discrete_manager_create_callback_;
-  static CreateContinuousContactManagerCallbackFn continuous_manager_create_callback_;
+  static CreateDiscreteContactManagerFactoryCallbackFn discrete_manager_create_callback_;
+  static CreateContinuousContactManagerFactoryCallbackFn continuous_manager_create_callback_;
 };
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_CONTACT_MANAGERS_PLUGIN_FACTORY_H

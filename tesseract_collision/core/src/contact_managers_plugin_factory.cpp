@@ -208,10 +208,10 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
 {
   if (discrete_manager_create_callback_)
   {
-    auto cm = discrete_manager_create_callback_(name, plugin_info.config);
+    auto cm = discrete_manager_create_callback_(plugin_info.class_name);
     if (cm)
     {
-      return cm;
+      return cm->create(name, plugin_info.config);
     }
   }
 
@@ -258,10 +258,10 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
 {
   if (continuous_manager_create_callback_)
   {
-    auto cm = continuous_manager_create_callback_(name, plugin_info.config);
+    auto cm = continuous_manager_create_callback_(plugin_info.class_name);
     if (cm)
     {
-      return cm;
+      return cm->create(name, plugin_info.config);
     }
   }
 
@@ -308,29 +308,29 @@ YAML::Node ContactManagersPluginFactory::getConfig() const
   return config;
 }
 
-void ContactManagersPluginFactory::setGlobalCreateDiscreteContactManagerCallback(
-    const CreateDiscreteContactManagerCallbackFn& fn)
+void ContactManagersPluginFactory::setGlobalCreateDiscreteContactManagerFactoryCallback(
+    const CreateDiscreteContactManagerFactoryCallbackFn& fn)
 {
   discrete_manager_create_callback_ = fn;
 }
 
-void ContactManagersPluginFactory::clearGlobalCreateDiscreteContactManagerCallback()
+void ContactManagersPluginFactory::clearGlobalCreateDiscreteContactManagerFactoryCallback()
 {
   discrete_manager_create_callback_ = nullptr;
 }
 
-void ContactManagersPluginFactory::setGlobalCreateContinuousContactManagerCallback(
-    const CreateContinuousContactManagerCallbackFn& fn)
+void ContactManagersPluginFactory::setGlobalCreateContinuousContactManagerFactoryCallback(
+    const CreateContinuousContactManagerFactoryCallbackFn& fn)
 {
   continuous_manager_create_callback_ = fn;
 }
 
-void ContactManagersPluginFactory::clearGlobalCreateContinuousContactManagerCallback()
+void ContactManagersPluginFactory::clearGlobalCreateContinuousContactManagerFactoryCallback()
 {
   continuous_manager_create_callback_ = nullptr;
 }
 
-CreateDiscreteContactManagerCallbackFn ContactManagersPluginFactory::discrete_manager_create_callback_;
-CreateContinuousContactManagerCallbackFn ContactManagersPluginFactory::continuous_manager_create_callback_;
+CreateDiscreteContactManagerFactoryCallbackFn ContactManagersPluginFactory::discrete_manager_create_callback_;
+CreateContinuousContactManagerFactoryCallbackFn ContactManagersPluginFactory::continuous_manager_create_callback_;
 
 }  // namespace tesseract_collision
