@@ -244,6 +244,15 @@ KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
                                       const tesseract_scene_graph::SceneState& scene_state) const
 {
+  if (create_fwd_kin_callback_)
+  {
+    auto cm = create_fwd_kin_callback_(plugin_info.class_name);
+    if (cm)
+    {
+      return cm->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
+    }
+  }
+
   try
   {
     auto it = fwd_kin_factories_.find(plugin_info.class_name);
@@ -301,6 +310,15 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
                                       const tesseract_scene_graph::SceneState& scene_state) const
 {
+  if (create_inv_kin_callback_)
+  {
+    auto cm = create_inv_kin_callback_(plugin_info.class_name);
+    if (cm)
+    {
+      return cm->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
+    }
+  }
+
   try
   {
     auto it = inv_kin_factories_.find(plugin_info.class_name);
@@ -343,5 +361,21 @@ YAML::Node KinematicsPluginFactory::getConfig() const
 
   return config;
 }
+
+void KinematicsPluginFactory::setGlobalCreateFwdKinFactoryCallback(const CreateFwdKinFactoryCallbackFn& fn)
+{
+  create_fwd_kin_callback_ = fn;
+}
+void KinematicsPluginFactory::clearGlobalCreateFwdKinFactoryCallback() { create_fwd_kin_callback_ = nullptr; }
+
+void KinematicsPluginFactory::setGlobalCreateInvKinFactoryCallback(const CreateInvKinFactoryCallbackFn& fn)
+{
+  create_inv_kin_callback_ = fn;
+}
+
+void KinematicsPluginFactory::clearGlobalCreateInvKinFactoryCallback() { create_inv_kin_callback_ = nullptr; }
+
+CreateFwdKinFactoryCallbackFn KinematicsPluginFactory::create_fwd_kin_callback_;
+CreateInvKinFactoryCallbackFn KinematicsPluginFactory::create_inv_kin_callback_;
 
 }  // namespace tesseract_kinematics

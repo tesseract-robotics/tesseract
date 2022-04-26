@@ -116,6 +116,9 @@ protected:
   friend class PluginLoader;
 };
 
+using CreateFwdKinFactoryCallbackFn = std::function<FwdKinFactory::Ptr(const std::string&)>;
+using CreateInvKinFactoryCallbackFn = std::function<InvKinFactory::Ptr(const std::string&)>;
+
 class KinematicsPluginFactory
 {
 public:
@@ -304,12 +307,44 @@ public:
    */
   YAML::Node getConfig() const;
 
+  /**
+   * @brief Set a global FwdKin factory create callback
+   *
+   * Callback function is called before plugins to allow explicit
+   * factory allocation
+   *
+   * @param fn FwdKin create callback function
+   */
+  static void setGlobalCreateFwdKinFactoryCallback(const CreateFwdKinFactoryCallbackFn& fn);
+
+  /**
+   * @brief Clear the global FwdKin factory create callback
+   */
+  static void clearGlobalCreateFwdKinFactoryCallback();
+
+  /**
+   * @brief Set a global InvKin factory create callback
+   *
+   * Callback function is called before plugins to allow explicit
+   * factory allocation
+   *
+   * @param fn InvKin factory create callback function
+   */
+  static void setGlobalCreateInvKinFactoryCallback(const CreateInvKinFactoryCallbackFn& fn);
+
+  /**
+   * @brief Clear the global InvKin create callback
+   */
+  static void clearGlobalCreateInvKinFactoryCallback();
+
 private:
   mutable std::map<std::string, FwdKinFactory::Ptr> fwd_kin_factories_;
   mutable std::map<std::string, InvKinFactory::Ptr> inv_kin_factories_;
   std::map<std::string, tesseract_common::PluginInfoContainer> fwd_plugin_info_;
   std::map<std::string, tesseract_common::PluginInfoContainer> inv_plugin_info_;
   tesseract_common::PluginLoader plugin_loader_;
+  static CreateFwdKinFactoryCallbackFn create_fwd_kin_callback_;
+  static CreateInvKinFactoryCallbackFn create_inv_kin_callback_;
 };
 
 }  // namespace tesseract_kinematics
