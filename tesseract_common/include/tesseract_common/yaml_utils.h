@@ -204,6 +204,7 @@ struct convert<Eigen::Isometry3d>
       quat.y() = o["y"].as<double>();
       quat.z() = o["z"].as<double>();
       quat.w() = o["w"].as<double>();
+      quat.normalize();
 
       out.linear() = quat.toRotationMatrix();
     }
