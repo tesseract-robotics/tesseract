@@ -2,6 +2,11 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Normalize quaternion when decoding yaml Eigen::Isometry3d
+* Contributors: Levi Armstrong
+
 0.9.5 (2022-04-24)
 ------------------
 * yaml_utils.h nullptr comparison fixup (`#755 <https://github.com/tesseract-robotics/tesseract/issues/755>`_)
