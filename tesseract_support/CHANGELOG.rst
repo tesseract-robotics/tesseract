@@ -2,8 +2,8 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.6 (2022-05-02)
+------------------
 * Add fwd_kin_plugins to abb_irb2400_plugins.yaml
 * Contributors: John Wason
 

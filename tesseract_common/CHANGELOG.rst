@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.6 (2022-05-02)
+------------------
 * Normalize quaternion when decoding yaml Eigen::Isometry3d
 * Contributors: Levi Armstrong
 
