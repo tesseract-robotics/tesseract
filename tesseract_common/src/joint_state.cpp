@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/unordered_map.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
@@ -68,8 +69,22 @@ void JointState::serialize(Archive& ar, const unsigned int /*version*/)  // NOLI
 
 JointTrajectory::JointTrajectory(std::string description) : description(std::move(description)) {}
 
+JointTrajectory::JointTrajectory(std::unordered_map<std::string, double> initial_state, std::string description)
+  : initial_state(std::move(initial_state)), description(std::move(description))
+{
+}
+
 JointTrajectory::JointTrajectory(std::vector<JointState> states, std::string description)
   : states(std::move(states)), description(std::move(description))
+{
+  for (std::size_t i = 0; i < states.front().joint_names.size(); ++i)
+    initial_state[states.front().joint_names[i]] = states.front().position[i];
+}
+
+JointTrajectory::JointTrajectory(std::unordered_map<std::string, double> initial_state,
+                                 std::vector<JointState> states,
+                                 std::string description)
+  : initial_state(std::move(initial_state)), states(std::move(states)), description(std::move(description))
 {
 }
 
@@ -78,6 +93,7 @@ bool JointTrajectory::operator==(const JointTrajectory& other) const
   bool ret_val = true;
   ret_val &= (description == other.description);
   ret_val &= (states == other.states);
+  ret_val &= (initial_state == other.initial_state);
   return ret_val;
 }
 
@@ -167,11 +183,16 @@ void JointTrajectory::swap(std::vector<value_type>& other) { states.swap(other);
 template <class Archive>
 void JointTrajectory::serialize(Archive& ar, const unsigned int version)  // NOLINT
 {
+  if (version == 1)
+    ar& BOOST_SERIALIZATION_NVP(initial_state);
+
   ar& BOOST_SERIALIZATION_NVP(states);
   ar& BOOST_SERIALIZATION_NVP(description);
 }
 
 }  // namespace tesseract_common
+
+BOOST_CLASS_VERSION(tesseract_common::JointTrajectory, 1)  // Adding initial_state
 
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointState)

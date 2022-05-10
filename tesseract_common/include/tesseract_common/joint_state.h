@@ -82,9 +82,19 @@ class JointTrajectory
 {
 public:
   JointTrajectory(std::string description = "");
+  JointTrajectory(std::unordered_map<std::string, double> initial_state, std::string description = "");
   JointTrajectory(std::vector<JointState> states, std::string description = "");
+  JointTrajectory(std::unordered_map<std::string, double> initial_state,
+                  std::vector<JointState> states,
+                  std::string description = "");
 
+  /** @brief The state of the environment for the trajectory */
+  std::unordered_map<std::string, double> initial_state;
+
+  /** @brief The state in the trajectory */
   std::vector<JointState> states;
+
+  /** @brief A description of the trajectory */
   std::string description;
 
   bool operator==(const JointTrajectory& other) const;
