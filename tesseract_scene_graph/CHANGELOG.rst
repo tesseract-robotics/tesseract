@@ -2,6 +2,9 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.6 (2022-05-02)
+------------------
+
 0.9.5 (2022-04-24)
 ------------------
 * Add utility for rebuilding link and joint maps in scene graph
