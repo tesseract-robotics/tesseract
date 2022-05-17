@@ -116,8 +116,10 @@ protected:
   friend class PluginLoader;
 };
 
+#ifdef TESSERACT_PLUGIN_FACTORY_CALLBACKS
 using CreateFwdKinFactoryCallbackFn = std::function<FwdKinFactory::Ptr(const std::string&)>;
 using CreateInvKinFactoryCallbackFn = std::function<InvKinFactory::Ptr(const std::string&)>;
+#endif
 
 class KinematicsPluginFactory
 {
@@ -307,6 +309,7 @@ public:
    */
   YAML::Node getConfig() const;
 
+#ifdef TESSERACT_PLUGIN_FACTORY_CALLBACKS
   /**
    * @brief Set a global FwdKin factory create callback
    *
@@ -336,6 +339,7 @@ public:
    * @brief Clear the global InvKin create callback
    */
   static void clearGlobalCreateInvKinFactoryCallback();
+#endif
 
 private:
   mutable std::map<std::string, FwdKinFactory::Ptr> fwd_kin_factories_;
@@ -343,8 +347,11 @@ private:
   std::map<std::string, tesseract_common::PluginInfoContainer> fwd_plugin_info_;
   std::map<std::string, tesseract_common::PluginInfoContainer> inv_plugin_info_;
   tesseract_common::PluginLoader plugin_loader_;
+
+#ifdef TESSERACT_PLUGIN_FACTORY_CALLBACKS
   static CreateFwdKinFactoryCallbackFn create_fwd_kin_callback_;
   static CreateInvKinFactoryCallbackFn create_inv_kin_callback_;
+#endif
 };
 
 }  // namespace tesseract_kinematics

@@ -206,6 +206,7 @@ DiscreteContactManager::UPtr
 ContactManagersPluginFactory::createDiscreteContactManager(const std::string& name,
                                                            const tesseract_common::PluginInfo& plugin_info) const
 {
+#ifdef TESSERACT_PLUGIN_FACTORY_CALLBACKS
   if (discrete_manager_create_callback_)
   {
     auto cm = discrete_manager_create_callback_(plugin_info.class_name);
@@ -214,6 +215,7 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
       return cm->create(name, plugin_info.config);
     }
   }
+#endif
 
   try
   {
@@ -256,6 +258,7 @@ ContinuousContactManager::UPtr
 ContactManagersPluginFactory::createContinuousContactManager(const std::string& name,
                                                              const tesseract_common::PluginInfo& plugin_info) const
 {
+#ifdef TESSERACT_PLUGIN_FACTORY_CALLBACKS
   if (continuous_manager_create_callback_)
   {
     auto cm = continuous_manager_create_callback_(plugin_info.class_name);
@@ -264,6 +267,7 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
       return cm->create(name, plugin_info.config);
     }
   }
+#endif
 
   try
   {
@@ -308,6 +312,7 @@ YAML::Node ContactManagersPluginFactory::getConfig() const
   return config;
 }
 
+#ifdef TESSERACT_PLUGIN_FACTORY_CALLBACKS
 void ContactManagersPluginFactory::setGlobalCreateDiscreteContactManagerFactoryCallback(
     const CreateDiscreteContactManagerFactoryCallbackFn& fn)
 {
@@ -332,5 +337,5 @@ void ContactManagersPluginFactory::clearGlobalCreateContinuousContactManagerFact
 
 CreateDiscreteContactManagerFactoryCallbackFn ContactManagersPluginFactory::discrete_manager_create_callback_;
 CreateContinuousContactManagerFactoryCallbackFn ContactManagersPluginFactory::continuous_manager_create_callback_;
-
+#endif
 }  // namespace tesseract_collision

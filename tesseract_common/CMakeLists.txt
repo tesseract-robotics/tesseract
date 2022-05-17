@@ -42,6 +42,10 @@ set(COVERAGE_EXCLUDE
     /*/gtest/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
+if(TESSERACT_PLUGIN_FACTORY_CALLBACKS)
+  set(TESSERACT_PLUGIN_FACTORY_CALLBACKS_DEFINITIONS -DTESSERACT_PLUGIN_FACTORY_CALLBACKS=1)
+endif()
+
 add_library(
   ${PROJECT_NAME}
   src/allowed_collision_matrix.cpp
@@ -66,7 +70,8 @@ target_link_libraries(
          console_bridge::console_bridge
          yaml-cpp)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS}
+                                                  ${TESSERACT_PLUGIN_FACTORY_CALLBACKS_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

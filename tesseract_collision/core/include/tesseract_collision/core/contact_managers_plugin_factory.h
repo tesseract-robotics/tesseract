@@ -100,10 +100,13 @@ protected:
   friend class PluginLoader;
 };
 
+#ifdef TESSERACT_PLUGIN_FACTORY_CALLBACKS
+
 using CreateDiscreteContactManagerFactoryCallbackFn =
     std::function<DiscreteContactManagerFactory::Ptr(const std::string&)>;
 using CreateContinuousContactManagerFactoryCallbackFn =
     std::function<ContinuousContactManagerFactory::Ptr(const std::string&)>;
+#endif
 
 class ContactManagersPluginFactory
 {
@@ -261,6 +264,7 @@ public:
    */
   YAML::Node getConfig() const;
 
+#ifdef TESSERACT_PLUGIN_FACTORY_CALLBACKS
   /**
    * @brief Set a global discrete contact manager factory create callback
    *
@@ -293,14 +297,18 @@ public:
    */
   static void clearGlobalCreateContinuousContactManagerFactoryCallback();
 
+#endif
+
 private:
   mutable std::map<std::string, DiscreteContactManagerFactory::Ptr> discrete_factories_;
   mutable std::map<std::string, ContinuousContactManagerFactory::Ptr> continuous_factories_;
   tesseract_common::PluginInfoContainer discrete_plugin_info_;
   tesseract_common::PluginInfoContainer continuous_plugin_info_;
   tesseract_common::PluginLoader plugin_loader_;
+#ifdef TESSERACT_PLUGIN_FACTORY_CALLBACKS
   static CreateDiscreteContactManagerFactoryCallbackFn discrete_manager_create_callback_;
   static CreateContinuousContactManagerFactoryCallbackFn continuous_manager_create_callback_;
+#endif
 };
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_CONTACT_MANAGERS_PLUGIN_FACTORY_H
