@@ -199,7 +199,7 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
 
   EXPECT_EQ(m.f.eigen_values.size(), 6);
   EXPECT_NEAR(m.m.volume, 0, 1e-6);
-  EXPECT_GT(m.m.condition, 1e+20, 1);
+  EXPECT_GT(m.m.condition, 1e+20);
 
   EXPECT_EQ(m.f_linear.eigen_values.size(), 3);
   EXPECT_NEAR(m.f_linear.eigen_values[0], 5.508714726106856, 1e-6);
