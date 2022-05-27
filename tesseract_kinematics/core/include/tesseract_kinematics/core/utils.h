@@ -310,11 +310,37 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
     Eigen::EigenSolver<Eigen::MatrixXd> sm(m, false);
 
     data.eigen_values = sm.eigenvalues().real();
-    data.measure = std::sqrt(data.eigen_values.maxCoeff()) / std::sqrt(data.eigen_values.minCoeff());
-    data.condition = data.eigen_values.maxCoeff() / data.eigen_values.minCoeff();
+
+    // Set values near zero to zero
+    for (Eigen::Index i = 0; i < data.eigen_values.size(); ++i)
+    {
+      if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
+        data.eigen_values[i] = +0;
+    }
+
+    // If the minimum eigen value is approximately zero set measure and condition to max double
+    if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values.minCoeff(), 0))
+    {
+      data.measure = std::numeric_limits<double>::max();
+      data.condition = std::numeric_limits<double>::max();
+    }
+    else
+    {
+      data.measure = std::sqrt(data.eigen_values.maxCoeff()) / std::sqrt(data.eigen_values.minCoeff());
+      data.condition = data.eigen_values.maxCoeff() / data.eigen_values.minCoeff();
+    }
+
     data.volume = 1;
     for (Eigen::Index i = 0; i < sm.eigenvalues().size(); ++i)
+    {
+      // If an eigen value is approximately zero set the volume to zero and return
+      if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
+      {
+        data.volume = +0;
+        break;
+      }
       data.volume = data.volume * data.eigen_values[i];
+    }
     data.volume = std::sqrt(data.volume);
     return data;
   };
