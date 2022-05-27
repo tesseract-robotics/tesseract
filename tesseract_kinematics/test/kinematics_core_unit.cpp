@@ -179,7 +179,7 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
   tesseract_kinematics::Manipulability m = tesseract_kinematics::calcManipulability(jacobian);
   EXPECT_EQ(m.m.eigen_values.size(), 6);
   EXPECT_NEAR(m.m.volume, 0, 1e-6);
-  EXPECT_NEAR(m.m.condition, 1.2526941195405473e+18, 1);
+  EXPECT_GT(m.m.condition, 1e+20);
 
   EXPECT_EQ(m.m_linear.eigen_values.size(), 3);
   EXPECT_NEAR(m.m_linear.eigen_values[0], 0.18153054745434696, 1e-6);
@@ -199,7 +199,7 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
 
   EXPECT_EQ(m.f.eigen_values.size(), 6);
   EXPECT_NEAR(m.m.volume, 0, 1e-6);
-  EXPECT_NEAR(m.m.condition, 1.2526941195405473e+18, 1);
+  EXPECT_GT(m.m.condition, 1e+20, 1);
 
   EXPECT_EQ(m.f_linear.eigen_values.size(), 3);
   EXPECT_NEAR(m.f_linear.eigen_values[0], 5.508714726106856, 1e-6);
