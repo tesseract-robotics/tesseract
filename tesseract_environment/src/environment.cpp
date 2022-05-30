@@ -769,6 +769,7 @@ tesseract_common::ContactManagersPluginInfo Environment::getContactManagersPlugi
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
   return setActiveDiscreteContactManagerHelper(name);
 }
 
@@ -788,25 +789,28 @@ tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContac
 bool Environment::setActiveContinuousContactManager(const std::string& name)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> continous_lock(continuous_manager_mutex_);
   return setActiveContinuousContactManagerHelper(name);
 }
 
 tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContactManager() const
 {
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   {  // Clone cached manager if exists
-    std::shared_lock<std::shared_mutex> lock(mutex_);
+    std::shared_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
     if (discrete_manager_)
       return discrete_manager_->clone();
   }
 
-  // Try to create the default plugin
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  const std::string& name = contact_managers_plugin_info_.discrete_plugin_infos.default_plugin;
-  discrete_manager_ = getDiscreteContactManagerHelper(name);
-  if (discrete_manager_ == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
-    return nullptr;
+  {  // Try to create the default plugin
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
+    const std::string& name = contact_managers_plugin_info_.discrete_plugin_infos.default_plugin;
+    discrete_manager_ = getDiscreteContactManagerHelper(name);
+    if (discrete_manager_ == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
+      return nullptr;
+    }
   }
 
   return discrete_manager_->clone();
@@ -814,26 +818,29 @@ tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContac
 
 void Environment::clearCachedDiscreteContactManager() const
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
+  std::shared_lock<std::shared_mutex> lock;
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
   discrete_manager_ = nullptr;
 }
 
 tesseract_collision::ContinuousContactManager::UPtr Environment::getContinuousContactManager() const
 {
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   {  // Clone cached manager if exists
-    std::shared_lock<std::shared_mutex> lock(mutex_);
+    std::shared_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
     if (continuous_manager_)
       return continuous_manager_->clone();
   }
 
-  // Try to create the default plugin
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  const std::string& name = contact_managers_plugin_info_.continuous_plugin_infos.default_plugin;
-  continuous_manager_ = getContinuousContactManagerHelper(name);
-  if (continuous_manager_ == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
-    return nullptr;
+  {  // Try to create the default plugin
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
+    const std::string& name = contact_managers_plugin_info_.continuous_plugin_infos.default_plugin;
+    continuous_manager_ = getContinuousContactManagerHelper(name);
+    if (continuous_manager_ == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
+      return nullptr;
+    }
   }
 
   return continuous_manager_->clone();
@@ -841,7 +848,8 @@ tesseract_collision::ContinuousContactManager::UPtr Environment::getContinuousCo
 
 void Environment::clearCachedContinuousContactManager() const
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
   continuous_manager_ = nullptr;
 }
 
@@ -872,6 +880,8 @@ std::shared_lock<std::shared_mutex> Environment::lockRead() const
 
 bool Environment::operator==(const Environment& rhs) const
 {
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+
   // No need to check everything mainly the items serialized
   bool equal = true;
   equal &= initialized_ == rhs.initialized_;
@@ -915,6 +925,8 @@ bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
   }
 
   contact_managers_plugin_info_.discrete_plugin_infos.default_plugin = name;
+
+  // The calling function should be locking discrete_manager_mutex_
   discrete_manager_ = std::move(manager);
 
   return true;
@@ -936,6 +948,8 @@ bool Environment::setActiveContinuousContactManagerHelper(const std::string& nam
   }
 
   contact_managers_plugin_info_.continuous_plugin_infos.default_plugin = name;
+
+  // The calling function should be locking continuous_manager_mutex_
   continuous_manager_ = std::move(manager);
 
   return true;
@@ -1029,21 +1043,21 @@ void Environment::currentStateChanged()
   timestamp_ = std::chrono::system_clock::now();
   current_state_timestamp_ = timestamp_;
   current_state_ = state_solver_->getState();
+
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
   if (discrete_manager_ != nullptr)
     discrete_manager_->setCollisionObjectsTransform(current_state_.link_transforms);
+
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
   if (continuous_manager_ != nullptr)
   {
     std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
     for (const auto& tf : current_state_.link_transforms)
     {
       if (std::find(active_link_names.begin(), active_link_names.end(), tf.first) != active_link_names.end())
-      {
         continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second, tf.second);
-      }
       else
-      {
         continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second);
-      }
     }
   }
 
@@ -1059,10 +1073,18 @@ void Environment::environmentChanged()
 {
   timestamp_ = std::chrono::system_clock::now();
   std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
-  if (discrete_manager_ != nullptr)
-    discrete_manager_->setActiveCollisionObjects(active_link_names);
-  if (continuous_manager_ != nullptr)
-    continuous_manager_->setActiveCollisionObjects(active_link_names);
+
+  {
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
+    if (discrete_manager_ != nullptr)
+      discrete_manager_->setActiveCollisionObjects(active_link_names);
+  }
+
+  {
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
+    if (continuous_manager_ != nullptr)
+      continuous_manager_->setActiveCollisionObjects(active_link_names);
+  }
 
   {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
     std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
@@ -1106,6 +1128,9 @@ bool Environment::removeLinkHelper(const std::string& name)
   std::vector<std::string> child_link_names = scene_graph_->getLinkChildrenNames(name);
 
   scene_graph_->removeLink(name, true);
+
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
   if (discrete_manager_ != nullptr)
     discrete_manager_->removeCollisionObject(name);
   if (continuous_manager_ != nullptr)
@@ -1127,9 +1152,11 @@ Environment::UPtr Environment::clone() const
   auto cloned_env = std::make_unique<Environment>();
 
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
-  std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
-  std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
+  std::shared_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
+  std::shared_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
+  std::shared_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
+  std::shared_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
+  std::shared_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
 
   if (!initialized_)
     return cloned_env;
@@ -1494,8 +1521,11 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
   // If Link existed remove it from collision before adding the replacing links geometry
   if (link_exists)
   {
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
     if (discrete_manager_ != nullptr)
       discrete_manager_->removeCollisionObject(link_name);
+
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
     if (continuous_manager_ != nullptr)
       continuous_manager_->removeCollisionObject(link_name);
   }
@@ -1507,8 +1537,11 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
     tesseract_common::VectorIsometry3d shape_poses;
     getCollisionObject(shapes, shape_poses, *cmd->getLink());
 
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
     if (discrete_manager_ != nullptr)
       discrete_manager_->addCollisionObject(link_name, 0, shapes, shape_poses, true);
+
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
     if (continuous_manager_ != nullptr)
       continuous_manager_->addCollisionObject(link_name, 0, shapes, shape_poses, true);
   }
@@ -1641,6 +1674,7 @@ bool Environment::applyChangeJointOriginCommand(const ChangeJointOriginCommand::
 
 bool Environment::applyChangeLinkCollisionEnabledCommand(const ChangeLinkCollisionEnabledCommand::ConstPtr& cmd)
 {
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
   if (discrete_manager_ != nullptr)
   {
     if (cmd->getEnabled())
@@ -1649,6 +1683,7 @@ bool Environment::applyChangeLinkCollisionEnabledCommand(const ChangeLinkCollisi
       discrete_manager_->disableCollisionObject(cmd->getLinkName());
   }
 
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
   if (continuous_manager_ != nullptr)
   {
     if (cmd->getEnabled())
@@ -1762,6 +1797,8 @@ bool Environment::applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd)
                       pre_links.end(),
                       std::inserter(diff_links, diff_links.begin()));
 
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
   for (const auto& link : diff_links)
   {
     if (!link->collision.empty())
@@ -1936,6 +1973,7 @@ bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManag
   if (contact_managers_factory_.hasDiscreteContactManagerPlugins())
   {
     std::string discrete_default = contact_managers_factory_.getDefaultDiscreteContactManagerPlugin();
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
     if (discrete_manager_ == nullptr || discrete_manager_->getName() != discrete_default)
       setActiveDiscreteContactManagerHelper(discrete_default);
   }
@@ -1947,6 +1985,7 @@ bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManag
   if (contact_managers_factory_.hasContinuousContactManagerPlugins())
   {
     std::string continuous_default = contact_managers_factory_.getDefaultContinuousContactManagerPlugin();
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
     if (continuous_manager_ == nullptr || continuous_manager_->getName() != continuous_default)
       setActiveContinuousContactManagerHelper(continuous_default);
   }
@@ -1987,9 +2026,11 @@ bool Environment::applyChangeCollisionMarginsCommand(const ChangeCollisionMargin
 {
   collision_margin_data_.apply(cmd->getCollisionMarginData(), cmd->getCollisionMarginOverrideType());
 
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
   if (continuous_manager_ != nullptr)
     continuous_manager_->setCollisionMarginData(collision_margin_data_, CollisionMarginOverrideType::REPLACE);
 
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
   if (discrete_manager_ != nullptr)
     discrete_manager_->setCollisionMarginData(collision_margin_data_, CollisionMarginOverrideType::REPLACE);
 
@@ -2002,6 +2043,8 @@ bool Environment::applyChangeCollisionMarginsCommand(const ChangeCollisionMargin
 template <class Archive>
 void Environment::save(Archive& ar, const unsigned int /*version*/) const
 {
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+
   ar& BOOST_SERIALIZATION_NVP(resource_locator_);
   ar& BOOST_SERIALIZATION_NVP(commands_);
   ar& BOOST_SERIALIZATION_NVP(init_revision_);

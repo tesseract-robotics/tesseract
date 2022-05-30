@@ -627,12 +627,14 @@ protected:
    * @note This is intentionally not serialized it will auto updated
    */
   mutable tesseract_collision::DiscreteContactManager::UPtr discrete_manager_;
+  mutable std::shared_mutex discrete_manager_mutex_;
 
   /**
    * @brief The continuous contact manager object
    * @note This is intentionally not serialized it will auto updated
    */
   mutable tesseract_collision::ContinuousContactManager::UPtr continuous_manager_;
+  mutable std::shared_mutex continuous_manager_mutex_;
 
   /**
    * @brief A cache of group joint names to provide faster access
