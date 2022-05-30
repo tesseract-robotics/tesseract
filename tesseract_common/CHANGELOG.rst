@@ -2,6 +2,11 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update Findtcmalloc.cmake to include threads and split out tcmalloc_minimal to Findtcmalloc_minimal.cmake
+* Contributors: Levi Armstrong
+
 0.9.6 (2022-05-02)
 ------------------
 * Normalize quaternion when decoding yaml Eigen::Isometry3d

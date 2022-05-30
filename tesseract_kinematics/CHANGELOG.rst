@@ -2,6 +2,11 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix numerical issue in manipulability calculation
+* Contributors: Levi Armstrong
+
 0.9.6 (2022-05-02)
 ------------------
 

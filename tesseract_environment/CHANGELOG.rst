@@ -2,6 +2,13 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add environment discrete_manager_mutex_ and continuous_manager_mutex_
+* Allow not providing contact manager plugins
+* Add the ability to set the environment discrete and continuous manager to nullptr to save space when needed
+* Contributors: Levi Armstrong
+
 0.9.6 (2022-05-02)
 ------------------
 

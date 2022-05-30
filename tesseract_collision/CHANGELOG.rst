@@ -2,6 +2,12 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Reduce bullet octomap storage
+* Allow not providing contact manager plugins
+* Contributors: Levi Armstrong
+
 0.9.6 (2022-05-02)
 ------------------
 
