@@ -292,6 +292,116 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   }
 }
 
+TEST(TesseractContactManagersFactoryUnit, LoadOnlyDiscretePluginTest)  // NOLINT
+{
+  std::string config = R"(contact_manager_plugins:
+                            search_paths:
+                              - /usr/local/lib
+                            search_libraries:
+                              - tesseract_collision_bullet_factories
+                              - tesseract_collision_fcl_factories
+                            discrete_plugins:
+                              default: BulletDiscreteBVHManager
+                              plugins:
+                                BulletDiscreteBVHManager:
+                                  class: BulletDiscreteBVHManagerFactory
+                                BulletDiscreteSimpleManager:
+                                  class: BulletDiscreteSimpleManagerFactory
+                                FCLDiscreteBVHManager:
+                                  class: FCLDiscreteBVHManagerFactory)";
+
+  ContactManagersPluginFactory factory(config);
+  YAML::Node plugin_config = YAML::Load(config);
+
+  const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
+  const YAML::Node& search_paths = plugin_info["search_paths"];
+  const YAML::Node& search_libraries = plugin_info["search_libraries"];
+  const YAML::Node& discrete_plugins = plugin_info["discrete_plugins"]["plugins"];
+
+  {
+    std::set<std::string> sp = factory.getSearchPaths();
+    EXPECT_EQ(sp.size(), 2);
+
+    for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
+    {
+      EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
+    }
+  }
+
+  {
+    std::set<std::string> sl = factory.getSearchLibraries();
+    EXPECT_EQ(sl.size(), 2);
+
+    for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
+    {
+      EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
+    }
+  }
+
+  EXPECT_EQ(discrete_plugins.size(), 3);
+  for (auto cm_it = discrete_plugins.begin(); cm_it != discrete_plugins.end(); ++cm_it)
+  {
+    auto name = cm_it->first.as<std::string>();
+
+    DiscreteContactManager::UPtr cm = factory.createDiscreteContactManager(name);
+    EXPECT_TRUE(cm != nullptr);
+  }
+}
+
+TEST(TesseractContactManagersFactoryUnit, LoadOnlyContinuousPluginTest)  // NOLINT
+{
+  std::string config = R"(contact_manager_plugins:
+                            search_paths:
+                              - /usr/local/lib
+                            search_libraries:
+                              - tesseract_collision_bullet_factories
+                              - tesseract_collision_fcl_factories
+                            continuous_plugins:
+                              default: BulletCastBVHManager
+                              plugins:
+                                BulletCastBVHManager:
+                                  class: BulletCastBVHManagerFactory
+                                BulletCastSimpleManager:
+                                  class: BulletCastSimpleManagerFactory)";
+
+  ContactManagersPluginFactory factory(config);
+  YAML::Node plugin_config = YAML::Load(config);
+
+  const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
+  const YAML::Node& search_paths = plugin_info["search_paths"];
+  const YAML::Node& search_libraries = plugin_info["search_libraries"];
+  const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
+
+  {
+    std::set<std::string> sp = factory.getSearchPaths();
+    EXPECT_EQ(sp.size(), 2);
+
+    for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
+    {
+      EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
+    }
+  }
+
+  {
+    std::set<std::string> sl = factory.getSearchLibraries();
+    EXPECT_EQ(sl.size(), 2);
+
+    for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
+    {
+      EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
+    }
+  }
+
+  EXPECT_EQ(continuous_plugins.size(), 2);
+  for (auto cm_it = continuous_plugins.begin(); cm_it != continuous_plugins.end(); ++cm_it)
+  {
+    auto name = cm_it->first.as<std::string>();
+
+    ContinuousContactManager::UPtr cm = factory.createContinuousContactManager(name);
+    EXPECT_TRUE(cm != nullptr);
+  }
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

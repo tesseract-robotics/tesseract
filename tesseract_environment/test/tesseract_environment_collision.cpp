@@ -168,7 +168,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentClearDiscreteCollisionTest
 {
   // Get the environment
   auto env = getEnvironment();
-  env->clearDiscreteContactManager();
+  env->clearCachedDiscreteContactManager();
 
   // Setup collision margin data
   CollisionCheckConfig mCollisionCheckConfig;
@@ -204,7 +204,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentClearContinuousCollisionTe
 {
   // Get the environment
   auto env = getEnvironment();
-  env->clearContinuousContactManager();
+  env->clearCachedContinuousContactManager();
 
   // Setup collision margin data
   CollisionCheckConfig mCollisionCheckConfig;
