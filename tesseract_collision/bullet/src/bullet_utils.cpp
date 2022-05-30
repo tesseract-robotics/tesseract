@@ -164,6 +164,8 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
   auto subshape = std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
   double occupancy_threshold = octree.getOccupancyThres();
 
+  std::vector<std::shared_ptr<btCollisionShape>> managed_shapes;
+  managed_shapes.resize(octree.getTreeDepth() + 1);
   switch (geom->getSubType())
   {
     case tesseract_geometry::Octree::SubType::BOX:
@@ -179,14 +181,27 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
           geomTrans.setOrigin(btVector3(
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
           auto l = static_cast<btScalar>(size / 2.0);
-          auto childshape = std::make_shared<btBoxShape>(btVector3(l, l, l));
-          childshape->setUserIndex(shape_index);
-          childshape->setMargin(BULLET_MARGIN);
-          cow->manage(childshape);
+
+          std::shared_ptr<btCollisionShape> childshape = managed_shapes.at(it.getDepth());
+          if (childshape == nullptr)
+          {
+            childshape = std::make_shared<btBoxShape>(btVector3(l, l, l));
+            childshape->setUserIndex(shape_index);
+            childshape->setMargin(BULLET_MARGIN);
+            managed_shapes.at(it.getDepth()) = childshape;
+          }
 
           subshape->addChildShape(geomTrans, childshape.get());
         }
       }
+
+      cow->manageReserve(managed_shapes.size());
+      for (const auto& managed_shape : managed_shapes)
+      {
+        if (managed_shape != nullptr)
+          cow->manage(managed_shape);
+      }
+
       return subshape;
     }
     case tesseract_geometry::Octree::SubType::SPHERE_INSIDE:
@@ -201,14 +216,27 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
           geomTrans.setIdentity();
           geomTrans.setOrigin(btVector3(
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
-          auto childshape = std::make_shared<btSphereShape>(static_cast<btScalar>((size / 2)));
-          childshape->setUserIndex(shape_index);
-          // Sphere is a special case where you do not modify the margin which is internally set to the radius
-          cow->manage(childshape);
+
+          std::shared_ptr<btCollisionShape> childshape = managed_shapes.at(it.getDepth());
+          if (childshape == nullptr)
+          {
+            childshape = std::make_shared<btSphereShape>(static_cast<btScalar>((size / 2)));
+            childshape->setUserIndex(shape_index);
+            // Sphere is a special case where you do not modify the margin which is internally set to the radius
+            managed_shapes.at(it.getDepth()) = childshape;
+          }
 
           subshape->addChildShape(geomTrans, childshape.get());
         }
       }
+
+      cow->manageReserve(managed_shapes.size());
+      for (const auto& managed_shape : managed_shapes)
+      {
+        if (managed_shape != nullptr)
+          cow->manage(managed_shape);
+      }
+
       return subshape;
     }
     case tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE:
@@ -223,15 +251,28 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
           geomTrans.setIdentity();
           geomTrans.setOrigin(btVector3(
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
-          auto childshape =
-              std::make_shared<btSphereShape>(static_cast<btScalar>(std::sqrt(2 * ((size / 2) * (size / 2)))));
-          childshape->setUserIndex(shape_index);
-          // Sphere is a special case where you do not modify the margin which is internally set to the radius
-          cow->manage(childshape);
+
+          std::shared_ptr<btCollisionShape> childshape = managed_shapes.at(it.getDepth());
+          if (childshape == nullptr)
+          {
+            childshape =
+                std::make_shared<btSphereShape>(static_cast<btScalar>(std::sqrt(2 * ((size / 2) * (size / 2)))));
+            childshape->setUserIndex(shape_index);
+            // Sphere is a special case where you do not modify the margin which is internally set to the radius
+            managed_shapes.at(it.getDepth()) = childshape;
+          }
 
           subshape->addChildShape(geomTrans, childshape.get());
         }
       }
+
+      cow->manageReserve(managed_shapes.size());
+      for (const auto& managed_shape : managed_shapes)
+      {
+        if (managed_shape != nullptr)
+          cow->manage(managed_shape);
+      }
+
       return subshape;
     }
   }

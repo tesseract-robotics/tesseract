@@ -199,6 +199,8 @@ public:
 
   void manage(const std::shared_ptr<btCollisionShape>& t) { m_data.push_back(t); }
 
+  void manageReserve(std::size_t s) { m_data.reserve(s); }
+
 protected:
   std::string m_name;                               /**< @brief The name of the collision object */
   int m_type_id{ -1 };                              /**< @brief A user defined type id */
