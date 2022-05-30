@@ -37,7 +37,7 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
   return srdf;
 }
 
-TEST(TesseractEnvironmentCollisionUnit, runEnvironmentCollisionTest)  // NOLINT
+tesseract_environment::Environment::UPtr getEnvironment()
 {
   auto scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -45,14 +45,14 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentCollisionTest)  // NOLINT
   auto srdf = getSRDFModel(*scene_graph);
   EXPECT_TRUE(srdf != nullptr);
 
-  auto env = std::make_shared<Environment>();
+  auto env = std::make_unique<Environment>();
   bool success = env->init(*scene_graph, srdf);
   EXPECT_TRUE(success);
 
   Link link_1("link_n1");
   {
     Visual::Ptr v = std::make_shared<Visual>();
-    v->origin.translation() = Eigen::Vector3d(1, 0, 0);
+    v->origin.translation() = Eigen::Vector3d(0, 0, 0);
     v->material = std::make_shared<Material>("test_material");
     v->material->color = Eigen::Vector4d(1, 0, 0, 1);
     v->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
@@ -89,6 +89,14 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentCollisionTest)  // NOLINT
   auto cmd2 = std::make_shared<AddLinkCommand>(link_2, true);
   env->applyCommand(cmd2);
 
+  return env;
+}
+
+TEST(TesseractEnvironmentCollisionUnit, runEnvironmentDiscreteCollisionTest)  // NOLINT
+{
+  // Get the environment
+  auto env = getEnvironment();
+
   // Setup collision margin data
   CollisionCheckConfig mCollisionCheckConfig;
   mCollisionCheckConfig.longest_valid_segment_length = 0.1;
@@ -107,7 +115,120 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentCollisionTest)  // NOLINT
     EXPECT_FALSE(collision.empty());
   }
 
-  manager->setCollisionObjectsTransform("link_n1", Eigen::Isometry3d::Identity());
+  auto pose = Eigen::Isometry3d::Identity();
+  pose.translation() = Eigen::Vector3d(0, 0, 1.5);
+  manager->setCollisionObjectsTransform("link_n1", pose);
+  manager->setCollisionMarginData(mCollisionCheckConfig.contact_manager_config.margin_data);
+
+  // Check for collisions
+  tesseract_collision::ContactResultMap collision;
+  manager->contactTest(collision, mCollisionCheckConfig.contact_request);
+
+  EXPECT_FALSE(collision.empty());
+}
+
+TEST(TesseractEnvironmentCollisionUnit, runEnvironmentContinuousCollisionTest)  // NOLINT
+{
+  // Get the environment
+  auto env = getEnvironment();
+
+  // Setup collision margin data
+  CollisionCheckConfig mCollisionCheckConfig;
+  mCollisionCheckConfig.longest_valid_segment_length = 0.1;
+  mCollisionCheckConfig.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+  mCollisionCheckConfig.type = tesseract_collision::CollisionEvaluatorType::CONTINUOUS;
+  tesseract_collision::CollisionMarginData margin_data(0.0);
+  mCollisionCheckConfig.contact_manager_config.margin_data = margin_data;
+
+  // Setup collision checker
+  ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
+  {  // Check for collisions
+    tesseract_collision::ContactResultMap collision;
+    std::vector<std::string> active_links = { "link_n1" };
+    manager->setActiveCollisionObjects(active_links);
+    manager->contactTest(collision, mCollisionCheckConfig.contact_request);
+    EXPECT_FALSE(collision.empty());
+  }
+
+  auto pose1 = Eigen::Isometry3d::Identity();
+  pose1.translation() = Eigen::Vector3d(0, -2, 1.5);
+  auto pose2 = Eigen::Isometry3d::Identity();
+  pose2.translation() = Eigen::Vector3d(0, 2, 1.5);
+  manager->setCollisionObjectsTransform("link_n1", pose1, pose2);
+  manager->setCollisionMarginData(mCollisionCheckConfig.contact_manager_config.margin_data);
+
+  // Check for collisions
+  tesseract_collision::ContactResultMap collision;
+  manager->contactTest(collision, mCollisionCheckConfig.contact_request);
+
+  EXPECT_FALSE(collision.empty());
+}
+
+TEST(TesseractEnvironmentCollisionUnit, runEnvironmentClearDiscreteCollisionTest)  // NOLINT
+{
+  // Get the environment
+  auto env = getEnvironment();
+  env->clearDiscreteContactManager();
+
+  // Setup collision margin data
+  CollisionCheckConfig mCollisionCheckConfig;
+  mCollisionCheckConfig.longest_valid_segment_length = 0.1;
+  mCollisionCheckConfig.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+  mCollisionCheckConfig.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+  tesseract_collision::CollisionMarginData margin_data(0.0);
+  mCollisionCheckConfig.contact_manager_config.margin_data = margin_data;
+
+  // Setup collision checker
+  DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
+  {  // Check for collisions
+    tesseract_collision::ContactResultMap collision;
+    std::vector<std::string> active_links = { "link_n1" };
+    manager->setActiveCollisionObjects(active_links);
+    manager->contactTest(collision, mCollisionCheckConfig.contact_request);
+    EXPECT_FALSE(collision.empty());
+  }
+
+  auto pose = Eigen::Isometry3d::Identity();
+  pose.translation() = Eigen::Vector3d(0, 0, 1.5);
+  manager->setCollisionObjectsTransform("link_n1", pose);
+  manager->setCollisionMarginData(mCollisionCheckConfig.contact_manager_config.margin_data);
+
+  // Check for collisions
+  tesseract_collision::ContactResultMap collision;
+  manager->contactTest(collision, mCollisionCheckConfig.contact_request);
+
+  EXPECT_FALSE(collision.empty());
+}
+
+TEST(TesseractEnvironmentCollisionUnit, runEnvironmentClearContinuousCollisionTest)  // NOLINT
+{
+  // Get the environment
+  auto env = getEnvironment();
+  env->clearContinuousContactManager();
+
+  // Setup collision margin data
+  CollisionCheckConfig mCollisionCheckConfig;
+  mCollisionCheckConfig.longest_valid_segment_length = 0.1;
+  mCollisionCheckConfig.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+  mCollisionCheckConfig.type = tesseract_collision::CollisionEvaluatorType::CONTINUOUS;
+  tesseract_collision::CollisionMarginData margin_data(0.0);
+  mCollisionCheckConfig.contact_manager_config.margin_data = margin_data;
+
+  // Setup collision checker
+  ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
+  {  // Check for collisions
+    tesseract_collision::ContactResultMap collision;
+    std::vector<std::string> active_links = { "link_n1" };
+    manager->setActiveCollisionObjects(active_links);
+    manager->contactTest(collision, mCollisionCheckConfig.contact_request);
+    EXPECT_FALSE(collision.empty());
+  }
+
+  auto pose1 = Eigen::Isometry3d::Identity();
+  pose1.translation() = Eigen::Vector3d(0, -2, 1.5);
+  auto pose2 = Eigen::Isometry3d::Identity();
+  pose2.translation() = Eigen::Vector3d(0, 2, 1.5);
+  manager->setCollisionObjectsTransform("link_n1", pose1, pose2);
   manager->setCollisionMarginData(mCollisionCheckConfig.contact_manager_config.margin_data);
 
   // Check for collisions
