@@ -102,6 +102,11 @@ void ContactManagersPluginFactory::addDiscreteContactManagerPlugin(const std::st
   discrete_plugin_info_.plugins[name] = std::move(plugin_info);
 }
 
+bool ContactManagersPluginFactory::hasDiscreteContactManagerPlugins() const
+{
+  return !discrete_plugin_info_.plugins.empty();
+}
+
 tesseract_common::PluginInfoMap ContactManagersPluginFactory::getDiscreteContactManagerPlugins() const
 {
   return discrete_plugin_info_.plugins;
@@ -146,6 +151,11 @@ void ContactManagersPluginFactory::addContinuousContactManagerPlugin(const std::
                                                                      tesseract_common::PluginInfo plugin_info)
 {
   continuous_plugin_info_.plugins[name] = std::move(plugin_info);
+}
+
+bool ContactManagersPluginFactory::hasContinuousContactManagerPlugins() const
+{
+  return !continuous_plugin_info_.plugins.empty();
 }
 
 tesseract_common::PluginInfoMap ContactManagersPluginFactory::getContinuousContactManagerPlugins() const

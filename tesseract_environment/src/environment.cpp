@@ -812,7 +812,7 @@ tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContac
   return discrete_manager_->clone();
 }
 
-void Environment::clearDiscreteContactManager()
+void Environment::clearCachedDiscreteContactManager() const
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   discrete_manager_ = nullptr;
@@ -839,7 +839,7 @@ tesseract_collision::ContinuousContactManager::UPtr Environment::getContinuousCo
   return continuous_manager_->clone();
 }
 
-void Environment::clearContinuousContactManager()
+void Environment::clearCachedContinuousContactManager() const
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   continuous_manager_ = nullptr;
@@ -1933,13 +1933,27 @@ bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManag
       contact_managers_factory_.setDefaultContinuousContactManagerPlugin(info.continuous_plugin_infos.default_plugin);
   }
 
-  std::string discrete_default = contact_managers_factory_.getDefaultDiscreteContactManagerPlugin();
-  if (discrete_manager_ == nullptr || discrete_manager_->getName() != discrete_default)
-    setActiveDiscreteContactManagerHelper(discrete_default);
+  if (contact_managers_factory_.hasDiscreteContactManagerPlugins())
+  {
+    std::string discrete_default = contact_managers_factory_.getDefaultDiscreteContactManagerPlugin();
+    if (discrete_manager_ == nullptr || discrete_manager_->getName() != discrete_default)
+      setActiveDiscreteContactManagerHelper(discrete_default);
+  }
+  else
+  {
+    CONSOLE_BRIDGE_logWarn("Environment, No discrete contact manager plugins were provided");
+  }
 
-  std::string continuous_default = contact_managers_factory_.getDefaultContinuousContactManagerPlugin();
-  if (continuous_manager_ == nullptr || continuous_manager_->getName() != continuous_default)
-    setActiveContinuousContactManagerHelper(continuous_default);
+  if (contact_managers_factory_.hasContinuousContactManagerPlugins())
+  {
+    std::string continuous_default = contact_managers_factory_.getDefaultContinuousContactManagerPlugin();
+    if (continuous_manager_ == nullptr || continuous_manager_->getName() != continuous_default)
+      setActiveContinuousContactManagerHelper(continuous_default);
+  }
+  else
+  {
+    CONSOLE_BRIDGE_logWarn("Environment, No continuous contact manager plugins were provided");
+  }
 
   ++revision_;
   commands_.push_back(cmd);

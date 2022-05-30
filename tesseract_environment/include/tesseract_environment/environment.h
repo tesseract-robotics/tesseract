@@ -480,10 +480,10 @@ public:
   tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManager() const;
 
   /**
-   * @brief Set the internal copy of the environments active discrete contact manager not nullptr
+   * @brief Set the cached internal copy of the environments active discrete contact manager not nullptr
    * @details This can be useful to save space in the event the environment is being saved
    */
-  void clearDiscreteContactManager();
+  void clearCachedDiscreteContactManager() const;
 
   /** @brief Get a copy of the environments available discrete contact manager by name */
   tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManager(const std::string& name) const;
@@ -499,10 +499,10 @@ public:
   tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManager() const;
 
   /**
-   * @brief Set the internal copy of the environments active continuous contact manager not nullptr
+   * @brief Set the cached internal copy of the environments active continuous contact manager not nullptr
    * @details This can be useful to save space in the event the environment is being saved
    */
-  void clearContinuousContactManager();
+  void clearCachedContinuousContactManager() const;
 
   /** @brief Get a copy of the environments available continuous contact manager by name */
   tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManager(const std::string& name) const;

@@ -288,8 +288,8 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
     EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
   }
   {
-    env->clearDiscreteContactManager();
-    env->clearContinuousContactManager();
+    env->clearCachedDiscreteContactManager();
+    env->clearCachedContinuousContactManager();
     tesseract_common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
     EXPECT_EQ(cm_info.discrete_plugin_infos.default_plugin, "BulletDiscreteSimpleManager");
     EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastSimpleManager");
