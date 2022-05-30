@@ -3,11 +3,11 @@
 # tcmalloc_LIBRARIES   - List of libraries when using tcmalloc. tcmalloc_FOUND       - True if tcmalloc found.
 
 set(tcmalloc_NAMES
-    tcmalloc_minimal
-    libtcmalloc_minimal
     tcmalloc
-    tcmalloc_minimal4
-    libtcmalloc_minimal.so.4)
+    libtcmalloc
+    libtcmalloc.so
+    tcmalloc4
+    libtcmalloc.so.4)
 
 find_library(
   tcmalloc_LIBRARY NO_DEFAULT_PATH
@@ -37,6 +37,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(tcmalloc DEFAULT_MSG tcmalloc_LIBRARY)
 
 if(tcmalloc_FOUND)
+  find_package(Threads REQUIRED)
   add_library(tcmalloc::tcmalloc INTERFACE IMPORTED)
-  set_target_properties(tcmalloc::tcmalloc PROPERTIES INTERFACE_LINK_LIBRARIES ${tcmalloc_LIBRARY})
+  target_link_libraries(tcmalloc::tcmalloc INTERFACE ${tcmalloc_LIBRARY} Threads::Threads)
 endif()
