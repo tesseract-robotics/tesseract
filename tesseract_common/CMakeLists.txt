@@ -90,9 +90,12 @@ install(
   PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE)
 
-install(FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"
-              "${CMAKE_CURRENT_LIST_DIR}/cmake/FindTinyXML2.cmake" "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc.cmake"
-        DESTINATION lib/cmake/${PROJECT_NAME})
+install(
+  FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/FindTinyXML2.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc_minimal.cmake"
+  DESTINATION lib/cmake/${PROJECT_NAME})
 
 if(TESSERACT_ENABLE_TESTING)
   enable_testing()
