@@ -479,6 +479,12 @@ public:
   /** @brief Get a copy of the environments active discrete contact manager */
   tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManager() const;
 
+  /**
+   * @brief Set the internal copy of the environments active discrete contact manager not nullptr
+   * @details This can be useful to save space in the event the environment is being saved
+   */
+  void clearDiscreteContactManager();
+
   /** @brief Get a copy of the environments available discrete contact manager by name */
   tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManager(const std::string& name) const;
 
@@ -491,6 +497,12 @@ public:
 
   /** @brief Get a copy of the environments active continuous contact manager */
   tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManager() const;
+
+  /**
+   * @brief Set the internal copy of the environments active continuous contact manager not nullptr
+   * @details This can be useful to save space in the event the environment is being saved
+   */
+  void clearContinuousContactManager();
 
   /** @brief Get a copy of the environments available continuous contact manager by name */
   tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManager(const std::string& name) const;
@@ -614,13 +626,13 @@ protected:
    * @brief The discrete contact manager object
    * @note This is intentionally not serialized it will auto updated
    */
-  tesseract_collision::DiscreteContactManager::UPtr discrete_manager_;
+  mutable tesseract_collision::DiscreteContactManager::UPtr discrete_manager_;
 
   /**
    * @brief The continuous contact manager object
    * @note This is intentionally not serialized it will auto updated
    */
-  tesseract_collision::ContinuousContactManager::UPtr continuous_manager_;
+  mutable tesseract_collision::ContinuousContactManager::UPtr continuous_manager_;
 
   /**
    * @brief A cache of group joint names to provide faster access

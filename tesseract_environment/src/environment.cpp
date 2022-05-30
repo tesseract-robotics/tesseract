@@ -793,18 +793,56 @@ bool Environment::setActiveContinuousContactManager(const std::string& name)
 
 tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContactManager() const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  if (!discrete_manager_)
+  {  // Clone cached manager if exists
+    std::shared_lock<std::shared_mutex> lock(mutex_);
+    if (discrete_manager_)
+      return discrete_manager_->clone();
+  }
+
+  // Try to create the default plugin
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  const std::string& name = contact_managers_plugin_info_.discrete_plugin_infos.default_plugin;
+  discrete_manager_ = getDiscreteContactManagerHelper(name);
+  if (discrete_manager_ == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
     return nullptr;
+  }
+
   return discrete_manager_->clone();
+}
+
+void Environment::clearDiscreteContactManager()
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  discrete_manager_ = nullptr;
 }
 
 tesseract_collision::ContinuousContactManager::UPtr Environment::getContinuousContactManager() const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  if (!continuous_manager_)
+  {  // Clone cached manager if exists
+    std::shared_lock<std::shared_mutex> lock(mutex_);
+    if (continuous_manager_)
+      return continuous_manager_->clone();
+  }
+
+  // Try to create the default plugin
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  const std::string& name = contact_managers_plugin_info_.continuous_plugin_infos.default_plugin;
+  continuous_manager_ = getContinuousContactManagerHelper(name);
+  if (continuous_manager_ == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
     return nullptr;
+  }
+
   return continuous_manager_->clone();
+}
+
+void Environment::clearContinuousContactManager()
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  continuous_manager_ = nullptr;
 }
 
 tesseract_collision::ContinuousContactManager::UPtr
@@ -879,9 +917,6 @@ bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
   contact_managers_plugin_info_.discrete_plugin_infos.default_plugin = name;
   discrete_manager_ = std::move(manager);
 
-  // Update the current state information since the contact manager has been created/set
-  currentStateChanged();
-
   return true;
 }
 
@@ -902,9 +937,6 @@ bool Environment::setActiveContinuousContactManagerHelper(const std::string& nam
 
   contact_managers_plugin_info_.continuous_plugin_infos.default_plugin = name;
   continuous_manager_ = std::move(manager);
-
-  // Update the current state information since the contact manager has been created/set
-  currentStateChanged();
 
   return true;
 }
@@ -936,6 +968,8 @@ Environment::getDiscreteContactManagerHelper(const std::string& name) const
 
   manager->setCollisionMarginData(collision_margin_data_);
 
+  manager->setCollisionObjectsTransform(current_state_.link_transforms);
+
   return manager;
 }
 
@@ -966,6 +1000,15 @@ Environment::getContinuousContactManagerHelper(const std::string& name) const
   }
 
   manager->setCollisionMarginData(collision_margin_data_);
+
+  std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
+  for (const auto& tf : current_state_.link_transforms)
+  {
+    if (std::find(active_link_names.begin(), active_link_names.end(), tf.first) != active_link_names.end())
+      manager->setCollisionObjectsTransform(tf.first, tf.second, tf.second);
+    else
+      manager->setCollisionObjectsTransform(tf.first, tf.second);
+  }
 
   return manager;
 }
