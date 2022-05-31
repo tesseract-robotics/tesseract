@@ -57,7 +57,7 @@ add_library(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
-         ${TinyXML2_LIBRARIES}
+         tinyxml2::tinyxml2
          ${CMAKE_DL_LIBS}
          Boost::boost
          Boost::system
@@ -77,7 +77,6 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${TinyXML2_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
