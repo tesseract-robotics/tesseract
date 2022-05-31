@@ -2,6 +2,11 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix find tcmalloc on melodic
+* Contributors: Levi Armstrong
+
 0.9.8 (2022-05-30)
 ------------------
 * Fix Findtcmalloc_minimal.cmake
