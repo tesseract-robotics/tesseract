@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.9 (2022-05-30)
+------------------
 * Fix find tcmalloc on melodic
 * Contributors: Levi Armstrong
 
