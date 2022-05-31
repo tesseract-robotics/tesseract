@@ -40,5 +40,6 @@ find_package_handle_standard_args(tcmalloc_minimal DEFAULT_MSG tcmalloc_minimal_
 if(tcmalloc_minimal_FOUND)
   find_package(Threads REQUIRED)
   add_library(tcmalloc::tcmalloc_minimal INTERFACE IMPORTED)
-  target_link_libraries(tcmalloc::tcmalloc_minimal INTERFACE ${tcmalloc_minimal_LIBRARY} Threads::Threads)
+  set_property(TARGET tcmalloc::tcmalloc_minimal PROPERTY INTERFACE_LINK_LIBRARIES ${tcmalloc_minimal_LIBRARY}
+                                                          Threads::Threads)
 endif()
