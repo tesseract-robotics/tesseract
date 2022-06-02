@@ -1979,7 +1979,7 @@ bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManag
   }
   else
   {
-    CONSOLE_BRIDGE_logWarn("Environment, No discrete contact manager plugins were provided");
+    CONSOLE_BRIDGE_logDebug("Environment, No discrete contact manager plugins were provided");
   }
 
   if (contact_managers_factory_.hasContinuousContactManagerPlugins())
@@ -1991,7 +1991,7 @@ bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManag
   }
   else
   {
-    CONSOLE_BRIDGE_logWarn("Environment, No continuous contact manager plugins were provided");
+    CONSOLE_BRIDGE_logDebug("Environment, No continuous contact manager plugins were provided");
   }
 
   ++revision_;
