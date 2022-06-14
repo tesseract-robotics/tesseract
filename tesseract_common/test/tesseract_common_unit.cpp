@@ -305,7 +305,7 @@ TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
   EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
-TESSERACT_ANY_EXPORT(tesseract_common::JointState);  // NOLINT
+TESSERACT_ANY_EXPORT(tesseract_common, JointState);  // NOLINT
 
 TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 {

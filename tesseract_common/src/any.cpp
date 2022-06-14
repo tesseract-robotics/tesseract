@@ -29,43 +29,16 @@
 namespace tesseract_common
 {
 template <class Archive>
-void detail_any::AnyInnerBase::serialize(Archive& /*ar*/, const unsigned int /*version*/)  // NOLINT
-{
-}
-
-Any::Any()  // NOLINT
-  : any_type_(nullptr)
-{
-}
-
-Any::Any(const Any& other) : any_type_(other.any_type_->clone()) {}
-
-Any::Any(Any&& other) noexcept { any_type_.swap(other.any_type_); }
-
-Any& Any::operator=(Any&& other) noexcept
-{
-  any_type_.swap(other.any_type_);
-  return (*this);
-}
-
-Any& Any::operator=(const Any& other)
-{
-  (*this) = Any(other);
-  return (*this);
-}
-
-bool Any::operator==(const Any& rhs) const { return any_type_->operator==(*rhs.any_type_); }
-
-bool Any::operator!=(const Any& rhs) const { return !operator==(rhs); }
-
-template <class Archive>
 void Any::serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
 {
-  ar& boost::serialization::make_nvp("any_type", any_type_);
+  ar& boost::serialization::make_nvp("base", boost::serialization::base_object<AnyBase>(*this));
 }
 
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::detail_any::AnyInnerBase)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyBase)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::Any)
+
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyBase)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::Any)
