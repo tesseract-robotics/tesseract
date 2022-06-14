@@ -69,12 +69,12 @@ namespace tesseract_common
 namespace detail_any
 {
 template <typename T>
-struct AnyInstance : tesseract_common::TypeErasureInstance<T, tesseract_common::TypeErasureInterface>
+struct AnyInstance : tesseract_common::TypeErasureInstance<T, tesseract_common::TypeErasureInterface>  // NOLINT
 {
   using BaseType = tesseract_common::TypeErasureInstance<T, tesseract_common::TypeErasureInterface>;
   AnyInstance() = default;
   AnyInstance(const T& x) : BaseType(x) {}
-  AnyInstance(AnyInstance&& x) : BaseType(std::move(x)) {}
+  AnyInstance(AnyInstance&& x) noexcept : BaseType(std::move(x)) {}
 
 private:
   friend class boost::serialization::access;

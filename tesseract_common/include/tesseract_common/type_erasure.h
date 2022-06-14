@@ -104,14 +104,14 @@ private:
 };
 
 template <typename F>
-struct TypeErasureInstanceWrapper : F
+struct TypeErasureInstanceWrapper : F  // NOLINT
 {
   using ValueType = typename F::ValueType;
   using InterfaceType = typename F::InterfaceType;
 
   TypeErasureInstanceWrapper() = default;
   TypeErasureInstanceWrapper(const ValueType& x) : F(x) {}
-  TypeErasureInstanceWrapper(TypeErasureInstanceWrapper&& x) : F(std::move(x)) {}
+  TypeErasureInstanceWrapper(TypeErasureInstanceWrapper&& x) noexcept : F(std::move(x)) {}
 
   std::unique_ptr<TypeErasureInterface> clone() const final
   {
