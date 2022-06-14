@@ -29,6 +29,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/concept_check.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/serialization.h>
@@ -68,6 +69,26 @@ namespace tesseract_common
 #ifndef SWIG
 namespace detail_any
 {
+template <typename A>
+struct AnyConcept  // NOLINT
+  : boost::Assignable<A>,
+    boost::CopyConstructible<A>,
+    boost::EqualityComparable<A>
+{
+  BOOST_CONCEPT_USAGE(AnyConcept)
+  {
+    A cp(c);
+    A assign = c;
+    bool eq = (c == cp);
+    bool neq = (c != cp);
+    UNUSED(eq);
+    UNUSED(neq);
+  }
+
+private:
+  A c;
+};
+
 template <typename T>
 struct AnyInstance : tesseract_common::TypeErasureInstance<T, tesseract_common::TypeErasureInterface>  // NOLINT
 {
@@ -75,6 +96,8 @@ struct AnyInstance : tesseract_common::TypeErasureInstance<T, tesseract_common::
   AnyInstance() = default;
   AnyInstance(const T& x) : BaseType(x) {}
   AnyInstance(AnyInstance&& x) noexcept : BaseType(std::move(x)) {}
+
+  BOOST_CONCEPT_ASSERT((AnyConcept<T>));
 
 private:
   friend class boost::serialization::access;
