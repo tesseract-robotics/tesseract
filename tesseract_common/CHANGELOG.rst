@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.10 (2022-06-14)
+-------------------
 * Add type erasure interface (`#776 <https://github.com/tesseract-robotics/tesseract/issues/776>`_)
   * Add type erasure interface
   * revert change to type erasure constructor
