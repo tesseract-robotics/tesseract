@@ -145,8 +145,8 @@ public:
   using InterfaceType = Interface;
 
   template <typename T, generic_ctor_enabler<T> = 0>
-  TypeErasureBase(T value)  // NOLINT
-    : value_(std::make_unique<TypeErasureInstanceWrapper<Instance<T>>>(std::move(value)))
+  TypeErasureBase(T&& value)  // NOLINT
+    : value_(std::make_unique<TypeErasureInstanceWrapper<Instance<uncvref_t<T>>>>(value))
   {
   }
 
