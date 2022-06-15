@@ -27,218 +27,105 @@
 #define TESSERACT_COMMON_ANY_H
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <memory>
-#include <typeindex>
 #include <boost/serialization/base_object.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/unique_ptr.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/type_traits/is_virtual_base_of.hpp>
+#include <boost/concept_check.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/serialization.h>
+#include <tesseract_common/type_erasure.h>
+
 /** @brief If shared library, this must go in the header after the class definition */
-#define TESSERACT_ANY_EXPORT_KEY(any_t)                                                                                \
-  BOOST_CLASS_EXPORT_KEY2(tesseract_common::detail_any::AnyInner<any_t>, #any_t)                                       \
-  BOOST_CLASS_TRACKING(tesseract_common::detail_any::AnyInner<any_t>, boost::serialization::track_never)
+#define TESSERACT_ANY_EXPORT_KEY(N, C)                                                                                 \
+  namespace N                                                                                                          \
+  {                                                                                                                    \
+  using C##InstanceBase = tesseract_common::TypeErasureInstance<C, tesseract_common::TypeErasureInterface>;            \
+  using C##Instance = tesseract_common::detail_any::AnyInstance<C>;                                                    \
+  using C##InstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<C##Instance>;                                \
+  }                                                                                                                    \
+  BOOST_CLASS_EXPORT_KEY(N::C##InstanceBase)                                                                           \
+  BOOST_CLASS_EXPORT_KEY(N::C##Instance)                                                                               \
+  BOOST_CLASS_EXPORT_KEY(N::C##InstanceWrapper)                                                                        \
+  BOOST_CLASS_TRACKING(N::C##InstanceBase, boost::serialization::track_never)                                          \
+  BOOST_CLASS_TRACKING(N::C##Instance, boost::serialization::track_never)                                              \
+  BOOST_CLASS_TRACKING(N::C##InstanceWrapper, boost::serialization::track_never)
 
 /** @brief If shared library, this must go in the cpp after the implicit instantiation of the serialize function */
-#define TESSERACT_ANY_EXPORT_IMPLEMENT(any_t)                                                                          \
-  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::detail_any::AnyInner<any_t>)
+#define TESSERACT_ANY_EXPORT_IMPLEMENT(inst)                                                                           \
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##InstanceBase)                                                                     \
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##Instance)                                                                         \
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##InstanceWrapper)
 
 /**
  * @brief This should not be used within shared libraries use the two above.
  * If not in a shared library it can go in header or cpp
  */
-#define TESSERACT_ANY_EXPORT(any_t)                                                                                    \
-  TESSERACT_ANY_EXPORT_KEY(any_t)                                                                                      \
-  TESSERACT_ANY_EXPORT_IMPLEMENT(any_t)
+#define TESSERACT_ANY_EXPORT(N, C)                                                                                     \
+  TESSERACT_ANY_EXPORT_KEY(N, C)                                                                                       \
+  TESSERACT_ANY_EXPORT_IMPLEMENT(N::C)
 
 namespace tesseract_common
 {
 #ifndef SWIG
 namespace detail_any
 {
-struct AnyInnerBase
+template <typename A>
+struct AnyConcept  // NOLINT
+  : boost::Assignable<A>,
+    boost::CopyConstructible<A>,
+    boost::EqualityComparable<A>
 {
-  AnyInnerBase() = default;
-  virtual ~AnyInnerBase() = default;
-  AnyInnerBase(const AnyInnerBase&) = delete;
-  AnyInnerBase& operator=(const AnyInnerBase&) = delete;
-  AnyInnerBase(AnyInnerBase&&) = delete;
-  AnyInnerBase& operator=(AnyInnerBase&&) = delete;
-
-  virtual bool operator==(const AnyInnerBase& rhs) const = 0;
-
-  // This is not required for user defined implementation
-  virtual bool operator!=(const AnyInnerBase& rhs) const = 0;
-
-  // This is not required for user defined implementation
-  virtual std::type_index getType() const = 0;
-
-  // This is not required for user defined implementation
-  virtual void* recover() = 0;
-
-  // This is not required for user defined implementation
-  virtual const void* recover() const = 0;
-
-  // This is not required for user defined implementation
-  virtual std::unique_ptr<AnyInnerBase> clone() const = 0;
+  BOOST_CONCEPT_USAGE(AnyConcept)
+  {
+    A cp(c);
+    A assign = c;
+    bool eq = (c == cp);
+    bool neq = (c != cp);
+    UNUSED(eq);
+    UNUSED(neq);
+  }
 
 private:
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive& /*ar*/, const unsigned int /*version*/);  // NOLINT
+  A c;
 };
 
 template <typename T>
-struct AnyInner final : AnyInnerBase
+struct AnyInstance : tesseract_common::TypeErasureInstance<T, tesseract_common::TypeErasureInterface>  // NOLINT
 {
-  AnyInner() = default;
-  ~AnyInner() override = default;
-  AnyInner(const AnyInner&) = delete;
-  AnyInner(AnyInner&&) = delete;
-  AnyInner& operator=(const AnyInner&) = delete;
-  AnyInner& operator=(AnyInner&&) = delete;
+  using BaseType = tesseract_common::TypeErasureInstance<T, tesseract_common::TypeErasureInterface>;
+  AnyInstance() = default;
+  AnyInstance(const T& x) : BaseType(x) {}
+  AnyInstance(AnyInstance&& x) noexcept : BaseType(std::move(x)) {}
 
-  // Constructors from T (copy and move variants).
-  explicit AnyInner(T any_type) : any_type_(std::move(any_type)) {}
-  explicit AnyInner(T&& any_type) : any_type_(std::move(any_type)) {}
-
-  std::unique_ptr<AnyInnerBase> clone() const final { return std::make_unique<AnyInner>(any_type_); }
-
-  std::type_index getType() const final { return std::type_index(typeid(T)); }
-
-  void* recover() final { return &any_type_; }
-
-  const void* recover() const final { return &any_type_; }
-
-  bool operator==(const AnyInnerBase& rhs) const final
-  {
-    // Compare class types before casting the incoming object to the T type
-    if (rhs.getType() == getType())
-    {
-      const auto* any_type = static_cast<const T*>(rhs.recover());
-      return any_type_ == *any_type;
-    }
-    return false;
-  }
-
-  bool operator!=(const AnyInnerBase& rhs) const final { return !operator==(rhs); }
+  BOOST_CONCEPT_ASSERT((AnyConcept<T>));
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
   {
-    // If this line is removed a exception is thrown for unregistered cast need to too look into this.
-    ar& boost::serialization::make_nvp("base", boost::serialization::base_object<AnyInnerBase>(*this));
-    ar& boost::serialization::make_nvp("impl", any_type_);
+    ar& boost::serialization::make_nvp("base", boost::serialization::base_object<BaseType>(*this));
   }
-
-  T any_type_;
 };
 }  // namespace detail_any
 #endif  // SWIG
 }  // namespace tesseract_common
 
-namespace boost
-{
-// Taken from pagmo to address the same issue
-// NOTE: in some earlier versions of Boost (i.e., at least up to 1.67)
-// the is_virtual_base_of type trait, used by the Boost serialization library, fails
-// with a compile time error if a class is declared final. Thus, we provide a specialized
-// implementation of this type trait to work around the issue. See:
-// https://www.boost.org/doc/libs/1_52_0/libs/type_traits/doc/html/boost_typetraits/reference/is_virtual_base_of.html
-// https://stackoverflow.com/questions/18982064/boost-serialization-of-base-class-of-final-subclass-error
-// We never use virtual inheritance, thus the specialization is always false.
-template <typename T>
-struct is_virtual_base_of<tesseract_common::detail_any::AnyInnerBase, tesseract_common::detail_any::AnyInner<T>>
-  : false_type
-{
-};
-}  // namespace boost
-
 namespace tesseract_common
 {
-class Any
+using AnyBase = tesseract_common::TypeErasureBase<TypeErasureInterface, detail_any::AnyInstance>;
+
+struct Any : AnyBase
 {
-  template <typename T>
-  using uncvref_t = std::remove_cv_t<typename std::remove_reference<T>::type>;
-
-  // Enable the generic ctor only if ``T`` is not a ForwardKinematics (after removing const/reference qualifiers)
-  // If ``T`` is of type ForwardKinematics we disable so it will use the copy or move constructors of this class.
-  template <typename T>
-  using generic_ctor_enabler = std::enable_if_t<!std::is_same<Any, uncvref_t<T>>::value, int>;
-
-public:
-  template <typename T, generic_ctor_enabler<T> = 0>
-  Any(T&& any_type)  // NOLINT
-    : any_type_(std::make_unique<detail_any::AnyInner<uncvref_t<T>>>(any_type))
-  {
-  }
-
-  Any();  // NOLINT
-
-  // Destructor
-  ~Any() = default;
-
-  // Copy constructor
-  Any(const Any& other);
-
-  // Move ctor.
-  Any(Any&& other) noexcept;
-
-  // Move assignment.
-  Any& operator=(Any&& other) noexcept;
-
-  // Copy assignment.
-  Any& operator=(const Any& other);
-
-  template <typename T, generic_ctor_enabler<T> = 0>
-  Any& operator=(T&& other)
-  {
-    (*this) = Any(std::forward<T>(other));
-    return (*this);
-  }
-
-  std::type_index getType() const
-  {
-    if (any_type_ == nullptr)
-      return std::type_index(typeid(nullptr));
-
-    return any_type_->getType();
-  }
-
-  bool operator==(const Any& rhs) const;
-
-  bool operator!=(const Any& rhs) const;
-
-  template <typename T>
-  T& as()
-  {
-    if (getType() != typeid(T))
-      throw std::bad_cast();
-
-    auto* p = static_cast<uncvref_t<T>*>(any_type_->recover());
-    return *p;
-  }
-
-  template <typename T>
-  const T& as() const
-  {
-    if (getType() != typeid(T))
-      throw std::bad_cast();
-
-    auto p = static_cast<const uncvref_t<T>*>(any_type_->recover());
-    return *p;
-  }
+  using AnyBase::AnyBase;
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
+
   template <class Archive>
   void serialize(Archive& ar, const unsigned int /*version*/);  // NOLINT
-
-  std::unique_ptr<detail_any::AnyInnerBase> any_type_;
 };
 
 }  // namespace tesseract_common
@@ -246,7 +133,10 @@ private:
 #ifdef SWIG
 %template(Instructions) std::vector<tesseract_common::Any>;
 #else
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::detail_any::AnyInnerBase)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyBase)
+BOOST_CLASS_TRACKING(tesseract_common::AnyBase, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::Any)
 BOOST_CLASS_TRACKING(tesseract_common::Any, boost::serialization::track_never);
 #endif  // SWIG
 
