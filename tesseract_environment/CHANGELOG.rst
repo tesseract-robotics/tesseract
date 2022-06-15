@@ -2,6 +2,11 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make missing contact manager plugins a debug vs warn message
+* Contributors: Levi Armstrong
+
 0.9.9 (2022-05-30)
 ------------------
 

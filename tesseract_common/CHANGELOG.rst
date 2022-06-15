@@ -2,6 +2,14 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add type erasure interface (`#776 <https://github.com/tesseract-robotics/tesseract/issues/776>`_)
+  * Add type erasure interface
+  * revert change to type erasure constructor
+* Update FindTinyXML2.cmake
+* Contributors: Levi Armstrong
+
 0.9.9 (2022-05-30)
 ------------------
 * Fix find tcmalloc on melodic
