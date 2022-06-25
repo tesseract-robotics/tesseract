@@ -202,7 +202,7 @@ public:
   T& as()
   {
     if (getType() != typeid(T))
-      throw std::runtime_error("PolyBase, tried to cast '" + std::string(getType().name()) + "' to '" +
+      throw std::runtime_error("TypeErasureBase, tried to cast '" + std::string(getType().name()) + "' to '" +
                                std::string(typeid(T).name()) + "'!");
 
     auto* p = static_cast<uncvref_t<T>*>(value_->recover());
@@ -213,7 +213,7 @@ public:
   const T& as() const
   {
     if (getType() != typeid(T))
-      throw std::runtime_error("PolyBase, tried to cast '" + std::string(getType().name()) + "' to '" +
+      throw std::runtime_error("TypeErasureBase, tried to cast '" + std::string(getType().name()) + "' to '" +
                                std::string(typeid(T).name()) + "'!");
 
     const auto* p = static_cast<const uncvref_t<T>*>(value_->recover());
