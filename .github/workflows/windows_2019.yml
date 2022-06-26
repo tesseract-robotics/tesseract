@@ -10,7 +10,7 @@ on:
 
 env:
   VCPKG_PKGS: >-
-    fcl bullet3 octomap console-bridge eigen3 yaml-cpp benchmark tinyxml2 assimp orocos-kdl pcl boost-dll boost-filesystem boost-filesystem boost-serialization boost-program-options boost-graph
+    fcl bullet3 octomap console-bridge eigen3 yaml-cpp benchmark tinyxml2 assimp orocos-kdl pcl lapack-reference boost-dll boost-filesystem boost-filesystem boost-serialization boost-program-options boost-graph
 
 jobs:
   windows_ci:
