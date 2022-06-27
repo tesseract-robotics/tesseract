@@ -1,0 +1,8 @@
+#!/bin/bash
+build_dir=$(dirname $0)/../../build
+cp -r $build_dir/tesseract_collision/test/benchmarks/*.json /root/benchmarks/
+cp -r $build_dir/tesseract_environment/test/benchmarks/*.json /root/benchmarks/
+find /root/benchmarks/ -type f -name "*_result.json" -exec cat {} \; > /root/benchmarks/tmp_bench.json
+cat /root/benchmarks/tmp_bench.json | docker run -i --rm itchyny/gojq:0.12.6 -s \
+      '.[0].benchmarks = ([.[].benchmarks] | add) |
+      if .[0].benchmarks == null then null else .[0] end' > /root/benchmarks/tesseract-benchmark_result.json
