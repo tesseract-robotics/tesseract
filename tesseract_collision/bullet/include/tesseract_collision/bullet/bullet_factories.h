@@ -54,5 +54,7 @@ public:
   ContinuousContactManager::UPtr create(const std::string& name, const YAML::Node& config) const override final;
 };
 
+void BulletFactoriesAnchor();
+
 }  // namespace tesseract_collision::tesseract_collision_bullet
 #endif  // TESSERACT_COLLISION_BULLET_BULLET_FACTORIES_H

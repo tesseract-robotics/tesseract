@@ -46,7 +46,11 @@ inline std::set<std::string> parseEnvironmentVariableList(const std::string& env
     return list;
 
   std::string evn_str = std::string(env_var);
+#ifndef _WIN32
   boost::split(list, evn_str, boost::is_any_of(":"), boost::token_compress_on);
+#else
+  boost::split(list, evn_str, boost::is_any_of(";"), boost::token_compress_on);
+#endif
   return list;
 }
 
@@ -108,6 +112,12 @@ std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_
       if (ClassLoader::isClassAvailable(plugin_name, library))
         return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library);
     }
+  }
+
+  for (const auto& library : plugins_local)
+  {
+    if (ClassLoader::isClassAvailable(plugin_name, library))
+      return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library);
   }
 
   std::stringstream msg;
@@ -223,6 +233,33 @@ std::vector<std::string> PluginLoader::getAvailableSections(bool include_hidden)
 int PluginLoader::count() const
 {
   return static_cast<int>(getAllSearchLibraries(search_libraries_env, search_libraries).size());
+}
+
+template <typename T>
+void PluginLoader::addSymbolLibraryToSearchLibrariesEnv(const T& symbol, const std::string& search_libraries_env)
+{
+  std::string env_var_str;
+  char* env_var = std::getenv(search_libraries_env.c_str());
+  if (env_var != nullptr)
+  {
+    env_var_str = env_var;
+  }
+
+  boost::dll::fs::path lib_path = boost::dll::symbol_location(symbol);
+  if (env_var_str.empty())
+  {
+    env_var_str = lib_path.string();
+  }
+  else
+  {
+  #ifndef _WIN32
+    env_var_str = env_var_str + ":" + lib_path.string();
+  #else
+    env_var_str = env_var_str + ";" + lib_path.string();
+  #endif
+  }
+
+  setenv(search_libraries_env.c_str(),env_var_str.c_str(),1);
 }
 
 }  // namespace tesseract_common
