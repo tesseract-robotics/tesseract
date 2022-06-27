@@ -1,10 +1,5 @@
 find_package(fcl 0.6 REQUIRED)
 
-if(WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
-  include_directories(BEFORE ${FCL_INCLUDE_DIRS})
-  link_directories(BEFORE ${FCL_LIBRARY_DIRS})
-endif()
-
 # Create target for FCL implementation
 add_library(${PROJECT_NAME}_fcl src/fcl_discrete_managers.cpp src/fcl_utils.cpp src/fcl_collision_object_wrapper.cpp)
 target_link_libraries(
