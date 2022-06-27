@@ -130,7 +130,7 @@ public:
    * @param symbol_ptr Pointer to the symbol to find
    * @param search_libraries_env The environmental variable to modify
    */
-  static void addSymbolLibraryToSearchLibrariesEnv(const void* symbol_ptr, const std::string& search_libraries_env);
+  static inline void addSymbolLibraryToSearchLibrariesEnv(const void* symbol_ptr, const std::string& search_libraries_env);
 };
 
 }  // namespace tesseract_common
