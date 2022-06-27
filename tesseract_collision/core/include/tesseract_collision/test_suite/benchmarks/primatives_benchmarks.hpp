@@ -39,7 +39,7 @@ struct DiscreteBenchmarkInfo
 };
 
 /** @brief Benchmark that checks the clone method in discrete contact managers*/
-static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, std::size_t num_obj)
+static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, std::size_t num_obj)  // NOLINT
 {
   std::vector<std::string> active_obj(num_obj);
   for (std::size_t ind = 0; ind < num_obj; ind++)
@@ -52,14 +52,14 @@ static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, std::s
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   DiscreteContactManager::Ptr clone;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(clone = info.contact_manager_->clone());
   }
 };
 
 /** @brief Benchmark that checks the contactTest function in discrete contact managers*/
-static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
+static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)  // NOLINT
 {
   info.contact_manager_->addCollisionObject(std::string("geom1"), 0, info.geom1_, info.obj1_poses);
   info.contact_manager_->addCollisionObject(std::string("geom2"), 0, info.geom2_, info.obj2_poses);
@@ -68,7 +68,7 @@ static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   ContactResultMap result;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     result.clear();
     info.contact_manager_->contactTest(result, ContactRequest(info.contact_test_type_));
@@ -79,10 +79,10 @@ static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
  * benchmarks if that is important*/
 static void BM_SELECT_RANDOM_OBJECT(benchmark::State& state, int num_obj)
 {
-  int selected_link;
-  for (auto _ : state)
+  int selected_link{ 0 };
+  for (auto _ : state)  // NOLINT
   {
-    benchmark::DoNotOptimize(selected_link = rand() % num_obj);
+    benchmark::DoNotOptimize(selected_link = rand() % num_obj);  // NOLINT
   }
 };
 
@@ -103,7 +103,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state,
   info.contact_manager_->setActiveCollisionObjects(active_obj);
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for
     // the same one. Subtract off approximately BM_SELECT_RANDOM_OBJECT if you need absolute numbers rather than
@@ -116,7 +116,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state,
 /** @brief Benchmark that checks the setCollisionObjectsTransform(const std::vector<std::string>& names, const
    tesseract_common::VectorIsometry3d& poses) method in discrete contact managers. Moves only a single random link*/
 static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
-                                                      DiscreteBenchmarkInfo info,
+                                                      DiscreteBenchmarkInfo info,  // NOLINT
                                                       std::size_t num_obj)
 {
   // Setting up collision objects
@@ -131,7 +131,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   std::vector<std::string> selected_links(1);
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for
     // the same one. Subtract off approximately BM_SELECT_RANDOM_OBJECT if you need absolute numbers rather than
@@ -159,7 +159,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   tesseract_common::TransformMap selected_link;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for
     // the same one. It might be worth it to manually time these as well if it's really important
