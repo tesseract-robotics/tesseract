@@ -36,7 +36,7 @@ using namespace tesseract_collision;
 
 TEST(TesseractContactManagersFactoryUnit, StaticLoadPlugin)  // NOLINT
 {
-  tesseract_common::PluginLoader::addSymbolLibraryToSearchLibrariesEnv(tesseract_collision::tesseract_collision_bullet::BulletFactoriesAnchor, "TESSERACT_CONTACT_MANAGERS_PLUGINS");
+    tesseract_common::PluginLoader::addSymbolLibraryToSearchLibrariesEnv(tesseract_collision::tesseract_collision_bullet::BulletFactoriesAnchor(), "TESSERACT_CONTACT_MANAGERS_PLUGINS");
 
   std::string config = R"(contact_manager_plugins:
                             search_paths:

@@ -235,8 +235,7 @@ int PluginLoader::count() const
   return static_cast<int>(getAllSearchLibraries(search_libraries_env, search_libraries).size());
 }
 
-template <typename T>
-void PluginLoader::addSymbolLibraryToSearchLibrariesEnv(const T& symbol, const std::string& search_libraries_env)
+void PluginLoader::addSymbolLibraryToSearchLibrariesEnv(const void* symbol_ptr, const std::string& search_libraries_env)
 {
   std::string env_var_str;
   char* env_var = std::getenv(search_libraries_env.c_str());
@@ -245,7 +244,8 @@ void PluginLoader::addSymbolLibraryToSearchLibrariesEnv(const T& symbol, const s
     env_var_str = env_var;
   }
 
-  boost::dll::fs::path lib_path = boost::dll::symbol_location(symbol);
+  boost::dll::fs::path lib_path = boost::dll::symbol_location_ptr(symbol_ptr);
+
   if (env_var_str.empty())
   {
     env_var_str = lib_path.string();
@@ -259,7 +259,11 @@ void PluginLoader::addSymbolLibraryToSearchLibrariesEnv(const T& symbol, const s
   #endif
   }
 
+#ifndef _WIN32
   setenv(search_libraries_env.c_str(),env_var_str.c_str(),1);
+#else
+  _putenv_s(search_libraries_env.c_str(),env_var_str.c_str());
+#endif
 }
 
 }  // namespace tesseract_common

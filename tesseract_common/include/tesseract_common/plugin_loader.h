@@ -127,11 +127,10 @@ public:
    * utility function will determine the location of the library, and add it to the library search
    * environment variable so it can be found.
    * 
-   * @param symbol The symbol to find
+   * @param symbol_ptr Pointer to the symbol to find
    * @param search_libraries_env The environmental variable to modify
    */
-  template <typename T>
-  static void addSymbolLibraryToSearchLibrariesEnv(const T& symbol, const std::string& search_libraries_env);
+  static void addSymbolLibraryToSearchLibrariesEnv(const void* symbol_ptr, const std::string& search_libraries_env);
 };
 
 }  // namespace tesseract_common
