@@ -307,7 +307,7 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
 
   auto fn = [](const Eigen::MatrixXd& m) {
     ManipulabilityEllipsoid data;
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> sm(m, false);
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> sm(m, Eigen::DecompositionOptions::EigenvaluesOnly);
     data.eigen_values = sm.eigenvalues().real();
 
     // Set eigenvalues near zero to zero. This also implies zero volume
