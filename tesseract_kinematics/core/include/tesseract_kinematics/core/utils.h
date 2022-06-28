@@ -326,8 +326,8 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
     }
     else
     {
-      data.measure = std::sqrt(data.eigen_values.maxCoeff()) / std::sqrt(data.eigen_values.minCoeff());
       data.condition = data.eigen_values.maxCoeff() / data.eigen_values.minCoeff();
+      data.measure = std::sqrt(data.condition);
     }
 
     data.volume = 1;
