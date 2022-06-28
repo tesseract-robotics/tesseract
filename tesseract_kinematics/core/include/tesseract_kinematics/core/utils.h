@@ -310,12 +310,16 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
     Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> sm(m, false);
 
     data.eigen_values = sm.eigenvalues().real();
+    data.volume = 1;
 
-    // Set values near zero to zero
+    // Set eigenvalues near zero to zero. This also implies zero volume
     for (Eigen::Index i = 0; i < data.eigen_values.size(); ++i)
     {
       if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
+      {
         data.eigen_values[i] = +0;
+        data.volume = +0;
+      }
     }
 
     // If the minimum eigen value is approximately zero set measure and condition to max double
@@ -330,18 +334,9 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
       data.measure = std::sqrt(data.condition);
     }
 
-    data.volume = 1;
-    for (Eigen::Index i = 0; i < sm.eigenvalues().size(); ++i)
-    {
-      // If an eigen value is approximately zero set the volume to zero and return
-      if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
-      {
-        data.volume = +0;
-        break;
-      }
-      data.volume = data.volume * data.eigen_values[i];
-    }
-    data.volume = std::sqrt(data.volume);
+    if (data.volume != 0)  // volume is sqrt of product of eigenvalues
+      data.volume = std::sqrt(data.eigen_values.prod());
+
     return data;
   };
 
