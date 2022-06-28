@@ -307,7 +307,7 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
 
   auto fn = [](const Eigen::MatrixXd& m) {
     ManipulabilityEllipsoid data;
-    Eigen::EigenSolver<Eigen::MatrixXd> sm(m, false);
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> sm(m, false);
 
     data.eigen_values = sm.eigenvalues().real();
 
