@@ -27,11 +27,6 @@ else()
   set(BULLET_LIBRARY_DIRS_ABS ${BULLET_LIBRARY_DIRS})
 endif()
 
-if(WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
-  include_directories(BEFORE "${BULLET_INCLUDE_DIRS_ABS}")
-  link_directories(BEFORE "${BULLET_LIBRARY_DIRS_ABS}")
-endif()
-
 find_library(HACD_LIBRARY HACD HINTS ${BULLET_LIBRARY_DIRS_ABS})
 if(NOT HACD_LIBRARY)
   message(

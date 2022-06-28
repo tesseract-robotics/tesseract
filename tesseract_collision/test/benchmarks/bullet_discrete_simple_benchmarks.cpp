@@ -216,7 +216,7 @@ int main(int argc, char** argv)
   //////////////////////////////////////
   // Large Dataset contactTest
   //////////////////////////////////////
-  if (std::string(BENCHMARK_ARGS).compare("CI_ONLY") != 0)
+  if (std::string(BENCHMARK_ARGS) != "CI_ONLY")
   {
     std::function<void(benchmark::State&, DiscreteContactManager::Ptr, int, tesseract_geometry::GeometryType)>
         BM_LARGE_DATASET_MULTILINK_FUNC = BM_LARGE_DATASET_MULTILINK;

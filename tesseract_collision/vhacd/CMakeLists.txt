@@ -12,9 +12,19 @@ if(NOT
     WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
 endif()
 
-if(WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
-  include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
-  link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
+# Some Bullet installations (vcpkg) use absolute paths instead of relative to BULLET_ROOT_DIR in the CMake vars
+set(BULLET_INCLUDE_DIRS_ABS "")
+set(BULLET_LIBRARY_DIRS_ABS "")
+if(NOT IS_ABSOLUTE "${BULLET_INCLUDE_DIR}")
+  foreach(dir IN LISTS BULLET_INCLUDE_DIRS)
+    list(APPEND BULLET_INCLUDE_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
+  endforeach()
+  foreach(dir IN LISTS BULLET_LIBRARY_DIRS)
+    list(APPEND BULLET_LIBRARY_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
+  endforeach()
+else()
+  set(BULLET_INCLUDE_DIRS_ABS ${BULLET_INCLUDE_DIRS})
+  set(BULLET_LIBRARY_DIRS_ABS ${BULLET_LIBRARY_DIRS})
 endif()
 
 # Third party vhacd
@@ -64,7 +74,7 @@ target_link_libraries(
          ${BULLET_LIBRARIES})
 target_include_directories(${PROJECT_NAME}_vhacd PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                         "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_vhacd SYSTEM PUBLIC "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+target_include_directories(${PROJECT_NAME}_vhacd SYSTEM PUBLIC "${BULLET_INCLUDE_DIRS_ABS}")
 
 # Convex decomposition libraries
 add_library(${PROJECT_NAME}_vhacd_convex_decomposition src/convex_decomposition_vhacd.cpp)
