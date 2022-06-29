@@ -119,23 +119,47 @@ endif()
 configure_package(NAMESPACE tesseract)
 
 if(TESSERACT_PACKAGE)
+  set(LINUX_DEPENDS
+      "libbullet-dev"
+      "libbullet-extras-dev"
+      "libeigen3-dev"
+      "libconsole-bridge-dev"
+      "libyaml-cpp-dev"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-support")
+
+  set(WINDOWS_DEPENDS
+      "Eigen3"
+      "console_bridge"
+      "bullet"
+      "bullet_extras"
+      "yaml-cpp"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-support")
+
+  if(TESSERACT_BUILD_FCL)
+    list(APPEND LINUX_DEPENDS "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
+    list(APPEND LINUX_DEPENDS "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
+  endif()
+
+  if(TESSERACT_BUILD_VHACD)
+    list(APPEND LINUX_DEPENDS "libomp-dev")
+    list(APPEND WINDOWS_DEPENDS "omp")
+
+    if(OpenCL_FOUND)
+      list(APPEND LINUX_DEPENDS "ocl-icd-opencl-dev")
+      list(APPEND WINDOWS_DEPENDS "ocl-icd-opencl")
+    endif()
+  endif()
+
   tesseract_cpack(
     VERSION ${pkg_extracted_version}
     MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
     DESCRIPTION ${pkg_extracted_description}
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
-    LINUX_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-support"
-      "libbullet-dev"
-      "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
-      "libconsole-bridge-dev"
-      "libeigen3-dev"
-    WINDOWS_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-support"
-      "Eigen3")
+    LINUX_DEPENDS ${LINUX_DEPENDS}
+    WINDOWS_DEPENDS ${WINDOWS_DEPENDS})
 endif()

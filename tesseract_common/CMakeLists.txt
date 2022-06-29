@@ -110,16 +110,19 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "libboost-system1.71.0"
-      "libboost-filesystem1.71.0"
-      "libboost-serialization1.71.0"
+      "libboost-system-dev"
+      "libboost-filesystem-dev"
+      "libboost-serialization-dev"
       "libconsole-bridge-dev"
       "libtinyxml2-dev"
       "libeigen3-dev"
+      "libyaml-cpp-dev"
     WINDOWS_DEPENDS
       "boost_system"
       "boost_filesystem;"
       "boost_serialization"
+      "console-bridge"
       "tinyxml2"
-      "Eigen3")
+      "Eigen3"
+      "yaml-cpp")
 endif()

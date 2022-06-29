@@ -20,7 +20,7 @@ echo "   artifact_dir: $artifact_dir"
 echo "   artifact_ext: $artifact_ext"
 echo "   build_dir: $build_dir"
 
-declare -a StringArray=("tesseract_collision" "tesseract_common" "tesseract_environment" "tesseract_geometry" "tesseract_kinematics" "tesseract_scene_graph" "tesseract_support" "tesseract_urdf" "tesseract_visualization" "tesseract_state_solver")
+declare -a StringArray=("tesseract_collision" "tesseract_common" "tesseract_environment" "tesseract_geometry" "tesseract_kinematics" "tesseract_scene_graph" "tesseract_support" "tesseract_urdf" "tesseract_srdf" "tesseract_visualization" "tesseract_state_solver")
 
 # Iterate the packages using for loop
 for val in ${StringArray[@]}; do

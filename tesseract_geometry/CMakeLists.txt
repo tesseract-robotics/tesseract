@@ -129,14 +129,15 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "libassimp-dev"
       "libconsole-bridge-dev"
-      "liboctomap-dev (>= 1.9.6) | ${TESSERACT_PACKAGE_PREFIX}octomap"
+      "liboctomap-dev (>= 1.9.3) | ${TESSERACT_PACKAGE_PREFIX}octomap"
       "libeigen3-dev"
-    WINDOWS_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+    WINDOWS_DEPENDS
       "Assimp"
+      "console_bridge"
+      "octomap | ${TESSERACT_PACKAGE_PREFIX}octomap"
       "Eigen3"
-      "console_bridge")
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common")
 endif()
