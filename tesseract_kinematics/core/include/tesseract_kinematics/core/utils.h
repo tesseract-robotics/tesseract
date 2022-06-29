@@ -307,11 +307,10 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
 
   auto fn = [](const Eigen::MatrixXd& m) {
     ManipulabilityEllipsoid data;
-    Eigen::EigenSolver<Eigen::MatrixXd> sm(m, false);
-
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> sm(m, Eigen::DecompositionOptions::EigenvaluesOnly);
     data.eigen_values = sm.eigenvalues().real();
 
-    // Set values near zero to zero
+    // Set eigenvalues near zero to zero. This also implies zero volume
     for (Eigen::Index i = 0; i < data.eigen_values.size(); ++i)
     {
       if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
@@ -326,22 +325,12 @@ inline Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>
     }
     else
     {
-      data.measure = std::sqrt(data.eigen_values.maxCoeff()) / std::sqrt(data.eigen_values.minCoeff());
       data.condition = data.eigen_values.maxCoeff() / data.eigen_values.minCoeff();
+      data.measure = std::sqrt(data.condition);
     }
 
-    data.volume = 1;
-    for (Eigen::Index i = 0; i < sm.eigenvalues().size(); ++i)
-    {
-      // If an eigen value is approximately zero set the volume to zero and return
-      if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
-      {
-        data.volume = +0;
-        break;
-      }
-      data.volume = data.volume * data.eigen_values[i];
-    }
-    data.volume = std::sqrt(data.volume);
+    data.volume = std::sqrt(data.eigen_values.prod());
+
     return data;
   };
 
