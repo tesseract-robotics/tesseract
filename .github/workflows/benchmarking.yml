@@ -54,7 +54,7 @@ jobs:
       - name: Store Bullet Discrete, FCL Discrete and Environment benchmark result
         uses: rhysd/github-action-benchmark@v1
         with:
-          name: Bullet Discrete Simple C++ Benchmark
+          name: C++ Benchmark
           tool: 'googlecpp'
           output-file-path: /home/runner/work/tesseract/tesseract/benchmarks/tesseract-benchmark_result.json
           # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869/highlight/false
@@ -69,5 +69,5 @@ jobs:
 
       # PERSONAL_GITHUB_TOKEN needed here since we are pushing to a branch
       - name: Push benchmark result
-        run: git push 'https://ros-industrial-consortium:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/ros-industrial-consortium/tesseract.git' gh-pages:gh-pages
+        run: git push 'https://tesseract-robotics:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/tesseract-robotics/tesseract.git' gh-pages:gh-pages
         if: github.event_name != 'pull_request'
