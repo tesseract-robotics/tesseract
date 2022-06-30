@@ -18,7 +18,7 @@ namespace test_suite
 /** @brief Benchmark that checks collisions between a lot of objects. In this case it is a grid of spheres - each as its
  * own link*/
 static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
-                                       DiscreteContactManager::Ptr checker,
+                                       DiscreteContactManager::Ptr checker,  // NOLINT
                                        int edge_size,
                                        tesseract_geometry::GeometryType type)
 {
@@ -85,7 +85,7 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
 
   ContactResultVector result_vector;
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     ContactResultMap result;
     result_vector.clear();
@@ -97,7 +97,7 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
 /** @brief Benchmark that checks collisions between a lot of objects. In this case it is a grid of spheres in one link
  * and a single sphere in another link*/
 static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
-                                        DiscreteContactManager::Ptr checker,
+                                        DiscreteContactManager::Ptr checker,  // NOLINT
                                         int edge_size,
                                         tesseract_geometry::GeometryType type)
 {
@@ -152,7 +152,7 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
       }
     }
   }
-  link_names.push_back("grid_link");
+  link_names.emplace_back("grid_link");
   checker->addCollisionObject(link_names.back(), 0, obj3_shapes, obj3_poses);
 
   // Add Single Sphere Link
@@ -165,7 +165,7 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   tesseract_common::VectorIsometry3d single_poses;
   single_shapes.push_back(CollisionShapePtr(sphere->clone()));
   single_poses.push_back(sphere_pose);
-  link_names.push_back("single_link");
+  link_names.emplace_back("single_link");
   checker->addCollisionObject(link_names.back(), 0, single_shapes, single_poses);
 
   // Check if they are in collision
@@ -175,7 +175,7 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
 
   ContactResultVector result_vector;
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     ContactResultMap result;
     result_vector.clear();

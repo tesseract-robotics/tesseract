@@ -129,14 +129,15 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "libconsole-bridge-dev"
       "liborocos-kdl-dev"
       "libeigen3-dev"
-    WINDOWS_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+    WINDOWS_DEPENDS
       "console_bridge"
-      "Eigen3")
+      "orocos-kdl"
+      "Eigen3"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common")
 endif()

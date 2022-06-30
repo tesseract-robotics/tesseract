@@ -24,7 +24,6 @@ macro(add_benchmark benchmark_name benchmark_file)
     octomath
     ${LIBFCL_LIBRARIES})
   target_include_directories(${benchmark_name} PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
-  target_include_directories(${benchmark_name} SYSTEM PRIVATE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
   add_dependencies(
     ${benchmark_name}
     ${PROJECT_NAME}_test_suite_benchmarks

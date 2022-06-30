@@ -21,6 +21,8 @@
   <build_export_depend>eigen</build_export_depend>
   <build_depend>ros_industrial_cmake_boilerplate</build_depend>
 
+  <test_depend>gtest</test_depend>
+
   <export>
     <build_type>cmake</build_type>
   </export>

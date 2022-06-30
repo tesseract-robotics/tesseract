@@ -112,18 +112,21 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      tesseract_state_solver
-      "${TESSERACT_PACKAGE_PREFIX}tesseract_state_solver"
-      "${TESSERACT_PACKAGE_PREFIX}opw-kinematics"
       "libconsole-bridge-dev"
       "liborocos-kdl-dev"
       "libeigen3-dev"
-    WINDOWS_DEPENDS
+      "libyaml-cpp-dev"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
       "${TESSERACT_PACKAGE_PREFIX}opw-kinematics"
-      "Eigen3")
+    WINDOWS_DEPENDS
+      "console_bridge"
+      "orocos-kdl"
+      "Eigen3"
+      "yaml-cpp"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
+      "${TESSERACT_PACKAGE_PREFIX}opw-kinematics")
 endif()

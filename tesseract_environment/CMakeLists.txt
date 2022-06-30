@@ -149,16 +149,8 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
       "libconsole-bridge-dev"
       "libeigen3-dev"
-    WINDOWS_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
@@ -166,6 +158,16 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-srdf"
+    WINDOWS_DEPENDS
       "console_bridge"
-      "Eigen3")
+      "Eigen3"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-srdf")
 endif()

@@ -1,0 +1,54 @@
+#!/usr/bin/python3
+import json
+import os
+
+build_dir = "/root/target_ws/build"
+result_files = []
+
+search_path = build_dir + "/tesseract_collision/test/benchmarks"
+for file in os.listdir(search_path):
+    if file.endswith(".json"):
+        result_files.append(os.path.join(search_path, file))
+    # endif
+# endfor
+
+search_path = build_dir + "/tesseract_environment/test/benchmarks"
+for file in os.listdir(search_path):
+    if file.endswith(".json"):
+        result_files.append(os.path.join(search_path, file))
+    # endif
+#endfor
+
+cnt = 0
+all_data = {}
+for file in result_files:
+    # Opening JSON file
+    f = open(file, "r")
+
+    # returns JSON object as a dictionary
+    data = json.loads(f.read())
+
+    if cnt == 0:
+        all_data = data
+    else:
+        for benchmark in data["benchmarks"]:
+            all_data["benchmarks"].append(benchmark)
+        # endfor
+    # endif
+
+    # Closing file
+    f.close()
+
+    # Increment counter
+    cnt+=1
+# endfor
+
+# the base path to where the output must be stored
+if not os.path.exists("/root/benchmarks"):
+    os.makedirs("/root/benchmarks")
+# endif
+
+# the json file where the output must be stored
+out_file = open("/root/benchmarks/tesseract-benchmark_result.json", "w+")
+json.dump(all_data, out_file, indent = 4)
+out_file.close()

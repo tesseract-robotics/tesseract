@@ -28,7 +28,7 @@ jobs:
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=ON -DBENCHMARK_ARGS=CI_ONLY",
              DOCKER_RUN_OPTS: '-v ~/work/tesseract/tesseract/benchmarks:/root/benchmarks',
-             AFTER_SCRIPT: 'cp -r $target_ws/build/tesseract_collision/test/benchmarks/*.json /root/benchmarks/ && cp -r $target_ws/build/tesseract_environment/test/benchmarks/*.json /root/benchmarks/'}
+             AFTER_SCRIPT: '$target_ws/src/tesseract/.run_combine_benchmark_results'}
 
     steps:
       - uses: actions/checkout@v2
@@ -51,60 +51,12 @@ jobs:
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
 
-      - name: Store Bullet Discrete Simple benchmark result
+      - name: Store Bullet Discrete, FCL Discrete and Environment benchmark result
         uses: rhysd/github-action-benchmark@v1
         with:
-          name: Bullet Discrete Simple C++ Benchmark
+          name: C++ Benchmark
           tool: 'googlecpp'
-          output-file-path: /home/runner/work/tesseract/tesseract/benchmarks/tesseract_collision_bullet_discrete_simple_benchmarks_results.json
-          # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869/highlight/false
-          github-token: ${{ secrets.GITHUB_TOKEN }} # GitHub API token to make a commit comment
-          auto-push: false
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%'
-          comment-on-alert: true
-          fail-on-alert: false
-          alert-comment-cc-users: '@mpowelson'
-          max-items-in-chart: 20
-
-      - name: Store Bullet Discrete BVH benchmark result
-        uses: rhysd/github-action-benchmark@v1
-        with:
-          name: Bullet Discrete BVH C++ Benchmark
-          tool: 'googlecpp'
-          output-file-path: /home/runner/work/tesseract/tesseract/benchmarks/tesseract_collision_bullet_discrete_bvh_benchmarks_results.json
-          # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869/highlight/false
-          github-token: ${{ secrets.GITHUB_TOKEN }} # GitHub API token to make a commit comment
-          auto-push: false
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%'
-          comment-on-alert: true
-          fail-on-alert: false
-          alert-comment-cc-users: '@mpowelson'
-          max-items-in-chart: 20
-
-      - name: Store FCL Discrete BVH benchmark result
-        uses: rhysd/github-action-benchmark@v1
-        with:
-          name: FCL Discrete BVH C++ Benchmark
-          tool: 'googlecpp'
-          output-file-path: /home/runner/work/tesseract/tesseract/benchmarks/tesseract_collision_fcl_discrete_bvh_benchmarks_results.json
-          # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869/highlight/false
-          github-token: ${{ secrets.GITHUB_TOKEN }} # GitHub API token to make a commit comment
-          auto-push: false
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%'
-          comment-on-alert: true
-          fail-on-alert: false
-          alert-comment-cc-users: '@mpowelson'
-          max-items-in-chart: 20
-
-      - name: Store Environment Clone benchmark result
-        uses: rhysd/github-action-benchmark@v1
-        with:
-          name: Environment Clone C++ Benchmark
-          tool: 'googlecpp'
-          output-file-path: /home/runner/work/tesseract/tesseract/benchmarks/tesseract_environment_clone_benchmark_results.json
+          output-file-path: /home/runner/work/tesseract/tesseract/benchmarks/tesseract-benchmark_result.json
           # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869/highlight/false
           github-token: ${{ secrets.GITHUB_TOKEN }} # GitHub API token to make a commit comment
           auto-push: false
@@ -117,5 +69,5 @@ jobs:
 
       # PERSONAL_GITHUB_TOKEN needed here since we are pushing to a branch
       - name: Push benchmark result
-        run: git push 'https://ros-industrial-consortium:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/ros-industrial-consortium/tesseract.git' gh-pages:gh-pages
+        run: git push 'https://tesseract-robotics:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/tesseract-robotics/tesseract.git' gh-pages:gh-pages
         if: github.event_name != 'pull_request'

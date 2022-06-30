@@ -133,7 +133,6 @@ struct TesseractCompoundCompoundLeafCallback : btDbvt::ICollide
     , m_sharedManifold(sharedManifold)
     , m_contact_test_data(static_cast<ContactTestData*>(compound1ObjWrap->m_collisionObject->getUserPointer()))
   {
-    btAssert(dynamic_cast<ContactTestData*>(compound1ObjWrap->m_collisionObject->getUserPointer()) != nullptr);
   }
 
   void Process(const btDbvtNode* leaf0, const btDbvtNode* leaf1)  // NOLINT
