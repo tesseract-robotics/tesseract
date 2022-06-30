@@ -130,6 +130,9 @@ InverseKinematics::UPtr OPWInvKinFactory::create(const std::string& solver_name,
 
   return std::make_unique<OPWInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
 }
+
+TESSERACT_PLUGIN_ANCHOR_IMPL(OPWFactoriesAnchor)
+
 }  // namespace tesseract_kinematics
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)

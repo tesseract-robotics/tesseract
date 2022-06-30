@@ -57,6 +57,8 @@ class KDLInvKinChainNRFactory : public InvKinFactory
                                  const YAML::Node& config) const override final;
 };
 
+TESSERACT_PLUGIN_ANCHOR_DECL(KDLFactoriesAnchor)
+
 }  // namespace tesseract_kinematics
 
 #endif  // TESSERACT_KINEMATICS_KDL_FACTORIES_H

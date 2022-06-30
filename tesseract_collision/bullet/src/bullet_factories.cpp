@@ -56,10 +56,7 @@ ContinuousContactManager::UPtr BulletCastSimpleManagerFactory::create(const std:
   return std::make_unique<BulletCastSimpleManager>(name);
 }
 
-const void* BulletFactoriesAnchor()
-{ 
-  return (const void*)&BulletFactoriesAnchor;
-}
+TESSERACT_PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
 
 }  // namespace tesseract_collision::tesseract_collision_bullet
 
