@@ -2,6 +2,12 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updated CPack (`#786 <https://github.com/tesseract-robotics/tesseract/issues/786>`_)
+* Update to use find_gtest macro
+* Contributors: Levi Armstrong, Michael Ripperger
+
 0.9.10 (2022-06-14)
 -------------------
 
