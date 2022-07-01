@@ -121,7 +121,7 @@ std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_
   for (const auto& library_fullpath : libraries_with_fullpath)
   {
     if (ClassLoader::isClassAvailable(plugin_name, library_fullpath))
-        return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library_fullpath);
+      return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library_fullpath);
   }
 
   // Check for environment variable for search paths
@@ -178,7 +178,7 @@ bool PluginLoader::isPluginAvailable(const std::string& plugin_name) const
   for (const auto& library_fullpath : libraries_with_fullpath)
   {
     if (ClassLoader::isClassAvailable(plugin_name, library_fullpath))
-        return true;
+      return true;
   }
 
   // Check for environment variable to override default library
@@ -301,17 +301,17 @@ void PluginLoader::addSymbolLibraryToSearchLibrariesEnv(const void* symbol_ptr, 
   }
   else
   {
-  #ifndef _WIN32
+#ifndef _WIN32
     env_var_str = env_var_str + ":" + lib_path.string();
-  #else
+#else
     env_var_str = env_var_str + ";" + lib_path.string();
-  #endif
+#endif
   }
 
 #ifndef _WIN32
-  setenv(search_libraries_env.c_str(),env_var_str.c_str(),1);
+  setenv(search_libraries_env.c_str(), env_var_str.c_str(), 1);
 #else
-  _putenv_s(search_libraries_env.c_str(),env_var_str.c_str());
+  _putenv_s(search_libraries_env.c_str(), env_var_str.c_str());
 #endif
 }
 

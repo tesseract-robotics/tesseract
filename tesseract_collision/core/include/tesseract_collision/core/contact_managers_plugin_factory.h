@@ -142,7 +142,7 @@ public:
 
   /**
    * @brief Clear the search paths
-   * 
+   *
    */
   void clearSearchPaths();
 
@@ -160,7 +160,7 @@ public:
 
   /**
    * @brief Clean the search libraries
-   * 
+   *
    */
   void clearSearchLibraries();
 
