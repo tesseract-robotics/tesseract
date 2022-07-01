@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.11 (2022-06-30)
+-------------------
 * Improve manipulability calculcation (`#787 <https://github.com/tesseract-robotics/tesseract/issues/787>`_)
   * Use SelfAdjointEigenSolver
   * Simplify calculation of measure = sqrt(condition)

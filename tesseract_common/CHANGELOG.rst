@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.11 (2022-06-30)
+-------------------
 * Renames in type erasure to avoid WIN32 defines
 * Updated CPack (`#786 <https://github.com/tesseract-robotics/tesseract/issues/786>`_)
 * Update to use find_gtest macro

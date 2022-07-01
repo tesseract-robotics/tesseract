@@ -2,8 +2,8 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.11 (2022-06-30)
+-------------------
 * Update to use find_gtest macro
 * Add missing gtest test_depend to tesseract_support
 * Contributors: Levi Armstrong

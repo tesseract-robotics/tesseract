@@ -2,8 +2,8 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.11 (2022-06-30)
+-------------------
 * Updated CPack (`#786 <https://github.com/tesseract-robotics/tesseract/issues/786>`_)
 * Add missing gtest test_depends in tesseract_visualization
 * Update to use find_gtest macro
