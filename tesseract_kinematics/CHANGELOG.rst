@@ -2,6 +2,18 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.11 (2022-06-30)
+-------------------
+* Improve manipulability calculcation (`#787 <https://github.com/tesseract-robotics/tesseract/issues/787>`_)
+  * Use SelfAdjointEigenSolver
+  * Simplify calculation of measure = sqrt(condition)
+  * Simplify calculation of volume
+  Co-authored-by: christian.petersmeier <christian.petersmeier@uni-bielefeld.de>
+* Updated CPack (`#786 <https://github.com/tesseract-robotics/tesseract/issues/786>`_)
+* Add lapack test_depends tesseract_kinematics
+* Update to use find_gtest macro
+* Contributors: Levi Armstrong, Michael Ripperger, Robert Haschke
+
 0.9.10 (2022-06-14)
 -------------------
 

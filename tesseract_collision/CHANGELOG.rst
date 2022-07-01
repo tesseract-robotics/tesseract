@@ -2,6 +2,14 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.11 (2022-06-30)
+-------------------
+* Updated CPack (`#786 <https://github.com/tesseract-robotics/tesseract/issues/786>`_)
+* Fix benchmark CI
+* Minor fixes
+* Update to use find_gtest macro
+* Contributors: Levi Armstrong, Michael Ripperger
+
 0.9.10 (2022-06-14)
 -------------------
 
