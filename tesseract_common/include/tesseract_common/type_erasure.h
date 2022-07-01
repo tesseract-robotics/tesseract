@@ -62,11 +62,11 @@ private:
   void serialize(Archive& /*ar*/, const unsigned int /*version*/){};  // NOLINT
 };
 
-template <typename ConcreteType, typename Interface>
-struct TypeErasureInstance : Interface
+template <typename ConcreteType, typename ConceptInterface>
+struct TypeErasureInstance : ConceptInterface
 {
-  using ValueType = ConcreteType;
-  using InterfaceType = Interface;
+  using ConceptValueType = ConcreteType;
+  using ConceptInterfaceType = ConceptInterface;
 
   TypeErasureInstance() = default;
 
@@ -74,19 +74,19 @@ struct TypeErasureInstance : Interface
 
   explicit TypeErasureInstance(ConcreteType&& value) : value_(std::move(value)) {}
 
-  const ValueType& get() const { return value_; }
+  const ConceptValueType& get() const { return value_; }
 
-  ValueType& get() { return value_; }
+  ConceptValueType& get() { return value_; }
 
   void* recover() final { return &value_; }
 
   const void* recover() const final { return &value_; }
 
-  std::type_index getType() const final { return std::type_index(typeid(ValueType)); }
+  std::type_index getType() const final { return std::type_index(typeid(ConceptValueType)); }
 
   bool equals(const TypeErasureInterface& other) const final
   {
-    return this->getType() == other.getType() && this->get() == *static_cast<const ValueType*>(other.recover());
+    return this->getType() == other.getType() && this->get() == *static_cast<const ConceptValueType*>(other.recover());
   }
 
   ConcreteType value_;
@@ -98,7 +98,7 @@ private:
   void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
   {
     // If this line is removed a exception is thrown for unregistered cast need to too look into this.
-    ar& boost::serialization::make_nvp("base", boost::serialization::base_object<Interface>(*this));
+    ar& boost::serialization::make_nvp("base", boost::serialization::base_object<ConceptInterface>(*this));
     ar& boost::serialization::make_nvp("impl", value_);
   }
 };
@@ -106,11 +106,11 @@ private:
 template <typename F>
 struct TypeErasureInstanceWrapper : F  // NOLINT
 {
-  using ValueType = typename F::ValueType;
-  using InterfaceType = typename F::InterfaceType;
+  using ConceptValueType = typename F::ConceptValueType;
+  using ConceptInterfaceType = typename F::ConceptInterfaceType;
 
   TypeErasureInstanceWrapper() = default;
-  TypeErasureInstanceWrapper(const ValueType& x) : F(x) {}
+  TypeErasureInstanceWrapper(const ConceptValueType& x) : F(x) {}
   TypeErasureInstanceWrapper(TypeErasureInstanceWrapper&& x) noexcept : F(std::move(x)) {}
 
   std::unique_ptr<TypeErasureInterface> clone() const final
@@ -129,7 +129,7 @@ private:
   }
 };
 
-template <typename Interface, template <typename> class Instance>
+template <typename ConceptInterface, template <typename> class ConceptInstance>
 struct TypeErasureBase
 {
 private:
@@ -142,11 +142,11 @@ private:
   using generic_ctor_enabler = std::enable_if_t<!std::is_base_of<TypeErasureBase, uncvref_t<T>>::value, int>;
 
 public:
-  using InterfaceType = Interface;
+  using ConceptInterfaceType = ConceptInterface;
 
   template <typename T, generic_ctor_enabler<T> = 0>
   TypeErasureBase(T&& value)  // NOLINT
-    : value_(std::make_unique<TypeErasureInstanceWrapper<Instance<uncvref_t<T>>>>(value))
+    : value_(std::make_unique<TypeErasureInstanceWrapper<ConceptInstance<uncvref_t<T>>>>(value))
   {
   }
 
@@ -194,9 +194,9 @@ public:
 
   bool operator!=(const TypeErasureBase& rhs) const { return !operator==(rhs); }
 
-  InterfaceType& interface() { return *static_cast<InterfaceType*>(value_.get()); }
+  ConceptInterfaceType& getInterface() { return *static_cast<ConceptInterfaceType*>(value_.get()); }
 
-  const InterfaceType& interface() const { return *static_cast<const InterfaceType*>(value_.get()); }
+  const ConceptInterfaceType& getInterface() const { return *static_cast<const ConceptInterfaceType*>(value_.get()); }
 
   template <typename T>
   T& as()
