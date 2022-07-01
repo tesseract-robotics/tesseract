@@ -293,7 +293,7 @@ void PluginLoader::addSymbolLibraryToSearchLibrariesEnv(const void* symbol_ptr, 
     env_var_str = env_var;
   }
 
-  boost::dll::fs::path lib_path = boost::dll::fs::canonical(boost::dll::symbol_location_ptr(symbol_ptr));
+  boost::filesystem::path lib_path = boost::filesystem::canonical(boost::dll::symbol_location_ptr(symbol_ptr));
 
   if (env_var_str.empty())
   {

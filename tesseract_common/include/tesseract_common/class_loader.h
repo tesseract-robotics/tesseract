@@ -122,10 +122,10 @@ struct ClassLoader
   TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, boostdll)
 
 #define TESSERACT_PLUGIN_ANCHOR_DECL(ANCHOR_NAME) \
-  const void* ANCHOR_NAME();
+  const void* ANCHOR_NAME(); // NOLINT
 
 #define TESSERACT_PLUGIN_ANCHOR_IMPL(ANCHOR_NAME) \
-  const void* ANCHOR_NAME() { return (const void*)(&ANCHOR_NAME); }
+  const void* ANCHOR_NAME() { return (const void*)(&ANCHOR_NAME); } // NOLINT
 
 // clang-format on
 
