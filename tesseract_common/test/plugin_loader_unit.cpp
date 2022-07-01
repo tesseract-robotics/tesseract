@@ -36,7 +36,11 @@ const std::string tesseract_common::TestPluginBase::SECTION_NAME = "TestBase";
 
 TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
 {
+#ifndef _WIN32
   std::string env_var = "UNITTESTENV=a:b:c";
+#else
+  std::string env_var = "UNITTESTENV=a;b;c";
+#endif
   putenv(env_var.data());
   std::set<std::string> s = tesseract_common::parseEnvironmentVariableList("UNITTESTENV");
   std::vector<std::string> v(s.begin(), s.end());

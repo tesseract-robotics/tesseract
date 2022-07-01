@@ -145,12 +145,6 @@ std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_
     }
   }
 
-  for (const auto& library : library_names)
-  {
-    if (ClassLoader::isClassAvailable(plugin_name, library))
-      return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library);
-  }
-
   std::stringstream msg;
   if (search_system_folders)
     msg << std::endl << "Search Paths (Search System Folders: True):" << std::endl;
