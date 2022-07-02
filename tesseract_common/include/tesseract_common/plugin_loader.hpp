@@ -46,7 +46,11 @@ inline std::set<std::string> parseEnvironmentVariableList(const std::string& env
     return list;
 
   std::string evn_str = std::string(env_var);
+#ifndef _WIN32
   boost::split(list, evn_str, boost::is_any_of(":"), boost::token_compress_on);
+#else
+  boost::split(list, evn_str, boost::is_any_of(";"), boost::token_compress_on);
+#endif
   return list;
 }
 
@@ -78,15 +82,46 @@ inline std::set<std::string> getAllSearchLibraries(const std::string& search_lib
   return existing_search_libraries;
 }
 
+/**
+ * @brief This will remove libraries with full path in the provided library_names and return them.
+ * @param library_names The set to search and remove libraries with full paths
+ * @return A set of the libraries provided as full path
+ */
+inline std::set<std::string> extractLibrariesWithFullPath(std::set<std::string>& library_names)
+{
+  std::set<std::string> libraries_with_fullpath;
+  for (auto it = library_names.begin(); it != library_names.end();)
+  {
+    if (boost::filesystem::exists(*it) && boost::filesystem::path(*it).is_absolute())
+    {
+      libraries_with_fullpath.insert(*it);
+      it = library_names.erase(it);
+    }
+    else
+    {
+      ++it;
+    }
+  }
+
+  return libraries_with_fullpath;
+}
+
 template <class PluginBase>
 std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_name) const
 {
   // Check for environment variable for plugin definitions
-  std::set<std::string> plugins_local = getAllSearchLibraries(search_libraries_env, search_libraries);
-  if (plugins_local.empty())
+  std::set<std::string> library_names = getAllSearchLibraries(search_libraries_env, search_libraries);
+  if (library_names.empty())
   {
     CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
     return nullptr;
+  }
+
+  std::set<std::string> libraries_with_fullpath = extractLibrariesWithFullPath(library_names);
+  for (const auto& library_fullpath : libraries_with_fullpath)
+  {
+    if (ClassLoader::isClassAvailable(plugin_name, library_fullpath))
+      return ClassLoader::createSharedInstance<PluginBase>(plugin_name, library_fullpath);
   }
 
   // Check for environment variable for search paths
@@ -131,11 +166,19 @@ std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_
 bool PluginLoader::isPluginAvailable(const std::string& plugin_name) const
 {
   // Check for environment variable for plugin definitions
-  std::set<std::string> plugins_local = getAllSearchLibraries(search_libraries_env, search_libraries);
-  if (plugins_local.empty())
+  std::set<std::string> library_names = getAllSearchLibraries(search_libraries_env, search_libraries);
+  if (library_names.empty())
   {
     CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
     return false;
+  }
+
+  // Check for libraries provided as full paths. These are searched first
+  std::set<std::string> libraries_with_fullpath = extractLibrariesWithFullPath(library_names);
+  for (const auto& library_fullpath : libraries_with_fullpath)
+  {
+    if (ClassLoader::isClassAvailable(plugin_name, library_fullpath))
+      return true;
   }
 
   // Check for environment variable to override default library
@@ -173,11 +216,19 @@ std::vector<std::string> PluginLoader::getAvailablePlugins(const std::string& se
   std::vector<std::string> plugins;
 
   // Check for environment variable for plugin definitions
-  std::set<std::string> plugins_local = getAllSearchLibraries(search_libraries_env, search_libraries);
-  if (plugins_local.empty())
+  std::set<std::string> library_names = getAllSearchLibraries(search_libraries_env, search_libraries);
+  if (library_names.empty())
   {
     CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
     return plugins;
+  }
+
+  // Check for libraries provided as full paths. These are searched first
+  std::set<std::string> libraries_with_fullpath = extractLibrariesWithFullPath(library_names);
+  for (const auto& library_fullpath : libraries_with_fullpath)
+  {
+    std::vector<std::string> lib_plugins = ClassLoader::getAvailableSymbols(section, library_fullpath);
+    plugins.insert(plugins.end(), lib_plugins.begin(), lib_plugins.end());
   }
 
   // Check for environment variable to override default library
@@ -199,11 +250,19 @@ std::vector<std::string> PluginLoader::getAvailableSections(bool include_hidden)
   std::vector<std::string> sections;
 
   // Check for environment variable for plugin definitions
-  std::set<std::string> plugins_local = getAllSearchLibraries(search_libraries_env, search_libraries);
-  if (plugins_local.empty())
+  std::set<std::string> library_names = getAllSearchLibraries(search_libraries_env, search_libraries);
+  if (library_names.empty())
   {
     CONSOLE_BRIDGE_logError("No plugin libraries were provided!");
     return sections;
+  }
+
+  // Check for libraries provided as full paths. These are searched first
+  std::set<std::string> libraries_with_fullpath = extractLibrariesWithFullPath(library_names);
+  for (const auto& library_fullpath : libraries_with_fullpath)
+  {
+    std::vector<std::string> lib_sections = ClassLoader::getAvailableSections(library_fullpath, "", include_hidden);
+    sections.insert(sections.end(), lib_sections.begin(), lib_sections.end());
   }
 
   // Check for environment variable to override default library
@@ -223,6 +282,37 @@ std::vector<std::string> PluginLoader::getAvailableSections(bool include_hidden)
 int PluginLoader::count() const
 {
   return static_cast<int>(getAllSearchLibraries(search_libraries_env, search_libraries).size());
+}
+
+void PluginLoader::addSymbolLibraryToSearchLibrariesEnv(const void* symbol_ptr, const std::string& search_libraries_env)
+{
+  std::string env_var_str;
+  char* env_var = std::getenv(search_libraries_env.c_str());
+  if (env_var != nullptr)
+  {
+    env_var_str = env_var;
+  }
+
+  boost::filesystem::path lib_path = boost::filesystem::canonical(boost::dll::symbol_location_ptr(symbol_ptr));
+
+  if (env_var_str.empty())
+  {
+    env_var_str = lib_path.string();
+  }
+  else
+  {
+#ifndef _WIN32
+    env_var_str = env_var_str + ":" + lib_path.string();
+#else
+    env_var_str = env_var_str + ";" + lib_path.string();
+#endif
+  }
+
+#ifndef _WIN32
+  setenv(search_libraries_env.c_str(), env_var_str.c_str(), 1);
+#else
+  _putenv_s(search_libraries_env.c_str(), env_var_str.c_str());
+#endif
 }
 
 }  // namespace tesseract_common

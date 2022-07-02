@@ -597,5 +597,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //  scene_pub_.Publish(scene_msg);
 //}
 
+TESSERACT_PLUGIN_ANCHOR_IMPL(IgnitionVisualizationAnchor)
+
 TESSERACT_ADD_VISUALIZATION_PLUGIN(tesseract_visualization::TesseractIgnitionVisualization,
                                    TesseractIgnitionVisualizationPlugin)

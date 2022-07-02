@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/dll/alias.hpp>
 #include <boost/dll/import_class.hpp>
 #include <boost/dll/shared_library.hpp>
+#include <boost/dll/runtime_symbol_info.hpp>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

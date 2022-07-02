@@ -169,6 +169,9 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& solver_name,
   return std::make_unique<REPInvKin>(
       scene_graph, scene_state, std::move(inv_kin), m_reach, std::move(fwd_kin), sample_range, sample_res, solver_name);
 }
+
+TESSERACT_PLUGIN_ANCHOR_IMPL(REPInvKinFactoriesAnchor)
+
 }  // namespace tesseract_kinematics
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)

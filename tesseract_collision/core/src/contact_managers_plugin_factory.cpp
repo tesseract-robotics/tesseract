@@ -86,6 +86,8 @@ void ContactManagersPluginFactory::addSearchPath(const std::string& path) { plug
 
 std::set<std::string> ContactManagersPluginFactory::getSearchPaths() const { return plugin_loader_.search_paths; }
 
+void ContactManagersPluginFactory::clearSearchPaths() { plugin_loader_.search_paths.clear(); }
+
 void ContactManagersPluginFactory::addSearchLibrary(const std::string& library_name)
 {
   plugin_loader_.search_libraries.insert(library_name);
@@ -95,6 +97,8 @@ std::set<std::string> ContactManagersPluginFactory::getSearchLibraries() const
 {
   return plugin_loader_.search_libraries;
 }
+
+void ContactManagersPluginFactory::clearSearchLibraries() { plugin_loader_.search_libraries.clear(); }
 
 void ContactManagersPluginFactory::addDiscreteContactManagerPlugin(const std::string& name,
                                                                    tesseract_common::PluginInfo plugin_info)

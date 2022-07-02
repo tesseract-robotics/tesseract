@@ -141,6 +141,12 @@ public:
   std::set<std::string> getSearchPaths() const;
 
   /**
+   * @brief Clear the search paths
+   *
+   */
+  void clearSearchPaths();
+
+  /**
    * @brief Add a library to search for plugin name
    * @param library_name The library name without the prefix or suffix
    */
@@ -151,6 +157,12 @@ public:
    * @return The search libraries
    */
   std::set<std::string> getSearchLibraries() const;
+
+  /**
+   * @brief Clean the search libraries
+   *
+   */
+  void clearSearchLibraries();
 
   /**
    * @brief Add a discrete contact manager plugin

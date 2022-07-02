@@ -118,6 +118,20 @@ public:
    * @return The number of plugins.
    */
   inline int count() const;
+
+  /**
+   * @brief Utility function to add library containing symbol to the search env variable
+   *
+   * In some cases the name and location of a library is unknown at runtime, but a symbol can
+   * be linked at compile time. This is true for Python auditwheel distributions. This
+   * utility function will determine the location of the library, and add it to the library search
+   * environment variable so it can be found.
+   *
+   * @param symbol_ptr Pointer to the symbol to find
+   * @param search_libraries_env The environmental variable to modify
+   */
+  static inline void addSymbolLibraryToSearchLibrariesEnv(const void* symbol_ptr,
+                                                          const std::string& search_libraries_env);
 };
 
 }  // namespace tesseract_common

@@ -38,6 +38,9 @@ class REPInvKinFactory : public InvKinFactory
                                  const KinematicsPluginFactory& plugin_factory,
                                  const YAML::Node& config) const override final;
 };
+
+TESSERACT_PLUGIN_ANCHOR_DECL(REPInvKinFactoriesAnchor)
+
 }  // namespace tesseract_kinematics
 
 #endif  // TESSERACT_KINEMATICS_REP_FACTORY_H

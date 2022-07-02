@@ -38,5 +38,8 @@ class OPWInvKinFactory : public InvKinFactory
                                  const KinematicsPluginFactory& plugin_factory,
                                  const YAML::Node& config) const override final;
 };
+
+TESSERACT_PLUGIN_ANCHOR_DECL(OPWFactoriesAnchor)
+
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_OPW_FACTORY_H

@@ -121,6 +121,8 @@ InverseKinematics::UPtr KDLInvKinChainNRFactory::create(const std::string& solve
   return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, solver_name);
 }
 
+TESSERACT_PLUGIN_ANCHOR_IMPL(KDLFactoriesAnchor)
+
 }  // namespace tesseract_kinematics
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
