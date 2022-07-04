@@ -63,6 +63,7 @@ target_clang_tidy(${PROJECT_NAME}_bullet ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_bullet PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_bullet
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -81,6 +82,7 @@ target_clang_tidy(${PROJECT_NAME}_bullet_factories ENABLE ${TESSERACT_ENABLE_CLA
 target_cxx_version(${PROJECT_NAME}_bullet_factories PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_bullet_factories
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -108,6 +110,7 @@ if(${HACD_LIBRARY})
   target_cxx_version(${PROJECT_NAME}_hacd_convex_decomposition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(
     ${PROJECT_NAME}_hacd_convex_decomposition
+    PRIVATE
     ALL
     EXCLUDE ${COVERAGE_EXCLUDE}
     ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})

@@ -86,6 +86,7 @@ target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -111,6 +112,7 @@ if(IGNITION_FOUND)
   target_cxx_version(${PROJECT_NAME}_ignition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(
     ${PROJECT_NAME}_ignition
+    PRIVATE
     ALL
     EXCLUDE ${COVERAGE_EXCLUDE}
     ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -137,6 +139,7 @@ if(IGNITION_FOUND)
   target_cxx_version(${PROJECT_NAME}_ignition_visualization PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(
     ${PROJECT_NAME}_ignition_visualization
+    PRIVATE
     ALL
     EXCLUDE ${COVERAGE_EXCLUDE}
     ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})

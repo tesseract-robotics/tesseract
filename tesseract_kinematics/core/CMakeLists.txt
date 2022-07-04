@@ -23,6 +23,7 @@ target_clang_tidy(${PROJECT_NAME}_core ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_core PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_core
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -39,6 +40,7 @@ target_clang_tidy(${PROJECT_NAME}_core_factories ENABLE ${TESSERACT_ENABLE_CLANG
 target_cxx_version(${PROJECT_NAME}_core_factories PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_core_factories
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})

@@ -33,6 +33,7 @@ macro(add_gtest test_name test_file)
   target_cxx_version(${test_name} PRIVATE VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(
     ${test_name}
+    PRIVATE
     ALL
     EXCLUDE ${COVERAGE_EXCLUDE}
     ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})

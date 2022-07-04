@@ -93,6 +93,7 @@ target_clang_tidy(${PROJECT_NAME}_vhacd_convex_decomposition ENABLE ${TESSERACT_
 target_cxx_version(${PROJECT_NAME}_vhacd_convex_decomposition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_vhacd_convex_decomposition
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
