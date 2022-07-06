@@ -56,8 +56,8 @@ static const std::string AXES_MODEL_NAME = "tesseract_axes_model";
 static const std::string ARROW_MODEL_NAME = "tesseract_arrow_model";
 static const std::string TOOL_PATH_MODEL_NAME = "tesseract_tool_path_model";
 
-using namespace tesseract_visualization;
-
+namespace tesseract_visualization
+{
 TesseractIgnitionVisualization::TesseractIgnitionVisualization()
 {
   scene_pub_ = node_.Advertise<ignition::msgs::Scene>(DEFAULT_SCENE_TOPIC_NAME);
@@ -598,6 +598,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //}
 
 TESSERACT_PLUGIN_ANCHOR_IMPL(IgnitionVisualizationAnchor)
+}  // namespace tesseract_visualization
 
 TESSERACT_ADD_VISUALIZATION_PLUGIN(tesseract_visualization::TesseractIgnitionVisualization,
                                    TesseractIgnitionVisualizationPlugin)
