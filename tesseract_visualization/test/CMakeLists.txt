@@ -14,6 +14,7 @@ target_clang_tidy(${PROJECT_NAME}_player_unit ENABLE ${TESSERACT_ENABLE_CLANG_TI
 target_cxx_version(${PROJECT_NAME}_player_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_player_unit
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
