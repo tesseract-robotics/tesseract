@@ -2,6 +2,10 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update ros_industrial_cmake_boilerplate to 0.3.0 (`#795 <https://github.com/tesseract-robotics/tesseract/issues/795>`_)
+
 0.9.11 (2022-06-30)
 -------------------
 * Updated CPack (`#786 <https://github.com/tesseract-robotics/tesseract/issues/786>`_)
