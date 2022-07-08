@@ -155,7 +155,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
       for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
         ordered_sol(i) = solution(inv_kin_joint_map_[static_cast<std::size_t>(i)]);
 
-      if (tesseract_common::satisfiesPositionLimits(ordered_sol, limits_.joint_limits))
+      if (tesseract_common::satisfiesPositionLimits<double>(ordered_sol, limits_.joint_limits))
         solutions_filtered.push_back(ordered_sol);
     }
 
@@ -167,7 +167,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   solutions_filtered.reserve(solutions.size());
   for (auto& solution : solutions)
   {
-    if (tesseract_common::satisfiesPositionLimits(solution, limits_.joint_limits))
+    if (tesseract_common::satisfiesPositionLimits<double>(solution, limits_.joint_limits))
       solutions_filtered.push_back(solution);
   }
 

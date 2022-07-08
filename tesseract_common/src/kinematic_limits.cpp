@@ -62,33 +62,45 @@ void KinematicLimits::serialize(Archive& ar, const unsigned int /*version*/)  //
   ar& BOOST_SERIALIZATION_NVP(acceleration_limits);
 }
 
-bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::VectorXd>& joint_positions,
-                             const Eigen::Ref<const Eigen::MatrixX2d>& position_limits,
-                             double max_diff,
-                             double max_rel_diff)
-{
-  auto p = joint_positions.array();
-  auto l0 = position_limits.col(0).array();
-  auto l1 = position_limits.col(1).array();
+template bool
+isWithinPositionLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& joint_positions,
+                              const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& position_limits);
 
-  auto lower_diff_abs = (p - l0).abs();
-  auto lower_diff = (lower_diff_abs <= max_diff);
-  auto lower_relative_diff = (lower_diff_abs <= max_rel_diff * p.abs().max(l0.abs()));
-  auto lower_check = p > l0 || lower_diff || lower_relative_diff;
+template bool
+isWithinPositionLimits<double>(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& joint_positions,
+                               const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& position_limits);
 
-  auto upper_diff_abs = (p - l1).abs();
-  auto upper_diff = (upper_diff_abs <= max_diff);
-  auto upper_relative_diff = (upper_diff_abs <= max_rel_diff * p.abs().max(l1.abs()));
-  auto upper_check = p < l1 || upper_diff || upper_relative_diff;
+template bool
+satisfiesPositionLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& joint_positions,
+                               const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& position_limits,
+                               float max_diff,
+                               float max_rel_diff);
 
-  return (lower_check.all() && upper_check.all());
-}
+template bool
+satisfiesPositionLimits<double>(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& joint_positions,
+                                const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& position_limits,
+                                double max_diff,
+                                double max_rel_diff);
 
-void enforcePositionLimits(Eigen::Ref<Eigen::VectorXd> joint_positions,
-                           const Eigen::Ref<const Eigen::MatrixX2d>& position_limits)
-{
-  joint_positions = joint_positions.array().min(position_limits.col(1).array()).max(position_limits.col(0).array());
-}
+template bool
+satisfiesPositionLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& joint_positions,
+                               const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& position_limits,
+                               const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& max_diff,
+                               const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& max_rel_diff);
+
+template bool
+satisfiesPositionLimits<double>(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& joint_positions,
+                                const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& position_limits,
+                                const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& max_diff,
+                                const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& max_rel_diff);
+
+template void
+enforcePositionLimits<float>(Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, 1>> joint_positions,
+                             const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& position_limits);
+
+template void
+enforcePositionLimits<double>(Eigen::Ref<Eigen::Matrix<double, Eigen::Dynamic, 1>> joint_positions,
+                              const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& position_limits);
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>

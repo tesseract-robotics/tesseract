@@ -385,9 +385,9 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
           Eigen::VectorXd new_sol = sol;
           new_sol[*current_index] = val;
 
-          if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+          if (tesseract_common::satisfiesPositionLimits<double>(new_sol, limits))
           {
-            tesseract_common::enforcePositionLimits(new_sol, limits);
+            tesseract_common::enforcePositionLimits<double>(new_sol, limits);
             redundant_sols.push_back(new_sol.template cast<FloatType>());
           }
 
@@ -416,9 +416,9 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
           Eigen::VectorXd new_sol = sol;
           new_sol[*current_index] = val;
 
-          if (tesseract_common::satisfiesPositionLimits(new_sol, limits))
+          if (tesseract_common::satisfiesPositionLimits<double>(new_sol, limits))
           {
-            tesseract_common::enforcePositionLimits(new_sol, limits);
+            tesseract_common::enforcePositionLimits<double>(new_sol, limits);
             redundant_sols.push_back(new_sol.template cast<FloatType>());
           }
 
