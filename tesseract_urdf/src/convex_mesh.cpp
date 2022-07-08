@@ -124,7 +124,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeConvexMesh(const std::shared_ptr<cons
 
   try
   {
-    writeMeshToFile(mesh, /*trailingSlash(package_path) + noLeadingSlash(*/ filename);
+    writeMeshToFile(mesh, trailingSlash(package_path) + noLeadingSlash(filename));
   }
   catch (...)
   {
