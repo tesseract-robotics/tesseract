@@ -47,7 +47,7 @@ public:
   using Ptr = std::shared_ptr<ChangeJointOriginCommand>;
   using ConstPtr = std::shared_ptr<const ChangeJointOriginCommand>;
 
-  ChangeJointOriginCommand() : Command(CommandType::CHANGE_JOINT_ORIGIN){};
+  ChangeJointOriginCommand();
 
   /**
    * @brief Changes the origin associated with the joint
@@ -57,13 +57,10 @@ public:
    * @param joint_name Name of the joint to be updated
    * @param new_origin New transform to be set as the origin
    */
-  ChangeJointOriginCommand(std::string joint_name, const Eigen::Isometry3d& origin)
-    : Command(CommandType::CHANGE_JOINT_ORIGIN), joint_name_(std::move(joint_name)), origin_(origin)
-  {
-  }
+  ChangeJointOriginCommand(std::string joint_name, const Eigen::Isometry3d& origin);
 
-  const std::string& getJointName() const { return joint_name_; }
-  const Eigen::Isometry3d& getOrigin() const { return origin_; }
+  const std::string& getJointName() const;
+  const Eigen::Isometry3d& getOrigin() const;
 
   bool operator==(const ChangeJointOriginCommand& rhs) const;
   bool operator!=(const ChangeJointOriginCommand& rhs) const;

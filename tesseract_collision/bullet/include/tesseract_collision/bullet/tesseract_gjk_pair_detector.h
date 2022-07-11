@@ -33,9 +33,7 @@ class btConvexPenetrationDepthSolver;
 
 #include <tesseract_collision/core/types.h>
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 /**
  * @brief This is a modifed Convex to Convex collision algorithm
@@ -113,6 +111,5 @@ public:
   /// don't use setIgnoreMargin, it's for Bullet's internal use
   void setIgnoreMargin(bool ignoreMargin) { m_ignoreMargin = ignoreMargin; }
 };
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet
 #endif  // TESSERACT_COLLISION_TESSERACT_GJK_PAIR_DETECTOR_H

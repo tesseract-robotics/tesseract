@@ -34,7 +34,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/octree.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/octree.h>
 #include <tesseract_urdf/utils.h>

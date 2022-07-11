@@ -3,6 +3,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <vector>
+#include <omp.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/urdf_parser.h>
@@ -1993,6 +1994,7 @@ TEST(TesseractEnvironmentUnit, EnvMultithreadedApplyCommandsTest)  // NOLINT
 #pragma omp parallel for num_threads(10) shared(env)
   for (long i = 0; i < 10; ++i)  // NOLINT
   {
+    // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
     const int tn = omp_get_thread_num();
     CONSOLE_BRIDGE_logDebug("Thread (ID: %i): %i of %i", tn, i, 10);
 
@@ -2508,9 +2510,7 @@ bool hasProcessInterpolatedResultsTime1(const tesseract_collision::ContactResult
   return false;
 }
 
-/**
- * @brief Get the total number of contacts
- */
+/** @brief Get the total number of contacts */
 int getContactCount(const std::vector<tesseract_collision::ContactResultMap>& contacts)
 {
   int total{ 0 };

@@ -131,6 +131,7 @@ SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double
       state.joints[joint.first] = joint.second;
   }
 
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
   calculateTransforms(state, jnt_array, data_.tree.getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;

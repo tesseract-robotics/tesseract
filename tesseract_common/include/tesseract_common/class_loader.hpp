@@ -135,7 +135,7 @@ std::vector<std::string> ClassLoader::getAvailableSymbols(const std::string& sec
     CONSOLE_BRIDGE_logDebug("Failed to find or load library: %s with error: %s",
                             decorate(library_name, library_directory).c_str(),
                             ec.message().c_str());
-    return std::vector<std::string>();
+    return {};
   }
 
   // Class `library_info` can extract information from a library
@@ -170,7 +170,7 @@ std::vector<std::string> ClassLoader::getAvailableSections(const std::string& li
     CONSOLE_BRIDGE_logDebug("Failed to find or load library: %s with error: %s",
                             decorate(library_name, library_directory).c_str(),
                             ec.message().c_str());
-    return std::vector<std::string>();
+    return {};
   }
 
   // Class `library_info` can extract information from a library

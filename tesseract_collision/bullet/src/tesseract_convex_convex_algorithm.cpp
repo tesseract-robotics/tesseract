@@ -181,11 +181,8 @@ static SIMD_FORCE_INLINE btScalar capsuleCapsuleDistance(btVector3& normalOnB,
 
 //////////
 
-TesseractConvexConvexAlgorithm::CreateFunc::CreateFunc(btConvexPenetrationDepthSolver* pdSolver)
+TesseractConvexConvexAlgorithm::CreateFunc::CreateFunc(btConvexPenetrationDepthSolver* pdSolver) : m_pdSolver(pdSolver)
 {
-  m_numPerturbationIterations = 0;
-  m_minimumPointsPerturbationThreshold = 3;
-  m_pdSolver = pdSolver;
 }
 
 TesseractConvexConvexAlgorithm::TesseractConvexConvexAlgorithm(btPersistentManifold* mf,
@@ -197,9 +194,7 @@ TesseractConvexConvexAlgorithm::TesseractConvexConvexAlgorithm(btPersistentManif
                                                                int minimumPointsPerturbationThreshold)
   : btActivatingCollisionAlgorithm(ci, body0Wrap, body1Wrap)
   , m_pdSolver(pdSolver)
-  , m_ownManifold(false)
   , m_manifoldPtr(mf)
-  , m_lowLevelOfDetail(false)
   ,
 #ifdef USE_SEPDISTANCE_UTIL2
   m_sepDistance((static_cast<btConvexShape*>(body0->getCollisionShape()))->getAngularMotionDisc(),
@@ -485,11 +480,11 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
         btScalar m_marginOnB;
         btScalar m_reportedDistance{ 0 };
 
-        bool m_foundResult;
+        bool m_foundResult{ false };
         btWithoutMarginResult(btDiscreteCollisionDetectorInterface::Result* result,
                               btScalar marginOnA,
                               btScalar marginOnB)
-          : m_originalResult(result), m_marginOnA(marginOnA), m_marginOnB(marginOnB), m_foundResult(false)
+          : m_originalResult(result), m_marginOnA(marginOnA), m_marginOnB(marginOnB)
         {
         }
 

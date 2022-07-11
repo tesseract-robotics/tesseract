@@ -7,7 +7,6 @@ macro(add_benchmark benchmark_name benchmark_file)
   target_compile_options(${benchmark_name} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(${benchmark_name} PRIVATE ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
-  target_clang_tidy(${benchmark_name} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_cxx_version(${benchmark_name} PRIVATE VERSION ${TESSERACT_CXX_VERSION})
   target_link_libraries(
     ${benchmark_name}
@@ -23,6 +22,7 @@ macro(add_benchmark benchmark_name benchmark_file)
     octomap
     octomath
     ${LIBFCL_LIBRARIES})
+  target_clang_tidy(${benchmark_name} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_include_directories(${benchmark_name} PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   add_dependencies(
     ${benchmark_name}
@@ -50,8 +50,8 @@ target_link_libraries(
           ${LIBFCL_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_profile PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_definitions(${PROJECT_NAME}_profile INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_profile ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_profile PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+target_clang_tidy(${PROJECT_NAME}_profile ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_code_coverage(
   ${PROJECT_NAME}_profile
   PRIVATE

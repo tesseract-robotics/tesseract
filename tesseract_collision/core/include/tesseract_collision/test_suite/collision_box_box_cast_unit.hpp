@@ -4,9 +4,7 @@
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision
-{
-namespace test_suite
+namespace tesseract_collision::test_suite
 {
 namespace detail
 {
@@ -173,7 +171,6 @@ inline void runTest(ContinuousContactManager& checker)
     EXPECT_NEAR(p1[2], 0.0, 0.001);
   }
 }
-}  // namespace test_suite
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::test_suite
 
 #endif  // TESSERACT_COLLISION_COLLISION_BOX_BOX_CAST_UNIT_H

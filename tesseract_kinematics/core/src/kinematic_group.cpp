@@ -40,9 +40,10 @@ KinematicGroup::KinematicGroup(std::string name,
                                InverseKinematics::UPtr inv_kin,
                                const tesseract_scene_graph::SceneGraph& scene_graph,
                                const tesseract_scene_graph::SceneState& scene_state)
-  : JointGroup(std::move(name), joint_names, scene_graph, scene_state), joint_names_(std::move(joint_names))
+  : JointGroup(std::move(name), joint_names, scene_graph, scene_state)
+  , joint_names_(std::move(joint_names))
+  , inv_kin_(std::move(inv_kin))
 {
-  inv_kin_ = std::move(inv_kin);
   std::vector<std::string> inv_kin_joint_names = inv_kin_->getJointNames();
 
   if (static_cast<Eigen::Index>(joint_names_.size()) != inv_kin_->numJoints())

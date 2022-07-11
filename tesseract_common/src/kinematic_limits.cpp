@@ -32,7 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/kinematic_limits.h>
 #include <tesseract_common/eigen_serialization.h>
-#include <tesseract_common/serialization.h>
 
 namespace tesseract_common
 {

@@ -12,9 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision
-{
-namespace test_suite
+namespace tesseract_collision::test_suite
 {
 inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
@@ -135,7 +133,6 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
     EXPECT_TRUE(result_vector[static_cast<std::size_t>(i)].size() == 2700);
   }
 }
-}  // namespace test_suite
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::test_suite
 
 #endif  // TESSERACT_COLLISION_COLLISION_MULTI_THREADED_UNIT_HPP

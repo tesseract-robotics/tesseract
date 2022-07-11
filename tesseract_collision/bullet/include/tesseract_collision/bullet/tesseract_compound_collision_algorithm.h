@@ -35,9 +35,7 @@ class btCollisionObject;
 class btCollisionShape;
 
 // LCOV_EXCL_START
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 /**
  * @brief Supports collision between CompoundCollisionShapes and other collision shapes
@@ -61,7 +59,7 @@ protected:
   bool m_isSwapped;
 
   class btPersistentManifold* m_sharedManifold;
-  bool m_ownsManifold;
+  bool m_ownsManifold{ false };
 
   int m_compoundShapeRevision;  // to keep track of changes, so that childAlgorithm array can be updated
 
@@ -124,7 +122,6 @@ public:
     }
   };
 };
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet
 // LCOV_EXCL_STOP
 #endif  // TESSERACT_COLLISION_TESSERACT_COMPOUND_COLLISION_ALGORITHM_H

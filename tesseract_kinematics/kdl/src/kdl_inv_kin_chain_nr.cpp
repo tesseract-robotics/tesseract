@@ -126,7 +126,7 @@ IKSolutions KDLInvKinChainNR::calcInvKinHelper(const Eigen::Isometry3d& pose,
       CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK");
     }
     // LCOV_EXCL_STOP
-    return IKSolutions();
+    return {};
   }
 
   KDLToEigen(kdl_solution, solution);

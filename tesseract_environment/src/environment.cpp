@@ -262,13 +262,13 @@ Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& s
   if (local_sg == nullptr)
   {
     CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
-    return Commands();
+    return {};
   }
 
   if (!local_sg->getLink(local_sg->getRoot()))
   {
     CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
-    return Commands();
+    return {};
   }
 
   if (srdf_model != nullptr)

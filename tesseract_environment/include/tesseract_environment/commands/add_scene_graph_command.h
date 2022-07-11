@@ -54,13 +54,7 @@ public:
    * into the environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with
    * different names
    */
-  AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph, std::string prefix = "")
-    : Command(CommandType::ADD_SCENE_GRAPH)
-    , scene_graph_(scene_graph.clone())
-    , joint_(nullptr)
-    , prefix_(std::move(prefix))
-  {
-  }
+  AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph, std::string prefix = "");
 
   /**
    * @brief Merge a graph into the current environment
@@ -74,13 +68,7 @@ public:
    */
   AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph,
                        const tesseract_scene_graph::Joint& joint,
-                       std::string prefix = "")
-    : Command(CommandType::ADD_SCENE_GRAPH)
-    , scene_graph_(scene_graph.clone())
-    , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
-    , prefix_(std::move(prefix))
-  {
-  }
+                       std::string prefix = "");
 
   const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const { return scene_graph_; }
   const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }

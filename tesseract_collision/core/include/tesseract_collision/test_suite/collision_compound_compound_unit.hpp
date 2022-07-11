@@ -10,9 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision
-{
-namespace test_suite
+namespace tesseract_collision::test_suite
 {
 namespace detail
 {
@@ -149,6 +147,5 @@ inline void runTest(DiscreteContactManager& checker)
   DiscreteContactManager::Ptr cloned_checker = checker.clone();
   detail::runTestCompound(*cloned_checker);
 }
-}  // namespace test_suite
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_COMPOUND_COMPOUND_UNIT_HPP

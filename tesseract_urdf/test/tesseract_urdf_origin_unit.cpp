@@ -24,7 +24,7 @@ Eigen::Quaterniond fromRPY(double roll, double pitch, double yaw)
   z = std::cos(phi) * std::cos(the) * std::sin(psi) - std::sin(phi) * std::sin(the) * std::cos(psi);
   w = std::cos(phi) * std::cos(the) * std::cos(psi) + std::sin(phi) * std::sin(the) * std::sin(psi);
 
-  return Eigen::Quaterniond(w, x, y, z);
+  return Eigen::Quaterniond{ w, x, y, z };
 }
 
 TEST(TesseractURDFUnit, parse_origin)  // NOLINT

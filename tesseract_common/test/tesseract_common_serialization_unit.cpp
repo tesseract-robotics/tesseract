@@ -434,7 +434,7 @@ struct TestAtomic
     value = other.value.load();
     return *this;
   }
-  TestAtomic(TestAtomic&& other) noexcept { value = other.value.load(); }
+  TestAtomic(TestAtomic&& other) noexcept : value(other.value.load()) {}
   TestAtomic& operator=(TestAtomic&& other) noexcept
   {
     value = other.value.load();

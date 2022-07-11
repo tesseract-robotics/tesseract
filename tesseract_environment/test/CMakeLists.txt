@@ -1,11 +1,12 @@
 find_gtest()
 find_package(tesseract_support REQUIRED)
 find_package(OpenMP REQUIRED)
-if(OPENMP_FOUND)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-else(OPENMP_FOUND)
-  message(STATUS "Not found OpenMP")
+if(NOT TARGET OpenMP::OpenMP_CXX)
+  find_package(Threads REQUIRED)
+  add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+  set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+  # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
+  set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
 endif()
 
 add_executable(${PROJECT_NAME}_unit tesseract_environment_unit.cpp)
@@ -14,6 +15,7 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}
+          OpenMP::OpenMP_CXX
           tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_collision_bullet

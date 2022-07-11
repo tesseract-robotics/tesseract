@@ -786,7 +786,7 @@ std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std
     link_names.insert(joint_children.begin(), joint_children.end());
   }
 
-  return std::vector<std::string>(link_names.begin(), link_names.end());
+  return std::vector<std::string>{ link_names.begin(), link_names.end() };
 }
 
 std::unordered_map<std::string, std::string>

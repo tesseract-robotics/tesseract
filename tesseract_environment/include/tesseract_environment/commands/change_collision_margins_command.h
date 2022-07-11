@@ -48,39 +48,21 @@ public:
   using Ptr = std::shared_ptr<ChangeCollisionMarginsCommand>;
   using ConstPtr = std::shared_ptr<const ChangeCollisionMarginsCommand>;
 
-  ChangeCollisionMarginsCommand() : Command(CommandType::CHANGE_COLLISION_MARGINS){};
+  ChangeCollisionMarginsCommand();
 
   ChangeCollisionMarginsCommand(
       double default_margin,
-      CollisionMarginOverrideType override_type = CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN)
-    : Command(CommandType::CHANGE_COLLISION_MARGINS)
-    , collision_margin_data_(CollisionMarginData(default_margin))
-    , collision_margin_override_(override_type)
-  {
-  }
+      CollisionMarginOverrideType override_type = CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN);
 
   ChangeCollisionMarginsCommand(
       PairsCollisionMarginData pairs_margin,
-      CollisionMarginOverrideType override_type = CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN)
-    : Command(CommandType::CHANGE_COLLISION_MARGINS)
-    , collision_margin_data_(CollisionMarginData(std::move(pairs_margin)))
-    , collision_margin_override_(override_type)
-  {
-  }
+      CollisionMarginOverrideType override_type = CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN);
 
   ChangeCollisionMarginsCommand(CollisionMarginData collision_margin_data,
-                                CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE)
-    : Command(CommandType::CHANGE_COLLISION_MARGINS)
-    , collision_margin_data_(std::move(collision_margin_data))
-    , collision_margin_override_(override_type)
-  {
-  }
+                                CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE);
 
-  tesseract_common::CollisionMarginData getCollisionMarginData() const { return collision_margin_data_; }
-  tesseract_common::CollisionMarginOverrideType getCollisionMarginOverrideType() const
-  {
-    return collision_margin_override_;
-  }
+  tesseract_common::CollisionMarginData getCollisionMarginData() const;
+  tesseract_common::CollisionMarginOverrideType getCollisionMarginOverrideType() const;
 
   bool operator==(const ChangeCollisionMarginsCommand& rhs) const;
   bool operator!=(const ChangeCollisionMarginsCommand& rhs) const;

@@ -41,8 +41,6 @@ TesseractCompoundCollisionAlgorithm::TesseractCompoundCollisionAlgorithm(const b
                                                                          bool isSwapped)
   : btActivatingCollisionAlgorithm(ci, body0Wrap, body1Wrap), m_isSwapped(isSwapped), m_sharedManifold(ci.m_manifold)
 {
-  m_ownsManifold = false;
-
   const btCollisionObjectWrapper* colObjWrap = m_isSwapped ? body1Wrap : body0Wrap;
   btAssert(colObjWrap->getCollisionShape()->isCompound());
 

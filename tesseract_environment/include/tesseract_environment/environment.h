@@ -542,19 +542,19 @@ protected:
   int init_revision_{ 0 };
 
   /** @brief The history of commands applied to the environment after initialization */
-  Commands commands_;
+  Commands commands_{};
 
   /**
    * @brief Tesseract Scene Graph
    * @note This is intentionally not serialized it will auto updated
    */
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph_;
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph_{ nullptr };
 
   /**
    * @brief Tesseract Scene Graph Const
    * @note This is intentionally not serialized it will auto updated
    */
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_;
+  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_{ nullptr };
 
   /**
    * @brief The kinematics information
@@ -581,7 +581,7 @@ protected:
    * @brief Tesseract State Solver
    * @note This is intentionally not serialized it will auto updated
    */
-  tesseract_scene_graph::MutableStateSolver::UPtr state_solver_;
+  tesseract_scene_graph::MutableStateSolver::UPtr state_solver_{ nullptr };
 
   /**
    * @brief The function used to determine if two objects are allowed in collision
@@ -593,16 +593,16 @@ protected:
    * @brief A vector of user defined callbacks for locating tool center point
    * @todo This needs to be switched to class so it may be serialized
    */
-  std::vector<FindTCPOffsetCallbackFn> find_tcp_cb_;
+  std::vector<FindTCPOffsetCallbackFn> find_tcp_cb_{};
 
   /**
    * @brief A map of user defined event callback functions
    * @details This should not be cloned or serialized
    */
-  std::map<std::size_t, EventCallbackFn> event_cb_;
+  std::map<std::size_t, EventCallbackFn> event_cb_{};
 
   /** @brief Used when initialized by URDF_STRING, URDF_STRING_SRDF_STRING, URDF_PATH, and URDF_PATH_SRDF_PATH */
-  tesseract_common::ResourceLocator::ConstPtr resource_locator_;
+  tesseract_common::ResourceLocator::ConstPtr resource_locator_{ nullptr };
 
   /**
    * @brief The contact manager information
@@ -626,14 +626,14 @@ protected:
    * @brief The discrete contact manager object
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable tesseract_collision::DiscreteContactManager::UPtr discrete_manager_;
+  mutable tesseract_collision::DiscreteContactManager::UPtr discrete_manager_{ nullptr };
   mutable std::shared_mutex discrete_manager_mutex_;
 
   /**
    * @brief The continuous contact manager object
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable tesseract_collision::ContinuousContactManager::UPtr continuous_manager_;
+  mutable tesseract_collision::ContinuousContactManager::UPtr continuous_manager_{ nullptr };
   mutable std::shared_mutex continuous_manager_mutex_;
 
   /**
@@ -641,7 +641,7 @@ protected:
    * @details This will cleared when environment changes
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable std::unordered_map<std::string, std::vector<std::string>> group_joint_names_cache_;
+  mutable std::unordered_map<std::string, std::vector<std::string>> group_joint_names_cache_{};
   mutable std::shared_mutex group_joint_names_cache_mutex_;
 
   /**
@@ -649,7 +649,7 @@ protected:
    * @details This will cleared when environment changes
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable std::unordered_map<std::string, tesseract_kinematics::JointGroup::UPtr> joint_group_cache_;
+  mutable std::unordered_map<std::string, tesseract_kinematics::JointGroup::UPtr> joint_group_cache_{};
   mutable std::shared_mutex joint_group_cache_mutex_;
 
   /**
@@ -658,7 +658,7 @@ protected:
    * @note This is intentionally not serialized it will auto updated
    */
   mutable std::map<std::pair<std::string, std::string>, tesseract_kinematics::KinematicGroup::UPtr>
-      kinematic_group_cache_;
+      kinematic_group_cache_{};
   mutable std::shared_mutex kinematic_group_cache_mutex_;
 
   /** @brief The environment can be accessed from multiple threads, need use mutex throughout */

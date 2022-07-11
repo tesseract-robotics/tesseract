@@ -67,9 +67,9 @@ Eigen::Isometry3d convert(const KDL::Frame& frame)
   return transform;
 }
 
-KDL::Vector convert(const Eigen::Vector3d& vector) { return KDL::Vector(vector(0), vector(1), vector(2)); }
+KDL::Vector convert(const Eigen::Vector3d& vector) { return KDL::Vector{ vector(0), vector(1), vector(2) }; }
 
-Eigen::Vector3d convert(const KDL::Vector& vector) { return Eigen::Vector3d(vector(0), vector(1), vector(2)); }
+Eigen::Vector3d convert(const KDL::Vector& vector) { return Eigen::Vector3d{ vector(0), vector(1), vector(2) }; }
 
 Eigen::MatrixXd convert(const KDL::Jacobian& jacobian) { return jacobian.data; }
 
@@ -111,17 +111,17 @@ KDL::Joint convert(const Joint::ConstPtr& joint)
     case JointType::REVOLUTE:
     {
       KDL::Vector axis = convert(joint->axis);
-      return KDL::Joint(name, parent_joint.p, parent_joint.M * axis, KDL::Joint::RotAxis);
+      return KDL::Joint{ name, parent_joint.p, parent_joint.M * axis, KDL::Joint::RotAxis };
     }
     case JointType::CONTINUOUS:
     {
       KDL::Vector axis = convert(joint->axis);
-      return KDL::Joint(name, parent_joint.p, parent_joint.M * axis, KDL::Joint::RotAxis);
+      return KDL::Joint{ name, parent_joint.p, parent_joint.M * axis, KDL::Joint::RotAxis };
     }
     case JointType::PRISMATIC:
     {
       KDL::Vector axis = convert(joint->axis);
-      return KDL::Joint(name, parent_joint.p, parent_joint.M * axis, KDL::Joint::TransAxis);
+      return KDL::Joint{ name, parent_joint.p, parent_joint.M * axis, KDL::Joint::TransAxis };
     }
     default:
     {

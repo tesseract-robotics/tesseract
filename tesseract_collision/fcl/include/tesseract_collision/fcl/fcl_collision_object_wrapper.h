@@ -32,9 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_fcl
+namespace tesseract_collision::tesseract_collision_fcl
 {
 /**
  * @brief This is a wrapper around FCL Collision Object Class which allows you to expand the AABB by the contact dist.
@@ -78,7 +76,6 @@ protected:
   double contact_distance_{ 0 }; /**< @brief The contact distance threshold. */
 };
 
-}  // namespace tesseract_collision_fcl
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_fcl
 
 #endif  // TESSERACT_COLLISION_FCL_COLLISION_OBJECT_WRAPPER_H

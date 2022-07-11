@@ -1,12 +1,14 @@
 find_package(OpenMP REQUIRED)
-if(OPENMP_FOUND)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-else(OPENMP_FOUND)
-  message(STATUS "Not found OpenMP")
+if(NOT TARGET OpenMP::OpenMP_CXX)
+  find_package(Threads REQUIRED)
+  add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+  set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+  # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
+  set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
 endif()
 
 find_package(tesseract_scene_graph REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 find_gtest()
 
@@ -23,14 +25,16 @@ macro(add_gtest test_name test_file)
             tesseract::tesseract_geometry
             tesseract::tesseract_scene_graph
             console_bridge::console_bridge
+            OpenMP::OpenMP_CXX
+            Eigen3::Eigen
             ${Boost_LIBRARIES}
             octomap
             octomath
             ${LIBFCL_LIBRARIES})
   target_compile_options(${test_name} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(${test_name} PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-  target_clang_tidy(${test_name} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_cxx_version(${test_name} PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+  target_clang_tidy(${test_name} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_code_coverage(
     ${test_name}
     PRIVATE

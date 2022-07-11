@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tinyxml2
 {
-class XMLElement;
+class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 namespace tesseract_scene_graph

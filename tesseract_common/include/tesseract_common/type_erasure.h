@@ -156,7 +156,7 @@ public:
   ~TypeErasureBase() = default;
 
   // Copy constructor
-  TypeErasureBase(const TypeErasureBase& other) { value_ = other.value_->clone(); }
+  TypeErasureBase(const TypeErasureBase& other) : value_(other.value_->clone()) {}
 
   // Move ctor.
   TypeErasureBase(TypeErasureBase&& other) noexcept { value_.swap(other.value_); }
@@ -185,7 +185,7 @@ public:
   std::type_index getType() const
   {
     if (value_ == nullptr)
-      return std::type_index(typeid(nullptr));
+      return std::type_index{ typeid(nullptr) };
 
     return value_->getType();
   }
@@ -230,7 +230,7 @@ private:
     ar& boost::serialization::make_nvp("value", value_);
   }
 
-  std::unique_ptr<TypeErasureInterface> value_;
+  std::unique_ptr<TypeErasureInterface> value_{ nullptr };
 };
 
 }  // namespace tesseract_common

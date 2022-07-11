@@ -36,9 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 class btConvexPenetrationDepthSolver;
 
 // LCOV_EXCL_START
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 /// Enabling USE_SEPDISTANCE_UTIL2 requires 100% reliable distance computation. However, when using large size ratios
 /// GJK can be imprecise so the distance is not conservative. In that case, enabling this USE_SEPDISTANCE_UTIL2 would
@@ -74,9 +72,9 @@ class TesseractConvexConvexAlgorithm : public btActivatingCollisionAlgorithm
   btVertexArray worldVertsB1;
   btVertexArray worldVertsB2;
 
-  bool m_ownManifold;
+  bool m_ownManifold{ false };
   btPersistentManifold* m_manifoldPtr;
-  bool m_lowLevelOfDetail;
+  bool m_lowLevelOfDetail{ false };
 
   int m_numPerturbationIterations;
   int m_minimumPointsPerturbationThreshold;
@@ -124,8 +122,8 @@ public:
   struct CreateFunc : public btCollisionAlgorithmCreateFunc
   {
     btConvexPenetrationDepthSolver* m_pdSolver;
-    int m_numPerturbationIterations;
-    int m_minimumPointsPerturbationThreshold;
+    int m_numPerturbationIterations{ 0 };
+    int m_minimumPointsPerturbationThreshold{ 3 };
 
     CreateFunc(btConvexPenetrationDepthSolver* pdSolver);
 
@@ -145,7 +143,6 @@ public:
   };
 };
 
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet
 // LCOV_EXCL_STOP
 #endif  // TESSERACT_COLLISION_TESSERACT_CONVEX_CONVEX_ALGORITHM_H

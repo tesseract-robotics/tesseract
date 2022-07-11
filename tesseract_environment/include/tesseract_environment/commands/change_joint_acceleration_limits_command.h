@@ -45,30 +45,22 @@ public:
   using Ptr = std::shared_ptr<ChangeJointAccelerationLimitsCommand>;
   using ConstPtr = std::shared_ptr<const ChangeJointAccelerationLimitsCommand>;
 
-  ChangeJointAccelerationLimitsCommand() : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS){};
+  ChangeJointAccelerationLimitsCommand();
 
   /**
    * @brief Changes the acceleration limits associated with a joint
    * @param joint_name Name of the joint to be updated
    * @param limits New acceleration limits to be set as the joint limits
    */
-  ChangeJointAccelerationLimitsCommand(std::string joint_name, double limit)
-    : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_({ std::make_pair(std::move(joint_name), limit) })
-  {
-    assert(limit > 0);
-  }
+  ChangeJointAccelerationLimitsCommand(std::string joint_name, double limit);
 
   /**
    * @brief Changes the acceleration limits associated with a joint
    * @param limits A map of joint names to new acceleration limits
    */
-  ChangeJointAccelerationLimitsCommand(std::unordered_map<std::string, double> limits)
-    : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_(std::move(limits))
-  {
-    assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second > 0; }));
-  }
+  ChangeJointAccelerationLimitsCommand(std::unordered_map<std::string, double> limits);
 
-  const std::unordered_map<std::string, double>& getLimits() const { return limits_; }
+  const std::unordered_map<std::string, double>& getLimits() const;
 
   bool operator==(const ChangeJointAccelerationLimitsCommand& rhs) const;
   bool operator!=(const ChangeJointAccelerationLimitsCommand& rhs) const;

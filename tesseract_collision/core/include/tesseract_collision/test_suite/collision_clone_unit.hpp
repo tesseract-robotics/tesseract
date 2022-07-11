@@ -4,9 +4,7 @@
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision
-{
-namespace test_suite
+namespace tesseract_collision::test_suite
 {
 namespace detail
 {
@@ -179,6 +177,5 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   EXPECT_NEAR(result_vector[0].normal[1] * idx[2], cloned_result_vector[0].normal[1] * cloned_idx[2], normal_tol);
   EXPECT_NEAR(result_vector[0].normal[2] * idx[2], cloned_result_vector[0].normal[2] * cloned_idx[2], normal_tol);
 }
-}  // namespace test_suite
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_CLONE_UNIT_HPP

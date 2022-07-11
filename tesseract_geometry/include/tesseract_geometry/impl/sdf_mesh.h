@@ -87,7 +87,7 @@ public:
                   std::move(mesh_textures),
                   GeometryType::SDF_MESH)
   {
-    if ((getFaceCount() * 4) != getFaces()->size())
+    if ((static_cast<long>(getFaceCount()) * 4) != getFaces()->size())
       std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
   }
 
@@ -126,7 +126,7 @@ public:
                   std::move(mesh_textures),
                   GeometryType::SDF_MESH)
   {
-    if ((getFaceCount() * 4) != getFaces()->size())
+    if ((static_cast<long>(getFaceCount()) * 4) != getFaces()->size())
       std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
   }
 

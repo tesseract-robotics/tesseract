@@ -119,7 +119,7 @@ void Octree::load(Archive& ar, const unsigned int /*version*/)
 
   // Write that data into the stringstream required by octree and load data
   std::stringstream s;
-  s.write(data_string.data(), octree_data_size);
+  s.write(data_string.data(), static_cast<std::streamsize>(octree_data_size));
 
   if (binary_octree_)
     local_octree->readBinary(s);

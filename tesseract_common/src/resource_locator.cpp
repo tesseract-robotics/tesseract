@@ -76,7 +76,7 @@ std::vector<uint8_t> SimpleLocatedResource::getResourceContents() const
   if (ifs.fail())
   {
     CONSOLE_BRIDGE_logError("Could not read all bytes from file: %s", filename_.c_str());
-    return std::vector<uint8_t>();
+    return {};
   }
   std::ifstream::pos_type pos = ifs.tellg();
 

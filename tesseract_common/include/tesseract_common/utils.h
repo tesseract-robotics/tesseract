@@ -64,7 +64,7 @@ std::string strFormat(const std::string& format, Args... args)
   auto size = static_cast<size_t>(size_s);
   auto buf = std::make_unique<char[]>(size);  // NOLINT
   std::snprintf(buf.get(), size, format.c_str(), args...);
-  return std::string(buf.get(), buf.get() + size - 1);  // We don't want the '\0' inside
+  return std::string{ buf.get(), buf.get() + size - 1 };  // We don't want the '\0' inside
 }
 
 /**

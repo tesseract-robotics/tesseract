@@ -6,6 +6,8 @@ Checks: >
     clang-analyzer-*,
     -clang-analyzer-cplusplus*,
     bugprone-*,
+    -bugprone-easily-swappable-parameters,
+    -bugprone-exception-escape,
     cppcoreguidelines-*,
     -cppcoreguidelines-macro-usage,
     -cppcoreguidelines-pro-type-static-cast-downcast,
@@ -28,7 +30,10 @@ Checks: >
     -readability-named-parameter,
     -readability-magic-numbers,
     -readability-isolate-declaration,
-    -readability-function-cognitive-complexity
+    -readability-function-cognitive-complexity,
+    -readability-use-anyofallof,
+    -readability-identifier-length,
+    -readability-suspicious-call-argument
 WarningsAsErrors: >
     -*,
     clang-diagnostic-*,
@@ -36,6 +41,8 @@ WarningsAsErrors: >
     clang-analyzer-*,
     -clang-analyzer-cplusplus*,
     bugprone-*,
+    -bugprone-easily-swappable-parameters,
+    -bugprone-exception-escape,
     cppcoreguidelines-*,
     -cppcoreguidelines-macro-usage,
     -cppcoreguidelines-pro-type-static-cast-downcast,
@@ -59,6 +66,9 @@ WarningsAsErrors: >
     -readability-magic-numbers,
     -readability-isolate-declaration,
     -readability-function-cognitive-complexity
+    -readability-use-anyofallof,
+    -readability-identifier-length,
+    -readability-suspicious-call-argument
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
@@ -68,5 +78,7 @@ CheckOptions:
   - key:             cppcoreguidelines-explicit-virtual-functions.AllowOverrideAndFinal
     value:           '1'
   - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value:           '1'
+  - key:             cppcoreguidelines-pro-type-member-init.IgnoreArrays
     value:           '1'
 ...

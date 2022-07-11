@@ -99,7 +99,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstP
     std::vector<fcl::Triangle> tri_indices(static_cast<size_t>(triangle_count));
     for (int i = 0; i < triangle_count; ++i)
     {
-      assert(triangles[4 * i] == 3);
+      assert(triangles[4L * i] == 3);
       tri_indices[static_cast<size_t>(i)] = fcl::Triangle(static_cast<size_t>(triangles[(4 * i) + 1]),
                                                           static_cast<size_t>(triangles[(4 * i) + 2]),
                                                           static_cast<size_t>(triangles[(4 * i) + 3]));

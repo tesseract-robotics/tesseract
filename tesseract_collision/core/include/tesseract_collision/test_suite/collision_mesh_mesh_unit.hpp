@@ -5,9 +5,7 @@
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision
-{
-namespace test_suite
+namespace tesseract_collision::test_suite
 {
 namespace detail
 {
@@ -213,6 +211,5 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0, 1, 0)), 0.0);
   EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0, 1, 0)))), 0.00001);
 }
-}  // namespace test_suite
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_MESH_MESH_UNIT_HPP

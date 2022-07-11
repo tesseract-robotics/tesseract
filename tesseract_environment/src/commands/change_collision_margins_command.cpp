@@ -36,6 +36,41 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+ChangeCollisionMarginsCommand::ChangeCollisionMarginsCommand() : Command(CommandType::CHANGE_COLLISION_MARGINS){};
+
+ChangeCollisionMarginsCommand::ChangeCollisionMarginsCommand(double default_margin,
+                                                             CollisionMarginOverrideType override_type)
+  : Command(CommandType::CHANGE_COLLISION_MARGINS)
+  , collision_margin_data_(CollisionMarginData(default_margin))
+  , collision_margin_override_(override_type)
+{
+}
+
+ChangeCollisionMarginsCommand::ChangeCollisionMarginsCommand(PairsCollisionMarginData pairs_margin,
+                                                             CollisionMarginOverrideType override_type)
+  : Command(CommandType::CHANGE_COLLISION_MARGINS)
+  , collision_margin_data_(CollisionMarginData(std::move(pairs_margin)))
+  , collision_margin_override_(override_type)
+{
+}
+
+ChangeCollisionMarginsCommand::ChangeCollisionMarginsCommand(CollisionMarginData collision_margin_data,
+                                                             CollisionMarginOverrideType override_type)
+  : Command(CommandType::CHANGE_COLLISION_MARGINS)
+  , collision_margin_data_(std::move(collision_margin_data))
+  , collision_margin_override_(override_type)
+{
+}
+
+tesseract_common::CollisionMarginData ChangeCollisionMarginsCommand::getCollisionMarginData() const
+{
+  return collision_margin_data_;
+}
+tesseract_common::CollisionMarginOverrideType ChangeCollisionMarginsCommand::getCollisionMarginOverrideType() const
+{
+  return collision_margin_override_;
+}
+
 bool ChangeCollisionMarginsCommand::operator==(const ChangeCollisionMarginsCommand& rhs) const
 {
   bool equal = true;
