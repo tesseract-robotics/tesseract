@@ -113,7 +113,7 @@ IKSolutions KDLInvKinChainLMA::calcInvKinHelper(const Eigen::Isometry3d& pose,
     CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK");
 #endif
     // LCOV_EXCL_STOP
-    return IKSolutions();
+    return {};
   }
 
   KDLToEigen(kdl_solution, solution);

@@ -62,7 +62,7 @@ public:
 
 private:
   std::string link_name_;
-  Eigen::Isometry3d origin_;
+  Eigen::Isometry3d origin_{ Eigen::Isometry3d::Identity() };
 
   friend class boost::serialization::access;
   template <class Archive>

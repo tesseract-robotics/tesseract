@@ -36,9 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 /** @note When using this header only include it in the cpp never in the header */
-namespace boost
-{
-namespace serialization
+namespace boost::serialization
 {
 template <class Archive, class T>
 inline void save(Archive& ar, const std::atomic<T>& t, const unsigned int)
@@ -60,6 +58,5 @@ inline void serialize(Archive& ar, std::atomic<T>& t, const unsigned int version
 {
   boost::serialization::split_free(ar, t, version);
 }
-}  // namespace serialization
-}  // namespace boost
+}  // namespace boost::serialization
 #endif  // TESSERACT_COMMON_ATOMIC_SERIALIZATION_H

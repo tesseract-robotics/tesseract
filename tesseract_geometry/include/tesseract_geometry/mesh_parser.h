@@ -476,14 +476,14 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
   // And have it read the given file with some post-processing
   const aiScene* scene = nullptr;
   if (triangulate)
-    scene = importer.ReadFileFromMemory(&data[0],
+    scene = importer.ReadFileFromMemory(data.data(),
                                         data.size(),
                                         aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |
                                             aiProcess_SortByPType | aiProcess_RemoveComponent,
                                         hint);
   else
     scene =
-        importer.ReadFileFromMemory(&data[0],
+        importer.ReadFileFromMemory(data.data(),
                                     data.size(),
                                     aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent,
                                     hint);

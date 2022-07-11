@@ -38,6 +38,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+ChangeJointOriginCommand::ChangeJointOriginCommand() : Command(CommandType::CHANGE_JOINT_ORIGIN){};
+
+ChangeJointOriginCommand::ChangeJointOriginCommand(std::string joint_name, const Eigen::Isometry3d& origin)
+  : Command(CommandType::CHANGE_JOINT_ORIGIN), joint_name_(std::move(joint_name)), origin_(origin)
+{
+}
+
+const std::string& ChangeJointOriginCommand::getJointName() const { return joint_name_; }
+const Eigen::Isometry3d& ChangeJointOriginCommand::getOrigin() const { return origin_; }
+
 bool ChangeJointOriginCommand::operator==(const ChangeJointOriginCommand& rhs) const
 {
   bool equal = true;

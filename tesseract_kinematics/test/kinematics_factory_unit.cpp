@@ -73,7 +73,7 @@ void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
 
     for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
     {
-      EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
+      EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
     }
   }
 
@@ -83,7 +83,7 @@ void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {
-      EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
+      EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
     }
   }
 

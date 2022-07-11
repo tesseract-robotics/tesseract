@@ -6,9 +6,7 @@
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision
-{
-namespace test_suite
+namespace tesseract_collision::test_suite
 {
 namespace detail
 {
@@ -344,6 +342,5 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
     detail::runTestPrimitive(checker);
 }
 
-}  // namespace test_suite
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_BOX_SPHERE_UNIT_HPP

@@ -128,11 +128,11 @@ bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eig
                              FloatType max_diff = static_cast<FloatType>(1e-6),
                              FloatType max_rel_diff = std::numeric_limits<FloatType>::epsilon())
 {
-  return satisfiesPositionLimits<FloatType>(
-      joint_positions,
-      position_limits,
-      Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(joint_positions.size(), max_diff),
-      Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(joint_positions.size(), max_rel_diff));
+  const auto eigen_max_diff = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(joint_positions.size(), max_diff);
+  const auto eigen_max_rel_diff =
+      Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(joint_positions.size(), max_rel_diff);
+  // NOLINTNEXTLINE(clang-analyzer-core.uninitialized.UndefReturn)
+  return satisfiesPositionLimits<FloatType>(joint_positions, position_limits, eigen_max_diff, eigen_max_rel_diff);
 }
 
 /**

@@ -49,9 +49,7 @@
 %shared_ptr(tesseract_collision::tesseract_collision_bullet::BulletCastBVHManager)
 #endif  // SWIG
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 /** @brief A BVH implementation of a tesseract contact manager */
 class BulletCastBVHManager : public ContinuousContactManager
@@ -169,7 +167,6 @@ private:
   /** @brief This function will update internal data when margin data has changed */
   void onCollisionMarginDataChanged();
 };
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet
 
 #endif  // TESSERACT_COLLISION_BULLET_CAST_BVH_MANAGERS_H

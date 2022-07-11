@@ -37,6 +37,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand()
+  : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS){};
+
+ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand(std::string joint_name, double limit)
+  : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_({ std::make_pair(std::move(joint_name), limit) })
+{
+  assert(limit > 0);
+}
+
+ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand(std::unordered_map<std::string, double> limits)
+  : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_(std::move(limits))
+{
+  assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second > 0; }));
+}
+
+const std::unordered_map<std::string, double>& ChangeJointVelocityLimitsCommand::getLimits() const { return limits_; }
+
 bool ChangeJointVelocityLimitsCommand::operator==(const ChangeJointVelocityLimitsCommand& rhs) const
 {
   bool equal = true;

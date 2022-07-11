@@ -37,6 +37,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+AddSceneGraphCommand::AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph, std::string prefix)
+  : Command(CommandType::ADD_SCENE_GRAPH)
+  , scene_graph_(scene_graph.clone())
+  , joint_(nullptr)
+  , prefix_(std::move(prefix))
+{
+}
+
+AddSceneGraphCommand::AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                           const tesseract_scene_graph::Joint& joint,
+                                           std::string prefix)
+  : Command(CommandType::ADD_SCENE_GRAPH)
+  , scene_graph_(scene_graph.clone())
+  , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
+  , prefix_(std::move(prefix))
+{
+}
+
 bool AddSceneGraphCommand::operator==(const AddSceneGraphCommand& rhs) const
 {
   bool equal = true;

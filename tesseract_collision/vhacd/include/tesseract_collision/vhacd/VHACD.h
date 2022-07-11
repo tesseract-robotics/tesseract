@@ -55,9 +55,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_collision
-{
-namespace VHACD
+namespace tesseract_collision::VHACD
 {
 class IVHACD
 {
@@ -182,5 +180,4 @@ public:
 };
 IVHACD* CreateVHACD();
 IVHACD* CreateVHACD_ASYNC();
-}  // namespace VHACD
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::VHACD

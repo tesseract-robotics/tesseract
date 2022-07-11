@@ -102,7 +102,7 @@ void TesseractCompoundCompoundCollisionAlgorithm::removeChildAlgorithms()
 
 struct TesseractCompoundCompoundLeafCallback : btDbvt::ICollide
 {
-  int m_numOverlapPairs;
+  int m_numOverlapPairs{ 0 };
 
   const btCollisionObjectWrapper* m_compound0ColObjWrap;
   const btCollisionObjectWrapper* m_compound1ColObjWrap;
@@ -123,8 +123,7 @@ struct TesseractCompoundCompoundLeafCallback : btDbvt::ICollide
                                         btManifoldResult* resultOut,
                                         btHashedSimplePairCache* childAlgorithmsCache,
                                         btPersistentManifold* sharedManifold)
-    : m_numOverlapPairs(0)
-    , m_compound0ColObjWrap(compound1ObjWrap)
+    : m_compound0ColObjWrap(compound1ObjWrap)
     , m_compound1ColObjWrap(compound0ObjWrap)
     , m_dispatcher(dispatcher)
     , m_dispatchInfo(dispatchInfo)

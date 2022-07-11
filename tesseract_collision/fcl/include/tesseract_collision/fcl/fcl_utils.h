@@ -56,9 +56,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/fcl/fcl_collision_object_wrapper.h>
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_fcl
+namespace tesseract_collision::tesseract_collision_fcl
 {
 using CollisionGeometryPtr = std::shared_ptr<fcl::CollisionGeometryd>;
 using CollisionObjectPtr = std::shared_ptr<FCLCollisionObjectWrapper>;
@@ -276,6 +274,5 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
 bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
-}  // namespace tesseract_collision_fcl
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_fcl
 #endif  // TESSERACT_COLLISION_FCL_UTILS_H

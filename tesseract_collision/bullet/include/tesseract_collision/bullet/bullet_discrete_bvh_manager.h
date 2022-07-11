@@ -49,9 +49,7 @@
 %shared_ptr(tesseract_collision::tesseract_collision_bullet::BulletDiscreteBVHManager)
 #endif  // SWIG
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 /** @brief A BVH implementation of a bullet manager */
 class BulletDiscreteBVHManager : public DiscreteContactManager
@@ -158,6 +156,5 @@ private:
   void onCollisionMarginDataChanged();
 };
 
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet
 #endif  // TESSERACT_COLLISION_BULLET_DISCRETE_BVH_MANAGERS_H

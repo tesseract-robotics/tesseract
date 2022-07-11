@@ -10,9 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision
-{
-namespace test_suite
+namespace tesseract_collision::test_suite
 {
 namespace detail
 {
@@ -155,6 +153,5 @@ inline void runTest(DiscreteContactManager& checker)
   detail::runTestOctomap(*cloned_checker, ContactTestType::FIRST);
 }
 
-}  // namespace test_suite
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_OCTOMAP_OCTOMAP_UNIT_HPP

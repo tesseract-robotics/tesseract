@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/octomap.h>
 #include <tesseract_urdf/octree.h>
 #include <tesseract_common/resource_locator.h>
-#include <tesseract_geometry/impl/octree.h>
 #include <tesseract_urdf/utils.h>
 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS

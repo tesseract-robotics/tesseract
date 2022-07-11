@@ -49,9 +49,7 @@
 %shared_ptr(tesseract_collision::tesseract_collision_bullet::BulletCastSimpleManager)
 #endif  // SWIG
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_bullet
+namespace tesseract_collision::tesseract_collision_bullet
 {
 /** @brief A simple implementation of a tesseract manager which does not use BHV */
 class BulletCastSimpleManager : public ContinuousContactManager
@@ -167,7 +165,6 @@ private:
   void onCollisionMarginDataChanged();
 };
 
-}  // namespace tesseract_collision_bullet
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_bullet
 
 #endif  // TESSERACT_COLLISION_BULLET_CAST_SIMPLE_MANAGERS_H

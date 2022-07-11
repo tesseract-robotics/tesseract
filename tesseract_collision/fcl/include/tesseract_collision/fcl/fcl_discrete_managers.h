@@ -49,9 +49,7 @@
 %shared_ptr(tesseract_collision::tesseract_collision_fcl::FCLDiscreteBVHManager)
 #endif  // SWIG
 
-namespace tesseract_collision
-{
-namespace tesseract_collision_fcl
+namespace tesseract_collision::tesseract_collision_fcl
 {
 /** @brief A FCL implementation of the discrete contact manager */
 class FCLDiscreteBVHManager : public DiscreteContactManager
@@ -159,6 +157,5 @@ private:
   void onCollisionMarginDataChanged();
 };
 
-}  // namespace tesseract_collision_fcl
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::tesseract_collision_fcl
 #endif  // TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H

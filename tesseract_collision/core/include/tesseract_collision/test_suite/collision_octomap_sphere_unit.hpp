@@ -13,9 +13,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision
-{
-namespace test_suite
+namespace tesseract_collision::test_suite
 {
 namespace detail
 {
@@ -136,7 +134,6 @@ inline void runTest(DiscreteContactManager& checker, double tol, bool use_convex
   detail::runTestTyped(checker, tol, ContactTestType::ALL);
 }
 
-}  // namespace test_suite
-}  // namespace tesseract_collision
+}  // namespace tesseract_collision::test_suite
 
 #endif  // TESSERACT_COLLISION_COLLISION_OCTOMAP_SPHERE_UNIT_HPP

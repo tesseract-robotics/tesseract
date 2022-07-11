@@ -151,7 +151,7 @@ ContactResult* processResult(ContactTestData& cdata,
     if (contact.distance < dr[0].distance)
     {
       dr[0] = contact;
-      return &(dr[0]);
+      return dr.data();
     }
   }
   //    else if (cdata.cdata.condition == DistanceRequestType::LIMITED)

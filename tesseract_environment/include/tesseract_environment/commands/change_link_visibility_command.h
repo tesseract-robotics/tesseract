@@ -61,7 +61,7 @@ public:
   bool operator!=(const ChangeLinkVisibilityCommand& rhs) const;
 
 private:
-  std::string link_name_{ "" };
+  std::string link_name_;
   bool enabled_{ false };
 
   friend class boost::serialization::access;

@@ -284,7 +284,7 @@ struct ContactManagerConfig
 
 /**
  * @brief This is a high level structure containing common information that collision checking utilities need. The goal
- * of this config is to allow all collision checking utilities and planners to use the same datastructure
+ * of this config is to allow all collision checking utilities and planners to use the same data structure
  */
 struct CollisionCheckConfig
 {

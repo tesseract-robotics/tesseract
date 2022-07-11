@@ -27,7 +27,7 @@ public:
    * @param pt1 The starting point
    * @param pt2 The final point
    */
-  ArrowMarker(const Eigen::Vector3d& pt1, const Eigen::Vector3d& pt2)
+  ArrowMarker(const Eigen::Vector3d& pt1, const Eigen::Vector3d& pt2) : shaft_radius(0.005), head_radius(0.01)
   {
     Eigen::Vector3d x, y, z;
     z = (pt2 - pt1).normalized();
@@ -42,9 +42,7 @@ public:
 
     double length = (pt2 - pt1).norm();
     shaft_length = length - 0.01;
-    shaft_radius = 0.005;
     head_length = length - shaft_length;
-    head_radius = 0.01;
   }
 
   int getType() const override { return static_cast<int>(MarkerType::ARROW); }

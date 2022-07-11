@@ -32,7 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/serialization.h>
 #include <tesseract_environment/command.h>
 
 namespace tesseract_environment
