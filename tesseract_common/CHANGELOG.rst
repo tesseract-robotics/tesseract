@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.13.0 (2022-07-11)
+-------------------
 * Update code based on clang-tidy-14
 * Make limits utility functions templates
 * Contributors: Levi Armstrong

@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.13.0 (2022-07-11)
+-------------------
 * Update code based on clang-tidy-14
 * Contributors: Levi Armstrong
 
