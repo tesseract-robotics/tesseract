@@ -27,6 +27,14 @@ else()
   set(BULLET_LIBRARY_DIRS_ABS ${BULLET_LIBRARY_DIRS})
 endif()
 
+set(BULLET_LIBRARIES_ABS "")
+foreach(BULLET_LIB IN LISTS BULLET_LIBRARIES)
+  find_library(BULLET_LIB_ABS_${BULLET_LIB} ${BULLET_LIB} PATHS ${BULLET_LIBRARY_DIRS_ABS} NO_DEFAULT_PATH REQUIRED)
+  list(APPEND BULLET_LIBRARIES_ABS "${BULLET_LIB_ABS_${BULLET_LIB}}")
+  message(STATUS "BULLET_LIB=${BULLET_LIB} BULLET_LIB_ABS=${BULLET_LIB_ABS_${BULLET_LIB}}")
+endforeach()
+message(STATUS "BULLET_LIBRARIES_ABS=${BULLET_LIBRARIES_ABS}")
+
 # Third party vhacd
 include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/vhacd_common.cmake")
 
@@ -71,7 +79,7 @@ target_link_libraries(
   PUBLIC OpenMP::OpenMP_CXX
          tesseract::tesseract_common
          Eigen3::Eigen
-         ${BULLET_LIBRARIES})
+         ${BULLET_LIBRARIES_ABS})
 target_include_directories(${PROJECT_NAME}_vhacd PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                         "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_vhacd SYSTEM PUBLIC "${BULLET_INCLUDE_DIRS_ABS}")

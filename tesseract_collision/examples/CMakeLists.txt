@@ -7,7 +7,6 @@ target_link_libraries(
   tesseract::tesseract_support
   tesseract::tesseract_geometry
   console_bridge::console_bridge
-  ${BULLET_LIBRARIES}
   ${Boost_LIBRARIES}
   octomap
   octomath

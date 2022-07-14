@@ -16,7 +16,6 @@ macro(add_benchmark benchmark_name benchmark_file)
     ${PROJECT_NAME}_fcl
     tesseract::tesseract_geometry
     tesseract::tesseract_scene_graph
-    ${BULLET_LIBRARIES}
     console_bridge
     ${Boost_LIBRARIES}
     octomap
@@ -44,7 +43,6 @@ target_link_libraries(
           ${PROJECT_NAME}_fcl
           tesseract::tesseract_geometry
           tesseract::tesseract_support
-          ${BULLET_LIBRARIES}
           ${Boost_LIBRARIES}
           ${OCTOMAP_LIBRARIES}
           ${LIBFCL_LIBRARIES})

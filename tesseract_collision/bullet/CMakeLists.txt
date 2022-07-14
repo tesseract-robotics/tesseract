@@ -27,6 +27,14 @@ else()
   set(BULLET_LIBRARY_DIRS_ABS ${BULLET_LIBRARY_DIRS})
 endif()
 
+set(BULLET_LIBRARIES_ABS "")
+foreach(BULLET_LIB IN LISTS BULLET_LIBRARIES)
+  find_library(BULLET_LIB_ABS_${BULLET_LIB} ${BULLET_LIB} PATHS ${BULLET_LIBRARY_DIRS_ABS} NO_DEFAULT_PATH REQUIRED)
+  list(APPEND BULLET_LIBRARIES_ABS "${BULLET_LIB_ABS_${BULLET_LIB}}")
+  message(STATUS "BULLET_LIB=${BULLET_LIB} BULLET_LIB_ABS=${BULLET_LIB_ABS_${BULLET_LIB}}")
+endforeach()
+message(STATUS "BULLET_LIBRARIES_ABS=${BULLET_LIBRARIES_ABS}")
+
 find_library(HACD_LIBRARY HACD HINTS ${BULLET_LIBRARY_DIRS_ABS})
 if(NOT HACD_LIBRARY)
   message(
@@ -55,7 +63,7 @@ target_link_libraries(
          console_bridge::console_bridge
          octomap
          octomath)
-target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${BULLET_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${BULLET_LIBRARIES_ABS})
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_bullet PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_bullet PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
@@ -100,7 +108,7 @@ if(${HACD_LIBRARY})
            Eigen3::Eigen
            tesseract::tesseract_geometry
            console_bridge::console_bridge
-           ${BULLET_LIBRARIES}
+           ${BULLET_LIBRARIES_ABS}
            ${HACD_LIBRARY})
   target_compile_options(${PROJECT_NAME}_hacd_convex_decomposition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
   target_compile_options(${PROJECT_NAME}_hacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
