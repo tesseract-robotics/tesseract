@@ -393,20 +393,33 @@ bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
                                double max_diff,
                                double max_rel_diff)
 {
+  const auto eigen_max_diff = Eigen::VectorXd::Constant(v1.size(), max_diff);
+  const auto eigen_max_rel_diff = Eigen::VectorXd::Constant(v1.size(), max_rel_diff);
+  // NOLINTNEXTLINE(clang-analyzer-core.uninitialized.UndefReturn)
+  return almostEqualRelativeAndAbs(v1, v2, eigen_max_diff, eigen_max_rel_diff);
+}
+
+bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
+                               const Eigen::Ref<const Eigen::VectorXd>& v2,
+                               const Eigen::Ref<const Eigen::VectorXd>& max_diff,
+                               const Eigen::Ref<const Eigen::VectorXd>& max_rel_diff)
+{
   if (v1.size() == 0 && v2.size() == 0)
     return true;
-  if (v1.size() != v2.size())
+  if (v1.size() != v2.size() || v1.size() != max_diff.size() || v1.size() != max_rel_diff.size())
     return false;
 
   Eigen::ArrayWrapper<const Eigen::Ref<const Eigen::VectorXd>> a1 = v1.array();
   Eigen::ArrayWrapper<const Eigen::Ref<const Eigen::VectorXd>> a2 = v2.array();
+  Eigen::ArrayWrapper<const Eigen::Ref<const Eigen::VectorXd>> md = max_diff.array();
+  Eigen::ArrayWrapper<const Eigen::Ref<const Eigen::VectorXd>> mrd = max_rel_diff.array();
 
   auto diff_abs = (a1 - a2).abs();
   double diff = diff_abs.maxCoeff();
-  if (diff <= max_diff)
+  if ((diff <= md).all())
     return true;
 
-  return (diff_abs <= (max_rel_diff * a1.abs().max(a2.abs()))).all();
+  return (diff_abs <= (mrd * a1.abs().max(a2.abs()))).all();
 }
 
 std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& link_names,

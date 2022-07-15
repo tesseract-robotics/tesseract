@@ -444,7 +444,7 @@ tinyxml2::XMLError QueryIntAttributeRequired(const tinyxml2::XMLElement* xml_ele
  * @param max_diff The max diff when comparing std::abs(a - b) <= max_diff, if true they are considered equal
  * @param max_rel_diff The max relative diff std::abs(a - b) <= largest * max_rel_diff, if true considered equal. The
  * largest is the largest of the absolute values of a and b.
- * @return True if they are relativily equal, otherwise false.
+ * @return True if they are relatively equal, otherwise false.
  */
 bool almostEqualRelativeAndAbs(double a,
                                double b,
@@ -461,7 +461,7 @@ bool almostEqualRelativeAndAbs(double a,
  * @param max_diff The max diff when comparing max(abs(a - b)) <= max_diff, if true they are considered equal
  * @param max_rel_diff The max relative diff abs(a - b) <= largest * max_rel_diff, if true considered equal. The
  * largest is the largest of the absolute values of a and b.
- * @return True if they are relativily equal, otherwise false.
+ * @return True if they are relatively equal, otherwise false.
  */
 bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
                                const Eigen::Ref<const Eigen::VectorXd>& v2,
@@ -469,9 +469,26 @@ bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
                                double max_rel_diff = std::numeric_limits<double>::epsilon());
 
 /**
+ * @brief Check if two Eigen VectorXd are relatively and absolute equal
+ * @details
+ *    This is a vectorized implementation of the function above.
+ *    The max_diff is for handling when comparing numbers near zero
+ * @param a A vector of double
+ * @param b A vector of double
+ * @param max_diff The max diff when comparing max(abs(a - b)) <= max_diff, if true they are considered equal
+ * @param max_rel_diff The max relative diff abs(a - b) <= largest * max_rel_diff, if true considered equal. The
+ * largest is the largest of the absolute values of a and b.
+ * @return True if they are relatively equal, otherwise false.
+ */
+bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
+                               const Eigen::Ref<const Eigen::VectorXd>& v2,
+                               const Eigen::Ref<const Eigen::VectorXd>& max_diff,
+                               const Eigen::Ref<const Eigen::VectorXd>& max_rel_diff);
+
+/**
  * @brief Convert a string to a numeric value type
  * @param s The string to be converted
- * @param value The value to be loaded with coverted string
+ * @param value The value to be loaded with converted string
  * @return True if successful, otherwise false
  */
 template <typename FloatType>
