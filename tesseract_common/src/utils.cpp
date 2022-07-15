@@ -395,6 +395,7 @@ bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
 {
   const auto eigen_max_diff = Eigen::VectorXd::Constant(v1.size(), max_diff);
   const auto eigen_max_rel_diff = Eigen::VectorXd::Constant(v1.size(), max_rel_diff);
+  // NOLINTNEXTLINE(clang-analyzer-core.uninitialized.UndefReturn)
   return almostEqualRelativeAndAbs(v1, v2, eigen_max_diff, eigen_max_rel_diff);
 }
 
