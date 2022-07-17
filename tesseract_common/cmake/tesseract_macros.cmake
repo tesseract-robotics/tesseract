@@ -192,3 +192,55 @@ macro(tesseract_cpack)
   endif()
   include(CPack)
 endmacro()
+
+macro(find_bullet)
+  find_package(
+    Bullet
+    REQUIRED
+    CONFIGS
+    BulletConfig-float64.cmake
+    BulletConfig.cmake)
+  if(NOT
+     ${BULLET_DEFINITIONS}
+     MATCHES
+     ".*-DBT_USE_DOUBLE_PRECISION.*")
+    message(
+      WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
+  endif()
+
+  # Some Bullet installations (vcpkg) use absolute paths instead of relative to BULLET_ROOT_DIR in the CMake vars
+  set(BULLET_INCLUDE_DIRS_ABS "")
+  set(BULLET_LIBRARY_DIRS_ABS "")
+  if(NOT IS_ABSOLUTE "${BULLET_INCLUDE_DIR}")
+    foreach(dir IN LISTS BULLET_INCLUDE_DIRS)
+      list(APPEND BULLET_INCLUDE_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
+    endforeach()
+    foreach(dir IN LISTS BULLET_LIBRARY_DIRS)
+      list(APPEND BULLET_LIBRARY_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
+    endforeach()
+  else()
+    set(BULLET_INCLUDE_DIRS_ABS ${BULLET_INCLUDE_DIRS})
+    set(BULLET_LIBRARY_DIRS_ABS ${BULLET_LIBRARY_DIRS})
+  endif()
+
+  set(BULLET_LIBRARIES_ABS "")
+  foreach(BULLET_LIB IN LISTS BULLET_LIBRARIES)
+    find_library(BULLET_LIB_ABS_${BULLET_LIB} ${BULLET_LIB} PATHS ${BULLET_LIBRARY_DIRS_ABS} NO_DEFAULT_PATH REQUIRED)
+    list(APPEND BULLET_LIBRARIES_ABS "${BULLET_LIB_ABS_${BULLET_LIB}}")
+    message(STATUS "BULLET_LIB=${BULLET_LIB} BULLET_LIB_ABS=${BULLET_LIB_ABS_${BULLET_LIB}}")
+  endforeach()
+  message(STATUS "BULLET_LIBRARIES_ABS=${BULLET_LIBRARIES_ABS}")
+
+  if(NOT TARGET Bullet3::Bullet)
+    add_library(Bullet3::Bullet INTERFACE IMPORTED)
+    set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${BULLET_INCLUDE_DIRS_ABS}")
+    set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_LINK_LIBRARIES "${BULLET_LIBRARIES_ABS}")
+    target_compile_definitions(Bullet3::Bullet INTERFACE "${BULLET_DEFINITIONS}")
+  endif()
+
+  find_library(HACD_LIBRARY HACD HINTS ${BULLET_LIBRARY_DIRS_ABS})
+  if(NOT HACD_LIBRARY)
+    message(
+      WARNING "HACD not found! Convex decomposition library will not be built. Install libbullet-extras-dev on Linux.")
+  endif()
+endmacro()

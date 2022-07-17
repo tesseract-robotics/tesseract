@@ -1,31 +1,4 @@
-find_package(
-  Bullet
-  REQUIRED
-  CONFIGS
-  BulletConfig-float64.cmake
-  BulletConfig.cmake)
-if(NOT
-   ${BULLET_DEFINITIONS}
-   MATCHES
-   ".*-DBT_USE_DOUBLE_PRECISION.*")
-  message(
-    WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
-endif()
-
-# Some Bullet installations (vcpkg) use absolute paths instead of relative to BULLET_ROOT_DIR in the CMake vars
-set(BULLET_INCLUDE_DIRS_ABS "")
-set(BULLET_LIBRARY_DIRS_ABS "")
-if(NOT IS_ABSOLUTE "${BULLET_INCLUDE_DIR}")
-  foreach(dir IN LISTS BULLET_INCLUDE_DIRS)
-    list(APPEND BULLET_INCLUDE_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
-  endforeach()
-  foreach(dir IN LISTS BULLET_LIBRARY_DIRS)
-    list(APPEND BULLET_LIBRARY_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
-  endforeach()
-else()
-  set(BULLET_INCLUDE_DIRS_ABS ${BULLET_INCLUDE_DIRS})
-  set(BULLET_LIBRARY_DIRS_ABS ${BULLET_LIBRARY_DIRS})
-endif()
+find_bullet()
 
 # Third party vhacd
 include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/vhacd_common.cmake")
@@ -57,7 +30,7 @@ add_library(
 target_cxx_version(${PROJECT_NAME}_vhacd PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_compile_options(${PROJECT_NAME}_vhacd PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_vhacd PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_vhacd PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
+target_compile_definitions(${PROJECT_NAME}_vhacd PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 
 if(OpenCL_FOUND)
   target_include_directories(${PROJECT_NAME}_vhacd PRIVATE "${OpenCL_INCLUDE_DIR}")
@@ -71,10 +44,9 @@ target_link_libraries(
   PUBLIC OpenMP::OpenMP_CXX
          tesseract::tesseract_common
          Eigen3::Eigen
-         ${BULLET_LIBRARIES})
+         Bullet3::Bullet)
 target_include_directories(${PROJECT_NAME}_vhacd PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                         "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_vhacd SYSTEM PUBLIC "${BULLET_INCLUDE_DIRS_ABS}")
 
 # Convex decomposition libraries
 add_library(${PROJECT_NAME}_vhacd_convex_decomposition src/convex_decomposition_vhacd.cpp)
