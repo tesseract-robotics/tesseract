@@ -1,37 +1,4 @@
-find_package(
-  Bullet
-  REQUIRED
-  CONFIGS
-  BulletConfig-float64.cmake
-  BulletConfig.cmake)
-if(NOT
-   ${BULLET_DEFINITIONS}
-   MATCHES
-   ".*-DBT_USE_DOUBLE_PRECISION.*")
-  message(
-    WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
-endif()
-
-# Some Bullet installations (vcpkg) use absolute paths instead of relative to BULLET_ROOT_DIR in the CMake vars
-set(BULLET_INCLUDE_DIRS_ABS "")
-set(BULLET_LIBRARY_DIRS_ABS "")
-if(NOT IS_ABSOLUTE "${BULLET_INCLUDE_DIR}")
-  foreach(dir IN LISTS BULLET_INCLUDE_DIRS)
-    list(APPEND BULLET_INCLUDE_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
-  endforeach()
-  foreach(dir IN LISTS BULLET_LIBRARY_DIRS)
-    list(APPEND BULLET_LIBRARY_DIRS_ABS "${BULLET_ROOT_DIR}/${dir}")
-  endforeach()
-else()
-  set(BULLET_INCLUDE_DIRS_ABS ${BULLET_INCLUDE_DIRS})
-  set(BULLET_LIBRARY_DIRS_ABS ${BULLET_LIBRARY_DIRS})
-endif()
-
-find_library(HACD_LIBRARY HACD HINTS ${BULLET_LIBRARY_DIRS_ABS})
-if(NOT HACD_LIBRARY)
-  message(
-    WARNING "HACD not found! Convex decomposition library will not be built. Install libbullet-extras-dev on Linux.")
-endif()
+find_bullet()
 
 # Create target for Bullet implementation
 add_library(
@@ -51,14 +18,14 @@ target_link_libraries(
   ${PROJECT_NAME}_bullet
   PUBLIC ${PROJECT_NAME}_core
          Eigen3::Eigen
+         Bullet3::Bullet
          tesseract::tesseract_geometry
          console_bridge::console_bridge
          octomap
          octomath)
-target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${BULLET_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_bullet PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_bullet PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
+target_compile_definitions(${PROJECT_NAME}_bullet PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_cxx_version(${PROJECT_NAME}_bullet PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_clang_tidy(${PROJECT_NAME}_bullet ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_code_coverage(
@@ -69,15 +36,13 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME}_bullet PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                          "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC "${BULLET_INCLUDE_DIRS_ABS}")
 
 # Create target for Bullet implementation
 add_library(${PROJECT_NAME}_bullet_factories src/bullet_factories.cpp)
 target_link_libraries(${PROJECT_NAME}_bullet_factories PUBLIC ${PROJECT_NAME}_bullet)
 target_compile_options(${PROJECT_NAME}_bullet_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_bullet_factories PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_bullet_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS}
-                                                                   ${BULLET_DEFINITIONS})
+target_compile_definitions(${PROJECT_NAME}_bullet_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_cxx_version(${PROJECT_NAME}_bullet_factories PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_clang_tidy(${PROJECT_NAME}_bullet_factories ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_code_coverage(
@@ -89,7 +54,6 @@ target_code_coverage(
 target_include_directories(
   ${PROJECT_NAME}_bullet_factories PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                           "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_bullet_factories SYSTEM PUBLIC "${BULLET_INCLUDE_DIRS_ABS}")
 
 # Convex decomposition libraries
 if(${HACD_LIBRARY})
@@ -98,14 +62,13 @@ if(${HACD_LIBRARY})
     ${PROJECT_NAME}_hacd_convex_decomposition
     PUBLIC ${PROJECT_NAME}_bullet
            Eigen3::Eigen
+           Bullet3::Bullet
            tesseract::tesseract_geometry
            console_bridge::console_bridge
-           ${BULLET_LIBRARIES}
            ${HACD_LIBRARY})
   target_compile_options(${PROJECT_NAME}_hacd_convex_decomposition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
   target_compile_options(${PROJECT_NAME}_hacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-  target_compile_definitions(${PROJECT_NAME}_hacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS}
-                                                                              ${BULLET_DEFINITIONS})
+  target_compile_definitions(${PROJECT_NAME}_hacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
   target_cxx_version(${PROJECT_NAME}_hacd_convex_decomposition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_clang_tidy(${PROJECT_NAME}_hacd_convex_decomposition ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_code_coverage(
@@ -117,7 +80,6 @@ if(${HACD_LIBRARY})
   target_include_directories(
     ${PROJECT_NAME}_hacd_convex_decomposition PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                      "$<INSTALL_INTERFACE:include>")
-  target_include_directories(${PROJECT_NAME}_hacd_convex_decomposition SYSTEM PUBLIC "${BULLET_INCLUDE_DIRS_ABS}")
   install_targets(TARGETS ${PROJECT_NAME}_hacd_convex_decomposition)
 endif()
 
@@ -128,6 +90,7 @@ if(NOT MSVC)
     create_convex_hull
     PUBLIC ${PROJECT_NAME}_core
            ${PROJECT_NAME}_bullet
+           Bullet3::Bullet
            Boost::boost
            Boost::program_options
            Eigen3::Eigen

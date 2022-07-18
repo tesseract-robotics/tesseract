@@ -6,7 +6,7 @@ macro(add_benchmark benchmark_name benchmark_file)
   target_compile_definitions(${benchmark_name} PRIVATE BENCHMARK_ARGS="${BENCHMARK_ARGS}")
   target_compile_options(${benchmark_name} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-  target_compile_definitions(${benchmark_name} PRIVATE ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
+  target_compile_definitions(${benchmark_name} PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
   target_cxx_version(${benchmark_name} PRIVATE VERSION ${TESSERACT_CXX_VERSION})
   target_link_libraries(
     ${benchmark_name}
@@ -16,7 +16,7 @@ macro(add_benchmark benchmark_name benchmark_file)
     ${PROJECT_NAME}_fcl
     tesseract::tesseract_geometry
     tesseract::tesseract_scene_graph
-    ${BULLET_LIBRARIES}
+    Bullet3::Bullet
     console_bridge
     ${Boost_LIBRARIES}
     octomap
@@ -44,7 +44,7 @@ target_link_libraries(
           ${PROJECT_NAME}_fcl
           tesseract::tesseract_geometry
           tesseract::tesseract_support
-          ${BULLET_LIBRARIES}
+          Bullet3::Bullet
           ${Boost_LIBRARIES}
           ${OCTOMAP_LIBRARIES}
           ${LIBFCL_LIBRARIES})

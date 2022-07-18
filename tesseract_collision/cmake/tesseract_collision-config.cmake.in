@@ -20,22 +20,9 @@ find_dependency(yaml-cpp)
 
 if(@TESSERACT_BUILD_FCL@)
   find_dependency(fcl)
-
-  if (WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
-    include_directories(BEFORE ${FCL_INCLUDE_DIRS})
-    link_directories(BEFORE ${FCL_LIBRARY_DIRS})
-  endif()
 endif()
 
-find_package(Bullet REQUIRED CONFIGS BulletConfig-float64.cmake BulletConfig.cmake)
-IF(NOT ${BULLET_DEFINITIONS} MATCHES ".*-DBT_USE_DOUBLE_PRECISION.*")
-  message(WARNING "Bullet does not appear to be build with double precision, current definitions: ${BULLET_DEFINITIONS}")
-endif()
-
-if (WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
-  include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
-  link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
-endif()
+find_bullet()
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
