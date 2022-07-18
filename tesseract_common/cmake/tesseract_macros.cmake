@@ -231,11 +231,28 @@ macro(find_bullet)
   endforeach()
   message(STATUS "BULLET_LIBRARIES_ABS=${BULLET_LIBRARIES_ABS}")
 
+  set(BULLET_DEFINITIONS_STRIPED "")
+  foreach(DEF ${BULLET_DEFINITIONS})
+    string(STRIP ${DEF} DEF)
+    if(NOT
+       "${DEF}"
+       STREQUAL
+       "")
+      string(LENGTH ${DEF} DEF_LENGTH)
+      string(
+        SUBSTRING ${DEF}
+                  2
+                  ${DEF_LENGTH}
+                  DEF)
+      list(APPEND BULLET_DEFINITIONS_STRIPED ${DEF})
+    endif()
+  endforeach()
+
   if(NOT TARGET Bullet3::Bullet)
     add_library(Bullet3::Bullet INTERFACE IMPORTED)
     set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${BULLET_INCLUDE_DIRS_ABS}")
     set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_LINK_LIBRARIES "${BULLET_LIBRARIES_ABS}")
-    target_compile_definitions(Bullet3::Bullet INTERFACE "${BULLET_DEFINITIONS}")
+    set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${BULLET_DEFINITIONS_STRIPED}")
   endif()
 
   find_library(HACD_LIBRARY HACD HINTS ${BULLET_LIBRARY_DIRS_ABS})
