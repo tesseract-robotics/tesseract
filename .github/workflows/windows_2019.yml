@@ -27,7 +27,8 @@ jobs:
       with:
         pkgs: >-
           ${{ env.VCPKG_PKGS }}
-        triplet: x64-windows-release    
+        triplet: x64-windows-release
+        extra-args: --clean-after-build
     - name: install-depends
       shell: cmd
       run: |
