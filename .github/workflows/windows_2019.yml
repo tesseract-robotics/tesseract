@@ -57,7 +57,7 @@ jobs:
       shell: cmd
       run: |
         call ./install/setup.bat
-        set PATH=%PATH%;C:/vcpkg/installed/x64-windows-release/bin
+        set PATH=%PATH%;%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release\bin
         colcon test --event-handlers console_direct+ --return-code-on-test-failure
         if %ERRORLEVEL% GEQ 1 exit 1
         colcon test-result --verbose
