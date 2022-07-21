@@ -10,7 +10,9 @@ on:
 
 env:
   VCPKG_PKGS: >-
-    fcl bullet3 octomap console-bridge eigen3 yaml-cpp benchmark tinyxml2 assimp orocos-kdl pcl lapack-reference boost-dll boost-filesystem boost-filesystem boost-serialization boost-program-options boost-graph
+    fcl bullet3[multithreading,double-precision,rtti] octomap console-bridge eigen3 yaml-cpp 
+    benchmark tinyxml2 assimp orocos-kdl pcl lapack-reference boost-dll boost-filesystem boost-filesystem 
+    boost-serialization boost-program-options boost-graph urdfdom ccd[double-precision]
 
 jobs:
   windows_ci:
@@ -20,41 +22,19 @@ jobs:
     - uses: actions/checkout@v3
       with:
         path: workspace/src/tesseract
-
-    - name: checkout-vcpkg
-      uses: actions/checkout@v3
+    - name: vcpkg build
+      uses: johnwason/vcpkg-action@v2
       with:
-        path: vcpkg
-        repository: microsoft/vcpkg
-
-    - name: bootstrap-vcpkg
-      working-directory: vcpkg
-      run: bootstrap-vcpkg.bat
-
-    - name: vcpkg-dry-run
-      working-directory: vcpkg
-      shell: cmd
-      run: |
-        vcpkg install --dry-run --triplet x64-windows-release ${{ env.VCPKG_PKGS }} > vcpkg_dry_run.txt
-
-    - name: cache-vcpkg-archives
-      if: startsWith(github.ref, 'refs/tags/v') != true
-      id: cache-vcpkg-archives
-      uses: pat-s/always-upload-cache@v3
-      with:
-        path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
-        key: ${{ runner.os }}-x64-windows-release-vcpkg-${{ hashFiles('vcpkg/vcpkg_dry_run.txt') }}-main
-        restore-keys: |
-          ${{ runner.os }}-x64-windows-release-vcpkg-
-
+        pkgs: >-
+          ${{ env.VCPKG_PKGS }}
+        triplet: x64-windows-release
+        extra-args: --clean-after-build
     - name: install-depends
       shell: cmd
       run: |
-        vcpkg integrate install
         python -m pip install vcstool -q
         python -m pip install colcon-common-extensions -q
         python -m pip install ninja -q
-        vcpkg install --triplet x64-windows-release ${{ env.VCPKG_PKGS }}
 
     - name: configure-msvc
       uses: ilammy/msvc-dev-cmd@v1
@@ -66,8 +46,10 @@ jobs:
       shell: cmd
       run: |
         set PATH=%PATH%;C:/vcpkg/installed/x64-windows-release/bin
+        set CMAKE_PREFIX_PATH=%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/dependencies.rosinstall" src/
-        colcon build --event-handlers console_direct+ --cmake-args -G "Ninja" -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
+        if %ERRORLEVEL% GEQ 1 exit 1
+        colcon build --event-handlers console_direct+ --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
         if %ERRORLEVEL% GEQ 1 exit 1
 
     - name: run-test
@@ -75,7 +57,7 @@ jobs:
       shell: cmd
       run: |
         call ./install/setup.bat
-        set PATH=%PATH%;C:/vcpkg/installed/x64-windows-release/bin
+        set PATH=%PATH%;%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release\bin
         colcon test --event-handlers console_direct+ --return-code-on-test-failure
         if %ERRORLEVEL% GEQ 1 exit 1
         colcon test-result --verbose

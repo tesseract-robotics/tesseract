@@ -21,7 +21,7 @@ TEST(TesseractSupportUnit, TesseractSupportResourceLocatorUnit)  // NOLINT
   EXPECT_TRUE(resource != nullptr);
   EXPECT_TRUE(resource->isFile());
   EXPECT_EQ(resource->getUrl(), "package://tesseract_support/urdf/abb_irb2400.urdf");
-  EXPECT_EQ(resource->getFilePath(), (package_path / "urdf/abb_irb2400.urdf").string());
+  EXPECT_EQ(tesseract_common::fs::path(resource->getFilePath()), (package_path / "urdf/abb_irb2400.urdf"));
   EXPECT_FALSE(resource->getResourceContents().empty());
   EXPECT_TRUE(resource->getResourceContentStream() != nullptr);
 
@@ -29,7 +29,7 @@ TEST(TesseractSupportUnit, TesseractSupportResourceLocatorUnit)  // NOLINT
   EXPECT_TRUE(sub_resource != nullptr);
   EXPECT_TRUE(sub_resource->isFile());
   EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_support/urdf/boxbot.urdf");
-  EXPECT_EQ(sub_resource->getFilePath(), (package_path / "urdf/boxbot.urdf").string());
+  EXPECT_EQ(tesseract_common::fs::path(sub_resource->getFilePath()), (package_path / "urdf/boxbot.urdf"));
   EXPECT_FALSE(sub_resource->getResourceContents().empty());
   EXPECT_TRUE(sub_resource->getResourceContentStream() != nullptr);
 
