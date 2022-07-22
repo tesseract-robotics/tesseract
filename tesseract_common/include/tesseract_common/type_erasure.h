@@ -156,7 +156,7 @@ public:
   ~TypeErasureBase() = default;
 
   // Copy constructor
-  TypeErasureBase(const TypeErasureBase& other) : value_(other.value_->clone()) {}
+  TypeErasureBase(const TypeErasureBase& other) : value_((other.value_ != nullptr) ? other.value_->clone() : nullptr) {}
 
   // Move ctor.
   TypeErasureBase(TypeErasureBase&& other) noexcept { value_.swap(other.value_); }
@@ -190,7 +190,16 @@ public:
     return value_->getType();
   }
 
-  bool operator==(const TypeErasureBase& rhs) const { return value_->equals(*rhs.value_); }
+  bool operator==(const TypeErasureBase& rhs) const
+  {
+    if (value_ == nullptr && rhs.value_ == nullptr)
+      return true;
+
+    if (value_ != nullptr && rhs.value_ != nullptr)
+      return value_->equals(*rhs.value_);
+
+    return false;
+  }
 
   bool operator!=(const TypeErasureBase& rhs) const { return !operator==(rhs); }
 
