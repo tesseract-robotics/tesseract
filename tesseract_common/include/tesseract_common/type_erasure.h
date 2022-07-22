@@ -190,6 +190,8 @@ public:
     return value_->getType();
   }
 
+  bool isNull() const { return (value_ == nullptr); }
+
   bool operator==(const TypeErasureBase& rhs) const
   {
     if (value_ == nullptr && rhs.value_ == nullptr)
