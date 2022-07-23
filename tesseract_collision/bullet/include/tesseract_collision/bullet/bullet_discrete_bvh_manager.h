@@ -119,13 +119,11 @@ public:
 
   void contactTest(ContactResultMap& collisions, const ContactRequest& request) override final;
 
-#ifndef SWIG
   /**
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
   void addCollisionObject(const COW::Ptr& cow);
-#endif  // SWIG
 
 private:
   std::string name_;

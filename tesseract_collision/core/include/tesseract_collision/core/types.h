@@ -131,15 +131,9 @@ struct ContactResult
   void clear();
 };
 
-#ifndef SWIG
 using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
 using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std::string>, ContactResultVector>;
-#else
-// clang-format off
-%tesseract_aligned_vector_using(ContactResultVector, tesseract_collision::ContactResult);
-%tesseract_aligned_map_of_aligned_vector_using(ContactResultMap, %arg(std::pair<std::string,std::string>), tesseract_collision::ContactResult);
-// clang-format on
-#endif
+
 /**
  * @brief Should return true if contact results are valid, otherwise false.
  *
@@ -176,7 +170,6 @@ std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v
 // Need to mark deprecated
 std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v);
 
-#ifndef SWIG
 /**
  * @brief This data is intended only to be used internal to the collision checkers as a container and should not
  *        be externally used by other libraries or packages.
@@ -210,7 +203,6 @@ struct ContactTestData
   /** @brief Indicate if search is finished */
   bool done = false;
 };
-#endif  // SWIG
 
 /**
  * @brief High level descriptor used in planners and utilities to specify what kind of collision check is desired.

@@ -72,13 +72,7 @@ struct KinGroupIKInput
    */
   std::string tip_link_name;  // This defines the internal kinematic group the information belongs to
 };
-#ifndef SWIG
 using KinGroupIKInputs = tesseract_common::AlignedVector<KinGroupIKInput>;
-#else
-// clang-format off
-%tesseract_aligned_vector_using(KinGroupIKInputs,tesseract_kinematics::KinGroupIKInput)
-// clang-format on
-#endif
 
 class KinematicGroup : public JointGroup
 {

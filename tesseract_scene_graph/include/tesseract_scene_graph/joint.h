@@ -350,8 +350,7 @@ public:
     this->type = JointType::UNKNOWN;
   }
 
-#ifndef SWIG
-  /**
+ /**
    * @brief Clone the joint keeping the name
    * @return Cloned joint
    */
@@ -391,7 +390,6 @@ public:
   }
   bool operator==(const Joint& rhs) const;
   bool operator!=(const Joint& rhs) const;
-#endif  // SWIG
 
 private:
   std::string name_;

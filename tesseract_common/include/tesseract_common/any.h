@@ -64,7 +64,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
   TESSERACT_ANY_EXPORT_KEY(N, C)                                                                                       \
   TESSERACT_ANY_EXPORT_IMPLEMENT(N::C)
 
-#ifndef SWIG
 namespace tesseract_common::detail_any
 {
 template <typename A>
@@ -107,7 +106,6 @@ private:
   }
 };
 }  // namespace tesseract_common::detail_any
-#endif  // SWIG
 
 namespace tesseract_common
 {

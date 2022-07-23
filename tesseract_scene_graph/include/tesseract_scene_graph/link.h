@@ -221,7 +221,6 @@ public:
   bool operator==(const Link& rhs) const;
   bool operator!=(const Link& rhs) const;
 
-#ifndef SWIG
   /**
    * @brief Clone the link keeping the name.
    * @return Cloned link
@@ -246,7 +245,6 @@ public:
     }
     return ret;
   }
-#endif  // SWIG
 
 private:
   std::string name_;

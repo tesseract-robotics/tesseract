@@ -52,7 +52,6 @@ public:
     SPHERE_OUTSIDE
   };
 
-#ifndef SWIG
   Octree(std::shared_ptr<const octomap::OcTree> octree, const SubType sub_type)
     : Geometry(GeometryType::OCTREE), octree_(std::move(octree)), sub_type_(sub_type)
   {
@@ -88,14 +87,12 @@ public:
 
     octree_ = ot;
   }
-#endif  // SWIG
 
   Octree() = default;
   ~Octree() override = default;
 
-#ifndef SWIG
   const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
-#endif  // SWIG
+
   SubType getSubType() const { return sub_type_; }
 
   bool getPruned() const { return pruned_; }
@@ -222,7 +219,6 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 
 public:
-#ifndef SWIG
   /**
    * @brief A custom octree prune which will prune if all children are above the occupancy threshold.
    *
@@ -244,7 +240,6 @@ public:
         break;
     }
   }
-#endif  // SWIG
 };
 }  // namespace tesseract_geometry
 
