@@ -35,11 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_collision::DiscreteContactManager)
-%wrap_unique_ptr(DiscreteContactManagerUPtr,tesseract_collision::DiscreteContactManager)
-#endif  // SWIG
-
 namespace tesseract_collision
 {
 class DiscreteContactManager

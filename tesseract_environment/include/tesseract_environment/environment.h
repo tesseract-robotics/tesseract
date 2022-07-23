@@ -52,11 +52,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/kinematic_group.h>
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_environment::Environment)
-%wrap_unique_ptr(EnvironmentUPtr,tesseract_environment::Environment)
-#endif  // SWIG
-
 namespace tesseract_environment
 {
 /**

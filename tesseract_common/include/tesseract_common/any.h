@@ -127,14 +127,10 @@ private:
 
 }  // namespace tesseract_common
 
-#ifdef SWIG
-%template(Instructions) std::vector<tesseract_common::Any>;
-#else
 BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyBase)
 BOOST_CLASS_TRACKING(tesseract_common::AnyBase, boost::serialization::track_never)
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::Any)
 BOOST_CLASS_TRACKING(tesseract_common::Any, boost::serialization::track_never);
-#endif  // SWIG
 
 #endif  // TESSERACT_COMMON_ANY_H

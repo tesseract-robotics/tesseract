@@ -37,15 +37,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_geometry::Octree)
-#endif  // SWIG
-
 namespace tesseract_geometry
 {
-#ifdef SWIG
-%nodefaultctor Octree;
-#endif  // SWIG
 class Octree : public Geometry
 {
 public:

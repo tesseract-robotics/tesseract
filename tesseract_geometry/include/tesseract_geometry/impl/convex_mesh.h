@@ -38,11 +38,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/mesh_material.h>
 #include <tesseract_geometry/impl/polygon_mesh.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_geometry::ConvexMesh)
-%template(ConvexMeshVector) std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh> >;
-#endif  // SWIG
-
 namespace tesseract_geometry
 {
 class ConvexMesh : public PolygonMesh

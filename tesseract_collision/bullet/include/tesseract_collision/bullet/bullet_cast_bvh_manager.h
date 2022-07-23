@@ -45,10 +45,6 @@
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_collision/bullet/tesseract_collision_configuration.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_collision::tesseract_collision_bullet::BulletCastBVHManager)
-#endif  // SWIG
-
 namespace tesseract_collision::tesseract_collision_bullet
 {
 /** @brief A BVH implementation of a tesseract contact manager */

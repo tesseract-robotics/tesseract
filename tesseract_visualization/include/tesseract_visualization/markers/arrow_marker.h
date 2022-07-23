@@ -4,10 +4,6 @@
 #include <tesseract_visualization/markers/marker.h>
 #include <tesseract_scene_graph/link.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_visualization::ArrowMarker)
-#endif  // SWIG
-
 namespace tesseract_visualization
 {
 /**

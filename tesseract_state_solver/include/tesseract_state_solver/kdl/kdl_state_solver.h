@@ -37,10 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_state_solver/state_solver.h>
 #include <tesseract_scene_graph/kdl_parser.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_scene_graph::KDLStateSolver)
-#endif  // SWIG
-
 namespace tesseract_scene_graph
 {
 class KDLStateSolver : public StateSolver

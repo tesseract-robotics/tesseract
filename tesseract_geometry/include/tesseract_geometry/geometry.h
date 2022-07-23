@@ -35,10 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#ifdef SWIG
-%shared_ptr(tesseract_geometry::Geometry)
-#endif  // SWIG
-
 namespace tesseract_geometry
 {
 enum GeometryType
@@ -59,10 +55,6 @@ enum GeometryType
 static const std::vector<std::string> GeometryTypeStrings = { "UNINITIALIZED", "SPHERE",   "CYLINDER", "CAPSULE",
                                                               "CONE",          "BOX",      "PLANE",    "MESH",
                                                               "CONVEX_MESH",   "SDF_MESH", "OCTREE",   "POLYGON_MESH" };
-
-#ifdef SWIG
-%nodefaultctor Geometry;
-#endif  // SWIG
 
 class Geometry
 {
@@ -97,10 +89,5 @@ private:
 using Geometrys = std::vector<Geometry::Ptr>;
 using GeometrysConst = std::vector<Geometry::ConstPtr>;
 }  // namespace tesseract_geometry
-
-#ifdef SWIG
-%template(Geometries) std::vector<std::shared_ptr<tesseract_geometry::Geometry> >;
-%template(GeometriesConst) std::vector<std::shared_ptr<const tesseract_geometry::Geometry> >;
-#endif  // SWIG
 
 #endif  // TESSERACT_GEOMETRY_GEOMETRY_H

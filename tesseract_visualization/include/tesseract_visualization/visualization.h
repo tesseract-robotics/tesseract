@@ -39,10 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/environment.h>
 #include <tesseract_visualization/markers/marker.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_visualization::Visualization)
-#endif  // SWIG
-
 // clang-format off
 #define TESSERACT_ADD_VISUALIZATION_PLUGIN(DERIVED_CLASS, ALIAS)                                                       \
   TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, Plotter)

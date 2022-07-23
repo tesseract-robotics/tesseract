@@ -42,10 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_kinematics::KDLInvKinChainNR)
-#endif  // SWIG
-
 namespace tesseract_kinematics
 {
 static const std::string KDL_INV_KIN_CHAIN_NR_SOLVER_NAME = "KDLInvKinChainNR";

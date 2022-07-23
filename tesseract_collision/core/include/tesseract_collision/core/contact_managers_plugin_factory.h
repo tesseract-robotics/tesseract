@@ -39,12 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/plugin_loader.h>
 #include <tesseract_common/types.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_collision::ContactManagersPluginFactory)
-%shared_ptr(tesseract_collision::DiscreteContactManagerFactory)
-%shared_ptr(tesseract_collision::ContinuousContactManagerFactory)
-#endif  // SWIG
-
 // clang-format off
 #define TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                    \
   TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, DiscColl)

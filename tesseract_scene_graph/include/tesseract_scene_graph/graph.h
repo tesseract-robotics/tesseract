@@ -43,17 +43,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_common/allowed_collision_matrix.h>
 
-#ifdef SWIG
-
-%shared_ptr(tesseract_scene_graph::SceneGraph)
-%wrap_unique_ptr(SceneGraphUPtr,tesseract_scene_graph::SceneGraph)
-%template(LinkVector) std::vector<std::shared_ptr<tesseract_scene_graph::Link> >;
-%template(JointVector) std::vector<std::shared_ptr<tesseract_scene_graph::Joint> >;
-%template(LinkConstVector) std::vector<std::shared_ptr<tesseract_scene_graph::Link const> >;
-%template(JointConstVector) std::vector<std::shared_ptr<tesseract_scene_graph::Joint const> >;
-
-#endif  // SWIG
-
 #ifndef SWIG
 
 /* definition of basic boost::graph properties */

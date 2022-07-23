@@ -239,10 +239,6 @@ private:
 };
 }  // namespace tesseract_common
 
-#ifdef SWIG
-%template(PluginInfoMap) std::map<std::string, tesseract_common::PluginInfo>;
-#endif  // SWIG
-
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::PluginInfo, "PluginInfo")
