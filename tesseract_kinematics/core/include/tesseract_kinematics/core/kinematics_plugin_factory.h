@@ -41,12 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/plugin_loader.h>
 #include <tesseract_common/types.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_kinematics::KinematicsPluginFactory)
-%shared_ptr(tesseract_kinematics::FwdKinFactory)
-%shared_ptr(tesseract_kinematics::InvKinFactory)
-#endif  // SWIG
-
 // clang-format off
 #define TESSERACT_ADD_FWD_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
   TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, FwdKin)

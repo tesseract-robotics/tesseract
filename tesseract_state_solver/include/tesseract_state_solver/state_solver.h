@@ -40,11 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/scene_state.h>
 #include <tesseract_common/types.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_scene_graph::StateSolver)
-%wrap_unique_ptr(StateSolverUPtr,tesseract_scene_graph::StateSolver)
-#endif  // SWIG
-
 namespace tesseract_scene_graph
 {
 class StateSolver

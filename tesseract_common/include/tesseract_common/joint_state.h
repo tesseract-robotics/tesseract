@@ -71,10 +71,6 @@ private:
 
 }  // namespace tesseract_common
 
-#ifdef SWIG
-%template(JointStates) std::vector<tesseract_common::JointState>;
-#endif
-
 namespace tesseract_common
 {
 /** @brief Represents a joint trajectory */
@@ -109,7 +105,6 @@ public:
   using size_type = typename std::vector<value_type>::size_type;
   /** difference_type */
   using difference_type = typename std::vector<value_type>::difference_type;
-#ifndef SWIG
   /** iterator */
   using iterator = typename std::vector<value_type>::iterator;
   /** const_iterator */
@@ -123,9 +118,7 @@ public:
   JointTrajectory(InputIt first, InputIt last) : states(first, last)
   {
   }
-#endif  // SWIG
 
-#ifndef SWIG
   ///////////////
   // Iterators //
   ///////////////
@@ -232,22 +225,6 @@ public:
   void pop_back();
   /** @brief swaps the contents  */
   void swap(std::vector<value_type>& other);
-
-#endif  // SWIG
-
-#ifdef SWIG
-  %ignore get_allocator;
-  %ignore resize;
-  %ignore assign;
-  %ignore swap;
-  %ignore insert;
-  %ignore JointTrajectory();
-  %ignore JointTrajectory(const JointTrajectory&);
-  %ignore JointTrajectory(size_type);
-  %ignore JointTrajectory(size_type, value_type const &);
-  %swig_vector_methods(tesseract_common::JointTrajectory)
-  %std_vector_methods(JointTrajectory)
-#endif  // SWIG
 
 private:
   friend class boost::serialization::access;

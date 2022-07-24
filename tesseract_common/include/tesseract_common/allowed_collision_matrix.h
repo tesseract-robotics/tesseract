@@ -12,13 +12,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#ifdef SWIG
-
-%shared_ptr(tesseract_common::AllowedCollisionMatrix)
-%template(AllowedCollisionEntries) std::unordered_map<std::pair<std::string,std::string>, std::string, tesseract_common::PairHash>;
-
-#endif  // SWIG
-
 namespace tesseract_common
 {
 using AllowedCollisionEntries =

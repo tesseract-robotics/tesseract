@@ -3,10 +3,6 @@
 
 #include <tesseract_visualization/markers/marker.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_visualization::AxisMarker)
-#endif  // SWIG
-
 namespace tesseract_visualization
 {
 /** @brief An axis */

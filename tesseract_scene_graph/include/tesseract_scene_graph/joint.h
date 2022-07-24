@@ -46,18 +46,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Eigen>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#ifdef SWIG
-
-%shared_ptr(tesseract_scene_graph::JointDynamics)
-%shared_ptr(tesseract_scene_graph::JointLimits)
-%shared_ptr(tesseract_scene_graph::JointSafety)
-%shared_ptr(tesseract_scene_graph::JointMimic)
-%shared_ptr(tesseract_scene_graph::JointCalibration)
-%shared_ptr(tesseract_scene_graph::Joint)
-%shared_ptr(tesseract_scene_graph::Link)
-
-#endif  // SWIG
-
 namespace tesseract_scene_graph
 {
 class Link;
@@ -362,7 +350,6 @@ public:
     this->type = JointType::UNKNOWN;
   }
 
-#ifndef SWIG
   /**
    * @brief Clone the joint keeping the name
    * @return Cloned joint
@@ -403,7 +390,6 @@ public:
   }
   bool operator==(const Joint& rhs) const;
   bool operator!=(const Joint& rhs) const;
-#endif  // SWIG
 
 private:
   std::string name_;
@@ -456,21 +442,6 @@ inline std::ostream& operator<<(std::ostream& os, const JointType& type)
   return os;
 }
 }  // namespace tesseract_scene_graph
-
-#ifdef SWIG
-%extend tesseract_scene_graph::Joint
-{
-  tesseract_scene_graph::Joint::Ptr clone() const
-  {
-    return std::make_shared<tesseract_scene_graph::Joint>(std::move($self->clone()));
-  }
-
-  tesseract_scene_graph::Joint::Ptr clone(const std::string& name) const
-  {
-    return std::make_shared<tesseract_scene_graph::Joint>(std::move($self->clone(name)));
-  }
-}
-#endif
 
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/tracking.hpp>

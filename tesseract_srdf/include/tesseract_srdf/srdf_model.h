@@ -42,10 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/collision_margin_data.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_srdf::SRDFModel)
-#endif  // SWIG
-
 /// Main namespace
 namespace tesseract_srdf
 {

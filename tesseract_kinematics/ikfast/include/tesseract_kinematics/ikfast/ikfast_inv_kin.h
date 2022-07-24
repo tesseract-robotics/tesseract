@@ -29,10 +29,6 @@
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/core/types.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_kinematics::IKFastInvKin)
-#endif  // SWIG
-
 namespace tesseract_kinematics
 {
 static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";

@@ -24,10 +24,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#ifdef SWIG
-%shared_ptr(tesseract_visualization::Marker)
-#endif  // SWIG
-
 namespace tesseract_visualization
 {
 enum class MarkerType : int

@@ -40,11 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_scene_graph/graph.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_kinematics::ForwardKinematics)
-%wrap_unique_ptr(ForwardKinematicsUPtr,tesseract_kinematics::ForwardKinematics)
-#endif  // SWIG
-
 namespace tesseract_kinematics
 {
 /** @brief Forward kinematics functions. */

@@ -4,10 +4,6 @@
 #include <tesseract_visualization/markers/marker.h>
 #include <tesseract_geometry/geometry.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_visualization::GeometryMarker)
-#endif  // SWIG
-
 namespace tesseract_visualization
 {
 /** @brief An geometry marker */

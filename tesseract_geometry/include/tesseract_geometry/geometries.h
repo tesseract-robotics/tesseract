@@ -38,36 +38,4 @@
 #include <tesseract_geometry/impl/sdf_mesh.h>
 #include <tesseract_geometry/impl/sphere.h>
 
-#ifdef SWIG
-
-%shared_factory(
-    tesseract_geometry::Geometry,
-    tesseract_geometry::Box,
-    tesseract_geometry::Capsule,
-    tesseract_geometry::Cone,
-    tesseract_geometry::ConvexMesh,
-    tesseract_geometry::Cylinder,
-    tesseract_geometry::Octree,
-    tesseract_geometry::Plane,
-    tesseract_geometry::PolygonMesh,
-    tesseract_geometry::Mesh,
-    tesseract_geometry::SDFMesh,
-    tesseract_geometry::Sphere
-)
-
-%include <tesseract_geometry/impl/box.h>
-%include <tesseract_geometry/impl/capsule.h>
-%include <tesseract_geometry/impl/polygon_mesh.h>
-%include <tesseract_geometry/impl/cone.h>
-%include <tesseract_geometry/impl/convex_mesh.h>
-%include <tesseract_geometry/impl/cylinder.h>
-%include <tesseract_geometry/impl/mesh.h>
-%include <tesseract_geometry/impl/mesh_material.h>
-%include <tesseract_geometry/impl/octree.h>
-%include <tesseract_geometry/impl/plane.h>
-%include <tesseract_geometry/impl/sdf_mesh.h>
-%include <tesseract_geometry/impl/sphere.h>
-
-#endif  // SWIG
-
 #endif

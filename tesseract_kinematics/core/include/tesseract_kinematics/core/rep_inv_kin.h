@@ -38,10 +38,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/core/types.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_kinematics::RobotWithExternalPositionerInvKin)
-#endif  // SWIG
-
 namespace tesseract_kinematics
 {
 static const std::string DEFAULT_REP_INV_KIN_SOLVER_NAME = "REPInvKin";

@@ -45,10 +45,6 @@
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/fcl/fcl_utils.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_collision::tesseract_collision_fcl::FCLDiscreteBVHManager)
-#endif  // SWIG
-
 namespace tesseract_collision::tesseract_collision_fcl
 {
 /** @brief A FCL implementation of the discrete contact manager */
@@ -123,13 +119,11 @@ public:
 
   void contactTest(ContactResultMap& collisions, const ContactRequest& request) override final;
 
-#ifndef SWIG
   /**
    * @brief Add a fcl collision object to the manager
    * @param cow The tesseract fcl collision object
    */
   void addCollisionObject(const COW::Ptr& cow);
-#endif  // SWIG
 
 private:
   std::string name_;

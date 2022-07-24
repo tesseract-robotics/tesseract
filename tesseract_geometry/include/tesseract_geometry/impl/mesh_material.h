@@ -36,12 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/geometry.h>
 #include <tesseract_common/types.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_geometry::MeshMaterial)
-%shared_ptr(tesseract_geometry::MeshTexture)
-%template(VectorMeshTexture) std::vector<std::shared_ptr<tesseract_geometry::MeshTexture>>;
-#endif  // SWIG
-
 namespace tesseract_geometry
 {
 /**

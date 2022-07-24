@@ -35,11 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_kinematics::KinematicGroup)
-%wrap_unique_ptr(KinematicGroupUPtr,tesseract_kinematics::KinematicGroup)
-#endif  // SWIG
-
 namespace tesseract_kinematics
 {
 /**
@@ -77,13 +72,7 @@ struct KinGroupIKInput
    */
   std::string tip_link_name;  // This defines the internal kinematic group the information belongs to
 };
-#ifndef SWIG
 using KinGroupIKInputs = tesseract_common::AlignedVector<KinGroupIKInput>;
-#else
-// clang-format off
-%tesseract_aligned_vector_using(KinGroupIKInputs,tesseract_kinematics::KinGroupIKInput)
-// clang-format on
-#endif
 
 class KinematicGroup : public JointGroup
 {
@@ -169,7 +158,3 @@ private:
 }  // namespace tesseract_kinematics
 
 #endif  // TESSERACT_KINEMATICS_KINEMATIC_GROUP_H
-
-#ifdef SWIG
-%tesseract_aligned_vector(KinGroupIKInputs,tesseract_kinematics::KinGroupIKInput)
-#endif  // SWIG

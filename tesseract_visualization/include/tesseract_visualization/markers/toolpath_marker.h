@@ -9,9 +9,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/markers/marker.h>
 #include <tesseract_common/types.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_visualization::ToolpathMarker)
-#endif  // SWIG
 namespace tesseract_visualization
 {
 /** @brief An arrow defined by two points */

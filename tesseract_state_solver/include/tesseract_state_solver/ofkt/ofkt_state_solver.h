@@ -42,10 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_state_solver/mutable_state_solver.h>
 #include <tesseract_state_solver/ofkt/ofkt_node.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_scene_graph::OFKTStateSolver)
-#endif  // SWIG
-
 namespace tesseract_scene_graph
 {
 /**
