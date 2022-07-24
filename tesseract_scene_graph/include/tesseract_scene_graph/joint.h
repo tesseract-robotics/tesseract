@@ -350,7 +350,7 @@ public:
     this->type = JointType::UNKNOWN;
   }
 
- /**
+  /**
    * @brief Clone the joint keeping the name
    * @return Cloned joint
    */
