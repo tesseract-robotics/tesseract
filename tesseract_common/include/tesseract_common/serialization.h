@@ -40,6 +40,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/tracking_enum.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/types.h>
+#include <tesseract_common/serialization_extensions.h>
+
 // Used to replace commas in these macros to avoid them being interpreted as multiple arguments
 // Example: TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(std::variant<std::string COMMA Eigen::Isometry3d>)
 #define COMMA ,
@@ -110,7 +113,11 @@ struct Serialization
                                const std::string& file_path,
                                const std::string& name = "")
   {
-    std::ofstream os(file_path);
+    fs::path fp(file_path);
+    if (!fp.has_extension())
+      fp.append(".").append(serialization::xml::extension<SerializableType>::value);
+
+    std::ofstream os(fp.string());
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
       boost::archive::xml_oarchive oa(os);
       // Boost uses the same function for serialization and deserialization so it requires a non-const reference
@@ -131,7 +138,11 @@ struct Serialization
                                   const std::string& file_path,
                                   const std::string& name = "")
   {
-    std::ofstream os(file_path, std::ios_base::binary);
+    fs::path fp(file_path);
+    if (!fp.has_extension())
+      fp.append(".").append(serialization::binary::extension<SerializableType>::value);
+
+    std::ofstream os(fp.string(), std::ios_base::binary);
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
       boost::archive::binary_oarchive oa(os);
       // Boost uses the same function for serialization and deserialization so it requires a non-const reference
@@ -192,5 +203,4 @@ struct Serialization
   }
 };
 }  // namespace tesseract_common
-
 #endif  // TESSERACT_COMMON_SERIALIZATION_H
