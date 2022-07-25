@@ -450,8 +450,8 @@ void SRDFModel::serialize(Archive& ar, const unsigned int /*version*/)
   ar& BOOST_SERIALIZATION_NVP(calibration_info);
 }
 
+}  // namespace tesseract_srdf
+
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_srdf::SRDFModel)
-// This causes build failures for some reason, but it seems to work without it
-// BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_srdf::SRDFModel)
-}  // namespace tesseract_srdf
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_srdf::SRDFModel)
