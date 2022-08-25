@@ -2,6 +2,12 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move boost serialization export outside tesseract_common namespace in srdf_model.cpp
+* Move most SWIG commands to tesseract_python package (`#809 <https://github.com/tesseract-robotics/tesseract/issues/809>`_)
+* Contributors: John Wason, Levi Armstrong
+
 0.13.0 (2022-07-11)
 -------------------
 * Update code based on clang-tidy-14

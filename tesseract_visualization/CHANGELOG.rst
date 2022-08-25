@@ -2,6 +2,11 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move most SWIG commands to tesseract_python package (`#809 <https://github.com/tesseract-robotics/tesseract/issues/809>`_)
+* Contributors: John Wason
+
 0.13.0 (2022-07-11)
 -------------------
 * Update code based on clang-tidy-14

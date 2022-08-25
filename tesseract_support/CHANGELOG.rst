@@ -2,6 +2,11 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix the Windows 2019 github action (`#805 <https://github.com/tesseract-robotics/tesseract/issues/805>`_)
+* Contributors: John Wason
+
 0.13.0 (2022-07-11)
 -------------------
 
