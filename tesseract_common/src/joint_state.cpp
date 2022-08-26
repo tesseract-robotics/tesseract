@@ -36,8 +36,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-JointState::JointState(std::vector<std::string> joint_names, Eigen::VectorXd position)
-  : joint_names(std::move(joint_names)), position(std::move(position))
+JointState::JointState(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
+  : joint_names(std::move(joint_names)), position(position)
 {
 }
 
