@@ -39,7 +39,7 @@ class JointState
 {
 public:
   JointState() = default;
-  JointState(std::vector<std::string> joint_names, Eigen::VectorXd position);
+  JointState(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position);
 
   /** @brief The joint corresponding to the position vector. */
   std::vector<std::string> joint_names;
