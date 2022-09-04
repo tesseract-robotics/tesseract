@@ -228,6 +228,59 @@ void ContactManagersPluginInfo::serialize(Archive& ar, const unsigned int /*vers
 }
 
 /*********************************************************/
+/******          TaskComposerPluginInfo           *****/
+/*********************************************************/
+void TaskComposerPluginInfo::insert(const TaskComposerPluginInfo& other)
+{
+  search_paths.insert(other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
+  executor_plugin_infos.plugins.insert(other.executor_plugin_infos.plugins.begin(),
+                                       other.executor_plugin_infos.plugins.end());
+  node_plugin_infos.plugins.insert(other.node_plugin_infos.plugins.begin(), other.node_plugin_infos.plugins.end());
+
+  if (!other.executor_plugin_infos.default_plugin.empty())
+    executor_plugin_infos.default_plugin = other.executor_plugin_infos.default_plugin;
+
+  if (!other.node_plugin_infos.default_plugin.empty())
+    node_plugin_infos.default_plugin = other.node_plugin_infos.default_plugin;
+}
+
+void TaskComposerPluginInfo::clear()
+{
+  search_paths.clear();
+  search_libraries.clear();
+  executor_plugin_infos.clear();
+  node_plugin_infos.clear();
+}
+
+bool TaskComposerPluginInfo::empty() const
+{
+  return (search_paths.empty() && search_libraries.empty() && executor_plugin_infos.plugins.empty() &&
+          node_plugin_infos.plugins.empty());
+}
+
+bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
+{
+  bool equal = true;
+  equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
+  equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
+  equal &= executor_plugin_infos == rhs.executor_plugin_infos;
+  equal &= node_plugin_infos == rhs.node_plugin_infos;
+
+  return equal;
+}
+bool TaskComposerPluginInfo::operator!=(const TaskComposerPluginInfo& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void TaskComposerPluginInfo::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(search_paths);
+  ar& BOOST_SERIALIZATION_NVP(search_libraries);
+  ar& BOOST_SERIALIZATION_NVP(executor_plugin_infos);
+  ar& BOOST_SERIALIZATION_NVP(node_plugin_infos);
+}
+
+/*********************************************************/
 /******               CalibrationInfo                *****/
 /*********************************************************/
 void CalibrationInfo::insert(const CalibrationInfo& other) { joints.insert(other.joints.begin(), other.joints.end()); }
@@ -265,5 +318,7 @@ TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::KinematicsPluginInfo)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::KinematicsPluginInfo)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ContactManagersPluginInfo)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ContactManagersPluginInfo)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::TaskComposerPluginInfo)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::TaskComposerPluginInfo)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CalibrationInfo)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CalibrationInfo)

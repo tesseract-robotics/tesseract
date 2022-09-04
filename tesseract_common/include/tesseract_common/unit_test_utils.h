@@ -50,7 +50,7 @@ void testSerialization(const SerializableType& object, const std::string& typena
     std::string file_path = tesseract_common::getTempPath() + typename_string + ".xml";
     EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileXML<SerializableType>(object, file_path));
 
-    auto nobject = tesseract_common::Serialization::fromArchiveFileXML<SerializableType>(file_path);
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileXML<SerializableType>(file_path) };
     EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
   }
 
@@ -58,7 +58,7 @@ void testSerialization(const SerializableType& object, const std::string& typena
     std::string file_path = tesseract_common::getTempPath() + typename_string + ".binary";
     EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileBinary<SerializableType>(object, file_path));
 
-    auto nobject = tesseract_common::Serialization::fromArchiveFileBinary<SerializableType>(file_path);
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileBinary<SerializableType>(file_path) };
     EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
   }
 
@@ -67,7 +67,7 @@ void testSerialization(const SerializableType& object, const std::string& typena
         tesseract_common::Serialization::toArchiveStringXML<SerializableType>(object, typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    auto nobject = tesseract_common::Serialization::fromArchiveStringXML<SerializableType>(object_string);
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringXML<SerializableType>(object_string) };
     EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
   }
 }

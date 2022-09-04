@@ -152,6 +152,33 @@ TEST(TesseractCommonSerializeUnit, ContactManagersPluginInfo)  // NOLINT
   tesseract_common::testSerialization<ContactManagersPluginInfo>(*object, "ContactManagersPluginInfo");
 }
 
+TEST(TesseractCommonSerializeUnit, TaskComposerPluginInfo)  // NOLINT
+{
+  auto object = std::make_shared<TaskComposerPluginInfo>();
+  object->search_paths.insert("path 1");
+  object->search_paths.insert("path 2");
+  object->search_libraries.insert("search_libraries 1");
+  object->search_libraries.insert("search_libraries 2");
+  object->search_libraries.insert("search_libraries 3");
+
+  {
+    PluginInfo plugin;
+    plugin.class_name = "test_class_name";
+    plugin.config["test"] = "value";
+    object->executor_plugin_infos.default_plugin = "test_string";
+    object->executor_plugin_infos.plugins["plugin_key"] = plugin;
+  }
+  {
+    PluginInfo plugin;
+    plugin.class_name = "test_class_name 2";
+    plugin.config["test2"] = "value2";
+    object->node_plugin_infos.default_plugin = "test_string2";
+    object->node_plugin_infos.plugins["plugin_key2"] = plugin;
+  }
+
+  tesseract_common::testSerialization<TaskComposerPluginInfo>(*object, "TaskComposerPluginInfo");
+}
+
 TEST(TesseractCommonSerializeUnit, KinematicsPluginInfo)  // NOLINT
 {
   auto object = std::make_shared<KinematicsPluginInfo>();
