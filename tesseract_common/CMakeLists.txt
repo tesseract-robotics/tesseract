@@ -45,7 +45,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 add_library(
   ${PROJECT_NAME}
   src/allowed_collision_matrix.cpp
-  src/any.cpp
+  src/any_poly.cpp
   src/collision_margin_data.cpp
   src/joint_state.cpp
   src/manipulator_info.cpp

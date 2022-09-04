@@ -408,7 +408,7 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
     if (!rhs.discrete_plugin_infos.plugins.empty())
       contact_manager_plugins[DISCRETE_PLUGINS_KEY] = rhs.discrete_plugin_infos;
 
-    if (!rhs.discrete_plugin_infos.plugins.empty())
+    if (!rhs.continuous_plugin_infos.plugins.empty())
       contact_manager_plugins[CONTINUOUS_PLUGINS_KEY] = rhs.continuous_plugin_infos;
 
     return contact_manager_plugins;
@@ -483,6 +483,110 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
       catch (const std::exception& e)
       {
         throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + CONTINUOUS_PLUGINS_KEY +
+                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+      }
+    }
+
+    return true;
+  }
+};
+
+template <>
+struct convert<tesseract_common::TaskComposerPluginInfo>
+{
+  static Node encode(const tesseract_common::TaskComposerPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string EXECUTOR_PLUGINS_KEY{ "executor_plugins" };
+    const std::string NODE_PLUGINS_KEY{ "node_plugins" };
+
+    YAML::Node task_composer_plugins;
+    if (!rhs.search_paths.empty())
+      task_composer_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
+
+    if (!rhs.search_libraries.empty())
+      task_composer_plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+
+    if (!rhs.executor_plugin_infos.plugins.empty())
+      task_composer_plugins[EXECUTOR_PLUGINS_KEY] = rhs.executor_plugin_infos;
+
+    if (!rhs.node_plugin_infos.plugins.empty())
+      task_composer_plugins[NODE_PLUGINS_KEY] = rhs.node_plugin_infos;
+
+    return task_composer_plugins;
+  }
+
+  static bool decode(const Node& node, tesseract_common::TaskComposerPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string EXECUTOR_PLUGINS_KEY{ "executor_plugins" };
+    const std::string NODE_PLUGINS_KEY{ "node_plugins" };
+
+    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
+    {
+      std::set<std::string> sp;
+      try
+      {
+        sp = search_paths.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + SEARCH_PATHS_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_paths.insert(sp.begin(), sp.end());
+    }
+
+    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
+    {
+      std::set<std::string> sl;
+      try
+      {
+        sl = search_libraries.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_libraries.insert(sl.begin(), sl.end());
+    }
+
+    if (const YAML::Node& executor_plugins = node[EXECUTOR_PLUGINS_KEY])
+    {
+      if (!executor_plugins.IsMap())
+        throw std::runtime_error(EXECUTOR_PLUGINS_KEY + ", should contain a map of task composer executor names to "
+                                                        "plugins!");
+
+      try
+      {
+        rhs.executor_plugin_infos = executor_plugins.as<tesseract_common::PluginInfoContainer>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + EXECUTOR_PLUGINS_KEY +
+                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+      }
+    }
+
+    if (const YAML::Node& node_plugins = node[NODE_PLUGINS_KEY])
+    {
+      if (!node_plugins.IsMap())
+        throw std::runtime_error(NODE_PLUGINS_KEY + ", should contain a map of names to plugins!");
+
+      try
+      {
+        rhs.node_plugin_infos = node_plugins.as<tesseract_common::PluginInfoContainer>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + NODE_PLUGINS_KEY +
                                  "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
       }
     }

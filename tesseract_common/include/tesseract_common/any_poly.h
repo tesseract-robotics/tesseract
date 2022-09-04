@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMON_ANY_H
-#define TESSERACT_COMMON_ANY_H
+#ifndef TESSERACT_COMMON_ANY_POLY_H
+#define TESSERACT_COMMON_ANY_POLY_H
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/base_object.hpp>
@@ -39,22 +39,22 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #define TESSERACT_ANY_EXPORT_KEY(N, C)                                                                                 \
   namespace N                                                                                                          \
   {                                                                                                                    \
-  using C##InstanceBase = tesseract_common::TypeErasureInstance<C, tesseract_common::TypeErasureInterface>;            \
-  using C##Instance = tesseract_common::detail_any::AnyInstance<C>;                                                    \
-  using C##InstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<C##Instance>;                                \
+  using C##AnyInstanceBase = tesseract_common::TypeErasureInstance<C, tesseract_common::TypeErasureInterface>;         \
+  using C##AnyInstance = tesseract_common::detail_any::AnyInstance<C>;                                                 \
+  using C##AnyInstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<C##AnyInstance>;                          \
   }                                                                                                                    \
-  BOOST_CLASS_EXPORT_KEY(N::C##InstanceBase)                                                                           \
-  BOOST_CLASS_EXPORT_KEY(N::C##Instance)                                                                               \
-  BOOST_CLASS_EXPORT_KEY(N::C##InstanceWrapper)                                                                        \
-  BOOST_CLASS_TRACKING(N::C##InstanceBase, boost::serialization::track_never)                                          \
-  BOOST_CLASS_TRACKING(N::C##Instance, boost::serialization::track_never)                                              \
-  BOOST_CLASS_TRACKING(N::C##InstanceWrapper, boost::serialization::track_never)
+  BOOST_CLASS_EXPORT_KEY(N::C##AnyInstanceBase)                                                                        \
+  BOOST_CLASS_EXPORT_KEY(N::C##AnyInstance)                                                                            \
+  BOOST_CLASS_EXPORT_KEY(N::C##AnyInstanceWrapper)                                                                     \
+  BOOST_CLASS_TRACKING(N::C##AnyInstanceBase, boost::serialization::track_never)                                       \
+  BOOST_CLASS_TRACKING(N::C##AnyInstance, boost::serialization::track_never)                                           \
+  BOOST_CLASS_TRACKING(N::C##AnyInstanceWrapper, boost::serialization::track_never)
 
 /** @brief If shared library, this must go in the cpp after the implicit instantiation of the serialize function */
 #define TESSERACT_ANY_EXPORT_IMPLEMENT(inst)                                                                           \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##InstanceBase)                                                                     \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##Instance)                                                                         \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##InstanceWrapper)
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstanceBase)                                                                  \
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstance)                                                                      \
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstanceWrapper)
 
 /**
  * @brief This should not be used within shared libraries use the two above.
@@ -109,11 +109,11 @@ private:
 
 namespace tesseract_common
 {
-using AnyBase = tesseract_common::TypeErasureBase<TypeErasureInterface, detail_any::AnyInstance>;
+using AnyPolyBase = tesseract_common::TypeErasureBase<TypeErasureInterface, detail_any::AnyInstance>;
 
-struct Any : AnyBase
+struct AnyPoly : AnyPolyBase
 {
-  using AnyBase::AnyBase;
+  using AnyPolyBase::AnyPolyBase;
 
 private:
   friend class boost::serialization::access;
@@ -125,10 +125,10 @@ private:
 
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyBase)
-BOOST_CLASS_TRACKING(tesseract_common::AnyBase, boost::serialization::track_never)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyPolyBase)
+BOOST_CLASS_TRACKING(tesseract_common::AnyPolyBase, boost::serialization::track_never)
 
-BOOST_CLASS_EXPORT_KEY(tesseract_common::Any)
-BOOST_CLASS_TRACKING(tesseract_common::Any, boost::serialization::track_never);
+BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::AnyPoly, boost::serialization::track_never)
 
-#endif  // TESSERACT_COMMON_ANY_H
+#endif  // TESSERACT_COMMON_ANY_POLY_H

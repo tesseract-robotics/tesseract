@@ -24,21 +24,21 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/any.h>
+#include <tesseract_common/any_poly.h>
 
 namespace tesseract_common
 {
 template <class Archive>
-void Any::serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
+void AnyPoly::serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
 {
-  ar& boost::serialization::make_nvp("base", boost::serialization::base_object<AnyBase>(*this));
+  ar& boost::serialization::make_nvp("base", boost::serialization::base_object<AnyPolyBase>(*this));
 }
 
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyBase)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::Any)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyPolyBase)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyPoly)
 
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyBase)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::Any)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyPolyBase)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyPoly)

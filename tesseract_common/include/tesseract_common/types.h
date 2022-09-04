@@ -203,6 +203,42 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
+/** @brief The task composer plugin information structure */
+struct TaskComposerPluginInfo
+{
+  /** @brief A list of paths to search for plugins */
+  std::set<std::string> search_paths;
+
+  /** @brief A list of library names without the prefix or suffix that contain plugins*/
+  std::set<std::string> search_libraries;
+
+  /** @brief A map of name to task composer executor plugin information */
+  tesseract_common::PluginInfoContainer executor_plugin_infos;
+
+  /** @brief A map of name to task composer node plugin information */
+  tesseract_common::PluginInfoContainer node_plugin_infos;
+
+  /** @brief Insert the content of an other TaskComposerPluginInfo */
+  void insert(const TaskComposerPluginInfo& other);
+
+  /** @brief Clear the contents */
+  void clear();
+
+  /** @brief Check if structure is empty */
+  bool empty() const;
+
+  // Yaml Config key
+  static inline const std::string CONFIG_KEY{ "task_composer_plugins" };
+
+  bool operator==(const TaskComposerPluginInfo& rhs) const;
+  bool operator!=(const TaskComposerPluginInfo& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+};
+
 /** @brief The CalibrationInfo struct */
 struct CalibrationInfo
 {
@@ -245,6 +281,7 @@ BOOST_CLASS_EXPORT_KEY2(tesseract_common::PluginInfo, "PluginInfo")
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::PluginInfoContainer, "PluginInfoContainer")
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::KinematicsPluginInfo, "KinematicsPluginInfo")
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::ContactManagersPluginInfo, "ContactManagersPluginInfo")
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::TaskComposerPluginInfo, "TaskComposerPluginInfo")
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::CalibrationInfo, "CalibrationInfo")
 
 #endif  // TESSERACT_COMMON_TYPES_H
