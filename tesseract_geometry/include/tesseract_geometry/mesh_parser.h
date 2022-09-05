@@ -49,7 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <assimp/postprocess.h>
 
 #ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
-#include <assimp/pbrmaterial.h>
+#include <assimp/material.h>
 #endif
 
 #include <console_bridge/console.h>
@@ -160,17 +160,17 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
 
         aiColor4D pbr_base_color;
 #ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
-        if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, pbr_base_color) == AI_SUCCESS)
+        if (mat->Get(AI_MATKEY_BASE_COLOR, pbr_base_color) == AI_SUCCESS)
         {
           // Use PBR Metallic material properties if available
           base_color = Eigen::Vector4d(pbr_base_color.r, pbr_base_color.g, pbr_base_color.b, pbr_base_color.a);
           float metallicFactor{ 0 };
-          if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, metallicFactor) == AI_SUCCESS)
+          if (mat->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == AI_SUCCESS)
           {
             metallic = metallicFactor;
           }
           float roughnessFactor{ 0.5 };
-          if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, roughnessFactor) == AI_SUCCESS)
+          if (mat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughnessFactor) == AI_SUCCESS)
           {
             roughness = roughnessFactor;
           }
