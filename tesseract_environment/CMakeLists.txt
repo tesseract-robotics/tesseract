@@ -78,7 +78,7 @@ add_library(
   ${PROJECT_NAME}_commands
   src/command.cpp
   src/commands/add_allowed_collision_command.cpp
-  src/commands/add_contact_managers_plugin_info_command
+  src/commands/add_contact_managers_plugin_info_command.cpp
   src/commands/add_kinematics_information_command.cpp
   src/commands/add_link_command.cpp
   src/commands/add_scene_graph_command.cpp
