@@ -1,6 +1,6 @@
 /**
  * @file environment_cache.cpp
- * @brief A environment cache
+ * @brief Default environment cache
  *
  * @author Levi Armstrong
  * @date December 3, 2020
@@ -28,7 +28,8 @@
 
 namespace tesseract_environment
 {
-DefaultEnvironmentCache::DefaultEnvironmentCache(Environment::ConstPtr env, std::size_t cache_size)
+DefaultEnvironmentCache::DefaultEnvironmentCache(tesseract_environment::Environment::ConstPtr env,
+                                                 std::size_t cache_size)
   : env_(std::move(env)), cache_size_(cache_size)
 {
 }
@@ -44,8 +45,28 @@ long DefaultEnvironmentCache::getCacheSize() const { return static_cast<long>(ca
 void DefaultEnvironmentCache::refreshCache() const
 {
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract_environment::Environment::UPtr env;
+  refreshCacheHelper();
+}
 
+tesseract_environment::Environment::UPtr DefaultEnvironmentCache::getCachedEnvironment() const
+{
+  tesseract_scene_graph::SceneState current_state = env_->getState();
+
+  std::unique_lock<std::shared_mutex> lock(cache_mutex_);
+  refreshCacheHelper();  // This is to make sure the cached items are updated if needed
+  assert(!cache_.empty());
+  tesseract_environment::Environment::UPtr t = std::move(cache_.back());
+  // Update to the current joint values
+  t->setState(current_state.joints);
+
+  cache_.pop_back();
+
+  return t;
+}
+
+void DefaultEnvironmentCache::refreshCacheHelper() const
+{
+  tesseract_environment::Environment::UPtr env;
   auto lock_read = env_->lockRead();
   int rev = env_->getRevision();
   if (rev != cache_env_revision_ || cache_.empty())
@@ -67,21 +88,4 @@ void DefaultEnvironmentCache::refreshCache() const
   }
 }
 
-Environment::UPtr DefaultEnvironmentCache::getCachedEnvironment() const
-{
-  // This is to make sure the cached items are updated if needed
-  refreshCache();
-
-  tesseract_scene_graph::SceneState current_state = env_->getState();
-
-  std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract_environment::Environment::UPtr t = std::move(cache_.back());
-
-  // Update to the current joint values
-  t->setState(current_state.joints);
-
-  cache_.pop_back();
-
-  return t;
-}
 }  // namespace tesseract_environment
