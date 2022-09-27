@@ -23,7 +23,7 @@ jobs:
       with:
         path: workspace/src/tesseract
     - name: vcpkg build
-      uses: johnwason/vcpkg-action@v2
+      uses: johnwason/vcpkg-action@v3
       with:
         pkgs: >-
           ${{ env.VCPKG_PKGS }}
@@ -45,7 +45,7 @@ jobs:
       working-directory: workspace
       shell: cmd
       run: |
-        set PATH=%PATH%;C:/vcpkg/installed/x64-windows-release/bin
+        set PATH=%PATH%;%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release\bin
         set CMAKE_PREFIX_PATH=%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/dependencies.rosinstall" src/
         if %ERRORLEVEL% GEQ 1 exit 1
