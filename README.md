@@ -2,7 +2,9 @@
 
 [![codecov](https://codecov.io/gh/tesseract-robotics/tesseract/branch/master/graph/badge.svg?token=nh4aHZzgpR)](https://codecov.io/gh/tesseract-robotics/tesseract)
 
-[![Python](https://img.shields.io/badge/python-2.7+|3.6+-blue.svg)](https://github.com/tesseract-robotics/tesseract_python)
+[![Python](https://img.shields.io/badge/python-3.7+-blue.svg)](https://github.com/tesseract-robotics/tesseract_python)
+
+![PyPI](https://img.shields.io/pypi/v/tesseract-robotics)
 
 Platform             | CI Status
 ---------------------|:---------
@@ -30,6 +32,25 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 ## Tesseract Setup Wizard and Visualization Tools
 
 [![](https://github.com/snapcore/snap-store-badges/blob/master/EN/%5BEN%5D-snap-store-black-uneditable%401x.png)](https://snapcraft.io/tesseract-ignition)
+
+## Python Installation
+
+A self contained Tesseract Python package is available on PyPI for Windows 10+, Ubuntu 20.04, and Ubuntu 22.04. This package
+contains Tesseract, Tesseract Planning, and all dependencies in the single package. Packages are available for Python
+3.7 - 3.10.
+
+To install on Windows:
+```
+python -m pip install tesseract-robotics tesseract-robotics-viewer
+```
+To install on Ubuntu 20.04 and Ubuntu 22.04:
+
+```
+sudo apt install python3-pip python3-numpy
+# The supplied version of pip on Ubuntu 20.04 is too old for manylinux_2_31, upgrade pip
+python3 -m pip install -U pip
+python3 -m pip install --user  tesseract_robotics tesseract_robotics_viewer
+```
 
 ## Tesseract Core Packages
 
