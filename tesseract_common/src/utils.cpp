@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <type_traits>
 #include <console_bridge/console.h>
+#include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
@@ -66,6 +67,20 @@ std::enable_if_t<std::is_polymorphic<E>::value> my_rethrow_if_nested(const E& e)
   const auto* p = dynamic_cast<const std::nested_exception*>(std::addressof(e));
   if (p && p->nested_ptr())
     p->rethrow_nested();
+}
+
+std::string fileToString(const tesseract_common::fs::path& filepath)
+{
+  std::ifstream ifs(filepath.c_str());
+  std::string contents;
+
+  ifs.seekg(0, std::ios::end);
+  contents.reserve(ifs.tellg());
+  ifs.seekg(0, std::ios::beg);
+
+  contents.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+  ifs.close();
+  return contents;
 }
 
 // LCOV_EXCL_START
