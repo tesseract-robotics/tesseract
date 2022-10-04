@@ -68,6 +68,13 @@ std::string strFormat(const std::string& format, Args... args)
 }
 
 /**
+ * @brief Read in the contents of the file into a string
+ * @param filepath The file to read
+ * @return The contents of the file
+ */
+std::string fileToString(const tesseract_common::fs::path& filepath);
+
+/**
  * @brief Change the reference point of the provided Twist
  * @param twist The current Twist which gets modified in place
  * @param ref_point Is expressed in the same base frame of the Twist
