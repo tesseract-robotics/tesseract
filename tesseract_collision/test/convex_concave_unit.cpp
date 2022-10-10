@@ -68,7 +68,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   checker.calcCollisionsDiscrete(req, location, result);
 
   tesseract::ContactResultVector result_vector;
-  tesseract::flattenResults(result, result_vector);
+  tesseract::flattenMoveResults(result, result_vector);
 
   // This does fail need to create an issue on bullet
   EXPECT_LT(std::abs(result_vector[0].distance + 0.75), 0.0001);
@@ -80,7 +80,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   result_vector.clear();
 
   checker.calcCollisionsDiscrete(req, location, result);
-  tesseract::flattenResults(result, result_vector);
+  tesseract::flattenMoveResults(result, result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
@@ -90,7 +90,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   req.contact_distance = 0.251;
 
   checker.calcCollisionsDiscrete(req, location, result);
-  tesseract::flattenResults(result, result_vector);
+  tesseract::flattenMoveResults(result, result_vector);
 
   EXPECT_LT(std::abs(0.25 - result_vector[0].distance), 0.0001);
   EXPECT_TRUE(!result_vector.empty());
@@ -114,7 +114,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   //  req.type = tesseract::ContactRequestType::SINGLE;
 
   //  checker.calcCollisionsContinuous(req, location, location2, result);
-  //  tesseract::flattenResults(result,
+  //  tesseract::flattenMoveResults(result,
   //  result_vector);
   //  EXPECT_TRUE(!result_vector.empty());
 }

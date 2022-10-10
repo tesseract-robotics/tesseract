@@ -82,7 +82,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
     ContactResultMap result;
     result_vector.clear();
     checker.contactTest(result, ContactRequest(ContactTestType::ALL));
-    flattenResults(std::move(result), result_vector);
+    flattenMoveResults(std::move(result), result_vector);
 
     if (result_vector.size() != 300)
       for (const auto& result : result_vector)

@@ -151,17 +151,6 @@ public:
    */
   const std::shared_ptr<const Eigen::VectorXi>& getFaces() const { return faces_; }
 
-#ifndef SWIG
-  /**
-   * @brief Get vertex count
-   * @return Number of vertices
-   */
-  [[deprecated("Deprecated due to typo.  Please use getVertexCount()")]] int getVerticeCount() const
-  {
-    return getVertexCount();
-  }
-#endif  // SWIG
-
   /**
    * @brief Get vertex count
    * @return Number of vertices

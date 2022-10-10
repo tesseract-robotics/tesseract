@@ -77,8 +77,6 @@ std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v
   return v.size();
 }
 
-std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v) { return flattenMoveResults(std::move(m), v); }
-
 ContactTestData::ContactTestData(const std::vector<std::string>& active,
                                  CollisionMarginData collision_margin_data,
                                  IsContactAllowedFn fn,

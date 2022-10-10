@@ -90,7 +90,7 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
     ContactResultMap result;
     result_vector.clear();
     checker->contactTest(result, ContactTestType::ALL);
-    flattenResults(std::move(result), result_vector);
+    flattenMoveResults(std::move(result), result_vector);
   }
 };
 
@@ -180,7 +180,7 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
     ContactResultMap result;
     result_vector.clear();
     checker->contactTest(result, ContactTestType::ALL);
-    flattenResults(std::move(result), result_vector);
+    flattenMoveResults(std::move(result), result_vector);
   }
 };
 

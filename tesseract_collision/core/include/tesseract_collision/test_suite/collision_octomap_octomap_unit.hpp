@@ -90,7 +90,7 @@ inline void runTestOctomap(DiscreteContactManager& checker, ContactTestType test
   checker.contactTest(result, ContactRequest(test_type));
 
   ContactResultVector result_vector;
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   for (const auto& cr : result_vector)
@@ -121,7 +121,7 @@ inline void runTestOctomap(ContinuousContactManager& checker, ContactTestType te
   checker.contactTest(result, ContactRequest(test_type));
 
   ContactResultVector result_vector;
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   for (const auto& cr : result_vector)

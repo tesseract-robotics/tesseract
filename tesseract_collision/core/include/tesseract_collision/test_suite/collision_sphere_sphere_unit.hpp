@@ -149,7 +149,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.30, 0.0001);
@@ -193,7 +193,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
 
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
@@ -207,7 +207,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   checker.setCollisionMarginData(CollisionMarginData(0.52));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.52, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.0001);
@@ -262,7 +262,7 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   // Bullet: -0.270548 {0.232874,0,-0.025368} {-0.032874,0,0.025368}
   // FCL:    -0.270548 {0.232874,0,-0.025368} {-0.032874,0,0.025368}
@@ -306,7 +306,7 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   checker.setCollisionObjectsTransform(location);
 
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 }
@@ -329,7 +329,7 @@ inline void runTestConvex2(DiscreteContactManager& checker)
   checker.setCollisionMarginData(CollisionMarginData(0.55));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.55, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   // Bullet: 0.524565 {0.237717,0,0} {0.7622825,0,0} Using blender this appears to be the correct result
   // FCL:    0.546834 {0.237717,-0.0772317,0} {0.7622825,0.0772317}
@@ -376,7 +376,7 @@ inline void runTestConvex3(DiscreteContactManager& checker)
   ContactResultMap result;
   ContactResultVector result_vector;
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   // Bullet: -0.280223 {0.0425563,0.2308753,-0.0263040} {-0.0425563, -0.0308753, 0.0263040}
   // FCL:    -0.280223 {0.0425563,0.2308753,-0.0263040} {-0.0425563, -0.0308753, 0.0263040}
