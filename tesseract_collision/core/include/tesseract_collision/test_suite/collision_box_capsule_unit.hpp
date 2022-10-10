@@ -123,7 +123,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.55, 0.0001);
@@ -160,7 +160,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.setCollisionObjectsTransform(location);
 
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
@@ -174,7 +174,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.setCollisionMarginData(CollisionMarginData(0.251));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.251, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.125, 0.001);

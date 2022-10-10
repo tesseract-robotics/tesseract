@@ -133,7 +133,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
@@ -146,7 +146,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   cloned_checker->contactTest(cloned_result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector cloned_result_vector;
-  flattenResults(std::move(cloned_result), cloned_result_vector);
+  flattenMoveResults(std::move(cloned_result), cloned_result_vector);
 
   std::vector<int> cloned_idx = { 0, 1, 1 };
   if (cloned_result_vector[0].link_names[0] != "sphere_link")

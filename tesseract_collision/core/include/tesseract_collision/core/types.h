@@ -167,9 +167,6 @@ std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v);
 
 std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v);
 
-// Need to mark deprecated
-std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v);
-
 /**
  * @brief This data is intended only to be used internal to the collision checkers as a container and should not
  *        be externally used by other libraries or packages.

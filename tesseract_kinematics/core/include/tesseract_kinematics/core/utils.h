@@ -489,25 +489,6 @@ inline bool isValid(const std::array<FloatType, 6>& qs)
  * @param dof The length of the float array
  */
 template <typename FloatType>
-DEPRECATED("Use redundancy version")
-inline void harmonizeTowardZero(Eigen::Ref<VectorX<FloatType>> qs)
-{
-  const static auto pi = FloatType(M_PI);
-  const static auto two_pi = FloatType(2.0 * M_PI);
-
-  for (Eigen::Index i = 0; i < qs.rows(); ++i)
-  {
-    FloatType diff = std::fmod(qs[i] + pi, two_pi);
-    qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);
-  }
-}
-
-/**
- * @brief This take an array of floats and modifies them in place to be between [-PI, PI]
- * @param qs A pointer to a float array
- * @param dof The length of the float array
- */
-template <typename FloatType>
 inline void harmonizeTowardZero(Eigen::Ref<VectorX<FloatType>> qs,
                                 const std::vector<Eigen::Index>& redundancy_capable_joints)
 {

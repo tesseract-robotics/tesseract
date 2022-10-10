@@ -143,7 +143,7 @@ inline void runTest(ContinuousContactManager& checker)
     checker.contactTest(result, ContactRequest(t));
 
     ContactResultVector result_vector;
-    flattenResults(std::move(result), result_vector);
+    flattenMoveResults(std::move(result), result_vector);
 
     EXPECT_TRUE(!result_vector.empty());
     EXPECT_NEAR(result_vector[0].distance, -0.2475, 0.001);

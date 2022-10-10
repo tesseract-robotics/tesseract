@@ -103,7 +103,7 @@ inline void runTestTyped(DiscreteContactManager& checker, double tol, ContactTes
   checker.contactTest(result, ContactRequest(test_type));
 
   ContactResultVector result_vector;
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   if (test_type == ContactTestType::CLOSEST)

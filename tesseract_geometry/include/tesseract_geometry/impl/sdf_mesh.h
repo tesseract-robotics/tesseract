@@ -128,23 +128,6 @@ public:
   SDFMesh() = default;
   ~SDFMesh() override = default;
 
-#ifndef SWIG
-  /**
-   * @brief Get SDF mesh Triangles
-   * @return A vector of triangle indices
-   */
-  [[deprecated("Please use getFaces() instead")]] const std::shared_ptr<const Eigen::VectorXi>& getTriangles() const
-  {
-    return getFaces();
-  }
-
-  /**
-   * @brief Get triangle count
-   * @return Number of triangles
-   */
-  [[deprecated("Please use getFaceCount() instead")]] int getTriangleCount() const { return getFaceCount(); }
-#endif  // SWIG
-
   Geometry::Ptr clone() const override
   {
     return std::make_shared<SDFMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
