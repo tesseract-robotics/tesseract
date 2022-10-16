@@ -1289,16 +1289,10 @@ bool Environment::applyCommandsHelper(const Commands& commands)
         success &= applyChangeLinkVisibilityCommand(cmd);
         break;
       }
-      case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
+      case tesseract_environment::CommandType::MODIFY_ALLOWED_COLLISIONS:
       {
-        auto cmd = std::static_pointer_cast<const AddAllowedCollisionCommand>(command);
-        success &= applyAddAllowedCollisionCommand(cmd);
-        break;
-      }
-      case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
-      {
-        auto cmd = std::static_pointer_cast<const RemoveAllowedCollisionCommand>(command);
-        success &= applyRemoveAllowedCollisionCommand(cmd);
+        auto cmd = std::static_pointer_cast<const ModifyAllowedCollisionsCommand>(command);
+        success &= applyModifyAllowedCollisionsCommand(cmd);
         break;
       }
       case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
@@ -1715,19 +1709,32 @@ bool Environment::applyChangeLinkVisibilityCommand(const ChangeLinkVisibilityCom
   return true;
 }
 
-bool Environment::applyAddAllowedCollisionCommand(const AddAllowedCollisionCommand::ConstPtr& cmd)
+bool Environment::applyModifyAllowedCollisionsCommand(const ModifyAllowedCollisionsCommand::ConstPtr& cmd)
 {
-  scene_graph_->addAllowedCollision(cmd->getLinkName1(), cmd->getLinkName2(), cmd->getReason());
+  switch (cmd->getModifyType())
+  {
+    case ModifyAllowedCollisionsType::REMOVE:
+    {
+      for (const auto& entry : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
+        scene_graph_->removeAllowedCollision(entry.first.first, entry.first.second);
 
-  ++revision_;
-  commands_.push_back(cmd);
+      break;
+    }
+    case ModifyAllowedCollisionsType::REPLACE:
+    {
+      scene_graph_->clearAllowedCollisions();
+      for (const auto& entry : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
+        scene_graph_->addAllowedCollision(entry.first.first, entry.first.second, entry.second);
+      break;
+    }
+    case ModifyAllowedCollisionsType::ADD:
+    {
+      for (const auto& entry : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
+        scene_graph_->addAllowedCollision(entry.first.first, entry.first.second, entry.second);
 
-  return true;
-}
-
-bool Environment::applyRemoveAllowedCollisionCommand(const RemoveAllowedCollisionCommand::ConstPtr& cmd)
-{
-  scene_graph_->removeAllowedCollision(cmd->getLinkName1(), cmd->getLinkName2());
+      break;
+    }
+  }
 
   ++revision_;
   commands_.push_back(cmd);

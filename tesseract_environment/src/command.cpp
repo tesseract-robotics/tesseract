@@ -36,6 +36,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+Command::Command(CommandType type) : type_(type) {}
+
 template <class Archive>
 void save(Archive& ar, const CommandType& g, const unsigned int /*version*/)
 {

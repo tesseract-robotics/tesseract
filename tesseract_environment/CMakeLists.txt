@@ -77,7 +77,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CUR
 add_library(
   ${PROJECT_NAME}_commands
   src/command.cpp
-  src/commands/add_allowed_collision_command.cpp
   src/commands/add_contact_managers_plugin_info_command.cpp
   src/commands/add_kinematics_information_command.cpp
   src/commands/add_link_command.cpp
@@ -90,9 +89,9 @@ add_library(
   src/commands/change_link_collision_enabled_command.cpp
   src/commands/change_link_origin_command.cpp
   src/commands/change_link_visibility_command.cpp
+  src/commands/modify_allowed_collisions_command.cpp
   src/commands/move_joint_command.cpp
   src/commands/move_link_command.cpp
-  src/commands/remove_allowed_collision_command.cpp
   src/commands/remove_allowed_collision_link_command.cpp
   src/commands/remove_joint_command.cpp
   src/commands/remove_link_command.cpp
