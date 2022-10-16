@@ -709,8 +709,7 @@ private:
   bool applyChangeJointOriginCommand(const ChangeJointOriginCommand::ConstPtr& cmd);
   bool applyChangeLinkCollisionEnabledCommand(const ChangeLinkCollisionEnabledCommand::ConstPtr& cmd);
   bool applyChangeLinkVisibilityCommand(const ChangeLinkVisibilityCommand::ConstPtr& cmd);
-  bool applyAddAllowedCollisionCommand(const AddAllowedCollisionCommand::ConstPtr& cmd);
-  bool applyRemoveAllowedCollisionCommand(const RemoveAllowedCollisionCommand::ConstPtr& cmd);
+  bool applyModifyAllowedCollisionsCommand(const ModifyAllowedCollisionsCommand::ConstPtr& cmd);
   bool applyRemoveAllowedCollisionLinkCommand(const RemoveAllowedCollisionLinkCommand::ConstPtr& cmd);
   bool applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd);
   bool applyChangeJointPositionLimitsCommand(const ChangeJointPositionLimitsCommand::ConstPtr& cmd);

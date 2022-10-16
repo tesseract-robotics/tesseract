@@ -538,10 +538,12 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   // Remove allowed collision
-  auto cmd_remove = std::make_shared<RemoveAllowedCollisionCommand>(l1, l2);
-  EXPECT_EQ(cmd_remove->getType(), CommandType::REMOVE_ALLOWED_COLLISION);
-  EXPECT_EQ(cmd_remove->getLinkName1(), l1);
-  EXPECT_EQ(cmd_remove->getLinkName2(), l2);
+  tesseract_common::AllowedCollisionMatrix remove_ac;
+  remove_ac.addAllowedCollision(l1, l2, "remove");
+  auto cmd_remove = std::make_shared<ModifyAllowedCollisionsCommand>(remove_ac, ModifyAllowedCollisionsType::REMOVE);
+  EXPECT_EQ(cmd_remove->getType(), CommandType::MODIFY_ALLOWED_COLLISIONS);
+  EXPECT_EQ(cmd_remove->getAllowedCollisionMatrix().getAllAllowedCollisions().size(), 1);
+  EXPECT_TRUE(cmd_remove->getAllowedCollisionMatrix().isCollisionAllowed(l1, l2));
 
   EXPECT_TRUE(env->applyCommand(cmd_remove));
 
@@ -551,11 +553,12 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_EQ(env->getCommandHistory().back(), cmd_remove);
 
   // Add allowed collision back
-  auto cmd_add = std::make_shared<AddAllowedCollisionCommand>(l1, l2, r);
-  EXPECT_EQ(cmd_add->getType(), CommandType::ADD_ALLOWED_COLLISION);
-  EXPECT_EQ(cmd_add->getLinkName1(), l1);
-  EXPECT_EQ(cmd_add->getLinkName2(), l2);
-  EXPECT_EQ(cmd_add->getReason(), r);
+  tesseract_common::AllowedCollisionMatrix add_ac;
+  add_ac.addAllowedCollision(l1, l2, r);
+  auto cmd_add = std::make_shared<ModifyAllowedCollisionsCommand>(add_ac, ModifyAllowedCollisionsType::ADD);
+  EXPECT_EQ(cmd_add->getType(), CommandType::MODIFY_ALLOWED_COLLISIONS);
+  EXPECT_EQ(cmd_add->getAllowedCollisionMatrix().getAllAllowedCollisions().size(), 1);
+  EXPECT_TRUE(cmd_add->getAllowedCollisionMatrix().isCollisionAllowed(l1, l2));
 
   EXPECT_TRUE(env->applyCommand(cmd_add));
 

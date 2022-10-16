@@ -28,7 +28,6 @@
 #ifndef TESSERACT_ENVIRONMENT_COMMANDS_H
 #define TESSERACT_ENVIRONMENT_COMMANDS_H
 
-#include <tesseract_environment/commands/add_allowed_collision_command.h>
 #include <tesseract_environment/commands/add_contact_managers_plugin_info_command.h>
 #include <tesseract_environment/commands/add_link_command.h>
 #include <tesseract_environment/commands/add_kinematics_information_command.h>
@@ -40,9 +39,9 @@
 #include <tesseract_environment/commands/change_link_collision_enabled_command.h>
 #include <tesseract_environment/commands/change_link_origin_command.h>
 #include <tesseract_environment/commands/change_link_visibility_command.h>
+#include <tesseract_environment/commands/modify_allowed_collisions_command.h>
 #include <tesseract_environment/commands/move_joint_command.h>
 #include <tesseract_environment/commands/move_link_command.h>
-#include <tesseract_environment/commands/remove_allowed_collision_command.h>
 #include <tesseract_environment/commands/remove_allowed_collision_link_command.h>
 #include <tesseract_environment/commands/remove_joint_command.h>
 #include <tesseract_environment/commands/remove_link_command.h>

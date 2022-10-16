@@ -78,11 +78,31 @@ TEST(EnvironmentSerializeUnit, Environment)  // NOLINT
   testSerializationPtr<Environment>(env, "Environment");
 }
 
-TEST(EnvironmentCommandsSerializeUnit, AddAllowedCollisionCommand)  // NOLINT
+TEST(EnvironmentCommandsSerializeUnit, ModifyAllowedCollisionsCommand)  // NOLINT
 {
-  auto object = std::make_shared<AddAllowedCollisionCommand>("link1", "link2", "description");
-  testSerialization<AddAllowedCollisionCommand>(*object, "AddAllowedCollisionCommand");
-  testSerializationDerivedClass<Command, AddAllowedCollisionCommand>(object, "AddAllowedCollisionCommand");
+  {  // ADD
+    tesseract_common::AllowedCollisionMatrix add_ac;
+    add_ac.addAllowedCollision("link1", "link2", "description");
+    auto object = std::make_shared<ModifyAllowedCollisionsCommand>(add_ac, ModifyAllowedCollisionsType::ADD);
+    testSerialization<ModifyAllowedCollisionsCommand>(*object, "ModifyAllowedCollisionsCommand");
+    testSerializationDerivedClass<Command, ModifyAllowedCollisionsCommand>(object, "ModifyAllowedCollisionsCommand");
+  }
+
+  {  // REMOVE
+    tesseract_common::AllowedCollisionMatrix remove_ac;
+    remove_ac.addAllowedCollision("link1", "link2", "description");
+    auto object = std::make_shared<ModifyAllowedCollisionsCommand>(remove_ac, ModifyAllowedCollisionsType::REMOVE);
+    testSerialization<ModifyAllowedCollisionsCommand>(*object, "ModifyAllowedCollisionsCommand");
+    testSerializationDerivedClass<Command, ModifyAllowedCollisionsCommand>(object, "ModifyAllowedCollisionsCommand");
+  }
+
+  {  // REMOVE
+    tesseract_common::AllowedCollisionMatrix replace_ac;
+    replace_ac.addAllowedCollision("link1", "link2", "description");
+    auto object = std::make_shared<ModifyAllowedCollisionsCommand>(replace_ac, ModifyAllowedCollisionsType::REPLACE);
+    testSerialization<ModifyAllowedCollisionsCommand>(*object, "ModifyAllowedCollisionsCommand");
+    testSerializationDerivedClass<Command, ModifyAllowedCollisionsCommand>(object, "ModifyAllowedCollisionsCommand");
+  }
 }
 
 TEST(EnvironmentCommandsSerializeUnit, AddContactManagersPluginInfoCommand)  // NOLINT
@@ -212,13 +232,6 @@ TEST(EnvironmentCommandsSerializeUnit, MoveLinkCommand)  // NOLINT
   auto object = std::make_shared<MoveLinkCommand>(*joint_1);
   testSerialization<MoveLinkCommand>(*object, "MoveLinkCommand");
   testSerializationDerivedClass<Command, MoveLinkCommand>(object, "MoveLinkCommand");
-}
-
-TEST(EnvironmentCommandsSerializeUnit, RemoveAllowedCollisionCommand)  // NOLINT
-{
-  auto object = std::make_shared<RemoveAllowedCollisionCommand>("link name", "link name 2");
-  testSerialization<RemoveAllowedCollisionCommand>(*object, "RemoveAllowedCollisionCommand");
-  testSerializationDerivedClass<Command, RemoveAllowedCollisionCommand>(object, "RemoveAllowedCollisionCommand");
 }
 
 TEST(EnvironmentCommandsSerializeUnit, RemoveAllowedCollisionLinkCommand)  // NOLINT
