@@ -350,6 +350,18 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_kin_plugin_entry);
   }
 
+  if (!contact_managers_plugin_info.empty())
+  {
+    tesseract_common::fs::path p(file_path);
+    std::ofstream fout(p.parent_path().append("contact_managers_plugin_config.yaml").string());
+    YAML::Node config;
+    config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY] = contact_managers_plugin_info;
+    fout << config;
+    tinyxml2::XMLElement* xml_kin_plugin_entry = doc.NewElement("contact_managers_plugin_config");
+    xml_kin_plugin_entry->SetAttribute("filename", "contact_managers_plugin_config.yaml");
+    xml_root->InsertEndChild(xml_kin_plugin_entry);
+  }
+
   if (!calibration_info.empty())
   {
     tesseract_common::fs::path p(file_path);
@@ -388,18 +400,6 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
 
       xml_root->InsertEndChild(xml_cm_entry);
     }
-  }
-
-  if (!contact_managers_plugin_info.empty())
-  {
-    tesseract_common::fs::path p(file_path);
-    std::ofstream fout(p.parent_path().append("contact_managers_plugin_config.yaml").string());
-    YAML::Node config;
-    config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY] = contact_managers_plugin_info;
-    fout << config;
-    tinyxml2::XMLElement* xml_kin_plugin_entry = doc.NewElement("contact_managers_plugin_config");
-    xml_kin_plugin_entry->SetAttribute("filename", "contact_managers_plugin_config.yaml");
-    xml_root->InsertEndChild(xml_kin_plugin_entry);
   }
 
   doc.InsertFirstChild(xml_root);
