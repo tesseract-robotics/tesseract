@@ -64,6 +64,36 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
+/**
+ * @brief A general resource loaders using environment variable
+ * @details Also can set this environment variable TESSERACT_RESOURCE_PATH
+ * with ':' separated directories and then use the directires as package names
+ */
+class GeneralResourceLocator : public ResourceLocator
+{
+public:
+  using Ptr = std::shared_ptr<GeneralResourceLocator>;
+  using ConstPtr = std::shared_ptr<const GeneralResourceLocator>;
+  GeneralResourceLocator();
+  GeneralResourceLocator(const GeneralResourceLocator&) = default;
+  GeneralResourceLocator& operator=(const GeneralResourceLocator&) = default;
+  GeneralResourceLocator(GeneralResourceLocator&&) = default;
+  GeneralResourceLocator& operator=(GeneralResourceLocator&&) = default;
+  ~GeneralResourceLocator() override = default;
+
+  std::shared_ptr<Resource> locateResource(const std::string& url) const override;
+
+  bool operator==(const GeneralResourceLocator& rhs) const;
+  bool operator!=(const GeneralResourceLocator& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+
+  std::unordered_map<std::string, std::string> package_paths_;
+};
+
 /**  @brief Represents resource data available from a file or url */
 class Resource : public ResourceLocator
 {
@@ -203,6 +233,7 @@ private:
 
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::GeneralResourceLocator, "GeneralResourceLocator")
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::SimpleLocatedResource, "SimpleLocatedResource")
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::BytesResource, "BytesResource")
 

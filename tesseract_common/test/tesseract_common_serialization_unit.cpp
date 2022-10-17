@@ -38,8 +38,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/atomic_serialization.h>
 #include <tesseract_common/joint_state.h>
 #include <tesseract_common/manipulator_info.h>
+#include <tesseract_common/resource_locator.h>
 
 using namespace tesseract_common;
+
+TEST(TesseractCommonSerializeUnit, GeneralResourceLocator)  // NOLINT
+{
+  GeneralResourceLocator locator;
+  tesseract_common::testSerialization<GeneralResourceLocator>(locator, "GeneralResourceLocator");
+}
 
 TEST(TesseractCommonSerializeUnit, KinematicLimits)  // NOLINT
 {

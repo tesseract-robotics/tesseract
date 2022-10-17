@@ -85,6 +85,94 @@ TEST(ResourceLocatorUnit, SimpleResourceLocatorUnit)  // NOLINT
   EXPECT_TRUE(resource_does_not_exist->getResourceContentStream() == nullptr);
 }
 
+TEST(ResourceLocatorUnit, GeneralResourceLocatorUnit1)  // NOLINT
+{
+  using namespace tesseract_common;
+  tesseract_common::fs::path file_path(__FILE__);
+  tesseract_common::fs::path package_path = file_path.parent_path().parent_path();
+
+#ifndef _WIN32
+  std::string env_var = "TESSERACT_RESOURCE_PATH=" + package_path.string();
+#else
+  std::string env_var = "TESSERACT_RESOURCE_PATH=" + package_path.string();
+#endif
+  putenv(env_var.data());
+
+  ResourceLocator::Ptr locator = std::make_shared<GeneralResourceLocator>();
+
+  Resource::Ptr resource = locator->locateResource("package://tesseract_common/package.xml");
+  EXPECT_TRUE(resource != nullptr);
+  EXPECT_TRUE(resource->isFile());
+  EXPECT_EQ(resource->getUrl(), "package://tesseract_common/package.xml");
+  EXPECT_EQ(tesseract_common::fs::path(resource->getFilePath()), (package_path / "package.xml"));
+  EXPECT_FALSE(resource->getResourceContents().empty());
+  EXPECT_TRUE(resource->getResourceContentStream() != nullptr);
+
+  Resource::Ptr sub_resource = resource->locateResource("colcon.pkg");
+  EXPECT_TRUE(sub_resource != nullptr);
+  EXPECT_TRUE(sub_resource->isFile());
+  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common/colcon.pkg");
+  EXPECT_EQ(tesseract_common::fs::path(sub_resource->getFilePath()), (package_path / "colcon.pkg"));
+  EXPECT_FALSE(sub_resource->getResourceContents().empty());
+  EXPECT_TRUE(sub_resource->getResourceContentStream() != nullptr);
+
+  tesseract_common::Resource::Ptr sub_resource_empty = sub_resource->locateResource("");
+  EXPECT_TRUE(sub_resource_empty == nullptr);
+
+  tesseract_common::Resource::Ptr resource_empty = locator->locateResource("");
+  EXPECT_TRUE(resource_empty == nullptr);
+
+  tesseract_common::Resource::Ptr resource_does_not_exist = locator->locateResource("package://tesseract_common/"
+                                                                                    "does_not_exist.txt");
+  EXPECT_TRUE(resource_does_not_exist != nullptr);
+  EXPECT_TRUE(resource_does_not_exist->getResourceContents().empty());
+  EXPECT_TRUE(resource_does_not_exist->getResourceContentStream() == nullptr);
+}
+
+TEST(ResourceLocatorUnit, GeneralResourceLocatorUnit2)  // NOLINT
+{
+  using namespace tesseract_common;
+  tesseract_common::fs::path file_path(__FILE__);
+  tesseract_common::fs::path package_path = file_path.parent_path().parent_path();
+
+#ifndef _WIN32
+  std::string env_var = "ROS_PACKAGE_PATH=" + package_path.string();
+#else
+  std::string env_var = "ROS_PACKAGE_PATH=" + package_path.string();
+#endif
+  putenv(env_var.data());
+
+  ResourceLocator::Ptr locator = std::make_shared<GeneralResourceLocator>();
+
+  Resource::Ptr resource = locator->locateResource("package://tesseract_common/package.xml");
+  EXPECT_TRUE(resource != nullptr);
+  EXPECT_TRUE(resource->isFile());
+  EXPECT_EQ(resource->getUrl(), "package://tesseract_common/package.xml");
+  EXPECT_EQ(tesseract_common::fs::path(resource->getFilePath()), (package_path / "package.xml"));
+  EXPECT_FALSE(resource->getResourceContents().empty());
+  EXPECT_TRUE(resource->getResourceContentStream() != nullptr);
+
+  Resource::Ptr sub_resource = resource->locateResource("colcon.pkg");
+  EXPECT_TRUE(sub_resource != nullptr);
+  EXPECT_TRUE(sub_resource->isFile());
+  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common/colcon.pkg");
+  EXPECT_EQ(tesseract_common::fs::path(sub_resource->getFilePath()), (package_path / "colcon.pkg"));
+  EXPECT_FALSE(sub_resource->getResourceContents().empty());
+  EXPECT_TRUE(sub_resource->getResourceContentStream() != nullptr);
+
+  tesseract_common::Resource::Ptr sub_resource_empty = sub_resource->locateResource("");
+  EXPECT_TRUE(sub_resource_empty == nullptr);
+
+  tesseract_common::Resource::Ptr resource_empty = locator->locateResource("");
+  EXPECT_TRUE(resource_empty == nullptr);
+
+  tesseract_common::Resource::Ptr resource_does_not_exist = locator->locateResource("package://tesseract_common/"
+                                                                                    "does_not_exist.txt");
+  EXPECT_TRUE(resource_does_not_exist != nullptr);
+  EXPECT_TRUE(resource_does_not_exist->getResourceContents().empty());
+  EXPECT_TRUE(resource_does_not_exist->getResourceContentStream() == nullptr);
+}
+
 TEST(ResourceLocatorUnit, ByteResourceUnit)  // NOLINT
 {
   using namespace tesseract_common;

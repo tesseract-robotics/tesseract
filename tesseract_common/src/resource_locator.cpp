@@ -30,9 +30,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <cassert>
 #include <iostream>
+#include <mutex>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/resource_locator.h>
@@ -47,6 +50,111 @@ bool ResourceLocator::operator!=(const ResourceLocator& /*rhs*/) const { return 
 template <class Archive>
 void ResourceLocator::serialize(Archive& /*ar*/, const unsigned int /*version*/)
 {
+}
+
+GeneralResourceLocator::GeneralResourceLocator()
+{
+  // This was added to allow user defined resource path
+  // When using this within a snap you can map host ros package paths to this environment variable
+  char* tesseract_resource_paths = std::getenv("TESSERACT_RESOURCE_PATH");
+  if (tesseract_resource_paths != nullptr)
+  {
+    std::vector<std::string> tokens;
+#ifndef _WIN32
+    boost::split(tokens, tesseract_resource_paths, boost::is_any_of(":"), boost::token_compress_on);
+#else
+    boost::split(tokens, tesseract_resource_paths, boost::is_any_of(";"), boost::token_compress_on);
+#endif
+    for (const auto& token : tokens)
+    {
+      tesseract_common::fs::path d(token);
+      if (tesseract_common::fs::is_directory(d) && tesseract_common::fs::exists(d))
+      {
+        std::string dir_name = d.filename().string();
+        if (package_paths_.find(dir_name) == package_paths_.end())
+          package_paths_[dir_name] = token;
+      }
+      else
+      {
+        CONSOLE_BRIDGE_logWarn("Package Path does not exist: %s", token.c_str());
+      }
+    }
+  }
+
+  char* ros_package_paths = std::getenv("ROS_PACKAGE_PATH");
+  if (ros_package_paths != nullptr)
+  {
+    std::vector<std::string> tokens;
+#ifndef _WIN32
+    boost::split(tokens, ros_package_paths, boost::is_any_of(":"), boost::token_compress_on);
+#else
+    boost::split(tokens, ros_package_paths, boost::is_any_of(";"), boost::token_compress_on);
+#endif
+    for (const auto& token : tokens)
+    {
+      tesseract_common::fs::path d(token);
+      if (tesseract_common::fs::is_directory(d) && tesseract_common::fs::exists(d))
+      {
+        std::string dir_name = d.filename().string();
+        if (package_paths_.find(dir_name) == package_paths_.end())
+          package_paths_[dir_name] = token;
+      }
+      else
+      {
+        CONSOLE_BRIDGE_logError("Package Path does not exist: &s", token.c_str());
+      }
+    }
+  }
+}
+
+std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::string& url) const
+{
+  std::string mod_url = url;
+  if (url.find("file:///") == 0)
+  {
+    mod_url.erase(0, strlen("file://"));
+    size_t pos = mod_url.find('/');
+    if (pos == std::string::npos)
+      return nullptr;
+  }
+  else if (url.find("package://") == 0)
+  {
+    mod_url.erase(0, strlen("package://"));
+    size_t pos = mod_url.find('/');
+    if (pos == std::string::npos)
+      return nullptr;
+
+    std::string package = mod_url.substr(0, pos);
+    mod_url.erase(0, pos);
+
+    auto find_package = package_paths_.find(package);
+    if (find_package != package_paths_.end())
+    {
+      mod_url = find_package->second + mod_url;
+    }
+    else
+    {
+      CONSOLE_BRIDGE_logError("Failed to find package resource %s for %s", package.c_str(), url.c_str());
+      return nullptr;
+    }
+  }
+
+  if (!tesseract_common::fs::path(mod_url).is_complete())
+  {
+    CONSOLE_BRIDGE_logWarn("Resource not handled: %s", mod_url.c_str());
+    return nullptr;
+  }
+
+  return std::make_shared<SimpleLocatedResource>(url, mod_url, std::make_shared<GeneralResourceLocator>(*this));
+}
+
+bool GeneralResourceLocator::operator==(const GeneralResourceLocator& /*rhs*/) const { return true; }
+bool GeneralResourceLocator::operator!=(const GeneralResourceLocator& /*rhs*/) const { return false; }
+
+template <class Archive>
+void GeneralResourceLocator::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ResourceLocator);
 }
 
 bool Resource::operator==(const Resource& /*rhs*/) const { return true; }
@@ -213,8 +321,10 @@ void BytesResource::serialize(Archive& ar, const unsigned int /*version*/)
 
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ResourceLocator)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::GeneralResourceLocator)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::Resource)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::SimpleLocatedResource)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::BytesResource)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::GeneralResourceLocator)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::SimpleLocatedResource)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::BytesResource)
