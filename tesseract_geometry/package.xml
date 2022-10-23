@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>tesseract_geometry</name>
-  <version>0.13.1</version>
+  <version>0.14.0</version>
   <description>The tesseract_geometry package</description>
   <maintainer email="Armstrong@todo.todo">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>

@@ -2,8 +2,8 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.14.0 (2022-10-23)
+-------------------
 * Order srdf save so plugins are above the acm
 * Contributors: Levi Armstrong
 

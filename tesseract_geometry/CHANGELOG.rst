@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.14.0 (2022-10-23)
+-------------------
 * Remove deprecated items
 * Fix codecov build using ros_industrial_cmake_boilerplate 0.3.1
 * Contributors: Levi Armstrong

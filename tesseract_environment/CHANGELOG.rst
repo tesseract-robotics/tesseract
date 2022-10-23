@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.14.0 (2022-10-23)
+-------------------
 * Add modify allowed collisions command
 * Add forgotten source file extension to CMakeLists.
 * Fix issue where cache is emptied by other threads after refresh causing segfault when popping environment on empty queue
