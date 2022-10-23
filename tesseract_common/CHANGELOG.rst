@@ -2,6 +2,16 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add general resource locator
+* Remove deprecated items
+* Add fileToString utility function
+* Rename Any to AnyPoly
+* Remove StatusCode and fix eigen being passed by value in JointState
+* Including <boost/serialization/library_version_type.hpp> for Boost 1.74. Fixes `tesseract-robotics/tesseract#764 <https://github.com/tesseract-robotics/tesseract/issues/764>`_
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.13.1 (2022-08-25)
 -------------------
 * Add tesseract extension macro

@@ -2,6 +2,11 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Order srdf save so plugins are above the acm
+* Contributors: Levi Armstrong
+
 0.13.1 (2022-08-25)
 -------------------
 * Move boost serialization export outside tesseract_common namespace in srdf_model.cpp
