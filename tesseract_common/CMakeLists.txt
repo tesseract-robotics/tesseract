@@ -16,6 +16,7 @@ find_package(Boost REQUIRED COMPONENTS system filesystem serialization)
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(FreeImage REQUIRED)
 
 find_package(console_bridge REQUIRED)
 if(NOT TARGET console_bridge::console_bridge)
@@ -47,12 +48,18 @@ add_library(
   src/allowed_collision_matrix.cpp
   src/any_poly.cpp
   src/collision_margin_data.cpp
+  src/color.cpp
   src/joint_state.cpp
   src/manipulator_info.cpp
+  src/material.cpp
   src/kinematic_limits.cpp
   src/eigen_serialization.cpp
+  src/image.cpp
   src/utils.cpp
   src/resource_locator.cpp
+  src/shader_param.cpp
+  src/shader_params.cpp
+  src/shader_type.cpp
   src/types.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
@@ -64,6 +71,7 @@ target_link_libraries(
          Boost::filesystem
          Boost::serialization
          console_bridge::console_bridge
+         ${FreeImage_LIBRARIES}
          yaml-cpp)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -77,6 +85,8 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+    ${FreeImage_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
@@ -91,6 +101,8 @@ install(
 
 install(
   FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/FindFreeImage.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/FindPkgMacros.cmake"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/FindTinyXML2.cmake"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc.cmake"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc_minimal.cmake"

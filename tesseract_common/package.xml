@@ -16,6 +16,7 @@
   <depend>libconsole-bridge-dev</depend>
   <depend>tinyxml2</depend>
   <depend>yaml-cpp</depend>
+  <depend>freeimage</depend>
 
   <build_depend>libboost-system-dev</build_depend>
   <build_export_depend>libboost-system-dev</build_export_depend>
