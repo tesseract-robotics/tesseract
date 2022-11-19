@@ -53,6 +53,8 @@ add_library(
   src/eigen_serialization.cpp
   src/utils.cpp
   src/resource_locator.cpp
+  src/tool_path.cpp
+  src/tool_path_segment.cpp
   src/types.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
