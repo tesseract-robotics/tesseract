@@ -60,6 +60,8 @@ add_library(
   src/shader_param.cpp
   src/shader_params.cpp
   src/shader_type.cpp
+  src/tool_path.cpp
+  src/tool_path_segment.cpp
   src/types.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
@@ -85,8 +87,7 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${FreeImage_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${FreeImage_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
