@@ -61,18 +61,13 @@ LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::stri
 /******               PluginInfo                     *****/
 /*********************************************************/
 
-std::string PluginInfo::getConfigString() const
-{
-  std::stringstream stream;
-  stream << config;
-  return stream.str();
-}
+std::string PluginInfo::getConfigString() const { return toYAMLString(config); }
 
 bool PluginInfo::operator==(const PluginInfo& rhs) const
 {
   bool equal = true;
   equal &= class_name == rhs.class_name;
-  equal &= isIdentical(config, rhs.config);
+  equal &= compareYAML(config, rhs.config);
 
   return equal;
 }
@@ -92,7 +87,8 @@ void PluginInfo::load(Archive& ar, const unsigned int /*version*/)
   ar& BOOST_SERIALIZATION_NVP(class_name);
   std::string config_string;
   ar& BOOST_SERIALIZATION_NVP(config_string);
-  config = YAML::Load(config_string);
+  // On 18.04 '~' does not load as null so must check
+  config = (config_string != "~") ? YAML::Load(config_string) : YAML::Node();
 }
 
 template <class Archive>
@@ -135,8 +131,24 @@ void KinematicsPluginInfo::insert(const KinematicsPluginInfo& other)
 {
   search_paths.insert(other.search_paths.begin(), other.search_paths.end());
   search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
-  fwd_plugin_infos.insert(other.fwd_plugin_infos.begin(), other.fwd_plugin_infos.end());
-  inv_plugin_infos.insert(other.inv_plugin_infos.begin(), other.inv_plugin_infos.end());
+
+  for (const auto& group_plugins : other.fwd_plugin_infos)
+  {
+    if (!group_plugins.second.default_plugin.empty())
+      fwd_plugin_infos[group_plugins.first].default_plugin = group_plugins.second.default_plugin;
+
+    for (const auto& plugin_info : group_plugins.second.plugins)
+      fwd_plugin_infos[group_plugins.first].plugins[plugin_info.first] = plugin_info.second;
+  }
+
+  for (const auto& group_plugins : other.inv_plugin_infos)
+  {
+    if (!group_plugins.second.default_plugin.empty())
+      inv_plugin_infos[group_plugins.first].default_plugin = group_plugins.second.default_plugin;
+
+    for (const auto& plugin_info : group_plugins.second.plugins)
+      inv_plugin_infos[group_plugins.first].plugins[plugin_info.first] = plugin_info.second;
+  }
 }
 
 void KinematicsPluginInfo::clear()
@@ -157,8 +169,10 @@ bool KinematicsPluginInfo::operator==(const KinematicsPluginInfo& rhs) const
   bool equal = true;
   equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
   equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
-  equal &= fwd_plugin_infos == rhs.fwd_plugin_infos;
-  equal &= inv_plugin_infos == rhs.inv_plugin_infos;
+  equal &= isIdenticalMap<std::map<std::string, PluginInfoContainer>, PluginInfoContainer>(fwd_plugin_infos,
+                                                                                           rhs.fwd_plugin_infos);
+  equal &= isIdenticalMap<std::map<std::string, PluginInfoContainer>, PluginInfoContainer>(inv_plugin_infos,
+                                                                                           rhs.inv_plugin_infos);
 
   return equal;
 }
@@ -180,10 +194,18 @@ void ContactManagersPluginInfo::insert(const ContactManagersPluginInfo& other)
 {
   search_paths.insert(other.search_paths.begin(), other.search_paths.end());
   search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
-  discrete_plugin_infos.plugins.insert(other.discrete_plugin_infos.plugins.begin(),
-                                       other.discrete_plugin_infos.plugins.end());
-  continuous_plugin_infos.plugins.insert(other.continuous_plugin_infos.plugins.begin(),
-                                         other.continuous_plugin_infos.plugins.end());
+
+  if (!other.discrete_plugin_infos.default_plugin.empty())
+    discrete_plugin_infos.default_plugin = other.discrete_plugin_infos.default_plugin;
+
+  for (const auto& plugin_info : other.discrete_plugin_infos.plugins)
+    discrete_plugin_infos.plugins[plugin_info.first] = plugin_info.second;
+
+  if (!other.continuous_plugin_infos.default_plugin.empty())
+    continuous_plugin_infos.default_plugin = other.continuous_plugin_infos.default_plugin;
+
+  for (const auto& plugin_info : other.continuous_plugin_infos.plugins)
+    continuous_plugin_infos.plugins[plugin_info.first] = plugin_info.second;
 
   if (!other.discrete_plugin_infos.default_plugin.empty())
     discrete_plugin_infos.default_plugin = other.discrete_plugin_infos.default_plugin;
@@ -211,9 +233,8 @@ bool ContactManagersPluginInfo::operator==(const ContactManagersPluginInfo& rhs)
   bool equal = true;
   equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
   equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
-  equal &= discrete_plugin_infos == rhs.discrete_plugin_infos;
-  equal &= continuous_plugin_infos == rhs.continuous_plugin_infos;
-
+  equal &= (discrete_plugin_infos == rhs.discrete_plugin_infos);
+  equal &= (continuous_plugin_infos == rhs.continuous_plugin_infos);
   return equal;
 }
 bool ContactManagersPluginInfo::operator!=(const ContactManagersPluginInfo& rhs) const { return !operator==(rhs); }
@@ -234,15 +255,18 @@ void TaskComposerPluginInfo::insert(const TaskComposerPluginInfo& other)
 {
   search_paths.insert(other.search_paths.begin(), other.search_paths.end());
   search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
-  executor_plugin_infos.plugins.insert(other.executor_plugin_infos.plugins.begin(),
-                                       other.executor_plugin_infos.plugins.end());
-  node_plugin_infos.plugins.insert(other.node_plugin_infos.plugins.begin(), other.node_plugin_infos.plugins.end());
 
   if (!other.executor_plugin_infos.default_plugin.empty())
     executor_plugin_infos.default_plugin = other.executor_plugin_infos.default_plugin;
 
+  for (const auto& plugin_info : other.executor_plugin_infos.plugins)
+    executor_plugin_infos.plugins[plugin_info.first] = plugin_info.second;
+
   if (!other.node_plugin_infos.default_plugin.empty())
     node_plugin_infos.default_plugin = other.node_plugin_infos.default_plugin;
+
+  for (const auto& plugin_info : other.node_plugin_infos.plugins)
+    node_plugin_infos.plugins[plugin_info.first] = plugin_info.second;
 }
 
 void TaskComposerPluginInfo::clear()
@@ -264,9 +288,8 @@ bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
   bool equal = true;
   equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
   equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
-  equal &= executor_plugin_infos == rhs.executor_plugin_infos;
-  equal &= node_plugin_infos == rhs.node_plugin_infos;
-
+  equal &= (executor_plugin_infos == rhs.executor_plugin_infos);
+  equal &= (node_plugin_infos == rhs.node_plugin_infos);
   return equal;
 }
 bool TaskComposerPluginInfo::operator!=(const TaskComposerPluginInfo& rhs) const { return !operator==(rhs); }
@@ -283,7 +306,11 @@ void TaskComposerPluginInfo::serialize(Archive& ar, const unsigned int /*version
 /*********************************************************/
 /******               CalibrationInfo                *****/
 /*********************************************************/
-void CalibrationInfo::insert(const CalibrationInfo& other) { joints.insert(other.joints.begin(), other.joints.end()); }
+void CalibrationInfo::insert(const CalibrationInfo& other)
+{
+  for (const auto& joint : other.joints)
+    joints[joint.first] = joint.second;
+}
 
 void CalibrationInfo::clear() { joints.clear(); }
 

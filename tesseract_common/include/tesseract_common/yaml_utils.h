@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
+#include <tesseract_common/utils.h>
 
 namespace tesseract_common
 {
@@ -61,9 +62,85 @@ inline YAML::Node fromYAMLString(const std::string& string) { return YAML::Load(
  * @param node1 Input YAML::Node
  * @param node2 Input YAML::Node
  */
-inline bool isIdentical(const YAML::Node& node1, const YAML::Node& node2)
+inline bool compareYAML(const YAML::Node& node1, const YAML::Node& node2)
 {
-  return toYAMLString(node1) == toYAMLString(node2);
+  if (node1.is(node2))
+    return true;
+
+  if (node1.Type() != node2.Type())
+    return false;
+
+  switch (node1.Type())
+  {
+    case YAML::NodeType::Scalar:
+    {
+      try
+      {
+        auto v1 = node1.as<bool>();
+        auto v2 = node2.as<bool>();
+        return (v1 == v2);
+      }
+      catch (YAML::TypedBadConversion<bool>& /*e*/)
+      {
+        try
+        {
+          auto v1 = node1.as<int>();
+          auto v2 = node2.as<int>();
+          return (v1 == v2);
+        }
+        catch (YAML::TypedBadConversion<int>& /*e*/)
+        {
+          try
+          {
+            auto v1 = node1.as<double>();
+            auto v2 = node2.as<double>();
+            return almostEqualRelativeAndAbs(v1, v2, 1e-6, std::numeric_limits<float>::epsilon());
+          }
+          catch (YAML::TypedBadConversion<double>& /*e*/)
+          {
+            try
+            {
+              auto v1 = node1.as<std::string>();
+              auto v2 = node2.as<std::string>();
+              return (v1 == v2);
+            }
+            catch (YAML::TypedBadConversion<std::string>& /*e*/)
+            {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    case YAML::NodeType::Null:
+      return true;
+    case YAML::NodeType::Undefined:
+      return false;
+    case YAML::NodeType::Map:
+    case YAML::NodeType::Sequence:
+      if (node1.size() != node2.size())
+        return false;
+  }
+
+  if (node1.IsMap())
+  {
+    bool result = true;
+    for (YAML::const_iterator it1 = node1.begin(), it2; it1 != node1.end() && result; ++it1)
+    {
+      for (it2 = node2.begin(); it2 != node2.end(); ++it2)
+      {
+        if (compareYAML(it1->first, it2->first))
+          break;
+      }
+      if (it2 == node2.end())
+        return false;
+
+      result = compareYAML(it1->second, it2->second);
+    }
+    return result;
+  }
+
+  return std::equal(node1.begin(), node1.end(), node2.begin(), compareYAML);
 }
 }  // namespace tesseract_common
 
