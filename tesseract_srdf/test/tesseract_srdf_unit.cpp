@@ -1561,6 +1561,20 @@ TEST(TesseractSRDFUnit, AddRemoveChainGroupUnit)  // NOLINT
   EXPECT_EQ(info.group_names.size(), 1);
   EXPECT_TRUE(info.hasGroup("manipulator"));
 
+  // Copy Equal
+  KinematicsInformation info1_copy = info;
+  EXPECT_EQ(info1_copy, info);
+
+  // Not equal
+  chain_group = ChainGroup();
+  chain_group.push_back(std::make_pair("tool0", "base_link"));
+  info1_copy.addChainGroup("manipulator", chain_group);
+  EXPECT_NE(info1_copy, info);
+
+  // Insert
+  info1_copy.insert(info);
+  EXPECT_EQ(info1_copy, info);
+
   // Remove
   info.removeChainGroup("manipulator");
   EXPECT_FALSE(info.hasChainGroup("manipulator"));
@@ -1583,6 +1597,24 @@ TEST(TesseractSRDFUnit, AddRemoveJointGroupUnit)  // NOLINT
   EXPECT_EQ(info.joint_groups.size(), 1);
   EXPECT_EQ(info.group_names.size(), 1);
 
+  // Copy Equal
+  KinematicsInformation info1_copy = info;
+  EXPECT_EQ(info1_copy, info);
+
+  // Different order equal
+  joint_group = { "joint_6", "joint_5", "joint_4", "joint_3", "joint_2", "joint_1" };
+  info1_copy.addJointGroup("manipulator", joint_group);
+  EXPECT_EQ(info1_copy, info);
+
+  // Not Equal
+  joint_group = { "joint_6", "joint_5", "joint_4", "joint_3", "joint_2", "joint_0" };
+  info1_copy.addJointGroup("manipulator", joint_group);
+  EXPECT_NE(info1_copy, info);
+
+  // Insert
+  info1_copy.insert(info);
+  EXPECT_EQ(info1_copy, info);
+
   // Remove
   info.removeJointGroup("manipulator");
   EXPECT_FALSE(info.hasJointGroup("manipulator"));
@@ -1603,6 +1635,24 @@ TEST(TesseractSRDFUnit, AddRemoveLinkGroupUnit)  // NOLINT
   EXPECT_TRUE(info.hasGroup("manipulator"));
   EXPECT_EQ(info.link_groups.size(), 1);
   EXPECT_EQ(info.group_names.size(), 1);
+
+  // Copy Equal
+  KinematicsInformation info1_copy = info;
+  EXPECT_EQ(info1_copy, info);
+
+  // Different order equal
+  link_group = { "link_6", "link_5", "link_4", "link_3", "link_2", "link_1" };
+  info1_copy.addLinkGroup("manipulator", link_group);
+  EXPECT_EQ(info1_copy, info);
+
+  // Not Equal
+  link_group = { "link_6", "link_5", "link_4", "link_3", "link_2", "link_0" };
+  info1_copy.addLinkGroup("manipulator", link_group);
+  EXPECT_NE(info1_copy, info);
+
+  // Insert
+  info1_copy.insert(info);
+  EXPECT_EQ(info1_copy, info);
 
   // Remove
   info.removeLinkGroup("manipulator");
@@ -1632,6 +1682,25 @@ TEST(TesseractSRDFUnit, AddRemoveGroupJointStateUnit)  // NOLINT
   EXPECT_EQ(info.group_states.at("manipulator").size(), 1);
   EXPECT_EQ(info.group_states.size(), 1);
 
+  // Copy Equal
+  KinematicsInformation info1_copy = info;
+  EXPECT_EQ(info1_copy, info);
+
+  // Not Equal
+  group_states["joint_1"] = 1;
+  group_states["joint_2"] = 2;
+  group_states["joint_3"] = 3;
+  group_states["joint_4"] = 4;
+  group_states["joint_5"] = 5;
+  group_states["joint_6"] = 6;
+
+  info1_copy.addGroupJointState("manipulator", "all-zeros", group_states);
+  EXPECT_NE(info1_copy, info);
+
+  // Insert
+  info1_copy.insert(info);
+  EXPECT_EQ(info1_copy, info);
+
   // Remove
   info.removeGroupJointState("manipulator", "all-zeros");
   EXPECT_FALSE(info.hasGroupJointState("manipulator", "all-zeros"));
@@ -1644,7 +1713,6 @@ TEST(TesseractSRDFUnit, AddRemoveGroupTCPUnit)  // NOLINT
   KinematicsInformation info;
 
   // ADD
-  GroupsTCPs group_tcps;
   Eigen::Isometry3d tcp_laser = Eigen::Isometry3d::Identity();
   tcp_laser.translation() = Eigen::Vector3d(1, 0.1, 1);
 
@@ -1659,6 +1727,26 @@ TEST(TesseractSRDFUnit, AddRemoveGroupTCPUnit)  // NOLINT
   EXPECT_TRUE(info.group_tcps.at("manipulator").at("welder").isApprox(tcp_welder, 1e-6));
   EXPECT_EQ(info.group_tcps.at("manipulator").size(), 2);
   EXPECT_EQ(info.group_tcps.size(), 1);
+
+  // Copy Equal
+  KinematicsInformation info1_copy = info;
+  EXPECT_EQ(info1_copy, info);
+
+  // Not Equal
+  tcp_laser = Eigen::Isometry3d::Identity();
+  tcp_laser.translation() = Eigen::Vector3d(0.1, 1, 0.2);
+
+  tcp_welder = Eigen::Isometry3d::Identity();
+  tcp_welder.translation() = Eigen::Vector3d(1, 0.1, 1);
+
+  info1_copy.addGroupTCP("manipulator", "laser", tcp_laser);
+  info1_copy.addGroupTCP("manipulator", "welder", tcp_welder);
+
+  EXPECT_NE(info1_copy, info);
+
+  // Insert
+  info1_copy.insert(info);
+  EXPECT_EQ(info1_copy, info);
 
   // Remove
   info.removeGroupTCP("manipulator", "laser");
