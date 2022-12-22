@@ -891,19 +891,23 @@ TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "KDLFwdKin";
-    kpi.fwd_plugin_infos["manipulator"].plugins = { std::make_pair("KDLFwdKin", pi) };
+    kpi_insert.fwd_plugin_infos["manipulator"].plugins = { std::make_pair("KDLFwdKin", pi) };
+    kpi_insert.fwd_plugin_infos["manipulator"].default_plugin = "KDLFwdKin";
   }
 
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "KDLInvKin";
-    kpi.inv_plugin_infos["manipulator"].plugins = { std::make_pair("KDLInvKin", pi) };
+    kpi_insert.inv_plugin_infos["manipulator"].plugins = { std::make_pair("KDLInvKin", pi) };
+    kpi_insert.inv_plugin_infos["manipulator"].default_plugin = "KDLInvKin";
   }
 
   EXPECT_FALSE(kpi_insert.empty());
 
+  EXPECT_NE(kpi, kpi_insert);
   kpi.insert(kpi_insert);
   EXPECT_FALSE(kpi.empty());
+  EXPECT_EQ(kpi, kpi_insert);
 
   kpi.clear();
   EXPECT_TRUE(kpi.empty());
@@ -921,19 +925,23 @@ TEST(TesseractCommonUnit, ContactManagersPluginInfoUnit)  // NOLINT
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "DiscretePluginFactory";
-    cmpi.discrete_plugin_infos.plugins = { std::make_pair("DiscretePlugin", pi) };
+    cmpi_insert.discrete_plugin_infos.plugins = { std::make_pair("DiscretePlugin", pi) };
+    cmpi_insert.discrete_plugin_infos.default_plugin = "DiscretePlugin";
   }
 
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "ContinuousPluginFactory";
-    cmpi.continuous_plugin_infos.plugins = { std::make_pair("ContinuousPlugin", pi) };
+    cmpi_insert.continuous_plugin_infos.plugins = { std::make_pair("ContinuousPlugin", pi) };
+    cmpi_insert.continuous_plugin_infos.default_plugin = "ContinuousPlugin";
   }
 
   EXPECT_FALSE(cmpi_insert.empty());
 
+  EXPECT_NE(cmpi, cmpi_insert);
   cmpi.insert(cmpi_insert);
   EXPECT_FALSE(cmpi.empty());
+  EXPECT_EQ(cmpi, cmpi_insert);
 
   cmpi.clear();
   EXPECT_TRUE(cmpi.empty());
@@ -951,19 +959,23 @@ TEST(TesseractCommonUnit, TaskComposerPluginInfoUnit)  // NOLINT
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "TaskComposerExecutorPluginFactory";
-    tcpi.executor_plugin_infos.plugins = { std::make_pair("TaskComposerExecutorPlugin", pi) };
+    tcpi_insert.executor_plugin_infos.plugins = { std::make_pair("TaskComposerExecutorPlugin", pi) };
+    tcpi_insert.executor_plugin_infos.default_plugin = "TaskComposerExecutorPlugin";
   }
 
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "TaskComposerNodePluginFactory";
-    tcpi.node_plugin_infos.plugins = { std::make_pair("TaskComposerNodePlugin", pi) };
+    tcpi_insert.node_plugin_infos.plugins = { std::make_pair("TaskComposerNodePlugin", pi) };
+    tcpi_insert.node_plugin_infos.default_plugin = "TaskComposerNodePlugin";
   }
 
   EXPECT_FALSE(tcpi_insert.empty());
 
+  EXPECT_NE(tcpi, tcpi_insert);
   tcpi.insert(tcpi_insert);
   EXPECT_FALSE(tcpi.empty());
+  EXPECT_EQ(tcpi, tcpi_insert);
 
   tcpi.clear();
   EXPECT_TRUE(tcpi.empty());
