@@ -55,33 +55,26 @@ void KinematicsInformation::clear()
 void KinematicsInformation::insert(const KinematicsInformation& other)
 {
   group_names.insert(other.group_names.begin(), other.group_names.end());
-  chain_groups.insert(other.chain_groups.begin(), other.chain_groups.end());
-  joint_groups.insert(other.joint_groups.begin(), other.joint_groups.end());
-  link_groups.insert(other.link_groups.begin(), other.link_groups.end());
+
+  for (const auto& group : other.chain_groups)
+    chain_groups[group.first] = group.second;
+
+  for (const auto& group : other.joint_groups)
+    joint_groups[group.first] = group.second;
+
+  for (const auto& group : other.link_groups)
+    link_groups[group.first] = group.second;
+
   for (const auto& group : other.group_states)
   {
-    auto it = group_states.find(group.first);
-    if (it == group_states.end())
-    {
-      group_states[group.first] = group.second;
-    }
-    else
-    {
-      it->second.insert(group.second.begin(), group.second.end());
-    }
+    for (const auto& state : group.second)
+      group_states[group.first][state.first] = state.second;
   }
 
   for (const auto& group : other.group_tcps)
   {
-    auto it = group_tcps.find(group.first);
-    if (it == group_tcps.end())
-    {
-      group_tcps[group.first] = group.second;
-    }
-    else
-    {
-      it->second.insert(group.second.begin(), group.second.end());
-    }
+    for (const auto& tcp : group.second)
+      group_tcps[group.first][tcp.first] = tcp.second;
   }
 
   kinematics_plugin_info.insert(other.kinematics_plugin_info);
@@ -191,10 +184,64 @@ bool KinematicsInformation::hasGroupTCP(const std::string& group_name, const std
   return (it->second.find(tcp_name) != it->second.end());
 }
 
-bool KinematicsInformation::operator==(const KinematicsInformation& /*rhs*/) const
+bool KinematicsInformation::operator==(const KinematicsInformation& rhs) const
 {
+  auto double_eq = [](const double& v1, const double& v2) {
+    return tesseract_common::almostEqualRelativeAndAbs(v1, v2, 1e-6, std::numeric_limits<float>::epsilon());
+  };
+
+  auto state_eq = [double_eq](const GroupsJointState& v1, const GroupsJointState& v2) {
+    return tesseract_common::isIdenticalMap<GroupsJointState, double>(v1, v2, double_eq);
+  };
+
+  auto tcp_eq = [](const Eigen::Isometry3d& v1, const Eigen::Isometry3d& v2) { return v1.isApprox(v2, 1e-5); };
+
+  auto list_eq = [](const std::vector<std::string>& v1, const std::vector<std::string>& v2) {
+    return tesseract_common::isIdentical<std::string>(v1, v2, false);
+  };
+
   bool equal = true;
-  /// @todo Write this
+  equal &= tesseract_common::isIdenticalSet<std::string>(group_names, rhs.group_names);
+  equal &= tesseract_common::isIdenticalMap<ChainGroups, ChainGroup>(chain_groups, rhs.chain_groups);
+  equal &= tesseract_common::isIdenticalMap<JointGroups, JointGroup>(joint_groups, rhs.joint_groups, list_eq);
+  equal &= tesseract_common::isIdenticalMap<LinkGroups, LinkGroup>(link_groups, rhs.link_groups, list_eq);
+  equal &= (kinematics_plugin_info == rhs.kinematics_plugin_info);
+
+  equal &= (group_states.size() == rhs.group_states.size());
+  if (equal)
+  {
+    for (const auto& group_state : group_states)
+    {
+      auto it_group = rhs.group_states.find(group_state.first);
+
+      equal &= (it_group != rhs.group_states.end());
+      if (!equal)
+        break;
+
+      equal &= tesseract_common::isIdenticalMap<GroupsJointStates, GroupsJointState>(
+          group_state.second, it_group->second, state_eq);
+      if (!equal)
+        break;
+    }
+  }
+
+  equal &= (group_tcps.size() == rhs.group_tcps.size());
+  if (equal)
+  {
+    for (const auto& group_tcp : group_tcps)
+    {
+      auto it_group = rhs.group_tcps.find(group_tcp.first);
+
+      equal &= (it_group != rhs.group_tcps.end());
+      if (!equal)
+        break;
+
+      equal &=
+          tesseract_common::isIdenticalMap<GroupsTCPs, Eigen::Isometry3d>(group_tcp.second, it_group->second, tcp_eq);
+      if (!equal)
+        break;
+    }
+  }
 
   return equal;
 }
