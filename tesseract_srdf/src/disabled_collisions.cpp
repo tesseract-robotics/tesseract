@@ -68,8 +68,10 @@ tesseract_common::AllowedCollisionMatrix parseDisabledCollisions(const tesseract
     }
 
     status = tesseract_common::QueryStringAttribute(xml_element, "reason", reason);
+    // LCOV_EXCL_START
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'reason'!"));
+    // LCOV_EXCL_STOP
 
     acm.addAllowedCollision(link1_name, link2_name, reason);
   }
