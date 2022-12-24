@@ -850,7 +850,7 @@ TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // missing link2
     std::string xml_string =
@@ -862,7 +862,7 @@ TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // missing reason but should not fail
     std::string xml_string =
@@ -874,7 +874,7 @@ TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
     EXPECT_FALSE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_NO_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_NO_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // invalid link1 but should not fail
     std::string xml_string =
@@ -886,7 +886,7 @@ TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
     EXPECT_FALSE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_NO_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_NO_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // invalid link2 but should not fail
     std::string xml_string =
@@ -898,7 +898,7 @@ TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
     EXPECT_FALSE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_NO_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_NO_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // The reason is numeric but still a valid string so should not fail
     std::string xml_string =
@@ -910,7 +910,7 @@ TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
     EXPECT_FALSE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_NO_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_NO_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
 }
 
@@ -975,7 +975,7 @@ TEST(TesseractSRDFUnit, SRDFChainGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing chains
     std::string str = R"(<robot name="abb_irb2400">
@@ -984,7 +984,7 @@ TEST(TesseractSRDFUnit, SRDFChainGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing chain base_link
     std::string str = R"(<robot name="abb_irb2400">
@@ -995,7 +995,7 @@ TEST(TesseractSRDFUnit, SRDFChainGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing chain tip_link
     std::string str = R"(<robot name="abb_irb2400">
@@ -1006,7 +1006,7 @@ TEST(TesseractSRDFUnit, SRDFChainGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // invalid chain base_link
     std::string str = R"(<robot name="abb_irb2400">
@@ -1017,7 +1017,7 @@ TEST(TesseractSRDFUnit, SRDFChainGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // invalid chain tip_link
     std::string str = R"(<robot name="abb_irb2400">
@@ -1028,7 +1028,7 @@ TEST(TesseractSRDFUnit, SRDFChainGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 }
 
@@ -1098,7 +1098,7 @@ TEST(TesseractSRDFUnit, SRDFJointGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing joints
     std::string str = R"(<robot name="abb_irb2400">
@@ -1108,7 +1108,7 @@ TEST(TesseractSRDFUnit, SRDFJointGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing joint name
     std::string str = R"(<robot name="abb_irb2400">
@@ -1120,7 +1120,7 @@ TEST(TesseractSRDFUnit, SRDFJointGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // joint does not exist
@@ -1133,7 +1133,7 @@ TEST(TesseractSRDFUnit, SRDFJointGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 }
 
@@ -1204,7 +1204,7 @@ TEST(TesseractSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing joints
     std::string str = R"(<robot name="abb_irb2400">
@@ -1223,7 +1223,7 @@ TEST(TesseractSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // link does not exist
     std::string str = R"(<robot name="abb_irb2400">
@@ -1235,7 +1235,7 @@ TEST(TesseractSRDFUnit, SRDFLinkGroupUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 }
 
@@ -1311,7 +1311,7 @@ TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // missing group
     std::string xml_string =
@@ -1323,7 +1323,7 @@ TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // invalid group
     std::string xml_string =
@@ -1335,7 +1335,7 @@ TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // no joints
     std::string xml_string =
@@ -1345,7 +1345,7 @@ TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // missing joint name
     std::string xml_string =
@@ -1357,7 +1357,7 @@ TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // missing joint value
     std::string xml_string =
@@ -1369,7 +1369,7 @@ TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // invalid joint value
     std::string xml_string =
@@ -1381,7 +1381,7 @@ TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
   {  // invalid joint name
     std::string xml_string =
@@ -1393,7 +1393,7 @@ TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
     EXPECT_TRUE(is_failure(xml_string));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, xml_string, locator));  // NOLINT
   }
 }
 
@@ -1461,7 +1461,7 @@ TEST(TesseractSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing tcp element
     std::string str = R"(<robot name="abb_irb2400">
@@ -1470,7 +1470,7 @@ TEST(TesseractSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing tcp name
     std::string str = R"(<robot name="abb_irb2400">
@@ -1481,7 +1481,7 @@ TEST(TesseractSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing tcp xyz
     std::string str = R"(<robot name="abb_irb2400">
@@ -1492,7 +1492,7 @@ TEST(TesseractSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // missing tcp orientation
     std::string str = R"(<robot name="abb_irb2400">
@@ -1503,7 +1503,7 @@ TEST(TesseractSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // invalid tcp xyz
     std::string str = R"(<robot name="abb_irb2400">
@@ -1514,7 +1514,7 @@ TEST(TesseractSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // invalid orientation
     std::string str = R"(<robot name="abb_irb2400">
@@ -1525,7 +1525,7 @@ TEST(TesseractSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
   {  // invalid orientation
     std::string str = R"(<robot name="abb_irb2400">
@@ -1536,7 +1536,7 @@ TEST(TesseractSRDFUnit, SRDFGroupTCPsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 }
 
@@ -1664,7 +1664,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // missing pair link1
@@ -1677,7 +1677,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // missing pair link2
@@ -1690,7 +1690,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // missing pair margin
@@ -1703,7 +1703,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // empty default margin
@@ -1716,7 +1716,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // empty pair margin
@@ -1729,7 +1729,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // invalid link name 1, but should not fail
@@ -1742,7 +1742,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_FALSE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_NO_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_NO_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // invalid link name 2, but should not fail
@@ -1755,7 +1755,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_FALSE(is_failure(str));
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_NO_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_NO_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 }
 
@@ -2010,7 +2010,7 @@ TEST(TesseractSRDFUnit, ParseConfigFilePathUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseConfigFilePath(locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // failures (resource does not exist)
@@ -2030,7 +2030,7 @@ TEST(TesseractSRDFUnit, ParseConfigFilePathUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseConfigFilePath(locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // failures (resource not found)
@@ -2050,7 +2050,7 @@ TEST(TesseractSRDFUnit, ParseConfigFilePathUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseConfigFilePath(locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 }
 
@@ -2096,7 +2096,7 @@ TEST(TesseractSRDFUnit, ParseContactManagersPluginConfigUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseContactManagersPluginConfig(locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // failure
@@ -2116,7 +2116,7 @@ TEST(TesseractSRDFUnit, ParseContactManagersPluginConfigUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseContactManagersPluginConfig(locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 }
 
@@ -2162,7 +2162,7 @@ TEST(TesseractSRDFUnit, ParseKinematicsPluginConfigUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseKinematicsPluginConfig(locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // failure
@@ -2182,7 +2182,7 @@ TEST(TesseractSRDFUnit, ParseKinematicsPluginConfigUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseKinematicsPluginConfig(locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // failure
@@ -2202,7 +2202,7 @@ TEST(TesseractSRDFUnit, ParseKinematicsPluginConfigUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseKinematicsPluginConfig(locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 }
 
@@ -2247,7 +2247,7 @@ TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseCalibrationConfig(*g, locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // failure
@@ -2267,7 +2267,7 @@ TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseCalibrationConfig(*g, locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 
   {  // failure
@@ -2287,7 +2287,7 @@ TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
     EXPECT_ANY_THROW(tesseract_srdf::parseCalibrationConfig(*g, locator, element, version));  // NOLINT
 
     tesseract_srdf::SRDFModel srdf_model;
-    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));
+    EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
 }
 
