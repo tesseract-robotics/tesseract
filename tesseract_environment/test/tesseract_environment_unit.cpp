@@ -152,6 +152,7 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
   EXPECT_FALSE(env->reset());
   EXPECT_FALSE(env->isInitialized());
   EXPECT_TRUE(env->clone() != nullptr);
+  EXPECT_TRUE(env->getEventCallbacks().empty());
 
   bool success = false;
   switch (init_type)
@@ -522,6 +523,23 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   // Get the environment
   auto env = getEnvironment();
 
+  int callback_counter{ 0 };
+  EventCallbackFn callback = [&callback_counter](const Event& /*event*/) { ++callback_counter; };
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+  env->removeEventCallback(0);
+  EXPECT_TRUE(env->getEventCallbacks().empty());
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+  env->clearEventCallbacks();
+  EXPECT_TRUE(env->getEventCallbacks().empty());
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+  EXPECT_EQ(callback_counter, 0);
+
   std::string l1 = "link_1";
   std::string l2 = "link_6";
   std::string r = "Unit Test";
@@ -546,6 +564,7 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_TRUE(cmd_remove->getAllowedCollisionMatrix().isCollisionAllowed(l1, l2));
 
   EXPECT_TRUE(env->applyCommand(cmd_remove));
+  EXPECT_EQ(callback_counter, 2);
 
   EXPECT_FALSE(acm->isCollisionAllowed(l1, l2));
   EXPECT_EQ(env->getRevision(), 4);
@@ -561,6 +580,7 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_TRUE(cmd_add->getAllowedCollisionMatrix().isCollisionAllowed(l1, l2));
 
   EXPECT_TRUE(env->applyCommand(cmd_add));
+  EXPECT_EQ(callback_counter, 4);
 
   EXPECT_TRUE(acm->isCollisionAllowed(l1, l2));
   EXPECT_EQ(env->getRevision(), 5);
@@ -573,6 +593,7 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_EQ(cmd_remove_link->getLinkName(), l1);
 
   EXPECT_TRUE(env->applyCommand(cmd_remove_link));
+  EXPECT_EQ(callback_counter, 6);
 
   EXPECT_FALSE(acm->isCollisionAllowed(l1, "base_link"));
   EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_2"));
@@ -1456,6 +1477,23 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   auto env = getEnvironment();
   auto timestamp1 = env->getTimestamp();
 
+  int callback_counter{ 0 };
+  EventCallbackFn callback = [&callback_counter](const Event& /*event*/) { ++callback_counter; };
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+  env->removeEventCallback(0);
+  EXPECT_TRUE(env->getEventCallbacks().empty());
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+  env->clearEventCallbacks();
+  EXPECT_TRUE(env->getEventCallbacks().empty());
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+  EXPECT_EQ(callback_counter, 0);
+
   // Check if visibility and collision enabled
   for (const auto& link_name : env->getLinkNames())
   {
@@ -1476,6 +1514,7 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   joint_states["joint_a6"] = 0.0;
   joint_states["joint_a7"] = 0.0;
   env->setState(joint_states);
+  EXPECT_EQ(callback_counter, 1);
 
   // Get new timestamp
   auto current_state_timestamp2 = env->getCurrentStateTimestamp();
@@ -2027,6 +2066,12 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
   // Get the environment
   auto env = getEnvironment();
 
+  int callback_counter{ 0 };
+  EventCallbackFn callback = [&callback_counter](const Event& /*event*/) { ++callback_counter; };
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+
   // Modifying collision margin from default
   tesseract_common::CollisionMarginData collision_margin_data(0.1);
   collision_margin_data.setPairCollisionMargin("link_1", "link_2", 0.1);
@@ -2039,6 +2084,7 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
 
   // Clone the environment
   auto clone = env->clone();
+  EXPECT_TRUE(clone->getEventCallbacks().empty());
 
   // Timestamp should be identical after clone
   EXPECT_TRUE(timestamp == clone->getTimestamp());
@@ -2133,6 +2179,23 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   // Get the environment
   auto env = getEnvironment();
 
+  int callback_counter{ 0 };
+  EventCallbackFn callback = [&callback_counter](const Event& /*event*/) { ++callback_counter; };
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+  env->removeEventCallback(0);
+  EXPECT_TRUE(env->getEventCallbacks().empty());
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+  env->clearEventCallbacks();
+  EXPECT_TRUE(env->getEventCallbacks().empty());
+
+  env->addEventCallback(0, callback);
+  EXPECT_FALSE(env->getEventCallbacks().empty());
+  EXPECT_EQ(callback_counter, 0);
+
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
   //////////////////////////////////////////////////////////////////
@@ -2161,11 +2224,13 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
 
   env->setState(active_joint_names, jvals);
   states.push_back(env->getState());
+  EXPECT_EQ(callback_counter, 1);
 
   // Set the environment to a random state
   env->setState(env->getStateSolver()->getRandomState().joints);
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
+  EXPECT_EQ(callback_counter, 2);
 
   states.push_back(env->getState(active_joint_names, jvals));
   states.push_back(env->getState(map_jvals));
@@ -2173,26 +2238,35 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   env->setState(env->getStateSolver()->getRandomState().joints);
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
+  EXPECT_EQ(callback_counter, 3);
+
   env->setState(active_joint_names, jvals);
   cjv = env->getCurrentJointValues();
   EXPECT_TRUE(cjv.isApprox(jvals, 1e-6));
   states.push_back(env->getState());
+  EXPECT_EQ(callback_counter, 4);
 
   env->setState(env->getStateSolver()->getRandomState().joints);
   cjv = env->getCurrentJointValues();
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
+  EXPECT_EQ(callback_counter, 5);
+
   env->setState(active_joint_names, jvals);
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_TRUE(cjv.isApprox(jvals, 1e-6));
   states.push_back(env->getState());
+  EXPECT_EQ(callback_counter, 6);
 
   env->setState(env->getStateSolver()->getRandomState().joints);
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
+  EXPECT_EQ(callback_counter, 7);
+
   env->setState(map_jvals);
   cjv = env->getCurrentJointValues();
   EXPECT_TRUE(cjv.isApprox(jvals, 1e-6));
   states.push_back(env->getState());
+  EXPECT_EQ(callback_counter, 8);
 
   for (auto& current_state : states)
   {

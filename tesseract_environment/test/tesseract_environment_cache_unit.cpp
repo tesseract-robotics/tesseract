@@ -90,6 +90,8 @@ TEST(TesseractEnvironmentCache, defaultEnvironmentCacheTest)  // NOLINT
     EXPECT_TRUE(cached_env != nullptr);
     EXPECT_EQ(cached_env->getRevision(), 4);
   }
+
+  cache.refreshCache();
 }
 
 int main(int argc, char** argv)
