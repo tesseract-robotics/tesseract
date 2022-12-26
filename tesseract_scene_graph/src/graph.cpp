@@ -174,10 +174,10 @@ bool SceneGraph::addLink(const Link& link, const Joint& joint)
   }
 
   if (!addLinkHelper(std::make_shared<Link>(link.clone())))
-    return false;
+    return false;  // LCOV_EXCL_LINE
 
   if (!addJointHelper(std::make_shared<Joint>(joint.clone())))
-    return false;
+    return false;  // LCOV_EXCL_LINE
 
   return true;
 }
