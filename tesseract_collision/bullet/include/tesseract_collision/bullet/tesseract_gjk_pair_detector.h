@@ -100,7 +100,7 @@ public:
   void setMinkowskiB(const btConvexShape* minkB) { m_minkowskiB = minkB; }
   void setCachedSeparatingAxis(const btVector3& separatingAxis) { m_cachedSeparatingAxis = separatingAxis; }
 
-  const btVector3& getCachedSeparatingAxis() const { return m_cachedSeparatingAxis; }
+  const btVector3& getCachedSeparatingAxis() const { return m_cachedSeparatingAxis; }  // LCOV_EXCL_LINE
   btScalar getCachedSeparatingDistance() const { return m_cachedSeparatingDistance; }
 
   void setPenetrationDepthSolver(btConvexPenetrationDepthSolver* penetrationDepthSolver)

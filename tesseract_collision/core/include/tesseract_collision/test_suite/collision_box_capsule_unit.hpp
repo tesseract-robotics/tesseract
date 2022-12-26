@@ -104,11 +104,20 @@ inline void runTest(DiscreteContactManager& checker)
   // Add collision objects
   detail::addCollisionObjects(checker);
 
+  // Call it again to test adding same object
+  detail::addCollisionObjects(checker);
+
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "box_link", "capsule_link" });
-  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  std::vector<std::string> active_links{ "box_link", "capsule_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
+  checker.setDefaultCollisionMarginData(0.1);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
@@ -160,7 +169,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.setCollisionObjectsTransform(location);
 
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenMoveResults(std::move(result), result_vector);
+  flattenCopyResults(result, result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 

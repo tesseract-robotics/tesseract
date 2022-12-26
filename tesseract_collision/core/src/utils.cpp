@@ -39,14 +39,14 @@ IsContactAllowedFn combineContactAllowedFn(const IsContactAllowedFn& original,
       return override;
     case ACMOverrideType::AND:
       return [original, override](const std::string& str1, const std::string& str2) {
-        return original(str1, str2) && override(str1, str2);
+        return (original == nullptr) ? false : original(str1, str2) && override(str1, str2);
       };
     case ACMOverrideType::OR:
       return [original, override](const std::string& str1, const std::string& str2) {
-        return original(str1, str2) || override(str1, str2);
+        return (original == nullptr) ? override(str1, str2) : original(str1, str2) || override(str1, str2);
       };
-    default:
-      return original;
+    default:            // LCOV_EXCL_LINE
+      return original;  // LCOV_EXCL_LINE
   }
 }
 }  // namespace tesseract_collision

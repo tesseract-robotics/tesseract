@@ -51,17 +51,15 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
 
   if (use_convex_mesh)
   {
-    tesseract_common::VectorVector3d mesh_vertices;
-    Eigen::VectorXi mesh_faces;
+    auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto mesh_faces = std::make_shared<Eigen::VectorXi>();
     // TODO: Need to figure out why this test not pass of bullet when using the box_2m.ply mesh
-    EXPECT_GT(loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box2_2m.ply", mesh_vertices, mesh_faces),
+    EXPECT_GT(loadSimplePlyFile(
+                  std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box2_2m.ply", *mesh_vertices, *mesh_faces, true),
               0);
 
-    // This is required because convex hull cannot have multiple faces on the same plane.
-    auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
-    auto ch_faces = std::make_shared<Eigen::VectorXi>();
-    int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    second_box = std::make_shared<tesseract_geometry::ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+    auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+    second_box = makeConvexMesh(*mesh);
   }
   else
   {
@@ -129,7 +127,13 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
+  std::vector<std::string> active_links{ "box_link", "second_box_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getPairCollisionMargin("box_link", "second_box_link"), 0.1, 1e-5);
 
@@ -188,7 +192,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     tesseract_common::VectorIsometry3d transforms = { location["box_link"] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
-    flattenMoveResults(std::move(result), result_vector);
+    flattenCopyResults(result, result_vector);
 
     EXPECT_TRUE(result_vector.empty());
   }
@@ -231,7 +235,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     EXPECT_NEAR(checker.getCollisionMarginData().getPairCollisionMargin("box_link", "second_box_link"), 0.25, 1e-5);
     EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.25, 1e-5);
     checker.contactTest(result, ContactRequest(test_type));
-    flattenMoveResults(std::move(result), result_vector);
+    flattenCopyResults(result, result_vector);
 
     EXPECT_TRUE(!result_vector.empty());
     EXPECT_NEAR(result_vector[0].distance, 0.1, 0.001);
@@ -302,6 +306,9 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
 inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
   // Add collision objects
+  detail::addCollisionObjects(checker, use_convex_mesh);
+
+  // Call it again to test adding same object
   detail::addCollisionObjects(checker, use_convex_mesh);
 
   detail::runTestTyped(checker, ContactTestType::FIRST);

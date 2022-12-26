@@ -70,6 +70,7 @@ add_gtest(${PROJECT_NAME}_octomap_octomap_unit collision_octomap_octomap_unit.cp
 add_gtest(${PROJECT_NAME}_collision_margin_data_unit collision_margin_data_unit.cpp)
 add_gtest(${PROJECT_NAME}_factory_unit contact_managers_factory_unit.cpp)
 add_gtest(${PROJECT_NAME}_core_unit collision_core_unit.cpp)
+add_gtest(${PROJECT_NAME}_config_unit contact_managers_config_unit.cpp)
 
 add_gtest(${PROJECT_NAME}_factory_static_unit contact_managers_factory_static_unit.cpp)
 target_link_libraries(${PROJECT_NAME}_factory_static_unit PRIVATE ${PROJECT_NAME}_bullet_factories)

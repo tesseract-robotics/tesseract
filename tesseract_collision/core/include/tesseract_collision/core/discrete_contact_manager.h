@@ -40,7 +40,9 @@ namespace tesseract_collision
 class DiscreteContactManager
 {
 public:
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   using Ptr = std::shared_ptr<DiscreteContactManager>;
   using ConstPtr = std::shared_ptr<const DiscreteContactManager>;

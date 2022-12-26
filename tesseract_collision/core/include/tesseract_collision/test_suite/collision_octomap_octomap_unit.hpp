@@ -75,7 +75,13 @@ inline void runTestOctomap(DiscreteContactManager& checker, ContactTestType test
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "octomap1_link", "octomap2_link" });
+  std::vector<std::string> active_links{ "octomap1_link", "octomap2_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
   checker.setCollisionMarginData(CollisionMarginData(0.25));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.25, 1e-5);
 
@@ -104,9 +110,20 @@ inline void runTestOctomap(ContinuousContactManager& checker, ContactTestType te
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "octomap1_link" });
+  std::vector<std::string> active_links{ "octomap1_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
   checker.setCollisionMarginData(CollisionMarginData(0.25));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.25, 1e-5);
+
+  // Set the collision object transforms
+  tesseract_common::TransformMap location;
+  location["octomap2_link"] = Eigen::Isometry3d::Identity();
+  checker.setCollisionObjectsTransform(location);
 
   // Set the collision object transforms
   Eigen::Isometry3d start_pos, end_pos;
@@ -121,7 +138,7 @@ inline void runTestOctomap(ContinuousContactManager& checker, ContactTestType te
   checker.contactTest(result, ContactRequest(test_type));
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  flattenCopyResults(result, result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   for (const auto& cr : result_vector)
@@ -134,6 +151,10 @@ inline void runTestOctomap(ContinuousContactManager& checker, ContactTestType te
 inline void runTest(ContinuousContactManager& checker)
 {
   detail::addCollisionObjects<ContinuousContactManager>(checker);
+
+  // Call it again to test adding same object
+  detail::addCollisionObjects<ContinuousContactManager>(checker);
+
   detail::runTestOctomap(checker, ContactTestType::FIRST);
   detail::runTestOctomap(checker, ContactTestType::CLOSEST);
   detail::runTestOctomap(checker, ContactTestType::ALL);
@@ -145,6 +166,10 @@ inline void runTest(ContinuousContactManager& checker)
 inline void runTest(DiscreteContactManager& checker)
 {
   detail::addCollisionObjects<DiscreteContactManager>(checker);
+
+  // Call it again to test adding same object
+  detail::addCollisionObjects<DiscreteContactManager>(checker);
+
   detail::runTestOctomap(checker, ContactTestType::FIRST);
   detail::runTestOctomap(checker, ContactTestType::CLOSEST);
   detail::runTestOctomap(checker, ContactTestType::ALL);

@@ -397,12 +397,14 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConst
       shape->setMargin(BULLET_MARGIN);
       break;
     }
+    // LCOV_EXCL_START
     default:
     {
       CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using BULLET yet",
                               static_cast<int>(geom->getType()));
       break;
     }
+      // LCOV_EXCL_STOP
   }
 
   return shape;
@@ -1269,7 +1271,9 @@ COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
       }
       else
       {
+        // LCOV_EXCL_START
         throw std::runtime_error("I can only collision check convex shapes and compound shapes made of convex shapes");
+        // LCOV_EXCL_STOP
       }
     }
 
@@ -1283,7 +1287,9 @@ COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
   }
   else
   {
+    // LCOV_EXCL_START
     throw std::runtime_error("I can only collision check convex shapes and compound shapes made of convex shapes");
+    // LCOV_EXCL_STOP
   }
 
   return new_cow;

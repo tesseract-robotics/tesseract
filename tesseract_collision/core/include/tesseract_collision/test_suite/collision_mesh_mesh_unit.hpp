@@ -118,11 +118,20 @@ inline void runTest(DiscreteContactManager& checker)
   // Add collision objects
   detail::addCollisionObjects(checker);
 
+  // Call it again to test adding same object
+  detail::addCollisionObjects(checker);
+
   ///////////////////////////////////////////////////////////////////
   // Test when object is in collision (Closest Feature Edge to Edge)
   ///////////////////////////////////////////////////////////////////
-  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
-  checker.setCollisionMarginData(CollisionMarginData(0));
+  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
+  checker.setDefaultCollisionMarginData(0);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.0, 1e-5);
 
   // Test when object is inside another
@@ -151,7 +160,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.setCollisionObjectsTransform(location);
 
   checker.contactTest(result, ContactRequest(ContactTestType::ALL));
-  flattenMoveResults(std::move(result), result_vector);
+  flattenCopyResults(result, result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
@@ -195,7 +204,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.setCollisionMarginData(CollisionMarginData(0.55));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.55, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenMoveResults(std::move(result), result_vector);
+  flattenCopyResults(result, result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.001);

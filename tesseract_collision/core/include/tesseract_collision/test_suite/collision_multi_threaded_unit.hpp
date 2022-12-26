@@ -20,17 +20,14 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   CollisionShapePtr sphere;
   if (use_convex_mesh)
   {
-    tesseract_common::VectorVector3d mesh_vertices;
-    Eigen::VectorXi mesh_faces;
-    EXPECT_GT(
-        loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces),
-        0);
+    auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto mesh_faces = std::make_shared<Eigen::VectorXi>();
+    EXPECT_GT(loadSimplePlyFile(
+                  std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", *mesh_vertices, *mesh_faces, true),
+              0);
 
-    // This is required because convex hull cannot have multiple faces on the same plane.
-    auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
-    auto ch_faces = std::make_shared<Eigen::VectorXi>();
-    int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere = std::make_shared<tesseract_geometry::ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+    auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+    sphere = makeConvexMesh(*mesh);
   }
   else
   {
@@ -68,6 +65,11 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   // Check if they are in collision
   checker.setActiveCollisionObjects(link_names);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(link_names, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
   checker.setCollisionObjectsTransform(location);
