@@ -40,7 +40,7 @@ bool Geometry::operator==(const Geometry& rhs) const
   equal &= type_ == rhs.type_;
   return equal;
 }
-bool Geometry::operator!=(const Geometry& rhs) const { return !operator==(rhs); }
+bool Geometry::operator!=(const Geometry& rhs) const { return !operator==(rhs); }  // LCOV_EXCL_LINE
 
 template <class Archive>
 void Geometry::serialize(Archive& ar, const unsigned int /*version*/)
