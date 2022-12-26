@@ -235,11 +235,13 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
     discrete_factories_[plugin_info.class_name] = plugin;
     return plugin->create(name, plugin_info.config);
   }
+  // LCOV_EXCL_START
   catch (const std::exception&)
   {
     CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
     return nullptr;
   }
+  // LCOV_EXCL_STOP
 }
 
 ContinuousContactManager::UPtr
@@ -276,11 +278,13 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
     continuous_factories_[plugin_info.class_name] = plugin;
     return plugin->create(name, plugin_info.config);
   }
+  // LCOV_EXCL_START
   catch (const std::exception&)
   {
     CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
     return nullptr;
   }
+  // LCOV_EXCL_STOP
 }
 
 void ContactManagersPluginFactory::saveConfig(const tesseract_common::fs::path& file_path) const

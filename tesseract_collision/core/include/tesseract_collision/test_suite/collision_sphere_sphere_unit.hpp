@@ -18,17 +18,14 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   CollisionShapePtr sphere;
   if (use_convex_mesh)
   {
-    tesseract_common::VectorVector3d mesh_vertices;
-    Eigen::VectorXi mesh_faces;
-    EXPECT_GT(
-        loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces),
-        0);
+    auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto mesh_faces = std::make_shared<Eigen::VectorXi>();
+    EXPECT_GT(loadSimplePlyFile(
+                  std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", *mesh_vertices, *mesh_faces, true),
+              0);
 
-    // This is required because convex hull cannot have multiple faces on the same plane.
-    auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
-    auto ch_faces = std::make_shared<Eigen::VectorXi>();
-    int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere = std::make_shared<tesseract_geometry::ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+    auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+    sphere = makeConvexMesh(*mesh);
   }
   else
   {
@@ -67,17 +64,14 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
 
   if (use_convex_mesh)
   {
-    tesseract_common::VectorVector3d mesh_vertices;
-    Eigen::VectorXi mesh_faces;
-    EXPECT_GT(
-        loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces),
-        0);
+    auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto mesh_faces = std::make_shared<Eigen::VectorXi>();
+    EXPECT_GT(loadSimplePlyFile(
+                  std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", *mesh_vertices, *mesh_faces, true),
+              0);
 
-    // This is required because convex hull cannot have multiple faces on the same plane.
-    auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
-    auto ch_faces = std::make_shared<Eigen::VectorXi>();
-    int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere1 = std::make_shared<tesseract_geometry::ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+    auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+    sphere1 = makeConvexMesh(*mesh);
   }
   else
   {
@@ -133,7 +127,13 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
+  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
@@ -193,7 +193,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
 
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenMoveResults(std::move(result), result_vector);
+  flattenCopyResults(result, result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
@@ -246,7 +246,13 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   ///////////////////////////////////////////////////////////////////
   // Test when object is in collision (Closest Feature Edge to Edge)
   ///////////////////////////////////////////////////////////////////
-  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
+  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
@@ -262,7 +268,7 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  flattenCopyResults(result, result_vector);
 
   // Bullet: -0.270548 {0.232874,0,-0.025368} {-0.032874,0,0.025368}
   // FCL:    -0.270548 {0.232874,0,-0.025368} {-0.032874,0,0.025368}
@@ -319,7 +325,13 @@ inline void runTestConvex2(DiscreteContactManager& checker)
   ContactResultMap result;
   ContactResultVector result_vector;
 
-  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
+  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
   tesseract_common::TransformMap location;
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
@@ -329,7 +341,7 @@ inline void runTestConvex2(DiscreteContactManager& checker)
   checker.setCollisionMarginData(CollisionMarginData(0.55));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.55, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenMoveResults(std::move(result), result_vector);
+  flattenCopyResults(result, result_vector);
 
   // Bullet: 0.524565 {0.237717,0,0} {0.7622825,0,0} Using blender this appears to be the correct result
   // FCL:    0.546834 {0.237717,-0.0772317,0} {0.7622825,0.0772317}
@@ -363,7 +375,13 @@ inline void runTestConvex3(DiscreteContactManager& checker)
   //////////////////////////////////////////////////////////////////////
   // Test when object is in collision (Closest Feature face to edge)
   //////////////////////////////////////////////////////////////////////
-  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
+  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
@@ -422,6 +440,9 @@ inline void runTestConvex(DiscreteContactManager& checker)
 inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh)
 {
   // Add collision objects
+  detail::addCollisionObjects(checker, use_convex_mesh);
+
+  // Call it again to test adding same object
   detail::addCollisionObjects(checker, use_convex_mesh);
 
   if (use_convex_mesh)

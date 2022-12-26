@@ -209,6 +209,8 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 0);
   EXPECT_ANY_THROW(factory.getDefaultDiscreteContactManagerPlugin());    // NOLINT
   EXPECT_ANY_THROW(factory.getDefaultContinuousContactManagerPlugin());  // NOLINT
+  EXPECT_FALSE(factory.hasDiscreteContactManagerPlugins());
+  EXPECT_FALSE(factory.hasContinuousContactManagerPlugins());
 
   factory.addSearchPath("/usr/local/lib");
   EXPECT_EQ(factory.getSearchPaths().size(), 2);
@@ -226,6 +228,7 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi.class_name = "TestDiscreteManagerFactory";
     factory.addDiscreteContactManagerPlugin("TestDiscreteManager", pi);
     EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 1);
+    EXPECT_TRUE(factory.hasDiscreteContactManagerPlugins());
 
     map = factory.getDiscreteContactManagerPlugins();
     EXPECT_TRUE(map.find("TestDiscreteManager") != map.end());
@@ -235,6 +238,7 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi2.class_name = "Test2DiscreteManagerFactory";
     factory.addDiscreteContactManagerPlugin("Test2DiscreteManager", pi2);
     EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 2);
+    EXPECT_TRUE(factory.hasDiscreteContactManagerPlugins());
 
     map = factory.getDiscreteContactManagerPlugins();
     EXPECT_TRUE(map.find("Test2DiscreteManager") != map.end());
@@ -262,6 +266,7 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi.class_name = "TestContinuousManagerFactory";
     factory.addContinuousContactManagerPlugin("TestContinuousManager", pi);
     EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 1);
+    EXPECT_TRUE(factory.hasContinuousContactManagerPlugins());
 
     map = factory.getContinuousContactManagerPlugins();
     EXPECT_TRUE(map.find("TestContinuousManager") != map.end());
@@ -271,6 +276,7 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     pi2.class_name = "Test2ContinuousManagerFactory";
     factory.addContinuousContactManagerPlugin("Test2ContinuousManager", pi2);
     EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 2);
+    EXPECT_TRUE(factory.hasContinuousContactManagerPlugins());
 
     map = factory.getContinuousContactManagerPlugins();
     EXPECT_TRUE(map.find("Test2ContinuousManager") != map.end());

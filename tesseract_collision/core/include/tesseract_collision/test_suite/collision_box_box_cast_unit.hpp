@@ -110,14 +110,28 @@ inline void addCollisionObjects(ContinuousContactManager& checker)
 
 inline void runTest(ContinuousContactManager& checker)
 {
+  // Check name which should not be empty
+  EXPECT_FALSE(checker.getName().empty());
+
   // Add collision objects
+  detail::addCollisionObjects(checker);
+
+  // Call it again to test adding same object
   detail::addCollisionObjects(checker);
 
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "moving_box_link" });
-  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  checker.setActiveCollisionObjects({ "moving_box_link", "static_box_link" });
+
+  std::vector<std::string> active_links{ "moving_box_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
+  checker.setDefaultCollisionMarginData(0.1);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
@@ -125,6 +139,7 @@ inline void runTest(ContinuousContactManager& checker)
   tesseract_common::VectorIsometry3d transforms = { Eigen::Isometry3d::Identity() };
   checker.setCollisionObjectsTransform(names, transforms);
 
+  tesseract_common::VectorIsometry3d start_poses, end_poses;
   Eigen::Isometry3d start_pos, end_pos;
   start_pos.setIdentity();
   start_pos.translation()(0) = -1.9;
@@ -132,7 +147,9 @@ inline void runTest(ContinuousContactManager& checker)
   end_pos.setIdentity();
   end_pos.translation()(0) = 1.9;
   end_pos.translation()(1) = 3.8;
-  checker.setCollisionObjectsTransform("moving_box_link", start_pos, end_pos);
+  start_poses.push_back(start_pos);
+  end_poses.push_back(end_pos);
+  checker.setCollisionObjectsTransform({ "moving_box_link" }, start_poses, end_poses);
 
   std::vector<ContactTestType> test_types = { ContactTestType::ALL, ContactTestType::CLOSEST, ContactTestType::FIRST };
 

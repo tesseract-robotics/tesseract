@@ -58,15 +58,12 @@ int main(int /*argc*/, char** /*argv*/)
   // Add second box to checker, but convert to convex hull mesh
   CollisionShapePtr second_box;
 
-  tesseract_common::VectorVector3d mesh_vertices;
-  Eigen::VectorXi mesh_faces;
-  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply", mesh_vertices, mesh_faces);
+  auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+  auto mesh_faces = std::make_shared<Eigen::VectorXi>();
+  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply", *mesh_vertices, *mesh_faces, true);
 
-  // This is required because convex hull cannot have multiple faces on the same plane.
-  auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
-  auto ch_faces = std::make_shared<Eigen::VectorXi>();
-  int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-  second_box = std::make_shared<ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+  auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+  second_box = makeConvexMesh(*mesh);
   // documentation:end:4: Add convex hull
 
   // documentation:start:5: Add convex hull collision

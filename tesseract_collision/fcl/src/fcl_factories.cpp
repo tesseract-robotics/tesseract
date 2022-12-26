@@ -35,7 +35,7 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManagerFactory::create(const std::str
   return std::make_unique<FCLDiscreteBVHManager>(name);
 }
 
-TESSERACT_PLUGIN_ANCHOR_IMPL(FCLFactoriesAnchor)
+TESSERACT_PLUGIN_ANCHOR_IMPL(FCLFactoriesAnchor)  // LCOV_EXCL_LINE
 
 }  // namespace tesseract_collision::tesseract_collision_fcl
 
