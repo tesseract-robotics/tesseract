@@ -65,7 +65,7 @@ bool Command::operator==(const Command& rhs) const
   equal &= type_ == rhs.type_;
   return equal;
 }
-bool Command::operator!=(const Command& rhs) const { return !operator==(rhs); }
+bool Command::operator!=(const Command& rhs) const { return !operator==(rhs); }  // LCOV_EXCL_LINE
 
 template <class Archive>
 void Command::serialize(Archive& ar, const unsigned int /*version*/)
