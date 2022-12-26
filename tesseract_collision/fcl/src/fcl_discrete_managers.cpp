@@ -115,10 +115,24 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
   {
     std::vector<CollisionObjectPtr>& objects = it->second->getCollisionObjects();
     fcl_co_count_ -= objects.size();
+
+    std::vector<fcl::CollisionObject<double>*> static_objs;
+    static_manager_->getObjects(static_objs);
+
+    std::vector<fcl::CollisionObject<double>*> dynamic_objs;
+    dynamic_manager_->getObjects(dynamic_objs);
+
+    // Must check if object exists in the manager before calling unregister.
+    // If it does not exist and unregister is called it is undefined behavior
     for (auto& co : objects)
     {
-      static_manager_->unregisterObject(co.get());
-      dynamic_manager_->unregisterObject(co.get());
+      auto static_it = std::find(static_objs.begin(), static_objs.end(), co.get());
+      if (static_it != static_objs.end())
+        static_manager_->unregisterObject(co.get());
+
+      auto dynamic_it = std::find(dynamic_objs.begin(), dynamic_objs.end(), co.get());
+      if (dynamic_it != dynamic_objs.end())
+        dynamic_manager_->unregisterObject(co.get());
     }
 
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
