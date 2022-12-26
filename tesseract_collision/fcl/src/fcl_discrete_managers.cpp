@@ -311,34 +311,6 @@ const CollisionMarginData& FCLDiscreteBVHManager::getCollisionMarginData() const
 void FCLDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
 IsContactAllowedFn FCLDiscreteBVHManager::getIsContactAllowedFn() const { return fn_; }
 
-/**
- * @brief This is used to perform self check for fcl. The AABB Tree self check is N^2 which is slow and it is faster
- *        to loop over the shapes and check bounding boxes.
- * @param cdata The contact test data passed to the callback
- * @param dynamic_manager The dynamics manager to perform self check on
- * @param callback The callback function to call if bounding boxes overlap
- */
-void selfCollisionContactTest(ContactTestData& cdata,
-                              const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& dynamic_manager,
-                              fcl::CollisionCallBack<double> callback)
-{
-  std::vector<fcl::CollisionObjectd*> co;
-  dynamic_manager->getObjects(co);
-  for (auto it1 = co.begin(), end = co.end(); it1 != end; ++it1)
-  {
-    auto it2 = it1;
-    it2++;
-    for (; it2 != end; ++it2)
-    {
-      if ((*it1)->getAABB().overlap((*it2)->getAABB()))
-      {
-        if (callback(*it1, *it2, &cdata))
-          return;
-      }
-    }
-  }
-}
-
 void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   ContactTestData cdata(active_, collision_margin_data_, fn_, request, collisions);
