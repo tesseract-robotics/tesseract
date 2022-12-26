@@ -202,17 +202,39 @@ TEST(TesseractGeometryUnit, Mesh)  // NOLINT
   (*faces)(7) = 3;
 
   using T = tesseract_geometry::Mesh;
-  auto geom = std::make_shared<T>(vertices, faces);
-  EXPECT_TRUE(geom->getVertices() != nullptr);
-  EXPECT_TRUE(geom->getFaces() != nullptr);
-  EXPECT_TRUE(geom->getVertexCount() == 4);
-  EXPECT_TRUE(geom->getFaceCount() == 2);
 
-  auto geom_clone = geom->clone();
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
+  {
+    auto geom = std::make_shared<T>(vertices, faces);
+    EXPECT_TRUE(geom->getVertices() != nullptr);
+    EXPECT_TRUE(geom->getFaces() != nullptr);
+    EXPECT_TRUE(geom->getVertexCount() == 4);
+    EXPECT_TRUE(geom->getFaceCount() == 2);
+    EXPECT_TRUE(geom->getMaterial() == nullptr);
+
+    auto geom_clone = geom->clone();
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getMaterial() == nullptr);
+  }
+
+  {
+    auto mat = std::make_shared<tesseract_geometry::MeshMaterial>();
+    auto geom = std::make_shared<T>(vertices, faces, nullptr, Eigen::Vector3d(1, 1, 1), nullptr, nullptr, mat);
+    EXPECT_TRUE(geom->getVertices() != nullptr);
+    EXPECT_TRUE(geom->getFaces() != nullptr);
+    EXPECT_TRUE(geom->getVertexCount() == 4);
+    EXPECT_TRUE(geom->getFaceCount() == 2);
+    EXPECT_TRUE(geom->getMaterial() != nullptr);
+
+    auto geom_clone = geom->clone();
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
+    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getMaterial() != nullptr);
+  }
 }
 
 TEST(TesseractGeometryUnit, SDFMesh)  // NOLINT
