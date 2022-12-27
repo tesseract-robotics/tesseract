@@ -264,8 +264,8 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
 
   // Should throw since this is a directory and not a file
   EXPECT_ANY_THROW(g.saveDOT(tesseract_common::getTempPath()));  // NOLINT
-  EXPECT_ANY_THROW(g.getVertex("vertex_does_not_exist"));
-  EXPECT_ANY_THROW(g.getEdge("edge_does_not_exist"));
+  EXPECT_ANY_THROW(g.getVertex("vertex_does_not_exist"));        // NOLINT
+  EXPECT_ANY_THROW(g.getEdge("edge_does_not_exist"));            // NOLINT
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
