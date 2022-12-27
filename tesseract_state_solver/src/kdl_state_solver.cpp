@@ -37,6 +37,9 @@ namespace tesseract_scene_graph
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+// This is compared directory to the OFKT state solver results so disable code coverage
+
+// LCOV_EXCL_START
 StateSolver::UPtr KDLStateSolver::clone() const { return std::make_unique<KDLStateSolver>(*this); }
 
 KDLStateSolver::KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph)
@@ -370,5 +373,5 @@ KDL::JntArray KDLStateSolver::getKDLJntArray(const std::unordered_map<std::strin
 
   return kdl_joints;
 }
-
+// LCOV_EXCL_STOP
 }  // namespace tesseract_scene_graph

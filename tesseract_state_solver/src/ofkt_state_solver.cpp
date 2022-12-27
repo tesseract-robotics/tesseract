@@ -130,7 +130,7 @@ void OFKTStateSolver::cloneHelper(OFKTStateSolver& cloned, const OFKTNode* node)
     }
     else
     {
-      throw std::runtime_error("Unsupported OFKTNode type!");
+      throw std::runtime_error("Unsupported OFKTNode type!");  // LCOV_EXCL_LINE
     }
 
     cloneHelper(cloned, child);
@@ -146,6 +146,7 @@ OFKTStateSolver::OFKTStateSolver(const std::string& root_name)
 {
   root_ = std::make_unique<OFKTRootNode>(root_name);
   link_map_[root_name] = root_.get();
+  link_names_ = { root_name };
   current_state_.link_transforms[root_name] = root_->getWorldTransformation();
 }
 
@@ -507,7 +508,7 @@ bool OFKTStateSolver::moveLink(const Joint& joint)
     return false;
   }
 
-  if (link_map_.find(joint.child_link_name) == link_map_.end())
+  if (link_map_.find(joint.parent_link_name) == link_map_.end())
   {
     CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to move link to parent link '%s' that does not exist!",
                             joint.parent_link_name.c_str());
@@ -689,7 +690,7 @@ bool OFKTStateSolver::insertSceneGraph(const SceneGraph& scene_graph, const Join
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   if (root_ == nullptr)
-    return false;  // throw std::runtime_error("OFKT State Solver is empty and tried to add scene graph with joint");
+    return false;  // LCOV_EXCL_LINE
 
   std::string parent_link = joint.parent_link_name;
   std::string child_link = joint.child_link_name;
@@ -1074,10 +1075,12 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint& joint,
       nodes_[joint_name] = std::move(n);
       break;
     }
+    // LCOV_EXCL_START
     default:
     {
       throw std::runtime_error("Unsupported joint type for joint '" + joint_name + "'");
     }
+      // LCOV_EXCL_STOP
   }
 }
 

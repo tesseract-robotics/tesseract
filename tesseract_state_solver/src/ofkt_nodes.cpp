@@ -91,10 +91,12 @@ void OFKTBaseNode::setStaticTransformation(Eigen::Isometry3d static_tf)
 
 const Eigen::Isometry3d& OFKTBaseNode::getStaticTransformation() const { return static_tf_; }
 const Eigen::Isometry3d& OFKTBaseNode::getLocalTransformation() const { return local_tf_; }
+// LCOV_EXCL_START
 Eigen::Isometry3d OFKTBaseNode::computeLocalTransformation(double /*joint_value*/) const
 {
   throw std::runtime_error("OFKTBaseNode: computeLocalTransformation should never be called!");
 }
+// LCOV_EXCL_STOP
 
 void OFKTBaseNode::computeAndStoreWorldTransformation()
 {
