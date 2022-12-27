@@ -90,10 +90,9 @@ tesseract_scene_graph::SceneGraph createTestSceneGraph()
   return g;
 }
 
-TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
+void runTest(tesseract_scene_graph::SceneGraph& g)
 {
   using namespace tesseract_scene_graph;
-  SceneGraph g = createTestSceneGraph();
 
   // Check getAdjacentLinkNames Method
   std::vector<std::string> adjacent_links = g.getAdjacentLinkNames("link_3");
@@ -265,6 +264,29 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
 
   // Should throw since this is a directory and not a file
   EXPECT_ANY_THROW(g.saveDOT(tesseract_common::getTempPath()));  // NOLINT
+  EXPECT_ANY_THROW(g.getVertex("vertex_does_not_exist"));        // NOLINT
+  EXPECT_ANY_THROW(g.getEdge("edge_does_not_exist"));            // NOLINT
+}
+
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
+{
+  {
+    tesseract_scene_graph::SceneGraph g = createTestSceneGraph();
+    runTest(g);
+  }
+
+  {  // Move Constructor
+    tesseract_scene_graph::SceneGraph g = createTestSceneGraph();
+    tesseract_scene_graph::SceneGraph g_move(std::move(g));
+    runTest(g_move);
+  }
+
+  {  // Move Assignment Constructor
+    tesseract_scene_graph::SceneGraph g = createTestSceneGraph();
+    tesseract_scene_graph::SceneGraph g_move;
+    g_move = std::move(g);
+    runTest(g_move);
+  }
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphClearUnit)  // NOLINT
@@ -347,6 +369,30 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddLinkJointPairUnit)  // NOLIN
   EXPECT_FALSE(g.addLink(link_6e, joint_6e));
   EXPECT_EQ(g.getLinks().size(), 6);
   EXPECT_EQ(g.getJoints().size(), 5);
+
+  // Check Graph
+  checkSceneGraph(g);
+}
+
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddLinkUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g = createTestSceneGraph();
+
+  Link replace_link("link_5");
+
+  // Add link which already exists but replace is not allowed
+  EXPECT_FALSE(g.addLink(replace_link));
+  EXPECT_EQ(g.getLinks().size(), 5);
+  EXPECT_EQ(g.getJoints().size(), 4);
+
+  // Check Graph
+  checkSceneGraph(g);
+
+  // Add link which already exists but replace is not allowed
+  EXPECT_TRUE(g.addLink(replace_link, true));
+  EXPECT_EQ(g.getLinks().size(), 5);
+  EXPECT_EQ(g.getJoints().size(), 4);
 
   // Check Graph
   checkSceneGraph(g);
@@ -650,6 +696,44 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddJointUnit)  // NOLINT
   EXPECT_FALSE(g.addJoint(joint_4));
   EXPECT_EQ(g.getLinks().size(), 5);
   EXPECT_EQ(g.getJoints().size(), 4);
+
+  // Add Joint with no joint limits
+  Link link_6("link_6");
+  EXPECT_TRUE(g.addLink(link_6));
+  joint_7.type = JointType::PRISMATIC;
+  EXPECT_FALSE(g.addJoint(joint_7));
+  EXPECT_EQ(g.getLinks().size(), 6);
+  EXPECT_EQ(g.getJoints().size(), 4);
+
+  joint_7.type = JointType::CONTINUOUS;
+  EXPECT_TRUE(g.addJoint(joint_7));
+  EXPECT_EQ(g.getJoints().size(), 5);
+  EXPECT_TRUE(g.getJoint("joint_7")->limits != nullptr);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->lower, -4 * M_PI, 1e-5);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->upper, 4 * M_PI, 1e-5);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->effort, 0.0, 1e-5);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->velocity, 2.0, 1e-5);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->acceleration, 1.0, 1e-5);
+
+  Link link_7("link_7");
+  EXPECT_TRUE(g.addLink(link_7));
+  EXPECT_EQ(g.getLinks().size(), 7);
+  EXPECT_EQ(g.getJoints().size(), 5);
+
+  Joint joint_8("joint_8");
+  joint_8.parent_to_joint_origin_transform.translation()(0) = 1.75;
+  joint_8.parent_link_name = "link_7";
+  joint_8.child_link_name = "link_6";
+  joint_8.type = JointType::CONTINUOUS;
+  joint_8.limits = std::make_shared<JointLimits>(0, 0, 0, 2, 1);
+  EXPECT_TRUE(g.addJoint(joint_8));
+  EXPECT_EQ(g.getJoints().size(), 6);
+  EXPECT_TRUE(g.getJoint("joint_7")->limits != nullptr);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->lower, -4 * M_PI, 1e-5);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->upper, 4 * M_PI, 1e-5);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->effort, 0.0, 1e-5);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->velocity, 2.0, 1e-5);
+  EXPECT_NEAR(g.getJoint("joint_7")->limits->acceleration, 1.0, 1e-5);
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveJointUnit)  // NOLINT
@@ -1502,6 +1586,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT
         EXPECT_DOUBLE_EQ(kdl_t(static_cast<unsigned>(i), static_cast<unsigned>(j)), t(i, j));
       }
     }
+
+    Eigen::MatrixXd t_wrong_size = Eigen::MatrixXd::Random(7, 7);
+    EXPECT_ANY_THROW(tesseract_scene_graph::convert(t_wrong_size));  // NOLINT
   }
 
   {  // KDL to Eigen
