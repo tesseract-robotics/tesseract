@@ -242,7 +242,9 @@ private:
 /** @brief The CalibrationInfo struct */
 struct CalibrationInfo
 {
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   CalibrationInfo() = default;
 
