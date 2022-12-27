@@ -1588,7 +1588,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT
     }
 
     Eigen::MatrixXd t_wrong_size = Eigen::MatrixXd::Random(7, 7);
-    EXPECT_ANY_THROW(tesseract_scene_graph::convert(t_wrong_size));
+    EXPECT_ANY_THROW(tesseract_scene_graph::convert(t_wrong_size));  // NOLINT
   }
 
   {  // KDL to Eigen
