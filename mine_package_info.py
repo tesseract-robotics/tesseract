@@ -30,8 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from bloom.generators import resolve_dependencies
-from bloom.generators.common import evaluate_package_conditions
+from bloom.generators.common import evaluate_package_conditions, resolve_rosdep_key
 from dataclasses import dataclass
 from os import path
 from os import devnull
@@ -53,7 +52,7 @@ class ProcessedPackage:
     build_depends: list = ()
     replaces: list = ()
     conflicts: list = ()
-    resolved_depends: list = ()
+    resolved_depends = None
 
 
 def default_fallback_resolver(key, peer_packages):
@@ -76,7 +75,7 @@ def format_depends(depends, resolved_depends, peer_packages, ros_distro):
     }
     formatted = []
     for d in depends:
-        if resolved_depends[d.name] is not None:
+        if resolved_depends is not None and resolved_depends[d.name] is not None:
             for resolved_dep in resolved_depends[d.name]:
                 version_depends = [k
                                    for k in versions.keys()
@@ -120,12 +119,34 @@ def extract_ubuntu_package_version(depends_name):
     return "Unknown"
 
 
+def resolve_dependencies(keys, os_name, os_version, ros_distro, peer_packages=None, fallback_resolver=None):
+    peer_packages = peer_packages or []
+    fallback_resolver = fallback_resolver or default_fallback_resolver
+
+    resolved_keys = {}
+    keys = [k.name for k in keys]
+    for key in keys:
+        resolved_key = None
+        try:
+          resolved_key, installer_key, default_installer_key = \
+              resolve_rosdep_key(key, os_name, os_version, ros_distro,
+                                 peer_packages, retry=False)
+        except Exception:
+            pass
+        # Do not compare the installer key here since this is a general purpose function
+        # They installer is verified in the OS specific generator, when the keys are pre-checked.
+        if resolved_key is None:
+            resolved_key = fallback_resolver(key, peer_packages)
+        resolved_keys[key] = resolved_key
+    return resolved_keys
+
+
 def mine_packages():
     os_name = "ubuntu"
     os_version = "focal"
     ros_distro = "noetic"
     system_package = find_packages("/opt/ros/noetic/share")
-    workspace_packages = find_packages("tesseract-1")
+    workspace_packages = find_packages("tesseract")
 
     if type(workspace_packages) == dict and workspace_packages != {}:
         peer_packages = [p.name for p in workspace_packages.values()]
@@ -150,6 +171,8 @@ def mine_packages():
             processed_pkg.conflicts = [
                 dep for dep in v.conflicts
                 if dep.evaluated_condition is not False]
+
+
             unresolved_keys = processed_pkg.depends + processed_pkg.build_depends + processed_pkg.replaces + processed_pkg.conflicts
             processed_pkg.resolved_depends = resolve_dependencies(unresolved_keys, os_name,
                                                                   os_version, ros_distro,
@@ -158,6 +181,10 @@ def mine_packages():
 
             processed_pkgs[processed_pkg.name] = processed_pkg
 
+        print("")
+        print("***************************************************")
+        print("*************** Workspace Packages ****************")
+        print("***************************************************")
         print("")
         # Print Workspace packages
         print("{:<40} {:<15} {:<30}".format('Workspace Package', 'Version', 'Licenses'))
@@ -172,6 +199,12 @@ def mine_packages():
             print("    Depends      : {0}".format(";".join(formatted_depends)))
             print("    Build Depends: {0}".format(";".join(formatted_build_depends)))
 
+        print("")
+        print("***************************************************")
+        print("*************** Packge Dependencies ***************")
+        print("***************************************************")
+        print("")
+
         # Print each packages dependencies
         for k, v in dict(processed_pkgs).items():
             print("")
@@ -179,16 +212,25 @@ def mine_packages():
             for d in v.depends:
                 if d.name in system_package:
                     dpkg = system_package[d.name]
-                    print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
+                    if dpkg is not None:
+                        print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
                 elif d.name in processed_pkgs:
                     dpkg = processed_pkgs[d.name]
-                    print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
+                    if dpkg is not None:
+                       print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
                 else:
-                    for rd in v.resolved_depends[d.name]:
-                        rd_pkg_version = extract_ubuntu_package_version(rd)
-                        rd_pkg_licenses = extract_ubuntu_package_license(rd)
-                        filtered_licenses = list(set(rd_pkg_licenses))
-                        print("{:<40} {:<40} {:<15} {:<30}".format("", rd, rd_pkg_version, ",".join(filtered_licenses)))
+                    if v.resolved_depends is not None and v.resolved_depends[d.name] is not None:
+                        for rd in v.resolved_depends[d.name]:
+                            rd_pkg_version = extract_ubuntu_package_version(rd)
+                            rd_pkg_licenses = extract_ubuntu_package_license(rd)
+                            filtered_licenses = list(set(rd_pkg_licenses))
+                            print("{:<40} {:<40} {:<15} {:<30}".format("", rd, rd_pkg_version, ",".join(filtered_licenses)))
+
+        print("")
+        print("***************************************************")
+        print("************ Packge Build Dependencies ************")
+        print("***************************************************")
+        print("")
 
         # Print each packages build dependencies
         for k, v in dict(processed_pkgs).items():
@@ -197,16 +239,19 @@ def mine_packages():
             for d in v.build_depends:
                 if d.name in system_package:
                     dpkg = system_package[d.name]
-                    print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
+                    if dpkg is not None:
+                        print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
                 elif d.name in processed_pkgs:
                     dpkg = processed_pkgs[d.name]
-                    print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
+                    if dpkg is not None:
+                        print("{:<40} {:<40} {:<15} {:<30}".format("", d.name, dpkg.version, ",".join(dpkg.licenses)))
                 else:
-                    for rd in v.resolved_depends[d.name]:
-                        rd_pkg_version = extract_ubuntu_package_version(rd)
-                        rd_pkg_licenses = extract_ubuntu_package_license(rd)
-                        filtered_licenses = list(set(rd_pkg_licenses))
-                        print("{:<40} {:<40} {:<15} {:<30}".format("", rd, rd_pkg_version, ",".join(filtered_licenses)))
+                    if v.resolved_depends is not None and v.resolved_depends[d.name] is not None:
+                        for rd in v.resolved_depends[d.name]:
+                            rd_pkg_version = extract_ubuntu_package_version(rd)
+                            rd_pkg_licenses = extract_ubuntu_package_license(rd)
+                            filtered_licenses = list(set(rd_pkg_licenses))
+                            print("{:<40} {:<40} {:<15} {:<30}".format("", rd, rd_pkg_version, ",".join(filtered_licenses)))
 
 
 # Press the green button in the gutter to run the script.
