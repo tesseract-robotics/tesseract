@@ -4,6 +4,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <type_traits>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
@@ -15,6 +16,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/kinematic_limits.h>
 #include <tesseract_common/yaml_utils.h>
+#include <tesseract_common/tool_path.h>
+#include <tesseract_common/tool_path_segment.h>
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
@@ -2120,6 +2123,115 @@ TEST(TesseractCommonUnit, concat)  // NOLINT
   EXPECT_EQ(c.rows(), a.rows() + b.rows());
   EXPECT_TRUE(c.head(3).isApprox(a));
   EXPECT_TRUE(c.tail(3).isApprox(b));
+}
+
+/** @brief Tests ToolPath */
+TEST(TesseractCommonUnit, ToolPath)  // NOLINT
+{
+  {  // Default
+    tesseract_common::ToolPath tool_path;
+    EXPECT_FALSE(tool_path.getUUID().is_nil());
+    EXPECT_TRUE(tool_path.getParentUUID().is_nil());
+    EXPECT_TRUE(tool_path.getDescription().empty());
+    EXPECT_TRUE(tool_path.getNamespace().empty());
+
+    boost::uuids::uuid uuid = tool_path.getUUID();
+    tool_path.regenerateUUID();
+    EXPECT_NE(uuid, tool_path.getUUID());
+
+    tool_path.setParentUUID(uuid);
+    EXPECT_EQ(uuid, tool_path.getParentUUID());
+
+    tool_path.setDescription("Description");
+    EXPECT_EQ(tool_path.getDescription(), "Description");
+
+    tool_path.setNamespace("Namespace");
+    EXPECT_EQ(tool_path.getNamespace(), "Namespace");
+  }
+
+  {  // Constructor 1
+    tesseract_common::ToolPath tool_path("Tool path description");
+    EXPECT_FALSE(tool_path.getUUID().is_nil());
+    EXPECT_TRUE(tool_path.getParentUUID().is_nil());
+    EXPECT_EQ(tool_path.getDescription(), "Tool path description");
+  }
+
+  {  // Constructor 2
+    auto uuid = boost::uuids::random_generator()();
+    tesseract_common::ToolPath tool_path(uuid, "Tool path description");
+    EXPECT_EQ(uuid, tool_path.getUUID());
+    EXPECT_TRUE(tool_path.getParentUUID().is_nil());
+    EXPECT_EQ(tool_path.getDescription(), "Tool path description");
+  }
+
+  {  // Equal
+    tesseract_common::ToolPath tool_path("Description");
+    tool_path.setNamespace("Namespace");
+    tesseract_common::ToolPathSegment segment;
+    segment.push_back(Eigen::Isometry3d::Identity());
+    segment.push_back(Eigen::Isometry3d::Identity());
+    segment.push_back(Eigen::Isometry3d::Identity());
+    segment.push_back(Eigen::Isometry3d::Identity());
+    segment.push_back(Eigen::Isometry3d::Identity());
+    EXPECT_EQ(segment.size(), 5);
+
+    tool_path.push_back(segment);
+    tool_path.push_back(segment);
+    tool_path.push_back(segment);
+    EXPECT_EQ(tool_path.size(), 3);
+
+    tesseract_common::ToolPath tool_path_copy{ tool_path };
+    EXPECT_EQ(tool_path, tool_path_copy);
+  }
+}
+
+/** @brief Tests ToolPath */
+TEST(TesseractCommonUnit, ToolPathSegment)  // NOLINT
+{
+  {  // Default
+    tesseract_common::ToolPathSegment segment;
+    EXPECT_FALSE(segment.getUUID().is_nil());
+    EXPECT_TRUE(segment.getParentUUID().is_nil());
+    EXPECT_TRUE(segment.getDescription().empty());
+
+    boost::uuids::uuid uuid = segment.getUUID();
+    segment.regenerateUUID();
+    EXPECT_NE(uuid, segment.getUUID());
+
+    segment.setParentUUID(uuid);
+    EXPECT_EQ(uuid, segment.getParentUUID());
+
+    segment.setDescription("Description");
+    EXPECT_EQ(segment.getDescription(), "Description");
+  }
+
+  {  // Constructor 1
+    tesseract_common::ToolPathSegment segment("Description");
+    EXPECT_FALSE(segment.getUUID().is_nil());
+    EXPECT_TRUE(segment.getParentUUID().is_nil());
+    EXPECT_EQ(segment.getDescription(), "Description");
+  }
+
+  {  // Constructor 2
+    auto uuid = boost::uuids::random_generator()();
+    tesseract_common::ToolPathSegment segment(uuid, "Description");
+    EXPECT_EQ(uuid, segment.getUUID());
+    EXPECT_TRUE(segment.getParentUUID().is_nil());
+    EXPECT_EQ(segment.getDescription(), "Description");
+  }
+
+  {  // Equal
+    tesseract_common::ToolPathSegment segment("Description");
+    segment.push_back(Eigen::Isometry3d::Identity());
+    segment.push_back(Eigen::Isometry3d::Identity());
+    segment.push_back(Eigen::Isometry3d::Identity());
+    segment.push_back(Eigen::Isometry3d::Identity());
+    segment.push_back(Eigen::Isometry3d::Identity());
+    EXPECT_EQ(segment.size(), 5);
+
+    tesseract_common::ToolPathSegment segment_copy{ segment };
+    EXPECT_EQ(segment, segment_copy);
+  }
 }
 
 int main(int argc, char** argv)
