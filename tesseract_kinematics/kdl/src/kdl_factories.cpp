@@ -75,6 +75,7 @@ KDLInvKinChainLMAFactory::create(const std::string& solver_name,
 {
   std::string base_link;
   std::string tip_link;
+  KDLConfig kdl_config;
 
   try
   {
@@ -87,6 +88,27 @@ KDLInvKinChainLMAFactory::create(const std::string& solver_name,
       tip_link = n.as<std::string>();
     else
       throw std::runtime_error("KDLInvKinChainLMAFactory, missing 'tip_link' entry");
+
+    // Optional configuration parameters
+    if (YAML::Node n = config["task_weights"])
+    {
+      // Make sure the length matches the constructor interface
+      if (n.size() != 6)
+        throw std::runtime_error("KDLInvKinChainLMAFactory, size of task_weights needs to be 6");
+
+      auto w = 0;
+      for (auto const &v : n)
+        kdl_config.weights(w++) = v.as<double>();
+    }
+
+    if (YAML::Node n = config["eps"])
+      kdl_config.eps = n.as<double>();
+
+    if (YAML::Node n = config["max_iterations"])
+      kdl_config.max_iterations = n.as<int>();
+
+    if (YAML::Node n = config["eps_joints"])
+      kdl_config.eps_joints = n.as<double>();
   }
   catch (const std::exception& e)
   {
@@ -94,7 +116,7 @@ KDLInvKinChainLMAFactory::create(const std::string& solver_name,
     return nullptr;
   }
 
-  return std::make_unique<KDLInvKinChainLMA>(scene_graph, base_link, tip_link, solver_name);
+  return std::make_unique<KDLInvKinChainLMA>(scene_graph, base_link, tip_link, kdl_config, solver_name);
 }
 
 std::unique_ptr<InverseKinematics>

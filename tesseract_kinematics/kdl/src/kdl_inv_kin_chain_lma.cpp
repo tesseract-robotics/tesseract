@@ -40,7 +40,7 @@ using Eigen::VectorXd;
 
 KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
                                      const std::vector<std::pair<std::string, std::string>>& chains,
-                                     std::string solver_name)
+                                     const KDLConfig& kdl_config, std::string solver_name)
   : solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
@@ -50,14 +50,14 @@ KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& sc
     throw std::runtime_error("Failed to parse KDL data from Scene Graph");
 
   // Create KDL IK Solver
-  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_LMA>(kdl_data_.robot_chain);
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_LMA>(kdl_data_.robot_chain, kdl_config.weights, kdl_config.eps, kdl_config.max_iterations, kdl_config.eps_joints);
 }
 
 KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
                                      const std::string& base_link,
                                      const std::string& tip_link,
-                                     std::string solver_name)
-  : KDLInvKinChainLMA(scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
+                                     const KDLConfig& kdl_config, std::string solver_name)
+  : KDLInvKinChainLMA(scene_graph, { std::make_pair(base_link, tip_link) }, kdl_config, std::move(solver_name))
 {
 }
 
