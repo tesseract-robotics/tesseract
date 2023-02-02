@@ -40,6 +40,7 @@ using Eigen::VectorXd;
 
 KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scene_graph,
                                    const std::vector<std::pair<std::string, std::string>>& chains,
+                                   const Config& kdl_config,
                                    std::string solver_name)
   : solver_name_(std::move(solver_name))
 {
@@ -51,15 +52,18 @@ KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scen
 
   // Create KDL FK and IK Solver
   fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
-  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(kdl_data_.robot_chain);
-  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR>(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_);
+  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(
+      kdl_data_.robot_chain, kdl_config.vel_eps, kdl_config.vel_iterations);
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR>(
+      kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_, kdl_config.pos_iterations, kdl_config.pos_eps);
 }
 
 KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scene_graph,
                                    const std::string& base_link,
                                    const std::string& tip_link,
+                                   const Config& kdl_config,
                                    std::string solver_name)
-  : KDLInvKinChainNR(scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
+  : KDLInvKinChainNR(scene_graph, { std::make_pair(base_link, tip_link) }, kdl_config, std::move(solver_name))
 {
 }
 
@@ -70,9 +74,9 @@ KDLInvKinChainNR::KDLInvKinChainNR(const KDLInvKinChainNR& other) { *this = othe
 KDLInvKinChainNR& KDLInvKinChainNR::operator=(const KDLInvKinChainNR& other)
 {
   kdl_data_ = other.kdl_data_;
-  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
-  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(kdl_data_.robot_chain);
-  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR>(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_);
+  fk_solver_ = other.fk_solver_;
+  ik_vel_solver_ = other.ik_vel_solver_;
+  ik_solver_ = other.ik_solver_;
   solver_name_ = other.solver_name_;
 
   return *this;

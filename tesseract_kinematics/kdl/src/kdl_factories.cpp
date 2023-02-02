@@ -75,7 +75,7 @@ KDLInvKinChainLMAFactory::create(const std::string& solver_name,
 {
   std::string base_link;
   std::string tip_link;
-  KDLConfig kdl_config;
+  KDLInvKinChainLMA::Config kdl_config;
 
   try
   {
@@ -93,12 +93,16 @@ KDLInvKinChainLMAFactory::create(const std::string& solver_name,
     if (YAML::Node n = config["task_weights"])
     {
       // Make sure the length matches the constructor interface
-      if (n.size() != 6)
-        throw std::runtime_error("KDLInvKinChainLMAFactory, size of task_weights needs to be 6");
+      if (n.size() != kdl_config.task_weights.size())
+      {
+        std::ostringstream what;
+        what << "KDLInvKinChainLMAFactory, size of task_weights needs to be " << kdl_config.task_weights.size();
+        throw std::runtime_error(what.str());
+      }
 
       auto w = 0;
-      for (auto const &v : n)
-        kdl_config.weights(w++) = v.as<double>();
+      for (auto const& v : n)
+        kdl_config.task_weights(w++) = v.as<double>();
     }
 
     if (YAML::Node n = config["eps"])
@@ -128,6 +132,7 @@ KDLInvKinChainNRFactory::create(const std::string& solver_name,
 {
   std::string base_link;
   std::string tip_link;
+  KDLInvKinChainNR::Config kdl_config;
 
   try
   {
@@ -140,6 +145,19 @@ KDLInvKinChainNRFactory::create(const std::string& solver_name,
       tip_link = n.as<std::string>();
     else
       throw std::runtime_error("KDLInvKinChainNRFactory, missing 'tip_link' entry");
+
+    // Optional configuration parameters
+    if (YAML::Node n = config["velocity_eps"])
+      kdl_config.vel_eps = n.as<double>();
+
+    if (YAML::Node n = config["velocity_iterations"])
+      kdl_config.vel_iterations = n.as<int>();
+
+    if (YAML::Node n = config["position_eps"])
+      kdl_config.pos_eps = n.as<double>();
+
+    if (YAML::Node n = config["position_iterations"])
+      kdl_config.pos_iterations = n.as<int>();
   }
   catch (const std::exception& e)
   {
@@ -147,7 +165,7 @@ KDLInvKinChainNRFactory::create(const std::string& solver_name,
     return nullptr;
   }
 
-  return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, solver_name);
+  return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, kdl_config, solver_name);
 }
 
 std::unique_ptr<InverseKinematics>

@@ -54,6 +54,25 @@ public:
   using UPtr = std::unique_ptr<KDLInvKinChainLMA>;
   using ConstUPtr = std::unique_ptr<const KDLInvKinChainLMA>;
 
+  /**
+   * @brief The Config struct
+   *
+   * This contains parameters that can be used to customize the KDL solver for your application.
+   * They are ultimately passed to the constuctor of the undelying ChainIkSolver.
+   *
+   * The defaults provided here are the same defaults imposed by the KDL library.
+   */
+  struct Config
+  {
+    Eigen::Matrix<double, 6, 1> task_weights{ std::vector<double>{ 1.0, 1.0, 1.0, 0.1, 0.1, 0.1 }.data() };
+    double eps{ 1E-5 };
+    int max_iterations{ 500 };
+    double eps_joints{ 1E-15 };
+
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  };
+
   ~KDLInvKinChainLMA() override = default;
   KDLInvKinChainLMA(const KDLInvKinChainLMA& other);
   KDLInvKinChainLMA& operator=(const KDLInvKinChainLMA& other);
@@ -71,7 +90,7 @@ public:
   KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
                     const std::string& base_link,
                     const std::string& tip_link,
-                    const KDLConfig& kdl_config,
+                    const Config& kdl_config,
                     std::string solver_name = KDL_INV_KIN_CHAIN_LMA_SOLVER_NAME);
 
   /**
@@ -83,7 +102,7 @@ public:
    */
   KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
                     const std::vector<std::pair<std::string, std::string> >& chains,
-                    const KDLConfig& kdl_config,
+                    const Config& kdl_config,
                     std::string solver_name = KDL_INV_KIN_CHAIN_LMA_SOLVER_NAME);
 
   IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
