@@ -64,7 +64,5 @@ private:
 };
 }  // namespace tesseract_geometry
 
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Cone, "Cone")
-BOOST_CLASS_TRACKING(tesseract_geometry::Cone, boost::serialization::track_never)
 #endif
