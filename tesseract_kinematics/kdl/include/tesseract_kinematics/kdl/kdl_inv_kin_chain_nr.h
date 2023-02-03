@@ -76,9 +76,6 @@ public:
     int vel_iterations{ 150 };
     double pos_eps{ 1e-6 };
     int pos_iterations{ 100 };
-
-  public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 
   ~KDLInvKinChainNR() override = default;
@@ -126,6 +123,7 @@ public:
 
 private:
   KDLChainData kdl_data_;                                       /**< @brief KDL data parsed from Scene Graph */
+  Config kdl_config_;                                           /**< @brief KDL configuration data parsed from YAML */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_;  /**< @brief KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;   /**< @brief KDL Inverse kinematic velocity solver */
   std::unique_ptr<KDL::ChainIkSolverPos_NR> ik_solver_;         /**< @brief KDL Inverse kinematic solver */
