@@ -42,7 +42,7 @@ KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scen
                                    const std::vector<std::pair<std::string, std::string>>& chains,
                                    const Config& kdl_config,
                                    std::string solver_name)
-  : solver_name_(std::move(solver_name))
+  : kdl_config_(kdl_config), solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
@@ -53,9 +53,9 @@ KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scen
   // Create KDL FK and IK Solver
   fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
   ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(
-      kdl_data_.robot_chain, kdl_config.vel_eps, kdl_config.vel_iterations);
+      kdl_data_.robot_chain, kdl_config_.vel_eps, kdl_config_.vel_iterations);
   ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR>(
-      kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_, kdl_config.pos_iterations, kdl_config.pos_eps);
+      kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_, kdl_config_.pos_iterations, kdl_config_.pos_eps);
 }
 
 KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -74,9 +74,12 @@ KDLInvKinChainNR::KDLInvKinChainNR(const KDLInvKinChainNR& other) { *this = othe
 KDLInvKinChainNR& KDLInvKinChainNR::operator=(const KDLInvKinChainNR& other)
 {
   kdl_data_ = other.kdl_data_;
-  fk_solver_ = other.fk_solver_;
-  ik_vel_solver_ = other.ik_vel_solver_;
-  ik_solver_ = other.ik_solver_;
+  kdl_config_ = other.kdl_config_;
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(
+      kdl_data_.robot_chain, kdl_config_.vel_eps, kdl_config_.vel_iterations);
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR>(
+      kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_, kdl_config_.pos_iterations, kdl_config_.pos_eps);
   solver_name_ = other.solver_name_;
 
   return *this;

@@ -42,7 +42,7 @@ KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& sc
                                      const std::vector<std::pair<std::string, std::string>>& chains,
                                      const Config& kdl_config,
                                      std::string solver_name)
-  : solver_name_(std::move(solver_name))
+  : kdl_config_(kdl_config), solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
@@ -52,7 +52,7 @@ KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& sc
 
   // Create KDL IK Solver
   ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_LMA>(
-      kdl_data_.robot_chain, kdl_config.task_weights, kdl_config.eps, kdl_config.max_iterations, kdl_config.eps_joints);
+      kdl_data_.robot_chain, kdl_config_.task_weights, kdl_config_.eps, kdl_config_.max_iterations, kdl_config_.eps_joints);
 }
 
 KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -71,7 +71,8 @@ KDLInvKinChainLMA::KDLInvKinChainLMA(const KDLInvKinChainLMA& other) { *this = o
 KDLInvKinChainLMA& KDLInvKinChainLMA::operator=(const KDLInvKinChainLMA& other)
 {
   kdl_data_ = other.kdl_data_;
-  ik_solver_ = other.ik_solver_;
+  kdl_config_ = other.kdl_config_;
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_LMA>(kdl_data_.robot_chain, kdl_config_.task_weights, kdl_config_.eps, kdl_config_.max_iterations, kdl_config_.eps_joints);
   solver_name_ = other.solver_name_;
 
   return *this;

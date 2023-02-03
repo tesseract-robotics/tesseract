@@ -102,22 +102,6 @@ struct KDLChainData
 };
 
 /**
- * @brief The KDLConfig struct
- *
- * This contains parameters that can be used to customize the KDL solver for your application.
- * They are ultimately passed to the constuctor of the undelying ChainIkSolver.
- *
- * The defaults provided here are the same defaults imposed by the KDL library.
- */
-struct KDLConfig
-{
-  Eigen::VectorXd weights = Eigen::VectorXd::Constant(6, 1.0);
-  double eps = 1E-5;
-  int max_iterations = 500;
-  double eps_joints = 1E-15;
-};
-
-/**
  * @brief Parse KDL chain data from the scene graph
  * @param results KDL Chain data
  * @param scene_graph The Scene Graph

@@ -118,6 +118,7 @@ public:
 
 private:
   KDLChainData kdl_data_;                                        /**< @brief KDL data parsed from Scene Graph */
+  Config kdl_config_;                                            /**< @brief KDL configuration data parsed from YAML */
   std::unique_ptr<KDL::ChainIkSolverPos_LMA> ik_solver_;         /**< @brief KDL Inverse kinematic solver */
   std::string solver_name_{ KDL_INV_KIN_CHAIN_LMA_SOLVER_NAME }; /**< @brief Name of this solver */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
