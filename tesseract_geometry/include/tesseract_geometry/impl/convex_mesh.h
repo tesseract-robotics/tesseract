@@ -164,7 +164,5 @@ private:
 };
 }  // namespace tesseract_geometry
 
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::ConvexMesh, "ConvexMesh")
-BOOST_CLASS_TRACKING(tesseract_geometry::ConvexMesh, boost::serialization::track_never)
 #endif

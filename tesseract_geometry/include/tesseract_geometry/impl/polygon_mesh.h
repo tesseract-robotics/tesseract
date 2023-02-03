@@ -244,6 +244,6 @@ private:
 };
 
 }  // namespace tesseract_geometry
-#include <boost/serialization/tracking.hpp>
+
 BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::PolygonMesh, "PolygonMesh")
 #endif  // POLYGON_MESH_H

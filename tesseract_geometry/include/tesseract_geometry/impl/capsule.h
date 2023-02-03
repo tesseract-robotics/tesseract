@@ -64,7 +64,5 @@ private:
 };
 }  // namespace tesseract_geometry
 
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Capsule, "Capsule")
-BOOST_CLASS_TRACKING(tesseract_geometry::Capsule, boost::serialization::track_never)
 #endif  // TESSERACT_GEOMETRY_CAPSULE_H
