@@ -103,4 +103,7 @@ using GeometrysConst = std::vector<Geometry::ConstPtr>;
 %template(GeometriesConst) std::vector<std::shared_ptr<const tesseract_geometry::Geometry> >;
 #endif  // SWIG
 
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Geometry, "Geometry")
+
 #endif  // TESSERACT_GEOMETRY_GEOMETRY_H

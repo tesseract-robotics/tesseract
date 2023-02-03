@@ -164,7 +164,6 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_geometry
-#include <boost/serialization/tracking.hpp>
+
 BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::SDFMesh, "SDFMesh")
-BOOST_CLASS_TRACKING(tesseract_geometry::SDFMesh, boost::serialization::track_never)
 #endif
