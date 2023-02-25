@@ -575,8 +575,8 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
   {
     const std::string SEARCH_PATHS_KEY{ "search_paths" };
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
-    const std::string EXECUTOR_PLUGINS_KEY{ "executor_plugins" };
-    const std::string NODE_PLUGINS_KEY{ "node_plugins" };
+    const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
+    const std::string NODE_PLUGINS_KEY{ "tasks" };
 
     YAML::Node task_composer_plugins;
     if (!rhs.search_paths.empty())
@@ -588,8 +588,8 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
     if (!rhs.executor_plugin_infos.plugins.empty())
       task_composer_plugins[EXECUTOR_PLUGINS_KEY] = rhs.executor_plugin_infos;
 
-    if (!rhs.node_plugin_infos.plugins.empty())
-      task_composer_plugins[NODE_PLUGINS_KEY] = rhs.node_plugin_infos;
+    if (!rhs.task_plugin_infos.plugins.empty())
+      task_composer_plugins[NODE_PLUGINS_KEY] = rhs.task_plugin_infos;
 
     return task_composer_plugins;
   }
@@ -598,8 +598,8 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
   {
     const std::string SEARCH_PATHS_KEY{ "search_paths" };
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
-    const std::string EXECUTOR_PLUGINS_KEY{ "executor_plugins" };
-    const std::string NODE_PLUGINS_KEY{ "node_plugins" };
+    const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
+    const std::string NODE_PLUGINS_KEY{ "tasks" };
 
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
@@ -659,7 +659,7 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
 
       try
       {
-        rhs.node_plugin_infos = node_plugins.as<tesseract_common::PluginInfoContainer>();
+        rhs.task_plugin_infos = node_plugins.as<tesseract_common::PluginInfoContainer>();
       }
       catch (const std::exception& e)
       {

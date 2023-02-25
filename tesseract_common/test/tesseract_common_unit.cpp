@@ -966,8 +966,8 @@ TEST(TesseractCommonUnit, TaskComposerPluginInfoUnit)  // NOLINT
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "TaskComposerNodePluginFactory";
-    tcpi_insert.node_plugin_infos.plugins = { std::make_pair("TaskComposerNodePlugin", pi) };
-    tcpi_insert.node_plugin_infos.default_plugin = "TaskComposerNodePlugin";
+    tcpi_insert.task_plugin_infos.plugins = { std::make_pair("TaskComposerNodePlugin", pi) };
+    tcpi_insert.task_plugin_infos.default_plugin = "TaskComposerNodePlugin";
   }
 
   EXPECT_FALSE(tcpi_insert.empty());
@@ -981,7 +981,7 @@ TEST(TesseractCommonUnit, TaskComposerPluginInfoUnit)  // NOLINT
   EXPECT_TRUE(tcpi.empty());
 }
 
-TEST(TesseractContactManagersFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
+TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
 {
   std::string yaml_string = R"(kinematic_plugins:
                                  search_paths:
@@ -1232,7 +1232,7 @@ TEST(TesseractContactManagersFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLI
   }
 }
 
-TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
+TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
 {
   std::string yaml_string = R"(contact_manager_plugins:
                                  search_paths:
@@ -1443,7 +1443,7 @@ TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  //
   }
 }
 
-TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
+TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
 {
   std::string yaml_string = R"(task_composer_plugins:
                                  search_paths:
@@ -1451,7 +1451,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                  search_libraries:
                                    - tesseract_task_composer_executor_factories
                                    - tesseract_task_composer_node_factories
-                                 executor_plugins:
+                                 executors:
                                    default: TaskflowTaskComposerExecutor
                                    plugins:
                                      TaskflowTaskComposerExecutor:
@@ -1466,7 +1466,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                        class: TaskflowTaskComposerExecutorFactory
                                        config:
                                          threads: 15
-                                 node_plugins:
+                                 tasks:
                                    default: CartesianMotionPipeline
                                    plugins:
                                      CartesianMotionPipeline:
@@ -1488,10 +1488,10 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
     const YAML::Node& plugin_info = plugin_config["task_composer_plugins"];
     const YAML::Node& search_paths = plugin_info["search_paths"];
     const YAML::Node& search_libraries = plugin_info["search_libraries"];
-    const YAML::Node& executor_default_plugin = plugin_info["executor_plugins"]["default"];
-    const YAML::Node& executor_plugins = plugin_info["executor_plugins"]["plugins"];
-    const YAML::Node& node_default_plugin = plugin_info["node_plugins"]["default"];
-    const YAML::Node& node_plugins = plugin_info["node_plugins"]["plugins"];
+    const YAML::Node& executor_default_plugin = plugin_info["executors"]["default"];
+    const YAML::Node& executor_plugins = plugin_info["executors"]["plugins"];
+    const YAML::Node& task_default_plugin = plugin_info["tasks"]["default"];
+    const YAML::Node& task_plugins = plugin_info["tasks"]["plugins"];
 
     {
       std::set<std::string> sp = tcpi.search_paths;
@@ -1516,8 +1516,8 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
     EXPECT_EQ(executor_default_plugin.as<std::string>(), tcpi.executor_plugin_infos.default_plugin);
     EXPECT_EQ(executor_plugins.size(), tcpi.executor_plugin_infos.plugins.size());
 
-    EXPECT_EQ(node_default_plugin.as<std::string>(), tcpi.node_plugin_infos.default_plugin);
-    EXPECT_EQ(node_plugins.size(), tcpi.node_plugin_infos.plugins.size());
+    EXPECT_EQ(task_default_plugin.as<std::string>(), tcpi.task_plugin_infos.default_plugin);
+    EXPECT_EQ(task_plugins.size(), tcpi.task_plugin_infos.plugins.size());
   }
 
   {  // search_paths failure
@@ -1527,7 +1527,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                    search_libraries:
                                      - tesseract_task_composer_executor_factories
                                      - tesseract_task_composer_node_factories
-                                   executor_plugins:
+                                   executors:
                                      default: TaskflowTaskComposerExecutor
                                      plugins:
                                        TaskflowTaskComposerExecutor:
@@ -1542,7 +1542,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                          class: TaskflowTaskComposerExecutorFactory
                                          config:
                                            threads: 15
-                                   node_plugins:
+                                   tasks:
                                      default: CartesianMotionPipeline
                                      plugins:
                                        CartesianMotionPipeline:
@@ -1566,7 +1566,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                      - /usr/local/lib
                                    search_libraries:
                                      failure: issue
-                                   executor_plugins:
+                                   executors:
                                      default: TaskflowTaskComposerExecutor
                                      plugins:
                                        TaskflowTaskComposerExecutor:
@@ -1581,7 +1581,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                          class: TaskflowTaskComposerExecutorFactory
                                          config:
                                            threads: 15
-                                   node_plugins:
+                                   tasks:
                                      default: CartesianMotionPipeline
                                      plugins:
                                        CartesianMotionPipeline:
@@ -1606,9 +1606,9 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                    search_libraries:
                                      - tesseract_task_composer_executor_factories
                                      - tesseract_task_composer_node_factories
-                                   executor_plugins:
+                                   executors:
                                      default: TaskflowTaskComposerExecutor
-                                   node_plugins:
+                                   tasks:
                                      default: CartesianMotionPipeline
                                      plugins:
                                        CartesianMotionPipeline:
@@ -1633,7 +1633,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                    search_libraries:
                                      - tesseract_task_composer_executor_factories
                                      - tesseract_task_composer_node_factories
-                                   executor_plugins:
+                                   executors:
                                      - TaskflowTaskComposerExecutor:
                                          class: TaskflowTaskComposerExecutorFactory
                                          config:
@@ -1646,7 +1646,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                          class: TaskflowTaskComposerExecutorFactory
                                          config:
                                            threads: 15
-                                   node_plugins:
+                                   tasks:
                                      default: CartesianMotionPipeline
                                      plugins:
                                        CartesianMotionPipeline:
@@ -1671,7 +1671,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                    search_libraries:
                                      - tesseract_task_composer_executor_factories
                                      - tesseract_task_composer_node_factories
-                                   executor_plugins:
+                                   executors:
                                      default: TaskflowTaskComposerExecutor
                                      plugins:
                                        TaskflowTaskComposerExecutor:
@@ -1686,7 +1686,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                          class: TaskflowTaskComposerExecutorFactory
                                          config:
                                            threads: 15
-                                   node_plugins:
+                                   tasks:
                                      default: CartesianMotionPipeline)";
     YAML::Node plugin_config = YAML::Load(yaml_string);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
@@ -1700,7 +1700,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                    search_libraries:
                                      - tesseract_task_composer_executor_factories
                                      - tesseract_task_composer_node_factories
-                                   executor_plugins:
+                                   executors:
                                      default: TaskflowTaskComposerExecutor
                                      plugins:
                                        TaskflowTaskComposerExecutor:
@@ -1715,7 +1715,7 @@ TEST(TesseractContactManagersFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NO
                                          class: TaskflowTaskComposerExecutorFactory
                                          config:
                                            threads: 15
-                                   node_plugins:
+                                   tasks:
                                      - CartesianMotionPipeline:
                                          class: CartesianMotionPipelineFactory
                                          config:

@@ -179,8 +179,8 @@ TEST(TesseractCommonSerializeUnit, TaskComposerPluginInfo)  // NOLINT
     PluginInfo plugin;
     plugin.class_name = "test_class_name 2";
     plugin.config["test2"] = "value2";
-    object->node_plugin_infos.default_plugin = "test_string2";
-    object->node_plugin_infos.plugins["plugin_key2"] = plugin;
+    object->task_plugin_infos.default_plugin = "test_string2";
+    object->task_plugin_infos.plugins["plugin_key2"] = plugin;
   }
 
   tesseract_common::testSerialization<TaskComposerPluginInfo>(*object, "TaskComposerPluginInfo");
