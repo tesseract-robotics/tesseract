@@ -262,11 +262,11 @@ void TaskComposerPluginInfo::insert(const TaskComposerPluginInfo& other)
   for (const auto& plugin_info : other.executor_plugin_infos.plugins)
     executor_plugin_infos.plugins[plugin_info.first] = plugin_info.second;
 
-  if (!other.node_plugin_infos.default_plugin.empty())
-    node_plugin_infos.default_plugin = other.node_plugin_infos.default_plugin;
+  if (!other.task_plugin_infos.default_plugin.empty())
+    task_plugin_infos.default_plugin = other.task_plugin_infos.default_plugin;
 
-  for (const auto& plugin_info : other.node_plugin_infos.plugins)
-    node_plugin_infos.plugins[plugin_info.first] = plugin_info.second;
+  for (const auto& plugin_info : other.task_plugin_infos.plugins)
+    task_plugin_infos.plugins[plugin_info.first] = plugin_info.second;
 }
 
 void TaskComposerPluginInfo::clear()
@@ -274,13 +274,13 @@ void TaskComposerPluginInfo::clear()
   search_paths.clear();
   search_libraries.clear();
   executor_plugin_infos.clear();
-  node_plugin_infos.clear();
+  task_plugin_infos.clear();
 }
 
 bool TaskComposerPluginInfo::empty() const
 {
   return (search_paths.empty() && search_libraries.empty() && executor_plugin_infos.plugins.empty() &&
-          node_plugin_infos.plugins.empty());
+          task_plugin_infos.plugins.empty());
 }
 
 bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
@@ -289,7 +289,7 @@ bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
   equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
   equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
   equal &= (executor_plugin_infos == rhs.executor_plugin_infos);
-  equal &= (node_plugin_infos == rhs.node_plugin_infos);
+  equal &= (task_plugin_infos == rhs.task_plugin_infos);
   return equal;
 }
 bool TaskComposerPluginInfo::operator!=(const TaskComposerPluginInfo& rhs) const { return !operator==(rhs); }
@@ -300,7 +300,7 @@ void TaskComposerPluginInfo::serialize(Archive& ar, const unsigned int /*version
   ar& BOOST_SERIALIZATION_NVP(search_paths);
   ar& BOOST_SERIALIZATION_NVP(search_libraries);
   ar& BOOST_SERIALIZATION_NVP(executor_plugin_infos);
-  ar& BOOST_SERIALIZATION_NVP(node_plugin_infos);
+  ar& BOOST_SERIALIZATION_NVP(task_plugin_infos);
 }
 
 /*********************************************************/

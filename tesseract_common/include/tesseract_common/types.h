@@ -215,8 +215,8 @@ struct TaskComposerPluginInfo
   /** @brief A map of name to task composer executor plugin information */
   tesseract_common::PluginInfoContainer executor_plugin_infos;
 
-  /** @brief A map of name to task composer node plugin information */
-  tesseract_common::PluginInfoContainer node_plugin_infos;
+  /** @brief A map of name to task composer task plugin information */
+  tesseract_common::PluginInfoContainer task_plugin_infos;
 
   /** @brief Insert the content of an other TaskComposerPluginInfo */
   void insert(const TaskComposerPluginInfo& other);
