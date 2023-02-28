@@ -69,5 +69,5 @@ jobs:
 
       # PERSONAL_GITHUB_TOKEN needed here since we are pushing to a branch
       - name: Push benchmark result
-        run: git push 'https://tesseract-robotics:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/tesseract-robotics/tesseract.git' gh-pages:gh-pages
+        run: git push 'https://tesseract-robotics:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/tesseract-robotics/tesseract_docs.git' gh-pages:gh-pages
         if: github.event_name != 'pull_request'
