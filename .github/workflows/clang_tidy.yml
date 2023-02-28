@@ -2,23 +2,17 @@ name: Clang-Tidy
 
 on:
   push:
-    paths-ignore:
-      - 'docs/**'
-      - '.github/workflows/api_docs.yml'
-      - '.clang**'
-      - '.run**'
-      - 'LICENSE**'
-      - '**.md'
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/clang_tidy.yml'
+      - '.clang-tidy'
     branches:
       - master
   pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - '.github/workflows/api_docs.yml'
-      - '.clang**'
-      - '.run**'
-      - 'LICENSE**'
-      - '**.md'
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/clang_tidy.yml'
+      - '.clang-tidy'
   schedule:
     - cron: '0 5 * * *'
 

@@ -2,13 +2,10 @@ name: Benchmarking
 
 on:
   push:
-    paths-ignore:
-      - 'docs/**'
-      - '.github/workflows/api_docs.yml'
-      - '.clang**'
-      - '.run**'
-      - 'LICENSE**'
-      - '**.md'
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/benchmarking.yml'
+      - '**.rosinstall'
     branches:
       - master
 

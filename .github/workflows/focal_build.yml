@@ -2,23 +2,17 @@ name: Focal-Build
 
 on:
   push:
-    paths-ignore:
-      - 'docs/**'
-      - '.github/workflows/api_docs.yml'
-      - '.clang**'
-      - '.run**'
-      - 'LICENSE**'
-      - '**.md'
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/focal_build.yml'
+      - '**.rosinstall'
     branches:
       - master
   pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - '.github/workflows/api_docs.yml'
-      - '.clang**'
-      - '.run**'
-      - 'LICENSE**'
-      - '**.md'
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/focal_build.yml'
+      - '**.rosinstall'
   schedule:
     - cron: '0 5 * * *'
   release:

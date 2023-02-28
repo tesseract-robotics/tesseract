@@ -2,9 +2,17 @@ name: Clang-Format
 
 on:
   push:
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/clang_format.yml'
+      - '**clang-format'
     branches:
       - master
   pull_request:
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/clang_format.yml'
+      - '**clang-format'
   schedule:
     - cron: '0 5 * * *'
 
