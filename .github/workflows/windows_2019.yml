@@ -2,9 +2,23 @@ name: Windows-2019
 
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/api_docs.yml'
+      - '.clang**'
+      - '.run**'
+      - 'LICENSE**'
+      - '**.md'
     branches:
       - master
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/api_docs.yml'
+      - '.clang**'
+      - '.run**'
+      - 'LICENSE**'
+      - '**.md'
   schedule:
     - cron: '0 5 * * *'
 

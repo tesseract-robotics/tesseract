@@ -2,6 +2,13 @@ name: Benchmarking
 
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/api_docs.yml'
+      - '.clang**'
+      - '.run**'
+      - 'LICENSE**'
+      - '**.md'
     branches:
       - master
 
