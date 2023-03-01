@@ -2,10 +2,6 @@ name: CMake-Format
 
 on:
   push:
-    paths:
-      - 'tesseract**'
-      - '.github/workflows/clang_format.yml'
-      - '**clang-format'
     branches:
       - master
   pull_request:

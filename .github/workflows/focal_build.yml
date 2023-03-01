@@ -2,10 +2,6 @@ name: Focal-Build
 
 on:
   push:
-    paths:
-      - 'tesseract**'
-      - '.github/workflows/focal_build.yml'
-      - '**.rosinstall'
     branches:
       - master
   pull_request:

@@ -2,9 +2,6 @@ name: CodeCov
 
 on:
   push:
-    paths:
-      - 'tesseract**'
-      - '.github/workflows/codecov.yml'
     branches:
       - master
   pull_request:

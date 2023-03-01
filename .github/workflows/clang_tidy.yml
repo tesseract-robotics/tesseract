@@ -2,10 +2,6 @@ name: Clang-Tidy
 
 on:
   push:
-    paths:
-      - 'tesseract**'
-      - '.github/workflows/clang_tidy.yml'
-      - '.clang-tidy'
     branches:
       - master
   pull_request:
