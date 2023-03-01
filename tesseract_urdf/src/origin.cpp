@@ -90,7 +90,7 @@ Eigen::Isometry3d tesseract_urdf::parseOrigin(const tinyxml2::XMLElement* xml_el
       Eigen::AngleAxisd pitchAngle(p, Eigen::Vector3d::UnitY());
       Eigen::AngleAxisd yawAngle(y, Eigen::Vector3d::UnitZ());
 
-      Eigen::Quaterniond rpy = yawAngle * pitchAngle * rollAngle;
+      Eigen::Quaterniond rpy{ yawAngle * pitchAngle * rollAngle };
 
       origin.linear() = rpy.toRotationMatrix();
     }

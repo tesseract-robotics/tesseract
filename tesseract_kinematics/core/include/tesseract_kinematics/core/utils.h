@@ -62,8 +62,7 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   Eigen::VectorXd njvals;
   double delta = 1e-8;
   tesseract_common::TransformMap poses = kin.calcFwdKin(joint_values);
-  Eigen::Isometry3d pose = poses[link_name];
-  pose = change_base * pose;
+  Eigen::Isometry3d pose{ change_base * poses[link_name] };
 
   for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
   {
@@ -72,13 +71,13 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
     Eigen::Isometry3d updated_pose = kin.calcFwdKin(njvals)[link_name];
     updated_pose = change_base * updated_pose;
 
-    Eigen::Vector3d temp = pose * link_point;
-    Eigen::Vector3d temp2 = updated_pose * link_point;
+    Eigen::Vector3d temp{ pose * link_point };
+    Eigen::Vector3d temp2{ updated_pose * link_point };
     jacobian(0, i) = (temp2.x() - temp.x()) / delta;
     jacobian(1, i) = (temp2.y() - temp.y()) / delta;
     jacobian(2, i) = (temp2.z() - temp.z()) / delta;
 
-    Eigen::VectorXd omega = (pose.rotation() * tesseract_common::calcRotationalError(pose.rotation().transpose() *
+    Eigen::Vector3d omega = (pose.rotation() * tesseract_common::calcRotationalError(pose.rotation().transpose() *
                                                                                      updated_pose.rotation())) /
                             delta;
     jacobian(3, i) = omega(0);
