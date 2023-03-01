@@ -217,7 +217,7 @@ bool KDLStateSolver::isActiveLinkName(const std::string& link_name) const
 {
   return (std::find(data_.active_link_names.begin(), data_.active_link_names.end(), link_name) !=
           data_.active_link_names.end());
-};
+}
 
 bool KDLStateSolver::hasLinkName(const std::string& link_name) const
 {
@@ -316,7 +316,7 @@ void KDLStateSolver::calculateTransformsHelper(SceneState& state,
       current_frame = GetTreeElementSegment(current_element).pose(0);
 
     Eigen::Isometry3d local_frame = convert(current_frame);
-    Eigen::Isometry3d global_frame = parent_frame * local_frame;
+    Eigen::Isometry3d global_frame{ parent_frame * local_frame };
     state.link_transforms[current_element.segment.getName()] = global_frame;
     if (current_element.segment.getName() != data_.tree.getRootSegment()->first)
       state.joint_transforms[current_element.segment.getJoint().getName()] = global_frame;

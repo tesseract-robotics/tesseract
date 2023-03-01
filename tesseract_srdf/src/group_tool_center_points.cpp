@@ -139,7 +139,7 @@ GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene_graph*
           Eigen::AngleAxisd pitchAngle(p, Eigen::Vector3d::UnitY());
           Eigen::AngleAxisd yawAngle(y, Eigen::Vector3d::UnitZ());
 
-          Eigen::Quaterniond rpy = yawAngle * pitchAngle * rollAngle;
+          Eigen::Quaterniond rpy{ yawAngle * pitchAngle * rollAngle };
 
           tcp.linear() = rpy.toRotationMatrix();
         }

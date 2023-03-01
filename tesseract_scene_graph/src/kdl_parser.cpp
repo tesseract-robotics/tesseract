@@ -41,28 +41,51 @@ namespace tesseract_scene_graph
 KDL::Frame convert(const Eigen::Isometry3d& transform)
 {
   KDL::Frame frame;
-  frame.Identity();
 
-  for (int i = 0; i < 3; ++i)
-    frame.p[i] = transform(i, 3);
+  // translation
+  frame.p[0] = transform(0, 3);
+  frame.p[1] = transform(1, 3);
+  frame.p[2] = transform(2, 3);
 
-  for (int i = 0; i < 9; ++i)
-    frame.M.data[i] = transform(i / 3, i % 3);
+  // rotation matrix
+  frame.M.data[0] = transform(0, 0);
+  frame.M.data[1] = transform(0, 1);
+  frame.M.data[2] = transform(0, 2);
+  frame.M.data[3] = transform(1, 0);
+  frame.M.data[4] = transform(1, 1);
+  frame.M.data[5] = transform(1, 2);
+  frame.M.data[6] = transform(2, 0);
+  frame.M.data[7] = transform(2, 1);
+  frame.M.data[8] = transform(2, 2);
 
   return frame;
 }
 
 Eigen::Isometry3d convert(const KDL::Frame& frame)
 {
-  Eigen::Isometry3d transform{ Eigen::Isometry3d::Identity() };
+  Eigen::Isometry3d transform;
 
   // translation
-  for (int i = 0; i < 3; ++i)
-    transform(i, 3) = frame.p[i];
+  transform(0, 3) = frame.p[0];
+  transform(1, 3) = frame.p[1];
+  transform(2, 3) = frame.p[2];
 
   // rotation matrix
-  for (int i = 0; i < 9; ++i)
-    transform(i / 3, i % 3) = frame.M.data[i];
+  transform(0, 0) = frame.M.data[0];
+  transform(0, 1) = frame.M.data[1];
+  transform(0, 2) = frame.M.data[2];
+  transform(1, 0) = frame.M.data[3];
+  transform(1, 1) = frame.M.data[4];
+  transform(1, 2) = frame.M.data[5];
+  transform(2, 0) = frame.M.data[6];
+  transform(2, 1) = frame.M.data[7];
+  transform(2, 2) = frame.M.data[8];
+
+  // Bottom row
+  transform(3, 0) = 0;
+  transform(3, 1) = 0;
+  transform(3, 2) = 0;
+  transform(3, 3) = 1;
 
   return transform;
 }

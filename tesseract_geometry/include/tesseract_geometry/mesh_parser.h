@@ -83,6 +83,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                                                 bool material_and_texture)
 {
   std::vector<std::shared_ptr<T>> meshes;
+  meshes.reserve(node->mNumMeshes);
 
   aiMatrix4x4 transform = parent_transform;
   transform *= node->mTransformation;
@@ -96,6 +97,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     std::shared_ptr<std::vector<MeshTexture::Ptr>> textures = nullptr;
 
     const aiMesh* a = scene->mMeshes[node->mMeshes[j]];
+    vertices->reserve(a->mNumVertices);
     for (unsigned int i = 0; i < a->mNumVertices; ++i)
     {
       aiVector3D v = transform * a->mVertices[i];
@@ -129,6 +131,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     if (normals && a->HasNormals())
     {
       vertex_normals = std::make_shared<tesseract_common::VectorVector3d>();
+      vertex_normals->reserve(a->mNumVertices);
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
       {
         aiVector3D v = transform * a->mNormals[i];
@@ -141,6 +144,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     if (vertex_colors && a->HasVertexColors(0))
     {
       vertex_colors = std::make_shared<tesseract_common::VectorVector4d>();
+      vertex_colors->reserve(a->mNumVertices);
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
       {
         aiColor4D v = a->mColors[0][i];

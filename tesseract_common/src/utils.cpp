@@ -133,7 +133,7 @@ Eigen::Vector3d calcRotationalError(const Eigen::Ref<const Eigen::Matrix3d>& R)
   // Make sure that the angle is on [-pi, pi]
   const static double two_pi = 2.0 * M_PI;
   double angle = s * r12.angle();
-  Eigen::Vector3d axis = s * r12.axis();
+  Eigen::Vector3d axis{ s * r12.axis() };
   angle = copysign(fmod(fabs(angle), two_pi), angle);
   if (angle < -M_PI)
     angle += two_pi;
@@ -157,7 +157,7 @@ Eigen::Vector3d calcRotationalError2(const Eigen::Ref<const Eigen::Matrix3d>& R)
   // Make sure that the angle is on [0, 2 * pi]
   const static double two_pi = 2.0 * M_PI;
   double angle = s * r12.angle();
-  Eigen::Vector3d axis = s * r12.axis();
+  Eigen::Vector3d axis{ s * r12.axis() };
   angle = copysign(fmod(fabs(angle), two_pi), angle);
   if (angle < 0)
     angle += two_pi;

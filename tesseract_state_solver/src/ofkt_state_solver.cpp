@@ -327,7 +327,7 @@ Eigen::MatrixXd OFKTStateSolver::calcJacobianHelper(const std::unordered_map<std
   OFKTNode* node = link_map_.at(link_name);
   Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(6, static_cast<Eigen::Index>(active_joint_names_.size()));
 
-  Eigen::Isometry3d total_tf = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d total_tf{ Eigen::Isometry3d::Identity() };
   while (node != root_.get())
   {
     if (node->getType() == JointType::FIXED || node->getType() == JointType::FLOATING)
