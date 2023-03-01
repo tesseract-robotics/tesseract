@@ -5,6 +5,10 @@ on:
     branches:
       - master
   pull_request:
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/focal_build.yml'
+      - '**.rosinstall'
   schedule:
     - cron: '0 5 * * *'
   release:

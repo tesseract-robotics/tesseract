@@ -5,6 +5,9 @@ on:
     branches:
       - master
   pull_request:
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/codecov.yml'
   schedule:
     - cron: '0 5 * * *'
 
