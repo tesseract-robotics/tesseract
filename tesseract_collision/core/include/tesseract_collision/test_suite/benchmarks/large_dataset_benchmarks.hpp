@@ -32,18 +32,26 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
   switch (type)
   {
     case tesseract_geometry::GeometryType::CONVEX_MESH:
+    {
       auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
-      sphere = makeConvexMesh(mesh);
+      sphere = makeConvexMesh(*mesh);
       break;
+    }
     case tesseract_geometry::GeometryType::MESH:
+    {
       sphere = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
       break;
+    }
     case tesseract_geometry::GeometryType::SPHERE:
+    {
       sphere = std::make_shared<tesseract_geometry::Sphere>(0.25);
       break;
+    }
     default:
+    {
       throw(std::runtime_error("Invalid geometry type"));
       break;
+    }
   }
 
   double delta = 0.55;
@@ -107,18 +115,26 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   switch (type)
   {
     case tesseract_geometry::GeometryType::CONVEX_MESH:
+    {
       auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
-      sphere = makeConvexMesh(mesh);
+      sphere = makeConvexMesh(*mesh);
       break;
+    }
     case tesseract_geometry::GeometryType::MESH:
+    {
       sphere = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
       break;
+    }
     case tesseract_geometry::GeometryType::SPHERE:
+    {
       sphere = std::make_shared<tesseract_geometry::Sphere>(0.25);
       break;
+    }
     default:
+    {
       throw(std::runtime_error("Invalid geometry type"));
       break;
+    }
   }
 
   // Add Grid of spheres
