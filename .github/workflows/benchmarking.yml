@@ -52,22 +52,18 @@ jobs:
         env: ${{matrix.env}}
 
       - name: Store Bullet Discrete, FCL Discrete and Environment benchmark result
-        uses: rhysd/github-action-benchmark@v1
+        uses: benchmark-action/github-action-benchmark@v1
         with:
           name: C++ Benchmark
           tool: 'googlecpp'
           output-file-path: /home/runner/work/tesseract/tesseract/benchmarks/tesseract-benchmark_result.json
-          # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869/highlight/false
-          github-token: ${{ secrets.GITHUB_TOKEN }} # GitHub API token to make a commit comment
-          auto-push: false
+          benchmark-data-dir-path: tesseract/benchmark
+          gh-repository: git@github.com:tesseract-robotics/tesseract_docs.git
+          github-token: ${{ secrets.DOCS_DEPLOY_KEY }}
+          auto-push: true
           # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '200%'
           comment-on-alert: true
           fail-on-alert: false
-          alert-comment-cc-users: '@mpowelson'
+          alert-comment-cc-users: '@Levi-Armstrong'
           max-items-in-chart: 20
-
-      # PERSONAL_GITHUB_TOKEN needed here since we are pushing to a branch
-      - name: Push benchmark result
-        run: git push 'https://tesseract-robotics:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/tesseract-robotics/tesseract_docs.git' gh-pages:gh-pages
-        if: github.event_name != 'pull_request'
