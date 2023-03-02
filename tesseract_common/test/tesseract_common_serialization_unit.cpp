@@ -27,6 +27,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_serialize.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/eigen_serialization.h>
@@ -39,6 +41,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/joint_state.h>
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_common/tool_path.h>
+#include <tesseract_common/tool_path_segment.h>
 
 using namespace tesseract_common;
 
@@ -524,6 +528,36 @@ TEST(TesseractCommonSerializeUnit, ExtensionBinaryMacro)  // NOLINT
 
   std::string default_ext = tesseract_common::serialization::binary::extension<ExtensionMacroTestB>::value;
   EXPECT_EQ(default_ext, "trsb");
+}
+
+TEST(TesseractCommonSerializeUnit, ToolPath)  // NOLINT
+{
+  tesseract_common::ToolPath tool_path("Description");
+  tool_path.setNamespace("Namespace");
+  tesseract_common::ToolPathSegment segment;
+  segment.push_back(Eigen::Isometry3d::Identity());
+  segment.push_back(Eigen::Isometry3d::Identity());
+  segment.push_back(Eigen::Isometry3d::Identity());
+  segment.push_back(Eigen::Isometry3d::Identity());
+  segment.push_back(Eigen::Isometry3d::Identity());
+
+  tool_path.push_back(segment);
+  tool_path.push_back(segment);
+  tool_path.push_back(segment);
+
+  tesseract_common::testSerialization<tesseract_common::ToolPath>(tool_path, "ToolPath");
+}
+
+TEST(TesseractCommonSerializeUnit, ToolPathSegment)  // NOLINT
+{
+  tesseract_common::ToolPathSegment segment;
+  segment.push_back(Eigen::Isometry3d::Identity());
+  segment.push_back(Eigen::Isometry3d::Identity());
+  segment.push_back(Eigen::Isometry3d::Identity());
+  segment.push_back(Eigen::Isometry3d::Identity());
+  segment.push_back(Eigen::Isometry3d::Identity());
+
+  tesseract_common::testSerialization<tesseract_common::ToolPathSegment>(segment, "ToolPathSegment");
 }
 
 int main(int argc, char** argv)

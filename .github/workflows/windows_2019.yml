@@ -54,7 +54,7 @@ jobs:
         set CMAKE_PREFIX_PATH=%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/dependencies.rosinstall" src/
         if %ERRORLEVEL% GEQ 1 exit 1
-        colcon build --event-handlers console_direct+ --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
+        colcon build --event-handlers console_direct+ --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON -DBOOST_UUID_FORCE_AUTO_LINK=ON
         if %ERRORLEVEL% GEQ 1 exit 1
 
     - name: run-test
