@@ -2,6 +2,13 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
+* Closes `#848 <https://github.com/tesseract-robotics/tesseract/issues/848>`_
+* Improve tesseract_scene_graph code coverage (`#838 <https://github.com/tesseract-robotics/tesseract/issues/838>`_)
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.14.0 (2022-10-23)
 -------------------
 * Including <boost/serialization/library_version_type.hpp> for Boost 1.74. Fixes `tesseract-robotics/tesseract#764 <https://github.com/tesseract-robotics/tesseract/issues/764>`_

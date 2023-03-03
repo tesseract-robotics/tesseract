@@ -2,6 +2,14 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update collision benchmarks
+* Remove unused fcl selfCollisionContactTest method
+* Improve tesseract_collision code coverage
+* Fix fcl unregistar bug
+* Contributors: Levi Armstrong
+
 0.14.0 (2022-10-23)
 -------------------
 * Remove deprecated items

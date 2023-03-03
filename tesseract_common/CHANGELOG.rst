@@ -2,6 +2,14 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
+* Update TaskComposerPluginInfo
+* Improve tesseract_state_solver code coverage
+* Fix tesseract_common plugin info implementations equal and insert methods
+* Contributors: Levi Armstrong
+
 0.14.0 (2022-10-23)
 -------------------
 * Add general resource locator

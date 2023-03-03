@@ -2,6 +2,13 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
+* Closes `#848 <https://github.com/tesseract-robotics/tesseract/issues/848>`_
+* Improve tesseract_state_solver code coverage
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.14.0 (2022-10-23)
 -------------------
 * Fix codecov build using ros_industrial_cmake_boilerplate 0.3.1

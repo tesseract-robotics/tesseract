@@ -2,6 +2,12 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
+* Closes `#848 <https://github.com/tesseract-robotics/tesseract/issues/848>`_
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.14.0 (2022-10-23)
 -------------------
 * Remove deprecated items

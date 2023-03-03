@@ -2,6 +2,11 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve tesseract_environment code coverage
+* Contributors: Levi Armstrong
+
 0.14.0 (2022-10-23)
 -------------------
 * Add modify allowed collisions command
