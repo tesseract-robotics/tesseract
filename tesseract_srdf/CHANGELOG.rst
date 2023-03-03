@@ -2,8 +2,8 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.15.0 (2023-03-03)
+-------------------
 * Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
 * Improve tesseract_srdf code coverage (`#836 <https://github.com/tesseract-robotics/tesseract/issues/836>`_)
 * Fix KinematicsInformation equal and insert methods

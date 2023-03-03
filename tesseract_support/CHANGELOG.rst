@@ -2,8 +2,8 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.15.0 (2023-03-03)
+-------------------
 * Fix tesseract_common plugin info implementations equal and insert methods
 * Fix KinematicsInformation equal and insert methods
 * Contributors: Levi Armstrong

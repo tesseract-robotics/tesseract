@@ -2,8 +2,8 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.15.0 (2023-03-03)
+-------------------
 * Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
 * Closes `#848 <https://github.com/tesseract-robotics/tesseract/issues/848>`_
 * Improve tesseract_state_solver code coverage
