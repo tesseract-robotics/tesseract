@@ -1,10 +1,6 @@
 name: DeployDocumentation
 
 on:
-  push:
-    branches:
-      - master
-
   # allow manually starting this workflow
   workflow_dispatch:
 

@@ -1,14 +1,6 @@
 name: Clang-Tidy
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    paths:
-      - 'tesseract**'
-      - '.github/workflows/clang_tidy.yml'
-      - '.clang-tidy'
   schedule:
     - cron: '0 5 * * *'
 

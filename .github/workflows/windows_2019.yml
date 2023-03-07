@@ -1,14 +1,6 @@
 name: Windows-2019
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    paths:
-      - 'tesseract**'
-      - '.github/workflows/windows_2019.yml'
-      - '**.rosinstall'
   schedule:
     - cron: '0 5 * * *'
 

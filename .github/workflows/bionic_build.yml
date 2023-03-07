@@ -1,16 +1,6 @@
 name: Bionic-Build
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    paths:
-      - 'tesseract**'
-      - '.github/workflows/bionic_build.yml'
-      - '**.rosinstall'
-  schedule:
-    - cron: '0 5 * * *'
   release:
     types:
       - released

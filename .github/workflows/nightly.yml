@@ -1,8 +1,6 @@
 name: Nightly
 
 on:
-  pull_request:
-    types: [labeled]
   schedule:
     - cron: '0 5 * * *'
 
