@@ -60,6 +60,7 @@ jobs:
           SSH_DEPLOY_KEY: ${{ secrets.DOCS_DEPLOY_KEY }}
         with:
           source-directory: benchmark-data-repository/tesseract/dev/bench
+          target-directory: tesseract/dev/bench
           destination-github-username: marip8
           destination-repository-name: tesseract_docs
           target-branch: gh-pages
