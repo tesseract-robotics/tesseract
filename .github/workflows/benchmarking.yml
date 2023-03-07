@@ -50,6 +50,7 @@ jobs:
           output-file-path: ${{ github.workspace }}/benchmarks/tesseract-benchmark_result.json
           benchmark-data-dir-path: tesseract/benchmark
           gh-repository: github.com/marip8/tesseract_docs
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: false
           # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '200%'
