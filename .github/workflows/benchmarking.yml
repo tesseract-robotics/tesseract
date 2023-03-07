@@ -39,6 +39,7 @@ jobs:
 
       - name: Generate fake benchmark
         run: |
+          mkdir -p ${{ github.workspace }}/benchmarks
           touch ${{ github.workspace }}/benchmarks/tesseract-benchmark_result.json
 
       - name: Store Bullet Discrete, FCL Discrete and Environment benchmark result
