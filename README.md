@@ -76,7 +76,7 @@ python3 -m pip install --user  tesseract_robotics tesseract_robotics_viewer
 
 * [Wiki](https://tesseract-docs.readthedocs.io)
 * [Doxygen](https://tesseract-robotics.github.io/tesseract_docs/tesseract/)
-* [Benchmark](https://tesseract-robotics.github.io/tesseract/dev/bench)
+* [Benchmark](https://tesseract-robotics.github.io/tesseract_docs/tesseract/dev/bench/)
 
 ## Evolution
 
