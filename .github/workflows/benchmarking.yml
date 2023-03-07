@@ -16,20 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         env:
-          - {CI_NAME: Focal-Benchmark,
-             OS_NAME: ubuntu,
-             OS_CODE_NAME: focal,
-             ROS_DISTRO: noetic,
-             ROS_REPO: main,
-             UPSTREAM_WORKSPACE: 'dependencies.rosinstall',
-             ROSDEP_SKIP_KEYS: "bullet ros_industrial_cmake_boilerplate fcl iwyu",
-             DOCKER_IMAGE: "rosindustrial/tesseract:noetic",
-             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Focal-Benchmark/.ccache",
-             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=ON -DBENCHMARK_ARGS=CI_ONLY",
-             DOCKER_RUN_OPTS: '-v ~/work/tesseract/tesseract/benchmarks:/root/benchmarks',
-             AFTER_SCRIPT: '$target_ws/src/tesseract/.run_combine_benchmark_results'}
-
+          - {CI_NAME: Focal-Benchmark}
     steps:
       - uses: actions/checkout@v2
 
@@ -49,21 +36,41 @@ jobs:
             ${{ matrix.env.CI_NAME }}-ccache-
 
       - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{matrix.env}}
+        env:
+          ROS_DISTRO: noetic
+          UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
+          ROSDEP_SKIP_KEYS: "bullet ros_industrial_cmake_boilerplate fcl iwyu"
+          DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
+          CCACHE_DIR: "${{ github.workspace }}/${{ matrix.env.CI_NAME }}/.ccache"
+          UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+          TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=ON -DBENCHMARK_ARGS=CI_ONLY"
+          DOCKER_RUN_OPTS: '-v ${{ github.workspace }}/benchmarks:/root/benchmarks'
+          AFTER_SCRIPT: '$target_ws/src/tesseract/.run_combine_benchmark_results'
 
       - name: Store Bullet Discrete, FCL Discrete and Environment benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: C++ Benchmark
           tool: 'googlecpp'
-          output-file-path: /home/runner/work/tesseract/tesseract/benchmarks/tesseract-benchmark_result.json
-          benchmark-data-dir-path: tesseract/benchmark
-          gh-repository: git@github.com:tesseract-robotics/tesseract_docs.git
-          github-token: ${{ secrets.DOCS_DEPLOY_KEY }}
-          auto-push: true
+          output-file-path: ${{ github.workspace }}/benchmarks/tesseract-benchmark_result.json
+          benchmark-data-dir-path: tesseract/dev/bench
+          gh-repository: github.com/tesseract-robotics/tesseract_docs
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
           # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '200%'
           comment-on-alert: true
           fail-on-alert: false
           alert-comment-cc-users: '@Levi-Armstrong'
           max-items-in-chart: 20
+
+      - name: Push benchmark result
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.DOCS_DEPLOY_KEY }}
+        with:
+          source-directory: benchmark-data-repository/tesseract/dev/bench
+          destination-github-username: tesseract-robotics
+          destination-repository-name: tesseract_docs
+          target-branch: gh-pages
+          target-directory: tesseract/dev/bench
