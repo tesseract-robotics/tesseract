@@ -43,7 +43,7 @@ jobs:
           name: C++ Benchmark
           tool: 'googlecpp'
           output-file-path: ${{ github.workspace }}/benchmarks/tesseract-benchmark_result.json
-          benchmark-data-dir-path: tesseract
+          benchmark-data-dir-path: tesseract/dev/bench
           gh-repository: github.com/marip8/tesseract_docs
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: false
@@ -60,7 +60,7 @@ jobs:
           SSH_DEPLOY_KEY: ${{ secrets.DOCS_DEPLOY_KEY }}
         with:
           source-directory: benchmark-data-repository/tesseract/dev/bench
-          target-directory: tesseract/dev/bench
           destination-github-username: marip8
           destination-repository-name: tesseract_docs
           target-branch: gh-pages
+          target-directory: tesseract/dev/bench
