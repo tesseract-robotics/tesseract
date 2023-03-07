@@ -1,0 +1,35 @@
+{
+  "context": {
+    "date": "2015/03/17-18:40:25",
+    "num_cpus": 40,
+    "mhz_per_cpu": 2801,
+    "cpu_scaling_enabled": false,
+    "build_type": "debug"
+  },
+  "benchmarks": [
+    {
+      "name": "BM_SetInsert/1024/1",
+      "iterations": 94877,
+      "real_time": 29275,
+      "cpu_time": 29836,
+      "bytes_per_second": 134066,
+      "items_per_second": 33516
+    },
+    {
+      "name": "BM_SetInsert/1024/8",
+      "iterations": 21609,
+      "real_time": 32317,
+      "cpu_time": 32429,
+      "bytes_per_second": 986770,
+      "items_per_second": 246693
+    },
+    {
+      "name": "BM_SetInsert/1024/10",
+      "iterations": 21393,
+      "real_time": 32724,
+      "cpu_time": 33355,
+      "bytes_per_second": 1199226,
+      "items_per_second": 299807
+    }
+  ]
+}
