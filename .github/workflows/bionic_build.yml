@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI_NAME: ubuntu-bionic
-      CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Bionic-Build/.ccache"
+      CCACHE_DIR: "${{ github.workspace }}/${{ matrix.env.CI_NAME}}/.ccache"
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
       PUSH_DOCKER_IMAGE: ${{ github.ref == 'refs/heads/master' || github.event_name == 'release' }}
