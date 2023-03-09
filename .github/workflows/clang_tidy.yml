@@ -18,17 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI_NAME: Clang-Tidy
-      OS_NAME: ubuntu
-      OS_CODE_NAME: focal
-      ROS_DISTRO: noetic
-      ROS_REPO: main
-      UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
-      ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow"
-      DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
-      CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Clang-Tidy/.ccache"
-      NOT_TEST_BUILD: true
-      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-      TARGET_CMAKE_ARGS: "-DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"
     steps:
       - uses: actions/checkout@v2
 
@@ -57,5 +46,15 @@ jobs:
           restore-keys: |
             ${{ env.CI_NAME }}-ccache-
 
-      - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{env}}
+      - uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
+        env:
+          DOCKER_IMAGE: ubuntu:20.04
+          ROS_DISTRO: false
+          ADDITIONAL_DEBS: 'curl lsb-release'
+          AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
+          UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
+          ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow"
+          CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Clang-Tidy/.ccache"
+          NOT_TEST_BUILD: true
+          UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+          TARGET_CMAKE_ARGS: "-DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"

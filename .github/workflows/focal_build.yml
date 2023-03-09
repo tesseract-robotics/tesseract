@@ -1,4 +1,4 @@
-name: Focal-Build
+name: Ubuntu Focal
 
 on:
   push:
@@ -17,12 +17,11 @@ on:
 
 jobs:
   industrial_ci:
-    name: Noetic
+    name: Ubuntu Focal
     runs-on: ubuntu-latest
     env:
-      CI_NAME: Focal-Build
+      CI_NAME: ubuntu-focal
       CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Focal-Build/.ccache"
-      ROS_DISTRO: noetic
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
       PUSH_DOCKER_IMAGE: ${{ github.ref == 'refs/heads/master' || github.event_name == 'release' }}
@@ -72,8 +71,8 @@ jobs:
             prefix=
             suffix=
           tags: |
-            type=ref,event=branch,prefix=${{ env.ROS_DISTRO }}-
-            type=semver,pattern={{major}}.{{minor}},prefix=${{ env.ROS_DISTRO }}-
+            type=ref,event=branch,prefix=${{ env.CI_NAME }}-
+            type=semver,pattern={{major}}.{{minor}},prefix=${{ env.CI_NAME }}-
 
       - name: Set build type
         run: |
@@ -85,21 +84,18 @@ jobs:
           fi
 
       - name: Build repository
-        uses: 'ros-industrial/industrial_ci@master'
+        uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
         env:
-          OS_NAME: ubuntu
-          OS_CODE_NAME: focal
-          ROS_REPO: main
+          DOCKER_IMAGE: ubuntu:20.04
+          ROS_DISTRO: false
+          ADDITIONAL_DEBS: 'curl lsb-release'
+          AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
           UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
           ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow"
-          DOCKER_IMAGE: "rosindustrial/tesseract:${{ env.ROS_DISTRO }}"
-          PARALLEL_TESTS: false
-          PARALLEL_BUILDS: false
           PREFIX: ${{ github.repository }}_
-          BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source $BASEDIR/${PREFIX}target_ws/install/setup.bash"
           UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
           TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTESSERACT_ENABLE_TESTING=ON"
-          AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_srdf tesseract_state_solver tesseract_urdf --make-args test'
+          BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source $BASEDIR/${PREFIX}target_ws/install/setup.bash"
           DOCKER_COMMIT: ${{ steps.meta.outputs.tags }}
 
       - name: Push post-build Docker

@@ -35,12 +35,14 @@ jobs:
           restore-keys: |
             ${{ matrix.env.CI_NAME }}-ccache-
 
-      - uses: 'ros-industrial/industrial_ci@master'
+      - uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
         env:
-          ROS_DISTRO: noetic
+          DOCKER_IMAGE: ubuntu:20.04
+          ROS_DISTRO: false
+          ADDITIONAL_DEBS: 'curl lsb-release'
+          AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
           UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
           ROSDEP_SKIP_KEYS: "bullet ros_industrial_cmake_boilerplate fcl iwyu"
-          DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
           CCACHE_DIR: "${{ github.workspace }}/${{ matrix.env.CI_NAME }}/.ccache"
           UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
           TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=ON -DBENCHMARK_ARGS=CI_ONLY"
