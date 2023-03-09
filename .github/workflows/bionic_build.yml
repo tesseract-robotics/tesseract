@@ -91,7 +91,7 @@ jobs:
           ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
           AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
           UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
-          ROSDEP_SKIP_KEYS: 'bullet ros_industrial_cmake_boilerplate iwyu fcl taskflow octomap'
+          ROSDEP_SKIP_KEYS: 'fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow octomap'
           PREFIX: ${{ github.repository }}_
           UPSTREAM_CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Release'
           TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_WARNINGS_AS_ERRORS=OFF"
