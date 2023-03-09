@@ -37,7 +37,7 @@ jobs:
              AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh',
              UPSTREAM_WORKSPACE: 'dependencies.rosinstall',
              DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_planning#master github:ros-industrial-consortium/trajopt_ros#master github:ros-industrial-consortium/tesseract_ros#master',
-             ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow octomap",
+             ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap",
              CCACHE_DIR: "${{ github.workspace }}/${{ matrix.env.CI_NAME}}/.ccache",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
