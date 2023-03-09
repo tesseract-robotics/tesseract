@@ -14,7 +14,6 @@ on:
 
 jobs:
   clang_format:
-    name: Clang-Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1

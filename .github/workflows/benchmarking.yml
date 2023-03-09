@@ -9,14 +9,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  industrial_ci:
-    name: ${{ matrix.env.CI_NAME }}
+  benchmark:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        env:
-          - {CI_NAME: Focal-Benchmark}
     steps:
       - uses: actions/checkout@v2
 
@@ -30,10 +24,10 @@ jobs:
       - name: ccache cache files
         uses: actions/cache@v1.1.0
         with:
-          path: ${{ matrix.env.CI_NAME }}/.ccache
-          key: ${{ matrix.env.CI_NAME }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          path: benchmark/.ccache
+          key: benchmark-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
           restore-keys: |
-            ${{ matrix.env.CI_NAME }}-ccache-
+            benchmark-ccache-
 
       - uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
         env:
@@ -43,7 +37,7 @@ jobs:
           AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
           UPSTREAM_WORKSPACE: 'dependencies.repos'
           ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin"
-          CCACHE_DIR: "${{ github.workspace }}/${{ matrix.env.CI_NAME }}/.ccache"
+          CCACHE_DIR: "${{ github.workspace }}/benchmark/.ccache"
           UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
           TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=ON -DBENCHMARK_ARGS=CI_ONLY"
           DOCKER_RUN_OPTS: '-v ${{ github.workspace }}/benchmarks:/root/benchmarks'
