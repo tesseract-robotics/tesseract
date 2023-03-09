@@ -46,7 +46,8 @@ jobs:
           restore-keys: |
             ${{ env.CI_NAME }}-ccache-
 
-      - uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
+      - name: Build repository
+        uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
         env:
           DOCKER_IMAGE: ubuntu:20.04
           ROS_DISTRO: false
