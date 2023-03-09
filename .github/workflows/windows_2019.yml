@@ -8,7 +8,7 @@ on:
     paths:
       - 'tesseract**'
       - '.github/workflows/windows_2019.yml'
-      - '**.rosinstall'
+      - '**.repos'
   schedule:
     - cron: '0 5 * * *'
 
@@ -52,7 +52,7 @@ jobs:
       run: |
         set PATH=%PATH%;%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release\bin
         set CMAKE_PREFIX_PATH=%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release
-        vcs import --input "${{ github.workspace }}/workspace/src/tesseract/dependencies.rosinstall" src/
+        vcs import --input "${{ github.workspace }}/workspace/src/tesseract/dependencies.repos" src/
         if %ERRORLEVEL% GEQ 1 exit 1
         colcon build --event-handlers console_direct+ --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
         if %ERRORLEVEL% GEQ 1 exit 1
