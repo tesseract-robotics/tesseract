@@ -22,10 +22,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [bionic, focal]
+        distro: [focal]
         include:
-          - distro: bionic
-            image: ubuntu:18.04
           - distro: focal
             image: ubuntu:20.04
     env:
