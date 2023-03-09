@@ -1,4 +1,4 @@
-name: Ubuntu Bionic
+name: Ubuntu
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   pull_request:
     paths:
       - 'tesseract**'
-      - '.github/workflows/bionic_build.yml'
+      - '.github/workflows/ubuntu.yml'
       - '**.repos'
   schedule:
     - cron: '0 5 * * *'
@@ -16,12 +16,19 @@ on:
       - released
 
 jobs:
-  industrial_ci:
-    name: Ubuntu Bionic
+  ci:
+    name: Ubuntu
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro: [bionic, focal]
+        include:
+          - distro: bionic
+            image: ubuntu:18.04
+          - distro: focal
+            image: ubuntu:20.04
     env:
-      CI_NAME: ubuntu-bionic
-      CCACHE_DIR: "${{ github.workspace }}/${{ matrix.env.CI_NAME}}/.ccache"
+      CCACHE_DIR: "${{ github.workspace }}/${{ matrix.distro }}/.ccache"
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
       PUSH_DOCKER_IMAGE: ${{ github.ref == 'refs/heads/master' || github.event_name == 'release' }}
@@ -49,10 +56,10 @@ jobs:
         continue-on-error: true
         uses: actions/cache@v1.1.0
         with:
-          path: ${{ env.CI_NAME }}/.ccache
-          key: ${{ env.CI_NAME }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          path: ${{ matrix.distro }}/.ccache
+          key: ${{ matrix.distro }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
           restore-keys: |
-            ${{ env.CI_NAME }}-ccache-
+            ${{ matrix.distro }}-ccache-
 
       - name: Login to Github container registry
         uses: docker/login-action@v1
@@ -71,8 +78,8 @@ jobs:
             prefix=
             suffix=
           tags: |
-            type=ref,event=branch,prefix=${{ env.CI_NAME }}-
-            type=semver,pattern={{major}}.{{minor}},prefix=${{ env.CI_NAME }}-
+            type=ref,event=branch,prefix=${{ matrix.distro }}-
+            type=semver,pattern={{major}}.{{minor}},prefix=${{ matrix.distro }}-
 
       - name: Set build type
         run: |
@@ -86,18 +93,18 @@ jobs:
       - name: Build repository
         uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
         env:
-          DOCKER_IMAGE: ubuntu:18.04
+          DOCKER_IMAGE: ${{ matrix.image }}
           ROS_DISTRO: false
           ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
           AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
           UPSTREAM_WORKSPACE: 'dependencies.repos'
-          ROSDEP_SKIP_KEYS: 'fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin'
+          ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin"
           PREFIX: ${{ github.repository }}_
-          UPSTREAM_CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Release'
-          TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_WARNINGS_AS_ERRORS=OFF"
+          UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+          TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTESSERACT_ENABLE_TESTING=ON"
           BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source $BASEDIR/${PREFIX}target_ws/install/setup.bash"
           DOCKER_COMMIT: ${{ steps.meta.outputs.tags }}
 
       - name: Push post-build Docker
-        if: ${{ env.PUSH_DOCKER_IMAGE == 'true' }}
+        if: ${{ env.PUSH_DOCKER_IMAGE  == 'true' }}
         run: docker push ${{ steps.meta.outputs.tags }}
