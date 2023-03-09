@@ -50,10 +50,10 @@ jobs:
         env:
           DOCKER_IMAGE: ubuntu:20.04
           ROS_DISTRO: false
-          ADDITIONAL_DEBS: 'curl lsb-release'
+          ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
           AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
           UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
-          ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow"
+          ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow octomap"
           CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Clang-Tidy/.ccache"
           NOT_TEST_BUILD: true
           UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
