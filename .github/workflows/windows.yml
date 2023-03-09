@@ -1,4 +1,4 @@
-name: Windows-2019
+name: Windows
 
 on:
   push:
@@ -19,13 +19,18 @@ env:
     boost-serialization boost-program-options boost-graph urdfdom ccd[double-precision]
 
 jobs:
-  windows_ci:
-    name: Windows-2019
-    runs-on: windows-2019
+  ci:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2019]
     steps:
     - uses: actions/checkout@v3
       with:
         path: workspace/src/tesseract
+
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v4
       with:
@@ -34,6 +39,7 @@ jobs:
         triplet: x64-windows-release
         extra-args: --clean-after-build
         token: ${{ github.token }}
+
     - name: install-depends
       shell: cmd
       run: |
