@@ -12,12 +12,6 @@ on:
   schedule:
     - cron: '0 5 * * *'
 
-env:
-  VCPKG_PKGS: >-
-    fcl bullet3[multithreading,double-precision,rtti] octomap console-bridge eigen3 yaml-cpp 
-    benchmark tinyxml2 assimp orocos-kdl pcl lapack-reference boost-dll boost-filesystem boost-filesystem 
-    boost-serialization boost-program-options boost-graph urdfdom ccd[double-precision] gtest
-
 jobs:
   ci:
     name: ${{ matrix.os }}
@@ -34,8 +28,7 @@ jobs:
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v4
       with:
-        pkgs: >-
-          ${{ env.VCPKG_PKGS }}
+        pkgs: bullet3[multithreading,double-precision,rtti] console-bridge eigen3 yaml-cpp benchmark tinyxml2 assimp orocos-kdl pcl lapack-reference boost-dll boost-filesystem boost-filesystem boost-serialization boost-program-options boost-graph urdfdom ccd[double-precision] gtest
         triplet: x64-windows-release
         extra-args: --clean-after-build
         token: ${{ github.token }}
