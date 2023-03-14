@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add flattenWrapperResults methods
+* Contributors: Levi Armstrong
+
 0.15.0 (2023-03-03)
 -------------------
 * Update collision benchmarks
