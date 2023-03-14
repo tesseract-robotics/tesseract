@@ -67,7 +67,9 @@ static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
   info.contact_manager_->setActiveCollisionObjects({ "geom1", "geom2" });
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
-  ContactResultMap result;
+  std::pmr::monotonic_buffer_resource mbr;
+  ContactResultMap result{&mbr};
+
   for (auto _ : state)  // NOLINT
   {
     result.clear();

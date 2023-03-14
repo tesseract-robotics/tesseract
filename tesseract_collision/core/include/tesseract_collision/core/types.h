@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <array>
 #include <unordered_map>
 #include <functional>
+#include <memory_resource>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/types.h>
 #include <tesseract_common/collision_margin_data.h>
@@ -83,8 +84,8 @@ static const std::vector<std::string> ContactTestTypeStrings = {
 
 struct ContactResult
 {
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
+//  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  using Isometry3dUnaligned = Eigen::Transform<double,3, Eigen::Isometry, Eigen::DontAlign>;
   /** @brief The distance between two links */
   double distance{ std::numeric_limits<double>::max() };
   /** @brief A user defined type id that is added to the contact shapes */
@@ -100,7 +101,7 @@ struct ContactResult
   /** @brief The nearest point on both links in local(link) coordinates */
   std::array<Eigen::Vector3d, 2> nearest_points_local{ Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero() };
   /** @brief The transform of link in world coordinates */
-  std::array<Eigen::Isometry3d, 2> transform{ Eigen::Isometry3d::Identity(), Eigen::Isometry3d::Identity() };
+  std::array<Isometry3dUnaligned, 2> transform{ Isometry3dUnaligned::Identity(), Isometry3dUnaligned::Identity() };
   /**
    * @brief The normal vector to move the two objects out of contact in world coordinates
    *
@@ -118,7 +119,7 @@ struct ContactResult
    *       continuous collision checking. If you desire the location of contact use cc_time and interpolate between
    *       transform and cc_transform;
    */
-  std::array<Eigen::Isometry3d, 2> cc_transform{ Eigen::Isometry3d::Identity(), Eigen::Isometry3d::Identity() };
+  std::array<Isometry3dUnaligned, 2> cc_transform{ Isometry3dUnaligned::Identity(), Isometry3dUnaligned::Identity() };
 
   /** @brief Some collision checkers only provide a single contact point for a given pair. This is used to indicate
    * if only one contact point is provided which means nearest_points[0] must equal nearest_points[1].
@@ -131,8 +132,12 @@ struct ContactResult
   void clear();
 };
 
-using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
-using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std::string>, ContactResultVector>;
+//using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
+//using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std::string>, ContactResultVector>;
+
+using ContactResultVector = std::pmr::vector<ContactResult>;
+using ContactResultMap = std::pmr::map<std::pair<std::string, std::string>, ContactResultVector>;
+
 
 /**
  * @brief Should return true if contact results are valid, otherwise false.

@@ -123,7 +123,7 @@ ContactResult* processResult(ContactTestData& cdata,
 
   if (!found)
   {
-    ContactResultVector data;
+    ContactResultVector& data = (*cdata.res)[key];
     if (cdata.req.type == ContactTestType::FIRST)
     {
       data.emplace_back(contact);
@@ -135,7 +135,7 @@ ContactResult* processResult(ContactTestData& cdata,
       data.emplace_back(contact);
     }
 
-    return &(cdata.res->insert(std::make_pair(key, data)).first->second.back());
+    return &(data.back());
   }
 
   assert(cdata.req.type != ContactTestType::FIRST);
