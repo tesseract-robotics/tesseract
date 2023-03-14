@@ -13,8 +13,7 @@ on:
     - cron: '0 5 * * *'
 
 jobs:
-  cmake_lang:
-    name: Format
+  cmake_format:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

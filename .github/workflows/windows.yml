@@ -1,4 +1,4 @@
-name: Windows-2019
+name: Windows
 
 on:
   push:
@@ -7,33 +7,32 @@ on:
   pull_request:
     paths:
       - 'tesseract**'
-      - '.github/workflows/windows_2019.yml'
-      - '**.rosinstall'
+      - '.github/workflows/windows.yml'
+      - '.github/workflows/windows_dependencies.repos'
   schedule:
     - cron: '0 5 * * *'
 
-env:
-  VCPKG_PKGS: >-
-    fcl bullet3[multithreading,double-precision,rtti] octomap console-bridge eigen3 yaml-cpp 
-    benchmark tinyxml2 assimp orocos-kdl pcl lapack-reference boost-dll boost-filesystem boost-filesystem 
-    boost-serialization boost-program-options boost-graph urdfdom ccd[double-precision]
-
 jobs:
-  windows_ci:
-    name: Windows-2019
-    runs-on: windows-2019
+  ci:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2019]
     steps:
     - uses: actions/checkout@v3
       with:
         path: workspace/src/tesseract
+
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v4
       with:
-        pkgs: >-
-          ${{ env.VCPKG_PKGS }}
+        pkgs: fcl bullet3[multithreading,double-precision,rtti] octomap console-bridge eigen3 yaml-cpp benchmark tinyxml2 assimp orocos-kdl pcl lapack-reference boost-dll boost-filesystem boost-filesystem boost-serialization boost-program-options boost-graph urdfdom ccd[double-precision] gtest
         triplet: x64-windows-release
         extra-args: --clean-after-build
         token: ${{ github.token }}
+
     - name: install-depends
       shell: cmd
       run: |
@@ -52,7 +51,7 @@ jobs:
       run: |
         set PATH=%PATH%;%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release\bin
         set CMAKE_PREFIX_PATH=%GITHUB_WORKSPACE%\vcpkg\installed\x64-windows-release
-        vcs import --input "${{ github.workspace }}/workspace/src/tesseract/dependencies.rosinstall" src/
+        vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" src/
         if %ERRORLEVEL% GEQ 1 exit 1
         colcon build --event-handlers console_direct+ --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
         if %ERRORLEVEL% GEQ 1 exit 1

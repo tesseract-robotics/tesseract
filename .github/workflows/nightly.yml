@@ -12,39 +12,17 @@ on:
 jobs:
   industrial_ci:
     if: contains(github.event.pull_request.labels.*.name, 'check-tesseract-ros') || github.event.schedule == true
-    name: ${{ matrix.env.CI_NAME }}
+    name: ${{ matrix.distro }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        env:
-          - {CI_NAME: Bionic-Build-Nightly,
-             OS_NAME: ubuntu,
-             OS_CODE_NAME: bionic,
-             ROS_DISTRO: melodic,
-             ROS_REPO: main,
-             UPSTREAM_WORKSPACE: 'dependencies.rosinstall',
-             DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_planning#master github:ros-industrial-consortium/trajopt_ros#master github:ros-industrial-consortium/tesseract_ros#master',
-             ROSDEP_SKIP_KEYS: "bullet ros_industrial_cmake_boilerplate fcl iwyu",
-             DOCKER_IMAGE: "rosindustrial/tesseract:melodic",
-             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Bionic-Build-Nightly/.ccache",
-             PARALLEL_TESTS: false,
-             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"}
-          - {CI_NAME: Focal-Build-Nightly,
-             OS_NAME: ubuntu,
-             OS_CODE_NAME: focal,
-             ROS_DISTRO: noetic,
-             ROS_REPO: main,
-             UPSTREAM_WORKSPACE: 'dependencies.rosinstall',
-             DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_planning#master github:ros-industrial-consortium/trajopt_ros#master github:ros-industrial-consortium/tesseract_ros#master',
-             ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow",
-             DOCKER_IMAGE: "rosindustrial/tesseract:noetic",
-             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Focal-Build-Nightly/.ccache",
-             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"}
+        distro: [bionic, focal]
+        include:
+          - distro: bionic
+            image: ubuntu:18.04
+          - distro: focal
+            image: ubuntu:20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -69,10 +47,21 @@ jobs:
         continue-on-error: true
         uses: actions/cache@v1.1.0
         with:
-          path: ${{ matrix.env.CI_NAME }}/.ccache
-          key: ${{ matrix.env.CI_NAME }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          path: ${{ matrix.distro }}/.ccache
+          key: ${{ matrix.distro }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
           restore-keys: |
-            ${{ matrix.env.CI_NAME }}-ccache-
+            ${{ matrix.distro }}-ccache-
 
-      - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{matrix.env}}
+      - uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
+        env:
+          DOCKER_IMAGE: ${{ matrix.image }}
+          ROS_DISTRO: false
+          ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
+          AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
+          UPSTREAM_WORKSPACE: 'dependencies.repos'
+          DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_planning#master github:ros-industrial-consortium/trajopt_ros#master github:ros-industrial-consortium/tesseract_ros#master'
+          ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin"
+          CCACHE_DIR: "${{ github.workspace }}/${{ matrix.distro}}/.ccache"
+          UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+          TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+          DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"

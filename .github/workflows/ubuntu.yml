@@ -1,4 +1,4 @@
-name: Focal-Build
+name: Ubuntu
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
   pull_request:
     paths:
       - 'tesseract**'
-      - '.github/workflows/focal_build.yml'
-      - '**.rosinstall'
+      - '.github/workflows/ubuntu.yml'
+      - '**.repos'
   schedule:
     - cron: '0 5 * * *'
   release:
@@ -16,13 +16,18 @@ on:
       - released
 
 jobs:
-  industrial_ci:
-    name: Noetic
+  ci:
+    name: ${{ matrix.distro }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [focal]
+        include:
+          - distro: focal
+            image: ubuntu:20.04
     env:
-      CI_NAME: Focal-Build
-      CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Focal-Build/.ccache"
-      ROS_DISTRO: noetic
+      CCACHE_DIR: "${{ github.workspace }}/${{ matrix.distro }}/.ccache"
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
       PUSH_DOCKER_IMAGE: ${{ github.ref == 'refs/heads/master' || github.event_name == 'release' }}
@@ -50,10 +55,10 @@ jobs:
         continue-on-error: true
         uses: actions/cache@v1.1.0
         with:
-          path: ${{ env.CI_NAME }}/.ccache
-          key: ${{ env.CI_NAME }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          path: ${{ matrix.distro }}/.ccache
+          key: ${{ matrix.distro }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
           restore-keys: |
-            ${{ env.CI_NAME }}-ccache-
+            ${{ matrix.distro }}-ccache-
 
       - name: Login to Github container registry
         uses: docker/login-action@v1
@@ -72,8 +77,8 @@ jobs:
             prefix=
             suffix=
           tags: |
-            type=ref,event=branch,prefix=${{ env.ROS_DISTRO }}-
-            type=semver,pattern={{major}}.{{minor}},prefix=${{ env.ROS_DISTRO }}-
+            type=ref,event=branch,prefix=${{ matrix.distro }}-
+            type=semver,pattern={{major}}.{{minor}},prefix=${{ matrix.distro }}-
 
       - name: Set build type
         run: |
@@ -85,21 +90,18 @@ jobs:
           fi
 
       - name: Build repository
-        uses: 'ros-industrial/industrial_ci@master'
+        uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
         env:
-          OS_NAME: ubuntu
-          OS_CODE_NAME: focal
-          ROS_REPO: main
-          UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
-          ROSDEP_SKIP_KEYS: "bullet fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics ros_industrial_cmake_boilerplate iwyu taskflow"
-          DOCKER_IMAGE: "rosindustrial/tesseract:${{ env.ROS_DISTRO }}"
-          PARALLEL_TESTS: false
-          PARALLEL_BUILDS: false
+          DOCKER_IMAGE: ${{ matrix.image }}
+          ROS_DISTRO: false
+          ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
+          AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
+          UPSTREAM_WORKSPACE: 'dependencies.repos'
+          ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin"
           PREFIX: ${{ github.repository }}_
-          BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source $BASEDIR/${PREFIX}target_ws/install/setup.bash"
           UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
           TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTESSERACT_ENABLE_TESTING=ON"
-          AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_srdf tesseract_state_solver tesseract_urdf --make-args test'
+          BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source $BASEDIR/${PREFIX}target_ws/install/setup.bash"
           DOCKER_COMMIT: ${{ steps.meta.outputs.tags }}
 
       - name: Push post-build Docker
