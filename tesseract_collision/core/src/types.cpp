@@ -62,7 +62,10 @@ std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v)
   v.clear();
   v.reserve(m.size());
   for (const auto& mv : m)
+  {
+    v.reserve(v.size() + mv.second.size());
     std::move(mv.second.begin(), mv.second.end(), std::back_inserter(v));
+  }
 
   return v.size();
 }
@@ -72,7 +75,37 @@ std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v
   v.clear();
   v.reserve(m.size());
   for (const auto& mv : m)
+  {
+    v.reserve(v.size() + mv.second.size());
     std::copy(mv.second.begin(), mv.second.end(), std::back_inserter(v));
+  }
+
+  return v.size();
+}
+
+std::size_t flattenWrapperResults(ContactResultMap& m, std::vector<std::reference_wrapper<ContactResult>>& v)
+{
+  v.clear();
+  v.reserve(m.size());
+  for (auto& mv : m)
+  {
+    v.reserve(v.size() + mv.second.size());
+    v.insert(v.end(), mv.second.begin(), mv.second.end());
+  }
+
+  return v.size();
+}
+
+std::size_t flattenWrapperResults(const ContactResultMap& m,
+                                  std::vector<std::reference_wrapper<const ContactResult>>& v)
+{
+  v.clear();
+  v.reserve(m.size());
+  for (const auto& mv : m)
+  {
+    v.reserve(v.size() + mv.second.size());
+    v.insert(v.end(), mv.second.begin(), mv.second.end());
+  }
 
   return v.size();
 }

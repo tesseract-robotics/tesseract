@@ -167,6 +167,11 @@ std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v);
 
 std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v);
 
+std::size_t flattenWrapperResults(ContactResultMap& m, std::vector<std::reference_wrapper<ContactResult>>& v);
+
+std::size_t flattenWrapperResults(const ContactResultMap& m,
+                                  std::vector<std::reference_wrapper<const ContactResult>>& v);
+
 /**
  * @brief This data is intended only to be used internal to the collision checkers as a container and should not
  *        be externally used by other libraries or packages.
