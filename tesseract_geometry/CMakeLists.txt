@@ -65,6 +65,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 add_library(
   ${PROJECT_NAME} SHARED
   src/geometry.cpp
+  src/utils.cpp
   src/geometries/box.cpp
   src/geometries/capsule.cpp
   src/geometries/cone.cpp

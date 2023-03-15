@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/bullet/convex_hull_utils.h>
+#include <tesseract_geometry/impl/box.h>
 
 using namespace tesseract_collision;
 using namespace tesseract_geometry;
