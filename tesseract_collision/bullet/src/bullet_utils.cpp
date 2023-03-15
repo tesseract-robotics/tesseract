@@ -53,6 +53,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_geometry/geometries.h>
+
 namespace tesseract_collision::tesseract_collision_bullet
 {
 btVector3 convertEigenToBt(const Eigen::Vector3d& v)

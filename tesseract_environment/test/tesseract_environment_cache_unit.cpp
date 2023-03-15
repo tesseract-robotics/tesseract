@@ -6,6 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/utils.h>
+#include <tesseract_geometry/impl/box.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/environment.h>

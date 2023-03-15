@@ -8,6 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_geometry/impl/box.h>
+#include <tesseract_geometry/impl/sphere.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
