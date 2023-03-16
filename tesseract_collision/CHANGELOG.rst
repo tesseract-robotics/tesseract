@@ -2,6 +2,12 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Expose Bullet collision pool allocator configuration
+* Switch include in tesseract_collision
+* Contributors: Levi Armstrong
+
 0.15.1 (2023-03-14)
 -------------------
 * Add flattenWrapperResults methods

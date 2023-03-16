@@ -2,6 +2,11 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Switch include in tesseract_collision
+* Contributors: Levi Armstrong
+
 0.15.1 (2023-03-14)
 -------------------
 
