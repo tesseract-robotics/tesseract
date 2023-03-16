@@ -30,6 +30,25 @@
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
+/**
+ * @brief The yaml config for each of the factories below is the same.
+ * @details
+ * The config and its parameters shown below are optional
+ * The values shown below are the default that will be used.
+ *
+ * The current defaults will result in 7MB being allocated for every contact manager created.
+ * If share_pool_allocators is set to true then this 7MB is shared between it and any clones created.
+ *
+ * Example Yaml Config:
+ *
+ *    plugins:
+ *      BulletDiscreteBVHManager:
+ *        class: BulletDiscreteBVHManagerFactory
+ *        config:
+ *          share_pool_allocators: false
+ *          max_persistent_manifold_pool_size: 4096
+ *          max_collision_algorithm_pool_size: 4096
+ */
 class BulletDiscreteBVHManagerFactory : public DiscreteContactManagerFactory
 {
 public:
