@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.15.2 (2023-03-15)
+-------------------
 * Expose Bullet collision pool allocator configuration
 * Switch include in tesseract_collision
 * Contributors: Levi Armstrong
