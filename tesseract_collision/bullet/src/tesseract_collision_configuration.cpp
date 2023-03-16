@@ -52,10 +52,66 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
-TesseractCollisionConfiguration::TesseractCollisionConfiguration(
-    const btDefaultCollisionConstructionInfo& constructionInfo)
-  : btDefaultCollisionConfiguration(constructionInfo)
+TesseractCollisionConfigurationInfo::TesseractCollisionConfigurationInfo(bool create_pool_allocators,
+                                                                         bool share_pool_allocators)
+  : share_pool_allocators_(share_pool_allocators)
 {
+  if (create_pool_allocators)
+    createPoolAllocators();
+}
+
+TesseractCollisionConfigurationInfo TesseractCollisionConfigurationInfo::clone() const
+{
+  if (persistent_manifold_pool_ == nullptr || collision_algorithm_pool_ == nullptr)
+    throw std::runtime_error("Pool allocators have not been setup!");
+
+  if (share_pool_allocators_)
+    return *this;
+
+  TesseractCollisionConfigurationInfo copy(*this);
+  copy.createPoolAllocators();
+
+  assert(copy.share_pool_allocators_ == share_pool_allocators_);
+  assert(copy.collision_algorithm_pool_ != collision_algorithm_pool_);
+  assert(copy.persistent_manifold_pool_ != persistent_manifold_pool_);
+
+  return copy;
+}
+
+void TesseractCollisionConfigurationInfo::createPoolAllocators()
+{
+  persistent_manifold_pool_ =
+      std::make_shared<btPoolAllocator>(sizeof(btPersistentManifold), m_defaultMaxPersistentManifoldPoolSize);
+  m_persistentManifoldPool = persistent_manifold_pool_.get();
+
+  /// calculate maximum element size, big enough to fit any collision algorithm in the memory pool
+  int maxSize = sizeof(TesseractConvexConvexAlgorithm);
+  int maxSize2 = sizeof(btConvexConcaveCollisionAlgorithm);
+  int maxSize3 = sizeof(TesseractCompoundCollisionAlgorithm);
+  int maxSize4 = sizeof(TesseractCompoundCompoundCollisionAlgorithm);
+
+  int collisionAlgorithmMaxElementSize = btMax(maxSize, m_customCollisionAlgorithmMaxElementSize);
+  collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize2);
+  collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize3);
+  collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize4);
+
+  TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+  collisionAlgorithmMaxElementSize = (collisionAlgorithmMaxElementSize + 16) & 0xffffffffffff0;  // NOLINT
+  TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+  collision_algorithm_pool_ =
+      std::make_shared<btPoolAllocator>(collisionAlgorithmMaxElementSize, m_defaultMaxCollisionAlgorithmPoolSize);
+  m_collisionAlgorithmPool = collision_algorithm_pool_.get();
+}
+
+TesseractCollisionConfiguration::TesseractCollisionConfiguration(const TesseractCollisionConfigurationInfo& config_info)
+  : btDefaultCollisionConfiguration(config_info)
+{
+  assert(config_info.m_collisionAlgorithmPool != nullptr);
+  assert(config_info.m_persistentManifoldPool != nullptr);
+  assert(m_ownsCollisionAlgorithmPool == false);
+  assert(m_ownsPersistentManifoldPool == false);
+
   void* mem = nullptr;
 
   m_compoundCreateFunc->~btCollisionAlgorithmCreateFunc();
@@ -92,49 +148,6 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(
 
   mem = btAlignedAlloc(sizeof(TesseractCompoundCollisionAlgorithm::SwappedCreateFunc), 16);
   m_swappedCompoundCreateFunc = new (mem) TesseractCompoundCollisionAlgorithm::SwappedCreateFunc;
-
-  /// calculate maximum element size, big enough to fit any collision algorithm in the memory pool
-  int maxSize = sizeof(TesseractConvexConvexAlgorithm);
-  int maxSize2 = sizeof(btConvexConcaveCollisionAlgorithm);
-  int maxSize3 = sizeof(TesseractCompoundCollisionAlgorithm);
-  int maxSize4 = sizeof(TesseractCompoundCompoundCollisionAlgorithm);
-
-  int collisionAlgorithmMaxElementSize = btMax(maxSize, constructionInfo.m_customCollisionAlgorithmMaxElementSize);
-  collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize2);
-  collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize3);
-  collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize4);
-
-  if (constructionInfo.m_persistentManifoldPool != nullptr)
-  {
-    m_ownsPersistentManifoldPool = false;
-    m_persistentManifoldPool = constructionInfo.m_persistentManifoldPool;
-  }
-  else
-  {
-    m_ownsPersistentManifoldPool = true;
-    void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
-    // NOLINTNEXTLINE
-    m_persistentManifoldPool = new (mem)
-        btPoolAllocator(sizeof(btPersistentManifold), constructionInfo.m_defaultMaxPersistentManifoldPoolSize);
-  }
-
-  TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-  collisionAlgorithmMaxElementSize = (collisionAlgorithmMaxElementSize + 16) & 0xffffffffffff0;  // NOLINT
-  TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-  if (constructionInfo.m_collisionAlgorithmPool != nullptr)
-  {
-    m_ownsCollisionAlgorithmPool = false;
-    m_collisionAlgorithmPool = constructionInfo.m_collisionAlgorithmPool;
-  }
-  else
-  {
-    m_ownsCollisionAlgorithmPool = true;
-    void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
-    // NOLINTNEXTLINE
-    m_collisionAlgorithmPool = new (mem)
-        btPoolAllocator(collisionAlgorithmMaxElementSize, constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize);
-  }
 }
 
 }  // namespace tesseract_collision::tesseract_collision_bullet

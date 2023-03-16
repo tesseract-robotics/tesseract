@@ -43,11 +43,33 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <memory>
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
+struct TesseractCollisionConfigurationInfo : public btDefaultCollisionConstructionInfo
+{
+  /**
+   * @brief TesseractCollisionConfigurationInfo
+   * @param create_pool_allocators Defer creation of pool allocators
+   * @param share_pool_allocators Indicate if pool allocators should be shared amongst clones
+   */
+  TesseractCollisionConfigurationInfo(bool create_pool_allocators = true, bool share_pool_allocators = false);
+
+  /** @brief Create pool allocators */
+  void createPoolAllocators();
+
+  /** @brief Clone the collision configuration information */
+  TesseractCollisionConfigurationInfo clone() const;
+
+protected:
+  bool share_pool_allocators_{ false };
+  std::shared_ptr<btPoolAllocator> persistent_manifold_pool_;
+  std::shared_ptr<btPoolAllocator> collision_algorithm_pool_;
+};
+
 /**
  * @brief This is a modified configuration that included the modified Bullet algorithms.
  *
@@ -60,7 +82,7 @@ class TesseractCollisionConfiguration : public btDefaultCollisionConfiguration
 {
 public:
   TesseractCollisionConfiguration(
-      const btDefaultCollisionConstructionInfo& constructionInfo = btDefaultCollisionConstructionInfo());
+      const TesseractCollisionConfigurationInfo& config_info = TesseractCollisionConfigurationInfo());
 };
 }  // namespace tesseract_collision::tesseract_collision_bullet
 #endif  // TESSERACT_COLLISION_TESSERACT_COLLISION_CONFIGURATION_H

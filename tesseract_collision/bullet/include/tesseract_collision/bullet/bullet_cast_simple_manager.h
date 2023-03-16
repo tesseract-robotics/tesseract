@@ -56,7 +56,8 @@ public:
   using UPtr = std::unique_ptr<BulletCastSimpleManager>;
   using ConstUPtr = std::unique_ptr<const BulletCastSimpleManager>;
 
-  BulletCastSimpleManager(std::string name = "BulletCastSimpleManager");
+  BulletCastSimpleManager(std::string name = "BulletCastSimpleManager",
+                          TesseractCollisionConfigurationInfo config_info = TesseractCollisionConfigurationInfo());
   ~BulletCastSimpleManager() override = default;
   BulletCastSimpleManager(const BulletCastSimpleManager&) = delete;
   BulletCastSimpleManager& operator=(const BulletCastSimpleManager&) = delete;
@@ -138,16 +139,24 @@ public:
 
 private:
   std::string name_;
-  std::vector<std::string> active_;            /**< @brief A list of the active collision objects */
-  std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
-
-  std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
-                                                         object to object collison algorithm */
-  btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
-  TesseractCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
-  Link2Cow link2cow_;                           /**< @brief A map of collision objects being managed */
-  std::vector<COW::Ptr> cows_;                  /**< @brief A vector of collision objects (active followed by static) */
-  Link2Cow link2castcow_;                       /**< @brief A map of cast collision objects being managed. */
+  /** @brief A list of the active collision objects */
+  std::vector<std::string> active_;
+  /** @brief A list of the collision objects */
+  std::vector<std::string> collision_objects_;
+  /** @brief The bullet collision dispatcher used for getting object to object collison algorithm */
+  std::unique_ptr<btCollisionDispatcher> dispatcher_;
+  /** @brief The bullet collision dispatcher configuration information */
+  btDispatcherInfo dispatch_info_;
+  /** @brief The bullet collision configuration information */
+  TesseractCollisionConfigurationInfo config_info_;
+  /** @brief The bullet collision configuration */
+  TesseractCollisionConfiguration coll_config_;
+  /** @brief A map of collision objects being managed */
+  Link2Cow link2cow_;
+  /** @brief A vector of collision objects (active followed by static) */
+  std::vector<COW::Ptr> cows_;
+  /** @brief A map of cast collision objects being managed. */
+  Link2Cow link2castcow_;
 
   /**
    * @brief This is used when contactTest is called. It is also added as a user point to the collsion objects

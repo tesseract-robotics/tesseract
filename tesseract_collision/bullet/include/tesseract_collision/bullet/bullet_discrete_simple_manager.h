@@ -56,7 +56,8 @@ public:
   using UPtr = std::unique_ptr<BulletDiscreteSimpleManager>;
   using ConstUPtr = std::unique_ptr<const BulletDiscreteSimpleManager>;
 
-  BulletDiscreteSimpleManager(std::string name = "BulletDiscreteSimpleManager");
+  BulletDiscreteSimpleManager(std::string name = "BulletDiscreteSimpleManager",
+                              TesseractCollisionConfigurationInfo config_info = TesseractCollisionConfigurationInfo());
   ~BulletDiscreteSimpleManager() override = default;
   BulletDiscreteSimpleManager(const BulletDiscreteSimpleManager&) = delete;
   BulletDiscreteSimpleManager& operator=(const BulletDiscreteSimpleManager&) = delete;
@@ -127,15 +128,22 @@ public:
 
 private:
   std::string name_;
-  std::vector<std::string> active_;            /**< @brief A list of the active collision objects */
-  std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
-
-  std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
-                                                         object to object collison algorithm */
-  btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
-  TesseractCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
-  Link2Cow link2cow_;          /**< @brief A map of all (static and active) collision objects being managed */
-  std::vector<COW::Ptr> cows_; /**< @brief A vector of collision objects (active followed by static) */
+  /** @brief A list of the active collision objects */
+  std::vector<std::string> active_;
+  /** @brief A list of the collision objects */
+  std::vector<std::string> collision_objects_;
+  /** @brief The bullet collision dispatcher used for getting object to object collison algorithm */
+  std::unique_ptr<btCollisionDispatcher> dispatcher_;
+  /** @brief The bullet collision dispatcher configuration information */
+  btDispatcherInfo dispatch_info_;
+  /** @brief The bullet collision configuration information */
+  TesseractCollisionConfigurationInfo config_info_;
+  /** @brief The bullet collision configuration */
+  TesseractCollisionConfiguration coll_config_;
+  /** @brief A map of all (static and active) collision objects being managed */
+  Link2Cow link2cow_;
+  /** @brief A vector of collision objects (active followed by static) */
+  std::vector<COW::Ptr> cows_;
 
   /**
    * @brief This is used when contactTest is called. It is also added as a user point to the collsion objects

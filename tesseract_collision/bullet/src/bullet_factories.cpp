@@ -24,36 +24,63 @@
  * limitations under the License.
  */
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <yaml-cpp/yaml.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_collision/bullet/bullet_factories.h>
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_cast_simple_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
+#include <tesseract_collision/bullet/tesseract_collision_configuration.h>
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
-DiscreteContactManager::UPtr BulletDiscreteBVHManagerFactory::create(const std::string& name,
-                                                                     const YAML::Node& /*config*/) const
+TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
 {
-  return std::make_unique<BulletDiscreteBVHManager>(name);
+  if (config.IsNull())
+    return TesseractCollisionConfigurationInfo();
+
+  bool share_pool_allocators{ false };
+  if (YAML::Node n = config["share_pool_allocators"])
+    share_pool_allocators = n.as<bool>();
+
+  TesseractCollisionConfigurationInfo config_info(false, share_pool_allocators);
+
+  if (YAML::Node n = config["max_persistent_manifold_pool_size"])
+    config_info.m_defaultMaxPersistentManifoldPoolSize = n.as<int>();
+
+  if (YAML::Node n = config["max_collision_algorithm_pool_size"])
+    config_info.m_defaultMaxCollisionAlgorithmPoolSize = n.as<int>();
+
+  config_info.createPoolAllocators();
+  return config_info;
+}
+
+DiscreteContactManager::UPtr BulletDiscreteBVHManagerFactory::create(const std::string& name,
+                                                                     const YAML::Node& config) const
+{
+  return std::make_unique<BulletDiscreteBVHManager>(name, getConfigInfo(config));
 }
 
 DiscreteContactManager::UPtr BulletDiscreteSimpleManagerFactory::create(const std::string& name,
-                                                                        const YAML::Node& /*config*/) const
+                                                                        const YAML::Node& config) const
 {
-  return std::make_unique<BulletDiscreteSimpleManager>(name);
+  return std::make_unique<BulletDiscreteSimpleManager>(name, getConfigInfo(config));
 }
 
 ContinuousContactManager::UPtr BulletCastBVHManagerFactory::create(const std::string& name,
-                                                                   const YAML::Node& /*config*/) const
+                                                                   const YAML::Node& config) const
 {
-  return std::make_unique<BulletCastBVHManager>(name);
+  return std::make_unique<BulletCastBVHManager>(name, getConfigInfo(config));
 }
 
 ContinuousContactManager::UPtr BulletCastSimpleManagerFactory::create(const std::string& name,
-                                                                      const YAML::Node& /*config*/) const
+                                                                      const YAML::Node& config) const
 {
-  return std::make_unique<BulletCastSimpleManager>(name);
+  return std::make_unique<BulletCastSimpleManager>(name, getConfigInfo(config));
 }
 
 TESSERACT_PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
