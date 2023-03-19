@@ -132,7 +132,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.55, 0.0001);
@@ -163,27 +163,25 @@ inline void runTest(DiscreteContactManager& checker)
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
   location["capsule_link"].translation() = Eigen::Vector3d(0, 0, 1);
-  result = ContactResultMap();
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
 
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenCopyResults(result, result_vector);
+  result.flattenCopyResults(result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
   /////////////////////////////////////////////
   // Test object inside the contact distance
   /////////////////////////////////////////////
-  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
   checker.setCollisionMarginData(CollisionMarginData(0.251));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.251, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.125, 0.001);

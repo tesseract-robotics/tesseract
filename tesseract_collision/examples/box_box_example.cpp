@@ -105,7 +105,7 @@ int main(int /*argc*/, char** /*argv*/)
   checker.contactTest(result, request);
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
   CONSOLE_BRIDGE_logInform("Distance: %f", result_vector[0].distance);
@@ -128,13 +128,12 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:10: Set collision object transform
 
   // documentation:start:11: Perform collision check
-  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
   // Check for collision after moving object
   checker.contactTest(result, request);
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
   // documentation:end:11: Perform collision check
 
@@ -145,13 +144,12 @@ int main(int /*argc*/, char** /*argv*/)
 
   // documentation:start:13: Perform collision check
   CONSOLE_BRIDGE_logInform("Test object inside the contact distance");
-  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
   // Check for contact with new threshold
   checker.contactTest(result, request);
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
   CONSOLE_BRIDGE_logInform("Distance: %f", result_vector[0].distance);

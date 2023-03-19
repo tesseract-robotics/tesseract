@@ -75,16 +75,17 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
   checker.setCollisionObjectsTransform(location);
 
+  ContactResultMap result;
   ContactResultVector result_vector;
 
   auto start_time = std::chrono::high_resolution_clock::now();
   num_interations = 1;
   for (auto i = 0; i < num_interations; ++i)
   {
-    ContactResultMap result;
+    result.clear();
     result_vector.clear();
     checker.contactTest(result, ContactRequest(ContactTestType::ALL));
-    flattenMoveResults(std::move(result), result_vector);
+    result.flattenMoveResults(result_vector);
 
     if (result_vector.size() != 300)
       for (const auto& result : result_vector)

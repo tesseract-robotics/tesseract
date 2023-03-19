@@ -176,10 +176,11 @@ void runDiscreteProfile(bool use_single_link, bool use_convex_mesh, double conta
   std::vector<Eigen::Isometry3d> poses = getTransforms(50);
   std::vector<DiscreteContactManager::Ptr> checkers = { bt_simple_checker, bt_bvh_checker, fcl_bvh_checker };
   std::vector<std::string> checker_names = { "BtSimple", "BtBVH", "FCLBVH" };
-  std::vector<std::size_t> checker_contacts = { 0, 0, 0 };
+  std::vector<long> checker_contacts = { 0, 0, 0 };
 
   std::printf("Total number of shape: %d\n", int(DIM * DIM * DIM));
   //  for (std::size_t i = 0; i < checkers.size(); ++i)
+  ContactResultMap result;
   for (std::size_t i = 0; i < 2; ++i)
   {
     addCollisionObjects(*checkers[i], use_single_link, use_convex_mesh);
@@ -191,9 +192,9 @@ void runDiscreteProfile(bool use_single_link, bool use_convex_mesh, double conta
       checkers[i]->setCollisionObjectsTransform("move_link", pose);
 
       // Perform collision check
-      ContactResultMap result;
+      result.clear();
       checkers[i]->contactTest(result, ContactTestType::FIRST);
-      checker_contacts[i] += result.size();
+      checker_contacts[i] += result.count();
     }
     auto end_time = std::chrono::high_resolution_clock::now();
     double total_time = std::chrono::duration<double, std::milli>(end_time - start_time).count();
@@ -211,7 +212,7 @@ void runContinuousProfile(bool use_single_link, bool use_convex_mesh, double con
   std::vector<Eigen::Isometry3d> poses = getTransforms(50);
   std::vector<ContinuousContactManager::Ptr> checkers = { bt_simple_checker, bt_bvh_checker };
   std::vector<std::string> checker_names = { "BtCastSimple", "BtCastBVH" };
-  std::vector<std::size_t> checker_contacts = { 0, 0, 0 };
+  std::vector<long> checker_contacts = { 0, 0, 0 };
 
   Eigen::Isometry3d delta_pose;
   delta_pose.setIdentity();
@@ -219,6 +220,7 @@ void runContinuousProfile(bool use_single_link, bool use_convex_mesh, double con
 
   std::printf("Total number of shape: %d\n", int(DIM * DIM * DIM));
   //  for (std::size_t i = 0; i < checkers.size(); ++i)
+  ContactResultMap result;
   for (std::size_t i = 0; i < 2; ++i)
   {
     addCollisionObjects(*checkers[i], use_single_link, use_convex_mesh);
@@ -230,9 +232,9 @@ void runContinuousProfile(bool use_single_link, bool use_convex_mesh, double con
       checkers[i]->setCollisionObjectsTransform("move_link", pose, pose * delta_pose);
 
       // Perform collision check
-      ContactResultMap result;
+      result.clear();
       checkers[i]->contactTest(result, ContactTestType::FIRST);
-      checker_contacts[i] += result.size();
+      checker_contacts[i] += result.count();
     }
     auto end_time = std::chrono::high_resolution_clock::now();
     double total_time = std::chrono::duration<double, std::milli>(end_time - start_time).count();

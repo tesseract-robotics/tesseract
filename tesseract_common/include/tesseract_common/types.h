@@ -84,6 +84,7 @@ struct PairHash
  * @return LinkNamesPair a lexicographically sorted pair of strings
  */
 LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2);
+void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, const std::string& link_name2);
 
 /** @brief The Plugin Information struct */
 // NOLINTNEXTLINE

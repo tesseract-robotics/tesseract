@@ -132,7 +132,137 @@ struct ContactResult
 };
 
 using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
-using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std::string>, ContactResultVector>;
+class ContactResultMap
+{
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  using KeyType = std::pair<std::string, std::string>;
+  using MappedType = ContactResultVector;
+  using ContainerType = tesseract_common::AlignedMap<KeyType, MappedType>;
+  using ConstReferenceType = typename tesseract_common::AlignedMap<KeyType, MappedType>::const_reference;
+  using ConstIteratorType = typename tesseract_common::AlignedMap<KeyType, MappedType>::const_iterator;
+  using PairType = typename std::pair<const KeyType, MappedType>;
+  using FilterFn = std::function<void(PairType&)>;
+
+  /**
+   * @brief Add contact results for the provided key
+   * @param key The key to append the results to
+   * @param result The results to add
+   */
+  ContactResult& addContactResult(const KeyType& key, ContactResult result);
+
+  /**
+   * @brief Add contact results for the provided key
+   * @param key The key to append the results to
+   * @param result The results to add
+   */
+  ContactResult& addContactResult(const KeyType& key, const MappedType& results);
+
+  /**
+   * @brief Set contact results for the provided key
+   * @param key The key to append the results to
+   * @param result The results to add
+   */
+  ContactResult& setContactResult(const KeyType& key, ContactResult result);
+
+  /**
+   * @brief Set contact results for the provided key
+   * @param key The key to append the results to
+   * @param result The results to add
+   */
+  ContactResult& setContactResult(const KeyType& key, const MappedType& results);
+
+  /**
+   * @brief This processes interpolated contact results by updating the cc_time and cc_type and then adds the result
+   * @details This is copied from the trajopt utility processInterpolatedCollisionResults
+   * @param sub_segment_results The interpolated results to process
+   * @param sub_segment_index The current sub segment index
+   * @param sub_segment_last_index The last sub segment index
+   * @param active_link_names The active link names
+   * @param segment_dt The segment dt
+   * @param discrete If discrete contact checker was used
+   * @param filter An option filter to exclude results
+   */
+  void addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
+                                       int sub_segment_index,
+                                       int sub_segment_last_index,
+                                       const std::vector<std::string>& active_link_names,
+                                       double segment_dt,
+                                       bool discrete,
+                                       const ContactResultMap::FilterFn& filter = nullptr);
+
+  // Flatten functions
+  void flattenMoveResults(ContactResultVector& v);
+  void flattenCopyResults(ContactResultVector& v) const;
+  void flattenWrapperResults(std::vector<std::reference_wrapper<ContactResult>>& v);
+  void flattenWrapperResults(std::vector<std::reference_wrapper<const ContactResult>>& v) const;
+
+  /**
+   * @brief Filter out results using the provided function
+   * @param fn The filter function
+   */
+  void filter(const FilterFn& filter);
+
+  /**
+   * @brief Get the total number of contact results storted
+   * @return The number of contact results
+   */
+  long count() const;
+
+  /**
+   * @brief Get the size of the map
+   * @details This loops over the internal map and counts entries with contacts
+   * @return The number of entries with contacts
+   */
+  std::size_t size() const;
+
+  /**
+   * @brief Check if results are present
+   * @return
+   */
+  bool empty() const;
+
+  /**
+   * @brief This is a consurvative clear.
+   * @details This does not call clear on the internal map but instead loops over each link pair entry and calls clear
+   * on the underlying vector. This way the vector capacity remains the same to avoid uneccessary heap allocation for
+   * subsequent contact requests.
+   * @note Use release to fully clear the internal data structure
+   */
+  void clear();
+
+  /** @brief Fully clear all internal data */
+  void release();
+
+  /**
+   * @brief Get the underlying container
+   * @warning Do not use this for anything other than debugging or serialization
+   */
+  const ContainerType& getContainer() const;
+
+  ///////////////
+  // Iterators //
+  ///////////////
+  /** @brief returns an iterator to the beginning */
+  ConstIteratorType begin() const;
+  /** @brief returns an iterator to the end */
+  ConstIteratorType end() const;
+  /** @brief returns an iterator to the beginning */
+  ConstIteratorType cbegin() const;
+  /** @brief returns an iterator to the end */
+  ConstIteratorType cend() const;
+
+  ////////////////////
+  // Element Access //
+  ////////////////////
+  /** @brief access specified element with bounds checking */
+  const ContactResultVector& at(const KeyType& key) const;
+  ConstIteratorType find(const KeyType& key) const;
+
+private:
+  ContainerType data_;
+  long cnt_{ 0 };
+};
 
 /**
  * @brief Should return true if contact results are valid, otherwise false.
@@ -162,15 +292,6 @@ struct ContactRequest
 
   ContactRequest(ContactTestType type = ContactTestType::ALL);
 };
-
-std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v);
-
-std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v);
-
-std::size_t flattenWrapperResults(ContactResultMap& m, std::vector<std::reference_wrapper<ContactResult>>& v);
-
-std::size_t flattenWrapperResults(const ContactResultMap& m,
-                                  std::vector<std::reference_wrapper<const ContactResult>>& v);
 
 /**
  * @brief This data is intended only to be used internal to the collision checkers as a container and should not

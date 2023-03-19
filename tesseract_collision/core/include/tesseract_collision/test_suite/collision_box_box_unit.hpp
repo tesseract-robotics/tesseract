@@ -151,7 +151,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   checker.contactTest(result, ContactRequest(test_type));
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -1.30, 0.001);
@@ -183,7 +183,6 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   ////////////////////////////////////////////////
   {
     location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
-    result = ContactResultMap();
     result.clear();
     result_vector.clear();
 
@@ -192,7 +191,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     tesseract_common::VectorIsometry3d transforms = { location["box_link"] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
-    flattenCopyResults(result, result_vector);
+    result.flattenCopyResults(result_vector);
 
     EXPECT_TRUE(result_vector.empty());
   }
@@ -207,7 +206,6 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     EXPECT_EQ(checker.getCollisionMarginData().getMaxCollisionMargin(), 1.7);
     EXPECT_NEAR(checker.getCollisionMarginData().getPairCollisionMargin("box_link", "second_box_link"), 0.1, 1e-5);
     location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
-    result = ContactResultMap();
     result.clear();
     result_vector.clear();
 
@@ -216,7 +214,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     tesseract_common::VectorIsometry3d transforms = { location["box_link"] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
-    flattenMoveResults(std::move(result), result_vector);
+    result.flattenMoveResults(result_vector);
 
     EXPECT_TRUE(result_vector.empty());
   }
@@ -224,7 +222,6 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   // Test object inside the contact distance only for this link pair
   /////////////////////////////////////////////
   {
-    result = ContactResultMap();
     result.clear();
     result_vector.clear();
 
@@ -235,7 +232,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     EXPECT_NEAR(checker.getCollisionMarginData().getPairCollisionMargin("box_link", "second_box_link"), 0.25, 1e-5);
     EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.25, 1e-5);
     checker.contactTest(result, ContactRequest(test_type));
-    flattenCopyResults(result, result_vector);
+    result.flattenCopyResults(result_vector);
 
     EXPECT_TRUE(!result_vector.empty());
     EXPECT_NEAR(result_vector[0].distance, 0.1, 0.001);
@@ -266,14 +263,13 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   // Test object inside the contact distance
   /////////////////////////////////////////////
   {
-    result = ContactResultMap();
     result.clear();
     result_vector.clear();
 
     checker.setCollisionMarginData(CollisionMarginData(0.25));
     EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.25, 1e-5);
     checker.contactTest(result, ContactRequest(test_type));
-    flattenMoveResults(std::move(result), result_vector);
+    result.flattenMoveResults(result_vector);
 
     EXPECT_TRUE(!result_vector.empty());
     EXPECT_NEAR(result_vector[0].distance, 0.1, 0.001);

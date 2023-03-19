@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/map.hpp>
 #include <tesseract_common/eigen_serialization.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -86,7 +87,32 @@ void serialize(Archive& ar, tesseract_collision::ContactResult& g, const unsigne
   split_free(ar, g, version);
 }
 
+/***************************************************/
+/****** tesseract_collision::ContactResultMap ******/
+/***************************************************/
+template <class Archive>
+void save(Archive& ar, const tesseract_collision::ContactResultMap& g, const unsigned int /*version*/)
+{
+  ar& boost::serialization::make_nvp("container", g.getContainer());
+}
+
+template <class Archive>
+void load(Archive& ar, tesseract_collision::ContactResultMap& g, const unsigned int /*version*/)
+{
+  tesseract_collision::ContactResultMap container;
+  ar& boost::serialization::make_nvp("container", container);
+
+  for (const auto& c : container)
+    g.addContactResult(c.first, c.second);
+}
+
+template <class Archive>
+void serialize(Archive& ar, tesseract_collision::ContactResultMap& g, const unsigned int version)
+{
+  split_free(ar, g, version);
+}
 }  // namespace boost::serialization
 
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactResult)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactResultMap)

@@ -56,6 +56,14 @@ void load(Archive& ar, tesseract_collision::ContactResult& g, const unsigned int
 template <class Archive>
 void serialize(Archive& ar, tesseract_collision::ContactResult& g, const unsigned int version);  // NOLINT
 
+template <class Archive>
+void save(Archive& ar, const tesseract_collision::ContactResultMap& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar, tesseract_collision::ContactResultMap& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, tesseract_collision::ContactResultMap& g, const unsigned int version);  // NOLINT
 }  // namespace boost::serialization
 
 #endif  // TESSERACT_COLLISION_SERIALIZATION_H

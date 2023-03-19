@@ -96,7 +96,8 @@ public:
    */
   virtual bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
   {
-    auto link_pair = tesseract_common::makeOrderedLinkPair(link_name1, link_name2);
+    thread_local LinkNamesPair link_pair;
+    tesseract_common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
     return (lookup_table_.find(link_pair) != lookup_table_.end());
   }
 
