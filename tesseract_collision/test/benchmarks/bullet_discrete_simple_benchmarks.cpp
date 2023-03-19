@@ -233,7 +233,7 @@ int main(int argc, char** argv)
                                    edge_size,
                                    tesseract_geometry::GeometryType::CONVEX_MESH)
           ->UseRealTime()
-          ->Unit(benchmark::TimeUnit::kMillisecond);
+          ->Unit(benchmark::TimeUnit::kNanosecond);
     }
     for (const auto& edge_size : edge_sizes)
     {
@@ -243,7 +243,7 @@ int main(int argc, char** argv)
       benchmark::RegisterBenchmark(
           name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::SPHERE)
           ->UseRealTime()
-          ->Unit(benchmark::TimeUnit::kMillisecond);
+          ->Unit(benchmark::TimeUnit::kNanosecond);
     }
     for (const auto& edge_size : edge_sizes)
     {
@@ -269,7 +269,7 @@ int main(int argc, char** argv)
                                    edge_size,
                                    tesseract_geometry::GeometryType::CONVEX_MESH)
           ->UseRealTime()
-          ->Unit(benchmark::TimeUnit::kMillisecond);
+          ->Unit(benchmark::TimeUnit::kNanosecond);
     }
     for (const auto& edge_size : edge_sizes)
     {
@@ -279,7 +279,7 @@ int main(int argc, char** argv)
       benchmark::RegisterBenchmark(
           name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::SPHERE)
           ->UseRealTime()
-          ->Unit(benchmark::TimeUnit::kMillisecond);
+          ->Unit(benchmark::TimeUnit::kNanosecond);
     }
     for (const auto& edge_size : edge_sizes)
     {
