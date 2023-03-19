@@ -174,7 +174,7 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.1, 0.0001);
@@ -241,11 +241,11 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   checker.setCollisionObjectsTransform(location_start, location_end);
 
   // Perform collision check
-  result = ContactResultMap();
+  result.clear();
+  result_vector.clear();
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
-  result_vector = ContactResultVector();
-  flattenCopyResults(result, result_vector);
+  result.flattenCopyResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.1, 0.0001);
@@ -330,7 +330,7 @@ inline void runTestConvex(ContinuousContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.0754, 0.001);
@@ -397,11 +397,11 @@ inline void runTestConvex(ContinuousContactManager& checker)
   checker.setCollisionObjectsTransform(location_start, location_end);
 
   // Perform collision check
-  result = ContactResultMap();
+  result.clear();
+  result_vector.clear();
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
-  result_vector = ContactResultVector();
-  flattenCopyResults(result, result_vector);
+  result.flattenCopyResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.0754, 0.001);

@@ -36,15 +36,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
+#include <tesseract_common/types.h>
 #include <tesseract_collision/core/common.h>
 
 namespace tesseract_collision
 {
-ObjectPairKey getObjectPairKey(const std::string& obj1, const std::string& obj2)
-{
-  return obj1 < obj2 ? std::make_pair(obj1, obj2) : std::make_pair(obj2, obj1);
-}
-
 std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string>& active_links,
                                                    const std::vector<std::string>& static_links,
                                                    const IsContactAllowedFn& acm)
@@ -63,7 +59,7 @@ std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string
     {
       const std::string& l2 = active_links[j];
       if (acm == nullptr || (acm != nullptr && !acm(l1, l2)))
-        clp.push_back(tesseract_collision::getObjectPairKey(l1, l2));
+        clp.push_back(tesseract_common::makeOrderedLinkPair(l1, l2));
     }
   }
 
@@ -73,7 +69,7 @@ std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string
     for (const auto& l2 : static_links)
     {
       if (acm == nullptr || (acm != nullptr && !acm(l1, l2)))
-        clp.push_back(tesseract_collision::getObjectPairKey(l1, l2));
+        clp.push_back(tesseract_common::makeOrderedLinkPair(l1, l2));
     }
   }
 
@@ -123,37 +119,25 @@ ContactResult* processResult(ContactTestData& cdata,
 
   if (!found)
   {
-    ContactResultVector data;
     if (cdata.req.type == ContactTestType::FIRST)
-    {
-      data.emplace_back(contact);
       cdata.done = true;
-    }
-    else
-    {
-      data.reserve(100);  // TODO: Need better way to initialize this
-      data.emplace_back(contact);
-    }
 
-    return &(cdata.res->insert(std::make_pair(key, data)).first->second.back());
+    return &(cdata.res->addContactResult(key, contact));
   }
 
   assert(cdata.req.type != ContactTestType::FIRST);
-  ContactResultVector& dr = (*cdata.res)[key];
   if (cdata.req.type == ContactTestType::ALL)
-  {
-    dr.emplace_back(contact);
-    return &(dr.back());
-  }
+    return &(cdata.res->addContactResult(key, contact));
 
   if (cdata.req.type == ContactTestType::CLOSEST)
   {
-    if (contact.distance < dr[0].distance)
-    {
-      dr[0] = contact;
-      return dr.data();
-    }
+    const auto& cv = cdata.res->at(key);
+    assert(!cv.empty());
+
+    if (contact.distance < cv.front().distance)
+      return &(cdata.res->setContactResult(key, contact));
   }
+
   //    else if (cdata.cdata.condition == DistanceRequestType::LIMITED)
   //    {
   //      assert(dr.size() < cdata.req->max_contacts_per_body);

@@ -157,7 +157,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.30, 0.0001);
@@ -182,20 +182,18 @@ inline void runTest(DiscreteContactManager& checker)
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
   location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
-  result = ContactResultMap();
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
 
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenCopyResults(result, result_vector);
+  result.flattenCopyResults(result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
   /////////////////////////////////////////////
   // Test object inside the contact distance
   /////////////////////////////////////////////
-  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -203,7 +201,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.applyContactManagerConfig(config);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.52, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.0001);
@@ -282,7 +280,7 @@ inline void runTest(ContinuousContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenCopyResults(result, result_vector);
+  result.flattenCopyResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.1, 0.0001);
@@ -349,11 +347,11 @@ inline void runTest(ContinuousContactManager& checker)
   checker.setCollisionObjectsTransform(location_start, location_end);
 
   // Perform collision check
-  result = ContactResultMap();
+  result.clear();
+  result_vector.clear();
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
-  result_vector = ContactResultVector();
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.1, 0.0001);

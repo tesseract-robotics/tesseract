@@ -57,57 +57,214 @@ void ContactResult::clear()
 
 ContactRequest::ContactRequest(ContactTestType type) : type(type) {}
 
-std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v)
+ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactResult result)
+{
+  ++cnt_;
+  auto& cv = data_[key];
+  if (cv.capacity() == 0)
+    cv.reserve(100);
+
+  return cv.emplace_back(std::move(result));
+}
+
+ContactResult& ContactResultMap::addContactResult(const KeyType& key, const MappedType& results)
+{
+  assert(!results.empty());
+  cnt_ += static_cast<long>(results.size());
+  auto& cv = data_[key];
+  cv.reserve(std::max(static_cast<std::size_t>(100), cv.size() + results.size()));
+  cv.insert(cv.end(), results.begin(), results.end());
+  return cv.back();
+}
+
+ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactResult result)
+{
+  auto& cv = data_[key];
+  cnt_ += (1 - static_cast<long>(cv.size()));
+  assert(cnt_ >= 0);
+  cv.clear();
+  if (cv.capacity() == 0)
+    cv.reserve(100);
+
+  return cv.emplace_back(std::move(result));
+}
+
+ContactResult& ContactResultMap::setContactResult(const KeyType& key, const MappedType& results)
+{
+  assert(!results.empty());
+  auto& cv = data_[key];
+  cnt_ += (static_cast<long>(results.size()) - static_cast<long>(cv.size()));
+  assert(cnt_ >= 0);
+  cv.clear();
+  cv.reserve(std::max(static_cast<std::size_t>(100), cv.size() + results.size()));
+  cv.insert(cv.end(), results.begin(), results.end());
+  return cv.back();
+}
+
+void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
+                                                       int sub_segment_index,
+                                                       int sub_segment_last_index,
+                                                       const std::vector<std::string>& active_link_names,
+                                                       double segment_dt,
+                                                       bool discrete,
+                                                       const tesseract_collision::ContactResultMap::FilterFn& filter)
+{
+  //  double segment_dt = (sub_segment_last_index > 0) ? 1.0 / static_cast<double>(sub_segment_last_index) : 0.0;
+  for (auto& pair : sub_segment_results.data_)
+  {
+    // Update cc_time and cc_type
+    for (auto& r : pair.second)
+    {
+      // Iterate over the two time values in r.cc_time
+      for (size_t j = 0; j < 2; ++j)
+      {
+        if (std::find(active_link_names.begin(), active_link_names.end(), r.link_names[j]) != active_link_names.end())
+        {
+          r.cc_time[j] = (r.cc_time[j] < 0) ?
+                             (static_cast<double>(sub_segment_index) * segment_dt) :
+                             (static_cast<double>(sub_segment_index) * segment_dt) + (r.cc_time[j] * segment_dt);
+          assert(r.cc_time[j] >= 0.0 && r.cc_time[j] <= 1.0);
+          if (sub_segment_index == 0 &&
+              (r.cc_type[j] == tesseract_collision::ContinuousCollisionType::CCType_Time0 || discrete))
+            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Time0;
+          else if (sub_segment_index == sub_segment_last_index &&
+                   (r.cc_type[j] == tesseract_collision::ContinuousCollisionType::CCType_Time1 || discrete))
+            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Time1;
+          else
+            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Between;
+
+          // If discrete set cc_transform for discrete continuous
+          if (discrete)
+            r.cc_transform = r.transform;
+        }
+      }
+    }
+
+    // Filter results
+    if (filter != nullptr)
+      filter(pair);
+
+    if (!pair.second.empty())
+    {
+      // Add results to the full segment results
+      cnt_ += static_cast<long>(pair.second.size());
+      auto it = data_.find(pair.first);
+      if (it == data_.end())
+      {
+        data_.insert(pair);
+      }
+      else
+      {
+        assert(it != data_.end());
+        // Note: Must include all contacts throughout the trajectory so the optimizer has all the information
+        //      to understand how to adjust the start and end state to move it out of collision. Originally tried
+        //      keeping the worst case only but ran into edge cases where this does not work in the units tests.
+
+        it->second.reserve(it->second.size() + pair.second.size());
+        it->second.insert(it->second.end(), pair.second.begin(), pair.second.end());
+      }
+    }
+  }
+}
+
+long ContactResultMap::count() const { return cnt_; }
+
+std::size_t ContactResultMap::size() const
+{
+  if (cnt_ == 0)
+    return 0;
+
+  std::size_t cnt{ 0 };
+  for (const auto& pair : data_)
+  {
+    if (!pair.second.empty())
+      ++cnt;
+  }
+
+  return cnt;
+}
+
+bool ContactResultMap::empty() const { return (cnt_ == 0); }
+
+void ContactResultMap::clear()
+{
+  if (cnt_ == 0)
+    return;
+
+  // Only clear the vectors so the capacity stays the same
+  for (auto& cv : data_)
+    cv.second.clear();
+
+  cnt_ = 0;
+}
+
+void ContactResultMap::release()
+{
+  data_.clear();
+  cnt_ = 0;
+}
+
+const ContactResultMap::ContainerType& ContactResultMap::getContainer() const { return data_; }
+
+ContactResultMap::ConstIteratorType ContactResultMap::begin() const { return data_.begin(); }
+
+ContactResultMap::ConstIteratorType ContactResultMap::end() const { return data_.end(); }
+
+ContactResultMap::ConstIteratorType ContactResultMap::cbegin() const { return data_.cbegin(); }
+
+ContactResultMap::ConstIteratorType ContactResultMap::cend() const { return data_.cend(); }
+
+const ContactResultVector& ContactResultMap::at(const KeyType& key) const { return data_.at(key); }
+
+ContactResultMap::ConstIteratorType ContactResultMap::find(const KeyType& key) const { return data_.find(key); }
+
+void ContactResultMap::flattenMoveResults(ContactResultVector& v)
 {
   v.clear();
-  v.reserve(m.size());
-  for (const auto& mv : m)
+  v.reserve(static_cast<std::size_t>(cnt_));
+  for (auto& mv : data_)
   {
-    v.reserve(v.size() + mv.second.size());
     std::move(mv.second.begin(), mv.second.end(), std::back_inserter(v));
+    mv.second.clear();
   }
-
-  return v.size();
+  cnt_ = 0;
 }
 
-std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v)
+void ContactResultMap::flattenCopyResults(ContactResultVector& v) const
 {
   v.clear();
-  v.reserve(m.size());
-  for (const auto& mv : m)
-  {
-    v.reserve(v.size() + mv.second.size());
+  v.reserve(static_cast<std::size_t>(cnt_));
+  for (const auto& mv : data_)
     std::copy(mv.second.begin(), mv.second.end(), std::back_inserter(v));
-  }
-
-  return v.size();
 }
 
-std::size_t flattenWrapperResults(ContactResultMap& m, std::vector<std::reference_wrapper<ContactResult>>& v)
+void ContactResultMap::flattenWrapperResults(std::vector<std::reference_wrapper<ContactResult>>& v)
 {
   v.clear();
-  v.reserve(m.size());
-  for (auto& mv : m)
-  {
-    v.reserve(v.size() + mv.second.size());
+  v.reserve(static_cast<std::size_t>(cnt_));
+  for (auto& mv : data_)
     v.insert(v.end(), mv.second.begin(), mv.second.end());
-  }
-
-  return v.size();
 }
 
-std::size_t flattenWrapperResults(const ContactResultMap& m,
-                                  std::vector<std::reference_wrapper<const ContactResult>>& v)
+void ContactResultMap::flattenWrapperResults(std::vector<std::reference_wrapper<const ContactResult>>& v) const
 {
   v.clear();
-  v.reserve(m.size());
-  for (const auto& mv : m)
-  {
-    v.reserve(v.size() + mv.second.size());
+  v.reserve(static_cast<std::size_t>(cnt_));
+  for (const auto& mv : data_)
     v.insert(v.end(), mv.second.begin(), mv.second.end());
-  }
+}
 
-  return v.size();
+void ContactResultMap::filter(const FilterFn& filter)
+{
+  std::size_t removed_cnt{ 0 };
+  for (auto& pair : data_)
+  {
+    std::size_t current_cnt = pair.second.size();
+    filter(pair);
+    removed_cnt += (current_cnt - pair.second.size());
+  }
+  cnt_ -= static_cast<long>(removed_cnt);
+  assert(cnt_ >= 0);
 }
 
 ContactTestData::ContactTestData(const std::vector<std::string>& active,

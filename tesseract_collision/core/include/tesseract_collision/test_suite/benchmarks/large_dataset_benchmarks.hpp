@@ -87,14 +87,15 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
   checker->setCollisionMarginData(CollisionMarginData(0.1));
   checker->setCollisionObjectsTransform(location);
 
+  ContactResultMap result;
   ContactResultVector result_vector;
 
   for (auto _ : state)  // NOLINT
   {
-    ContactResultMap result;
+    result.clear();
     result_vector.clear();
     checker->contactTest(result, ContactTestType::ALL);
-    flattenMoveResults(std::move(result), result_vector);
+    result.flattenMoveResults(result_vector);
   }
 }
 
@@ -181,14 +182,15 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   checker->setCollisionMarginData(CollisionMarginData(0.1));
   //  checker->setCollisionObjectsTransform(location);
 
+  ContactResultMap result;
   ContactResultVector result_vector;
 
   for (auto _ : state)  // NOLINT
   {
-    ContactResultMap result;
+    result.clear();
     result_vector.clear();
     checker->contactTest(result, ContactTestType::ALL);
-    flattenMoveResults(std::move(result), result_vector);
+    result.flattenMoveResults(result_vector);
   }
 }
 

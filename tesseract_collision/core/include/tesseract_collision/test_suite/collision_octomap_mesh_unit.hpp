@@ -98,7 +98,7 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   checker.contactTest(result, ContactRequest(ContactTestType::ALL));
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   const tesseract_collision::CollisionShapesConst& geom = checker.getCollisionObjectGeometries("plane_link");
   const auto& mesh = std::static_pointer_cast<const tesseract_geometry::Mesh>(geom.at(0));

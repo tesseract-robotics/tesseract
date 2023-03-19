@@ -46,15 +46,28 @@ namespace tesseract_common
 {
 std::size_t PairHash::operator()(const LinkNamesPair& pair) const
 {
-  return std::hash<std::string>()(pair.first + pair.second);
+  thread_local std::string key;
+  key = pair.first + pair.second;
+  return std::hash<std::string>()(key);
 }
 
 LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
 {
-  if (link_name1 <= link_name2)
-    return std::make_pair(link_name1, link_name2);
+  return (link_name1 <= link_name2) ? std::make_pair(link_name1, link_name2) : std::make_pair(link_name2, link_name1);
+}
 
-  return std::make_pair(link_name2, link_name1);
+void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, const std::string& link_name2)
+{
+  if (link_name1 <= link_name2)
+  {
+    pair.first = link_name1;
+    pair.second = link_name2;
+  }
+  else
+  {
+    pair.first = link_name2;
+    pair.second = link_name1;
+  }
 }
 
 /*********************************************************/

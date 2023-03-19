@@ -95,7 +95,7 @@ inline void runTestCompound(DiscreteContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::ALL));
 
   ContactResultVector result_vector;
-  flattenMoveResults(std::move(result), result_vector);
+  result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   for (const auto& cr : result_vector)
@@ -140,7 +140,7 @@ inline void runTestCompound(ContinuousContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::ALL));
 
   ContactResultVector result_vector;
-  flattenCopyResults(result, result_vector);
+  result.flattenCopyResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   for (const auto& cr : result_vector)

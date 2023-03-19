@@ -40,14 +40,6 @@ namespace tesseract_collision
 using ObjectPairKey = std::pair<std::string, std::string>;
 
 /**
- * @brief Get a key for two object to search the collision matrix
- * @param obj1 First collision object name
- * @param obj2 Second collision object name
- * @return The collision pair key
- */
-ObjectPairKey getObjectPairKey(const std::string& obj1, const std::string& obj2);
-
-/**
  * @brief Get a vector of possible collision object pairs
  * @todo Should this also filter out links without geometry?
  * @param active_links The active link names

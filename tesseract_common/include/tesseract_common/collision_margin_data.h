@@ -109,7 +109,7 @@ public:
    * @brief Get the default collision margin
    * @return default collision margin
    */
-  double getDefaultCollisionMargin() const { return default_collision_margin_; };
+  double getDefaultCollisionMargin() const { return default_collision_margin_; }
 
   /**
    * @brief Set the margin for a given contact pair
@@ -139,7 +139,8 @@ public:
    */
   double getPairCollisionMargin(const std::string& obj1, const std::string& obj2) const
   {
-    auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
+    thread_local LinkNamesPair key;
+    tesseract_common::makeOrderedLinkPair(key, obj1, obj2);
     const auto it = lookup_table_.find(key);
 
     if (it != lookup_table_.end())
