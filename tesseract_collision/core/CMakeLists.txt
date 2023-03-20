@@ -2,10 +2,11 @@
 add_library(
   ${PROJECT_NAME}_core
   src/common.cpp
-  src/types.cpp
   src/contact_managers_plugin_factory.cpp
   src/continuous_contact_manager.cpp
   src/discrete_contact_manager.cpp
+  src/serialization.cpp
+  src/types.cpp
   src/utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
@@ -14,6 +15,7 @@ target_link_libraries(
          tesseract::tesseract_geometry
          Boost::boost
          Boost::system
+         Boost::serialization
          yaml-cpp)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
