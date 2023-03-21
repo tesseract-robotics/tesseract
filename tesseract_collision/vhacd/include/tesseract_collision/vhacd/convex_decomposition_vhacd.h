@@ -26,30 +26,39 @@
 #ifndef TESSERACT_COLLISION_CONVEX_DECOMPOSITION_VHACD_H
 #define TESSERACT_COLLISION_CONVEX_DECOMPOSITION_VHACD_H
 
+#define ENABLE_VHACD_IMPLEMENTATION 1
+
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/vhacd/VHACD.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_collision/core/convex_decomposition.h>
 
 namespace tesseract_collision
 {
 struct VHACDParameters
 {
-  double concavity{ 0.001 };
-  double alpha{ 0.05 };
-  double beta{ 0.05 };
-  double min_volume_per_ch{ 0.0001 };
-  uint32_t resolution{ 1000 };
-  uint32_t max_num_vertices_per_ch{ 256 };
-  uint32_t plane_downsampling{ 4 };
-  uint32_t convexhull_downsampling{ 4 };
-  uint32_t pca{ 0 };
-  uint32_t mode{ 0 };  // 0: voxel-based (recommended), 1: tetrahedron-based
-  uint32_t convexhull_approximation{ 1U };
-  uint32_t ocl_acceleration{ 1U };
-  uint32_t max_convehulls{ 1024 };
-  /**
-   * @brief This will project the output convex hull vertices onto the original source mesh
-   *  to increase the floating point accuracy of the results
-   */
-  bool project_hull_vertices{ true };
+  /// The maximum number of convex hulls to produce
+  uint32_t max_convex_hulls{ 64 };
+  /// The voxel resolution to use
+  uint32_t resolution{ 400000 };
+  /// if the voxels are within 1% of the volume of the hull, we consider this a close enough approximation
+  double minimum_volume_percent_error_allowed{ 1 };
+  /// The maximum recursion depth
+  uint32_t max_recursion_depth{ 10 };
+  /// Whether or not to shrinkwrap the voxel positions to the source mesh on output
+  bool shrinkwrap{ true };
+  /// How to fill the interior of the voxelized mesh
+  VHACD::FillMode fill_mode{ VHACD::FillMode::FLOOD_FILL };
+  /// The maximum number of vertices allowed in any output convex hull
+  uint32_t max_num_vertices_per_ch{ 64 };
+  /// Whether or not to run asynchronously, taking advantage of additional cores
+  bool async_ACD{ true };
+  /// Once a voxel patch has an edge length of less than 4 on all 3 sides, we don't keep recursing
+  uint32_t min_edge_length{ 2 };
+  /// Whether or not to attempt to split planes along the best location. Experimental feature. False by default.
+  bool find_best_plane{ false };
 
   void print() const;
 };
