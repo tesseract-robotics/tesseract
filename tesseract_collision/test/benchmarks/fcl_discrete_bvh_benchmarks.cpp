@@ -243,7 +243,7 @@ int main(int argc, char** argv)
                                    edge_size,
                                    tesseract_geometry::GeometryType::CONVEX_MESH)
           ->UseRealTime()
-          ->Unit(benchmark::TimeUnit::kMillisecond);
+          ->Unit(benchmark::TimeUnit::kNanosecond);
     }
     for (const auto& edge_size : edge_sizes)
     {
@@ -253,7 +253,7 @@ int main(int argc, char** argv)
       benchmark::RegisterBenchmark(
           name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::SPHERE)
           ->UseRealTime()
-          ->Unit(benchmark::TimeUnit::kMillisecond);
+          ->Unit(benchmark::TimeUnit::kNanosecond);
     }
     // These last two took 45s and 120s. Too long to run in CI, and impractical for our purposes anyway.
     if (RUN_QUICK)
@@ -285,7 +285,7 @@ int main(int argc, char** argv)
                                    edge_size,
                                    tesseract_geometry::GeometryType::CONVEX_MESH)
           ->UseRealTime()
-          ->Unit(benchmark::TimeUnit::kMillisecond);
+          ->Unit(benchmark::TimeUnit::kNanosecond);
     }
     for (const auto& edge_size : edge_sizes)
     {
@@ -295,7 +295,7 @@ int main(int argc, char** argv)
       benchmark::RegisterBenchmark(
           name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::SPHERE)
           ->UseRealTime()
-          ->Unit(benchmark::TimeUnit::kMillisecond);
+          ->Unit(benchmark::TimeUnit::kNanosecond);
     }
     for (const auto& edge_size : edge_sizes)
     {

@@ -12,6 +12,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/convex_hull_utils.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
 
+#include <tesseract_geometry/impl/sphere.h>
+
 static const std::size_t DIM = 10;
 
 using namespace tesseract_collision;

@@ -38,5 +38,5 @@ inline tesseract_geometry::Geometry::Ptr CreateUnitPrimative(const tesseract_geo
       break;
   }
   return geom;
-};
+}
 #endif
