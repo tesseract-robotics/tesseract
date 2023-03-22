@@ -2,6 +2,12 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update tesseract_collision benchmarks (`#868 <https://github.com/tesseract-robotics/tesseract/issues/868>`_)
+* Add ContactResult boost serialization
+* Contributors: Levi Armstrong
+
 0.15.2 (2023-03-15)
 -------------------
 * Expose Bullet collision pool allocator configuration
