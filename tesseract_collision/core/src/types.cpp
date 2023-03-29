@@ -61,9 +61,6 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactRes
 {
   ++cnt_;
   auto& cv = data_[key];
-  if (cv.capacity() == 0)
-    cv.reserve(100);
-
   return cv.emplace_back(std::move(result));
 }
 
@@ -72,7 +69,8 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, const Mapp
   assert(!results.empty());
   cnt_ += static_cast<long>(results.size());
   auto& cv = data_[key];
-  cv.reserve(std::max(static_cast<std::size_t>(100), cv.size() + results.size()));
+  ;
+  cv.reserve(cv.size() + results.size());
   cv.insert(cv.end(), results.begin(), results.end());
   return cv.back();
 }
@@ -83,8 +81,6 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactRes
   cnt_ += (1 - static_cast<long>(cv.size()));
   assert(cnt_ >= 0);
   cv.clear();
-  if (cv.capacity() == 0)
-    cv.reserve(100);
 
   return cv.emplace_back(std::move(result));
 }
@@ -96,7 +92,7 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, const Mapp
   cnt_ += (static_cast<long>(results.size()) - static_cast<long>(cv.size()));
   assert(cnt_ >= 0);
   cv.clear();
-  cv.reserve(std::max(static_cast<std::size_t>(100), cv.size() + results.size()));
+  cv.reserve(cv.size() + results.size());
   cv.insert(cv.end(), results.begin(), results.end());
   return cv.back();
 }
@@ -109,7 +105,6 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
                                                        bool discrete,
                                                        const tesseract_collision::ContactResultMap::FilterFn& filter)
 {
-  //  double segment_dt = (sub_segment_last_index > 0) ? 1.0 / static_cast<double>(sub_segment_last_index) : 0.0;
   for (auto& pair : sub_segment_results.data_)
   {
     // Update cc_time and cc_type
