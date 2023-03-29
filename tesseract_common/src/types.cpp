@@ -47,7 +47,9 @@ namespace tesseract_common
 std::size_t PairHash::operator()(const LinkNamesPair& pair) const
 {
   thread_local std::string key;
-  key = pair.first + pair.second;
+  key.clear();
+  key.append(pair.first);
+  key.append(pair.second);
   return std::hash<std::string>()(key);
 }
 
