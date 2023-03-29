@@ -42,20 +42,17 @@ public:
   using Ptr = std::shared_ptr<ChangeLinkVisibilityCommand>;
   using ConstPtr = std::shared_ptr<const ChangeLinkVisibilityCommand>;
 
-  ChangeLinkVisibilityCommand() : Command(CommandType::CHANGE_LINK_VISIBILITY){};
+  ChangeLinkVisibilityCommand();
 
   /**
    * @brief Set a links visibility
    * @param name The name of the link
    * @param visibility True if should be visible, otherwise false
    */
-  ChangeLinkVisibilityCommand(std::string link_name, bool enabled)
-    : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(std::move(link_name)), enabled_(enabled)
-  {
-  }
+  ChangeLinkVisibilityCommand(std::string link_name, bool enabled);
 
-  const std::string& getLinkName() const { return link_name_; }
-  bool getEnabled() const { return enabled_; }
+  const std::string& getLinkName() const;
+  bool getEnabled() const;
 
   bool operator==(const ChangeLinkVisibilityCommand& rhs) const;
   bool operator!=(const ChangeLinkVisibilityCommand& rhs) const;

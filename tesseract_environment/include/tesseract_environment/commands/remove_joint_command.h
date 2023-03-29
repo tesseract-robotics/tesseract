@@ -42,7 +42,7 @@ public:
   using Ptr = std::shared_ptr<RemoveJointCommand>;
   using ConstPtr = std::shared_ptr<const RemoveJointCommand>;
 
-  RemoveJointCommand() : Command(CommandType::REMOVE_JOINT){};
+  RemoveJointCommand();
 
   /**
    * @brief Removes a joint from the environment
@@ -51,9 +51,9 @@ public:
    *
    * @param name Name of the joint to be removed
    */
-  RemoveJointCommand(std::string joint_name) : Command(CommandType::REMOVE_JOINT), joint_name_(std::move(joint_name)) {}
+  RemoveJointCommand(std::string joint_name);
 
-  const std::string& getJointName() const { return joint_name_; }
+  const std::string& getJointName() const;
 
   bool operator==(const RemoveJointCommand& rhs) const;
   bool operator!=(const RemoveJointCommand& rhs) const;

@@ -42,7 +42,7 @@ public:
   using Ptr = std::shared_ptr<RemoveLinkCommand>;
   using ConstPtr = std::shared_ptr<const RemoveLinkCommand>;
 
-  RemoveLinkCommand() : Command(CommandType::REMOVE_LINK){};
+  RemoveLinkCommand();
 
   /**
    * @brief Removes a link from the environment
@@ -51,9 +51,9 @@ public:
    *
    * @param name Name of the link to be removed
    */
-  RemoveLinkCommand(std::string link_name) : Command(CommandType::REMOVE_LINK), link_name_(std::move(link_name)) {}
+  RemoveLinkCommand(std::string link_name);
 
-  const std::string& getLinkName() const { return link_name_; }
+  const std::string& getLinkName() const;
 
   bool operator==(const RemoveLinkCommand& rhs) const;
   bool operator!=(const RemoveLinkCommand& rhs) const;

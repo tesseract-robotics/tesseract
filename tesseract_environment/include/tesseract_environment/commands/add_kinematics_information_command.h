@@ -43,17 +43,14 @@ public:
   using Ptr = std::shared_ptr<AddKinematicsInformationCommand>;
   using ConstPtr = std::shared_ptr<const AddKinematicsInformationCommand>;
 
-  AddKinematicsInformationCommand() : Command(CommandType::ADD_KINEMATICS_INFORMATION){};
+  AddKinematicsInformationCommand();
   /**
    * @brief Add kinematics information to the environment
    * @param kin_info The kinematics information
    */
-  AddKinematicsInformationCommand(tesseract_srdf::KinematicsInformation kinematics_information)
-    : Command(CommandType::ADD_KINEMATICS_INFORMATION), kinematics_information_(std::move(kinematics_information))
-  {
-  }
+  AddKinematicsInformationCommand(tesseract_srdf::KinematicsInformation kinematics_information);
 
-  const tesseract_srdf::KinematicsInformation& getKinematicsInformation() const { return kinematics_information_; }
+  const tesseract_srdf::KinematicsInformation& getKinematicsInformation() const;
 
   bool operator==(const AddKinematicsInformationCommand& rhs) const;
   bool operator!=(const AddKinematicsInformationCommand& rhs) const;

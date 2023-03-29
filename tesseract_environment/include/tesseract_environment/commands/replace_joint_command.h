@@ -42,7 +42,7 @@ public:
   using Ptr = std::shared_ptr<ReplaceJointCommand>;
   using ConstPtr = std::shared_ptr<const ReplaceJointCommand>;
 
-  ReplaceJointCommand() : Command(CommandType::REPLACE_JOINT){};
+  ReplaceJointCommand();
 
   /**
    * @brief Replace a joint in the environment
@@ -57,17 +57,9 @@ public:
    *
    * @param joint The joint to be replaced
    */
-  ReplaceJointCommand(const tesseract_scene_graph::Joint& joint)
-    : Command(CommandType::REPLACE_JOINT), joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
-  {
-    if (joint_->type != tesseract_scene_graph::JointType::FIXED)
-    {
-      //      if ()
-      /** @todo check limits */
-    }
-  }
+  ReplaceJointCommand(const tesseract_scene_graph::Joint& joint);
 
-  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
+  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const;
 
   bool operator==(const ReplaceJointCommand& rhs) const;
   bool operator!=(const ReplaceJointCommand& rhs) const;

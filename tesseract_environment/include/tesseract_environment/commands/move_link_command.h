@@ -43,7 +43,7 @@ public:
   using Ptr = std::shared_ptr<MoveLinkCommand>;
   using ConstPtr = std::shared_ptr<const MoveLinkCommand>;
 
-  MoveLinkCommand() : Command(CommandType::MOVE_LINK){};
+  MoveLinkCommand();
 
   /**
    * @brief Move a link in the environment
@@ -52,12 +52,9 @@ public:
    *
    * @param joint The new joint.
    */
-  MoveLinkCommand(const tesseract_scene_graph::Joint& joint)
-    : Command(CommandType::MOVE_LINK), joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
-  {
-  }
+  MoveLinkCommand(const tesseract_scene_graph::Joint& joint);
 
-  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
+  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const;
 
   bool operator==(const MoveLinkCommand& rhs) const;
   bool operator!=(const MoveLinkCommand& rhs) const;
