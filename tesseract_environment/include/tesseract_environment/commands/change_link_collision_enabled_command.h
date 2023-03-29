@@ -42,20 +42,17 @@ public:
   using Ptr = std::shared_ptr<ChangeLinkCollisionEnabledCommand>;
   using ConstPtr = std::shared_ptr<const ChangeLinkCollisionEnabledCommand>;
 
-  ChangeLinkCollisionEnabledCommand() : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED){};
+  ChangeLinkCollisionEnabledCommand();
 
   /**
    * @brief Set whether a link should be considered during collision checking
    * @param link_name The link name to modify collision enabled
    * @param enabled True if should be condisdered during collision checking, otherwise false
    */
-  ChangeLinkCollisionEnabledCommand(std::string link_name, bool enabled)
-    : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(std::move(link_name)), enabled_(enabled)
-  {
-  }
+  ChangeLinkCollisionEnabledCommand(std::string link_name, bool enabled);
 
-  const std::string& getLinkName() const { return link_name_; }
-  bool getEnabled() const { return enabled_; }
+  const std::string& getLinkName() const;
+  bool getEnabled() const;
 
   bool operator==(const ChangeLinkCollisionEnabledCommand& rhs) const;
   bool operator!=(const ChangeLinkCollisionEnabledCommand& rhs) const;
