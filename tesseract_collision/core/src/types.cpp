@@ -59,7 +59,7 @@ ContactRequest::ContactRequest(ContactTestType type) : type(type) {}
 
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactResult result)
 {
-  ++cnt_;
+  ++count_;
   auto& cv = data_[key];
   return cv.emplace_back(std::move(result));
 }
@@ -67,9 +67,8 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactRes
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, const MappedType& results)
 {
   assert(!results.empty());
-  cnt_ += static_cast<long>(results.size());
+  count_ += static_cast<long>(results.size());
   auto& cv = data_[key];
-  ;
   cv.reserve(cv.size() + results.size());
   cv.insert(cv.end(), results.begin(), results.end());
   return cv.back();
@@ -78,8 +77,8 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, const Mapp
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactResult result)
 {
   auto& cv = data_[key];
-  cnt_ += (1 - static_cast<long>(cv.size()));
-  assert(cnt_ >= 0);
+  count_ += (1 - static_cast<long>(cv.size()));
+  assert(count_ >= 0);
   cv.clear();
 
   return cv.emplace_back(std::move(result));
@@ -89,10 +88,10 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, const Mapp
 {
   assert(!results.empty());
   auto& cv = data_[key];
-  cnt_ += (static_cast<long>(results.size()) - static_cast<long>(cv.size()));
-  assert(cnt_ >= 0);
+  count_ += (static_cast<long>(results.size()) - static_cast<long>(cv.size()));
+  assert(count_ >= 0);
   cv.clear();
-  cv.reserve(cv.size() + results.size());
+  cv.reserve(results.size());
   cv.insert(cv.end(), results.begin(), results.end());
   return cv.back();
 }
@@ -142,7 +141,7 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
     if (!pair.second.empty())
     {
       // Add results to the full segment results
-      cnt_ += static_cast<long>(pair.second.size());
+      count_ += static_cast<long>(pair.second.size());
       auto it = data_.find(pair.first);
       if (it == data_.end())
       {
@@ -162,11 +161,11 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
   }
 }
 
-long ContactResultMap::count() const { return cnt_; }
+long ContactResultMap::count() const { return count_; }
 
 std::size_t ContactResultMap::size() const
 {
-  if (cnt_ == 0)
+  if (count_ == 0)
     return 0;
 
   std::size_t cnt{ 0 };
@@ -179,24 +178,24 @@ std::size_t ContactResultMap::size() const
   return cnt;
 }
 
-bool ContactResultMap::empty() const { return (cnt_ == 0); }
+bool ContactResultMap::empty() const { return (count_ == 0); }
 
 void ContactResultMap::clear()
 {
-  if (cnt_ == 0)
+  if (count_ == 0)
     return;
 
   // Only clear the vectors so the capacity stays the same
   for (auto& cv : data_)
     cv.second.clear();
 
-  cnt_ = 0;
+  count_ = 0;
 }
 
 void ContactResultMap::release()
 {
   data_.clear();
-  cnt_ = 0;
+  count_ = 0;
 }
 
 const ContactResultMap::ContainerType& ContactResultMap::getContainer() const { return data_; }
@@ -216,19 +215,19 @@ ContactResultMap::ConstIteratorType ContactResultMap::find(const KeyType& key) c
 void ContactResultMap::flattenMoveResults(ContactResultVector& v)
 {
   v.clear();
-  v.reserve(static_cast<std::size_t>(cnt_));
+  v.reserve(static_cast<std::size_t>(count_));
   for (auto& mv : data_)
   {
     std::move(mv.second.begin(), mv.second.end(), std::back_inserter(v));
     mv.second.clear();
   }
-  cnt_ = 0;
+  count_ = 0;
 }
 
 void ContactResultMap::flattenCopyResults(ContactResultVector& v) const
 {
   v.clear();
-  v.reserve(static_cast<std::size_t>(cnt_));
+  v.reserve(static_cast<std::size_t>(count_));
   for (const auto& mv : data_)
     std::copy(mv.second.begin(), mv.second.end(), std::back_inserter(v));
 }
@@ -236,7 +235,7 @@ void ContactResultMap::flattenCopyResults(ContactResultVector& v) const
 void ContactResultMap::flattenWrapperResults(std::vector<std::reference_wrapper<ContactResult>>& v)
 {
   v.clear();
-  v.reserve(static_cast<std::size_t>(cnt_));
+  v.reserve(static_cast<std::size_t>(count_));
   for (auto& mv : data_)
     v.insert(v.end(), mv.second.begin(), mv.second.end());
 }
@@ -244,7 +243,7 @@ void ContactResultMap::flattenWrapperResults(std::vector<std::reference_wrapper<
 void ContactResultMap::flattenWrapperResults(std::vector<std::reference_wrapper<const ContactResult>>& v) const
 {
   v.clear();
-  v.reserve(static_cast<std::size_t>(cnt_));
+  v.reserve(static_cast<std::size_t>(count_));
   for (const auto& mv : data_)
     v.insert(v.end(), mv.second.begin(), mv.second.end());
 }
@@ -258,8 +257,8 @@ void ContactResultMap::filter(const FilterFn& filter)
     filter(pair);
     removed_cnt += (current_cnt - pair.second.size());
   }
-  cnt_ -= static_cast<long>(removed_cnt);
-  assert(cnt_ >= 0);
+  count_ -= static_cast<long>(removed_cnt);
+  assert(count_ >= 0);
 }
 
 ContactTestData::ContactTestData(const std::vector<std::string>& active,
