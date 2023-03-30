@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-MoveJointCommand::MoveJointCommand() : Command(CommandType::MOVE_JOINT){}
+MoveJointCommand::MoveJointCommand() : Command(CommandType::MOVE_JOINT) {}
 
 MoveJointCommand::MoveJointCommand(std::string joint_name, std::string parent_link)
   : Command(CommandType::MOVE_JOINT), joint_name_(std::move(joint_name)), parent_link_(std::move(parent_link))

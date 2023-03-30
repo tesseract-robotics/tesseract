@@ -131,7 +131,7 @@ public:
 
   Visual() { this->clear(); }
   Eigen::Isometry3d origin;
-  tesseract_geometry::Geometry::Ptr geometry;
+  tesseract_geometry::Geometry::ConstPtr geometry;
 
   Material::Ptr material;
 
@@ -164,7 +164,7 @@ public:
 
   Collision() { this->clear(); }
   Eigen::Isometry3d origin;
-  tesseract_geometry::Geometry::Ptr geometry;
+  tesseract_geometry::Geometry::ConstPtr geometry;
 
   void clear()
   {

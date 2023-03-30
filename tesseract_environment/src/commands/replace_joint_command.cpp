@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-ReplaceJointCommand::ReplaceJointCommand() : Command(CommandType::REPLACE_JOINT){}
+ReplaceJointCommand::ReplaceJointCommand() : Command(CommandType::REPLACE_JOINT) {}
 
 ReplaceJointCommand::ReplaceJointCommand(const tesseract_scene_graph::Joint& joint)
   : Command(CommandType::REPLACE_JOINT), joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))

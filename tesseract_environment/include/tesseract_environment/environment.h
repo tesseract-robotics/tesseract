@@ -546,12 +546,6 @@ protected:
   tesseract_scene_graph::SceneGraph::Ptr scene_graph_{ nullptr };
 
   /**
-   * @brief Tesseract Scene Graph Const
-   * @note This is intentionally not serialized it will auto updated
-   */
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_{ nullptr };
-
-  /**
    * @brief The kinematics information
    * @note This is intentionally not serialized it will auto updated
    */
@@ -699,7 +693,7 @@ private:
   bool applyCommandsHelper(const Commands& commands);
 
   // Command Helper function
-  bool applyAddCommand(AddLinkCommand::ConstPtr cmd);
+  bool applyAddCommand(const AddLinkCommand::ConstPtr& cmd);
   bool applyMoveLinkCommand(const MoveLinkCommand::ConstPtr& cmd);
   bool applyMoveJointCommand(const MoveJointCommand::ConstPtr& cmd);
   bool applyRemoveLinkCommand(const RemoveLinkCommand::ConstPtr& cmd);
@@ -720,6 +714,11 @@ private:
   bool applyAddContactManagersPluginInfoCommand(const AddContactManagersPluginInfoCommand::ConstPtr& cmd);
   bool applySetActiveContinuousContactManagerCommand(const SetActiveContinuousContactManagerCommand::ConstPtr& cmd);
   bool applySetActiveDiscreteContactManagerCommand(const SetActiveDiscreteContactManagerCommand::ConstPtr& cmd);
+  bool applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::ConstPtr& cmd);
+
+  bool applyAddLinkCommandHelper(const tesseract_scene_graph::Link::ConstPtr& link,
+                                 const tesseract_scene_graph::Joint::ConstPtr& joint,
+                                 bool replace_allowed);
 
   friend class boost::serialization::access;
   template <class Archive>

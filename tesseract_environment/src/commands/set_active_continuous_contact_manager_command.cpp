@@ -36,7 +36,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-SetActiveContinuousContactManagerCommand::SetActiveContinuousContactManagerCommand() : Command(CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER){}
+SetActiveContinuousContactManagerCommand::SetActiveContinuousContactManagerCommand()
+  : Command(CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER)
+{
+}
 
 SetActiveContinuousContactManagerCommand::SetActiveContinuousContactManagerCommand(std::string active_contact_manager)
   : Command(CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER)

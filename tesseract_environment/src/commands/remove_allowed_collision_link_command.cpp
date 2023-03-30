@@ -37,7 +37,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-RemoveAllowedCollisionLinkCommand::RemoveAllowedCollisionLinkCommand() : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK){}
+RemoveAllowedCollisionLinkCommand::RemoveAllowedCollisionLinkCommand()
+  : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK)
+{
+}
 
 RemoveAllowedCollisionLinkCommand::RemoveAllowedCollisionLinkCommand(std::string link_name)
   : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK), link_name_(std::move(link_name))

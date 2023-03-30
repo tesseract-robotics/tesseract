@@ -178,7 +178,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
 IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInput& tip_link_pose,
                                        const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  return calcInvKin(KinGroupIKInputs{ tip_link_pose }, seed);
+  return calcInvKin(KinGroupIKInputs{ tip_link_pose }, seed);  // NOLINT
 }
 
 std::vector<std::string> KinematicGroup::getAllValidWorkingFrames() const { return working_frames_; }

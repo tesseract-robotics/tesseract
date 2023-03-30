@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-AddSceneGraphCommand::AddSceneGraphCommand() : Command(CommandType::ADD_SCENE_GRAPH){}
+AddSceneGraphCommand::AddSceneGraphCommand() : Command(CommandType::ADD_SCENE_GRAPH) {}
 
 AddSceneGraphCommand::AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph, std::string prefix)
   : Command(CommandType::ADD_SCENE_GRAPH)

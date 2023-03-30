@@ -614,6 +614,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
                      const tesseract_common::TrajArray& traj,
                      const tesseract_collision::CollisionCheckConfig& config)
 {
+  // NOLINTNEXTLINE
   if (config.type != tesseract_collision::CollisionEvaluatorType::DISCRETE &&
       config.type != tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE)
     throw std::runtime_error("checkTrajectory was given an CollisionEvaluatorType that is inconsistent with the "
