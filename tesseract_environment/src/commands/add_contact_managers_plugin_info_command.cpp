@@ -38,15 +38,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_environment
 {
 AddContactManagersPluginInfoCommand::AddContactManagersPluginInfoCommand()
-  : Command(CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO){}
+  : Command(CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO)
+{
+}
 
-AddContactManagersPluginInfoCommand::AddContactManagersPluginInfoCommand(tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info)
+AddContactManagersPluginInfoCommand::AddContactManagersPluginInfoCommand(
+    tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info)
   : Command(CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO)
   , contact_managers_plugin_info_(std::move(contact_managers_plugin_info))
 {
 }
 
-const tesseract_common::ContactManagersPluginInfo& AddContactManagersPluginInfoCommand::getContactManagersPluginInfo() const
+const tesseract_common::ContactManagersPluginInfo&
+AddContactManagersPluginInfoCommand::getContactManagersPluginInfo() const
 {
   return contact_managers_plugin_info_;
 }

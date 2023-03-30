@@ -349,7 +349,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   collision_geometries_.reserve(shapes_.size());
   collision_objects_.reserve(shapes_.size());
   collision_objects_raw_.reserve(shapes_.size());
-  for (std::size_t i = 0; i < shapes_.size(); ++i)
+  for (std::size_t i = 0; i < shapes_.size(); ++i)  // NOLINT
   {
     CollisionGeometryPtr subshape = createShapePrimitive(shapes_[i]);
     if (subshape != nullptr)

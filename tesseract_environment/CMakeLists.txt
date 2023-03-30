@@ -81,6 +81,7 @@ add_library(
   src/commands/add_kinematics_information_command.cpp
   src/commands/add_link_command.cpp
   src/commands/add_scene_graph_command.cpp
+  src/commands/add_trajectory_link_command.cpp
   src/commands/change_collision_margins_command.cpp
   src/commands/change_joint_acceleration_limits_command.cpp
   src/commands/change_joint_origin_command.cpp

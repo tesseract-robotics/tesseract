@@ -32,6 +32,7 @@
 #include <tesseract_environment/commands/add_link_command.h>
 #include <tesseract_environment/commands/add_kinematics_information_command.h>
 #include <tesseract_environment/commands/add_scene_graph_command.h>
+#include <tesseract_environment/commands/add_trajectory_link_command.h>
 #include <tesseract_environment/commands/change_joint_acceleration_limits_command.h>
 #include <tesseract_environment/commands/change_joint_origin_command.h>
 #include <tesseract_environment/commands/change_joint_position_limits_command.h>

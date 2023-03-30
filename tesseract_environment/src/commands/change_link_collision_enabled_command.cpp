@@ -41,7 +41,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_environment
 {
 ChangeLinkCollisionEnabledCommand::ChangeLinkCollisionEnabledCommand()
-  : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED){}
+  : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED)
+{
+}
 
 ChangeLinkCollisionEnabledCommand::ChangeLinkCollisionEnabledCommand(std::string link_name, bool enabled)
   : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(std::move(link_name)), enabled_(enabled)

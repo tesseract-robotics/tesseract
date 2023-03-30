@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-AddLinkCommand::AddLinkCommand() : Command(CommandType::ADD_LINK){}
+AddLinkCommand::AddLinkCommand() : Command(CommandType::ADD_LINK) {}
 
 AddLinkCommand::AddLinkCommand(const tesseract_scene_graph::Link& link, bool replace_allowed)
   : Command(CommandType::ADD_LINK)
@@ -48,8 +48,8 @@ AddLinkCommand::AddLinkCommand(const tesseract_scene_graph::Link& link, bool rep
 }
 
 AddLinkCommand::AddLinkCommand(const tesseract_scene_graph::Link& link,
-               const tesseract_scene_graph::Joint& joint,
-               bool replace_allowed)
+                               const tesseract_scene_graph::Joint& joint,
+                               bool replace_allowed)
   : Command(CommandType::ADD_LINK)
   , link_(std::make_shared<tesseract_scene_graph::Link>(link.clone()))
   , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))

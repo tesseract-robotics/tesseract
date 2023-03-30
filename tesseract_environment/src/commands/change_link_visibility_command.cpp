@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-ChangeLinkVisibilityCommand::ChangeLinkVisibilityCommand() : Command(CommandType::CHANGE_LINK_VISIBILITY){}
+ChangeLinkVisibilityCommand::ChangeLinkVisibilityCommand() : Command(CommandType::CHANGE_LINK_VISIBILITY) {}
 
 ChangeLinkVisibilityCommand::ChangeLinkVisibilityCommand(std::string link_name, bool enabled)
   : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(std::move(link_name)), enabled_(enabled)

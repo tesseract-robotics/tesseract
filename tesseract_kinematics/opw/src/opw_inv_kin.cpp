@@ -74,6 +74,7 @@ IKSolutions OPWInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link
   assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());                      // NOLINT
   assert(std::abs(1.0 - tip_link_poses.at(tip_link_name_).matrix().determinant()) < 1e-6);  // NOLINT
 
+  // NOLINTNEXTLINE
   opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, tip_link_poses.at(tip_link_name_));
 
   // Check the output
