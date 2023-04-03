@@ -29,7 +29,7 @@ jobs:
           restore-keys: |
             benchmark-ccache-
 
-      - uses: 'marip8/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
+      - uses: 'tesseract-robotics/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
         env:
           DOCKER_IMAGE: ubuntu:20.04
           ROS_DISTRO: false
