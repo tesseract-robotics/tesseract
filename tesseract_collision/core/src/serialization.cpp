@@ -99,7 +99,7 @@ void save(Archive& ar, const tesseract_collision::ContactResultMap& g, const uns
 template <class Archive>
 void load(Archive& ar, tesseract_collision::ContactResultMap& g, const unsigned int /*version*/)
 {
-  tesseract_collision::ContactResultMap container;
+  tesseract_collision::ContactResultMap::ContainerType container;
   ar& boost::serialization::make_nvp("container", container);
 
   for (const auto& c : container)
