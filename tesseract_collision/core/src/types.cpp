@@ -97,8 +97,8 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, const Mapp
 }
 
 void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
-                                                       int sub_segment_index,
-                                                       int sub_segment_last_index,
+                                                       long sub_segment_index,
+                                                       long sub_segment_last_index,
                                                        const std::vector<std::string>& active_link_names,
                                                        double segment_dt,
                                                        bool discrete,
@@ -192,6 +192,13 @@ void ContactResultMap::clear()
   count_ = 0;
 }
 
+void ContactResultMap::shrinkToFit()
+{
+  // Erase members that satisfy needs_removing(itr)
+  for (auto it = data_.cbegin(); it != data_.cend();)
+    it = it->second.empty() ? data_.erase(it) : std::next(it);
+}
+
 void ContactResultMap::release()
 {
   data_.clear();
@@ -282,11 +289,13 @@ ContactManagerConfig::ContactManagerConfig(double default_margin)
 CollisionCheckConfig::CollisionCheckConfig(double default_margin,
                                            ContactRequest request,
                                            CollisionEvaluatorType type,
-                                           double longest_valid_segment_length)
+                                           double longest_valid_segment_length,
+                                           CollisionCheckProgramType check_program_mode)
   : contact_manager_config(default_margin)
   , contact_request(std::move(request))
   , type(type)
   , longest_valid_segment_length(longest_valid_segment_length)
+  , check_program_mode(check_program_mode)
 {
 }
 
