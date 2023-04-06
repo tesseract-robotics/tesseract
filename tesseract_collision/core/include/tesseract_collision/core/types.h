@@ -202,8 +202,8 @@ public:
    * @param filter An option filter to exclude results
    */
   void addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
-                                       int sub_segment_index,
-                                       int sub_segment_last_index,
+                                       long sub_segment_index,
+                                       long sub_segment_last_index,
                                        const std::vector<std::string>& active_link_names,
                                        double segment_dt,
                                        bool discrete,
@@ -248,6 +248,9 @@ public:
    * @note Use release to fully clear the internal data structure
    */
   void clear();
+
+  /** @brief Remove map entries with no contact results */
+  void shrinkToFit();
 
   /** @brief Fully clear all internal data */
   void release();
@@ -367,6 +370,23 @@ enum class CollisionEvaluatorType
   LVS_CONTINUOUS
 };
 
+/** @brief The mode used to check program */
+enum class CollisionCheckProgramType
+{
+  /** @brief Check all states */
+  ALL,
+  /** @brief Check all states except the start state */
+  ALL_EXCEPT_START,
+  /** @brief Check all states except the end state */
+  ALL_EXCEPT_END,
+  /** @brief Check only the start state */
+  START_ONLY,
+  /** @brief Check only the end state */
+  END_ONLY,
+  /** @brief Check only the intermediate states */
+  INTERMEDIATE_ONLY
+};
+
 /** @brief Identifies how the provided AllowedCollisionMatrix should be applied relative to the isAllowedFn in the
  * contact manager */
 enum class ACMOverrideType
@@ -420,17 +440,23 @@ struct CollisionCheckConfig
   CollisionCheckConfig(double default_margin,
                        ContactRequest request = ContactRequest(),
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
-                       double longest_valid_segment_length = 0.005);
+                       double longest_valid_segment_length = 0.005,
+                       CollisionCheckProgramType check_program_mode = CollisionCheckProgramType::ALL);
 
   /** @brief Used to configure the contact manager prior to a series of checks */
   ContactManagerConfig contact_manager_config;
 
   /** @brief ContactRequest that will be used for this check. Default test type: FIRST*/
   ContactRequest contact_request;
+
   /** @brief Specifies the type of collision check to be performed. Default: DISCRETE */
   CollisionEvaluatorType type{ CollisionEvaluatorType::DISCRETE };
+
   /** @brief Longest valid segment to use if type supports lvs. Default: 0.005*/
   double longest_valid_segment_length{ 0.005 };
+
+  /** @brief Secifies the mode used when collision checking program/trajectory. Default: ALL */
+  CollisionCheckProgramType check_program_mode{ CollisionCheckProgramType::ALL };
 };
 }  // namespace tesseract_collision
 

@@ -93,6 +93,18 @@ void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results
                           const tesseract_collision::CollisionCheckConfig& config);
 
 /**
+ * @brief Should perform a discrete collision check a state first configuring manager with config
+ * @param contact_results The contact results to populate. It does not get cleared
+ * @param manager A discrete contact manager
+ * @param state First environment state
+ * @param contact_request Contact request passed to the manager
+ */
+void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results,
+                          tesseract_collision::ContinuousContactManager& manager,
+                          const tesseract_common::TransformMap& state,
+                          const tesseract_collision::ContactRequest& contact_request);
+
+/**
  * @brief Should perform a discrete collision check a state only passing contact_request to the manager
  * @param contact_results The contact results to populate. It does not get cleared
  * @param manager A discrete contact manager
