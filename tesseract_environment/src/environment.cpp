@@ -57,7 +57,6 @@ bool Environment::initHelper(const Commands& commands)
 
   scene_graph_ = std::make_shared<tesseract_scene_graph::SceneGraph>(
       std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0))->getSceneGraph()->getName());
-  scene_graph_const_ = scene_graph_;
 
   is_contact_allowed_fn_ = [this](const std::string& l1, const std::string& l2) {
     return scene_graph_->isCollisionAllowed(l1, l2);
@@ -212,7 +211,7 @@ bool Environment::init(const tesseract_common::fs::path& urdf_path,
   }
 
   Commands commands = getInitCommands(*scene_graph, srdf);
-  return init(commands);
+  return init(commands);  // NOLINT
 }
 
 bool Environment::reset()
@@ -246,7 +245,6 @@ void Environment::clear()
   revision_ = 0;
   init_revision_ = 0;
   scene_graph_ = nullptr;
-  scene_graph_const_ = nullptr;
   state_solver_ = nullptr;
   commands_.clear();
   kinematics_information_.clear();
@@ -328,7 +326,7 @@ bool Environment::applyCommands(const Commands& commands)
 
 bool Environment::applyCommand(Command::ConstPtr command) { return applyCommands({ std::move(command) }); }
 
-tesseract_scene_graph::SceneGraph::ConstPtr Environment::getSceneGraph() const { return scene_graph_const_; }
+tesseract_scene_graph::SceneGraph::ConstPtr Environment::getSceneGraph() const { return scene_graph_; }
 
 std::vector<std::string> Environment::getGroupJointNames(const std::string& group_name) const
 {
@@ -355,7 +353,7 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
       throw std::runtime_error("Environment, Groups with multiple chains is not supported!");
 
     tesseract_scene_graph::ShortestPath path =
-        scene_graph_const_->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
+        scene_graph_->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
 
     group_joint_names_cache_[group_name] = path.active_joints;
     return path.active_joints;
@@ -400,7 +398,7 @@ tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::str
                                                                   const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph_const_, current_state_);
+  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph_, current_state_);
 }
 
 tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const std::string& group_name,
@@ -426,7 +424,7 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
     ik_solver_name = kinematics_factory_.getDefaultInvKinPlugin(group_name);
 
   tesseract_kinematics::InverseKinematics::UPtr inv_kin =
-      kinematics_factory_.createInvKin(group_name, ik_solver_name, *scene_graph_const_, current_state_);
+      kinematics_factory_.createInvKin(group_name, ik_solver_name, *scene_graph_, current_state_);
 
   // TODO add error message
   if (inv_kin == nullptr)
@@ -434,7 +432,7 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
 
   // Store copy in cache and return
   auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
-      group_name, joint_names, std::move(inv_kin), *scene_graph_const_, current_state_);
+      group_name, joint_names, std::move(inv_kin), *scene_graph_, current_state_);
 
   kinematic_group_cache_[key] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
 
@@ -694,7 +692,7 @@ std::vector<std::string> Environment::getActiveLinkNames() const
 std::vector<std::string> Environment::getActiveLinkNames(const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return scene_graph_const_->getJointChildrenNames(joint_names);
+  return scene_graph_->getJointChildrenNames(joint_names);
 }
 
 std::vector<std::string> Environment::getStaticLinkNames() const
@@ -1166,7 +1164,6 @@ Environment::UPtr Environment::clone() const
   cloned_env->revision_ = revision_;
   cloned_env->commands_ = commands_;
   cloned_env->scene_graph_ = scene_graph_->clone();
-  cloned_env->scene_graph_const_ = cloned_env->scene_graph_;
   cloned_env->timestamp_ = timestamp_;
   cloned_env->current_state_ = current_state_;
   cloned_env->current_state_timestamp_ = current_state_timestamp_;
@@ -1355,6 +1352,12 @@ bool Environment::applyCommandsHelper(const Commands& commands)
         success &= applySetActiveDiscreteContactManagerCommand(cmd);
         break;
       }
+      case tesseract_environment::CommandType::ADD_TRAJECTORY_LINK:
+      {
+        auto cmd = std::static_pointer_cast<const AddTrajectoryLinkCommand>(command);
+        success &= applyAddTrajectoryLinkCommand(cmd);
+        break;
+      }
       // LCOV_EXCL_START
       default:
       {
@@ -1382,37 +1385,156 @@ bool Environment::applyCommandsHelper(const Commands& commands)
 //////////////// Internal Apply Command //////////////////////
 //////////////////////////////////////////////////////////////
 
-bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
+bool Environment::applyAddCommand(const AddLinkCommand::ConstPtr& cmd)
 {
   // The command should not allow this to occur but adding an assert to catch if something changes
   assert(!(!cmd->getLink() && !cmd->getJoint()));
   assert(!((cmd->getLink() != nullptr) && (cmd->getJoint() != nullptr) &&
            (cmd->getJoint()->child_link_name != cmd->getLink()->getName())));
 
+  if (!applyAddLinkCommandHelper(cmd->getLink(), cmd->getJoint(), cmd->replaceAllowed()))
+    return false;
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::ConstPtr& cmd)
+{
+  const tesseract_common::JointTrajectory& traj = cmd->getTrajectory();
+  if (traj.empty())
+    return false;
+
+  if (cmd->getLinkName().empty())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add trajectory link with empty link name.");
+    return false;
+  }
+
+  if (cmd->getParentLinkName().empty())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add trajectory link with empty parent link name.");
+    return false;
+  }
+
+  const bool parent_link_exists = (scene_graph_->getLink(cmd->getParentLinkName()) != nullptr);
+  if (!parent_link_exists)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) with parent link (%s) which does not exists.",
+                           cmd->getLinkName().c_str(),
+                           cmd->getParentLinkName().c_str());
+    return false;
+  }
+
+  auto state_solver = state_solver_->clone();
+
+  auto traj_link = std::make_shared<tesseract_scene_graph::Link>(cmd->getLinkName());
+  std::vector<std::string> joint_names;
+  std::vector<std::string> active_link_names;
+  for (const auto& state : traj)
+  {
+    if (state.joint_names.empty())
+    {
+      CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) with empty joint names.", cmd->getLinkName().c_str());
+      return false;
+    }
+
+    if (state.position.rows() == 0)
+    {
+      CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) with empty position.", cmd->getLinkName().c_str());
+      return false;
+    }
+
+    if (state.joint_names.size() != state.position.size())
+    {
+      CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) where joint names and position are different sizes.",
+                             cmd->getLinkName().c_str());
+      return false;
+    }
+
+    tesseract_scene_graph::SceneState scene_state = state_solver->getState(state.joint_names, state.position);
+    if (joint_names.empty() || !tesseract_common::isIdentical(state.joint_names, joint_names, false))
+    {
+      joint_names = state.joint_names;
+      active_link_names = scene_graph_->getJointChildrenNames(joint_names);
+
+      if (std::find(active_link_names.begin(), active_link_names.end(), cmd->getParentLinkName()) !=
+          active_link_names.end())
+      {
+        CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) where parent link is an active link.",
+                               cmd->getLinkName().c_str());
+        return false;
+      }
+    }
+
+    Eigen::Isometry3d parent_link_tf_inv = scene_state.link_transforms[cmd->getParentLinkName()].inverse();  // NOLINT
+    for (const auto& link_name : active_link_names)
+    {
+      Eigen::Isometry3d link_transform = parent_link_tf_inv * scene_state.link_transforms[link_name];
+      auto link = scene_graph_->getLink(link_name);
+      assert(link != nullptr);
+
+      auto clone = link->clone(link_name + "_clone");
+
+      for (auto& vis_clone : clone.visual)
+      {
+        vis_clone->origin = link_transform * vis_clone->origin;
+        traj_link->visual.push_back(vis_clone);
+      }
+
+      for (auto& col_clone : clone.collision)
+      {
+        col_clone->origin = link_transform * col_clone->origin;
+        traj_link->collision.push_back(col_clone);
+      }
+    }
+  }
+
+  auto traj_joint = std::make_shared<tesseract_scene_graph::Joint>(cmd->getLinkName() + "_joint");
+  traj_joint->type = tesseract_scene_graph::JointType::FIXED;
+  traj_joint->parent_link_name = cmd->getParentLinkName();
+  traj_joint->child_link_name = cmd->getLinkName();
+  traj_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+
+  if (!applyAddLinkCommandHelper(traj_link, traj_joint, cmd->replaceAllowed()))
+    return false;
+
+  ++revision_;
+  commands_.push_back(cmd);
+
+  return true;
+}
+
+bool Environment::applyAddLinkCommandHelper(const tesseract_scene_graph::Link::ConstPtr& link,
+                                            const tesseract_scene_graph::Joint::ConstPtr& joint,
+                                            bool replace_allowed)
+{
   bool link_exists = false;
   bool joint_exists = false;
   std::string link_name, joint_name;
 
-  if (cmd->getLink() != nullptr)
+  if (link != nullptr)
   {
-    link_name = cmd->getLink()->getName();
+    link_name = link->getName();
     link_exists = (scene_graph_->getLink(link_name) != nullptr);
   }
 
-  if (cmd->getJoint() != nullptr)
+  if (joint != nullptr)
   {
-    joint_name = cmd->getJoint()->getName();
+    joint_name = joint->getName();
     joint_exists = (scene_graph_->getJoint(joint_name) != nullptr);
   }
 
-  if ((link_exists && !cmd->replaceAllowed()))
+  if (link_exists && !replace_allowed)
   {
     CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists. Set replace_allowed to enable replacing.",
                            link_name.c_str());
     return false;
   }
 
-  if ((joint_exists && !cmd->replaceAllowed()))
+  if (joint_exists && !replace_allowed)
   {
     CONSOLE_BRIDGE_logWarn("Tried to replace link (%s) and joint (%s) where the joint exist but the link does not. "
                            "This is not supported.",
@@ -1423,13 +1545,13 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
 
   if (!link_exists && joint_exists)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists with a joint provided which does not exist. "
+    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which does not exists with a joint provided which already exists. "
                            "This is not supported.",
                            link_name.c_str());
     return false;
   }
 
-  if ((link_exists && cmd->getJoint() && !joint_exists))
+  if (link_exists && joint && !joint_exists)
   {
     CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists with a joint provided which does not exist. "
                            "This is not supported.",
@@ -1437,9 +1559,9 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
     return false;
   }
 
-  if (link_exists && !cmd->getJoint())
+  if (link_exists && !joint)
   {  // A link is being replaced
-    if (!scene_graph_->addLink(*cmd->getLink(), true))
+    if (!scene_graph_->addLink(*link, true))
       return false;
 
     // Solver is not affected by replace links
@@ -1458,7 +1580,7 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
       return false;
     }
 
-    if (!scene_graph_->addLink(*cmd->getLink(), true))
+    if (!scene_graph_->addLink(*link, true))
       return false;
 
     if (!scene_graph_->removeJoint(joint_name))
@@ -1470,7 +1592,7 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
       return false;
     }
 
-    if (!scene_graph_->addJoint(*cmd->getJoint()))
+    if (!scene_graph_->addJoint(*joint))
     {
       // Replace with original link
       if (!scene_graph_->addLink(*orig_link, true))
@@ -1483,10 +1605,10 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
       return false;
     }
 
-    if (!state_solver_->replaceJoint(*cmd->getJoint()))
+    if (!state_solver_->replaceJoint(*joint))
       throw std::runtime_error("Environment, failed to replace link and joint in state solver.");
   }
-  else if (!link_exists && !cmd->getJoint())
+  else if (!link_exists && !joint)
   {  // Add a new link is being added attached to the world
     std::string joint_name = "joint_" + link_name;
     tesseract_scene_graph::Joint joint(joint_name);
@@ -1494,21 +1616,18 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
     joint.child_link_name = link_name;
     joint.parent_link_name = scene_graph_->getRoot();
 
-    tesseract_scene_graph::Link::ConstPtr link = cmd->getLink();
-    cmd = std::make_shared<AddLinkCommand>(*link, joint);
-
-    if (!scene_graph_->addLink(*cmd->getLink(), *cmd->getJoint()))
+    if (!scene_graph_->addLink(*link, joint))
       return false;
 
-    if (!state_solver_->addLink(*cmd->getLink(), *cmd->getJoint()))
+    if (!state_solver_->addLink(*link, joint))
       throw std::runtime_error("Environment, failed to add link and joint in state solver.");
   }
   else
   {  // A new link and joint is being added
-    if (!scene_graph_->addLink(*cmd->getLink(), *cmd->getJoint()))
+    if (!scene_graph_->addLink(*link, *joint))
       return false;
 
-    if (!state_solver_->addLink(*cmd->getLink(), *cmd->getJoint()))
+    if (!state_solver_->addLink(*link, *joint))
       throw std::runtime_error("Environment, failed to add link and joint in state solver.");
   }
 
@@ -1525,11 +1644,11 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
   }
 
   // We have moved the original objects, get a pointer to them from scene_graph
-  if (!cmd->getLink()->collision.empty())
+  if (!link->collision.empty())
   {
     tesseract_collision::CollisionShapesConst shapes;
     tesseract_common::VectorIsometry3d shape_poses;
-    getCollisionObject(shapes, shape_poses, *cmd->getLink());
+    getCollisionObject(shapes, shape_poses, *link);
 
     std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
     if (discrete_manager_ != nullptr)
@@ -1539,9 +1658,6 @@ bool Environment::applyAddCommand(AddLinkCommand::ConstPtr cmd)
     if (continuous_manager_ != nullptr)
       continuous_manager_->addCollisionObject(link_name, 0, shapes, shape_poses, true);
   }
-
-  ++revision_;
-  commands_.push_back(cmd);
 
   return true;
 }

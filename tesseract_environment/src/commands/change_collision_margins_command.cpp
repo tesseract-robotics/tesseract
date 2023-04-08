@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-ChangeCollisionMarginsCommand::ChangeCollisionMarginsCommand() : Command(CommandType::CHANGE_COLLISION_MARGINS){};
+ChangeCollisionMarginsCommand::ChangeCollisionMarginsCommand() : Command(CommandType::CHANGE_COLLISION_MARGINS) {}
 
 ChangeCollisionMarginsCommand::ChangeCollisionMarginsCommand(double default_margin,
                                                              CollisionMarginOverrideType override_type)

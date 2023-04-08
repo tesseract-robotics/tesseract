@@ -37,6 +37,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+ReplaceJointCommand::ReplaceJointCommand() : Command(CommandType::REPLACE_JOINT) {}
+
+ReplaceJointCommand::ReplaceJointCommand(const tesseract_scene_graph::Joint& joint)
+  : Command(CommandType::REPLACE_JOINT), joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
+{
+  if (joint_->type != tesseract_scene_graph::JointType::FIXED)
+  {
+    //      if ()
+    /** @todo check limits */
+  }
+}
+
+const tesseract_scene_graph::Joint::ConstPtr& ReplaceJointCommand::getJoint() const { return joint_; }
+
 bool ReplaceJointCommand::operator==(const ReplaceJointCommand& rhs) const
 {
   bool equal = true;

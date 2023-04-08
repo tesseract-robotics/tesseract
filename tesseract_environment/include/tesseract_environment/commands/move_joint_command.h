@@ -42,7 +42,7 @@ public:
   using Ptr = std::shared_ptr<MoveJointCommand>;
   using ConstPtr = std::shared_ptr<const MoveJointCommand>;
 
-  MoveJointCommand() : Command(CommandType::MOVE_JOINT){};
+  MoveJointCommand();
 
   /**
    * @brief Move a joint from one link to another
@@ -52,13 +52,10 @@ public:
    * @param joint_name The name of the joint to move
    * @param new_parent_link The name of the link to move to.e
    */
-  MoveJointCommand(std::string joint_name, std::string parent_link)
-    : Command(CommandType::MOVE_JOINT), joint_name_(std::move(joint_name)), parent_link_(std::move(parent_link))
-  {
-  }
+  MoveJointCommand(std::string joint_name, std::string parent_link);
 
-  const std::string& getJointName() const { return joint_name_; }
-  const std::string& getParentLink() const { return parent_link_; }
+  const std::string& getJointName() const;
+  const std::string& getParentLink() const;
 
   bool operator==(const MoveJointCommand& rhs) const;
   bool operator!=(const MoveJointCommand& rhs) const;

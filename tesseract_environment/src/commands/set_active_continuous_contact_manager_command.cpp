@@ -36,6 +36,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+SetActiveContinuousContactManagerCommand::SetActiveContinuousContactManagerCommand()
+  : Command(CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER)
+{
+}
+
+SetActiveContinuousContactManagerCommand::SetActiveContinuousContactManagerCommand(std::string active_contact_manager)
+  : Command(CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER)
+  , active_contact_manager_(std::move(active_contact_manager))
+{
+}
+
+const std::string& SetActiveContinuousContactManagerCommand::getName() const { return active_contact_manager_; }
+
 bool SetActiveContinuousContactManagerCommand::operator==(const SetActiveContinuousContactManagerCommand& rhs) const
 {
   bool equal = true;

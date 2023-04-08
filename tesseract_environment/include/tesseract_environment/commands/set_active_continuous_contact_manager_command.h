@@ -43,19 +43,15 @@ public:
   using Ptr = std::shared_ptr<SetActiveContinuousContactManagerCommand>;
   using ConstPtr = std::shared_ptr<const SetActiveContinuousContactManagerCommand>;
 
-  SetActiveContinuousContactManagerCommand() : Command(CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER){};
+  SetActiveContinuousContactManagerCommand();
 
   /**
    * @brief Set the active discrete contact manager
    * @param active_contact_manager Active contact manager name
    */
-  SetActiveContinuousContactManagerCommand(std::string active_contact_manager)
-    : Command(CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER)
-    , active_contact_manager_(std::move(active_contact_manager))
-  {
-  }
+  SetActiveContinuousContactManagerCommand(std::string active_contact_manager);
 
-  const std::string& getName() const { return active_contact_manager_; }
+  const std::string& getName() const;
 
   bool operator==(const SetActiveContinuousContactManagerCommand& rhs) const;
   bool operator!=(const SetActiveContinuousContactManagerCommand& rhs) const;

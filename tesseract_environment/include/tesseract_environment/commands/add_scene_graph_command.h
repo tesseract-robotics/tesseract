@@ -43,7 +43,7 @@ public:
   using Ptr = std::shared_ptr<AddSceneGraphCommand>;
   using ConstPtr = std::shared_ptr<const AddSceneGraphCommand>;
 
-  AddSceneGraphCommand() : Command(CommandType::ADD_SCENE_GRAPH){};
+  AddSceneGraphCommand();
   /**
    * @brief Merge a graph into the current environment
    * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
@@ -70,9 +70,9 @@ public:
                        const tesseract_scene_graph::Joint& joint,
                        std::string prefix = "");
 
-  const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const { return scene_graph_; }
-  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
-  const std::string& getPrefix() const { return prefix_; }
+  const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const;
+  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const;
+  const std::string& getPrefix() const;
 
   bool operator==(const AddSceneGraphCommand& rhs) const;
   bool operator!=(const AddSceneGraphCommand& rhs) const;

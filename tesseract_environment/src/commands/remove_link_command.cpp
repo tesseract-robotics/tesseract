@@ -36,6 +36,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+RemoveLinkCommand::RemoveLinkCommand() : Command(CommandType::REMOVE_LINK) {}
+
+RemoveLinkCommand::RemoveLinkCommand(std::string link_name)
+  : Command(CommandType::REMOVE_LINK), link_name_(std::move(link_name))
+{
+}
+
+const std::string& RemoveLinkCommand::getLinkName() const { return link_name_; }
+
 bool RemoveLinkCommand::operator==(const RemoveLinkCommand& rhs) const
 {
   bool equal = true;

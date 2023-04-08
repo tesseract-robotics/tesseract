@@ -37,6 +37,35 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+AddLinkCommand::AddLinkCommand() : Command(CommandType::ADD_LINK) {}
+
+AddLinkCommand::AddLinkCommand(const tesseract_scene_graph::Link& link, bool replace_allowed)
+  : Command(CommandType::ADD_LINK)
+  , link_(std::make_shared<tesseract_scene_graph::Link>(link.clone()))
+  , joint_(nullptr)
+  , replace_allowed_(replace_allowed)
+{
+}
+
+AddLinkCommand::AddLinkCommand(const tesseract_scene_graph::Link& link,
+                               const tesseract_scene_graph::Joint& joint,
+                               bool replace_allowed)
+  : Command(CommandType::ADD_LINK)
+  , link_(std::make_shared<tesseract_scene_graph::Link>(link.clone()))
+  , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
+  , replace_allowed_(replace_allowed)
+{
+  if (joint_->child_link_name != link.getName())
+    throw std::runtime_error("AddLinkCommand: The provided joint child link name must equal the name of the provided "
+                             "link.");
+
+  /** @todo if joint is not fixed we should verify that limits are provided */
+}
+
+const tesseract_scene_graph::Link::ConstPtr& AddLinkCommand::getLink() const { return link_; }
+const tesseract_scene_graph::Joint::ConstPtr& AddLinkCommand::getJoint() const { return joint_; }
+bool AddLinkCommand::replaceAllowed() const { return replace_allowed_; }
+
 bool AddLinkCommand::operator==(const AddLinkCommand& rhs) const
 {
   bool equal = true;

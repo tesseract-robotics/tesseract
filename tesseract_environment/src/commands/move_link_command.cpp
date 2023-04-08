@@ -37,6 +37,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+MoveLinkCommand::MoveLinkCommand() : Command(CommandType::MOVE_LINK) {}
+
+MoveLinkCommand::MoveLinkCommand(const tesseract_scene_graph::Joint& joint)
+  : Command(CommandType::MOVE_LINK), joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
+{
+}
+
+const tesseract_scene_graph::Joint::ConstPtr& MoveLinkCommand::getJoint() const { return joint_; }
+
 bool MoveLinkCommand::operator==(const MoveLinkCommand& rhs) const
 {
   bool equal = true;
