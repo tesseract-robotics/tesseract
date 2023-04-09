@@ -8,6 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_geometry/mesh_parser.h>
+#include <tesseract_geometry/utils.h>
 
 TEST(TesseractGeometryUnit, Instantiation)  // NOLINT
 {
@@ -57,6 +58,12 @@ TEST(TesseractGeometryUnit, Box)  // NOLINT
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getX(), 1, 1e-5);
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getY(), 1, 1e-5);
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getZ(), 1, 1e-5);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Box(2, 1, 1)));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Box(1, 2, 1)));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Box(1, 1, 2)));
 }
 
 TEST(TesseractGeometryUnit, Cone)  // NOLINT
@@ -69,6 +76,11 @@ TEST(TesseractGeometryUnit, Cone)  // NOLINT
   auto geom_clone = geom->clone();
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getRadius(), 1, 1e-5);
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getLength(), 1, 1e-5);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Cone(2, 1)));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Cone(1, 2)));
 }
 
 TEST(TesseractGeometryUnit, Cylinder)  // NOLINT
@@ -81,6 +93,11 @@ TEST(TesseractGeometryUnit, Cylinder)  // NOLINT
   auto geom_clone = geom->clone();
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getRadius(), 1, 1e-5);
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getLength(), 1, 1e-5);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Cylinder(2, 1)));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Cylinder(1, 2)));
 }
 
 TEST(TesseractGeometryUnit, Capsule)  // NOLINT
@@ -93,6 +110,11 @@ TEST(TesseractGeometryUnit, Capsule)  // NOLINT
   auto geom_clone = geom->clone();
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getRadius(), 1, 1e-5);
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getLength(), 1, 1e-5);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Capsule(2, 1)));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Capsule(1, 2)));
 }
 
 TEST(TesseractGeometryUnit, Sphere)  // NOLINT
@@ -103,6 +125,10 @@ TEST(TesseractGeometryUnit, Sphere)  // NOLINT
 
   auto geom_clone = geom->clone();
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getRadius(), 1, 1e-5);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Sphere(2)));
 }
 
 TEST(TesseractGeometryUnit, Plane)  // NOLINT
@@ -119,6 +145,13 @@ TEST(TesseractGeometryUnit, Plane)  // NOLINT
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getB(), 1, 1e-5);
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getC(), 1, 1e-5);
   EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getD(), 1, 1e-5);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Plane(2, 1, 1, 1)));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Plane(1, 2, 1, 1)));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Plane(1, 1, 2, 1)));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::Plane(1, 1, 1, 2)));
 }
 
 TEST(TesseractGeometryUnit, PolygonMesh)  // NOLINT
@@ -149,6 +182,13 @@ TEST(TesseractGeometryUnit, PolygonMesh)  // NOLINT
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 1);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(
+      *geom,
+      tesseract_geometry::PolygonMesh(std::make_shared<tesseract_common::VectorVector3d>(),
+                                      std::make_shared<Eigen::VectorXi>())));
 }
 
 TEST(TesseractGeometryUnit, ConvexMesh)  // NOLINT
@@ -179,6 +219,13 @@ TEST(TesseractGeometryUnit, ConvexMesh)  // NOLINT
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 1);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
+  EXPECT_FALSE(tesseract_geometry::isIdentical(
+      *geom,
+      tesseract_geometry::ConvexMesh(std::make_shared<tesseract_common::VectorVector3d>(),
+                                     std::make_shared<Eigen::VectorXi>())));
 }
 
 TEST(TesseractGeometryUnit, Mesh)  // NOLINT
@@ -217,6 +264,9 @@ TEST(TesseractGeometryUnit, Mesh)  // NOLINT
     EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
     EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
     EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getMaterial() == nullptr);
+
+    // Test isIdentical
+    EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
   }
 
   {
@@ -234,6 +284,9 @@ TEST(TesseractGeometryUnit, Mesh)  // NOLINT
     EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
     EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
     EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getMaterial() != nullptr);
+
+    // Test isIdentical
+    EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
   }
 }
 
@@ -269,6 +322,9 @@ TEST(TesseractGeometryUnit, SDFMesh)  // NOLINT
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
 }
 
 TEST(TesseractGeometryUnit, Octree)  // NOLINT
@@ -296,6 +352,9 @@ TEST(TesseractGeometryUnit, Octree)  // NOLINT
   auto geom_clone = geom->clone();
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getOctree() != nullptr);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getSubType() == tesseract_geometry::Octree::SubType::BOX);
+
+  // Test isIdentical
+  EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
 }
 
 TEST(TesseractGeometryUnit, LoadMeshUnit)  // NOLINT
