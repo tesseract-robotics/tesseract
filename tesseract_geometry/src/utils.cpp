@@ -93,6 +93,38 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
 
       break;
     }
+    case GeometryType::CAPSULE:
+    {
+      const auto& s1 = static_cast<const Capsule&>(geom1);
+      const auto& s2 = static_cast<const Capsule&>(geom2);
+
+      if (std::abs(s1.getRadius() - s2.getRadius()) > std::numeric_limits<double>::epsilon())
+        return false;
+
+      if (std::abs(s1.getLength() - s2.getLength()) > std::numeric_limits<double>::epsilon())
+        return false;
+
+      break;
+    }
+    case GeometryType::PLANE:
+    {
+      const auto& s1 = static_cast<const Plane&>(geom1);
+      const auto& s2 = static_cast<const Plane&>(geom2);
+
+      if (std::abs(s1.getA() - s2.getA()) > std::numeric_limits<double>::epsilon())
+        return false;
+
+      if (std::abs(s1.getB() - s2.getB()) > std::numeric_limits<double>::epsilon())
+        return false;
+
+      if (std::abs(s1.getC() - s2.getC()) > std::numeric_limits<double>::epsilon())
+        return false;
+
+      if (std::abs(s1.getD() - s2.getD()) > std::numeric_limits<double>::epsilon())
+        return false;
+
+      break;
+    }
     case GeometryType::MESH:
     {
       const auto& s1 = static_cast<const Mesh&>(geom1);
