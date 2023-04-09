@@ -83,7 +83,9 @@ static const std::vector<std::string> ContactTestTypeStrings = {
 
 struct ContactResult
 {
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   /** @brief The distance between two links */
   double distance{ std::numeric_limits<double>::max() };
