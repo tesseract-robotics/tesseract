@@ -584,12 +584,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         // Special case when using LVS and only two states
         if (iStep == 0 && traj.rows() == 2)
         {
-          if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START ||
-              config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
-          {
-            contacts.emplace_back(tesseract_collision::ContactResultMap{});
-          }
-          else
+          if (config.check_program_mode != tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START &&
+              config.check_program_mode != tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
           {
             tesseract_common::TransformMap state = state_fn(traj.row(iStep));
             sub_state_results.clear();
