@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.16.0 (2023-04-09)
+-------------------
 * Add AddTrajectoryLinkCommand
 * Contributors: Levi Armstrong
 
