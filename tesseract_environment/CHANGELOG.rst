@@ -2,6 +2,15 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve collision code coverage
+* Add ContactResultMap shrinkToFit and CollisionCheckProgramType
+* Add AddTrajectoryLinkCommand
+* General cleanup of commands moving things to cpp
+* Add contact results class
+* Contributors: Levi Armstrong
+
 0.15.3 (2023-03-22)
 -------------------
 

@@ -2,6 +2,11 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add AddTrajectoryLinkCommand
+* Contributors: Levi Armstrong
+
 0.15.3 (2023-03-22)
 -------------------
 

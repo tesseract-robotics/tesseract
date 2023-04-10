@@ -2,6 +2,17 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve collision code coverage
+* Add ContactResultMap shrinkToFit and CollisionCheckProgramType
+* Fix ContactResultMap serialization
+* Add AddTrajectoryLinkCommand
+* Add documentation to ContactResultMap
+* Remove reserve(100) in ContactResultMap does not improve performance
+* Add contact results class
+* Contributors: Levi Armstrong
+
 0.15.3 (2023-03-22)
 -------------------
 * Update tesseract_collision benchmarks (`#868 <https://github.com/tesseract-robotics/tesseract/issues/868>`_)

@@ -2,6 +2,13 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add documentation to ContactResultMap
+* Avoid multiple memory allocations in PairHash::operator()
+* Add contact results class
+* Contributors: Levi Armstrong
+
 0.15.3 (2023-03-22)
 -------------------
 
