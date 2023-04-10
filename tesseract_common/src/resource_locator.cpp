@@ -66,19 +66,7 @@ GeneralResourceLocator::GeneralResourceLocator()
     boost::split(tokens, tesseract_resource_paths, boost::is_any_of(";"), boost::token_compress_on);
 #endif
     for (const auto& token : tokens)
-    {
-      tesseract_common::fs::path d(token);
-      if (tesseract_common::fs::is_directory(d) && tesseract_common::fs::exists(d))
-      {
-        std::string dir_name = d.filename().string();
-        if (package_paths_.find(dir_name) == package_paths_.end())
-          package_paths_[dir_name] = token;
-      }
-      else
-      {
-        CONSOLE_BRIDGE_logWarn("Package Path does not exist: %s", token.c_str());
-      }
-    }
+      processToken(token);
   }
 
   char* ros_package_paths = std::getenv("ROS_PACKAGE_PATH");
@@ -91,19 +79,46 @@ GeneralResourceLocator::GeneralResourceLocator()
     boost::split(tokens, ros_package_paths, boost::is_any_of(";"), boost::token_compress_on);
 #endif
     for (const auto& token : tokens)
+      processToken(token);
+  }
+}
+
+void GeneralResourceLocator::processToken(const std::string& token)
+{
+  tesseract_common::fs::path d(token);
+  if (tesseract_common::fs::is_directory(d) && tesseract_common::fs::exists(d))
+  {
+    // Check current directory
+    tesseract_common::fs::path check = d;
+    check.append("package.xml");
+    if (tesseract_common::fs::exists(check))
     {
-      tesseract_common::fs::path d(token);
-      if (tesseract_common::fs::is_directory(d) && tesseract_common::fs::exists(d))
-      {
-        std::string dir_name = d.filename().string();
-        if (package_paths_.find(dir_name) == package_paths_.end())
-          package_paths_[dir_name] = token;
-      }
-      else
-      {
-        CONSOLE_BRIDGE_logError("Package Path does not exist: &s", token.c_str());
-      }
+      std::string dir_name = d.filename().string();
+      if (package_paths_.find(dir_name) == package_paths_.end())
+        package_paths_[dir_name] = d.string();
     }
+
+    // Check all subdirectories
+    tesseract_common::fs::recursive_directory_iterator dir(d), end;
+    while (dir != end)
+    {
+      tesseract_common::fs::path check = dir->path();
+      check.append("package.xml");
+      if (tesseract_common::fs::exists(check))
+      {
+        std::string dir_name = dir->path().filename().string();
+        if (package_paths_.find(dir_name) == package_paths_.end())
+          package_paths_[dir_name] = dir->path().string();
+
+        dir.no_push();  // don't recurse into this directory.
+      }
+
+      ++dir;
+    }
+  }
+  else
+  {
+    CONSOLE_BRIDGE_logError("Package Path does not exist: &s", token.c_str());
   }
 }
 
