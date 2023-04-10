@@ -92,6 +92,8 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 
   std::unordered_map<std::string, std::string> package_paths_;
+
+  void processToken(const std::string& token);
 };
 
 /**  @brief Represents resource data available from a file or url */
