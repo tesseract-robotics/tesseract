@@ -75,7 +75,7 @@ public:
               std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
               MeshMaterial::Ptr mesh_material = nullptr,
               std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr,
-              GeometryType type = GeometryType::CONVEX_MESH)
+              GeometryType type = GeometryType::POLYGON_MESH)
     : Geometry(type)
     , vertices_(std::move(vertices))
     , faces_(std::move(faces))
@@ -121,7 +121,7 @@ public:
               std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
               MeshMaterial::Ptr mesh_material = nullptr,
               std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr,
-              GeometryType type = GeometryType::CONVEX_MESH)
+              GeometryType type = GeometryType::POLYGON_MESH)
     : Geometry(type)
     , vertices_(std::move(vertices))
     , faces_(std::move(faces))
