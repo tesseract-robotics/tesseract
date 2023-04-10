@@ -1492,7 +1492,7 @@ bool Environment::applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::
     }
   }
 
-  auto traj_joint = std::make_shared<tesseract_scene_graph::Joint>(cmd->getLinkName() + "_joint");
+  auto traj_joint = std::make_shared<tesseract_scene_graph::Joint>("joint_" + cmd->getLinkName());
   traj_joint->type = tesseract_scene_graph::JointType::FIXED;
   traj_joint->parent_link_name = cmd->getParentLinkName();
   traj_joint->child_link_name = cmd->getLinkName();

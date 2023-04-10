@@ -4,6 +4,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <algorithm>
 #include <vector>
 #include <omp.h>
+#include <cmath>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/urdf_parser.h>
@@ -751,6 +752,108 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
   }
   EXPECT_EQ(env->getRevision(), 6);
   EXPECT_EQ(env->getCommandHistory().size(), 6);
+
+  {  // Test when joint child link name does not match link names
+    const std::string link_name3 = "link_n3";
+    const std::string joint_name3 = "joint_n3";
+    Link link_3(link_name3);
+
+    Joint joint_3(joint_name3);
+    joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
+    joint_3.parent_link_name = link_name1;
+    joint_3.child_link_name = "does_not_exist";
+    joint_3.type = JointType::FIXED;
+
+    EXPECT_ANY_THROW(std::make_shared<AddLinkCommand>(link_3, joint_3));  // NOLINT
+  }
+}
+
+TEST(TesseractEnvironmentUnit, EnvAddandRemoveTrajectoryLink)  // NOLINT
+{
+  // Get the environment
+  auto env = getEnvironment();
+
+  tesseract_common::JointTrajectory trajectory;
+  trajectory.push_back(tesseract_common::JointState({ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
+  trajectory.push_back(tesseract_common::JointState({ "joint_a1", "joint_a2" }, Eigen::VectorXd::Ones(2)));
+
+  std::string link_name = "traj_link";
+  std::string parent_link_name = "base_link";
+
+  {
+    auto cmd = std::make_shared<AddTrajectoryLinkCommand>(link_name, parent_link_name, trajectory, false);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::ADD_TRAJECTORY_LINK);
+    EXPECT_TRUE(cmd->getLinkName() == link_name);
+    EXPECT_TRUE(cmd->getParentLinkName() == parent_link_name);
+    EXPECT_TRUE(!cmd->getTrajectory().empty());
+    EXPECT_TRUE(cmd->replaceAllowed() == false);
+    EXPECT_TRUE(env->applyCommand(cmd));
+  }
+
+  EXPECT_EQ(env->getRevision(), 4);
+  EXPECT_EQ(env->getCommandHistory().size(), 4);
+  EXPECT_TRUE(env->getDiscreteContactManager()->hasCollisionObject(link_name));
+  EXPECT_TRUE(env->getContinuousContactManager()->hasCollisionObject(link_name));
+
+  std::vector<std::string> link_names = env->getLinkNames();
+  std::vector<std::string> joint_names = env->getJointNames();
+  tesseract_scene_graph::SceneState state = env->getState();
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name) != link_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name) != joint_names.end());
+  EXPECT_TRUE(state.link_transforms.find(link_name) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find("joint_" + link_name) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find("joint_" + link_name) == state.joints.end());
+
+  env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "before_remove_traj_link_unit.dot");
+
+  {
+    auto cmd = std::make_shared<RemoveLinkCommand>(link_name);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::REMOVE_LINK);
+    EXPECT_EQ(cmd->getLinkName(), link_name);
+    EXPECT_TRUE(env->applyCommand(cmd));
+  }
+
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
+  EXPECT_FALSE(env->getDiscreteContactManager()->hasCollisionObject(link_name));
+  EXPECT_FALSE(env->getContinuousContactManager()->hasCollisionObject(link_name));
+
+  link_names = env->getLinkNames();
+  joint_names = env->getJointNames();
+  state = env->getState();
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name) == link_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), link_name) == joint_names.end());
+  EXPECT_TRUE(state.link_transforms.find(link_name) == state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find("joint_" + link_name) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find("joint_" + link_name) == state.joints.end());
+  EXPECT_TRUE(state.joint_transforms.find(link_name) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(link_name) == state.joints.end());
+
+  env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "after_remove_traj_link_unit.dot");
+
+  // Test against double removing
+  {
+    auto cmd = std::make_shared<RemoveLinkCommand>(link_name);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::REMOVE_LINK);
+    EXPECT_EQ(cmd->getLinkName(), link_name);
+    EXPECT_FALSE(env->applyCommand(cmd));
+  }
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
+
+  {
+    auto cmd = std::make_shared<RemoveJointCommand>("joint_" + link_name);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::REMOVE_JOINT);
+    EXPECT_EQ(cmd->getJointName(), "joint_" + link_name);
+    EXPECT_FALSE(env->applyCommand(cmd));
+  }
+  EXPECT_EQ(env->getRevision(), 5);
+  EXPECT_EQ(env->getCommandHistory().size(), 5);
 }
 
 TEST(TesseractEnvironmentUnit, EnvAddKinematicsInformationCommandUnit)  // NOLINT
@@ -1294,6 +1397,113 @@ TEST(TesseractEnvironmentUnit, EnvChangeCollisionMarginsCommandUnit)  // NOLINT
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::CHANGE_COLLISION_MARGINS);
     EXPECT_EQ(cmd->getCollisionMarginData(), collision_margin_data);
+    EXPECT_EQ(cmd->getCollisionMarginOverrideType(),
+              tesseract_common::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN);
+    EXPECT_TRUE(env->applyCommand(cmd));
+
+    EXPECT_EQ(env->getRevision(), 4);
+    EXPECT_EQ(env->getCommandHistory().size(), 4);
+    EXPECT_EQ(env->getCommandHistory().back(), cmd);
+    EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
+    EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.1, 1e-6);
+  }
+
+  {  // MODIFY_PAIR_MARGIN  and OVERRIDE_PAIR_MARGIN Constructor Unit Test
+    std::string link_name1 = "link_1";
+    std::string link_name2 = "link_2";
+    double margin = 0.1;
+
+    auto env = getEnvironment();
+    EXPECT_EQ(env->getRevision(), 3);
+    EXPECT_EQ(env->getCommandHistory().size(), 3);
+    EXPECT_NEAR(
+        env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        0.0,
+        1e-6);
+    EXPECT_NEAR(
+        env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        0.0,
+        1e-6);
+
+    // Test MODIFY_PAIR_MARGIN constructor
+    PairsCollisionMarginData pcmd;
+    auto key = tesseract_common::makeOrderedLinkPair(link_name1, link_name2);
+    pcmd[key] = margin;
+    tesseract_common::CollisionMarginOverrideType overrid_type =
+        tesseract_common::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN;
+
+    auto cmd = std::make_shared<ChangeCollisionMarginsCommand>(pcmd, overrid_type);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::CHANGE_COLLISION_MARGINS);
+    EXPECT_EQ(cmd->getCollisionMarginData().getPairCollisionMargins(), pcmd);
+    EXPECT_EQ(cmd->getCollisionMarginOverrideType(), tesseract_common::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN);
+    EXPECT_TRUE(env->applyCommand(cmd));
+
+    EXPECT_EQ(env->getRevision(), 4);
+    EXPECT_EQ(env->getCommandHistory().size(), 4);
+    EXPECT_EQ(env->getCommandHistory().back(), cmd);
+    EXPECT_NEAR(
+        env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        margin,
+        1e-6);
+    EXPECT_NEAR(
+        env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        margin,
+        1e-6);
+
+    // Test
+    std::string link_name3 = "link_3";
+    std::string link_name4 = "link_4";
+    margin = 0.2;
+    pcmd.clear();
+    key = tesseract_common::makeOrderedLinkPair(link_name3, link_name4);
+    pcmd[key] = margin;
+    overrid_type = tesseract_common::CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN;
+
+    cmd = std::make_shared<ChangeCollisionMarginsCommand>(pcmd, overrid_type);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::CHANGE_COLLISION_MARGINS);
+    EXPECT_EQ(cmd->getCollisionMarginData().getPairCollisionMargins(), pcmd);
+    EXPECT_EQ(cmd->getCollisionMarginOverrideType(),
+              tesseract_common::CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN);
+    EXPECT_TRUE(env->applyCommand(cmd));
+
+    EXPECT_EQ(env->getRevision(), 5);
+    EXPECT_EQ(env->getCommandHistory().size(), 5);
+    EXPECT_EQ(env->getCommandHistory().back(), cmd);
+    // Link1 and Link2 should be reset
+    EXPECT_NEAR(
+        env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        0,
+        1e-6);
+    EXPECT_NEAR(
+        env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name1, link_name2),
+        0,
+        1e-6);
+    EXPECT_NEAR(
+        env->getDiscreteContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name3, link_name4),
+        margin,
+        1e-6);
+    EXPECT_NEAR(
+        env->getContinuousContactManager()->getCollisionMarginData().getPairCollisionMargin(link_name3, link_name4),
+        margin,
+        1e-6);
+  }
+
+  {  // OVERRIDE_DEFAULT_MARGIN Constructor Unit Test
+    auto env = getEnvironment();
+    EXPECT_EQ(env->getRevision(), 3);
+    EXPECT_EQ(env->getCommandHistory().size(), 3);
+    EXPECT_NEAR(env->getDiscreteContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
+    EXPECT_NEAR(env->getContinuousContactManager()->getCollisionMarginData().getDefaultCollisionMargin(), 0.0, 1e-6);
+
+    tesseract_common::CollisionMarginOverrideType overrid_type =
+        tesseract_common::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN;
+
+    auto cmd = std::make_shared<ChangeCollisionMarginsCommand>(0.1, overrid_type);
+    EXPECT_TRUE(cmd != nullptr);
+    EXPECT_EQ(cmd->getType(), CommandType::CHANGE_COLLISION_MARGINS);
+    EXPECT_EQ(cmd->getCollisionMarginData().getDefaultCollisionMargin(), 0.1);
     EXPECT_EQ(cmd->getCollisionMarginOverrideType(),
               tesseract_common::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN);
     EXPECT_TRUE(env->applyCommand(cmd));
@@ -2683,6 +2893,10 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   traj4.row(0) = joint_pos_collision;
   traj4.row(1) = joint_end_pos;
 
+  tesseract_common::TrajArray traj5(2, joint_start_pos.size());
+  traj5.row(0) = joint_start_pos;
+  traj5.row(1) = joint_pos_collision;
+
   auto discrete_manager = env->getDiscreteContactManager();
   auto continuous_manager = env->getContinuousContactManager();
   auto state_solver = env->getStateSolver();
@@ -2973,6 +3187,15 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     checkProcessInterpolatedResultsNoTime1(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
+
+    contacts.clear();
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config));
+    EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj5.rows() - 1));
+    EXPECT_EQ(contacts.at(0).size(), 2);
+    EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(0)));
+    checkProcessInterpolatedResultsNoTime0(contacts.at(0));
+    checkProcessInterpolatedResults(contacts);
   }
 
   {  // CollisionEvaluatorType::LVS_DISCRETE && CollisionCheckProgramType::ALL_EXCEPT_END
@@ -3024,6 +3247,12 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     checkProcessInterpolatedResultsNoTime1(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
+
+    contacts.clear();
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config));
+    EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj5.rows() - 1));
+    EXPECT_EQ(contacts.at(0).size(), 0);
+    EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
   }
 
   {  // CollisionEvaluatorType::LVS_DISCRETE && CollisionCheckProgramType::ALL_EXCEPT_START
@@ -3070,6 +3299,15 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj4.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
+
+    contacts.clear();
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config));
+    EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj5.rows() - 1));
+    EXPECT_EQ(contacts.at(0).size(), 2);
+    EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(0)));
+    checkProcessInterpolatedResultsNoTime0(contacts.at(0));
+    checkProcessInterpolatedResults(contacts);
   }
 
   {  // CollisionEvaluatorType::LVS_DISCRETE && CollisionCheckProgramType::INTERMEDIATE_ONLY
@@ -3114,6 +3352,12 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     contacts.clear();
     EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj4, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj4.rows() - 1));
+    EXPECT_EQ(contacts.at(0).size(), 0);
+    EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
+
+    contacts.clear();
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config));
+    EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj5.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
   }
