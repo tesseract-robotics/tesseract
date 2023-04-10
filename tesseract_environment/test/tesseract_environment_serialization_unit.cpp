@@ -137,6 +137,17 @@ TEST(EnvironmentCommandsSerializeUnit, AddLinkCommand)  // NOLINT
   testSerializationDerivedClass<Command, AddLinkCommand>(object, "AddLinkCommand");
 }
 
+TEST(EnvironmentCommandsSerializeUnit, AddTrajectoryLinkCommand)  // NOLINT
+{
+  tesseract_common::JointTrajectory trajectory;
+  trajectory.push_back(tesseract_common::JointState({ "j1", "j2" }, Eigen::VectorXd::Zero(2)));
+  trajectory.push_back(tesseract_common::JointState({ "j1", "j2" }, Eigen::VectorXd::Ones(2)));
+
+  auto object = std::make_shared<AddTrajectoryLinkCommand>("link_name", "parent_link_name", trajectory, false);
+  testSerialization<AddTrajectoryLinkCommand>(*object, "AddTrajectoryLinkCommand");
+  testSerializationDerivedClass<Command, AddTrajectoryLinkCommand>(object, "AddTrajectoryLinkCommand");
+}
+
 TEST(EnvironmentCommandsSerializeUnit, AddSceneGraphCommand)  // NOLINT
 {
   tesseract_scene_graph::Joint joint;
