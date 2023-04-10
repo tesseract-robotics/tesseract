@@ -15,6 +15,46 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/kinematic_limits.h>
 #include <tesseract_common/yaml_utils.h>
+#include <tesseract_common/collision_margin_data.h>
+
+/** @brief Resource locator implementation using a provided function to locate file resources */
+class TestResourceLocator : public tesseract_common::ResourceLocator
+{
+public:
+  using Ptr = std::shared_ptr<TestResourceLocator>;
+  using ConstPtr = std::shared_ptr<const TestResourceLocator>;
+
+  ~TestResourceLocator() override = default;
+
+  tesseract_common::Resource::Ptr locateResource(const std::string& url) const override final
+  {
+    std::string mod_url = url;
+    if (url.find("package://tesseract_common") == 0)
+    {
+      mod_url.erase(0, strlen("package://tesseract_common"));
+      size_t pos = mod_url.find('/');
+      if (pos == std::string::npos)
+        return nullptr;
+
+      std::string package = mod_url.substr(0, pos);
+      mod_url.erase(0, pos);
+
+      tesseract_common::fs::path file_path(__FILE__);
+      std::string package_path = file_path.parent_path().parent_path().string();
+
+      if (package_path.empty())
+        return nullptr;
+
+      mod_url = package_path + mod_url;
+    }
+
+    if (!tesseract_common::fs::path(mod_url).is_complete())
+      return nullptr;
+
+    return std::make_shared<tesseract_common::SimpleLocatedResource>(
+        url, mod_url, std::make_shared<TestResourceLocator>(*this));
+  }
+};
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
@@ -249,6 +289,14 @@ TEST(TesseractCommonUnit, bytesResource)  // NOLINT
       std::make_shared<tesseract_common::BytesResource>("package://test_package/data.bin", data.data(), data.size());
   EXPECT_EQ(bytes_resource2->getUrl(), "package://test_package/data.bin");
   EXPECT_EQ(bytes_resource->getResourceContents().size(), data.size());
+}
+
+TEST(TesseractCommonUnit, fileToString)  // NOLINT
+{
+  tesseract_common::ResourceLocator::Ptr locator = std::make_shared<TestResourceLocator>();
+  tesseract_common::Resource::Ptr resource = locator->locateResource("package://tesseract_common/package.xml");
+  std::string data = tesseract_common::fileToString(tesseract_common::fs::path(resource->getFilePath()));
+  EXPECT_FALSE(data.empty());
 }
 
 TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
@@ -2120,6 +2168,82 @@ TEST(TesseractCommonUnit, concat)  // NOLINT
   EXPECT_EQ(c.rows(), a.rows() + b.rows());
   EXPECT_TRUE(c.head(3).isApprox(a));
   EXPECT_TRUE(c.tail(3).isApprox(b));
+}
+
+TEST(TesseractCommonUnit, TestAllowedCollisionEntriesCompare)  // NOLINT
+{
+  tesseract_common::AllowedCollisionMatrix acm1;
+  acm1.addAllowedCollision("link1", "link2", "test");
+
+  tesseract_common::AllowedCollisionMatrix acm2;
+  acm2.addAllowedCollision("link1", "link2", "test");
+
+  EXPECT_TRUE(acm1.getAllAllowedCollisions() == acm2.getAllAllowedCollisions());
+
+  acm2.addAllowedCollision("link1", "link3", "test");
+  EXPECT_FALSE(acm1.getAllAllowedCollisions() == acm2.getAllAllowedCollisions());
+
+  acm2.clearAllowedCollisions();
+  acm2.addAllowedCollision("link1", "link3", "test");
+  EXPECT_FALSE(acm1.getAllAllowedCollisions() == acm2.getAllAllowedCollisions());
+
+  acm2.clearAllowedCollisions();
+  acm2.addAllowedCollision("link1", "link2", "do_not_match");
+  EXPECT_FALSE(acm1.getAllAllowedCollisions() == acm2.getAllAllowedCollisions());
+}
+
+TEST(TesseractCommonUnit, CollisionMarginDataCompare)  // NOLINT
+{
+  {  // EQUAL Default
+    tesseract_common::CollisionMarginData margin_data1;
+    tesseract_common::CollisionMarginData margin_data2;
+
+    EXPECT_TRUE(margin_data1 == margin_data2);
+  }
+
+  {  // EQUAL with pair data
+    tesseract_common::CollisionMarginData margin_data1;
+    margin_data1.setPairCollisionMargin("link_1", "link_2", 1);
+    tesseract_common::CollisionMarginData margin_data2;
+    margin_data2.setPairCollisionMargin("link_1", "link_2", 1);
+
+    EXPECT_TRUE(margin_data1 == margin_data2);
+  }
+
+  {  // Not EQUAL Default
+    tesseract_common::CollisionMarginData margin_data1(0.1);
+    tesseract_common::CollisionMarginData margin_data2(0.2);
+
+    EXPECT_FALSE(margin_data1 == margin_data2);
+  }
+
+  {  // Not EQUAL with pair data
+    tesseract_common::CollisionMarginData margin_data1;
+    margin_data1.setPairCollisionMargin("link_1", "link_2", 1);
+    tesseract_common::CollisionMarginData margin_data2;
+    margin_data2.setPairCollisionMargin("link_1", "link_2", 1);
+    margin_data2.setPairCollisionMargin("link_1", "link_3", 1);
+
+    EXPECT_FALSE(margin_data1 == margin_data2);
+  }
+
+  {  // Not EQUAL with pair data
+    tesseract_common::CollisionMarginData margin_data1;
+    margin_data1.setPairCollisionMargin("link_1", "link_2", 1);
+    tesseract_common::CollisionMarginData margin_data2;
+    margin_data2.setPairCollisionMargin("link_1", "link_2", 2);
+
+    EXPECT_FALSE(margin_data1 == margin_data2);
+  }
+
+  {  // Not EQUAL with pair data
+    tesseract_common::CollisionMarginData margin_data1;
+    margin_data1.setPairCollisionMargin("link_1", "link_2", 1);
+    tesseract_common::CollisionMarginData margin_data2;
+    margin_data2.setPairCollisionMargin("link_1", "link_3", 1);
+
+    EXPECT_FALSE(margin_data1 == margin_data2);
+  }
 }
 
 int main(int argc, char** argv)

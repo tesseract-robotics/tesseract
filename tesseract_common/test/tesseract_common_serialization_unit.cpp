@@ -330,6 +330,240 @@ TEST(TesseractCommonSerializeUnit, VectorXd)  // NOLINT
   }
 }
 
+TEST(TesseractCommonSerializeUnit, VectorXi)  // NOLINT
+{
+  {  // Serialize empty object
+    Eigen::VectorXi ev;
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_xi_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXi nev;
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_xi_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+  }
+
+  // Serialize to object which already has data
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::VectorXi ev = Eigen::VectorXi::Random(6);
+
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_xi_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXi nev = Eigen::VectorXi::Random(6);
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_xi_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev == nev);
+  }
+
+  // Serialize to object which already has data and different size
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::VectorXi ev = Eigen::VectorXi::Random(6);
+
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_xi_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXi nev = Eigen::VectorXi::Random(3);
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_xi_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev == nev);
+  }
+
+  // Default use case
+  for (int i = 0; i < 5; ++i)
+  {
+    Eigen::VectorXi ev = Eigen::VectorXi::Random(6);
+
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_xi_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::VectorXi nev;
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_xi_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev == nev);
+  }
+}
+
+TEST(TesseractCommonSerializeUnit, Vector3d)  // NOLINT
+{
+  {  // Serialize empty object
+    Eigen::Vector3d ev;
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_3d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::Vector3d nev;
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_3d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+  }
+
+  // Serialize to object which already has data
+  for (int i = 0; i < 3; ++i)
+  {
+    Eigen::Vector3d ev = Eigen::Vector3d::Random();
+
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_3d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::Vector3d nev = Eigen::Vector3d::Random();
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_3d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+
+  // Default use case
+  for (int i = 0; i < 3; ++i)
+  {
+    Eigen::Vector3d ev = Eigen::Vector3d::Random();
+
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_3d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::Vector3d nev;
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_3d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+}
+
+TEST(TesseractCommonSerializeUnit, Vector4d)  // NOLINT
+{
+  {  // Serialize empty object
+    Eigen::Vector4d ev;
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_4d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::Vector4d nev;
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_4d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+  }
+
+  // Serialize to object which already has data
+  for (int i = 0; i < 4; ++i)
+  {
+    Eigen::Vector4d ev = Eigen::Vector4d::Random();
+
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_4d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::Vector4d nev = Eigen::Vector4d::Random();
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_4d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+
+  // Default use case
+  for (int i = 0; i < 4; ++i)
+  {
+    Eigen::Vector4d ev = Eigen::Vector4d::Random();
+
+    {
+      std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_4d_boost.xml");
+      boost::archive::xml_oarchive oa(os);
+      oa << BOOST_SERIALIZATION_NVP(ev);
+    }
+
+    Eigen::Vector4d nev;
+    {
+      std::ifstream ifs(tesseract_common::getTempPath() + "eigen_vector_4d_boost.xml");
+      assert(ifs.good());
+      boost::archive::xml_iarchive ia(ifs);
+
+      // restore the schedule from the archive
+      ia >> BOOST_SERIALIZATION_NVP(nev);
+    }
+
+    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
+  }
+}
+
 TEST(TesseractCommonSerializeUnit, MatrixX2d)  // NOLINT
 {
   {  // Serialize empty

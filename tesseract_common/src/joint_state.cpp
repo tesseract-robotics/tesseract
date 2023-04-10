@@ -83,6 +83,8 @@ bool JointTrajectory::operator==(const JointTrajectory& other) const
 
 bool JointTrajectory::operator!=(const JointTrajectory& rhs) const { return !operator==(rhs); }
 
+// LCOV_EXCL_START
+
 ///////////////
 // Iterators //
 ///////////////
@@ -121,7 +123,7 @@ JointTrajectory::const_reference JointTrajectory::at(size_type n) const { return
 JointTrajectory::pointer JointTrajectory::data() { return states.data(); }
 JointTrajectory::const_pointer JointTrajectory::data() const { return states.data(); }
 JointTrajectory::reference JointTrajectory::operator[](size_type pos) { return states[pos]; }
-JointTrajectory::const_reference JointTrajectory::operator[](size_type pos) const { return states[pos]; };
+JointTrajectory::const_reference JointTrajectory::operator[](size_type pos) const { return states[pos]; }
 
 ///////////////
 // Modifiers //
@@ -163,6 +165,8 @@ void JointTrajectory::emplace_back(Args&&... args)
 
 void JointTrajectory::pop_back() { states.pop_back(); }
 void JointTrajectory::swap(std::vector<value_type>& other) { states.swap(other); }
+
+// LCOV_EXCL_STOP
 
 template <class Archive>
 void JointTrajectory::serialize(Archive& ar, const unsigned int version)  // NOLINT
