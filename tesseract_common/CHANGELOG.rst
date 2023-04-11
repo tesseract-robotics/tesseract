@@ -2,6 +2,12 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve tesseract_common unit test coverage
+* Improve general resource locator
+* Contributors: Levi Armstrong
+
 0.16.0 (2023-04-09)
 -------------------
 * Add documentation to ContactResultMap

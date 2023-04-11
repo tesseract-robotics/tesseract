@@ -2,6 +2,11 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix polygon_mesh default geometry type in constructor
+* Contributors: Levi Armstrong
+
 0.16.0 (2023-04-09)
 -------------------
 * Improve geometry code coverage

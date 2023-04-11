@@ -2,6 +2,11 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add unit tests to cover new addTrajectoryLinkCommand
+* Contributors: Levi Armstrong
+
 0.16.0 (2023-04-09)
 -------------------
 * Improve collision code coverage
