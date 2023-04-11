@@ -118,6 +118,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
     }
   }
 
+  // LCOV_EXCL_START
   if (!failed_data.empty())
   {
     CONSOLE_BRIDGE_logError("checkKinematics failed %d out of %d\n           Translation failures %d out of %d (max: "
@@ -168,6 +169,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
     CONSOLE_BRIDGE_logError("%s", msg.str().c_str());
     return false;
   }
+  // LCOV_EXCL_STOP
 
   return true;
 }
