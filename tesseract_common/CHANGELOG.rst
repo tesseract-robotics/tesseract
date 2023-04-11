@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.16.1 (2023-04-11)
+-------------------
 * Improve tesseract_common unit test coverage
 * Improve general resource locator
 * Contributors: Levi Armstrong
