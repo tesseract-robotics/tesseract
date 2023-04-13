@@ -716,6 +716,44 @@ struct convert<tesseract_common::CalibrationInfo>
     return true;
   }
 };
+
+template <>
+struct convert<tesseract_common::Toolpath>
+{
+  static Node encode(const tesseract_common::Toolpath& rhs)
+  {
+    Node node;
+    for (const auto& seg : rhs)
+    {
+      Node seg_node;
+      for (const auto& p : seg)
+        seg_node.push_back(p);
+
+      node.push_back(seg_node);
+    }
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_common::Toolpath& rhs)
+  {
+    if (!node.IsSequence())
+      return false;
+
+    rhs.reserve(node.size());
+    for (const auto& seg_node : node)
+    {
+      tesseract_common::VectorIsometry3d seg;
+      seg.reserve(seg_node.size());
+      for (const auto& p_node : seg_node)
+        seg.push_back(p_node.as<Eigen::Isometry3d>());
+
+      rhs.push_back(seg);
+    }
+
+    return true;
+  }
+};
 }  // namespace YAML
 
 #endif  // TESSERACT_COMMON_YAML_UTILS_H
