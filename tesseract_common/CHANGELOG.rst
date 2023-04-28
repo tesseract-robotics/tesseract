@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.16.2 (2023-04-28)
+-------------------
 * Add yaml support for tool path
 * Contributors: Levi Armstrong
 
