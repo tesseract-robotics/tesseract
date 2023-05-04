@@ -2,6 +2,11 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Upgrade gazebo versions
+* Contributors: Levi Armstrong
+
 0.16.2 (2023-04-28)
 -------------------
 
