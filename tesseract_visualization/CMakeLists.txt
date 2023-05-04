@@ -17,11 +17,11 @@ find_package(tesseract_environment REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_state_solver REQUIRED)
 
-# Optional to build ignition visualization
-find_package(ignition-common3 COMPONENTS profiler events av QUIET)
-find_package(ignition-transport8 QUIET)
-find_package(ignition-msgs5 QUIET)
-find_package(ignition-math6-eigen3 QUIET)
+# Optional to build gazebo visualization
+find_package(gz-common5 COMPONENTS profiler events av QUIET)
+find_package(gz-transport11 QUIET)
+find_package(gz-msgs8 QUIET)
+find_package(gz-math7-eigen3 QUIET)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
@@ -36,13 +36,13 @@ else()
   endif()
 endif()
 
-set(IGNITION_FOUND FALSE)
-if(ignition-common3_FOUND
-   AND ignition-transport8_FOUND
-   AND ignition-msgs5_FOUND
-   AND ignition-math6-eigen3_FOUND)
-  set(IGNITION_FOUND TRUE)
-  message(STATUS "Ignition Visualization Library will be built!")
+set(GAZEBO_FOUND FALSE)
+if(gz-common5_FOUND
+   AND gz-transport11_FOUND
+   AND gz-msgs8_FOUND
+   AND gz-math7-eigen3_FOUND)
+  set(GAZEBO_FOUND TRUE)
+  message(STATUS "Gazebo Visualization Library will be built!")
 endif()
 
 # Load variable for clang tidy args, compiler options and cxx version
@@ -96,14 +96,17 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CUR
                                                   "$<INSTALL_INTERFACE:include>")
 
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
-if(IGNITION_FOUND)
+option(TESSERACT_BUILD_GZ_VISUALIZATION "Build Gazebo visualization plugin" ON)
+if(GAZEBO_FOUND AND TESSERACT_BUILD_GZ_VISUALIZATION)
   add_library(${PROJECT_NAME}_ignition src/ignition/entity_manager.cpp src/ignition/conversions.cpp)
   target_link_libraries(
     ${PROJECT_NAME}_ignition
     PUBLIC tesseract::tesseract_scene_graph
            tesseract::tesseract_common
-           ${IGNITION-COMMON_LIBRARIES}
-           ${IGNITION-MSGS_LIBRARIES}
+           gz-common5::gz-common5-profiler
+           gz-common5::gz-common5-events
+           gz-common5::gz-common5-av
+           gz-msg8::gz-msg8
            console_bridge::console_bridge)
   target_compile_options(${PROJECT_NAME}_ignition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
   target_compile_options(${PROJECT_NAME}_ignition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -118,8 +121,6 @@ if(IGNITION_FOUND)
     ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
   target_include_directories(${PROJECT_NAME}_ignition PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                              "$<INSTALL_INTERFACE:include>")
-  target_include_directories(${PROJECT_NAME}_ignition SYSTEM PUBLIC ${IGNITION-COMMON_INCLUDE_DIRS}
-                                                                    ${IGNITION-MSGS_INCLUDE_DIRS})
 
   add_library(${PROJECT_NAME}_ignition_visualization src/ignition/tesseract_ignition_visualization.cpp)
   target_link_libraries(
@@ -128,9 +129,11 @@ if(IGNITION_FOUND)
            ${PROJECT_NAME}_ignition
            tesseract::tesseract_scene_graph
            tesseract::tesseract_common
-           ${IGNITION-COMMON_LIBRARIES}
-           ${IGNITION-TRANSPORT_LIBRARIES}
-           ${IGNITION-MSGS_LIBRARIES}
+           gz-common5::gz-common5-profiler
+           gz-common5::gz-common5-events
+           gz-common5::gz-common5-av
+           gz-transport11::gz-transport11
+           gz-msg8::gz-msg8
            console_bridge::console_bridge)
   target_compile_options(${PROJECT_NAME}_ignition_visualization PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
   target_compile_options(${PROJECT_NAME}_ignition_visualization PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -146,9 +149,6 @@ if(IGNITION_FOUND)
   target_include_directories(
     ${PROJECT_NAME}_ignition_visualization PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
-  target_include_directories(
-    ${PROJECT_NAME}_ignition_visualization SYSTEM
-    PUBLIC ${IGNITION-COMMON_INCLUDE_DIRS} ${IGNITION-TRANSPORT_INCLUDE_DIRS} ${IGNITION-MSGS_INCLUDE_DIRS})
 
   list(
     APPEND
@@ -156,20 +156,20 @@ if(IGNITION_FOUND)
     ${PROJECT_NAME}_ignition
     ${PROJECT_NAME}_ignition_visualization)
 else()
-  list(APPEND IGNITION_MISSING "")
-  if(NOT ignition-common3_FOUND)
-    list(APPEND IGNITION_MISSING "ignition-common3")
+  list(APPEND GAZEBO_MISSING "")
+  if(NOT gz-common5_FOUND)
+    list(APPEND GAZEBO_MISSING "gz-common5")
   endif()
-  if(NOT ignition-transport8_FOUND)
-    list(APPEND IGNITION_MISSING "ignition-transport8")
+  if(NOT ignition-transport11_FOUND)
+    list(APPEND GAZEBO_MISSING "gz-transport11")
   endif()
-  if(NOT ignition-msgs5_FOUND)
-    list(APPEND IGNITION_MISSING "ignition-msgs5")
+  if(NOT gz-msgs8_FOUND)
+    list(APPEND GAZEBO_MISSING "gz-msgs8")
   endif()
-  if(NOT ignition-math6-eigen3_FOUND)
-    list(APPEND IGNITION_MISSING "ignition-math6-eigen3")
+  if(NOT gz-math7-eigen3_FOUND)
+    list(APPEND GAZEBO_MISSING "gz-math7-eigen3")
   endif()
-  message(STATUS "Ignition Visualization Library will not be built! Missing: ${IGNITION_MISSING}")
+  message(STATUS "Gazebo Visualization Library will not be built! Missing: ${GAZEBO_MISSING}")
 endif()
 
 configure_package(NAMESPACE tesseract TARGETS ${PACKAGE_LIBRARIES})
