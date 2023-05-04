@@ -28,9 +28,9 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ignition/msgs/scene.pb.h>
-#include <ignition/msgs/boolean.pb.h>
-#include <ignition/transport/Node.hh>
+#include <gz/msgs/scene.pb.h>
+#include <gz/msgs/boolean.pb.h>
+#include <gz/transport/Node.hh>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
@@ -69,10 +69,10 @@ public:
   void waitForInput(std::string message = "Hit enter key to continue!") override;
 
 private:
-  ignition::transport::Node node_;                    /**< Ignition communication node. */
-  ignition::transport::Node::Publisher scene_pub_;    /**< Scene publisher */
-  ignition::transport::Node::Publisher pose_pub_;     /**< Pose publisher */
-  ignition::transport::Node::Publisher deletion_pub_; /**< Deletion publisher */
+  gz::transport::Node node_;                    /**< Ignition communication node. */
+  gz::transport::Node::Publisher scene_pub_;    /**< Scene publisher */
+  gz::transport::Node::Publisher pose_pub_;     /**< Pose publisher */
+  gz::transport::Node::Publisher deletion_pub_; /**< Deletion publisher */
   EntityManager entity_manager_;
 
   /**

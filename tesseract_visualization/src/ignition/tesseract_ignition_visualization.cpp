@@ -26,9 +26,9 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ignition/msgs/MessageTypes.hh>
-#include <ignition/common/Console.hh>
-#include <ignition/math/eigen3/Conversions.hh>
+#include <gz/msgs/MessageTypes.hh>
+#include <gz/common/Console.hh>
+#include <gz/math/eigen3/Conversions.hh>
 #include <chrono>
 #include <numeric>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -42,13 +42,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/markers/toolpath_marker.h>
 #include <tesseract_common/class_loader.h>
 
-/** @brief Message type is ignition::msgs::Scene */
+/** @brief Message type is gz::msgs::Scene */
 static const std::string DEFAULT_SCENE_TOPIC_NAME = "/tesseract_ignition/topic/scene";
 
-/** @brief Message type is ignition::msgs::Pose_V */
+/** @brief Message type is gz::msgs::Pose_V */
 static const std::string DEFAULT_POSE_TOPIC_NAME = "/tesseract_ignition/topic/pose";
 
-/** @brief Message type is ignition::msgs::UInt32_V */
+/** @brief Message type is gz::msgs::UInt32_V */
 static const std::string DEFAULT_DELETION_TOPIC_NAME = "/tesseract_ignition/topic/deletion";
 
 static const std::string COLLISION_RESULTS_MODEL_NAME = "tesseract_collision_results_model";
@@ -60,9 +60,9 @@ namespace tesseract_visualization
 {
 TesseractIgnitionVisualization::TesseractIgnitionVisualization()
 {
-  scene_pub_ = node_.Advertise<ignition::msgs::Scene>(DEFAULT_SCENE_TOPIC_NAME);
-  pose_pub_ = node_.Advertise<ignition::msgs::Pose_V>(DEFAULT_POSE_TOPIC_NAME);
-  deletion_pub_ = node_.Advertise<ignition::msgs::UInt32_V>(DEFAULT_DELETION_TOPIC_NAME);
+  scene_pub_ = node_.Advertise<gz::msgs::Scene>(DEFAULT_SCENE_TOPIC_NAME);
+  pose_pub_ = node_.Advertise<gz::msgs::Pose_V>(DEFAULT_POSE_TOPIC_NAME);
+  deletion_pub_ = node_.Advertise<gz::msgs::UInt32_V>(DEFAULT_DELETION_TOPIC_NAME);
 }
 
 bool TesseractIgnitionVisualization::isConnected() const
@@ -86,7 +86,7 @@ void TesseractIgnitionVisualization::waitForConnection(long seconds) const
 
 void TesseractIgnitionVisualization::plotEnvironment(const tesseract_environment::Environment& env, std::string /*ns*/)
 {
-  ignition::msgs::Scene msg;
+  gz::msgs::Scene msg;
   toMsg(msg, entity_manager_, *(env.getSceneGraph()), env.getState().link_transforms);
   scene_pub_.Publish(msg);
 }
@@ -110,23 +110,23 @@ void TesseractIgnitionVisualization::plotTrajectory(const tesseract_common::Join
   }
 }
 
-void addArrow(EntityManager& entity_manager, ignition::msgs::Link& link, long& sub_index, const ArrowMarker& marker)
+void addArrow(EntityManager& entity_manager, gz::msgs::Link& link, long& sub_index, const ArrowMarker& marker)
 {
   std::string gv_name = link.name() + "_" + std::to_string(++sub_index);
-  ignition::msgs::Visual* gv_msg = link.add_visual();
+  gz::msgs::Visual* gv_msg = link.add_visual();
   gv_msg->set_id(static_cast<unsigned>(entity_manager.addVisual(gv_name)));
   gv_msg->set_name(gv_name);
 
-  gv_msg->mutable_pose()->CopyFrom(ignition::msgs::Convert(ignition::math::eigen3::convert(marker.pose)));
+  gv_msg->mutable_pose()->CopyFrom(gz::msgs::Convert(gz::math::eigen3::convert(marker.pose)));
 
-  ignition::msgs::Geometry geometry_msg;
-  geometry_msg.set_type(ignition::msgs::Geometry::Type::Geometry_Type_CYLINDER);
-  ignition::msgs::CylinderGeom shape_geometry_msg;
+  gz::msgs::Geometry geometry_msg;
+  geometry_msg.set_type(gz::msgs::Geometry::Type::Geometry_Type_CYLINDER);
+  gz::msgs::CylinderGeom shape_geometry_msg;
   shape_geometry_msg.set_radius(marker.shaft_radius);
   shape_geometry_msg.set_length(marker.shaft_length);
   geometry_msg.mutable_cylinder()->CopyFrom(shape_geometry_msg);
   gv_msg->mutable_geometry()->CopyFrom(geometry_msg);
-  ignition::msgs::Material shape_material_msg;
+  gz::msgs::Material shape_material_msg;
   shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(marker.material->color(0)));
   shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(marker.material->color(1)));
   shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(marker.material->color(2)));
@@ -136,7 +136,7 @@ void addArrow(EntityManager& entity_manager, ignition::msgs::Link& link, long& s
 }
 
 void addCylinder(EntityManager& entity_manager,
-                 ignition::msgs::Link& link,
+                 gz::msgs::Link& link,
                  long& sub_index,
                  const Eigen::Ref<const Eigen::Vector3d>& pt1,
                  const Eigen::Ref<const Eigen::Vector3d>& pt2,
@@ -144,7 +144,7 @@ void addCylinder(EntityManager& entity_manager,
                  const Eigen::Vector3d& /*scale*/)
 {
   std::string gv_name = link.name() + "_" + std::to_string(++sub_index);
-  ignition::msgs::Visual* gv_msg = link.add_visual();
+  gz::msgs::Visual* gv_msg = link.add_visual();
   gv_msg->set_id(static_cast<unsigned>(entity_manager.addVisual(gv_name)));
   gv_msg->set_name(gv_name);
 
@@ -160,16 +160,16 @@ void addCylinder(EntityManager& entity_manager,
   pose.linear() = rot;
   pose.translation() = pt1 + (((pt2 - pt1).norm() / 2) * z);
 
-  gv_msg->mutable_pose()->CopyFrom(ignition::msgs::Convert(ignition::math::eigen3::convert(pose)));
+  gv_msg->mutable_pose()->CopyFrom(gz::msgs::Convert(gz::math::eigen3::convert(pose)));
 
-  ignition::msgs::Geometry geometry_msg;
-  geometry_msg.set_type(ignition::msgs::Geometry::Type::Geometry_Type_CYLINDER);
-  ignition::msgs::CylinderGeom shape_geometry_msg;
+  gz::msgs::Geometry geometry_msg;
+  geometry_msg.set_type(gz::msgs::Geometry::Type::Geometry_Type_CYLINDER);
+  gz::msgs::CylinderGeom shape_geometry_msg;
   shape_geometry_msg.set_radius(1); /** @todo LEVI fix */
   shape_geometry_msg.set_length((pt2 - pt1).norm());
   geometry_msg.mutable_cylinder()->CopyFrom(shape_geometry_msg);
   gv_msg->mutable_geometry()->CopyFrom(geometry_msg);
-  ignition::msgs::Material shape_material_msg;
+  gz::msgs::Material shape_material_msg;
   shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(material.color(0)));
   shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(material.color(1)));
   shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(material.color(2)));
@@ -178,7 +178,7 @@ void addCylinder(EntityManager& entity_manager,
   gv_msg->set_parent_name(link.name());
 }
 
-void addAxis(EntityManager& entity_manager, ignition::msgs::Link& link, long& sub_index, const AxisMarker& m)
+void addAxis(EntityManager& entity_manager, gz::msgs::Link& link, long& sub_index, const AxisMarker& m)
 {
   Eigen::Vector3d x_axis = m.axis.matrix().block<3, 1>(0, 0);
   Eigen::Vector3d y_axis = m.axis.matrix().block<3, 1>(0, 1);
@@ -207,16 +207,16 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
     case static_cast<int>(MarkerType::ARROW):
     {
       const auto& m = dynamic_cast<const ArrowMarker&>(marker);
-      ignition::msgs::Scene scene_msg;
+      gz::msgs::Scene scene_msg;
       scene_msg.set_name("scene");
-      ignition::msgs::Model* model = scene_msg.add_model();
+      gz::msgs::Model* model = scene_msg.add_model();
       std::string model_name = ARROW_MODEL_NAME;
       model->set_name(model_name);
       model->set_id(static_cast<unsigned>(entity_manager_.addModel(model_name)));
 
       long cnt = 0;
       std::string link_name = model_name + std::to_string(++cnt);
-      ignition::msgs::Link* link_msg = model->add_link();
+      gz::msgs::Link* link_msg = model->add_link();
       link_msg->set_id(static_cast<unsigned>(entity_manager_.addVisual(link_name)));
       link_msg->set_name(link_name);
       addArrow(entity_manager_, *link_msg, cnt, m);
@@ -227,16 +227,16 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
     {
       const auto& m = dynamic_cast<const AxisMarker&>(marker);
 
-      ignition::msgs::Scene scene_msg;
+      gz::msgs::Scene scene_msg;
       scene_msg.set_name("scene");
-      ignition::msgs::Model* model = scene_msg.add_model();
+      gz::msgs::Model* model = scene_msg.add_model();
       std::string model_name = AXES_MODEL_NAME;
       model->set_name(model_name);
       model->set_id(static_cast<unsigned>(entity_manager_.addModel(model_name)));
 
       long cnt = 0;
       std::string link_name = model_name + std::to_string(++cnt);
-      ignition::msgs::Link* link_msg = model->add_link();
+      gz::msgs::Link* link_msg = model->add_link();
       link_msg->set_id(static_cast<unsigned>(entity_manager_.addVisual(link_name)));
       link_msg->set_name(link_name);
       addAxis(entity_manager_, *link_msg, cnt, m.axis);
@@ -247,9 +247,9 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
     {
       const auto& m = dynamic_cast<const ContactResultsMarker&>(marker);
 
-      ignition::msgs::Scene scene_msg;
+      gz::msgs::Scene scene_msg;
       scene_msg.set_name("scene");
-      ignition::msgs::Model* model = scene_msg.add_model();
+      gz::msgs::Model* model = scene_msg.add_model();
       std::string model_name = COLLISION_RESULTS_MODEL_NAME;
       model->set_name(model_name);
       model->set_id(static_cast<unsigned>(entity_manager_.addModel(model_name)));
@@ -261,7 +261,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
         double safety_distance = m.margin_data.getPairCollisionMargin(dist.link_names[0], dist.link_names[1]);
 
         std::string link_name = model_name + std::to_string(++cnt);
-        ignition::msgs::Link* link_msg = model->add_link();
+        gz::msgs::Link* link_msg = model->add_link();
         link_msg->set_id(static_cast<unsigned>(entity_manager_.addVisual(link_name)));
         link_msg->set_name(link_name);
 
@@ -340,7 +340,7 @@ void TesseractIgnitionVisualization::plotMarkers(const std::vector<Marker::Ptr>&
 
 void TesseractIgnitionVisualization::clear(std::string /*ns*/)
 {
-  ignition::msgs::UInt32_V deletion_msg;
+  gz::msgs::UInt32_V deletion_msg;
   long id = entity_manager_.getModel(COLLISION_RESULTS_MODEL_NAME);
   if (id >= 1000)
     deletion_msg.add_data(static_cast<unsigned>(id));
@@ -364,11 +364,11 @@ void TesseractIgnitionVisualization::waitForInput(std::string message)
 
 void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph::SceneState& scene_state)
 {
-  ignition::msgs::Pose_V pose_v;
+  gz::msgs::Pose_V pose_v;
   for (const auto& pair : scene_state.link_transforms)
   {
-    ignition::msgs::Pose* pose = pose_v.add_pose();
-    pose->CopyFrom(ignition::msgs::Convert(ignition::math::eigen3::convert(pair.second)));
+    gz::msgs::Pose* pose = pose_v.add_pose();
+    pose->CopyFrom(gz::msgs::Convert(gz::math::eigen3::convert(pair.second)));
     pose->set_name(pair.first);
     pose->set_id(static_cast<unsigned>(entity_manager_.getLink(pair.first)));
   }
@@ -431,9 +431,9 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //{
 //  using namespace tesseract_planning;
 
-//  ignition::msgs::Scene scene_msg;
+//  gz::msgs::Scene scene_msg;
 //  scene_msg.set_name("scene");
-//  ignition::msgs::Model* model = scene_msg.add_model();
+//  gz::msgs::Model* model = scene_msg.add_model();
 //  std::string model_name = TOOL_PATH_MODEL_NAME;
 //  model->set_name(model_name);
 //  model->set_id(static_cast<unsigned>(entity_manager_.addModel(model_name)));
@@ -465,7 +465,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //      tesseract_common::ManipulatorInfo manip_info;
 
 //      std::string link_name = model_name + std::to_string(++cnt);
-//      ignition::msgs::Link* link_msg = model->add_link();
+//      gz::msgs::Link* link_msg = model->add_link();
 //      link_msg->set_id(static_cast<unsigned>(entity_manager_.addVisual(link_name)));
 //      link_msg->set_name(link_name);
 
@@ -529,7 +529,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //  {
 //    long cnt = 0;
 //    std::string link_name = model_name + std::to_string(++cnt);
-//    ignition::msgs::Link* link_msg = model->add_link();
+//    gz::msgs::Link* link_msg = model->add_link();
 //    link_msg->set_id(static_cast<unsigned>(entity_manager_.addVisual(link_name)));
 //    link_msg->set_name(link_name);
 
