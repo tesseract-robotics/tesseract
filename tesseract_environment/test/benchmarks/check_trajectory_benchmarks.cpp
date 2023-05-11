@@ -50,12 +50,7 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
 
   for (auto _ : state)
   {
-    benchmark::DoNotOptimize(checkTrajectory(contacts,
-                                             *manager,
-                                             *state_solver,
-                                             joint_names,
-                                             traj,
-                                             config));
+    benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_names, traj, config));
   }
 }
 
@@ -74,11 +69,7 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP(benchmark::State& state,
 
   for (auto _ : state)
   {
-    benchmark::DoNotOptimize(checkTrajectory(contacts,
-                                             *manager,
-                                             *manip,
-                                             traj,
-                                             config));
+    benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *manip, traj, config));
   }
 }
 
@@ -98,12 +89,7 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
 
   for (auto _ : state)
   {
-    benchmark::DoNotOptimize(checkTrajectory(contacts,
-                                             *manager,
-                                             *state_solver,
-                                             joint_names,
-                                             traj,
-                                             config));
+    benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_names, traj, config));
   }
 }
 
@@ -122,11 +108,7 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_MANIP(benchmark::State& state,
 
   for (auto _ : state)
   {
-    benchmark::DoNotOptimize(checkTrajectory(contacts,
-                                             *manager,
-                                             *manip,
-                                             traj,
-                                             config));
+    benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *manip, traj, config));
   }
 }
 
@@ -258,14 +240,16 @@ int main(int argc, char** argv)
                        std::vector<std::string>,
                        tesseract_common::TrajArray,
                        tesseract_collision::CollisionCheckConfig,
-                       bool)> BM_CHECK_TRAJ_CS = BM_CHECK_TRAJECTORY_CONTINUOUS_SS;
+                       bool)>
+        BM_CHECK_TRAJ_CS = BM_CHECK_TRAJECTORY_CONTINUOUS_SS;
     std::function<void(benchmark::State&,
                        std::vector<tesseract_collision::ContactResultMap>,
                        tesseract_collision::ContinuousContactManager::Ptr,
                        tesseract_kinematics::JointGroup::Ptr,
                        tesseract_common::TrajArray,
                        tesseract_collision::CollisionCheckConfig,
-                       bool)> BM_CHECK_TRAJ_CM = BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP;
+                       bool)>
+        BM_CHECK_TRAJ_CM = BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP;
     std::function<void(benchmark::State&,
                        std::vector<tesseract_collision::ContactResultMap>,
                        tesseract_collision::DiscreteContactManager::Ptr,
@@ -273,17 +257,18 @@ int main(int argc, char** argv)
                        std::vector<std::string>,
                        tesseract_common::TrajArray,
                        tesseract_collision::CollisionCheckConfig,
-                       bool)> BM_CHECK_TRAJ_DS = BM_CHECK_TRAJECTORY_DISCRETE_SS;
+                       bool)>
+        BM_CHECK_TRAJ_DS = BM_CHECK_TRAJECTORY_DISCRETE_SS;
     std::function<void(benchmark::State&,
                        std::vector<tesseract_collision::ContactResultMap>,
                        tesseract_collision::DiscreteContactManager::Ptr,
                        tesseract_kinematics::JointGroup::Ptr,
                        tesseract_common::TrajArray,
                        tesseract_collision::CollisionCheckConfig,
-                       bool)> BM_CHECK_TRAJ_DM = BM_CHECK_TRAJECTORY_DISCRETE_MANIP;
+                       bool)>
+        BM_CHECK_TRAJ_DM = BM_CHECK_TRAJECTORY_DISCRETE_MANIP;
 
-
-    for (const bool log_level_debug : {false, true})
+    for (const bool log_level_debug : { false, true })
     {
       for (std::size_t i = 0; i < traj_arrays.size(); i++)
       {
@@ -291,14 +276,22 @@ int main(int argc, char** argv)
         if (log_level_debug)
           debug_str = "-Debug";
         const auto& traj_array = traj_arrays[i];
-        std::string BM_CHECK_TRAJ_CS_name = "BM_CHECK_TRAJ_CONTINUOUS_STATE_SOLVER-TRAJ" + std::to_string(i+1) + debug_str;
-        std::string BM_CHECK_TRAJ_CS_LVS_name = "BM_CHECK_TRAJ_CONTINUOUS_STATE_SOLVER-TRAJ" + std::to_string(i+1) + "-LVS" + debug_str;
-        std::string BM_CHECK_TRAJ_CM_name = "BM_CHECK_TRAJ_CONTINUOUS_JOINT_GROUP-TRAJ" + std::to_string(i+1) + debug_str;
-        std::string BM_CHECK_TRAJ_CM_LVS_name = "BM_CHECK_TRAJ_CONTINUOUS_JOINT_GROUP-TRAJ" + std::to_string(i+1) + "-LVS" + debug_str;
-        std::string BM_CHECK_TRAJ_DS_name = "BM_CHECK_TRAJ_DISCRETE_STATE_SOLVER-TRAJ" + std::to_string(i+1) + debug_str;
-        std::string BM_CHECK_TRAJ_DS_LVS_name = "BM_CHECK_TRAJ_DISCRETE_STATE_SOLVER-TRAJ" + std::to_string(i+1) + "-LVS" + debug_str;
-        std::string BM_CHECK_TRAJ_DM_name = "BM_CHECK_TRAJ_DISCRETE_JOINT_GROUP-TRAJ" + std::to_string(i+1) + debug_str;
-        std::string BM_CHECK_TRAJ_DM_LVS_name = "BM_CHECK_TRAJ_DISCRETE_JOINT_GROUP-TRAJ" + std::to_string(i+1) + "-LVS" + debug_str;
+        std::string BM_CHECK_TRAJ_CS_name =
+            "BM_CHECK_TRAJ_CONTINUOUS_STATE_SOLVER-TRAJ" + std::to_string(i + 1) + debug_str;
+        std::string BM_CHECK_TRAJ_CS_LVS_name =
+            "BM_CHECK_TRAJ_CONTINUOUS_STATE_SOLVER-TRAJ" + std::to_string(i + 1) + "-LVS" + debug_str;
+        std::string BM_CHECK_TRAJ_CM_name =
+            "BM_CHECK_TRAJ_CONTINUOUS_JOINT_GROUP-TRAJ" + std::to_string(i + 1) + debug_str;
+        std::string BM_CHECK_TRAJ_CM_LVS_name =
+            "BM_CHECK_TRAJ_CONTINUOUS_JOINT_GROUP-TRAJ" + std::to_string(i + 1) + "-LVS" + debug_str;
+        std::string BM_CHECK_TRAJ_DS_name =
+            "BM_CHECK_TRAJ_DISCRETE_STATE_SOLVER-TRAJ" + std::to_string(i + 1) + debug_str;
+        std::string BM_CHECK_TRAJ_DS_LVS_name =
+            "BM_CHECK_TRAJ_DISCRETE_STATE_SOLVER-TRAJ" + std::to_string(i + 1) + "-LVS" + debug_str;
+        std::string BM_CHECK_TRAJ_DM_name =
+            "BM_CHECK_TRAJ_DISCRETE_JOINT_GROUP-TRAJ" + std::to_string(i + 1) + debug_str;
+        std::string BM_CHECK_TRAJ_DM_LVS_name =
+            "BM_CHECK_TRAJ_DISCRETE_JOINT_GROUP-TRAJ" + std::to_string(i + 1) + "-LVS" + debug_str;
 
         benchmark::RegisterBenchmark(BM_CHECK_TRAJ_CS_name.c_str(),
                                      BM_CHECK_TRAJ_CS,
