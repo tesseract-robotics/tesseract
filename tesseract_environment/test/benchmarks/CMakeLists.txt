@@ -23,3 +23,4 @@ macro(add_benchmark benchmark_name benchmark_file)
 endmacro()
 
 add_benchmark(${PROJECT_NAME}_clone_benchmark environment_clone_benchmarks.cpp)
+add_benchmark(${PROJECT_NAME}_check_trajectory check_trajectory_benchmarks.cpp)
