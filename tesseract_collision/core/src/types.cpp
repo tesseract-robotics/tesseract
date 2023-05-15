@@ -401,9 +401,9 @@ ContactTrajectorySubstepResults ContactTrajectoryStepResults::mostCollisionsSubs
   return most_collisions_substep;
 }
 
-ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names)
-  : joint_names(std::move(j_names))
-{}
+ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names) : joint_names(std::move(j_names))
+{
+}
 
 ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names, const int& num_steps)
   : joint_names(std::move(j_names)), total_steps(num_steps)
