@@ -348,6 +348,12 @@ ContactTrajectoryStepResults::ContactTrajectoryStepResults(const int& step_numbe
   substeps.resize(static_cast<std::size_t>(1));
 }
 
+void ContactTrajectoryStepResults::resize(const int& num_substeps)
+{
+  total_substeps = num_substeps;
+  substeps.resize(static_cast<std::size_t>(num_substeps));
+}
+
 int ContactTrajectoryStepResults::numSubsteps() const { return static_cast<int>(substeps.size()); }
 
 int ContactTrajectoryStepResults::numContacts() const
@@ -395,9 +401,19 @@ ContactTrajectorySubstepResults ContactTrajectoryStepResults::mostCollisionsSubs
   return most_collisions_substep;
 }
 
+ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names)
+  : joint_names(std::move(j_names))
+{}
+
 ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names, const int& num_steps)
   : joint_names(std::move(j_names)), total_steps(num_steps)
 {
+  steps.resize(static_cast<std::size_t>(num_steps));
+}
+
+void ContactTrajectoryResults::resize(const int& num_steps)
+{
+  total_steps = num_steps;
   steps.resize(static_cast<std::size_t>(num_steps));
 }
 

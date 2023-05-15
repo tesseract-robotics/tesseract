@@ -489,6 +489,9 @@ struct ContactTrajectoryStepResults
                                Eigen::VectorXd end_state,
                                const int& num_substeps);
   ContactTrajectoryStepResults(const int& step_number, const Eigen::VectorXd& state);
+
+  void resize(const int& num_substeps);
+
   int numSubsteps() const;
 
   int numContacts() const;
@@ -509,7 +512,10 @@ struct ContactTrajectoryStepResults
 struct ContactTrajectoryResults
 {
   ContactTrajectoryResults() = default;
+  ContactTrajectoryResults(std::vector<std::string> j_names);
   ContactTrajectoryResults(std::vector<std::string> j_names, const int& num_steps);
+
+  void resize(const int& num_steps);
 
   int numSteps() const;
 
