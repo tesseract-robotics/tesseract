@@ -190,12 +190,14 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   contacts.clear();
   contacts.reserve(static_cast<std::size_t>(traj.rows()));
 
+  /** @brief Making this thread_local does not help because it is not called enough during planning */
+  tesseract_collision::ContactResultMap state_results;
+  tesseract_collision::ContactResultMap sub_state_results;
+
   bool found = false;
   if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::START_ONLY)
   {
     tesseract_common::TransformMap state = state_fn(traj.row(0));
-    tesseract_collision::ContactResultMap state_results;
-    tesseract_collision::ContactResultMap sub_state_results;
     checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
 
     if (!sub_state_results.empty())
@@ -215,8 +217,6 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::END_ONLY)
   {
     tesseract_common::TransformMap state = state_fn(traj.row(traj.rows() - 1));
-    tesseract_collision::ContactResultMap state_results;
-    tesseract_collision::ContactResultMap sub_state_results;
     tesseract_environment::checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
 
     if (!sub_state_results.empty())
@@ -236,7 +236,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   {
     for (tesseract_common::TrajArray::Index iStep = 0; iStep < traj.rows() - 1; ++iStep)
     {
-      tesseract_collision::ContactResultMap state_results;
+      state_results.clear();
 
       double dist = (traj.row(iStep + 1) - traj.row(iStep)).norm();
       if (dist > config.longest_valid_segment_length)
@@ -285,7 +285,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
           tesseract_common::TransformMap state0 = state_fn(subtraj.row(iSubStep));
           tesseract_common::TransformMap state1 = state_fn(subtraj.row(iSubStep + 1));
-          tesseract_collision::ContactResultMap sub_state_results;
+          sub_state_results.clear();
           checkTrajectorySegment(sub_state_results, manager, state0, state1, config.contact_request);
           if (!sub_state_results.empty())
           {
@@ -398,7 +398,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       tesseract_common::TransformMap state0 = state_fn(traj.row(iStep));
       tesseract_common::TransformMap state1 = state_fn(traj.row(iStep + 1));
 
-      tesseract_collision::ContactResultMap state_results;
+      state_results.clear();
       checkTrajectorySegment(state_results, manager, state0, state1, config.contact_request);
       if (!state_results.empty())
       {
@@ -475,12 +475,14 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   contacts.clear();
   contacts.reserve(static_cast<std::size_t>(traj.rows()));
 
+  /** @brief Making this thread_local does not help because it is not called enough during planning */
+  tesseract_collision::ContactResultMap state_results;
+  tesseract_collision::ContactResultMap sub_state_results;
+
   bool found = false;
   if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::START_ONLY)
   {
     tesseract_common::TransformMap state = state_fn(traj.row(0));
-    tesseract_collision::ContactResultMap state_results;
-    tesseract_collision::ContactResultMap sub_state_results;
     tesseract_environment::checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
 
     if (!sub_state_results.empty())
@@ -499,8 +501,6 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::END_ONLY)
   {
     tesseract_common::TransformMap state = state_fn(traj.row(traj.rows() - 1));
-    tesseract_collision::ContactResultMap state_results;
-    tesseract_collision::ContactResultMap sub_state_results;
     tesseract_environment::checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
 
     if (!sub_state_results.empty())
@@ -530,9 +530,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       return true;
 
     auto sub_segment_last_index = static_cast<int>(traj.rows() - 1);
-    tesseract_collision::ContactResultMap state_results;
     tesseract_common::TransformMap state = state_fn(traj.row(0));
-    tesseract_collision::ContactResultMap sub_state_results;
     checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
 
     if (debug_logging)
@@ -557,8 +555,6 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   {
     for (int iStep = 0; iStep < (traj.rows() - 1); ++iStep)
     {
-      tesseract_collision::ContactResultMap state_results;
-
       const double dist = (traj.row(iStep + 1) - traj.row(iStep)).norm();
       if (dist > config.longest_valid_segment_length)
       {
@@ -606,7 +602,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
           }
 
           tesseract_common::TransformMap state = state_fn(subtraj.row(iSubStep));
-          tesseract_collision::ContactResultMap sub_state_results;
+          sub_state_results.clear();
           checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
           if (!sub_state_results.empty())
           {
@@ -659,7 +655,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
               config.check_program_mode != tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
           {
             tesseract_common::TransformMap state = state_fn(traj.row(iStep));
-            tesseract_collision::ContactResultMap sub_state_results;
+            sub_state_results.clear();
             checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
             if (!sub_state_results.empty())
             {
@@ -685,7 +681,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
               config.check_program_mode != tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
           {
             tesseract_common::TransformMap state = state_fn(traj.row(iStep + 1));
-            tesseract_collision::ContactResultMap sub_state_results;
+            sub_state_results.clear();
             checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
             if (!sub_state_results.empty())
             {
@@ -722,7 +718,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         }
 
         tesseract_common::TransformMap state = state_fn(traj.row(iStep));
-        tesseract_collision::ContactResultMap sub_state_results;
+        sub_state_results.clear();
         checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
         if (!sub_state_results.empty())
         {
@@ -754,7 +750,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
           }
 
           tesseract_common::TransformMap state = state_fn(traj.row(iStep + 1));
-          tesseract_collision::ContactResultMap sub_state_results;
+          sub_state_results.clear();
           checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
           if (!sub_state_results.empty())
           {
@@ -806,10 +802,10 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         substep_contacts = tesseract_collision::ContactTrajectorySubstepResults(1, traj.row(iStep));
       }
 
-      tesseract_collision::ContactResultMap state_results;
+      state_results.clear();
 
       tesseract_common::TransformMap state = state_fn(traj.row(iStep));
-      tesseract_collision::ContactResultMap sub_state_results;
+      sub_state_results.clear();
       checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
       if (!sub_state_results.empty())
       {

@@ -305,8 +305,8 @@ CollisionCheckConfig::CollisionCheckConfig(double default_margin,
 }
 
 ContactTrajectorySubstepResults::ContactTrajectorySubstepResults(int substep_number,
-                                                                 const Eigen::VectorXd& start_state, // NOLINT
-                                                                 const Eigen::VectorXd& end_state) // NOLINT
+                                                                 const Eigen::VectorXd& start_state,  // NOLINT
+                                                                 const Eigen::VectorXd& end_state)    // NOLINT
   : substep(substep_number), state0(start_state), state1(end_state)
 {
 }
@@ -334,8 +334,8 @@ tesseract_collision::ContactResultVector ContactTrajectorySubstepResults::worstC
 }
 
 ContactTrajectoryStepResults::ContactTrajectoryStepResults(int step_number,
-                                                           const Eigen::VectorXd& start_state, // NOLINT
-                                                           const Eigen::VectorXd& end_state, // NOLINT
+                                                           const Eigen::VectorXd& start_state,  // NOLINT
+                                                           const Eigen::VectorXd& end_state,    // NOLINT
                                                            int num_substeps)
   : step(step_number), state0(start_state), state1(end_state), total_substeps(num_substeps)
 {
@@ -569,15 +569,20 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
   {
     for (const auto& substep : step.substeps)
     {
-      for (const auto& collision : substep.contacts)
+      if (!substep.contacts.empty())
       {
-        std::string link1_name = collision.second.front().link_names[0];
-        if (static_cast<int>(link1_name.size()) + 2 > longest_link1_width)
-          longest_link1_width = static_cast<int>(link1_name.size()) + 2;
+        for (const auto& collision : substep.contacts)
+        {
+          if (collision.second.empty())
+            continue;
+          std::string link1_name = collision.second.front().link_names[0];
+          if (static_cast<int>(link1_name.size()) + 2 > longest_link1_width)
+            longest_link1_width = static_cast<int>(link1_name.size()) + 2;
 
-        std::string link2_name = collision.second.front().link_names[1];
-        if (static_cast<int>(link2_name.size()) + 2 > longest_link2_width)
-          longest_link2_width = static_cast<int>(link2_name.size()) + 2;
+          std::string link2_name = collision.second.front().link_names[1];
+          if (static_cast<int>(link2_name.size()) + 2 > longest_link2_width)
+            longest_link2_width = static_cast<int>(link2_name.size()) + 2;
+        }
       }
     }
   }
@@ -622,6 +627,9 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
     int line_number = 0;
     for (const auto& substep : step.substeps)
     {
+      if (substep.contacts.empty())
+        continue;
+
       // Check if there are contacts in this substep
       if (substep.numContacts() == 0)
         continue;
@@ -632,6 +640,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
       // Iterate over every collision in this substep
       for (const auto& collision : substep.contacts)
       {
+        if (collision.second.empty())
+          continue;
         // Write the current substep string
         ss << std::setw(longest_steps_width) << step_number_string;
 
