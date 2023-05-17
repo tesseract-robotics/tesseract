@@ -466,8 +466,8 @@ struct ContactTrajectorySubstepResults
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   ContactTrajectorySubstepResults() = default;
-  ContactTrajectorySubstepResults(const int& substep, Eigen::VectorXd start_state, Eigen::VectorXd end_state);
-  ContactTrajectorySubstepResults(const int& substep, Eigen::VectorXd state);
+  ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& start_state, const Eigen::VectorXd& end_state);
+  ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& state);
 
   int numContacts() const;
 
@@ -484,13 +484,13 @@ struct ContactTrajectoryStepResults
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   ContactTrajectoryStepResults() = default;
-  ContactTrajectoryStepResults(const int& step_number,
-                               Eigen::VectorXd start_state,
-                               Eigen::VectorXd end_state,
-                               const int& num_substeps);
-  ContactTrajectoryStepResults(const int& step_number, const Eigen::VectorXd& state);
+  ContactTrajectoryStepResults(int step_number,
+                               const Eigen::VectorXd& start_state,
+                               const Eigen::VectorXd& end_state,
+                               int num_substeps);
+  ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state);
 
-  void resize(const int& num_substeps);
+  void resize(int num_substeps);
 
   int numSubsteps() const;
 
@@ -513,9 +513,9 @@ struct ContactTrajectoryResults
 {
   ContactTrajectoryResults() = default;
   ContactTrajectoryResults(std::vector<std::string> j_names);
-  ContactTrajectoryResults(std::vector<std::string> j_names, const int& num_steps);
+  ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps);
 
-  void resize(const int& num_steps);
+  void resize(int num_steps);
 
   int numSteps() const;
 

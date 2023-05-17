@@ -304,15 +304,15 @@ CollisionCheckConfig::CollisionCheckConfig(double default_margin,
 {
 }
 
-ContactTrajectorySubstepResults::ContactTrajectorySubstepResults(const int& substep_number,
-                                                                 Eigen::VectorXd start_state,
-                                                                 Eigen::VectorXd end_state)
-  : substep(substep_number), state0(std::move(start_state)), state1(std::move(end_state))
+ContactTrajectorySubstepResults::ContactTrajectorySubstepResults(int substep_number,
+                                                                 const Eigen::VectorXd& start_state, // NOLINT
+                                                                 const Eigen::VectorXd& end_state) // NOLINT
+  : substep(substep_number), state0(start_state), state1(end_state)
 {
 }
 
-ContactTrajectorySubstepResults::ContactTrajectorySubstepResults(const int& substep_number, Eigen::VectorXd state)
-  : substep(substep_number), state0(std::move(state)), state1(std::move(state))
+ContactTrajectorySubstepResults::ContactTrajectorySubstepResults(int substep_number, const Eigen::VectorXd& state)
+  : substep(substep_number), state0(state), state1(state)
 {
 }
 
@@ -333,22 +333,22 @@ tesseract_collision::ContactResultVector ContactTrajectorySubstepResults::worstC
   return worst_collision;
 }
 
-ContactTrajectoryStepResults::ContactTrajectoryStepResults(const int& step_number,
-                                                           Eigen::VectorXd start_state,
-                                                           Eigen::VectorXd end_state,
-                                                           const int& num_substeps)
-  : step(step_number), state0(std::move(start_state)), state1(std::move(end_state)), total_substeps(num_substeps)
+ContactTrajectoryStepResults::ContactTrajectoryStepResults(int step_number,
+                                                           const Eigen::VectorXd& start_state, // NOLINT
+                                                           const Eigen::VectorXd& end_state, // NOLINT
+                                                           int num_substeps)
+  : step(step_number), state0(start_state), state1(end_state), total_substeps(num_substeps)
 {
   substeps.resize(static_cast<std::size_t>(num_substeps));
 }
 
-ContactTrajectoryStepResults::ContactTrajectoryStepResults(const int& step_number, const Eigen::VectorXd& state)
+ContactTrajectoryStepResults::ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state)
   : step(step_number), state0(state), state1(state), total_substeps(1)
 {
   substeps.resize(static_cast<std::size_t>(1));
 }
 
-void ContactTrajectoryStepResults::resize(const int& num_substeps)
+void ContactTrajectoryStepResults::resize(int num_substeps)
 {
   total_substeps = num_substeps;
   substeps.resize(static_cast<std::size_t>(num_substeps));
@@ -405,13 +405,13 @@ ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_na
 {
 }
 
-ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names, const int& num_steps)
+ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps)
   : joint_names(std::move(j_names)), total_steps(num_steps)
 {
   steps.resize(static_cast<std::size_t>(num_steps));
 }
 
-void ContactTrajectoryResults::resize(const int& num_steps)
+void ContactTrajectoryResults::resize(int num_steps)
 {
   total_steps = num_steps;
   steps.resize(static_cast<std::size_t>(num_steps));
