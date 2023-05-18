@@ -469,6 +469,8 @@ struct ContactTrajectorySubstepResults
   ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& start_state, const Eigen::VectorXd& end_state);
   ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& state);
 
+  using UPtr = std::unique_ptr<ContactTrajectorySubstepResults>;
+
   int numContacts() const;
 
   tesseract_collision::ContactResultVector worstCollision() const;
@@ -489,6 +491,8 @@ struct ContactTrajectoryStepResults
                                const Eigen::VectorXd& end_state,
                                int num_substeps);
   ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state);
+
+  using UPtr = std::unique_ptr<ContactTrajectoryStepResults>;
 
   void resize(int num_substeps);
 
@@ -514,6 +518,8 @@ struct ContactTrajectoryResults
   ContactTrajectoryResults() = default;
   ContactTrajectoryResults(std::vector<std::string> j_names);
   ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps);
+
+  using UPtr = std::unique_ptr<ContactTrajectoryResults>;
 
   void resize(int num_steps);
 
