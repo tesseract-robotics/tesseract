@@ -32,6 +32,7 @@ jobs:
         triplet: x64-windows-release
         extra-args: --clean-after-build
         token: ${{ github.token }}
+        cache-key: ci-${{ matrix.os }}
 
     - name: install-depends
       shell: cmd
