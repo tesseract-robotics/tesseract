@@ -289,7 +289,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       double dist = (traj.row(iStep + 1) - traj.row(iStep)).norm();
       if (dist > config.longest_valid_segment_length)
       {
-        tesseract_common::TrajArray::Index cnt = static_cast<tesseract_common::TrajArray::Index>(std::ceil(dist / config.longest_valid_segment_length)) + 1;
+        tesseract_common::TrajArray::Index cnt =
+            static_cast<tesseract_common::TrajArray::Index>(std::ceil(dist / config.longest_valid_segment_length)) + 1;
         tesseract_common::TrajArray subtraj(cnt, traj.cols());
         for (tesseract_common::TrajArray::Index iVar = 0; iVar < traj.cols(); ++iVar)
           subtraj.col(iVar) = Eigen::VectorXd::LinSpaced(cnt, traj.row(iStep)(iVar), traj.row(iStep + 1)(iVar));
