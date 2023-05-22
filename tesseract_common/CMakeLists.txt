@@ -79,6 +79,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CUR
                                                   "$<INSTALL_INTERFACE:include>")
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
+if(WIN32)
+target_link_libraries(${PROJECT_NAME} PUBLIC Bcrypt)
+endif()
 
 # Mark cpp header files for installation
 install(
