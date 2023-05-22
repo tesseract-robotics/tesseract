@@ -118,7 +118,7 @@ void GeneralResourceLocator::processToken(const std::string& token)
   }
   else
   {
-    CONSOLE_BRIDGE_logError("Package Path does not exist: &s", token.c_str());
+    CONSOLE_BRIDGE_logError("Package Path does not exist: %s", token.c_str());
   }
 }
 
