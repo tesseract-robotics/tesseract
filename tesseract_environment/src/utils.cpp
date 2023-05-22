@@ -90,6 +90,9 @@ void checkTrajectorySegment(tesseract_collision::ContactResultMap& contact_resul
     {
       for (const auto& collision : contact_results)
       {
+        if (collision.second.empty())
+          continue;
+
         std::stringstream ss;
         ss << "Continuous collision detected between '" << collision.first.first << "' and '" << collision.first.second
            << "' with distance " << collision.second.front().distance << std::endl;
@@ -125,6 +128,9 @@ void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results
     {
       for (const auto& collision : contact_results)
       {
+        if (collision.second.empty())
+          continue;
+
         std::stringstream ss;
         ss << "Discrete collision detected between '" << collision.first.first << "' and '" << collision.first.second
            << "' with distance " << collision.second.front().distance << std::endl;
@@ -151,6 +157,9 @@ void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results
     {
       for (const auto& collision : contact_results)
       {
+        if (collision.second.empty())
+          continue;
+
         std::stringstream ss;
         ss << "Discrete collision detected between '" << collision.first.first << "' and '" << collision.first.second
            << "' with distance " << collision.second.front().distance << std::endl;
