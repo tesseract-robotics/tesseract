@@ -173,9 +173,9 @@ void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results
 void printContinuousDebugInfo(const std::vector<std::string>& joint_names,
                               const Eigen::VectorXd& swp0,
                               const Eigen::VectorXd& swp1,
-                              long step_idx,
-                              long step_size,
-                              long sub_step_idx = -1)
+                              tesseract_common::TrajArray::Index step_idx,
+                              tesseract_common::TrajArray::Index step_size,
+                              tesseract_common::TrajArray::Index sub_step_idx = -1)
 {
   std::stringstream ss;
   ss << "Continuous collision detected at step: " << step_idx << " of " << step_size;
@@ -194,9 +194,9 @@ void printContinuousDebugInfo(const std::vector<std::string>& joint_names,
 
 void printDiscreteDebugInfo(const std::vector<std::string>& joint_names,
                             const Eigen::VectorXd& swp,
-                            long step_idx,
-                            long step_size,
-                            long sub_step_idx = -1)
+                            tesseract_common::TrajArray::Index step_idx,
+                            tesseract_common::TrajArray::Index step_size,
+                            tesseract_common::TrajArray::Index sub_step_idx = -1)
 {
   std::stringstream ss;
   ss << "Discrete collision detected at step: " << step_idx << " of " << step_size;
@@ -282,23 +282,24 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
   if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
   {
-    for (long iStep = 0; iStep < traj.rows() - 1; ++iStep)
+    for (tesseract_common::TrajArray::Index iStep = 0; iStep < traj.rows() - 1; ++iStep)
     {
       state_results.clear();
 
       double dist = (traj.row(iStep + 1) - traj.row(iStep)).norm();
       if (dist > config.longest_valid_segment_length)
       {
-        long cnt = static_cast<long>(std::ceil(dist / config.longest_valid_segment_length)) + 1;
+        tesseract_common::TrajArray::Index cnt =
+            static_cast<tesseract_common::TrajArray::Index>(std::ceil(dist / config.longest_valid_segment_length)) + 1;
         tesseract_common::TrajArray subtraj(cnt, traj.cols());
-        for (long iVar = 0; iVar < traj.cols(); ++iVar)
+        for (tesseract_common::TrajArray::Index iVar = 0; iVar < traj.cols(); ++iVar)
           subtraj.col(iVar) = Eigen::VectorXd::LinSpaced(cnt, traj.row(iStep)(iVar), traj.row(iStep + 1)(iVar));
 
         auto sub_segment_last_index = static_cast<int>(subtraj.rows() - 1);
 
         // Update start index based on collision check program mode
-        long start_idx{ 0 };
-        long end_idx{ subtraj.rows() - 1 };
+        tesseract_common::TrajArray::Index start_idx{ 0 };
+        tesseract_common::TrajArray::Index end_idx{ subtraj.rows() - 1 };
         if (iStep == 0)
         {
           if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START ||
@@ -313,7 +314,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
             --end_idx;
         }
 
-        for (long iSubStep = start_idx; iSubStep < end_idx; ++iSubStep)
+        for (tesseract_common::TrajArray::Index iSubStep = start_idx; iSubStep < end_idx; ++iSubStep)
         {
           tesseract_common::TransformMap state0 = state_fn(subtraj.row(iSubStep));
           tesseract_common::TransformMap state1 = state_fn(subtraj.row(iSubStep + 1));
@@ -382,8 +383,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   }
   else
   {
-    long start_idx{ 0 };
-    long end_idx{ traj.rows() - 1 };
+    tesseract_common::TrajArray::Index start_idx{ 0 };
+    tesseract_common::TrajArray::Index end_idx{ traj.rows() - 1 };
     if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START ||
         config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
     {
@@ -395,7 +396,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
       --end_idx;
 
-    for (long iStep = start_idx; iStep < end_idx; ++iStep)
+    for (tesseract_common::TrajArray::Index iStep = start_idx; iStep < end_idx; ++iStep)
     {
       tesseract_common::TransformMap state0 = state_fn(traj.row(iStep));
       tesseract_common::TransformMap state1 = state_fn(traj.row(iStep + 1));
@@ -536,14 +537,14 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       {
         int cnt = static_cast<int>(std::ceil(dist / config.longest_valid_segment_length)) + 1;
         tesseract_common::TrajArray subtraj(cnt, traj.cols());
-        for (long iVar = 0; iVar < traj.cols(); ++iVar)
+        for (tesseract_common::TrajArray::Index iVar = 0; iVar < traj.cols(); ++iVar)
           subtraj.col(iVar) = Eigen::VectorXd::LinSpaced(cnt, traj.row(iStep)(iVar), traj.row(iStep + 1)(iVar));
 
         auto sub_segment_last_index = static_cast<int>(subtraj.rows() - 1);
 
         // Update start index based on collision check program mode
-        long start_idx{ 0 };
-        long end_idx{ subtraj.rows() - 1 };
+        tesseract_common::TrajArray::Index start_idx{ 0 };
+        tesseract_common::TrajArray::Index end_idx{ subtraj.rows() - 1 };
         if (iStep == 0)
         {
           if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START ||
@@ -560,7 +561,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
             --end_idx;
         }
 
-        for (long iSubStep = start_idx; iSubStep < end_idx; ++iSubStep)
+        for (tesseract_common::TrajArray::Index iSubStep = start_idx; iSubStep < end_idx; ++iSubStep)
         {
           tesseract_common::TransformMap state = state_fn(subtraj.row(iSubStep));
           sub_state_results.clear();
@@ -706,8 +707,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   }
   else
   {
-    long start_idx{ 0 };
-    long end_idx(traj.rows());
+    tesseract_common::TrajArray::Index start_idx{ 0 };
+    tesseract_common::TrajArray::Index end_idx(traj.rows());
 
     if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START ||
         config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
@@ -720,7 +721,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
       --end_idx;
 
-    for (long iStep = start_idx; iStep < end_idx; ++iStep)
+    for (tesseract_common::TrajArray::Index iStep = start_idx; iStep < end_idx; ++iStep)
     {
       state_results.clear();
 
