@@ -208,7 +208,6 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
-  assert(cd1->getName() != cd2->getName());
 
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
                          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
@@ -277,7 +276,6 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
-  assert(cd1->getName() != cd2->getName());
 
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
                          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
