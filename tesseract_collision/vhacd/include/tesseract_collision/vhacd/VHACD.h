@@ -1,4 +1,6 @@
+// Disable clang-format and clang-tidy checks for this external library
 // clang-format off
+// NOLINTBEGIN
 /* Copyright (c) 2011 Khaled Mamou (kmamou at gmail dot com)
  All rights reserved.
  
@@ -8366,3 +8368,4 @@ IVHACD* CreateVHACD_ASYNC()
 #endif // ENABLE_VHACD_IMPLEMENTATION
 
 #endif // VHACD_H
+// NOLINTEND
