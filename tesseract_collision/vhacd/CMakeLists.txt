@@ -12,6 +12,8 @@ target_compile_options(${PROJECT_NAME}_vhacd_convex_decomposition PUBLIC ${TESSE
 target_compile_definitions(${PROJECT_NAME}_vhacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_cxx_version(${PROJECT_NAME}_vhacd_convex_decomposition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_clang_tidy(${PROJECT_NAME}_vhacd_convex_decomposition ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_clang_tidy(${PROJECT_NAME}_vhacd_convex_decomposition LINE_FILTER
+                  "[{'name':'VHACD.h','lines':[[9999999, 9999999]]}, {'name':'.h'}, {'name':'.hpp'}]")
 target_code_coverage(
   ${PROJECT_NAME}_vhacd_convex_decomposition
   PRIVATE
