@@ -517,7 +517,7 @@ inline void harmonizeRedundantSolutions(Eigen::Ref<VectorX<FloatType>> qs,
   const static auto pi = FloatType(M_PI);
   const static auto two_pi = FloatType(2.0 * M_PI);
 
-  for (Eigen::VectorX<FloatType>::Index i =0; i< qs.size(); i++)
+  for (VectorX<FloatType>::Index i =0; i< qs.size(); i++)
   {
     // TODO: Should this harmonize here? It may have unpredictable results on numerical solvers
     // FloatType diff = std::fmod(qs[i] + pi, two_pi);
