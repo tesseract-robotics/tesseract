@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove invalid assert from FCL collision and distance callback functions
+* Contributors: Levi Armstrong
+
 0.16.3 (2023-05-04)
 -------------------
 

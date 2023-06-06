@@ -2,6 +2,13 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Windows updates (`#893 <https://github.com/tesseract-robotics/tesseract/issues/893>`_)
+* Fix check trajectory print statements (`#892 <https://github.com/tesseract-robotics/tesseract/issues/892>`_)
+* implemented benchmarking for checking trajectories (`#887 <https://github.com/tesseract-robotics/tesseract/issues/887>`_)
+* Contributors: John Wason, Levi Armstrong, Tyler Marr
+
 0.16.3 (2023-05-04)
 -------------------
 
