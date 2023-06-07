@@ -1,4 +1,4 @@
-# Convex decomposition libraries
+# Convex decomposition library
 add_library(${PROJECT_NAME}_vhacd_convex_decomposition src/convex_decomposition_vhacd.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_vhacd_convex_decomposition
@@ -11,9 +11,8 @@ target_compile_options(${PROJECT_NAME}_vhacd_convex_decomposition PRIVATE ${TESS
 target_compile_options(${PROJECT_NAME}_vhacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_vhacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_cxx_version(${PROJECT_NAME}_vhacd_convex_decomposition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
-target_clang_tidy(${PROJECT_NAME}_vhacd_convex_decomposition ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_clang_tidy(${PROJECT_NAME}_vhacd_convex_decomposition LINE_FILTER
-                  "[{'name':'VHACD.h','lines':[[9999999, 9999999]]}, {'name':'.h'}, {'name':'.hpp'}]")
+# target_clang_tidy(${PROJECT_NAME}_vhacd_convex_decomposition ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+
 target_code_coverage(
   ${PROJECT_NAME}_vhacd_convex_decomposition
   PRIVATE
