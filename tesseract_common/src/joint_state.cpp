@@ -45,10 +45,10 @@ bool JointState::operator==(const JointState& other) const
 {
   bool ret_val = true;
   ret_val &= (joint_names == other.joint_names);
-  ret_val &= (position.isApprox(other.position, 1e-5));
-  ret_val &= (velocity.isApprox(other.velocity, 1e-5));
-  ret_val &= (acceleration.isApprox(other.acceleration, 1e-5));
-  ret_val &= (effort.isApprox(other.effort, 1e-5));
+  ret_val &= ((position.size() == other.position.size()) && (position.isApprox(other.position, 1e-5)));
+  ret_val &= ((velocity.size() == other.velocity.size()) && (velocity.isApprox(other.velocity, 1e-5)));
+  ret_val &= ((acceleration.size() == other.acceleration.size()) && (acceleration.isApprox(other.acceleration, 1e-5)));
+  ret_val &= ((effort.size() == other.effort.size()) && (effort.isApprox(other.effort, 1e-5)));
   ret_val &= (tesseract_common::almostEqualRelativeAndAbs(time, other.time, 1e-5));
   return ret_val;
 }
