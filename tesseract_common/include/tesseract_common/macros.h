@@ -39,11 +39,9 @@
              _Pragma("GCC diagnostic ignored \"-Winconsistent-missing-override\"")	                                   \
                  _Pragma("GCC diagnostic ignored \"-Wconversion\"")			                                               \
                      _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")		                                       \
-                         _Pragma("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")		                               \
-                             _Pragma("GCC diagnostic ignored \"-Wunused-variable\"")		                               \
-                                 _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")		                           \
-                                     _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")                           \
-                                        _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+                         _Pragma("GCC diagnostic ignored \"-Wunused-variable\"")		                                   \
+                             _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")                                   \
+                                 _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
 #else
 #define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH                                                                          \
   _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
