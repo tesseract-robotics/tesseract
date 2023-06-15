@@ -1,4 +1,4 @@
-name: Ubuntu
+name: Ubuntu-Jammy
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   pull_request:
     paths:
       - 'tesseract**'
-      - '.github/workflows/ubuntu.yml'
+      - '.github/workflows/ubuntu_jammy.yml'
       - '**.repos'
   schedule:
     - cron: '0 5 * * *'
@@ -22,10 +22,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [focal]
+        distro: [jammy]
         include:
-          - distro: focal
-            image: ubuntu:20.04
+          - distro: jammy
+            image: ubuntu:22.04
     env:
       CCACHE_DIR: "${{ github.workspace }}/${{ matrix.distro }}/.ccache"
       REGISTRY: ghcr.io

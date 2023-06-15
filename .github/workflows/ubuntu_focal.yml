@@ -1,0 +1,109 @@
+name: Ubuntu-Focal
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/ubuntu_focal.yml'
+      - '**.repos'
+  schedule:
+    - cron: '0 5 * * *'
+  release:
+    types:
+      - released
+
+jobs:
+  ci:
+    name: ${{ matrix.distro }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [focal]
+        include:
+          - distro: focal
+            image: ubuntu:20.04
+    env:
+      CCACHE_DIR: "${{ github.workspace }}/${{ matrix.distro }}/.ccache"
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+      PUSH_DOCKER_IMAGE: ${{ github.ref == 'refs/heads/master' || github.event_name == 'release' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Free disk space
+        continue-on-error: true
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker image ls -aq)
+          df -h
+
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
+
+      - name: ccache cache files
+        continue-on-error: true
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ matrix.distro }}/.ccache
+          key: ${{ matrix.distro }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ matrix.distro }}-ccache-
+
+      - name: Login to Github container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker meta-information
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=false
+            prefix=
+            suffix=
+          tags: |
+            type=ref,event=branch,prefix=${{ matrix.distro }}-
+            type=semver,pattern={{major}}.{{minor}},prefix=${{ matrix.distro }}-
+
+      - name: Set build type
+        run: |
+          if [[ "${{ env.PUSH_DOCKER_IMAGE }}" = true ]]
+          then
+            echo "BUILD_TYPE=Release" >> $GITHUB_ENV
+          else
+            echo "BUILD_TYPE=Debug" >> $GITHUB_ENV
+          fi
+
+      - name: Build repository
+        uses: 'tesseract-robotics/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
+        env:
+          DOCKER_IMAGE: ${{ matrix.image }}
+          ROS_DISTRO: false
+          ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
+          AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
+          UPSTREAM_WORKSPACE: 'dependencies.repos'
+          ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin"
+          PREFIX: ${{ github.repository }}_
+          UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+          TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTESSERACT_ENABLE_TESTING=ON"
+          BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source $BASEDIR/${PREFIX}target_ws/install/setup.bash"
+          DOCKER_COMMIT: ${{ steps.meta.outputs.tags }}
+
+      - name: Push post-build Docker
+        if: ${{ env.PUSH_DOCKER_IMAGE  == 'true' }}
+        run: docker push ${{ steps.meta.outputs.tags }}

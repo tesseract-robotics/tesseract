@@ -8,7 +8,8 @@
 
 Platform             | CI Status
 ---------------------|:---------
-Linux (Focal)        | [![Build Status](https://github.com/tesseract-robotics/tesseract/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions/workflows/ubuntu.yml)
+Linux (Focal)        | [![Build Status](https://github.com/tesseract-robotics/tesseract/actions/workflows/ubuntu_focal.yml/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions/workflows/ubuntu_focal.yml)
+Linux (Jammy)        | [![Build Status](https://github.com/tesseract-robotics/tesseract/actions/workflows/ubuntu_jammy.yml/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions/workflows/ubuntu_jammy.yml)
 Windows              | [![Build Status](https://github.com/tesseract-robotics/tesseract/actions/workflows/windows.yml/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions/workflows/windows.yml)
 Lint  (Clang-Format) | [![Build Status](https://github.com/tesseract-robotics/tesseract/actions/workflows/clang_format.yml/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions/workflows/clang_format.yml)
 Lint  (CMake-Format) | [![Build Status](https://github.com/tesseract-robotics/tesseract/actions/workflows/cmake_format.yml/badge.svg)](https://github.com/tesseract-robotics/tesseract/actions/workflows/cmake_format.yml)
