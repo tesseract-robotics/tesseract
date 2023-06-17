@@ -97,7 +97,8 @@ public:
    *                  three vertices that define this face followed by three indices.
    * @param triangle_count Provide the number of faces. This is faster because it does not need to loop over triangles.
    * @param resource A resource locator for locating resource
-   * @param scale Scale the mesh
+   * @param scale Scale the resource mesh. The stored mesh data will already be scaled but if using the resource use
+   * this.
    * @param normals A vector of normals for the vertices (optional)
    * @param vertex_colors A vector of colors (RGBA) for the vertices (optional)
    * @param mesh_material A MeshMaterial describing the color and material properties of the mesh (optional)

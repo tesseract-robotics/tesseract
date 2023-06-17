@@ -2,6 +2,12 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.17.0 (2023-06-06)
+-------------------
+* Windows updates (`#893 <https://github.com/tesseract-robotics/tesseract/issues/893>`_)
+* Update resource_locator.cpp (`#889 <https://github.com/tesseract-robotics/tesseract/issues/889>`_)
+* Contributors: John Wason, Levi Armstrong
+
 0.16.3 (2023-05-04)
 -------------------
 

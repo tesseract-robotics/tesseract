@@ -1,9 +1,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
-#include <iomanip>
-#include <iostream>
-#include <tesseract_collision/vhacd/VHACD.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/bullet/convex_hull_utils.h>
@@ -21,16 +18,14 @@ public:
   ProgressCallback(ProgressCallback&&) = default;
   ProgressCallback& operator=(ProgressCallback&&) = default;
 
-  void Update(double overallProgress,
-              double stageProgress,
-              double operationProgress,
-              const std::string& stage,
-              const std::string& operation) override
+  void Update(const double overallProgress,
+              const double stageProgress,
+              const char* const stage,
+              const char* operation) override
   {
     std::cout << std::setfill(' ') << std::setw(3) << std::lround(overallProgress + 0.5) << "% "
               << "[ " << stage << " " << std::setfill(' ') << std::setw(3) << lround(stageProgress + 0.5) << "% ] "
-              << operation << " " << std::setfill(' ') << std::setw(3) << std::lround(operationProgress + 0.5) << "%"
-              << std::endl;
+              << operation << std::endl;
   }
 };
 
@@ -67,28 +62,24 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
   VHACD::IVHACD* interfaceVHACD = VHACD::CreateVHACD();
 
   ProgressCallback progress_callback;
-  VHACD::IVHACD::Parameters p;
-  p.m_concavity = params_.concavity;
-  p.m_alpha = params_.alpha;
-  p.m_beta = params_.beta;
-  p.m_minVolumePerCH = params_.min_volume_per_ch;
-  p.m_resolution = params_.resolution;
-  p.m_maxNumVerticesPerCH = params_.max_num_vertices_per_ch;
-  p.m_planeDownsampling = params_.plane_downsampling;
-  p.m_convexhullDownsampling = params_.convexhull_downsampling;
-  p.m_pca = params_.pca;
-  p.m_mode = params_.mode;
-  p.m_convexhullApproximation = params_.convexhull_approximation;
-  p.m_oclAcceleration = params_.ocl_acceleration;
-  p.m_maxConvexHulls = params_.max_convehulls;
-  p.m_projectHullVertices = params_.project_hull_vertices;
-  p.m_callback = &progress_callback;
+  VHACD::IVHACD::Parameters par;
+  par.m_maxConvexHulls = params_.max_convex_hulls;
+  par.m_resolution = params_.resolution;
+  par.m_minimumVolumePercentErrorAllowed = params_.minimum_volume_percent_error_allowed;
+  par.m_maxRecursionDepth = params_.max_recursion_depth;
+  par.m_shrinkWrap = params_.shrinkwrap;
+  par.m_fillMode = params_.fill_mode;
+  par.m_maxNumVerticesPerCH = params_.max_num_vertices_per_ch;
+  par.m_asyncACD = params_.async_ACD;
+  par.m_minEdgeLength = params_.min_edge_length;
+  par.m_findBestPlane = params_.find_best_plane;
+  par.m_callback = &progress_callback;
 
   bool res = interfaceVHACD->Compute(&points_local[0],
                                      static_cast<unsigned int>(points_local.size() / 3),
                                      (const uint32_t*)(&triangles_local[0]),
                                      static_cast<unsigned int>(triangles_local.size() / 3),
-                                     p);
+                                     par);
 
   std::vector<tesseract_geometry::ConvexMesh::Ptr> output;
   if (res)
@@ -100,10 +91,10 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
       interfaceVHACD->GetConvexHull(p, ch);
 
       auto vhacd_vertices = std::make_shared<tesseract_common::VectorVector3d>();
-      vhacd_vertices->reserve(ch.m_nPoints);
-      for (std::size_t i = 0; i < ch.m_nPoints; ++i)
+      vhacd_vertices->reserve(ch.m_points.size());
+      for (std::size_t i = 0; i < ch.m_points.size(); ++i)
       {
-        Eigen::Vector3d v(ch.m_points[3 * i], ch.m_points[(3 * i) + 1], ch.m_points[(3 * i) + 2]);
+        Eigen::Vector3d v(ch.m_points[i].mX, ch.m_points[i].mY, ch.m_points[i].mZ);
         vhacd_vertices->push_back(v);
       }
 
@@ -128,21 +119,29 @@ void VHACDParameters::print() const
 {
   std::stringstream msg;
   msg << "+ Parameters" << std::endl;
-  msg << "\t resolution                                  " << resolution << std::endl;
-  msg << "\t Max number of convex-hulls                  " << max_convehulls << std::endl;
-  msg << "\t max. concavity                              " << concavity << std::endl;
-  msg << "\t plane down-sampling                         " << plane_downsampling << std::endl;
-  msg << "\t convex-hull down-sampling                   " << convexhull_downsampling << std::endl;
-  msg << "\t alpha                                       " << alpha << std::endl;
-  msg << "\t beta                                        " << beta << std::endl;
-  msg << "\t pca                                         " << pca << std::endl;
-  msg << "\t mode                                        " << mode << std::endl;
-  msg << "\t max. vertices per convex-hull               " << max_num_vertices_per_ch << std::endl;
-  msg << "\t min. volume to add vertices to convex-hulls " << min_volume_per_ch << std::endl;
-  msg << "\t convex-hull approximation                   " << convexhull_approximation << std::endl;
-  msg << "\t OpenCL acceleration                         " << ocl_acceleration << std::endl;
-  //  msg << "\t OpenCL platform ID                          " << oclPlatformID << std::endl;
-  //  msg << "\t OpenCL device ID                            " << oclDeviceID << std::endl;
+  msg << "\t Max number of convex hulls                      " << max_convex_hulls << std::endl;
+  msg << "\t Voxel resolution                                " << resolution << std::endl;
+  msg << "\t Volume error allowed as a percentage            " << minimum_volume_percent_error_allowed << std::endl;
+  msg << "\t Maximum recursion depth                         " << max_recursion_depth << std::endl;
+  msg << "\t Shrinkwrap output to source mesh                " << shrinkwrap << std::endl;
+  msg << "\t Fill mode                                       ";
+  switch (fill_mode)
+  {
+    case VHACD::FillMode::FLOOD_FILL:
+      msg << "FLOOD_FILL";
+      break;
+    case VHACD::FillMode::SURFACE_ONLY:
+      msg << "SURFACE_ONLY";
+      break;
+    case VHACD::FillMode::RAYCAST_FILL:
+      msg << "RAYCAST_FILL";
+      break;
+  }
+  msg << std::endl;
+  msg << "\t Maximum number of vertices                      " << max_num_vertices_per_ch << std::endl;
+  msg << "\t Run asynchronously                              " << async_ACD << std::endl;
+  msg << "\t Minimum size of a voxel edge                    " << min_edge_length << std::endl;
+  msg << "\t Attempt to split planes along the best location " << find_best_plane << std::endl;
 
   std::cout << msg.str();
 }

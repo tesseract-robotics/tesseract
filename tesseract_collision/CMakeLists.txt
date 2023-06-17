@@ -144,16 +144,6 @@ if(TESSERACT_PACKAGE)
     list(APPEND LINUX_DEPENDS "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
   endif()
 
-  if(TESSERACT_BUILD_VHACD)
-    list(APPEND LINUX_DEPENDS "libomp-dev")
-    list(APPEND WINDOWS_DEPENDS "omp")
-
-    if(OpenCL_FOUND)
-      list(APPEND LINUX_DEPENDS "ocl-icd-opencl-dev")
-      list(APPEND WINDOWS_DEPENDS "ocl-icd-opencl")
-    endif()
-  endif()
-
   tesseract_cpack(
     VERSION ${pkg_extracted_version}
     MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
