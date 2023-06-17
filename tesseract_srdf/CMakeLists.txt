@@ -81,11 +81,11 @@ install(FILES include/${PROJECT_NAME}/srdf_model.h include/${PROJECT_NAME}/kinem
               include/${PROJECT_NAME}/utils.h DESTINATION include/${PROJECT_NAME})
 
 # ADD Examples
-if(TESSERACT_ENABLE_EXAMPLES)
+if(TESSERACT_ENABLE_EXAMPLES OR TESSERACT_SRDF_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-if(TESSERACT_ENABLE_TESTING)
+if(TESSERACT_ENABLE_TESTING OR TESSERACT_SRDF_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)

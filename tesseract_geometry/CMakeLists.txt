@@ -112,11 +112,11 @@ install(
 install(FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/Findassimp.cmake" DESTINATION lib/cmake/${PROJECT_NAME})
 
 # ADD Examples
-if(TESSERACT_ENABLE_EXAMPLES)
+if(TESSERACT_ENABLE_EXAMPLES OR TESSERACT_GEOMETRY_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-if(TESSERACT_ENABLE_TESTING)
+if(TESSERACT_ENABLE_TESTING OR TESSERACT_GEOMETRY_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
