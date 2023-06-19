@@ -59,6 +59,7 @@ ContactRequest::ContactRequest(ContactTestType type) : type(type) {}
 
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactResult result)
 {
+  assert(tesseract_common::makeOrderedLinkPair(key.first, key.second) == key);
   ++count_;
   auto& cv = data_[key];
   return cv.emplace_back(std::move(result));
@@ -67,6 +68,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactRes
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, const MappedType& results)
 {
   assert(!results.empty());
+  assert(tesseract_common::makeOrderedLinkPair(key.first, key.second) == key);
   count_ += static_cast<long>(results.size());
   auto& cv = data_[key];
   cv.reserve(cv.size() + results.size());
@@ -76,6 +78,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, const Mapp
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactResult result)
 {
+  assert(tesseract_common::makeOrderedLinkPair(key.first, key.second) == key);
   auto& cv = data_[key];
   count_ += (1 - static_cast<long>(cv.size()));
   assert(count_ >= 0);
@@ -86,6 +89,7 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactRes
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, const MappedType& results)
 {
+  assert(tesseract_common::makeOrderedLinkPair(key.first, key.second) == key);
   assert(!results.empty());
   auto& cv = data_[key];
   count_ += (static_cast<long>(results.size()) - static_cast<long>(cv.size()));
@@ -106,6 +110,7 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
 {
   for (auto& pair : sub_segment_results.data_)
   {
+    assert(tesseract_common::makeOrderedLinkPair(pair.first.first, pair.first.second) == pair.first);
     // Update cc_time and cc_type
     for (auto& r : pair.second)
     {

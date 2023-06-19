@@ -182,7 +182,7 @@ install(
   PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
 
-if(TESSERACT_ENABLE_TESTING)
+if(TESSERACT_ENABLE_TESTING OR TESSERACT_VISUALIZATION_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)

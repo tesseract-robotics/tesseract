@@ -99,7 +99,7 @@ install(
         "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc_minimal.cmake"
   DESTINATION lib/cmake/${PROJECT_NAME})
 
-if(TESSERACT_ENABLE_TESTING)
+if(TESSERACT_ENABLE_TESTING OR TESSERACT_COMMON_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
