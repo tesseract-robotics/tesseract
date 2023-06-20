@@ -468,7 +468,9 @@ struct CollisionCheckConfig
  */
 struct ContactTrajectorySubstepResults
 {
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   ContactTrajectorySubstepResults() = default;
   ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& start_state, const Eigen::VectorXd& end_state);
@@ -493,7 +495,9 @@ struct ContactTrajectorySubstepResults
  */
 struct ContactTrajectoryStepResults
 {
+  // LCOV_EXCL_START
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
 
   ContactTrajectoryStepResults() = default;
   ContactTrajectoryStepResults(int step_number,
