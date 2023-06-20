@@ -461,6 +461,11 @@ struct CollisionCheckConfig
   CollisionCheckProgramType check_program_mode{ CollisionCheckProgramType::ALL };
 };
 
+/**
+ * @brief The ContactTrajectorySubstepResults struct is the lowest level struct for tracking contacts in a trajectory.
+ * This struct is used for substeps between waypoints in a trajectory when a longest valid segment is used, storing the
+ * relevant states of the substep.
+ */
 struct ContactTrajectorySubstepResults
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -481,6 +486,11 @@ struct ContactTrajectorySubstepResults
   Eigen::VectorXd state1;
 };
 
+/**
+ * @brief The ContactTrajectoryStepResults struct is the second level struct for tracking contacts in a trajectory. This
+ * struct stores all the substep contact information as well as the start and end state of the given step in the
+ * trajectory.
+ */
 struct ContactTrajectoryStepResults
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -513,6 +523,11 @@ struct ContactTrajectoryStepResults
   int total_substeps = 0;
 };
 
+/**
+ * @brief The ContactTrajectoryResults struct is the top level struct for tracking contacts in a trajectory. This struct
+ * stores all the steps and therefore all the contacts in a trajectory. It also exposes a method for returning a contact
+ * summary table as a string for printing to a terminal.
+ */
 struct ContactTrajectoryResults
 {
   ContactTrajectoryResults() = default;
