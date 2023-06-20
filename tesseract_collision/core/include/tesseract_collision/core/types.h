@@ -534,6 +534,10 @@ struct ContactTrajectoryStepResults
  */
 struct ContactTrajectoryResults
 {
+  // LCOV_EXCL_START
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
+
   ContactTrajectoryResults() = default;
   ContactTrajectoryResults(std::vector<std::string> j_names);
   ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps);
