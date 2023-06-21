@@ -179,7 +179,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
   manager.applyContactManagerConfig(config.contact_manager_config);
 
-  bool debug_logging = console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
+  bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
 
   tesseract_collision::ContactTrajectoryResults::UPtr traj_contacts;
   if (debug_logging)
@@ -482,7 +482,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
   manager.applyContactManagerConfig(config.contact_manager_config);
 
-  bool debug_logging = console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
+  bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
 
   tesseract_collision::ContactTrajectoryResults::UPtr traj_contacts;
   if (debug_logging)
