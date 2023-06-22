@@ -283,7 +283,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
           if (debug_logging)
           {
             substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(
-                static_cast<int>(iSubStep), subtraj.row(iSubStep));
+                static_cast<int>(iSubStep) + 1, subtraj.row(iSubStep));
           }
 
           tesseract_common::TransformMap state0 = state_fn(subtraj.row(iSubStep));
@@ -623,7 +623,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
           if (debug_logging)
           {
             substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(
-                static_cast<int>(iSubStep), subtraj.row(iSubStep));
+                static_cast<int>(iSubStep) + 1, subtraj.row(iSubStep));
           }
 
           tesseract_common::TransformMap state = state_fn(subtraj.row(iSubStep));
