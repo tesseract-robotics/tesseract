@@ -343,9 +343,9 @@ ContactTrajectoryStepResults::ContactTrajectoryStepResults(int step_number,
 }
 
 ContactTrajectoryStepResults::ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state)
-  : step(step_number), state0(state), state1(state), total_substeps(1)
+  : step(step_number), state0(state), state1(state), total_substeps(2)
 {
-  substeps.resize(static_cast<std::size_t>(1));
+  substeps.resize(static_cast<std::size_t>(2));
 }
 
 void ContactTrajectoryStepResults::resize(int num_substeps)

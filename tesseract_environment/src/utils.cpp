@@ -179,7 +179,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
   manager.applyContactManagerConfig(config.contact_manager_config);
 
-  bool debug_logging = console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
+  bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
 
   tesseract_collision::ContactTrajectoryResults::UPtr traj_contacts;
   if (debug_logging)
@@ -283,7 +283,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
           if (debug_logging)
           {
             substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(
-                static_cast<int>(iSubStep), subtraj.row(iSubStep));
+                static_cast<int>(iSubStep) + 1, subtraj.row(iSubStep), subtraj.row(iSubStep + 1));
           }
 
           tesseract_common::TransformMap state0 = state_fn(subtraj.row(iSubStep));
@@ -347,8 +347,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         if (debug_logging)
         {
           step_contacts = std::make_unique<tesseract_collision::ContactTrajectoryStepResults>(
-              static_cast<int>(iStep + 1), traj.row(iStep));
-          substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(1, traj.row(iStep));
+              static_cast<int>(iStep + 1), traj.row(iStep), traj.row(iStep + 1), 1);
+          substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(1, traj.row(iStep), traj.row(iStep + 1));
         }
 
         tesseract_common::TransformMap state0 = state_fn(traj.row(iStep));
@@ -367,6 +367,11 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
           }
         }
         contacts.push_back(state_results);
+
+        if (debug_logging)
+        {
+          traj_contacts->steps[static_cast<size_t>(iStep)] = *step_contacts;
+        }
 
         if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
           break;
@@ -395,8 +400,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
       if (debug_logging)
       {
         step_contacts = std::make_unique<tesseract_collision::ContactTrajectoryStepResults>(static_cast<int>(iStep + 1),
-                                                                                            traj.row(iStep));
-        substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(1, traj.row(iStep));
+                                                                                            traj.row(iStep), traj.row(iStep + 1), 1);
+        substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(1, traj.row(iStep), traj.row(iStep + 1));
       }
 
       tesseract_common::TransformMap state0 = state_fn(traj.row(iStep));
@@ -417,6 +422,11 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         }
       }
       contacts.push_back(state_results);
+
+      if (debug_logging)
+      {
+        traj_contacts->steps[static_cast<size_t>(iStep)] = *step_contacts;
+      }
 
       if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
         break;
@@ -472,7 +482,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
   manager.applyContactManagerConfig(config.contact_manager_config);
 
-  bool debug_logging = console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
+  bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
 
   tesseract_collision::ContactTrajectoryResults::UPtr traj_contacts;
   if (debug_logging)
@@ -613,7 +623,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
           if (debug_logging)
           {
             substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(
-                static_cast<int>(iSubStep), subtraj.row(iSubStep));
+                static_cast<int>(iSubStep) + 1, subtraj.row(iSubStep));
           }
 
           tesseract_common::TransformMap state = state_fn(subtraj.row(iSubStep));
@@ -654,11 +664,13 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         // Special case when using LVS and only two states
         tesseract_collision::ContactTrajectoryStepResults::UPtr step_contacts;
         tesseract_collision::ContactTrajectorySubstepResults::UPtr substep_contacts;
+        tesseract_collision::ContactTrajectorySubstepResults::UPtr end_substep_contacts;
         if (debug_logging)
         {
           step_contacts =
               std::make_unique<tesseract_collision::ContactTrajectoryStepResults>(iStep + 1, traj.row(iStep));
           substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(1, traj.row(iStep));
+          end_substep_contacts = std::make_unique<tesseract_collision::ContactTrajectorySubstepResults>(2, traj.row(iStep + 1));
         }
 
         if (iStep == 0 && traj.rows() == 2)
@@ -700,8 +712,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
               found = true;
               if (debug_logging)
               {
-                substep_contacts->contacts = sub_state_results;
-                step_contacts->substeps[0] = *substep_contacts;
+                end_substep_contacts->contacts = sub_state_results;
+                step_contacts->substeps[1] = *end_substep_contacts;
                 traj_contacts->steps[static_cast<size_t>(iStep)] = *step_contacts;
               }
               state_results.addInterpolatedCollisionResults(
@@ -769,8 +781,8 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
             found = true;
             if (debug_logging)
             {
-              substep_contacts->contacts = sub_state_results;
-              step_contacts->substeps[0] = *substep_contacts;
+              end_substep_contacts->contacts = sub_state_results;
+              step_contacts->substeps[1] = *end_substep_contacts;
               traj_contacts->steps[static_cast<size_t>(iStep)] = *step_contacts;
             }
             state_results.addInterpolatedCollisionResults(
@@ -785,6 +797,11 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
         }
 
         contacts.push_back(state_results);
+
+        if (debug_logging)
+        {
+          traj_contacts->steps[static_cast<size_t>(iStep)] = *step_contacts;
+        }
       }
     }
   }
