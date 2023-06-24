@@ -520,25 +520,13 @@ inline void harmonizeRedundantSolutions(Eigen::Ref<VectorX<FloatType>> qs,
 
   for (const auto& i : redundancy_capable_joints)
   {
-    // TODO: Should this harmonize here? It may have unpredictable results on numerical solvers
-    // FloatType diff = std::fmod(qs[i] + pi, two_pi);
-    // qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);    
-    if (qs[i] < position_limits(i,0) && position_limits(i,0) > -pi)
-    {
-      double qs_i_2pi = two_pi + qs[i];
-      if (qs_i_2pi < position_limits(i,1))
-      {
-        qs[i] = qs_i_2pi;
-      }
+    if (qs[i] < position_limits(i,0) || qs[i] > position_limits(i,1))
+    {      
+      const auto mean = (position_limits(i,0) + position_limits(i,1))/2.0;    
+      const auto diff = std::fmod((qs[i] - mean) + pi, two_pi);
+      const auto vv = (diff < 0) ? (diff + pi) : (diff - pi);
+      qs[i] = (vv + mean);
     }
-    else if (qs[i] > position_limits(i,1) && position_limits(i,1) < pi)
-    {
-      double qs_i_2pi = qs[i] - two_pi;
-      if (qs_i_2pi > position_limits(i,0))
-      {
-        qs[i] = qs_i_2pi;
-      }
-    }        
   }
 }
 
