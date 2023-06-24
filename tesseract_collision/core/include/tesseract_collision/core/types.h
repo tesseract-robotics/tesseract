@@ -460,6 +460,109 @@ struct CollisionCheckConfig
   /** @brief Secifies the mode used when collision checking program/trajectory. Default: ALL */
   CollisionCheckProgramType check_program_mode{ CollisionCheckProgramType::ALL };
 };
+
+/**
+ * @brief The ContactTrajectorySubstepResults struct is the lowest level struct for tracking contacts in a trajectory.
+ * This struct is used for substeps between waypoints in a trajectory when a longest valid segment is used, storing the
+ * relevant states of the substep.
+ */
+struct ContactTrajectorySubstepResults
+{
+  // LCOV_EXCL_START
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
+
+  ContactTrajectorySubstepResults() = default;
+  ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& start_state, const Eigen::VectorXd& end_state);
+  ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& state);
+
+  using UPtr = std::unique_ptr<ContactTrajectorySubstepResults>;
+
+  int numContacts() const;
+
+  tesseract_collision::ContactResultVector worstCollision() const;
+
+  tesseract_collision::ContactResultMap contacts;
+  int substep = -1;
+  Eigen::VectorXd state0;
+  Eigen::VectorXd state1;
+};
+
+/**
+ * @brief The ContactTrajectoryStepResults struct is the second level struct for tracking contacts in a trajectory. This
+ * struct stores all the substep contact information as well as the start and end state of the given step in the
+ * trajectory.
+ */
+struct ContactTrajectoryStepResults
+{
+  // LCOV_EXCL_START
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
+
+  ContactTrajectoryStepResults() = default;
+  ContactTrajectoryStepResults(int step_number,
+                               const Eigen::VectorXd& start_state,
+                               const Eigen::VectorXd& end_state,
+                               int num_substeps);
+  ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state);
+
+  using UPtr = std::unique_ptr<ContactTrajectoryStepResults>;
+
+  void resize(int num_substeps);
+
+  int numSubsteps() const;
+
+  int numContacts() const;
+
+  ContactTrajectorySubstepResults worstSubstep() const;
+
+  tesseract_collision::ContactResultVector worstCollision() const;
+
+  ContactTrajectorySubstepResults mostCollisionsSubstep() const;
+
+  std::vector<ContactTrajectorySubstepResults> substeps;
+  int step = -1;
+  Eigen::VectorXd state0;
+  Eigen::VectorXd state1;
+  int total_substeps = 0;
+};
+
+/**
+ * @brief The ContactTrajectoryResults struct is the top level struct for tracking contacts in a trajectory. This struct
+ * stores all the steps and therefore all the contacts in a trajectory. It also exposes a method for returning a contact
+ * summary table as a string for printing to a terminal.
+ */
+struct ContactTrajectoryResults
+{
+  // LCOV_EXCL_START
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
+
+  ContactTrajectoryResults() = default;
+  ContactTrajectoryResults(std::vector<std::string> j_names);
+  ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps);
+
+  using UPtr = std::unique_ptr<ContactTrajectoryResults>;
+
+  void resize(int num_steps);
+
+  int numSteps() const;
+
+  int numContacts() const;
+
+  ContactTrajectoryStepResults worstStep() const;
+
+  tesseract_collision::ContactResultVector worstCollision() const;
+
+  ContactTrajectoryStepResults mostCollisionsStep() const;
+
+  std::stringstream trajectoryCollisionResultsTable() const;
+
+  std::vector<ContactTrajectoryStepResults> steps;
+  std::vector<std::string> joint_names;
+  int total_steps = 0;
+};
+
 }  // namespace tesseract_collision
 
 #endif  // TESSERACT_COLLISION_TYPES_H
