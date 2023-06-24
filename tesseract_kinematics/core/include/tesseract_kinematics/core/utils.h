@@ -505,15 +505,16 @@ inline void harmonizeTowardZero(Eigen::Ref<VectorX<FloatType>> qs,
 /**
  * @brief Check to see if the solution is within joint limits, and if not applies a redundant solution
  * that is within joint limits if available.
- * 
- * @tparam FloatType 
+ *
+ * @tparam FloatType
  * @param qs A pointer to a float array
  * @param position_limits The position limits of the robot
  */
 template <typename FloatType>
-inline void harmonizeRedundantSolutions(Eigen::Ref<VectorX<FloatType>> qs,
-                                const std::vector<Eigen::Index>& redundancy_capable_joints,
-                                const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits)
+inline void
+harmonizeRedundantSolutions(Eigen::Ref<VectorX<FloatType>> qs,
+                            const std::vector<Eigen::Index>& redundancy_capable_joints,
+                            const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits)
 {
   const static auto pi = FloatType(M_PI);
   const static auto two_pi = FloatType(2.0 * M_PI);
