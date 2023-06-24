@@ -505,15 +505,16 @@ inline void harmonizeTowardZero(Eigen::Ref<VectorX<FloatType>> qs,
 /**
  * @brief Check to see if the solution is within joint limits, and if not applies a redundant solution
  * that is within joint limits if available.
- * 
- * @tparam FloatType 
+ *
+ * @tparam FloatType
  * @param qs A pointer to a float array
  * @param position_limits The position limits of the robot
  */
 template <typename FloatType>
-inline void harmonizeRedundantSolutions(Eigen::Ref<VectorX<FloatType>> qs,
-                                const std::vector<Eigen::Index>& redundancy_capable_joints,
-                                const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits)
+inline void
+harmonizeRedundantSolutions(Eigen::Ref<VectorX<FloatType>> qs,
+                            const std::vector<Eigen::Index>& redundancy_capable_joints,
+                            const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits)
 {
   const static auto pi = FloatType(M_PI);
   const static auto two_pi = FloatType(2.0 * M_PI);
@@ -522,23 +523,23 @@ inline void harmonizeRedundantSolutions(Eigen::Ref<VectorX<FloatType>> qs,
   {
     // TODO: Should this harmonize here? It may have unpredictable results on numerical solvers
     // FloatType diff = std::fmod(qs[i] + pi, two_pi);
-    // qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);    
-    if (qs[i] < position_limits(i,0) && position_limits(i,0) > -pi)
+    // qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);
+    if (qs[i] < position_limits(i, 0) && position_limits(i, 0) > -pi)
     {
       double qs_i_2pi = two_pi + qs[i];
-      if (qs_i_2pi < position_limits(i,1))
+      if (qs_i_2pi < position_limits(i, 1))
       {
         qs[i] = qs_i_2pi;
       }
     }
-    else if (qs[i] > position_limits(i,1) && position_limits(i,1) < pi)
+    else if (qs[i] > position_limits(i, 1) && position_limits(i, 1) < pi)
     {
       double qs_i_2pi = qs[i] - two_pi;
-      if (qs_i_2pi > position_limits(i,0))
+      if (qs_i_2pi > position_limits(i, 0))
       {
         qs[i] = qs_i_2pi;
       }
-    }        
+    }
   }
 }
 

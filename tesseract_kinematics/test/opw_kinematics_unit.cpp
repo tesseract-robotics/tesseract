@@ -146,7 +146,6 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
   pose2.linear() = Eigen::Quaterniond(0.0, 0.0, 1.0, 0.0).matrix();
 
   runInvKinTest(kin_group2, pose2, base_link_name, tip_link_name, seed);
-
 }
 
 int main(int argc, char** argv)
