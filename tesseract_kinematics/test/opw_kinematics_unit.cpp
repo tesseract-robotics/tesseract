@@ -54,22 +54,6 @@ inline opw_kinematics::Parameters<double> getOPWKinematicsParamABB()
   return opw_params;
 }
 
-inline opw_kinematics::Parameters<double> getOPWKinematicsParamABB1200()
-{
-  opw_kinematics::Parameters<double> opw_params;
-  opw_params.a1 = (0.0);
-  opw_params.a2 = (-0.042);
-  opw_params.b = (0.000);
-  opw_params.c1 = (0.3991);
-  opw_params.c2 = (0.448);
-  opw_params.c3 = (0.451);
-  opw_params.c4 = (0.082);
-
-  opw_params.offsets[2] = -M_PI / 2.0;
-
-  return opw_params;
-}
-
 TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
 {
   // Inverse target pose and seed
@@ -123,20 +107,20 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
   // Inverse target pose and seed
   Eigen::Isometry3d pose;
   pose.setIdentity();
-  pose.translation()[0] = 0.3;
-  pose.translation()[1] = 0.01;
-  pose.translation()[2] = 0.8;
+  pose.translation()[0] = 1;
+  pose.translation()[1] = 0;
+  pose.translation()[2] = 1.306;
 
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(6);
 
   // Setup test
-  auto scene_graph = getSceneGraphABB1200();
+  auto scene_graph = getSceneGraphABB();
   std::string manip_name = "manip";
   std::string base_link_name = "base_link";
   std::string tip_link_name = "tool0";
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
 
-  opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB1200();
+  opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
 
   auto inv_kin = std::make_unique<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_names);
 
@@ -145,20 +129,24 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
 
   KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
 
-  //runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
+  runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
+
+  auto abb_joint_2 = scene_graph->getJoint("joint_2");
+  abb_joint_2->limits->lower = -3.49065;
+  abb_joint_2->limits->upper = 1.57079;
+
+  auto inv_kin2 = std::make_unique<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_names);
+  KinematicGroup kin_group2(manip_name, joint_names, std::move(inv_kin2), *scene_graph, scene_state);
 
   Eigen::Isometry3d pose2;
   pose2.setIdentity();
-  pose2.translation()[0] = -0.520;
-  pose2.translation()[1] = -0.035;
-  pose2.translation()[2] = 0.150;
-  pose2.linear() = Eigen::Quaterniond(0.0, -1.0, 0.0, 0.0).matrix();
+  pose2.translation()[0] = -0.268141;
+  pose2.translation()[1] = -0.023459;
+  pose2.translation()[2] = -0.753010;
+  pose2.linear() = Eigen::Quaterniond(0.0, 0.0, 1.0, 0.0).matrix();
 
-  runInvKinTest(kin_group, pose2, base_link_name, tip_link_name, seed);
+  runInvKinTest(kin_group2, pose2, base_link_name, tip_link_name, seed);
 
-  
-
-  
 }
 
 int main(int argc, char** argv)
