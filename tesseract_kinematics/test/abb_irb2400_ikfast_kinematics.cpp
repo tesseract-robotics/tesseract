@@ -28,7 +28,7 @@ namespace tesseract_kinematics
 AbbIRB2400Kinematics::AbbIRB2400Kinematics(std::string base_link_name,
                                            std::string tip_link_name,
                                            std::vector<std::string> joint_names)
-  : IKFastInvKin(base_link_name, tip_link_name, joint_names, { 0, 1, 2, 3, 4, 5 })
+  : IKFastInvKin(base_link_name, tip_link_name, joint_names)
 {
 }
 
