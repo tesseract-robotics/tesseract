@@ -9,7 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 const static std::string FACTORY_NAME = "TestFactory";
 
-TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT
+TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardZeroUnit)  // NOLINT
 {
   Eigen::VectorXd q(2);
   q[0] = (4 * M_PI) + M_PI_4;
@@ -32,6 +32,116 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeUnit)  // NOLINT
   tesseract_kinematics::harmonizeTowardZero<double>(q, { 0, 1 });
   EXPECT_NEAR(q[0], -3 * M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], 3 * M_PI_4, 1e-6);
+}
+
+TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
+{
+  Eigen::MatrixX2d c(2, 2);
+  c(0, 0) = -M_PI;
+  c(0, 1) = +M_PI;
+  c(1, 0) = -M_PI;
+  c(1, 1) = +M_PI;
+  Eigen::VectorXd m(2);
+  m[0] = (c(0, 0) + c(0, 1)) / 2.0;
+  m[1] = (c(1, 0) + c(1, 1)) / 2.0;
+
+  Eigen::VectorXd q(2);
+  q[0] = (4 * M_PI) + M_PI_4;
+  q[1] = -(4 * M_PI) - M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  EXPECT_NEAR(q[0], M_PI_4, 1e-6);
+  EXPECT_NEAR(q[1], -M_PI_4, 1e-6);
+  EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
+  EXPECT_TRUE(std::abs(q[1] - m[1]) < (M_PI + 1e-6));
+
+  q[0] = M_PI_4;
+  q[1] = -M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  EXPECT_NEAR(q[0], M_PI_4, 1e-6);
+  EXPECT_NEAR(q[1], -M_PI_4, 1e-6);
+  EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
+  EXPECT_TRUE(std::abs(q[1] - m[1]) < (M_PI + 1e-6));
+
+  q[0] = 5 * M_PI_4;
+  q[1] = -5 * M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  EXPECT_NEAR(q[0], -3 * M_PI_4, 1e-6);
+  EXPECT_NEAR(q[1], 3 * M_PI_4, 1e-6);
+  EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
+  EXPECT_TRUE(std::abs(q[1] - m[1]) < (M_PI + 1e-6));
+
+  // NON Zero Positive Constant
+  c(0, 0) = (10 * M_PI) + M_PI_4 - M_PI;
+  c(0, 1) = (10 * M_PI) + M_PI_4 + M_PI;
+  c(1, 0) = (10 * M_PI) + M_PI_4 - M_PI;
+  c(1, 1) = (10 * M_PI) + M_PI_4 + M_PI;
+  m[0] = (c(0, 0) + c(0, 1)) / 2.0;
+  m[1] = (c(1, 0) + c(1, 1)) / 2.0;
+
+  q[0] = (4 * M_PI) + M_PI_4;
+  q[1] = -(4 * M_PI) - M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  EXPECT_NEAR(q[0], m[0], 1e-6);
+  EXPECT_NEAR(q[1], m[1] - M_PI_2, 1e-6);
+  EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
+  EXPECT_TRUE(std::abs(q[1] - m[1]) < (M_PI + 1e-6));
+
+  q[0] = M_PI_4;
+  q[1] = -M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  EXPECT_NEAR(q[0], m[0], 1e-6);
+  EXPECT_NEAR(q[1], m[1] - M_PI_2, 1e-6);
+  EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
+  EXPECT_TRUE(std::abs(q[1] - m[1]) < (M_PI + 1e-6));
+
+  q[0] = 5 * M_PI_4;
+  q[1] = -5 * M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  EXPECT_NEAR(q[0], m[0] - M_PI, 1e-6);
+  EXPECT_NEAR(q[1], m[1] + M_PI_2, 1e-6);
+  EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
+  EXPECT_TRUE(std::abs(q[1] - m[1]) < (M_PI + 1e-6));
+
+  // NON Zero Negative Constant
+  c(0, 0) = (-1 * ((10 * M_PI) + M_PI_4)) - M_PI;
+  c(0, 1) = (-1 * ((10 * M_PI) + M_PI_4)) + M_PI;
+  c(1, 0) = (-1 * ((10 * M_PI) + M_PI_4)) - M_PI;
+  c(1, 1) = (-1 * ((10 * M_PI) + M_PI_4)) + M_PI;
+  m[0] = (c(0, 0) + c(0, 1)) / 2.0;
+  m[1] = (c(1, 0) + c(1, 1)) / 2.0;
+
+  q[0] = (4 * M_PI) + M_PI_4;
+  q[1] = -(4 * M_PI) - M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  EXPECT_NEAR(q[0], m[0] + M_PI_2, 1e-6);
+  EXPECT_NEAR(q[1], m[1], 1e-6);
+  EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
+  EXPECT_TRUE(std::abs(q[1] - m[1]) < (M_PI + 1e-6));
+
+  q[0] = M_PI_4;
+  q[1] = -M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  EXPECT_NEAR(q[0], m[0] + M_PI_2, 1e-6);
+  EXPECT_NEAR(q[1], m[1], 1e-6);
+  EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
+  EXPECT_TRUE(std::abs(q[1] - m[1]) < (M_PI + 1e-6));
+
+  q[0] = 5 * M_PI_4;
+  q[1] = -5 * M_PI_4;
+
+  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  EXPECT_NEAR(q[0], m[0] - M_PI_2, 1e-6);
+  EXPECT_NEAR(q[1], m[1] + M_PI, 1e-6);
+  EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
+  EXPECT_TRUE(std::abs(q[1] - m[1]) < (M_PI + 1e-6));
 }
 
 template <typename FloatType>

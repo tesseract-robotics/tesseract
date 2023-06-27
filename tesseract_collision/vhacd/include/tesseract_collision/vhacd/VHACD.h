@@ -131,7 +131,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 
 namespace VHACD
 {
-
 struct Vertex
 {
   double mX;
@@ -912,7 +911,6 @@ IVHACD* CreateVHACD_ASYNC();  // Create an asynchronous (non-blocking) implement
 // Scoped Timer
 namespace VHACD
 {
-
 class Timer
 {
 public:
@@ -3495,12 +3493,14 @@ void KdTreeNode::Search(Axes axis,
   {
     switch (count)
     {
-      case 0: {
+      case 0:
+      {
         found[count].m_node = this;
         found[count].m_distance = m;
         break;
       }
-      case 1: {
+      case 1:
+      {
         if (m < found[0].m_distance)
         {
           if (maxObjects == 1)
@@ -3522,7 +3522,8 @@ void KdTreeNode::Search(Axes axis,
         }
         break;
       }
-      default: {
+      default:
+      {
         bool inserted = false;
 
         for (uint32_t i = 0; i < count; i++)
@@ -5898,17 +5899,20 @@ bool VoxelHull::FindConcavity(uint32_t idx, uint32_t& splitLoc)
       VHACD::Vector3<int32_t> p2;
       switch (idx)
       {
-        case 0: {
+        case 0:
+        {
           p1 = VHACD::Vector3<int32_t>(i0, i1, m_1.GetZ() - 2);
           p2 = VHACD::Vector3<int32_t>(i0, i1, m_2.GetZ() + 2);
           break;
         }
-        case 1: {
+        case 1:
+        {
           p1 = VHACD::Vector3<int32_t>(i1, i0, m_1.GetZ() - 2);
           p2 = VHACD::Vector3<int32_t>(i1, i0, m_2.GetZ() + 2);
           break;
         }
-        case 2: {
+        case 2:
+        {
           p1 = VHACD::Vector3<int32_t>(m_1.GetX() - 2, i1, i0);
           p2 = VHACD::Vector3<int32_t>(m_2.GetX() + 2, i1, i0);
           break;
@@ -5938,17 +5942,20 @@ bool VoxelHull::FindConcavity(uint32_t idx, uint32_t& splitLoc)
       VHACD::Vector3<int32_t> p2;
       switch (idx)
       {
-        case 0: {
+        case 0:
+        {
           p1 = VHACD::Vector3<int32_t>(i0, m_1.GetY() - 2, i1);
           p2 = VHACD::Vector3<int32_t>(i0, m_2.GetY() + 2, i1);
           break;
         }
-        case 1: {
+        case 1:
+        {
           p1 = VHACD::Vector3<int32_t>(m_1.GetX() - 2, i0, i1);
           p2 = VHACD::Vector3<int32_t>(m_2.GetX() + 2, i0, i1);
           break;
         }
-        case 2: {
+        case 2:
+        {
           p1 = VHACD::Vector3<int32_t>(i1, m_1.GetY() - 2, i0);
           p2 = VHACD::Vector3<int32_t>(i1, m_2.GetY() + 2, i0);
           break;
