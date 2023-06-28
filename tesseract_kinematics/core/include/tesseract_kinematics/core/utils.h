@@ -484,7 +484,7 @@ inline bool isValid(const std::array<FloatType, 6>& qs)
 }
 
 /**
- * @brief This take an array of floats and modifies them in place to be between [-PI, PI]
+ * @brief This takes an array of floats and modifies them in place to be between [-PI, PI]
  * @param qs A pointer to a float array
  * @param dof The length of the float array
  */
@@ -497,8 +497,30 @@ inline void harmonizeTowardZero(Eigen::Ref<VectorX<FloatType>> qs,
 
   for (const auto& i : redundancy_capable_joints)
   {
-    FloatType diff = std::fmod(qs[i] + pi, two_pi);
+    const auto diff = std::fmod(qs[i] + pi, two_pi);
     qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);
+  }
+}
+
+/**
+ * @brief This takes the array of floats and modifies them in place to be between [-PI, PI] relative to limits median
+ * @param qs A pointer to a float array
+ * @param position_limits The limits leveraged for calculating median
+ */
+template <typename FloatType>
+inline void harmonizeTowardMedian(Eigen::Ref<VectorX<FloatType>> qs,
+                                  const std::vector<Eigen::Index>& redundancy_capable_joints,
+                                  const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits)
+{
+  const static auto pi = FloatType(M_PI);
+  const static auto two_pi = FloatType(2.0 * M_PI);
+
+  for (const auto& i : redundancy_capable_joints)
+  {
+    const auto mean = (position_limits(i, 0) + position_limits(i, 1)) / 2.0;
+    const auto diff = std::fmod((qs[i] - mean) + pi, two_pi);
+    const auto vv = (diff < 0) ? (diff + pi) : (diff - pi);
+    qs[i] = (vv + mean);
   }
 }
 

@@ -169,12 +169,12 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
     Eigen::MatrixXd base_link_jac = state_solver_->getJacobian(joint_names_, joint_angles, base_link_name);
     Eigen::MatrixXd base_kin_jac(6, numJoints());
     for (Eigen::Index i = 0; i < numJoints(); ++i)
-      base_link_jac.col(i) = base_link_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
+      base_kin_jac.col(i) = base_link_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
 
     tesseract_common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
-    tesseract_common::jacobianChangeBase(base_link_jac, base_link_tf.inverse());
+    tesseract_common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
 
-    kin_jac = kin_jac + base_link_jac;
+    kin_jac = kin_jac + base_kin_jac;
   }
   else
   {
@@ -210,14 +210,14 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
     Eigen::MatrixXd base_link_jac = state_solver_->getJacobian(joint_names_, joint_angles, base_link_name);
     Eigen::MatrixXd base_kin_jac(6, numJoints());
     for (Eigen::Index i = 0; i < numJoints(); ++i)
-      base_link_jac.col(i) = base_link_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
+      base_kin_jac.col(i) = base_link_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
 
     tesseract_common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
     tesseract_common::jacobianChangeRefPoint(kin_jac, (base_link_tf.inverse() * link_tf).linear() * link_point);
 
-    tesseract_common::jacobianChangeBase(base_link_jac, base_link_tf.inverse());
+    tesseract_common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
 
-    kin_jac = kin_jac + base_link_jac;
+    kin_jac = kin_jac + base_kin_jac;
   }
   else
   {

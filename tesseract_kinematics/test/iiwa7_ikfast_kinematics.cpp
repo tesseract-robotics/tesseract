@@ -30,7 +30,7 @@ iiwa7Kinematics::iiwa7Kinematics(std::string base_link_name,
                                  std::vector<std::string> joint_names,
                                  std::string solver_name,
                                  std::vector<std::vector<double> > free_joint_combos)
-  : IKFastInvKin(base_link_name, tip_link_name, joint_names, { 0, 1, 2, 3, 4, 5 }, solver_name, free_joint_combos)
+  : IKFastInvKin(base_link_name, tip_link_name, joint_names, solver_name, free_joint_combos)
 {
 }
 

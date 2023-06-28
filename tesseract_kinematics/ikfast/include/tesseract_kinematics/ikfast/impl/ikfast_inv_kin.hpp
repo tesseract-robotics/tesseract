@@ -46,13 +46,11 @@ namespace tesseract_kinematics
 inline IKFastInvKin::IKFastInvKin(std::string base_link_name,
                                   std::string tip_link_name,
                                   std::vector<std::string> joint_names,
-                                  std::vector<Eigen::Index> redundancy_capable_joints,
                                   std::string solver_name,
                                   std::vector<std::vector<double>> free_joint_states)
   : base_link_name_(std::move(base_link_name))
   , tip_link_name_(std::move(tip_link_name))
   , joint_names_(std::move(joint_names))
-  , redundancy_capable_joints_(std::move(redundancy_capable_joints))
   , solver_name_(std::move(solver_name))
   , free_joint_states_(std::move(free_joint_states))
 {
@@ -67,7 +65,6 @@ inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
   joint_names_ = other.joint_names_;
-  redundancy_capable_joints_ = other.redundancy_capable_joints_;
   solver_name_ = other.solver_name_;
   free_joint_states_ = other.free_joint_states_;
 
@@ -141,10 +138,7 @@ inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap
   {
     Eigen::Map<Eigen::VectorXd> eigen_sol(sols.data() + ikfast_dof * i, static_cast<Eigen::Index>(ikfast_dof));
     if (eigen_sol.array().allFinite())
-    {
-      harmonizeTowardZero<double>(eigen_sol, redundancy_capable_joints_);  // Modifies 'sol' in place
       solution_set.push_back(eigen_sol);
-    }
   }
 
   return solution_set;

@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/kinematic_group.h>
+#include <tesseract_kinematics/core/utils.h>
 #include <tesseract_common/utils.h>
 
 #include <tesseract_scene_graph/kdl_parser.h>
@@ -156,6 +157,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
       for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
         ordered_sol(i) = solution(inv_kin_joint_map_[static_cast<std::size_t>(i)]);
 
+      tesseract_kinematics::harmonizeTowardMedian<double>(ordered_sol, redundancy_indices_, limits_.joint_limits);
       if (tesseract_common::satisfiesPositionLimits<double>(ordered_sol, limits_.joint_limits))
         solutions_filtered.push_back(ordered_sol);
     }
@@ -168,6 +170,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   solutions_filtered.reserve(solutions.size());
   for (auto& solution : solutions)
   {
+    tesseract_kinematics::harmonizeTowardMedian<double>(solution, redundancy_indices_, limits_.joint_limits);
     if (tesseract_common::satisfiesPositionLimits<double>(solution, limits_.joint_limits))
       solutions_filtered.push_back(solution);
   }

@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <opw_kinematics/opw_parameters.h>
+#include <tesseract_kinematics/core/kinematic_group.h>
 
 using namespace tesseract_kinematics::test_suite;
 using namespace tesseract_kinematics;
@@ -99,6 +100,52 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
   EXPECT_EQ(inv_kin2->getJointNames(), joint_names);
 
   runInvKinTest(*inv_kin2, fwd_kin, pose, tip_link_name, seed);
+}
+
+TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
+{
+  // Inverse target pose and seed
+  Eigen::Isometry3d pose;
+  pose.setIdentity();
+  pose.translation()[0] = 1;
+  pose.translation()[1] = 0;
+  pose.translation()[2] = 1.306;
+
+  Eigen::VectorXd seed = Eigen::VectorXd::Zero(6);
+
+  // Setup test
+  auto scene_graph = getSceneGraphABB();
+  std::string manip_name = "manip";
+  std::string base_link_name = "base_link";
+  std::string tip_link_name = "tool0";
+  std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+
+  opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
+
+  auto inv_kin = std::make_unique<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_names);
+
+  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+
+  KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
+
+  runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
+
+  auto abb_joint_2 = scene_graph->getJoint("joint_2");
+  abb_joint_2->limits->lower = -3.49065;
+  abb_joint_2->limits->upper = 1.57079;
+
+  auto inv_kin2 = std::make_unique<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_names);
+  KinematicGroup kin_group2(manip_name, joint_names, std::move(inv_kin2), *scene_graph, scene_state);
+
+  Eigen::Isometry3d pose2;
+  pose2.setIdentity();
+  pose2.translation()[0] = -0.268141;
+  pose2.translation()[1] = -0.023459;
+  pose2.translation()[2] = -0.753010;
+  pose2.linear() = Eigen::Quaterniond(0.0, 0.0, 1.0, 0.0).matrix();
+
+  runInvKinTest(kin_group2, pose2, base_link_name, tip_link_name, seed);
 }
 
 int main(int argc, char** argv)
