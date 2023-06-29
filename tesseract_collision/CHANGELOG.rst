@@ -2,6 +2,17 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update kinematics group inverse kinematics to harmonize within joint limits (`#899 <https://github.com/tesseract-robotics/tesseract/issues/899>`_)
+* Trajectory logging fixup (`#908 <https://github.com/tesseract-robotics/tesseract/issues/908>`_)
+* Improve Trajectory Collision Logging (`#765 <https://github.com/tesseract-robotics/tesseract/issues/765>`_)
+* Add package cmake flags for testing, examples and benchmarks
+* Add assert to ContactResultsMap to make sure key is an ordered pair
+* Fix makeConvexMesh to pass through scale used on resource
+* Update VHACD to latest (v4.1, tag 454913f) (`#896 <https://github.com/tesseract-robotics/tesseract/issues/896>`_)
+* Contributors: John Wason, Levi Armstrong, Roelof, Tyler Marr
+
 0.17.0 (2023-06-06)
 -------------------
 * Remove invalid assert from FCL collision and distance callback functions

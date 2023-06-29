@@ -2,6 +2,14 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update kinematics group inverse kinematics to harmonize within joint limits (`#899 <https://github.com/tesseract-robotics/tesseract/issues/899>`_)
+* Trajectory logging fixup (`#908 <https://github.com/tesseract-robotics/tesseract/issues/908>`_)
+* Improve Trajectory Collision Logging (`#765 <https://github.com/tesseract-robotics/tesseract/issues/765>`_)
+* Add package cmake flags for testing, examples and benchmarks
+* Contributors: John Wason, Levi Armstrong, Tyler Marr
+
 0.17.0 (2023-06-06)
 -------------------
 * Windows updates (`#893 <https://github.com/tesseract-robotics/tesseract/issues/893>`_)

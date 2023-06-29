@@ -2,6 +2,13 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add package cmake flags for testing, examples and benchmarks
+* Removed gcc-specific options from clang config
+* Fix JointState equal operator
+* Contributors: Levi Armstrong, Roelof
+
 0.17.0 (2023-06-06)
 -------------------
 * Windows updates (`#893 <https://github.com/tesseract-robotics/tesseract/issues/893>`_)

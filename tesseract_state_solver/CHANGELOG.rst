@@ -2,6 +2,11 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add package cmake flags for testing, examples and benchmarks
+* Contributors: Levi Armstrong
+
 0.17.0 (2023-06-06)
 -------------------
 
