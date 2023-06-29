@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.18.0 (2023-06-29)
+-------------------
 * Add package cmake flags for testing, examples and benchmarks
 * Removed gcc-specific options from clang config
 * Fix JointState equal operator

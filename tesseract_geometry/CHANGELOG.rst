@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.18.0 (2023-06-29)
+-------------------
 * Add package cmake flags for testing, examples and benchmarks
 * Fix makeConvexMesh to pass through scale used on resource
 * Contributors: Levi Armstrong

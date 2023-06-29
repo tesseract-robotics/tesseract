@@ -2,8 +2,8 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.18.0 (2023-06-29)
+-------------------
 * Add package cmake flags for testing, examples and benchmarks
 * Contributors: Levi Armstrong
 
