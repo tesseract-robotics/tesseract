@@ -118,7 +118,7 @@ tesseract_geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract_geometry::Mes
   int ch_num_faces = createConvexHull(*ch_vertices, *ch_faces, *mesh.getVertices());
   auto convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(
       ch_vertices, ch_faces, ch_num_faces, mesh.getResource(), mesh.getScale());
-  convex_mesh->setCreationMethod(tesseract_geometry::ConvexMesh::MESH);
+  convex_mesh->setCreationMethod(tesseract_geometry::ConvexMesh::CONVERTED);
   return convex_mesh;
 }
 
