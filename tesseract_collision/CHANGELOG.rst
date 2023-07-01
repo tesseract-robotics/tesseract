@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.18.1 (2023-06-30)
+-------------------
 * Fix convert convex hull to set correct creation method
 * Contributors: Levi Armstrong
 
