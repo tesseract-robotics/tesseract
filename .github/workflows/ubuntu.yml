@@ -22,10 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [focal]
-        include:
-          - distro: focal
-            image: ubuntu:20.04
+        distro: [focal, jammy]
     env:
       CCACHE_DIR: "${{ github.workspace }}/${{ matrix.distro }}/.ccache"
       REGISTRY: ghcr.io
@@ -92,7 +89,7 @@ jobs:
       - name: Build repository
         uses: 'tesseract-robotics/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
         env:
-          DOCKER_IMAGE: ${{ matrix.image }}
+          DOCKER_IMAGE: ubuntu:${{ matrix.distro }}
           ROS_DISTRO: false
           ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
           AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
