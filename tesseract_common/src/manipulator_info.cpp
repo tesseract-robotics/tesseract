@@ -41,7 +41,7 @@ namespace tesseract_common
 ManipulatorInfo::ManipulatorInfo(std::string manipulator_,
                                  std::string working_frame_,
                                  std::string tcp_frame_,
-                                 const Eigen::Isometry3d& tcp_offset_)
+                                 const std::variant<std::string, Eigen::Isometry3d>& tcp_offset_)
   : manipulator(std::move(manipulator_))
   , working_frame(std::move(working_frame_))
   , tcp_frame(std::move(tcp_frame_))

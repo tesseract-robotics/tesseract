@@ -153,7 +153,7 @@ InverseKinematics::UPtr REPInvKinFactory::create(const std::string& solver_name,
 
       inv_kin = plugin_factory.createInvKin(m_info.class_name, m_info, scene_graph, scene_state);
       if (inv_kin == nullptr)
-        throw std::runtime_error("REPInvKinFactory, failed to create positioner forward kinematics!");
+        throw std::runtime_error("REPInvKinFactory, failed to create positioner inverse kinematics!");
     }
     else
     {
