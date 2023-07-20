@@ -212,6 +212,13 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->limits == nullptr);
     EXPECT_TRUE(elem->safety == nullptr);
     EXPECT_TRUE(elem->mimic == nullptr);
+
+    auto split_results = tesseract_urdf::splitJoint(elem);
+    EXPECT_EQ(split_results.first.size(), 2);
+    ASSERT_EQ(split_results.second.size(), 3);
+    EXPECT_EQ(split_results.second[0]->getName(), "my_joint_x_planar");
+    EXPECT_EQ(split_results.second[1]->getName(), "my_joint_y_planar");
+    EXPECT_EQ(split_results.second[2]->getName(), "my_joint_z_planar");
   }
 
   {
