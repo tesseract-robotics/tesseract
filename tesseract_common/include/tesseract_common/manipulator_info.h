@@ -49,7 +49,7 @@ struct ManipulatorInfo
   ManipulatorInfo(std::string manipulator_,
                   std::string working_frame_,
                   std::string tcp_frame_,
-                  const Eigen::Isometry3d& tcp_offset_ = Eigen::Isometry3d::Identity());
+                  std::variant<std::string, Eigen::Isometry3d> tcp_offset_ = Eigen::Isometry3d::Identity());
 
   /** @brief Name of the manipulator group */
   std::string manipulator;
