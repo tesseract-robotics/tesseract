@@ -1,7 +1,9 @@
 # TinyXML2_FOUND TinyXML2_INCLUDE_DIRS TinyXML2_LIBRARIES
 
 # try to find the CMake config file for TinyXML2 first
-find_package(TinyXML2 CONFIG QUIET)
+if(NOT TinyXML2_FOUND)
+  find_package(TinyXML2 CONFIG QUIET)
+endif()
 if(TinyXML2_FOUND)
   message(STATUS "Found TinyXML2 via Config file: ${TinyXML2_DIR}")
   if(NOT TINYXML2_LIBRARY)
