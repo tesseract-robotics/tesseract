@@ -49,14 +49,13 @@ TEST(TesseractKinematicsUnit, IKFastInvKin)  // NOLINT
 
   // Setup test
   auto scene_graph = getSceneGraphABB();
-  std::string manip_name = "manip";
   std::string base_link_name = "base_link";
   std::string tip_link_name = "tool0";
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
 
   KDLFwdKinChain fwd_kin(*scene_graph, base_link_name, tip_link_name);
 
-  auto inv_kin = std::make_shared<AbbIRB2400Kinematics>(base_link_name, tip_link_name, joint_names);
+  auto inv_kin = std::make_shared<IKFastInvKin>(base_link_name, tip_link_name, joint_names);
 
   EXPECT_EQ(inv_kin->getSolverName(), IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 6);

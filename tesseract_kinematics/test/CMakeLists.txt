@@ -1,27 +1,7 @@
 find_gtest()
 find_package(tesseract_support REQUIRED)
 find_package(tesseract_urdf REQUIRED)
-find_package(LAPACK REQUIRED) # Requried for ikfast
-
-add_library(abb_irb2400_ikfast_kinematics abb_irb2400_ikfast_kinematics.cpp)
-target_link_libraries(abb_irb2400_ikfast_kinematics PUBLIC ${PROJECT_NAME}_ikfast ${LAPACK_LIBRARIES})
-target_compile_definitions(abb_irb2400_ikfast_kinematics PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
-target_compile_options(abb_irb2400_ikfast_kinematics PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_options(abb_irb2400_ikfast_kinematics PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
-target_include_directories(abb_irb2400_ikfast_kinematics PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
-                                                                "$<INSTALL_INTERFACE:include>")
-target_include_directories(abb_irb2400_ikfast_kinematics SYSTEM PUBLIC ${LAPACK_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
-add_dependencies(abb_irb2400_ikfast_kinematics ${PROJECT_NAME}_ikfast)
-
-add_library(iiwa7_ikfast_kinematics iiwa7_ikfast_kinematics.cpp)
-target_link_libraries(iiwa7_ikfast_kinematics PUBLIC ${PROJECT_NAME}_ikfast ${LAPACK_LIBRARIES})
-target_compile_definitions(iiwa7_ikfast_kinematics PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
-target_compile_options(iiwa7_ikfast_kinematics PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_options(iiwa7_ikfast_kinematics PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
-target_include_directories(iiwa7_ikfast_kinematics PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
-                                                          "$<INSTALL_INTERFACE:include>")
-target_include_directories(iiwa7_ikfast_kinematics SYSTEM PUBLIC ${LAPACK_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
-add_dependencies(iiwa7_ikfast_kinematics ${PROJECT_NAME}_ikfast)
+find_package(LAPACK REQUIRED) # Required for ikfast
 
 add_executable(${PROJECT_NAME}_core_unit kinematics_core_unit.cpp)
 target_link_libraries(
@@ -108,8 +88,7 @@ target_link_libraries(
           ${PROJECT_NAME}_ikfast
           tesseract::tesseract_support
           tesseract::tesseract_urdf
-          tesseract::tesseract_scene_graph
-          abb_irb2400_ikfast_kinematics)
+          tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_ikfast_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                            ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ikfast_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
@@ -134,8 +113,7 @@ target_link_libraries(
           ${PROJECT_NAME}_ikfast
           tesseract::tesseract_support
           tesseract::tesseract_urdf
-          tesseract::tesseract_scene_graph
-          iiwa7_ikfast_kinematics)
+          tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_ikfast_7dof_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                 ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ikfast_7dof_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})

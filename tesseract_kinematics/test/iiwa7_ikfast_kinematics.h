@@ -1,23 +1,22 @@
-#ifndef IIWA7_IKFAST_KINDEMATICS_H
-#define IIWA7_IKFAST_KINDEMATICS_H
+/*
+ * Software License Agreement (Apache License)
+ *
+ * Copyright (c) 2023, Southwest Research Institute
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-#include <Eigen/Geometry>
-#include <tesseract_kinematics/core/forward_kinematics.h>
-#include <tesseract_kinematics/ikfast/ikfast_inv_kin.h>
-#include <vector>
+#include <tesseract_kinematics/ikfast/ikfast_factory_boilerplate.h>
+#include "iiwa7_ikfast_solver.hpp"
 
-namespace tesseract_kinematics
-{
-class iiwa7Kinematics : public IKFastInvKin
-{
-public:
-  iiwa7Kinematics() = default;  // NOLINT
-  iiwa7Kinematics(std::string base_link_name,
-                  std::string tip_link_name,
-                  std::vector<std::string> joint_names,
-                  std::string solver_name = "IKFastInvKin",
-                  std::vector<std::vector<double>> free_joint_combos = { { 0.0 } });
-};
-
-}  // namespace tesseract_kinematics
-#endif  // IIWA7_IKFAST_KINDEMATICS_H
+TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::IKFastInvKinFactory, iiwa7Kinematics)

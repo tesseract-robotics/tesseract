@@ -36,10 +36,10 @@ class IKFastInvKinFactory : public InvKinFactory
 {
 public:
   InverseKinematics::UPtr create(const std::string& solver_name,
-                                                       const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                       const tesseract_scene_graph::SceneState& /*scene_state*/,
-                                                       const KinematicsPluginFactory& /*plugin_factory*/,
-                                                       const YAML::Node& config) const override
+                                 const tesseract_scene_graph::SceneGraph& scene_graph,
+                                 const tesseract_scene_graph::SceneState& /*scene_state*/,
+                                 const KinematicsPluginFactory& /*plugin_factory*/,
+                                 const YAML::Node& config) const override
   {
     std::string base_link;
     std::string tip_link;
