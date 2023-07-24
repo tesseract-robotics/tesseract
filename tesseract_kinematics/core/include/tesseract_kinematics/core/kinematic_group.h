@@ -50,8 +50,8 @@ struct KinGroupIKInput
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  KinGroupIKInput(Eigen::Isometry3d p, std::string wf, std::string tl)
-    : pose(std::move(p)), working_frame(std::move(wf)), tip_link_name(std::move(tl))
+  KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std::string tl)
+    : pose(p), working_frame(std::move(wf)), tip_link_name(std::move(tl))
   {
   }
 
