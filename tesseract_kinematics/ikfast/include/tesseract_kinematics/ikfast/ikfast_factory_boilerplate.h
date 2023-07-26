@@ -1,5 +1,5 @@
 /**
- * @file ikfast_factory.h
+ * @file ikfast_factory_boilerplate.h
  * @brief Tesseract IKFast Factory Boilerplate.
  *
  * @author Michael Ripperger, Roelof Oomen
