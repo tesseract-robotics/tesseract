@@ -15,8 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IIWA7_IKFAST_KINEMATICS_H
+#define IIWA7_IKFAST_KINEMATICS_H
 
 #include <tesseract_kinematics/ikfast/ikfast_factory_boilerplate.h>
 #include "iiwa7_ikfast_solver.hpp"
 
 TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::IKFastInvKinFactory, iiwa7Kinematics)
+
+#endif  // IIWA7_IKFAST_KINEMATICS_H
