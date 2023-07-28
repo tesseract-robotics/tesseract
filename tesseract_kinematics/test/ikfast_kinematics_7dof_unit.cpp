@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "kinematics_test_utils.h"
-#include "iiwa7_ikfast_kinematics.h"
+#include "tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp"
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 
 using namespace tesseract_kinematics::test_suite;

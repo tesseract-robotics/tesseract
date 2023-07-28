@@ -79,7 +79,7 @@ add_gtest_discover_tests(${PROJECT_NAME}_opw_unit)
 add_dependencies(${PROJECT_NAME}_opw_unit ${PROJECT_NAME}_kdl ${PROJECT_NAME}_opw)
 add_dependencies(run_tests ${PROJECT_NAME}_opw_unit)
 
-add_executable(${PROJECT_NAME}_ikfast_unit ikfast_kinematics_unit.cpp)
+add_executable(${PROJECT_NAME}_ikfast_unit ikfast_kinematics_unit.cpp abb_irb2400_ikfast_kinematics.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_ikfast_unit
   PRIVATE GTest::GTest
@@ -104,7 +104,7 @@ add_gtest_discover_tests(${PROJECT_NAME}_ikfast_unit)
 add_dependencies(${PROJECT_NAME}_ikfast_unit ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ikfast)
 add_dependencies(run_tests ${PROJECT_NAME}_ikfast_unit)
 
-add_executable(${PROJECT_NAME}_ikfast_7dof_unit ikfast_kinematics_7dof_unit.cpp)
+add_executable(${PROJECT_NAME}_ikfast_7dof_unit ikfast_kinematics_7dof_unit.cpp iiwa7_ikfast_kinematics.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_ikfast_7dof_unit
   PRIVATE GTest::GTest

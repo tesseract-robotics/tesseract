@@ -15,12 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_KINEMATICS_ABB_IRB2400_IKFAST_KINEMATICS_H
-#define TESSERACT_KINEMATICS_ABB_IRB2400_IKFAST_KINEMATICS_H
-
 #include <tesseract_kinematics/ikfast/ikfast_factory_boilerplate.h>
-#include "abb_irb2400_ikfast_solver.hpp"
+#include "iiwa7_ikfast_solver.hpp"
 
-TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::IKFastInvKinFactory, AbbIRB2400Kinematics)
-
-#endif  // TESSERACT_KINEMATICS_ABB_IRB2400_IKFAST_KINEMATICS_H
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::IKFastInvKinFactory, iiwa7Kinematics)
