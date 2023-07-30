@@ -31,7 +31,6 @@
 
 namespace tesseract_kinematics
 {
-
 class IKFastInvKinFactory : public InvKinFactory
 {
 public:

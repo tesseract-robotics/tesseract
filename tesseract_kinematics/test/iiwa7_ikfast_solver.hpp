@@ -23,7 +23,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #ifndef IKFAST_HAS_LIBRARY
-#define IKFAST_HAS_LIBRARY
 #define IKFAST_NO_MAIN
 #endif
 #include <tesseract_kinematics/ikfast/external/ikfast.h>  // found inside share/openrave-X.Y/python/ikfast.h

@@ -16,7 +16,11 @@
  * limitations under the License.
  */
 #include <tesseract_kinematics/ikfast/ikfast_factory_boilerplate.h>
+
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include "abb_irb2400_ikfast_solver.hpp"
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::IKFastInvKinFactory, AbbIRB2400Kinematics)
