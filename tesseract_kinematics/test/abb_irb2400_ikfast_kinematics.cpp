@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (Apache License)
  *
- * Copyright (c) 2016, Southwest Research Institute
+ * Copyright (c) 2023, Southwest Research Institute
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <tesseract_kinematics/ikfast/ikfast_factory_boilerplate.h>
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp>
 #include "abb_irb2400_ikfast_solver.hpp"
-#include "abb_irb2400_ikfast_kinematics.h"
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_kinematics
-{
-AbbIRB2400Kinematics::AbbIRB2400Kinematics(std::string base_link_name,
-                                           std::string tip_link_name,
-                                           std::vector<std::string> joint_names)
-  : IKFastInvKin(base_link_name, tip_link_name, joint_names)
-{
-}
-
-}  // namespace tesseract_kinematics
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::IKFastInvKinFactory, AbbIRB2400Kinematics)
