@@ -316,9 +316,9 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
     inv_kin_factories_[plugin_info.class_name] = plugin;
     return plugin->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
   }
-  catch (const std::exception&)
+  catch (const std::exception& ex)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
+    CONSOLE_BRIDGE_logWarn(ex.what());
     return nullptr;
   }
 }
