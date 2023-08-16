@@ -3,7 +3,7 @@
   <name>tesseract_srdf</name>
   <version>0.18.1</version>
   <description>The tesseract_srdf package for parsing Tesseract specific srdf</description>
-  <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
+  <maintainer email="levi.armstrong@gmail.com">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
   <author>Levi Armstrong</author>
 

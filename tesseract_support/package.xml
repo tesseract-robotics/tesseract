@@ -3,7 +3,7 @@
   <name>tesseract_support</name>
   <version>0.18.1</version>
   <description>The tesseract_support package containing files for test and examples</description>
-  <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
+  <maintainer email="levi.armstrong@gmail.com">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
   <author >Levi Armstrong</author>
 
