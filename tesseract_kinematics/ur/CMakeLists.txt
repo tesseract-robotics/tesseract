@@ -46,4 +46,8 @@ install(
   PATTERN "*.h"
   PATTERN "*.hpp")
 
-install_targets(TARGETS ${PROJECT_NAME}_ur ${PROJECT_NAME}_ur_factory)
+configure_component(
+  COMPONENT ur
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_ur ${PROJECT_NAME}_ur_factory
+  DEPENDENCIES "tesseract_kinematics COMPONENTS core")

@@ -63,4 +63,8 @@ install(
   PATTERN "*.h"
   PATTERN "*.hpp")
 
-install_targets(TARGETS ${PROJECT_NAME}_kdl ${PROJECT_NAME}_kdl_factories)
+configure_component(
+  COMPONENT kdl
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_kdl ${PROJECT_NAME}_kdl_factories
+  DEPENDENCIES orocos_kdl "tesseract_kinematics COMPONENTS core")

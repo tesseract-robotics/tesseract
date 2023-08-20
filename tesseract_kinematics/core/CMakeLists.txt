@@ -58,4 +58,14 @@ install(
   PATTERN "*.h"
   PATTERN "*.hpp")
 
-install_targets(TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_core_factories)
+configure_component(
+  COMPONENT core
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_core_factories
+  DEPENDENCIES
+    Eigen3
+    console_bridge
+    tesseract_scene_graph
+    tesseract_state_solver
+    tesseract_common
+    yaml-cpp)

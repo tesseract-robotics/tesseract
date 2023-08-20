@@ -53,12 +53,14 @@ endif()
 set(KINEMATICS_PLUGINS "")
 
 # Core
+set(SUPPORTED_COMPONENTS core)
 add_subdirectory(core)
 
 # IKFast
 option(TESSERACT_BUILD_IKFAST "Build IKFast components" ON)
 if(TESSERACT_BUILD_IKFAST)
   message("Building IKFast components")
+  list(APPEND SUPPORTED_COMPONENTS ikfast)
   add_subdirectory(ikfast)
 endif()
 
@@ -66,6 +68,7 @@ endif()
 option(TESSERACT_BUILD_KDL "Build KDL components" ON)
 if(TESSERACT_BUILD_KDL)
   message("Building KDL components")
+  list(APPEND SUPPORTED_COMPONENTS kdl)
   add_subdirectory(kdl)
 endif()
 
@@ -73,6 +76,7 @@ endif()
 option(TESSERACT_BUILD_OPW "Build OPW components" ON)
 if(TESSERACT_BUILD_OPW)
   message("Building OPW components")
+  list(APPEND SUPPORTED_COMPONENTS opw)
   add_subdirectory(opw)
 endif()
 
@@ -80,6 +84,7 @@ endif()
 option(TESSERACT_BUILD_UR "Build UR components" ON)
 if(TESSERACT_BUILD_UR)
   message("Building UR components")
+  list(APPEND SUPPORTED_COMPONENTS ur)
   add_subdirectory(ur)
 endif()
 
@@ -102,7 +107,7 @@ if((TESSERACT_ENABLE_TESTING OR TESSERACT_KINEMATICS_ENABLE_TESTING)
   add_subdirectory(test)
 endif()
 
-configure_package(NAMESPACE tesseract)
+configure_package(COMPONENTS ${SUPPORTED_COMPONENTS} CFG_EXTRAS cmake/tesseract_kinematics-extras.cmake)
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(

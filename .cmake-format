@@ -46,6 +46,19 @@ with section("parse"):
       'kwargs': {
         'NAMESPACE': '?',
         'TARGETS': '*',
+        'COMPONENTS': '*',
+        'DEPENDENCIES': '*',
+        'CFG_EXTRAS': '*',
+      }
+    },
+    'configure_component': {
+      'pargs': {'nargs': 0},
+      'kwargs': {
+        'COMPONENT': '?',
+        'NAMESPACE': '?',
+        'TARGETS': '*',
+        'DEPENDENCIES': '*',
+        'CFG_EXTRAS': '*',
       }
     },
     'add_gtest_discover_tests': {

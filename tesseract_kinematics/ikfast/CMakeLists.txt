@@ -16,4 +16,8 @@ install(
   PATTERN "*.h"
   PATTERN "*.hpp")
 
-install_targets(TARGETS ${PROJECT_NAME}_ikfast)
+configure_component(
+  COMPONENT ikfast
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_ikfast
+  DEPENDENCIES "tesseract_kinematics COMPONENTS core")
