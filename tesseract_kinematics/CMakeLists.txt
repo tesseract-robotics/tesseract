@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -107,7 +107,7 @@ if((TESSERACT_ENABLE_TESTING OR TESSERACT_KINEMATICS_ENABLE_TESTING)
   add_subdirectory(test)
 endif()
 
-configure_package(COMPONENTS ${SUPPORTED_COMPONENTS} CFG_EXTRAS cmake/tesseract_kinematics-extras.cmake)
+configure_package(COMPONENTS ${SUPPORTED_COMPONENTS})
 
 if(TESSERACT_PACKAGE)
   tesseract_cpack(

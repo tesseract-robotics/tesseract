@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -13,7 +13,7 @@ endif()
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_collision REQUIRED)
-find_package(tesseract_kinematics REQUIRED)
+find_package(tesseract_kinematics REQUIRED COMPONENTS core)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_state_solver REQUIRED)
 find_package(tesseract_srdf REQUIRED)

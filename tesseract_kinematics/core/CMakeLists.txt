@@ -68,4 +68,5 @@ configure_component(
     tesseract_scene_graph
     tesseract_state_solver
     tesseract_common
-    yaml-cpp)
+    yaml-cpp
+  CFG_EXTRAS cmake/core-extras.cmake)

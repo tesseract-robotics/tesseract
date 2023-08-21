@@ -11,7 +11,7 @@ find_dependency(tesseract_collision)
 find_dependency(tesseract_scene_graph)
 find_dependency(tesseract_state_solver)
 find_dependency(tesseract_srdf)
-find_dependency(tesseract_kinematics)
+find_dependency(tesseract_kinematics COMPONENTS core)
 find_dependency(tesseract_urdf)
 find_dependency(tesseract_common)
 
