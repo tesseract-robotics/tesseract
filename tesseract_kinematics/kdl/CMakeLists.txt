@@ -5,6 +5,7 @@ add_library(
   src/kdl_fwd_kin_chain.cpp
   src/kdl_inv_kin_chain_lma.cpp
   src/kdl_inv_kin_chain_nr.cpp
+  src/kdl_inv_kin_chain_nr_jl.cpp
   src/kdl_utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_kdl

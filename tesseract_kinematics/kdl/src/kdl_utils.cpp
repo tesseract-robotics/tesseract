@@ -143,4 +143,37 @@ bool parseSceneGraph(KDLChainData& results,
   chains.emplace_back(base_name, tip_name);
   return parseSceneGraph(results, scene_graph, chains);
 }
+
+void parseChainData(KDL::JntArray& q_min,
+                    KDL::JntArray& q_max,
+                    const KDLChainData& kdl_data,
+                    const tesseract_scene_graph::SceneGraph& scene_graph)
+{
+  q_min.resize(kdl_data.robot_chain.getNrOfJoints());
+  q_max.resize(kdl_data.robot_chain.getNrOfJoints());
+
+  for (uint joint_num = 0; joint_num < kdl_data.robot_chain.getNrOfJoints(); ++joint_num)
+  {
+    auto joint = scene_graph.getJoint(kdl_data.joint_names[joint_num]);
+    double lower = std::numeric_limits<float>::lowest();
+    double upper = std::numeric_limits<float>::max();
+    // Does the joint have limits?
+    if (joint->type != tesseract_scene_graph::JointType::CONTINUOUS)
+    {
+      if (joint->safety)
+      {
+        lower = std::max(joint->limits->lower, joint->safety->soft_lower_limit);
+        upper = std::min(joint->limits->upper, joint->safety->soft_upper_limit);
+      }
+      else
+      {
+        lower = joint->limits->lower;
+        upper = joint->limits->upper;
+      }
+    }
+    // Assign limits
+    q_min(joint_num) = lower;
+    q_max(joint_num) = upper;
+  }
+}
 }  // namespace tesseract_kinematics

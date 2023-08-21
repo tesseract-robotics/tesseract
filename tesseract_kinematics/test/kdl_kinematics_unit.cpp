@@ -9,6 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
+#include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr_jl.h>
 
 using namespace tesseract_kinematics::test_suite;
 
@@ -30,6 +31,16 @@ TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)  // NOLINT
 
   tesseract_kinematics::KinematicsPluginFactory factory;
   runInvKinIIWATest(factory, "KDLInvKinChainNRFactory", "KDLFwdKinChainFactory");
+}
+
+TEST(TesseractKinematicsUnit, KDLKinChainNR_JLInverseKinematicUnit)  // NOLINT
+{
+  auto scene_graph = getSceneGraphIIWA();
+
+  tesseract_kinematics::KDLInvKinChainNR_JL derived_kin(*scene_graph, "base_link", "tool0");
+
+  tesseract_kinematics::KinematicsPluginFactory factory;
+  runInvKinIIWATest(factory, "KDLInvKinChainNR_JLFactory", "KDLFwdKinChainFactory");
 }
 
 int main(int argc, char** argv)

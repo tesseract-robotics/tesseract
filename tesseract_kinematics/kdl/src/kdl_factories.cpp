@@ -28,6 +28,7 @@
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
+#include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr_jl.h>
 
 namespace tesseract_kinematics
 {
@@ -121,6 +122,36 @@ InverseKinematics::UPtr KDLInvKinChainNRFactory::create(const std::string& solve
   return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, solver_name);
 }
 
+InverseKinematics::UPtr KDLInvKinChainNR_JLFactory::create(const std::string& solver_name,
+                                                        const tesseract_scene_graph::SceneGraph& scene_graph,
+                                                        const tesseract_scene_graph::SceneState& /*scene_state*/,
+                                                        const KinematicsPluginFactory& /*plugin_factory*/,
+                                                        const YAML::Node& config) const
+{
+  std::string base_link;
+  std::string tip_link;
+
+  try
+  {
+    if (YAML::Node n = config["base_link"])
+      base_link = n.as<std::string>();
+    else
+      throw std::runtime_error("KDLInvKinChainNR_JLFactory, missing 'base_link' entry");
+
+    if (YAML::Node n = config["tip_link"])
+      tip_link = n.as<std::string>();
+    else
+      throw std::runtime_error("KDLInvKinChainNR_JLFactory, missing 'tip_link' entry");
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("KDLInvKinChainNR_JLFactory: Failed to parse yaml config data! Details: %s", e.what());
+    return nullptr;
+  }
+
+  return std::make_unique<KDLInvKinChainNR_JL>(scene_graph, base_link, tip_link, solver_name);
+}
+
 TESSERACT_PLUGIN_ANCHOR_IMPL(KDLFactoriesAnchor)
 
 }  // namespace tesseract_kinematics
@@ -131,3 +162,5 @@ TESSERACT_ADD_FWD_KIN_PLUGIN(tesseract_kinematics::KDLFwdKinChainFactory, KDLFwd
 TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::KDLInvKinChainLMAFactory, KDLInvKinChainLMAFactory);
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::KDLInvKinChainNRFactory, KDLInvKinChainNRFactory);
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::KDLInvKinChainNR_JLFactory, KDLInvKinChainNR_JLFactory);

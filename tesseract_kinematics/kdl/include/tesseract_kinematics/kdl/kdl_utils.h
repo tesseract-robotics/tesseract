@@ -126,5 +126,16 @@ bool parseSceneGraph(KDLChainData& results,
                      const tesseract_scene_graph::SceneGraph& scene_graph,
                      const std::string& base_name,
                      const std::string& tip_name);
+
+/**
+ * @brief Parse joint limits from the KDL chain data
+ * @param lb Lower bounds (limits) of the joints
+ * @param ub Upper bounds (limits) of the joints
+ * @param scene_graph The Scene Graph
+ */
+void parseChainData(KDL::JntArray& q_min,
+                    KDL::JntArray& q_max,
+                    const KDLChainData& kdl_data,
+                    const tesseract_scene_graph::SceneGraph& scene_graph);
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_KDL_UTILS_H
