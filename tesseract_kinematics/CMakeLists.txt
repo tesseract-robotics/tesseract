@@ -110,28 +110,15 @@ endif()
 configure_package(COMPONENTS ${SUPPORTED_COMPONENTS})
 
 if(TESSERACT_PACKAGE)
-  tesseract_cpack(
-    VERSION ${pkg_extracted_version}
-    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
-    DESCRIPTION ${pkg_extracted_description}
-    LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
-    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
-    LINUX_DEPENDS
-      "libconsole-bridge-dev"
-      "liborocos-kdl-dev"
-      "libeigen3-dev"
-      "libyaml-cpp-dev"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
-      "${TESSERACT_PACKAGE_PREFIX}opw-kinematics"
-    WINDOWS_DEPENDS
-      "console_bridge"
-      "orocos-kdl"
-      "Eigen3"
-      "yaml-cpp"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
-      "${TESSERACT_PACKAGE_PREFIX}opw-kinematics")
+  cpack_package(
+    VERSION
+    ${pkg_extracted_version}
+    MAINTAINER
+    <https://github.com/ros-industrial-consortium/tesseract>
+    DESCRIPTION
+    ${pkg_extracted_description}
+    LICENSE_FILE
+    ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
+    README_FILE
+    ${CMAKE_CURRENT_LIST_DIR}/../README.md)
 endif()

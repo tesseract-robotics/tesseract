@@ -59,6 +59,7 @@ set(KINEMATICS_PLUGINS ${KINEMATICS_PLUGINS} "${PROJECT_NAME}_kdl_factories" PAR
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT kdl
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp")
@@ -68,3 +69,20 @@ configure_component(
   NAMESPACE tesseract
   TARGETS ${PROJECT_NAME}_kdl ${PROJECT_NAME}_kdl_factories
   DEPENDENCIES orocos_kdl "tesseract_kinematics COMPONENTS core")
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT
+    KDL # must be uppercase
+    VERSION
+    ${pkg_extracted_version}
+    DESCRIPTION
+    "Tesseract Kinematics kdl implementation"
+    COMPONENT_DEPENDS
+    ${PROJECT_NAME}
+    core
+    LINUX_DEPENDS
+    "liborocos-kdl-dev"
+    WINDOWS_DEPENDS
+    "orocos-kdl")
+endif()

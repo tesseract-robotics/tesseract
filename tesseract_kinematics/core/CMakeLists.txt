@@ -54,6 +54,7 @@ set(KINEMATICS_PLUGINS ${KINEMATICS_PLUGINS} "${PROJECT_NAME}_core_factories" PA
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT core
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp")
@@ -70,3 +71,29 @@ configure_component(
     tesseract_common
     yaml-cpp
   CFG_EXTRAS cmake/core-extras.cmake)
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT
+    CORE # must be uppercase
+    VERSION
+    ${pkg_extracted_version}
+    DESCRIPTION
+    "Tesseract Kinematics core components"
+    COMPONENT_DEPENDS
+    ${PROJECT_NAME}
+    LINUX_DEPENDS
+    "libconsole-bridge-dev"
+    "libeigen3-dev"
+    "libyaml-cpp-dev"
+    "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+    "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+    "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
+    WINDOWS_DEPENDS
+    "console_bridge"
+    "Eigen3"
+    "yaml-cpp"
+    "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+    "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+    "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver")
+endif()

@@ -12,6 +12,7 @@ target_include_directories(${PROJECT_NAME}_ikfast INTERFACE "$<BUILD_INTERFACE:$
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT ikfast
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp")
@@ -21,3 +22,16 @@ configure_component(
   NAMESPACE tesseract
   TARGETS ${PROJECT_NAME}_ikfast
   DEPENDENCIES "tesseract_kinematics COMPONENTS core")
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT
+    IKFAST # must be uppercase
+    VERSION
+    ${pkg_extracted_version}
+    DESCRIPTION
+    "Tesseract Kinematics ikfast implementation"
+    COMPONENT_DEPENDS
+    ${PROJECT_NAME}
+    core)
+endif()
