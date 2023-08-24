@@ -160,7 +160,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
         Eigen::Vector4d base_color;
         double metallic = 0.0;
         double roughness = 0.5;
-        Eigen::Vector4d emissive;
+        Eigen::Vector4d emissive = Eigen::Vector4d::Zero();
 
         aiColor4D pbr_base_color;
 #ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
