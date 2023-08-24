@@ -1,0 +1,75 @@
+name: Conda
+
+on:
+  push:
+    branches:
+      - master
+      - dev*
+  pull_request:
+    paths:
+      - 'tesseract**'
+      - '.github/workflows/conda.yml'
+      - '**.repos'
+  release:
+    types:
+      - released
+
+jobs:
+  conda-win:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v3
+      with:
+       path: src/tesseract
+    - name: install-depends
+      shell: cmd
+      run: |
+        python -m pip install vcstool -q
+    - name: vcs import
+      run: >
+        vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" src/
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        channels: conda-forge
+        auto-activate-base: true
+        python-version: 3.10
+    - name: conda install
+      run: >
+        conda install mamba boa conda-smithy -y
+    - name: build and test
+      shell: cmd
+      working-directory: src/tesseract/.github/workflows/conda
+      run: |
+        mamba mambabuild .
+
+  conda-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: src/tesseract
+    - name: install-depends
+      run: |
+        python -m pip install vcstool -q
+    - name: vcs import
+      run: >
+        vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" src/
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        channels: conda-forge
+        auto-activate-base: true
+        python-version: 3.10
+    - name: conda install
+      run: >
+        conda install mamba boa conda-smithy -y
+    - name: build and test
+      working-directory: src/tesseract/.github/workflows/conda
+      run: |
+        mamba mambabuild .
+
+      
+    
+    
+      
