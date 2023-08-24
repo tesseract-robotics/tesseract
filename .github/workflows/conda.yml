@@ -30,13 +30,14 @@ jobs:
         vcs import --input "${{ github.workspace }}/src/tesseract/.github/workflows/windows_dependencies.repos" src/
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        miniconda-version: "latest"
+        mamba-version: "*"
+        channel-priority: true
         channels: conda-forge
         auto-activate-base: true
         python-version: "3.10"
     - name: conda install
       run: >
-        conda install mamba boa conda-smithy -y
+        mamba install boa conda-smithy -y
     - name: build and test
       shell: cmd
       working-directory: src/tesseract/.github/workflows/conda
@@ -57,13 +58,14 @@ jobs:
         vcs import --input "${{ github.workspace }}/src/tesseract/.github/workflows/windows_dependencies.repos" src/
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        miniconda-version: "latest"
+        mamba-version: "*"
+        channel-priority: true
         channels: conda-forge
         auto-activate-base: true
         python-version: "3.10"
     - name: conda install
       run: >
-        conda install mamba boa conda-smithy -y
+        mamba install boa conda-smithy -y
     - name: build and test
       working-directory: src/tesseract/.github/workflows/conda
       run: |
