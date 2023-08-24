@@ -33,7 +33,7 @@ jobs:
         miniconda-version: "latest"
         channels: conda-forge
         auto-activate-base: true
-        python-version: 3.10
+        python-version: "3.10"
     - name: conda install
       run: >
         conda install mamba boa conda-smithy -y
@@ -60,7 +60,7 @@ jobs:
         miniconda-version: "latest"
         channels: conda-forge
         auto-activate-base: true
-        python-version: 3.10
+        python-version: "3.10"
     - name: conda install
       run: >
         conda install mamba boa conda-smithy -y
