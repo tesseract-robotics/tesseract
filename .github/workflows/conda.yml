@@ -30,11 +30,11 @@ jobs:
         vcs import --input "${{ github.workspace }}/src/tesseract/.github/workflows/windows_dependencies.repos" src/
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        mamba-version: "*"
+        miniforge-variant: Mambaforge
         channel-priority: true
         channels: conda-forge
-        auto-activate-base: true
         python-version: "3.10"
+        use-mamba: true
     - name: conda install
       run: >
         mamba install boa conda-smithy -y
@@ -58,11 +58,11 @@ jobs:
         vcs import --input "${{ github.workspace }}/src/tesseract/.github/workflows/windows_dependencies.repos" src/
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        mamba-version: "*"
+        miniforge-variant: Mambaforge
         channel-priority: true
         channels: conda-forge
-        auto-activate-base: true
         python-version: "3.10"
+        use-mamba: true
     - name: conda install
       run: >
         mamba install boa conda-smithy -y
