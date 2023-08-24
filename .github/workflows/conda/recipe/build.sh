@@ -1,6 +1,6 @@
 set -e
 
-ln -s $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-gcc $BUILD_PREFIX/bin/gcc
+ln -f -s $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-gcc $BUILD_PREFIX/bin/gcc
 
 colcon build --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
    --event-handlers console_cohesion+ \

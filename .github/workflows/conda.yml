@@ -49,13 +49,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        path: src/tesseract
+        path: workspace/src/tesseract
     - name: install-depends
       run: |
         python -m pip install vcstool -q
     - name: vcs import
       run: >
-        vcs import --input "${{ github.workspace }}/src/tesseract/.github/workflows/windows_dependencies.repos" src/
+        vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" src/
     - uses: conda-incubator/setup-miniconda@v2
       with:
         miniforge-variant: Mambaforge
@@ -67,8 +67,13 @@ jobs:
       run: >
         mamba install boa conda-smithy -y
     - name: build and test
-      working-directory: src/tesseract/.github/workflows/conda
       run: |
+        cp -r workspace/src/tesseract/.github/workflows/conda ./conda
+        cd conda
+        touch conda-forge.yml
+        conda smithy regenerate
+        
+        mamba mambabuild -m .ci_support/linux_64_.yaml .
         mamba mambabuild .
 
       

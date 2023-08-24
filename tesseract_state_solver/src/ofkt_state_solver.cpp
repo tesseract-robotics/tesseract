@@ -32,6 +32,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
+#include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
