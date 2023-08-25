@@ -157,7 +157,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     {
       aiMaterial* mat = scene->mMaterials[a->mMaterialIndex];
       {
-        Eigen::Vector4d base_color;
+        Eigen::Vector4d base_color = Eigen::Vector4d::Zero();
         double metallic = 0.0;
         double roughness = 0.5;
         Eigen::Vector4d emissive = Eigen::Vector4d::Zero();
