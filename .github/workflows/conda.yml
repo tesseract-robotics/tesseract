@@ -43,7 +43,7 @@ jobs:
         mkdir conda
         xcopy /E workspace\src\tesseract\.github\workflows\conda conda
         cd conda
-        echo > conda-forge.yml
+        New-Item -Name conda-forge.yml -ItemType File
         conda smithy regenerate
         
         mamba mambabuild -m .ci_support/win_64_.yaml .
