@@ -16,7 +16,6 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(octomap REQUIRED)
 find_package(assimp REQUIRED)
-link_directories(${assimp_LIBRARY_DIRS})
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
@@ -84,7 +83,7 @@ target_link_libraries(
          console_bridge::console_bridge
          octomap
          octomath
-         ${assimp_LIBRARIES})
+         assimp::assimp)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_ASSIMP_USE_PBRMATERIAL})
 target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -97,7 +96,6 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE ${assimp_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 

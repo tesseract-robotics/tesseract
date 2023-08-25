@@ -1,3 +1,7 @@
+find_package(assimp QUIET CONFIG)
+
+if(NOT assimp_FOUND)
+
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(ASSIMP_ARCHITECTURE "64")
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
@@ -65,8 +69,21 @@ else(MSVC)
   find_package_handle_standard_args(assimp REQUIRED_VARS assimp_INCLUDE_DIR assimp_LIBRARY)
 endif(MSVC)
 
+# Create assimp::assimp imported target
+add_library(assimp::assimp SHARED_IMPORTED)
+set_target_properties(assimp::assimp PROPERTIES
+  IMPORTED_LOCATION ${assimp_LIBRARY}
+  INTERFACE_INCLUDE_DIRECTORIES ${assimp_INCLUDE_DIR}
+  INTERFACE_LINK_LIBRARIES ${assimp_LIBRARY})
+
+else()
+set(assimp_LIBRARY assimp::assimp)
+endif()
+
 if(assimp_FOUND)
   set(assimp_INCLUDE_DIRS ${assimp_INCLUDE_DIR})
   set(assimp_LIBRARIES ${assimp_LIBRARY})
   set(assimp_LIBRARY_DIRS ${assimp_LIBRARY_DIR})
 endif()
+
+
