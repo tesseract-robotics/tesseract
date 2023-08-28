@@ -1,6 +1,6 @@
 find_package(assimp QUIET CONFIG)
 
-if(NOT assimp_FOUND)
+if((NOT assimp_FOUND) OR (NOT TARGET assimp::assimp))
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(ASSIMP_ARCHITECTURE "64")
@@ -70,7 +70,7 @@ else(MSVC)
 endif(MSVC)
 
 # Create assimp::assimp imported target
-add_library(assimp::assimp SHARED_IMPORTED)
+add_library(assimp::assimp SHARED IMPORTED)
 set_target_properties(assimp::assimp PROPERTIES
   IMPORTED_LOCATION ${assimp_LIBRARY}
   INTERFACE_INCLUDE_DIRECTORIES ${assimp_INCLUDE_DIR}
@@ -78,6 +78,34 @@ set_target_properties(assimp::assimp PROPERTIES
 
 else()
 set(assimp_LIBRARY assimp::assimp)
+endif()
+
+# workaround for https://github.com/assimp/assimp/issues/4474
+get_target_property(_assimp_TARGET_INCLUDE_DIRS assimp::assimp INTERFACE_INCLUDE_DIRECTORIES)
+foreach(_assimp_TARGET_INCLUDE_DIR ${_assimp_TARGET_INCLUDE_DIRS})
+ message(STATUS "_assimp_TARGET_INCLUDE_DIR ${_assimp_TARGET_INCLUDE_DIR}")
+  if(NOT EXISTS "${_assimp_TARGET_INCLUDE_DIR}")
+    # clear INTERFACE_INCLUDE_DIRECTORIES
+    find_path(
+    assimp_INCLUDE_DIR
+    NAMES assimp/postprocess.h
+          assimp/scene.h
+          assimp/version.h
+          assimp/config.h
+          assimp/cimport.h
+    PATHS /usr/local/include
+    PATHS /usr/include/ REQUIRED)
+    message(STATUS "Clearing assimp INTERFACE_INCLUDE_DIRECTORIES due to bug ${assimp_INCLUDE_DIR}")
+    set_property(TARGET assimp::assimp PROPERTY
+      INTERFACE_INCLUDE_DIRECTORIES)
+  endif()
+endforeach()
+
+get_target_property(_assimp_IMPORTED_CONFIGURATIONS assimp::assimp INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(_assimp_IMPORTED_LOCATION_DEBUG assimp::assimp IMPORTED_LOCATION_DEBUG)
+if((NOT _assimp_IMPORTED_CONFIGURATIONS) OR (NOT _assimp_IMPORTED_LOCATION_DEBUG))
+  message(STATUS "Setting assimp IMPORTED_CONFIGURATIONS due to bug")
+  set_property(TARGET assimp::assimp APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 endif()
 
 if(assimp_FOUND)
