@@ -63,9 +63,9 @@ requirements:
       - xorg-libxext   # [unix]
 
 build:
-skip: true # [py<37]
-number: 0
+  skip: true # [py<37]
+  number: 0
 
 about:
-home: https://github.com/ros-industrial-consortium/tesseract
-summary: Tesseract robotics motion planning framework
+  home: https://github.com/ros-industrial-consortium/tesseract
+  summary: Tesseract robotics motion planning framework
