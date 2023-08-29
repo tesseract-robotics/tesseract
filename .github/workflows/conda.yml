@@ -78,9 +78,3 @@ jobs:
         conda smithy regenerate
         
         mamba mambabuild -m .ci_support/linux_64_.yaml .
-        mamba mambabuild .
-
-      
-    
-    
-      
