@@ -121,9 +121,10 @@ if(TESSERACT_ENABLE_TESTING OR TESSERACT_GEOMETRY_ENABLE_TESTING)
 endif()
 
 if(TESSERACT_PACKAGE)
-  tesseract_cpack(
+  cpack(
     VERSION ${pkg_extracted_version}
-    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    MAINTAINER_NAME ${pkg_extracted_maintainer_name}
+    MAINTAINER_EMAIL ${pkg_extracted_maintainer_email}
     DESCRIPTION ${pkg_extracted_description}
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
@@ -139,4 +140,5 @@ if(TESSERACT_PACKAGE)
       "octomap | ${TESSERACT_PACKAGE_PREFIX}octomap"
       "Eigen3"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common")
+
 endif()

@@ -9,13 +9,13 @@ if(WIN32)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
+# All of these are used by all components so to avoid having them in each they are include here
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system program_options serialization)
 find_package(octomap REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
-find_package(tesseract_support REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 # These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
@@ -71,15 +71,26 @@ endif()
 set(CONTACT_MANAGERS_PLUGINS "")
 
 # Core
+set(SUPPORTED_COMPONENTS core)
 add_subdirectory(core)
 
 # Bullet (currently required for creation of convex hulls)
+list(APPEND SUPPORTED_COMPONENTS bullet)
 add_subdirectory(bullet)
+
+# Test Suite
+option(TESSERACT_BUILD_TEST_SUITE "Build Test Suite components" ON)
+if(TESSERACT_BUILD_TEST_SUITE)
+  message("Building Test Suite components")
+  list(APPEND SUPPORTED_COMPONENTS test_suite)
+  add_subdirectory(test_suite)
+endif()
 
 # FCL
 option(TESSERACT_BUILD_FCL "Build FCL components" ON)
 if(TESSERACT_BUILD_FCL)
   message("Building FCL components")
+  list(APPEND SUPPORTED_COMPONENTS fcl)
   add_subdirectory(fcl)
 endif()
 
@@ -87,6 +98,7 @@ endif()
 option(TESSERACT_BUILD_VHACD "Build VHACD components" ON)
 if(TESSERACT_BUILD_VHACD)
   message("Building VHACD components")
+  list(APPEND SUPPORTED_COMPONENTS vhacd)
   add_subdirectory(vhacd)
 endif()
 
@@ -107,7 +119,8 @@ if((TESSERACT_ENABLE_TESTING OR TESSERACT_COLLISION_ENABLE_TESTING) AND TESSERAC
 endif()
 
 # Benchmarks
-if((TESSERACT_ENABLE_BENCHMARKING OR TESSERACT_COLLISION_ENABLE_BENCHMARKING) AND TESSERACT_BUILD_FCL)
+if((TESSERACT_ENABLE_BENCHMARKING OR TESSERACT_COLLISION_ENABLE_BENCHMARKING) AND TESSERACT_BUILD_FCL
+   AND TESSERACT_BUILD_TEST_SUITE)
   add_subdirectory(test/benchmarks)
 endif()
 
@@ -116,40 +129,23 @@ if((TESSERACT_ENABLE_EXAMPLES OR TESSERACT_COLLISION_ENABLE_EXAMPLES) AND TESSER
   add_subdirectory(examples)
 endif()
 
-configure_package(NAMESPACE tesseract)
+configure_package(COMPONENT core SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS})
 
 if(TESSERACT_PACKAGE)
-  set(LINUX_DEPENDS
-      "libbullet-dev"
-      "libbullet-extras-dev"
-      "libeigen3-dev"
-      "libconsole-bridge-dev"
-      "libyaml-cpp-dev"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-support")
-
-  set(WINDOWS_DEPENDS
-      "Eigen3"
-      "console_bridge"
-      "bullet"
-      "bullet_extras"
-      "yaml-cpp"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-support")
-
-  if(TESSERACT_BUILD_FCL)
-    list(APPEND LINUX_DEPENDS "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
-    list(APPEND LINUX_DEPENDS "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
-  endif()
-
-  tesseract_cpack(
+  cpack_component_package(
     VERSION ${pkg_extracted_version}
-    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    MAINTAINER_NAME ${pkg_extracted_maintainer_name}
+    MAINTAINER_EMAIL ${pkg_extracted_maintainer_email}
     DESCRIPTION ${pkg_extracted_description}
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
-    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
-    LINUX_DEPENDS ${LINUX_DEPENDS}
-    WINDOWS_DEPENDS ${WINDOWS_DEPENDS})
+    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md COMPONENT_DEPENDS ${SUPPORTED_COMPONENTS})
+
+  if(UNIX AND TESSERACT_PACKAGE_SOURCE)
+    cpack_debian_source_package(
+      CHANGLELOG ${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.rst
+      UPLOAD ${TESSERACT_PACKAGE_SOURCE_UPLOAD}
+      DPUT_HOST ${TESSERACT_PACKAGE_SOURCE_DPUT_HOST}
+      DEBIAN_INCREMENT ${TESSERACT_PACKAGE_SOURCE_DEBIAN_INCREMENT}
+      DISTRIBUTIONS ${TESSERACT_PACKAGE_SOURCE_DISTRIBUTIONS})
+  endif()
 endif()

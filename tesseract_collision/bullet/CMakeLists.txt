@@ -124,4 +124,19 @@ install(
   PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
-install_targets(TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_bullet_factories)
+configure_component(
+  COMPONENT bullet
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_bullet_factories
+  DEPENDENCIES "tesseract_collision COMPONENTS core"
+  CFG_EXTRAS cmake/bullet-extras.cmake)
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT bullet
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Collision bullet components"
+    COMPONENT_DEPENDS core
+    LINUX_DEPENDS "libbullet-dev" "libbullet-extras-dev"
+    WINDOWS_DEPENDS "libbullet-dev" "libbullet-extras-dev")
+endif()

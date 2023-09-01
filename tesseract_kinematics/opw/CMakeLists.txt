@@ -58,17 +58,10 @@ configure_component(
 
 if(TESSERACT_PACKAGE)
   cpack_component(
-    COMPONENT
-    OPW # must be uppercase
-    VERSION
-    ${pkg_extracted_version}
-    DESCRIPTION
-    "Tesseract Kinematics opw implementation"
-    COMPONENT_DEPENDS
-    ${PROJECT_NAME}
-    core
-    LINUX_DEPENDS
-    "${TESSERACT_PACKAGE_PREFIX}opw-kinematics"
-    WINDOWS_DEPENDS
-    "${TESSERACT_PACKAGE_PREFIX}opw-kinematics")
+    COMPONENT opw
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Kinematics opw implementation"
+    COMPONENT_DEPENDS core
+    LINUX_DEPENDS "${TESSERACT_PACKAGE_PREFIX}opw-kinematics"
+    WINDOWS_DEPENDS "${TESSERACT_PACKAGE_PREFIX}opw-kinematics")
 endif()

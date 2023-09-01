@@ -44,9 +44,10 @@ with section("parse"):
     'configure_package': {
       'pargs': {'nargs': 0},
       'kwargs': {
+        'COMPONENT': '?',
         'NAMESPACE': '?',
         'TARGETS': '*',
-        'COMPONENTS': '*',
+        'SUPPORTED_COMPONENTS': '*',
         'DEPENDENCIES': '*',
         'CFG_EXTRAS': '*',
       }
@@ -121,6 +122,56 @@ with section("parse"):
         'README_FILE': 1,
         'LINUX_DEPENDS': '*',
         'WINDOWS_DEPENDS': '*',
+      }
+    },
+    'cpack': {
+      'pargs': {'nargs': 0},
+      'kwargs': {
+        'VERSION': '?',
+        'MAINTAINER_NAME': '?',
+        'MAINTAINER_EMAIL': '?',
+        'VENDOR': '?',
+        'DESCRIPTION': '?',
+        'LICENSE_FILE': '?',
+        'README_FILE': '?',
+        'PACKAGE_PREFIX': '?',
+        'LINUX_DEPENDS': '*',
+        'WINDOWS_DEPENDS': '*',
+      }
+    },
+    'cpack_component_package': {
+      'pargs': {'nargs': 0},
+      'kwargs': {
+        'VERSION': '?',
+        'MAINTAINER_NAME': '?',
+        'MAINTAINER_EMAIL': '?',
+        'VENDOR': '?',
+        'DESCRIPTION': '?',
+        'LICENSE_FILE': '?',
+        'README_FILE': '?',
+        'PACKAGE_PREFIX': '?',
+      }
+    },
+    'cpack_component': {
+      'pargs': {'nargs': 0},
+      'kwargs': {
+        'COMPONENT': '?',
+        'VERSION': '?',
+        'DESCRIPTION': '?',
+        'PACKAGE_PREFIX': '?',
+        'LINUX_DEPENDS': '*',
+        'WINDOWS_DEPENDS': '*',
+        'COMPONENT_DEPENDS': '*',
+      }
+    },
+    'cpack_debian_source_package': {
+      'pargs': {'nargs': 0},
+      'kwargs': {
+        'CHANGLELOG': '?',
+        'UPLOAD': '?',
+        'DPUT_HOST': '?',
+        'DEBIAN_INCREMENT': '?',
+        'DISTRIBUTIONS': '*',
       }
     },
   }

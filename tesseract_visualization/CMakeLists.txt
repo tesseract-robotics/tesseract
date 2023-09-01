@@ -11,7 +11,7 @@ endif()
 
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
-find_package(tesseract_collision REQUIRED)
+find_package(tesseract_collision REQUIRED COMPONENTS core)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
@@ -189,16 +189,17 @@ if(TESSERACT_ENABLE_TESTING OR TESSERACT_VISUALIZATION_ENABLE_TESTING)
 endif()
 
 if(TESSERACT_PACKAGE)
-  tesseract_cpack(
+  cpack(
     VERSION ${pkg_extracted_version}
-    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    MAINTAINER_NAME ${pkg_extracted_maintainer_name}
+    MAINTAINER_EMAIL ${pkg_extracted_maintainer_email}
     DESCRIPTION ${pkg_extracted_description}
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
       "libconsole-bridge-dev"
       "libeigen3-dev"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
@@ -206,7 +207,7 @@ if(TESSERACT_PACKAGE)
     WINDOWS_DEPENDS
       "console-bridge"
       "Eigen3"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"

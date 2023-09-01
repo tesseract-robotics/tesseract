@@ -72,17 +72,10 @@ configure_component(
 
 if(TESSERACT_PACKAGE)
   cpack_component(
-    COMPONENT
-    KDL # must be uppercase
-    VERSION
-    ${pkg_extracted_version}
-    DESCRIPTION
-    "Tesseract Kinematics kdl implementation"
-    COMPONENT_DEPENDS
-    ${PROJECT_NAME}
-    core
-    LINUX_DEPENDS
-    "liborocos-kdl-dev"
-    WINDOWS_DEPENDS
-    "orocos-kdl")
+    COMPONENT kdl
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Kinematics kdl implementation"
+    COMPONENT_DEPENDS core
+    LINUX_DEPENDS "liborocos-kdl-dev"
+    WINDOWS_DEPENDS "orocos-kdl")
 endif()

@@ -25,13 +25,8 @@ configure_component(
 
 if(TESSERACT_PACKAGE)
   cpack_component(
-    COMPONENT
-    IKFAST # must be uppercase
-    VERSION
-    ${pkg_extracted_version}
-    DESCRIPTION
-    "Tesseract Kinematics ikfast implementation"
-    COMPONENT_DEPENDS
-    ${PROJECT_NAME}
-    core)
+    COMPONENT ikfast
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Kinematics ikfast implementation"
+    COMPONENT_DEPENDS core)
 endif()

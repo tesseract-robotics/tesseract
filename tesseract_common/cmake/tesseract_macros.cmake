@@ -16,6 +16,22 @@ macro(tesseract_variables)
     set(BUILD_SHARED_LIBS ON)
   endif()
 
+  if(NOT DEFINED TESSERACT_PACKAGE_SOURCE_UPLOAD)
+    set(TESSERACT_PACKAGE_SOURCE_UPLOAD OFF)
+  endif()
+
+  if(NOT DEFINED TESSERACT_PACKAGE_SOURCE_DISTRIBUTIONS)
+    set(TESSERACT_PACKAGE_SOURCE_DISTRIBUTIONS focal jammy)
+  endif()
+
+  if(NOT DEFINED TESSERACT_PACKAGE_SOURCE_DPUT_HOST)
+    set(TESSERACT_PACKAGE_SOURCE_DPUT_HOST ppa:levi-armstrong/tesseract-robotics)
+  endif()
+
+  if(NOT DEFINED TESSERACT_PACKAGE_SOURCE_DEBIAN_INCREMENT)
+    set(TESSERACT_PACKAGE_SOURCE_DEBIAN_INCREMENT 0)
+  endif()
+
   if(NOT DEFINED TESSERACT_ENABLE_EXAMPLES)
     set(TESSERACT_ENABLE_EXAMPLES ON)
   endif()
@@ -132,65 +148,6 @@ macro(tesseract_variables)
   endif()
 
   set(TESSERACT_CXX_VERSION 17)
-endmacro()
-
-macro(tesseract_cpack)
-  set(oneValueArgs
-      VERSION
-      MAINTAINER
-      DESCRIPTION
-      LICENSE_FILE
-      README_FILE)
-  set(multiValueArgs LINUX_DEPENDS WINDOWS_DEPENDS)
-  cmake_parse_arguments(
-    ARG
-    ""
-    "${oneValueArgs}"
-    "${multiValueArgs}"
-    ${ARGN})
-
-  set(CPACK_PACKAGE_VENDOR "ROS-Industrial")
-  set(CPACK_RESOURCE_FILE_LICENSE ${ARG_LICENSE_FILE})
-  set(CPACK_RESOURCE_FILE_README ${ARG_README_FILE})
-  if(UNIX)
-    string(
-      REPLACE "_"
-              "-"
-              TESSERACT_PACKAGE_NAME
-              ${PROJECT_NAME})
-    set(CPACK_GENERATOR "DEB;TXZ")
-
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-      set(DEB_ARCH "amd64")
-    else()
-      set(DEB_ARCH ${CMAKE_SYSTEM_PROCESSOR})
-    endif()
-
-    set(CPACK_PACKAGE_FILE_NAME "${TESSERACT_PACKAGE_PREFIX}${TESSERACT_PACKAGE_NAME}_${DEB_ARCH}_linux_${ARG_VERSION}")
-    set(CPACK_DEBIAN_PACKAGE_NAME "${TESSERACT_PACKAGE_PREFIX}${TESSERACT_PACKAGE_NAME}")
-    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${DEB_ARCH})
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${ARG_MAINTAINER})
-    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${ARG_DESCRIPTION})
-    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS=ON)
-    string(
-      REPLACE ";"
-              ","
-              CPACK_DEBIAN_PACKAGE_DEPENDS
-              "${ARG_LINUX_DEPENDS}")
-  elseif(WIN32)
-    set(CPACK_GENERATOR "NuGet;TXZ")
-    set(CPACK_PACKAGE_FILE_NAME
-        "${TESSERACT_PACKAGE_PREFIX}${TESSERACT_PACKAGE_NAME}_${CMAKE_SYSTEM_PROCESSOR}_windows_${ARG_VERSION}")
-    set(CPACK_NUGET_PACKAGE_NAME
-        "${TESSERACT_PACKAGE_PREFIX}${TESSERACT_PACKAGE_NAME}_${CMAKE_SYSTEM_PROCESSOR}_windows")
-    set(CPACK_NUGET_PACKAGE_DESCRIPTION ${ARG_DESCRIPTION})
-    string(
-      REPLACE ";"
-              ","
-              CPACK_NUGET_PACKAGE_DEPENDENCIES
-              "${ARG_WINDOWS_DEPENDS}")
-  endif()
-  include(CPack)
 endmacro()
 
 macro(find_bullet)

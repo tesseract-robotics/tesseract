@@ -9,7 +9,7 @@ if(WIN32)
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-# System dependencies are found with CMake's conventions
+# All of these are used by all components so to avoid having them in each they are include here
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
@@ -107,18 +107,23 @@ if((TESSERACT_ENABLE_TESTING OR TESSERACT_KINEMATICS_ENABLE_TESTING)
   add_subdirectory(test)
 endif()
 
-configure_package(COMPONENTS ${SUPPORTED_COMPONENTS})
+configure_package(COMPONENT core SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS})
 
 if(TESSERACT_PACKAGE)
-  cpack_package(
-    VERSION
-    ${pkg_extracted_version}
-    MAINTAINER
-    <https://github.com/ros-industrial-consortium/tesseract>
-    DESCRIPTION
-    ${pkg_extracted_description}
-    LICENSE_FILE
-    ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
-    README_FILE
-    ${CMAKE_CURRENT_LIST_DIR}/../README.md)
+  cpack_component_package(
+    VERSION ${pkg_extracted_version}
+    MAINTAINER_NAME ${pkg_extracted_maintainer_name}
+    MAINTAINER_EMAIL ${pkg_extracted_maintainer_email}
+    DESCRIPTION ${pkg_extracted_description}
+    LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
+    README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md COMPONENT_DEPENDS ${SUPPORTED_COMPONENTS})
+
+  if(UNIX AND TESSERACT_PACKAGE_SOURCE)
+    cpack_debian_source_package(
+      CHANGLELOG ${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.rst
+      UPLOAD ${TESSERACT_PACKAGE_SOURCE_UPLOAD}
+      DPUT_HOST ${TESSERACT_PACKAGE_SOURCE_DPUT_HOST}
+      DEBIAN_INCREMENT ${TESSERACT_PACKAGE_SOURCE_DEBIAN_INCREMENT}
+      DISTRIBUTIONS ${TESSERACT_PACKAGE_SOURCE_DISTRIBUTIONS})
+  endif()
 endif()

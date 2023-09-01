@@ -33,4 +33,16 @@ install(
   PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
-install_targets(TARGETS ${PROJECT_NAME}_vhacd_convex_decomposition)
+configure_component(
+  COMPONENT vhacd
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_vhacd_convex_decomposition
+  DEPENDENCIES "tesseract_collision COMPONENTS core")
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT vhacd
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Collision vhacd components"
+    COMPONENT_DEPENDS core bullet)
+endif()

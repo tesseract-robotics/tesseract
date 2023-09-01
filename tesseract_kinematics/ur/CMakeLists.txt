@@ -55,13 +55,8 @@ configure_component(
 
 if(TESSERACT_PACKAGE)
   cpack_component(
-    COMPONENT
-    UR # must be upper case
-    VERSION
-    ${pkg_extracted_version}
-    DESCRIPTION
-    "Tesseract Kinematics ur implementation"
-    COMPONENT_DEPENDS
-    ${PROJECT_NAME}
-    core)
+    COMPONENT ur
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Kinematics ur implementation"
+    COMPONENT_DEPENDS core)
 endif()

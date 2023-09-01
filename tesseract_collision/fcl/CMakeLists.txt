@@ -54,4 +54,20 @@ install(
   PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
-install_targets(TARGETS ${PROJECT_NAME}_fcl ${PROJECT_NAME}_fcl_factories)
+configure_component(
+  COMPONENT fcl
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_fcl ${PROJECT_NAME}_fcl_factories
+  DEPENDENCIES "tesseract_collision COMPONENTS core")
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT fcl
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Collision FCL components"
+    COMPONENT_DEPENDS core
+    LINUX_DEPENDS "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
+                  "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
+    WINDOWS_DEPENDS "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
+                    "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
+endif()
