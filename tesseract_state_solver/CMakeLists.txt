@@ -101,7 +101,16 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME}_ofkt PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                        "$<INSTALL_INTERFACE:include>")
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt)
+configure_package(
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt
+  DEPENDENCIES
+    Eigen3
+    orocos_kdl
+    console_bridge
+    tesseract_scene_graph
+    tesseract_common
+  CFG_EXTRAS cmake/tesseract_state_solver-extras.cmake)
 
 # Mark cpp header files for installation
 install(

@@ -37,7 +37,7 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME} DEPENDENCIES tesseract_common)
 
 install(DIRECTORY include/${PROJECT_NAME} DESTINATION include)
 

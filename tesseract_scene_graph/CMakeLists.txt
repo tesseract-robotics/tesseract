@@ -75,7 +75,17 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
+configure_package(
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}
+  DEPENDENCIES
+    "Boost COMPONENTS graph"
+    Eigen3
+    console_bridge
+    orocos_kdl
+    tesseract_geometry
+    tesseract_common
+  CFG_EXTRAS cmake/tesseract_scene_graph-extras.cmake)
 
 # Mark cpp header files for installation
 install(

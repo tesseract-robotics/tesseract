@@ -129,7 +129,7 @@ configure_package(
   TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_commands
   DEPENDENCIES
     Eigen3
-    console_bridg
+    console_bridge
     "tesseract_collision COMPONENTS core"
     tesseract_scene_graph
     tesseract_state_solver

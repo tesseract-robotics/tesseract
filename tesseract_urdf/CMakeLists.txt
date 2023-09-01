@@ -137,7 +137,19 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
+configure_package(
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}
+  DEPENDENCIES
+    Boost
+    Eigen3
+    console_bridge
+    "PCL COMPONENTS common io"
+    "tesseract_collision COMPONENTS bullet"
+    tesseract_geometry
+    tesseract_common
+    tesseract_scene_graph
+  CFG_EXTRAS cmake/tesseract_urdf-extras.cmake)
 
 # Mark cpp header files for installation
 install(FILES include/${PROJECT_NAME}/urdf_parser.h DESTINATION include/${PROJECT_NAME})

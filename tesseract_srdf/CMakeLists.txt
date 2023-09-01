@@ -74,7 +74,17 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
+configure_package(
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}
+  DEPENDENCIES
+    Boost
+    Eigen3
+    console_bridge
+    tesseract_common
+    tesseract_scene_graph
+    yaml-cpp
+  CFG_EXTRAS cmake/tesseract_srdf-extras.cmake)
 
 # Mark cpp header files for installation
 install(FILES include/${PROJECT_NAME}/srdf_model.h include/${PROJECT_NAME}/kinematics_information.h

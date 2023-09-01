@@ -172,7 +172,18 @@ else()
   message(STATUS "Gazebo Visualization Library will not be built! Missing: ${GAZEBO_MISSING}")
 endif()
 
-configure_package(NAMESPACE tesseract TARGETS ${PACKAGE_LIBRARIES})
+configure_package(
+  NAMESPACE tesseract
+  TARGETS ${PACKAGE_LIBRARIES}
+  DEPENDENCIES
+    Eigen3
+    console_bridge
+    "tesseract_collision COMPONENTS core"
+    tesseract_common
+    tesseract_environment
+    tesseract_scene_graph
+    tesseract_state_solver
+  CFG_EXTRAS cmake/tesseract_visualization-extras.cmake)
 
 # Mark cpp header files for installation
 install(
