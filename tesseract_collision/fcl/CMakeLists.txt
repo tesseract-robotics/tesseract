@@ -58,7 +58,7 @@ configure_component(
   COMPONENT fcl
   NAMESPACE tesseract
   TARGETS ${PROJECT_NAME}_fcl ${PROJECT_NAME}_fcl_factories
-  DEPENDENCIES "tesseract_collision COMPONENTS core")
+  DEPENDENCIES "tesseract_collision COMPONENTS core" "fcl 0.6")
 
 if(TESSERACT_PACKAGE)
   cpack_component(

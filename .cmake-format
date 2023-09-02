@@ -112,18 +112,6 @@ with section("parse"):
         'EXCLUDE': '*',
       }
     },
-    'tesseract_cpack': {
-      'pargs': {'nargs': 0},
-      'kwargs': {
-        'VERSION': 1,
-        'MAINTAINER': 1,
-        'DESCRIPTION': 1,
-        'LICENSE_FILE': 1,
-        'README_FILE': 1,
-        'LINUX_DEPENDS': '*',
-        'WINDOWS_DEPENDS': '*',
-      }
-    },
     'cpack': {
       'pargs': {'nargs': 0},
       'kwargs': {
@@ -150,6 +138,7 @@ with section("parse"):
         'LICENSE_FILE': '?',
         'README_FILE': '?',
         'PACKAGE_PREFIX': '?',
+        'COMPONENT_DEPENDS': '*',
       }
     },
     'cpack_component': {
