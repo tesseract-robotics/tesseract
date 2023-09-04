@@ -123,6 +123,8 @@ with section("parse"):
         'LICENSE_FILE': '?',
         'README_FILE': '?',
         'PACKAGE_PREFIX': '?',
+        'LINUX_BUILD_DEPENDS': '*',
+        'WINDOWS_BUILD_DEPENDS': '*',
         'LINUX_DEPENDS': '*',
         'WINDOWS_DEPENDS': '*',
       }
@@ -148,6 +150,8 @@ with section("parse"):
         'VERSION': '?',
         'DESCRIPTION': '?',
         'PACKAGE_PREFIX': '?',
+        'LINUX_BUILD_DEPENDS': '*',
+        'WINDOWS_BUILD_DEPENDS': '*',
         'LINUX_DEPENDS': '*',
         'WINDOWS_DEPENDS': '*',
         'COMPONENT_DEPENDS': '*',
