@@ -2,6 +2,16 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update kinematics and collision packages to leverage cmake components (`#927 <https://github.com/tesseract-robotics/tesseract/issues/927>`_)
+* Update emails
+* Do not call find_package() if package has already been found.
+* Fix of ManipulatorInfo and typos (`#914 <https://github.com/tesseract-robotics/tesseract/issues/914>`_)
+  - ManipulatorInfo constructor now accepts tcp_offset as variant to match data member.
+  - Fixed typos in rep and rop factories.
+* Contributors: Levi Armstrong, Roelof, Roelof Oomen
+
 0.18.1 (2023-06-30)
 -------------------
 

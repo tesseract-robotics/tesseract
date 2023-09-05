@@ -2,6 +2,28 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update kinematics and collision packages to leverage cmake components (`#927 <https://github.com/tesseract-robotics/tesseract/issues/927>`_)
+* Update emails
+* Improved reporting of errors in IK plugin loader (`#924 <https://github.com/tesseract-robotics/tesseract/issues/924>`_)
+* Added IKFast factory boilerplate (`#916 <https://github.com/tesseract-robotics/tesseract/issues/916>`_)
+  * Added IKFast factory boilerplate
+  * Updated IKFast unit tests to use new IKFast boilerplate factory
+  * Reverted change to kinematic_group.h
+  * Add include guards
+  * Fix filename in header comment
+  Co-authored-by: Tyler Marr <41449746+marrts@users.noreply.github.com>
+  * IKFast plugins as cpp instead of h
+  * Fix ikfast clang-tidy issues
+  ---------
+  Co-authored-by: Tyler Marr <41449746+marrts@users.noreply.github.com>
+  Co-authored-by: Levi Armstrong <levi.armstrong@gmail.com>
+* Fix of ManipulatorInfo and typos (`#914 <https://github.com/tesseract-robotics/tesseract/issues/914>`_)
+  - ManipulatorInfo constructor now accepts tcp_offset as variant to match data member.
+  - Fixed typos in rep and rop factories.
+* Contributors: Levi Armstrong, Michael Ripperger, Roelof
+
 0.18.1 (2023-06-30)
 -------------------
 

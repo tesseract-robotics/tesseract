@@ -2,6 +2,12 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update kinematics and collision packages to leverage cmake components (`#927 <https://github.com/tesseract-robotics/tesseract/issues/927>`_)
+* Update emails
+* Contributors: Levi Armstrong
+
 0.18.1 (2023-06-30)
 -------------------
 

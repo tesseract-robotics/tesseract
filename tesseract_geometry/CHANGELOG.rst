@@ -2,6 +2,12 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update kinematics and collision packages to leverage cmake components (`#927 <https://github.com/tesseract-robotics/tesseract/issues/927>`_)
+* Add conda-forge CI test (`#930 <https://github.com/tesseract-robotics/tesseract/issues/930>`_)
+* Contributors: John Wason, Levi Armstrong
+
 0.18.1 (2023-06-30)
 -------------------
 
