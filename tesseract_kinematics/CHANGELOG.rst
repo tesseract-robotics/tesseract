@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.19.0 (2023-09-05)
+-------------------
 * Update kinematics and collision packages to leverage cmake components (`#927 <https://github.com/tesseract-robotics/tesseract/issues/927>`_)
 * Update emails
 * Improved reporting of errors in IK plugin loader (`#924 <https://github.com/tesseract-robotics/tesseract/issues/924>`_)
