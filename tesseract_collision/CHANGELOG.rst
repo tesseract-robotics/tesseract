@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.19.1 (2023-09-05)
+-------------------
 * Fix benchmark build
 * Contributors: Levi Armstrong
 
