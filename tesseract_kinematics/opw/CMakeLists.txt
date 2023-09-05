@@ -45,8 +45,23 @@ set(KINEMATICS_PLUGINS ${KINEMATICS_PLUGINS} "${PROJECT_NAME}_opw_factory" PAREN
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT opw
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp")
 
-install_targets(TARGETS ${PROJECT_NAME}_opw ${PROJECT_NAME}_opw_factory)
+configure_component(
+  COMPONENT opw
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_opw ${PROJECT_NAME}_opw_factory
+  DEPENDENCIES opw_kinematics "tesseract_kinematics COMPONENTS core")
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT opw
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Kinematics opw implementation"
+    COMPONENT_DEPENDS core
+    LINUX_DEPENDS "${TESSERACT_PACKAGE_PREFIX}opw-kinematics"
+    WINDOWS_DEPENDS "${TESSERACT_PACKAGE_PREFIX}opw-kinematics")
+endif()

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -74,7 +74,17 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
+configure_package(
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}
+  DEPENDENCIES
+    Boost
+    Eigen3
+    console_bridge
+    tesseract_common
+    tesseract_scene_graph
+    yaml-cpp
+  CFG_EXTRAS cmake/tesseract_srdf-extras.cmake)
 
 # Mark cpp header files for installation
 install(FILES include/${PROJECT_NAME}/srdf_model.h include/${PROJECT_NAME}/kinematics_information.h
@@ -92,9 +102,10 @@ if(TESSERACT_ENABLE_TESTING OR TESSERACT_SRDF_ENABLE_TESTING)
 endif()
 
 if(TESSERACT_PACKAGE)
-  tesseract_cpack(
+  cpack(
     VERSION ${pkg_extracted_version}
-    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    MAINTAINER_NAME ${pkg_extracted_maintainer_name}
+    MAINTAINER_EMAIL ${pkg_extracted_maintainer_email}
     DESCRIPTION ${pkg_extracted_description}
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
@@ -110,4 +121,13 @@ if(TESSERACT_PACKAGE)
       "yaml-cpp"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph")
+
+  if(UNIX AND TESSERACT_PACKAGE_SOURCE)
+    cpack_debian_source_package(
+      CHANGLELOG ${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.rst
+      UPLOAD ${TESSERACT_PACKAGE_SOURCE_UPLOAD}
+      DPUT_HOST ${TESSERACT_PACKAGE_SOURCE_DPUT_HOST}
+      DEBIAN_INCREMENT ${TESSERACT_PACKAGE_SOURCE_DEBIAN_INCREMENT}
+      DISTRIBUTIONS ${TESSERACT_PACKAGE_SOURCE_DISTRIBUTIONS})
+  endif()
 endif()

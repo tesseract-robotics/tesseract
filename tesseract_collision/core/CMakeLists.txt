@@ -16,7 +16,8 @@ target_link_libraries(
          Boost::boost
          Boost::system
          Boost::serialization
-         yaml-cpp)
+         yaml-cpp
+         octomap)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -33,31 +34,6 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME}_core PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                        "$<INSTALL_INTERFACE:include>")
 
-# Create test suite interface
-add_library(${PROJECT_NAME}_test_suite INTERFACE)
-target_link_libraries(
-  ${PROJECT_NAME}_test_suite
-  INTERFACE Eigen3::Eigen
-            tesseract::tesseract_support
-            tesseract::tesseract_geometry
-            ${PROJECT_NAME}_core)
-target_compile_options(${PROJECT_NAME}_test_suite INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_test_suite INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
-target_cxx_version(${PROJECT_NAME}_test_suite INTERFACE VERSION ${TESSERACT_CXX_VERSION})
-target_clang_tidy(${PROJECT_NAME}_test_suite ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_include_directories(${PROJECT_NAME}_test_suite INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                                "$<INSTALL_INTERFACE:include>")
-
-# Create test suite benchmarks interface
-add_library(${PROJECT_NAME}_test_suite_benchmarks INTERFACE)
-target_link_libraries(${PROJECT_NAME}_test_suite_benchmarks INTERFACE Eigen3::Eigen tesseract::tesseract_support
-                                                                      tesseract::tesseract_geometry)
-target_compile_options(${PROJECT_NAME}_test_suite_benchmarks INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_cxx_version(${PROJECT_NAME}_test_suite_benchmarks INTERFACE VERSION ${TESSERACT_CXX_VERSION})
-target_clang_tidy(${PROJECT_NAME}_test_suite_benchmarks ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_include_directories(
-  ${PROJECT_NAME}_test_suite_benchmarks INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                  "$<INSTALL_INTERFACE:include>")
 # Mark cpp header files for installation
 install(
   DIRECTORY include/${PROJECT_NAME}
@@ -68,8 +44,45 @@ install(
   PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
-install_targets(
-  TARGETS
-  ${PROJECT_NAME}_core
-  ${PROJECT_NAME}_test_suite
-  ${PROJECT_NAME}_test_suite_benchmarks)
+configure_component(
+  COMPONENT core
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_core
+  DEPENDENCIES
+    Eigen3
+    console_bridge
+    tesseract_geometry
+    tesseract_common
+    yaml-cpp
+    octomap
+    "Boost COMPONENTS system program_options serialization"
+  CFG_EXTRAS cmake/core-extras.cmake)
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT core
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Collision core components"
+    LINUX_DEPENDS
+      "libconsole-bridge-dev"
+      "libeigen3-dev"
+      "libyaml-cpp-dev"
+      "liboctomap-dev"
+      "libboost-system-dev"
+      "libboost-program-options-dev"
+      "libboost-serialization-dev"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
+    WINDOWS_DEPENDS
+      "console_bridge"
+      "Eigen3"
+      "yaml-cpp"
+      "liboctomap-dev"
+      "libboost-system-dev"
+      "libboost-program-options-dev"
+      "libboost-serialization-dev"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver")
+endif()

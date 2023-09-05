@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -11,7 +11,7 @@ endif()
 
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
-find_package(tesseract_collision REQUIRED)
+find_package(tesseract_collision REQUIRED COMPONENTS core)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
@@ -172,7 +172,18 @@ else()
   message(STATUS "Gazebo Visualization Library will not be built! Missing: ${GAZEBO_MISSING}")
 endif()
 
-configure_package(NAMESPACE tesseract TARGETS ${PACKAGE_LIBRARIES})
+configure_package(
+  NAMESPACE tesseract
+  TARGETS ${PACKAGE_LIBRARIES}
+  DEPENDENCIES
+    Eigen3
+    console_bridge
+    "tesseract_collision COMPONENTS core"
+    tesseract_common
+    tesseract_environment
+    tesseract_scene_graph
+    tesseract_state_solver
+  CFG_EXTRAS cmake/tesseract_visualization-extras.cmake)
 
 # Mark cpp header files for installation
 install(
@@ -189,16 +200,17 @@ if(TESSERACT_ENABLE_TESTING OR TESSERACT_VISUALIZATION_ENABLE_TESTING)
 endif()
 
 if(TESSERACT_PACKAGE)
-  tesseract_cpack(
+  cpack(
     VERSION ${pkg_extracted_version}
-    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    MAINTAINER_NAME ${pkg_extracted_maintainer_name}
+    MAINTAINER_EMAIL ${pkg_extracted_maintainer_email}
     DESCRIPTION ${pkg_extracted_description}
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
       "libconsole-bridge-dev"
       "libeigen3-dev"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
@@ -206,9 +218,18 @@ if(TESSERACT_PACKAGE)
     WINDOWS_DEPENDS
       "console-bridge"
       "Eigen3"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver")
+
+  if(UNIX AND TESSERACT_PACKAGE_SOURCE)
+    cpack_debian_source_package(
+      CHANGLELOG ${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.rst
+      UPLOAD ${TESSERACT_PACKAGE_SOURCE_UPLOAD}
+      DPUT_HOST ${TESSERACT_PACKAGE_SOURCE_DPUT_HOST}
+      DEBIAN_INCREMENT ${TESSERACT_PACKAGE_SOURCE_DEBIAN_INCREMENT}
+      DISTRIBUTIONS ${TESSERACT_PACKAGE_SOURCE_DISTRIBUTIONS})
+  endif()
 endif()

@@ -80,7 +80,7 @@ if(${HACD_LIBRARY})
   target_include_directories(
     ${PROJECT_NAME}_hacd_convex_decomposition PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                      "$<INSTALL_INTERFACE:include>")
-  install_targets(TARGETS ${PROJECT_NAME}_hacd_convex_decomposition)
+  install_targets(TARGETS ${PROJECT_NAME}_hacd_convex_decomposition COMPONENT bullet)
 endif()
 
 if(NOT MSVC)
@@ -108,7 +108,7 @@ if(NOT MSVC)
 
   list(APPEND PACKAGE_LIBRARIES create_convex_hull)
 
-  install_targets(TARGETS create_convex_hull)
+  install_targets(TARGETS create_convex_hull COMPONENT bullet)
 endif()
 
 # Add factory library so contact_managers_factory can find these factories by defauult
@@ -124,4 +124,19 @@ install(
   PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
-install_targets(TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_bullet_factories)
+configure_component(
+  COMPONENT bullet
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_bullet_factories
+  DEPENDENCIES "tesseract_collision COMPONENTS core"
+  CFG_EXTRAS cmake/bullet-extras.cmake)
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT bullet
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Collision bullet components"
+    COMPONENT_DEPENDS core
+    LINUX_DEPENDS "libbullet-dev" "libbullet-extras-dev"
+    WINDOWS_DEPENDS "libbullet-dev" "libbullet-extras-dev")
+endif()

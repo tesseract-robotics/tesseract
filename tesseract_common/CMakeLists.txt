@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -106,9 +106,10 @@ if(TESSERACT_ENABLE_TESTING OR TESSERACT_COMMON_ENABLE_TESTING)
 endif()
 
 if(TESSERACT_PACKAGE)
-  tesseract_cpack(
+  cpack(
     VERSION ${pkg_extracted_version}
-    MAINTAINER <https://github.com/ros-industrial-consortium/tesseract>
+    MAINTAINER_NAME ${pkg_extracted_maintainer_name}
+    MAINTAINER_EMAIL ${pkg_extracted_maintainer_email}
     DESCRIPTION ${pkg_extracted_description}
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
@@ -128,4 +129,13 @@ if(TESSERACT_PACKAGE)
       "tinyxml2"
       "Eigen3"
       "yaml-cpp")
+
+  if(UNIX AND TESSERACT_PACKAGE_SOURCE)
+    cpack_debian_source_package(
+      CHANGLELOG ${CMAKE_CURRENT_LIST_DIR}/CHANGELOG.rst
+      UPLOAD ${TESSERACT_PACKAGE_SOURCE_UPLOAD}
+      DPUT_HOST ${TESSERACT_PACKAGE_SOURCE_DPUT_HOST}
+      DEBIAN_INCREMENT ${TESSERACT_PACKAGE_SOURCE_DEBIAN_INCREMENT}
+      DISTRIBUTIONS ${TESSERACT_PACKAGE_SOURCE_DISTRIBUTIONS})
+  endif()
 endif()

@@ -42,8 +42,21 @@ set(KINEMATICS_PLUGINS ${KINEMATICS_PLUGINS} "${PROJECT_NAME}_ur_factory" PARENT
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT ur
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp")
 
-install_targets(TARGETS ${PROJECT_NAME}_ur ${PROJECT_NAME}_ur_factory)
+configure_component(
+  COMPONENT ur
+  NAMESPACE tesseract
+  TARGETS ${PROJECT_NAME}_ur ${PROJECT_NAME}_ur_factory
+  DEPENDENCIES "tesseract_kinematics COMPONENTS core")
+
+if(TESSERACT_PACKAGE)
+  cpack_component(
+    COMPONENT ur
+    VERSION ${pkg_extracted_version}
+    DESCRIPTION "Tesseract Kinematics ur implementation"
+    COMPONENT_DEPENDS core)
+endif()

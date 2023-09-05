@@ -1,5 +1,6 @@
 find_gtest()
 find_package(tesseract_support REQUIRED)
+find_package(tesseract_collision REQUIRED COMPONENTS core bullet fcl)
 find_package(OpenMP REQUIRED)
 if(NOT TARGET OpenMP::OpenMP_CXX)
   find_package(Threads REQUIRED)
