@@ -1,4 +1,5 @@
 find_package(benchmark REQUIRED)
+find_package(tesseract_support REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 
 macro(add_benchmark benchmark_name benchmark_file)
