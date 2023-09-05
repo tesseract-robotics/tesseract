@@ -112,6 +112,13 @@ with section("parse"):
         'EXCLUDE': '*',
       }
     },
+    'install_targets': {
+      'pargs': {'nargs': 0},
+      'kwargs': {
+        'TARGETS': '*',
+        'COMPONENT': '?',
+      }
+    },
     'cpack': {
       'pargs': {'nargs': 0},
       'kwargs': {

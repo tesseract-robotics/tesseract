@@ -80,11 +80,7 @@ if(${HACD_LIBRARY})
   target_include_directories(
     ${PROJECT_NAME}_hacd_convex_decomposition PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                      "$<INSTALL_INTERFACE:include>")
-  install_targets(
-    TARGETS
-    ${PROJECT_NAME}_hacd_convex_decomposition
-    COMPONENT
-    bullet)
+  install_targets(TARGETS ${PROJECT_NAME}_hacd_convex_decomposition COMPONENT bullet)
 endif()
 
 if(NOT MSVC)
@@ -112,11 +108,7 @@ if(NOT MSVC)
 
   list(APPEND PACKAGE_LIBRARIES create_convex_hull)
 
-  install_targets(
-    TARGETS
-    create_convex_hull
-    COMPONENT
-    bullet)
+  install_targets(TARGETS create_convex_hull COMPONENT bullet)
 endif()
 
 # Add factory library so contact_managers_factory can find these factories by defauult
