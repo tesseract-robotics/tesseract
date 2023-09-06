@@ -33,6 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 
 // LCOV_EXCL_START
+// See tesseract issue: https://github.com/tesseract-robotics/tesseract/issues/934
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 namespace tesseract_collision::tesseract_collision_bullet
 {
 TesseractCompoundCollisionAlgorithm::TesseractCompoundCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci,
@@ -295,6 +297,7 @@ void TesseractCompoundCollisionAlgorithm::processCollision(const btCollisionObje
     {
       if (m_childCollisionAlgorithms[i] != nullptr)
       {
+        // See tesseract issue: https://github.com/tesseract-robotics/tesseract/issues/934
         m_childCollisionAlgorithms[i]->getAllContactManifolds(manifoldArray);
         for (int m = 0; m < manifoldArray.size(); m++)
         {
@@ -422,4 +425,5 @@ btScalar TesseractCompoundCollisionAlgorithm::calculateTimeOfImpact(btCollisionO
   return hitFraction;
 }
 }  // namespace tesseract_collision::tesseract_collision_bullet
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 // LCOV_EXCL_STOP
