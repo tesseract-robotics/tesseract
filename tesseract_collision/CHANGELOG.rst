@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.19.2 (2023-09-06)
+-------------------
 * Fix Ubunut Jammy release build
 * Contributors: Levi Armstrong
 
