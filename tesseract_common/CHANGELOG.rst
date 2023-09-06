@@ -2,6 +2,11 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix Ubunut Jammy release build
+* Contributors: Levi Armstrong
+
 0.19.1 (2023-09-05)
 -------------------
 
