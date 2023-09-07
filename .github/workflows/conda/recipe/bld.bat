@@ -1,7 +1,7 @@
 set CXXFLAGS=%CXXFLAGS% -DEIGEN_DONT_ALIGN=1 -DEIGEN_DONT_VECTORIZE=1
 set CXXFLAGS=%CXXFLAGS% /std:c++17
 
-call colcon build --merge-install --install-base="%PREFIX%\opt\tesseract_robotics" ^
+colcon build --merge-install --install-base="%PREFIX%\opt\tesseract_robotics" ^
    --event-handlers console_cohesion+ ^
    --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp ^
    --cmake-args -GNinja -DCMAKE_BUILD_TYPE=Release ^
@@ -17,6 +17,13 @@ call colcon build --merge-install --install-base="%PREFIX%\opt\tesseract_robotic
    -DPYTHON_EXECUTABLE="%PREFIX%\python.exe" ^
    -DTESSERACT_ENABLE_EXAMPLES=OFF ^
    -DTESSERACT_BUILD_TRAJOPT_IFOPT=OFF ^
+   -DTESSERACT_ENABLE_TESTING=ON
+
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+colcon test --event-handlers console_direct+ --return-code-on-test-failure ^
+   --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp tesseract_common ^
+   --merge-install --install-base="%PREFIX%\opt\tesseract_robotics"
 
 if %errorlevel% neq 0 exit /b %errorlevel%
 
