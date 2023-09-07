@@ -37,10 +37,12 @@ jobs:
         use-mamba: true
     - name: conda install
       run: |
+        mamba activate test
         mamba update --all  -y
         mamba install boa conda-smithy -y
     - name: build and test
       run: |
+        mamba activate test
         mkdir conda
         xcopy /E workspace\src\tesseract\.github\workflows\conda conda
         cd conda
