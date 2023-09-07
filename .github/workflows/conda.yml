@@ -36,7 +36,8 @@ jobs:
         python-version: "3.10"
         use-mamba: true
     - name: conda install
-      run: >
+      run: |
+        mamba update --all  -y
         mamba install boa conda-smithy -y
     - name: build and test
       run: |
@@ -68,7 +69,8 @@ jobs:
         python-version: "3.10"
         use-mamba: true
     - name: conda install
-      run: >
+      run: |
+        mamba update --all  -y
         mamba install boa conda-smithy -y
     - name: build and test
       run: |
