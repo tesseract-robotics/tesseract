@@ -551,7 +551,7 @@ void Environment::setState(const std::unordered_map<std::string, double>& joints
     currentStateChanged();
   }
 
-  std::shared_lock<std::shared_mutex> lock;
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   triggerCurrentStateChangedCallbacks();
 }
 
@@ -564,7 +564,7 @@ void Environment::setState(const std::vector<std::string>& joint_names,
     currentStateChanged();
   }
 
-  std::shared_lock<std::shared_mutex> lock;
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   triggerCurrentStateChangedCallbacks();
 }
 
@@ -816,7 +816,7 @@ tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContac
 
 void Environment::clearCachedDiscreteContactManager() const
 {
-  std::shared_lock<std::shared_mutex> lock;
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
   discrete_manager_ = nullptr;
 }
