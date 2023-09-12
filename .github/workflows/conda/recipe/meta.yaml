@@ -39,6 +39,7 @@ requirements:
       - jsoncpp
       - yaml-cpp
       - bullet-cpp
+      - blas
       - xorg-libx11    # [unix]
       - xorg-libxext   # [unix]
     run:
@@ -59,6 +60,7 @@ requirements:
       - taskflow 
       - yaml-cpp
       - bullet-cpp
+      - blas
       - xorg-libx11    # [unix]
       - xorg-libxext   # [unix]
 

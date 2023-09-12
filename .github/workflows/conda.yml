@@ -33,13 +33,15 @@ jobs:
         miniforge-variant: Mambaforge
         channel-priority: true
         channels: conda-forge
-        python-version: "3.10"
         use-mamba: true
     - name: conda install
-      run: >
+      run: |
+        mamba activate test
+        mamba update --all  -y
         mamba install boa conda-smithy -y
     - name: build and test
       run: |
+        mamba activate test
         mkdir conda
         xcopy /E workspace\src\tesseract\.github\workflows\conda conda
         cd conda
@@ -68,7 +70,8 @@ jobs:
         python-version: "3.10"
         use-mamba: true
     - name: conda install
-      run: >
+      run: |
+        mamba update --all  -y
         mamba install boa conda-smithy -y
     - name: build and test
       run: |
