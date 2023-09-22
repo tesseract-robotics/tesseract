@@ -1,6 +1,6 @@
 find_gtest()
 find_package(tesseract_support REQUIRED)
-find_package(tesseract_collision REQUIRED COMPONENTS core bullet fcl)
+find_package(tesseract_collision REQUIRED COMPONENTS core OPTIONAL_COMPONENTS bullet fcl)
 find_package(OpenMP REQUIRED)
 if(NOT TARGET OpenMP::OpenMP_CXX)
   find_package(Threads REQUIRED)
@@ -10,32 +10,34 @@ if(NOT TARGET OpenMP::OpenMP_CXX)
   set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
 endif()
 
-add_executable(${PROJECT_NAME}_unit tesseract_environment_unit.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_unit
-  PRIVATE GTest::GTest
-          GTest::Main
-          ${PROJECT_NAME}
-          OpenMP::OpenMP_CXX
-          tesseract::tesseract_support
-          tesseract::tesseract_urdf
-          tesseract::tesseract_collision_bullet
-          tesseract::tesseract_collision_fcl
-          tesseract::tesseract_scene_graph)
-target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME}_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME}_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
-target_code_coverage(
-  ${PROJECT_NAME}_unit
-  PRIVATE
-  ALL
-  EXCLUDE ${COVERAGE_EXCLUDE}
-  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-add_gtest_discover_tests(${PROJECT_NAME}_unit)
-add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME})
-add_dependencies(run_tests ${PROJECT_NAME}_unit)
+if(tesseract_collision_fcl_FOUND AND tesseract_collision_bullet_FOUND)
+  add_executable(${PROJECT_NAME}_unit tesseract_environment_unit.cpp)
+  target_link_libraries(
+    ${PROJECT_NAME}_unit
+    PRIVATE GTest::GTest
+            GTest::Main
+            ${PROJECT_NAME}
+            OpenMP::OpenMP_CXX
+            tesseract::tesseract_support
+            tesseract::tesseract_urdf
+            tesseract::tesseract_collision_bullet
+            tesseract::tesseract_collision_fcl
+            tesseract::tesseract_scene_graph)
+  target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                      ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+  target_compile_definitions(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+  target_clang_tidy(${PROJECT_NAME}_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+  target_cxx_version(${PROJECT_NAME}_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+  target_code_coverage(
+    ${PROJECT_NAME}_unit
+    PRIVATE
+    ALL
+    EXCLUDE ${COVERAGE_EXCLUDE}
+    ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+  add_gtest_discover_tests(${PROJECT_NAME}_unit)
+  add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME})
+  add_dependencies(run_tests ${PROJECT_NAME}_unit)
+endif()
 
 add_executable(${PROJECT_NAME}_collision tesseract_environment_collision.cpp)
 target_link_libraries(
