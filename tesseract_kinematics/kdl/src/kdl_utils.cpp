@@ -108,6 +108,8 @@ bool parseSceneGraph(KDLChainData& results,
 
   results.joint_names.clear();
   results.joint_names.resize(results.robot_chain.getNrOfJoints());
+  results.q_min.resize(results.robot_chain.getNrOfJoints());
+  results.q_max.resize(results.robot_chain.getNrOfJoints());
 
   results.segment_index.clear();
   results.segment_index[results.base_link_name] = 0;
@@ -128,33 +130,7 @@ bool parseSceneGraph(KDLChainData& results,
 
     results.joint_names[j] = jnt.getName();
 
-    ++j;
-  }
-
-  return true;
-}
-
-bool parseSceneGraph(KDLChainData& results,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
-                     const std::string& base_name,
-                     const std::string& tip_name)
-{
-  std::vector<std::pair<std::string, std::string>> chains;
-  chains.emplace_back(base_name, tip_name);
-  return parseSceneGraph(results, scene_graph, chains);
-}
-
-void parseChainData(KDL::JntArray& q_min,
-                    KDL::JntArray& q_max,
-                    const KDLChainData& kdl_data,
-                    const tesseract_scene_graph::SceneGraph& scene_graph)
-{
-  q_min.resize(kdl_data.robot_chain.getNrOfJoints());
-  q_max.resize(kdl_data.robot_chain.getNrOfJoints());
-
-  for (uint joint_num = 0; joint_num < kdl_data.robot_chain.getNrOfJoints(); ++joint_num)
-  {
-    auto joint = scene_graph.getJoint(kdl_data.joint_names[joint_num]);
+    auto joint = scene_graph.getJoint(results.joint_names[j]);
     double lower = std::numeric_limits<float>::lowest();
     double upper = std::numeric_limits<float>::max();
     // Does the joint have limits?
@@ -172,8 +148,12 @@ void parseChainData(KDL::JntArray& q_min,
       }
     }
     // Assign limits
-    q_min(joint_num) = lower;
-    q_max(joint_num) = upper;
+    results.q_min(j) = lower;
+    results.q_max(j) = upper;
+
+    ++j;
   }
+
+  return true;
 }
 }  // namespace tesseract_kinematics

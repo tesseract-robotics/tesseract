@@ -31,7 +31,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/chainiksolverpos_nr_jl.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
-#include <unordered_map>
 #include <console_bridge/console.h>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -101,8 +100,6 @@ public:
   InverseKinematics::UPtr clone() const override final;
 
 private:
-  KDL::JntArray q_min_;                                            /**< @brief Minimum joint positions */
-  KDL::JntArray q_max_;                                            /**< @brief Maximum joint positions */
   KDLChainData kdl_data_;                                          /**< @brief KDL data parsed from Scene Graph */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_;     /**< @brief KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;      /**< @brief KDL Inverse kinematic velocity solver */

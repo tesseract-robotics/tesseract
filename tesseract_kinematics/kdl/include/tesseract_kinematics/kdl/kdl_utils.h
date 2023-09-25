@@ -100,6 +100,8 @@ struct KDLChainData
   std::string tip_link_name;                /**< @brief Link name of last kink in the kinematic object */
   std::map<std::string, int> segment_index; /**< @brief A map from chain link name to kdl chain segment number */
   std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
+  KDL::JntArray q_min;                                     /**< @brief Lower joint limits */
+  KDL::JntArray q_max;                                     /**< @brief Upper joint limits */
 };
 
 /**
@@ -126,16 +128,5 @@ bool parseSceneGraph(KDLChainData& results,
                      const tesseract_scene_graph::SceneGraph& scene_graph,
                      const std::string& base_name,
                      const std::string& tip_name);
-
-/**
- * @brief Parse joint limits from the KDL chain data
- * @param lb Lower bounds (limits) of the joints
- * @param ub Upper bounds (limits) of the joints
- * @param scene_graph The Scene Graph
- */
-void parseChainData(KDL::JntArray& q_min,
-                    KDL::JntArray& q_max,
-                    const KDLChainData& kdl_data,
-                    const tesseract_scene_graph::SceneGraph& scene_graph);
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_KDL_UTILS_H

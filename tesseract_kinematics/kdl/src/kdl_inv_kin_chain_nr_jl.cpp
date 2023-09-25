@@ -50,12 +50,11 @@ KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const tesseract_scene_graph::SceneGraph
   if (!parseSceneGraph(kdl_data_, scene_graph, chains))
     throw std::runtime_error("Failed to parse KDL data from Scene Graph");
 
-  parseChainData(q_min_, q_max_, kdl_data_, scene_graph);
-
   // Create KDL FK and IK Solver
   fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
   ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(kdl_data_.robot_chain);
-  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR_JL>(kdl_data_.robot_chain, q_min_, q_max_, *fk_solver_, *ik_vel_solver_);
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR_JL>(
+      kdl_data_.robot_chain, kdl_data_.q_min, kdl_data_.q_max, *fk_solver_, *ik_vel_solver_);
 }
 
 KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -72,12 +71,11 @@ KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const KDLInvKinChainNR_JL& other) { *th
 
 KDLInvKinChainNR_JL& KDLInvKinChainNR_JL::operator=(const KDLInvKinChainNR_JL& other)
 {
-  q_min_ = other.q_min_;
-  q_max_ = other.q_max_;
   kdl_data_ = other.kdl_data_;
   fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
   ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(kdl_data_.robot_chain);
-  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR_JL>(kdl_data_.robot_chain, q_min_, q_max_, *fk_solver_, *ik_vel_solver_);
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR_JL>(
+      kdl_data_.robot_chain, kdl_data_.q_min, kdl_data_.q_max, *fk_solver_, *ik_vel_solver_);
   solver_name_ = other.solver_name_;
 
   return *this;
