@@ -100,6 +100,8 @@ struct KDLChainData
   std::string tip_link_name;                /**< @brief Link name of last kink in the kinematic object */
   std::map<std::string, int> segment_index; /**< @brief A map from chain link name to kdl chain segment number */
   std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
+  KDL::JntArray q_min;                                     /**< @brief Lower joint limits */
+  KDL::JntArray q_max;                                     /**< @brief Upper joint limits */
 };
 
 /**
