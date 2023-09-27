@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.20.0 (2023-09-27)
+-------------------
 * Add std::variant boost serialization support
 * Contributors: Levi Armstrong
 

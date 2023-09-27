@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.20.0 (2023-09-27)
+-------------------
 * Add support for KDL::ChainIkSolverPos_NR_JL, which takes joint limits (`#928 <https://github.com/tesseract-robotics/tesseract/issues/928>`_)
 * Contributors: Roelof
 

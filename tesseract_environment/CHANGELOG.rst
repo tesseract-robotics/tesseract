@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.20.0 (2023-09-27)
+-------------------
 * Fix missing locks in tesseract_environment (`#938 <https://github.com/tesseract-robotics/tesseract/issues/938>`_)
 * Contributors: Roelof
 
