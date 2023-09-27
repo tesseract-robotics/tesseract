@@ -2,6 +2,11 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add std::variant boost serialization support
+* Contributors: Levi Armstrong
+
 0.19.2 (2023-09-06)
 -------------------
 * Fix Ubunut Jammy release build
