@@ -359,6 +359,30 @@ struct convert<Eigen::Vector2d>
 };
 
 template <>
+struct convert<Eigen::Vector3d>
+{
+  static Node encode(const Eigen::Vector3d& rhs)
+  {
+    Node node;
+    for (long i = 0; i < rhs.size(); ++i)
+      node.push_back(rhs(i));
+
+    return node;
+  }
+
+  static bool decode(const Node& node, Eigen::Vector3d& rhs)
+  {
+    if (!node.IsSequence() || (node.size() != 3))
+      return false;
+
+    for (long i = 0; i < 3; ++i)
+      rhs(i) = node[i].as<double>();
+
+    return true;
+  }
+};
+
+template <>
 struct convert<tesseract_common::KinematicsPluginInfo>
 {
   static Node encode(const tesseract_common::KinematicsPluginInfo& rhs)
