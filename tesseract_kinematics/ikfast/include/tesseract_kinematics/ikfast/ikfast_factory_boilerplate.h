@@ -70,10 +70,10 @@ public:
       // Get the free joint states
       if (YAML::Node free_joint_states_node = config["free_joint_states"])
       {
-        for (auto it = free_joint_states_node.begin(); it != free_joint_states_node.end(); ++it)
+        for (std::size_t idx = 0; idx < free_joint_states_node.size(); ++idx)
         {
           // Check the joints specification
-          if (it->second.size() != free_joints_required)
+          if (free_joint_states_node[idx].size() != free_joints_required)
           {
             std::stringstream ss;
             ss << "IKFastInvKinFactory, Number of active joints (" << active_joints.size()
@@ -81,7 +81,7 @@ public:
                << ") and the number of free joints (" << free_joint_states_map.size() << ")";
             throw std::runtime_error(ss.str());
           }
-          free_joint_states_map[it->first.as<std::size_t>()] = it->second.as<std::vector<double>>();
+          free_joint_states_map[idx] = free_joint_states_node[idx].as<std::vector<double>>();
         }
       }
       else
