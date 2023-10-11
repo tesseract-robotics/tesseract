@@ -29,8 +29,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <thread>
-#include <mutex>
 #include <shared_mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

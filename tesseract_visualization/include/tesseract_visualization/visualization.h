@@ -26,13 +26,6 @@
 #ifndef TESSERACT_VISUALIZATION_VISUALIZATION_H
 #define TESSERACT_VISUALIZATION_VISUALIZATION_H
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <any>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/joint_state.h>
 #include <tesseract_collision/core/types.h>
 #include <tesseract_scene_graph/graph.h>

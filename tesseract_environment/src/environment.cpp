@@ -32,7 +32,6 @@
 #include <tesseract_kinematics/core/validate.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <queue>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/binary_object.hpp>

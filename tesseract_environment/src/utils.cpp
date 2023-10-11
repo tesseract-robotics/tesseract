@@ -26,6 +26,9 @@
 
 #include <tesseract_collision/core/utils.h>
 #include <tesseract_environment/utils.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <iostream>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {

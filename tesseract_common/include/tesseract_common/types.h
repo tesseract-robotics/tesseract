@@ -32,7 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <vector>
-#include <memory>
 #include <map>
 #include <unordered_map>
 #include <boost/filesystem.hpp>

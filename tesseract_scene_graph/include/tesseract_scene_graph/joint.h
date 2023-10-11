@@ -41,9 +41,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/access.hpp>
 #include <string>
-#include <vector>
 #include <memory>
-#include <Eigen/Eigen>
+#include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph

@@ -5,9 +5,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/access.hpp>
 #include <string>
-#include <vector>
 #include <memory>
-#include <Eigen/Eigen>
+#include <Eigen/Core>
 #include <unordered_map>
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP

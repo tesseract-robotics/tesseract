@@ -4,7 +4,6 @@
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_srdf/utils.h>
-#include <iostream>
 #include <tesseract_support/tesseract_support_resource_locator.h>
 
 using namespace tesseract_scene_graph;

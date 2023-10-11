@@ -30,7 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/frames.hpp>
 #include <kdl/jntarray.hpp>
-#include <Eigen/Eigen>
+#include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>

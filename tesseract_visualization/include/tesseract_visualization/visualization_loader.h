@@ -26,11 +26,6 @@
 #ifndef TESSERACT_VISUALIZATION_VISUALIZATION_LOADER_H
 #define TESSERACT_VISUALIZATION_VISUALIZATION_LOADER_H
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <memory>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_visualization/visualization.h>
 #include <tesseract_common/plugin_loader.h>
 

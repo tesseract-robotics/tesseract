@@ -28,9 +28,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <console_bridge/console.h>
-#include <cassert>
 #include <iostream>
-#include <mutex>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/vector.hpp>
