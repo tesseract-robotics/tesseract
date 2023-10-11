@@ -31,6 +31,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <type_traits>
 #include <console_bridge/console.h>
 #include <fstream>
+#include <iostream>
+#include <iomanip>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>

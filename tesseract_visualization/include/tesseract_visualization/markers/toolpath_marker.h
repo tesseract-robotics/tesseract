@@ -2,9 +2,6 @@
 #define TESSERACT_VISUALIZATION_MARKERS_TOOLPATH_MARKER_H
 
 #include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <vector>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/markers/marker.h>
 #include <tesseract_common/types.h>

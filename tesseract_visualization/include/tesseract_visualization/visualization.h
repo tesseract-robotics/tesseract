@@ -30,7 +30,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <any>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/joint_state.h>

@@ -27,7 +27,6 @@
 #define TESSERACT_KINEMATICS_REP_INVERSE_KINEMATICS_H
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <unordered_map>
 #include <console_bridge/console.h>
 
 #include <tesseract_scene_graph/graph.h>

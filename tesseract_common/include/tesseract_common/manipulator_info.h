@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <vector>
 #include <variant>
 #include <Eigen/Geometry>
 #include <boost/serialization/base_object.hpp>

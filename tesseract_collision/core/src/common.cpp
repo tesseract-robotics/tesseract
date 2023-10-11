@@ -27,7 +27,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cstdio>
-#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <iomanip>

@@ -33,9 +33,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <variant>
-#include <Eigen/Dense>
-#include <fstream>
-#include <sstream>
+#include <Eigen/Geometry>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>

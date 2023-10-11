@@ -29,8 +29,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gz/msgs/MessageTypes.hh>
 #include <gz/common/Console.hh>
 #include <gz/math/eigen3/Conversions.hh>
-#include <chrono>
-#include <numeric>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/ignition/tesseract_ignition_visualization.h>

@@ -32,9 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <iostream>
 #include <memory>
-#include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>

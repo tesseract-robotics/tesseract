@@ -34,9 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <sstream>
 #include <stdexcept>
 #include <random>
-#include <iomanip>
 #include <Eigen/Core>
-#include <iostream>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

@@ -29,7 +29,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/adj_list_serialize.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <fstream>
-#include <queue>
 #include <console_bridge/console.h>
 #include <boost/graph/undirected_graph.hpp>
 #include <boost/graph/copy.hpp>

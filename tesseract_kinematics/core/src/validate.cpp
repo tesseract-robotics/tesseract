@@ -28,7 +28,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
-#include <algorithm>
 #include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
