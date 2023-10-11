@@ -1,8 +1,6 @@
 #ifndef TESSERACT_VISUALIZATION_MARKERS_TOOLPATH_MARKER_H
 #define TESSERACT_VISUALIZATION_MARKERS_TOOLPATH_MARKER_H
 
-#include <tesseract_common/macros.h>
-
 #include <tesseract_visualization/markers/marker.h>
 #include <tesseract_common/types.h>
 

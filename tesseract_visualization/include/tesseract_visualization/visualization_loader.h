@@ -26,8 +26,6 @@
 #ifndef TESSERACT_VISUALIZATION_VISUALIZATION_LOADER_H
 #define TESSERACT_VISUALIZATION_VISUALIZATION_LOADER_H
 
-#include <tesseract_common/macros.h>
-
 #include <tesseract_visualization/visualization.h>
 #include <tesseract_common/plugin_loader.h>
 
