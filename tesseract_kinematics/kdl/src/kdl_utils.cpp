@@ -156,4 +156,15 @@ bool parseSceneGraph(KDLChainData& results,
 
   return true;
 }
+
+bool parseSceneGraph(KDLChainData& results,
+                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const std::string& base_name,
+                     const std::string& tip_name)
+{
+  std::vector<std::pair<std::string, std::string>> chains;
+  chains.emplace_back(base_name, tip_name);
+  return parseSceneGraph(results, scene_graph, chains);
+}
+
 }  // namespace tesseract_kinematics
