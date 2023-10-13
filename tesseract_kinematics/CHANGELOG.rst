@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.20.1 (2023-10-13)
+-------------------
 * Replaced the implementation of tesseract_kinematics::parseSceneGraph (`#947 <https://github.com/tesseract-robotics/tesseract/issues/947>`_)
 * Unused includes cleanup (`#946 <https://github.com/tesseract-robotics/tesseract/issues/946>`_)
 * Add Eigen::Vector3d yaml support (`#945 <https://github.com/tesseract-robotics/tesseract/issues/945>`_)

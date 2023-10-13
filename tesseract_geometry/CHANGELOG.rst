@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.20.1 (2023-10-13)
+-------------------
 * Unused includes cleanup (`#946 <https://github.com/tesseract-robotics/tesseract/issues/946>`_)
 * Contributors: Roelof
 
