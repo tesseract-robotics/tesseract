@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/access.hpp>
 #include <functional>
 #include <memory>
+#include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
