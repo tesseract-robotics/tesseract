@@ -245,9 +245,39 @@ void Environment::clear()
   init_revision_ = 0;
   scene_graph_ = nullptr;
   state_solver_ = nullptr;
+  current_state_ = tesseract_scene_graph::SceneState();
   commands_.clear();
   kinematics_information_.clear();
+  kinematics_factory_ = tesseract_kinematics::KinematicsPluginFactory();
+  is_contact_allowed_fn_ = nullptr;
   collision_margin_data_ = tesseract_collision::CollisionMarginData();
+  contact_managers_plugin_info_.clear();
+  contact_managers_factory_ = tesseract_collision::ContactManagersPluginFactory();
+
+  {
+    std::unique_lock<std::shared_mutex> lock(discrete_manager_mutex_);
+    discrete_manager_ = nullptr;
+  }
+
+  {
+    std::unique_lock<std::shared_mutex> lock(continuous_manager_mutex_);
+    continuous_manager_ = nullptr;
+  }
+
+  {
+    std::unique_lock<std::shared_mutex> lock(group_joint_names_cache_mutex_);
+    group_joint_names_cache_.clear();
+  }
+
+  {
+    std::unique_lock<std::shared_mutex> lock(joint_group_cache_mutex_);
+    joint_group_cache_.clear();
+  }
+
+  {
+    std::unique_lock<std::shared_mutex> lock(kinematic_group_cache_mutex_);
+    kinematic_group_cache_.clear();
+  }
 }
 
 Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
