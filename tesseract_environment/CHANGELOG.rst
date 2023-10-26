@@ -2,6 +2,11 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update environment clear method to clear all internal cache data
+* Contributors: Levi Armstrong
+
 0.20.1 (2023-10-13)
 -------------------
 * Unused includes cleanup (`#946 <https://github.com/tesseract-robotics/tesseract/issues/946>`_)

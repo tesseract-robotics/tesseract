@@ -2,6 +2,9 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.20.1 (2023-10-13)
 -------------------
 
