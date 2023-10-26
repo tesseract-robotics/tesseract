@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.20.2 (2023-10-26)
+-------------------
 * Fix resource locator windows build
 * Contributors: Levi Armstrong
 
