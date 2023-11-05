@@ -239,6 +239,125 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
 }
 
+inline void runTestPrimitiveDistanceDisabled(DiscreteContactManager& checker)
+{
+  //////////////////////////////////////
+  // Test when object is in collision
+  //////////////////////////////////////
+  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
+
+  // Test when object is inside another
+  tesseract_common::TransformMap location;
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"].translation()(0) = 0.2;
+  checker.setCollisionObjectsTransform(location);
+
+  // Perform collision check
+  ContactResultMap result;
+  ContactRequest contact_request(ContactTestType::CLOSEST);
+  contact_request.calculate_distance = false;
+  checker.contactTest(result, contact_request);
+
+  ContactResultVector result_vector;
+  result.flattenMoveResults(result_vector);
+
+  EXPECT_TRUE(!result_vector.empty());
+  EXPECT_NEAR(result_vector[0].distance, -0.30, 0.0001);
+
+  std::vector<int> idx = { 0, 1, 1 };
+  if (result_vector[0].link_names[0] != "sphere_link")
+    idx = { 1, 0, -1 };
+
+  if (result_vector[0].single_contact_point)
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][0] - (0.25)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][0] - (-0.05)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][2] - (0.0)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][2] - (0.0)) > 0.001);
+  }
+  else
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0], 0.25, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][2], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][0], -0.05, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][2], 0.0, 0.001);
+  }
+
+  EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
+  EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
+  EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.0016);  // TODO LEVI: This was increased due to FLC
+                                                                  // calculation because it is using GJK
+
+  ////////////////////////////////////////////////
+  // Test object is out side the contact distance
+  ////////////////////////////////////////////////
+  location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  result.clear();
+  result_vector.clear();
+  checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
+
+  checker.contactTest(result, contact_request);
+  result.flattenCopyResults(result_vector);
+
+  EXPECT_TRUE(result_vector.empty());
+
+  /////////////////////////////////////////////
+  // Test object inside the contact distance
+  /////////////////////////////////////////////
+  result.clear();
+  result_vector.clear();
+
+  checker.setCollisionMarginData(CollisionMarginData(0.52));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.52, 1e-5);
+  checker.contactTest(result, contact_request);
+  result.flattenMoveResults(result_vector);
+
+  EXPECT_TRUE(!result_vector.empty());
+  EXPECT_NEAR(result_vector[0].distance, 0.5, 0.0001);
+
+  idx = { 0, 1, 1 };
+  if (result_vector[0].link_names[0] != "sphere_link")
+    idx = { 1, 0, -1 };
+
+  if (result_vector[0].single_contact_point)
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][0] - (0.25)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][0] - (0.75)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][2] - (0.0)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][2] - (0.0)) > 0.001);
+  }
+  else
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0], 0.25, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][2], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][0], 0.75, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[1])][2], 0.0, 0.001);
+  }
+
+  EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
+  EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
+  EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
+}
+
 inline void runTestConvex1(DiscreteContactManager& checker)
 {
   ///////////////////////////////////////////////////////////////////
@@ -445,7 +564,10 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh)
   if (use_convex_mesh)
     detail::runTestConvex(checker);
   else
+  {
     detail::runTestPrimitive(checker);
+    detail::runTestPrimitiveDistanceDisabled(checker);
+  }
 }
 }  // namespace tesseract_collision::test_suite
 
