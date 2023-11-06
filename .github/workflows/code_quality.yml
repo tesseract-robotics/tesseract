@@ -69,6 +69,6 @@ jobs:
             ${{ matrix.job_type }}-ccache-
 
       - name: Build repository
-        uses: 'tesseract-robotics/industrial_ci@2f4c8ab919f0aafddd514e586325defabd2911ea'
+        uses: 'tesseract-robotics/industrial_ci@0109bf3523050402490b56e19c9554e7d7c5379f'
         env: ${{ matrix.env }}
 
