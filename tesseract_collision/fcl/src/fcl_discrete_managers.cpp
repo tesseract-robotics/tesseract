@@ -314,7 +314,7 @@ IsContactAllowedFn FCLDiscreteBVHManager::getIsContactAllowedFn() const { return
 void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   ContactTestData cdata(active_, collision_margin_data_, fn_, request, collisions);
-  if (collision_margin_data_.getMaxCollisionMargin() > 0 && request.calculate_distance)
+  if (collision_margin_data_.getMaxCollisionMargin() > 0)
   {
     // TODO: Should the order be flipped?
     if (!static_manager_->empty())
