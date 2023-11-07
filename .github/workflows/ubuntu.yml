@@ -96,11 +96,12 @@ jobs:
           AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
           UPSTREAM_WORKSPACE: 'dependencies.repos'
           ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin"
+          BASEDIR: /opt
           PREFIX: ${{ github.repository }}_
           UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
           TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTESSERACT_ENABLE_TESTING=ON"
-          BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source $BASEDIR/${PREFIX}target_ws/install/setup.bash"
-          AFTER_SCRIPT: 'rm -r $BASEDIR/${PREFIX}upstream_ws/build $BASEDIR/${PREFIX}target_ws/build'
+          BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source ${BASEDIR}/${PREFIX}target_ws/install/setup.bash"
+          AFTER_SCRIPT: 'rm -r ${BASEDIR}/${PREFIX}upstream_ws/build ${BASEDIR}/${PREFIX}target_ws/build'
           DOCKER_COMMIT: ${{ steps.meta.outputs.tags }}
 
       - name: Push post-build Docker
