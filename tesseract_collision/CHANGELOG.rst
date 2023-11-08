@@ -2,6 +2,12 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix FCL contact test when calculate distance is false but contact threshold is greater than zero
+* Add collision unit test with calculate distance disabled
+* Contributors: Levi Armstrong
+
 0.20.2 (2023-10-26)
 -------------------
 

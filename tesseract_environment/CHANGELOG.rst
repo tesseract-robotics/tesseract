@@ -2,6 +2,9 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.20.2 (2023-10-26)
 -------------------
 * Update environment clear method to clear all internal cache data
