@@ -624,6 +624,11 @@ JointLimits::ConstPtr SceneGraph::getJointLimits(const std::string& name)
   return found->second.first->limits;
 }
 
+void SceneGraph::setAllowedCollisionMatrix(tesseract_common::AllowedCollisionMatrix::Ptr acm)
+{
+  acm_ = std::move(acm);
+}
+
 void SceneGraph::addAllowedCollision(const std::string& link_name1,
                                      const std::string& link_name2,
                                      const std::string& reason)
