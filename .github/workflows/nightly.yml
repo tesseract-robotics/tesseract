@@ -17,24 +17,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [bionic, focal]
-        include:
-          - distro: bionic
-            image: ubuntu:18.04
-          - distro: focal
-            image: ubuntu:20.04
-
+        distro: [focal, jammy]
+    container:
+      image: ubuntu:${{ matrix.distro }}
+      env:
+        CCACHE_DIR: "$GITHUB_WORKSPACE/${{ matrix.distro }}/.ccache"
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: target_ws/src
 
-      - name: Free Disk Space
-        continue-on-error: true
+      - name: Install Depends
+        shell: bash
         run: |
-          sudo swapoff -a
-          sudo rm -f /swapfile
-          sudo apt clean
-          docker rmi $(docker image ls -aq)
-          df -h
+          apt update
+          apt upgrade -y
+          apt install -y cmake curl lsb-release ca-certificates gnupg python3 python3-distutils python3-pip ccache git liboctomap-dev
+          python3 -m pip install vcstool -q
+          python3 -m pip install colcon-common-extensions -q
+          python3 -m pip install rosdep -q
+          rosdep init
+          rosdep update
+          cd $GITHUB_WORKSPACE/target_ws/src
+          ./.github/workflows/add_ros_apt_sources.sh
 
       - name: Prepare ccache timestamp
         id: ccache_cache_timestamp
@@ -52,16 +60,31 @@ jobs:
           restore-keys: |
             ${{ matrix.distro }}-ccache-
 
-      - uses: 'tesseract-robotics/industrial_ci@0109bf3523050402490b56e19c9554e7d7c5379f'
-        env:
-          DOCKER_IMAGE: ${{ matrix.image }}
-          ROS_DISTRO: false
-          ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
-          AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
-          UPSTREAM_WORKSPACE: 'dependencies.repos'
-          DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_planning#master github:ros-industrial-consortium/trajopt_ros#master github:ros-industrial-consortium/tesseract_ros#master'
-          ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin"
-          CCACHE_DIR: "${{ github.workspace }}/${{ matrix.distro}}/.ccache"
-          UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-          TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-          DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+      - name: Build Upstream Workspace
+        shell: bash
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/upstream_ws/src
+          vcs import --input "$GITHUB_WORKSPACE/target_ws/src/dependencies.repos" $GITHUB_WORKSPACE/upstream_ws/src/
+          cd $GITHUB_WORKSPACE/upstream_ws
+          rosdep install --from-paths src --ignore-src -r -y
+          colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Release
+          if [ $? -ge 1 ]; then return 1; fi
+
+      - name: Build Target Workspace
+        shell: bash
+        run: |
+          source $GITHUB_WORKSPACE/upstream_ws/install/setup.bash
+          cd $GITHUB_WORKSPACE/target_ws
+          rosdep install --from-paths src --ignore-src -r -y
+          colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON
+          if [ $? -ge 1 ]; then return 1; fi
+
+      - name: Run Tests
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE/target_ws
+          source $GITHUB_WORKSPACE/target_ws/install/setup.bash
+          colcon test --event-handlers console_direct+ --return-code-on-test-failure
+          if [ $? -ge 1 ]; then return 1; fi
+          colcon test-result --verbose
+          if [ $? -ge 1 ]; then return 1; fi

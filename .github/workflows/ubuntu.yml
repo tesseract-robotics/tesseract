@@ -24,23 +24,31 @@ jobs:
       fail-fast: false
       matrix:
         distro: [focal, jammy]
-    env:
-      CCACHE_DIR: "${{ github.workspace }}/${{ matrix.distro }}/.ccache"
-      REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
-      PUSH_DOCKER_IMAGE: ${{ github.ref == 'refs/heads/master' || github.event_name == 'release' }}
+    container:
+      image: ubuntu:${{ matrix.distro }}
+      env:
+        CCACHE_DIR: "$GITHUB_WORKSPACE/${{ matrix.distro }}/.ccache"
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          path: target_ws/src
 
-      - name: Free disk space
-        continue-on-error: true
+      - name: Install Depends
+        shell: bash
         run: |
-          sudo swapoff -a
-          sudo rm -f /swapfile
-          sudo apt clean
-          docker rmi $(docker image ls -aq)
-          df -h
+          apt update
+          apt upgrade -y
+          apt install -y cmake curl lsb-release ca-certificates gnupg python3 python3-distutils python3-pip ccache git liboctomap-dev
+          python3 -m pip install vcstool -q
+          python3 -m pip install colcon-common-extensions -q
+          python3 -m pip install rosdep -q
+          rosdep init
+          rosdep update
+          cd $GITHUB_WORKSPACE/target_ws/src
+          ./.github/workflows/add_ros_apt_sources.sh
 
       - name: Prepare ccache timestamp
         id: ccache_cache_timestamp
@@ -58,51 +66,31 @@ jobs:
           restore-keys: |
             ${{ matrix.distro }}-ccache-
 
-      - name: Login to Github container registry
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract Docker meta-information
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: |
-            latest=false
-            prefix=
-            suffix=
-          tags: |
-            type=ref,event=branch,prefix=${{ matrix.distro }}-
-            type=semver,pattern={{major}}.{{minor}},prefix=${{ matrix.distro }}-
-
-      - name: Set build type
+      - name: Build Upstream Workspace
+        shell: bash
         run: |
-          if [[ "${{ env.PUSH_DOCKER_IMAGE }}" = true ]]
-          then
-            echo "BUILD_TYPE=Release" >> $GITHUB_ENV
-          else
-            echo "BUILD_TYPE=Debug" >> $GITHUB_ENV
-          fi
+          mkdir -p $GITHUB_WORKSPACE/upstream_ws/src
+          vcs import --input "$GITHUB_WORKSPACE/target_ws/src/dependencies.repos" $GITHUB_WORKSPACE/upstream_ws/src/
+          cd $GITHUB_WORKSPACE/upstream_ws
+          rosdep install --from-paths src --ignore-src -r -y
+          colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Release
+          if [ $? -ge 1 ]; then return 1; fi
 
-      - name: Build repository
-        uses: 'tesseract-robotics/industrial_ci@0109bf3523050402490b56e19c9554e7d7c5379f'
-        env:
-          DOCKER_IMAGE: ubuntu:${{ matrix.distro }}
-          ROS_DISTRO: false
-          ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
-          AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
-          UPSTREAM_WORKSPACE: 'dependencies.repos'
-          ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin"
-          PREFIX: ${{ github.repository }}_
-          UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-          TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTESSERACT_ENABLE_TESTING=ON"
-          BEFORE_RUN_TARGET_TEST_EMBED: "ici_with_unset_variables source $BASEDIR/${PREFIX}target_ws/install/setup.bash"
-          AFTER_SCRIPT: 'rm -r $BASEDIR/${PREFIX}upstream_ws/build $BASEDIR/${PREFIX}target_ws/build'
-          DOCKER_COMMIT: ${{ steps.meta.outputs.tags }}
+      - name: Build Target Workspace
+        shell: bash
+        run: |
+          source $GITHUB_WORKSPACE/upstream_ws/install/setup.bash
+          cd $GITHUB_WORKSPACE/target_ws
+          rosdep install --from-paths src --ignore-src -r -y
+          colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON
+          if [ $? -ge 1 ]; then return 1; fi
 
-      - name: Push post-build Docker
-        if: ${{ env.PUSH_DOCKER_IMAGE  == 'true' }}
-        run: docker push ${{ steps.meta.outputs.tags }}
+      - name: Run Tests
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE/target_ws
+          source $GITHUB_WORKSPACE/target_ws/install/setup.bash
+          colcon test --event-handlers console_direct+ --return-code-on-test-failure
+          if [ $? -ge 1 ]; then return 1; fi
+          colcon test-result --verbose
+          if [ $? -ge 1 ]; then return 1; fi
