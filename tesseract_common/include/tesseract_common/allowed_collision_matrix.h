@@ -115,6 +115,15 @@ public:
     lookup_table_.insert(acm.getAllAllowedCollisions().begin(), acm.getAllAllowedCollisions().end());
   }
 
+  /**
+   * @brief Reserve space for the internal data storage
+   * @param size The size to reserve
+   */
+  void reserveAllowedCollisionMatrix(std::size_t size)
+  {
+    lookup_table_.reserve(size);
+  }
+
   friend std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
   {
     for (const auto& pair : acm.getAllAllowedCollisions())
