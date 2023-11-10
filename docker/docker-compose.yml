@@ -1,0 +1,14 @@
+version: '3'
+services:
+  tesseract:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        - TAG=focal
+    container_name: tesseract
+    image: ghcr.io/tesseract-robotics/tesseract_deploy:focal-0.20
+    stdin_open: true
+    tty: true
+    network_mode: host
+    user: ${CURRENT_UID}  # CURRENT_UID=$(id -u):$(id -g)
