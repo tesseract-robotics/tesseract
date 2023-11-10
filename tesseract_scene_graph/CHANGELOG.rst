@@ -2,6 +2,11 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Support message conversions
+* Contributors: Levi Armstrong
+
 0.21.1 (2023-11-09)
 -------------------
 
