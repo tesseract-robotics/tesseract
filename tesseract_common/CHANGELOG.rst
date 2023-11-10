@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.21.2 (2023-11-10)
+-------------------
 * Support message conversions
 * Contributors: Levi Armstrong
 
