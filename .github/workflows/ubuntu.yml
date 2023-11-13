@@ -41,56 +41,13 @@ jobs:
         run: |
           apt update
           apt upgrade -y
-          apt install -y cmake curl lsb-release ca-certificates gnupg python3 python3-distutils python3-pip ccache git liboctomap-dev
-          python3 -m pip install vcstool -q
-          python3 -m pip install colcon-common-extensions -q
-          python3 -m pip install rosdep -q
-          rosdep init
-          rosdep update
-          cd $GITHUB_WORKSPACE/target_ws/src
-          ./.github/workflows/add_ros_apt_sources.sh
+          apt install -y liboctomap-dev
 
-      - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        shell: cmake -P {0}
-        run: |
-          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-          message("::set-output name=timestamp::${current_date}")
-
-      - name: ccache cache files
-        continue-on-error: true
-        uses: actions/cache@v1.1.0
+      - name: Build and Tests
+        uses: tesseract-robotics/colcon-action@main
         with:
-          path: ${{ matrix.distro }}/.ccache
-          key: ${{ matrix.distro }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            ${{ matrix.distro }}-ccache-
-
-      - name: Build Upstream Workspace
-        shell: bash
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/upstream_ws/src
-          vcs import --input "$GITHUB_WORKSPACE/target_ws/src/dependencies.repos" $GITHUB_WORKSPACE/upstream_ws/src/
-          cd $GITHUB_WORKSPACE/upstream_ws
-          rosdep install --from-paths src --ignore-src -r -y
-          colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Release
-          if [ $? -ge 1 ]; then return 1; fi
-
-      - name: Build Target Workspace
-        shell: bash
-        run: |
-          source $GITHUB_WORKSPACE/upstream_ws/install/setup.bash
-          cd $GITHUB_WORKSPACE/target_ws
-          rosdep install --from-paths src --ignore-src -r -y
-          colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON
-          if [ $? -ge 1 ]; then return 1; fi
-
-      - name: Run Tests
-        shell: bash
-        run: |
-          cd $GITHUB_WORKSPACE/target_ws
-          source $GITHUB_WORKSPACE/target_ws/install/setup.bash
-          colcon test --event-handlers console_direct+ --return-code-on-test-failure
-          if [ $? -ge 1 ]; then return 1; fi
-          colcon test-result --verbose
-          if [ $? -ge 1 ]; then return 1; fi
+          ccache-prefix: ${{ matrix.distro }}
+          vcs-file: dependencies.repos
+          upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
+          target-path: target_ws/src
+          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON
