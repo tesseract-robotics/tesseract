@@ -48,7 +48,7 @@ jobs:
           apt install -y clang-tidy liboctomap-dev
 
       - name: Build and Tests
-        uses: tesseract-robotics/colcon-action@main
+        uses: tesseract-robotics/colcon-action@v1
         with:
           ccache-prefix: ${{ matrix.distro }}
           vcs-file: dependencies.repos
