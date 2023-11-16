@@ -2,6 +2,13 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix thread safety in environment (`#964 <https://github.com/tesseract-robotics/tesseract/issues/964>`_)
+  * Fix thread safety in environment.cpp
+  * Clang format
+* Contributors: Levi Armstrong
+
 0.21.2 (2023-11-10)
 -------------------
 * Support message conversions
