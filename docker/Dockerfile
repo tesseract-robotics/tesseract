@@ -9,14 +9,6 @@ USER root
 
 # Install
 RUN apt update \
-  && apt install -y \
-    curl \
-    lsb-release \
-    git \
-    build-essential
-
-# Install dependencies
-RUN apt update \
   && apt upgrade -y \
   && apt install -y cmake curl git python3 python3-distutils python3-pip liboctomap-dev \
   && python3 -m pip install vcstool -q \
