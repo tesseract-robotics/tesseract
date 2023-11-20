@@ -15,14 +15,13 @@ RUN apt update \
     git \
     build-essential
 
-# Install ROS sources and tooling dependencies
-COPY .github/workflows/add_ros_apt_sources.sh /tmp/add_ros_apt_sources.sh
-RUN ./tmp/add_ros_apt_sources.sh \
-  && apt install -y \
-    python3-colcon-common-extensions \
-    python3-rosdep \
-    python3-vcstool \
-    liboctomap-dev \
+# Install dependencies
+RUN apt update \
+    apt upgrade -y \
+    apt install -y cmake curl git python3 python3-distutils python3-pip liboctomap-dev \
+    python3 -m pip install vcstool -q \
+    python3 -m pip install colcon-common-extensions -q \
+    python3 -m pip install rosdep -q \
   && rosdep init \
   && rosdep update
 
