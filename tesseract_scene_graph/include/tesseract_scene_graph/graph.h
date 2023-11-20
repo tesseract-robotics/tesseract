@@ -348,6 +348,12 @@ public:
   JointLimits::ConstPtr getJointLimits(const std::string& name);
 
   /**
+   * @brief Set the allowed collision matrix
+   * @param acm The allowed collision matrix to assign
+   */
+  void setAllowedCollisionMatrix(tesseract_common::AllowedCollisionMatrix::Ptr acm);
+
+  /**
    * @brief Disable collision between two collision objects
    * @param link_name1 Collision object name
    * @param link_name2 Collision object name

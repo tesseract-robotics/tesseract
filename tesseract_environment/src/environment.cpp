@@ -100,7 +100,10 @@ bool Environment::init(const tesseract_scene_graph::SceneGraph& scene_graph,
 
 bool Environment::init(const std::string& urdf_string, const tesseract_common::ResourceLocator::ConstPtr& locator)
 {
-  resource_locator_ = locator;
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    resource_locator_ = locator;
+  }
 
   // Parse urdf string into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph;
@@ -123,7 +126,10 @@ bool Environment::init(const std::string& urdf_string,
                        const std::string& srdf_string,
                        const tesseract_common::ResourceLocator::ConstPtr& locator)
 {
-  resource_locator_ = locator;
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    resource_locator_ = locator;
+  }
 
   // Parse urdf string into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph;
@@ -158,7 +164,10 @@ bool Environment::init(const std::string& urdf_string,
 bool Environment::init(const tesseract_common::fs::path& urdf_path,
                        const tesseract_common::ResourceLocator::ConstPtr& locator)
 {
-  resource_locator_ = locator;
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    resource_locator_ = locator;
+  }
 
   // Parse urdf file into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph;
@@ -181,7 +190,10 @@ bool Environment::init(const tesseract_common::fs::path& urdf_path,
                        const tesseract_common::fs::path& srdf_path,
                        const tesseract_common::ResourceLocator::ConstPtr& locator)
 {
-  resource_locator_ = locator;
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    resource_locator_ = locator;
+  }
 
   // Parse urdf file into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph;

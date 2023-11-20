@@ -2,7 +2,8 @@
 import json
 import os
 
-build_dir = "/root/target_ws/build"
+workspace_dir = "/__w/tesseract/tesseract/target_ws"
+build_dir = workspace_dir + "/build"
 result_files = []
 
 search_path = build_dir + "/tesseract_collision/test/benchmarks"
@@ -44,11 +45,11 @@ for file in result_files:
 # endfor
 
 # the base path to where the output must be stored
-if not os.path.exists("/root/benchmarks"):
-    os.makedirs("/root/benchmarks")
+if not os.path.exists(workspace_dir + "/benchmarks"):
+    os.makedirs(workspace_dir + "/benchmarks")
 # endif
 
 # the json file where the output must be stored
-out_file = open("/root/benchmarks/tesseract-benchmark_result.json", "w+")
+out_file = open(workspace_dir + "/benchmarks/tesseract-benchmark_result.json", "w+")
 json.dump(all_data, out_file, indent = 4)
 out_file.close()

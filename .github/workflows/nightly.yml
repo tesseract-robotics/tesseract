@@ -17,51 +17,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [bionic, focal]
-        include:
-          - distro: bionic
-            image: ubuntu:18.04
-          - distro: focal
-            image: ubuntu:20.04
-
+        distro: [focal, jammy]
+    container:
+      image: ubuntu:${{ matrix.distro }}
+      env:
+        CCACHE_DIR: "$GITHUB_WORKSPACE/${{ matrix.distro }}/.ccache"
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Free Disk Space
-        continue-on-error: true
-        run: |
-          sudo swapoff -a
-          sudo rm -f /swapfile
-          sudo apt clean
-          docker rmi $(docker image ls -aq)
-          df -h
-
-      - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        shell: cmake -P {0}
-        run: |
-          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-          message("::set-output name=timestamp::${current_date}")
-
-      - name: ccache cache files
-        continue-on-error: true
-        uses: actions/cache@v1.1.0
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          path: ${{ matrix.distro }}/.ccache
-          key: ${{ matrix.distro }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            ${{ matrix.distro }}-ccache-
+          path: target_ws/src
 
-      - uses: 'tesseract-robotics/industrial_ci@0109bf3523050402490b56e19c9554e7d7c5379f'
-        env:
-          DOCKER_IMAGE: ${{ matrix.image }}
-          ROS_DISTRO: false
-          ADDITIONAL_DEBS: 'curl lsb-release liboctomap-dev'
-          AFTER_INIT: './.github/workflows/add_ros_apt_sources.sh'
-          UPSTREAM_WORKSPACE: 'dependencies.repos'
-          DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_planning#master github:ros-industrial-consortium/trajopt_ros#master github:ros-industrial-consortium/tesseract_ros#master'
-          ROSDEP_SKIP_KEYS: "fcl opw_kinematics ros_industrial_cmake_boilerplate iwyu octomap catkin"
-          CCACHE_DIR: "${{ github.workspace }}/${{ matrix.distro}}/.ccache"
-          UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-          TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-          DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+      - name: Install Depends
+        shell: bash
+        run: |
+          apt update
+          apt upgrade -y
+          apt install -y liboctomap-dev
+
+      - name: Build and Tests
+        uses: tesseract-robotics/colcon-action@v1
+        with:
+          ccache-prefix: ${{ matrix.distro }}
+          vcs-file: dependencies.repos
+          upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
+          target-path: target_ws/src
+          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON
