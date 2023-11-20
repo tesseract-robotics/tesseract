@@ -14,6 +14,7 @@ on:
 
 jobs:
   ci:
+    name: ${{ matrix.distro }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
