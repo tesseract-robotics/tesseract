@@ -17,8 +17,8 @@ RUN apt update \
 
 # Install dependencies
 RUN apt update \
-    apt upgrade -y \
-    apt install -y cmake curl git python3 python3-distutils python3-pip liboctomap-dev \
+  && apt upgrade -y \
+  && apt install -y cmake curl git python3 python3-distutils python3-pip liboctomap-dev \
     python3 -m pip install vcstool -q \
     python3 -m pip install colcon-common-extensions -q \
     python3 -m pip install rosdep -q \
