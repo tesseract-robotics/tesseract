@@ -40,6 +40,9 @@ jobs:
       id: setup-python
       with:
         python-version: '3.12'
+    - name: brew
+      run: |
+        brew install libomp cmake autotools autoconf libtool
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v5
       with:
@@ -53,9 +56,6 @@ jobs:
     - name: pip3
       run: |
         python3 -m pip install numpy setuptools wheel pytest delvewheel colcon-common-extensions vcstool
-    - name: brew
-      run: |
-        brew install libomp cmake autotools autoconf libtool
     - name: vcs import
       working-directory: ws/src
       run: vcs import --input tesseract/.github/workflows/windows_dependencies.repos
