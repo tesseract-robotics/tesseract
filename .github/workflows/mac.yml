@@ -49,7 +49,7 @@ jobs:
         pkgs: >-
           ${{ env.VCPKG_PKGS }}
         triplet: x64-osx-dynamic
-        extra-args: --clean-after-build
+        extra-args: --clean-after-build --overlay-triplets=${{ github.workspace }}/tesseract/.github/workflows/vcpkg_triplets
         token: ${{ github.token }}
         cache-key: osx-x64-vcpkg
         revision: master
@@ -62,8 +62,8 @@ jobs:
     - name: colcon build
       working-directory: ws
       run: |
-        export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GITHUB_WORKSPACE/vcpkg/installed/arm64-osx-dynamic/lib
-        export CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/arm64-osx-dynamic
+        export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GITHUB_WORKSPACE/vcpkg/installed/x64-osx-dynamic-release/lib
+        export CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/x64-osx-dynamic-release
 
         colcon build --merge-install \
             --packages-ignore tesseract_examples trajopt_ifopt trajopt_sqp ifopt vhacd tesseract_python \
@@ -76,8 +76,8 @@ jobs:
     - name: colcon test
       working-directory: ws
       run: |
-        export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GITHUB_WORKSPACE/vcpkg/installed/arm64-osx-dynamic/lib
-        export CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/arm64-osx-dynamic
+        export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GITHUB_WORKSPACE/vcpkg/installed/x64-osx-dynamic-release/lib
+        export CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/x64-osx-dynamic-release
 
         colcon test --merge-install \
             --packages-ignore tesseract_examples trajopt_ifopt trajopt_sqp ifopt vhacd tesseract_python \
