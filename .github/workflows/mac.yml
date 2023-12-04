@@ -42,7 +42,7 @@ jobs:
         python-version: '3.12'
     - name: brew
       run: |
-        brew install libomp cmake automake autoconf libtool
+        brew install libomp cmake automake autoconf libtool gcc
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v5
       with:
