@@ -49,7 +49,7 @@ jobs:
         pkgs: >-
           ${{ env.VCPKG_PKGS }}
         triplet: x64-osx-dynamic-release
-        extra-args: --clean-after-build --overlay-triplets=${{ github.workspace }}/tesseract/.github/workflows/vcpkg_triplets
+        extra-args: --clean-after-build --overlay-triplets=${{ github.workspace }}/ws/src/tesseract/.github/workflows/vcpkg_triplets
         token: ${{ github.token }}
         cache-key: osx-x64-vcpkg
         revision: master
