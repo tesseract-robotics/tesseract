@@ -23,7 +23,7 @@ env:
     tinyxml2 console-bridge assimp
     urdfdom octomap orocos-kdl pcl
     gtest benchmark flann jsoncpp
-    yaml-cpp
+    yaml-cpp eigen3
     openblas
     fcl ompl taskflow
     bullet3[multithreading,double-precision,rtti]
