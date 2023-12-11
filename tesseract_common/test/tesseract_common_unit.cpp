@@ -2144,6 +2144,40 @@ TEST(TesseractCommonUnit, calcTransformError)  // NOLINT
   }
 }
 
+/** @brief Tests calcTransformErrorJac */
+TEST(TesseractCommonUnit, calcTransformErrorJac)  // NOLINT
+{
+  Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
+
+  {  // X-Axis
+    Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitX());
+    Eigen::VectorXd err = tesseract_common::calcTransformErrorJac(identity, pi_rot);
+    EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d(M_PI_2, 0, 0)));
+  }
+
+  {  // Y-Axis
+    Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY());
+    Eigen::VectorXd err = tesseract_common::calcTransformErrorJac(identity, pi_rot);
+    EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d(0, M_PI_2, 0)));
+  }
+
+  {  // Z-Axis
+    Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ());
+    Eigen::VectorXd err = tesseract_common::calcTransformErrorJac(identity, pi_rot);
+    EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d(0, 0, M_PI_2)));
+  }
+
+  {  // Translation
+    Eigen::Isometry3d pi_rot = identity * Eigen::Translation3d(1, 2, 3);
+    Eigen::VectorXd err = tesseract_common::calcTransformErrorJac(identity, pi_rot);
+    EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d(1, 2, 3)));
+    EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d::Zero()));
+  }
+}
+
 /** @brief Tests calcTransformError */
 TEST(TesseractCommonUnit, computeRandomColor)  // NOLINT
 {
