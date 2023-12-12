@@ -41,7 +41,8 @@
                      _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")		                                       \
                          _Pragma("GCC diagnostic ignored \"-Wunused-variable\"")		                                   \
                              _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")                                   \
-                                 _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+                                 _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")                       \
+  // NOLINTBEGIN
 #else
 #define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH                                                                          \
   _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
@@ -55,10 +56,13 @@
                                   _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")		                           \
                                       _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")                          \
                                           _Pragma("GCC diagnostic ignored \"-Wstringop-overflow\"")                    \
-                                              _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+                                              _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")          \
+  // NOLINTEND
 #endif
 
-#define TESSERACT_COMMON_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
+#define TESSERACT_COMMON_IGNORE_WARNINGS_POP                                                                           \
+  _Pragma("GCC diagnostic pop")                                                                                        \
+  // NOLINTEND
 
 #elif defined(_MSC_VER)
 #define DEPRECATED(X) __declspec(deprecated(X))
