@@ -41,6 +41,17 @@ const size_t ERROR_UNHANDLED_EXCEPTION = 2;
 
 }  // namespace
 
+template <typename T>
+void check_range(const T& value, const T& min, const T& max)
+{
+  if (value < min || value > max)
+  {
+    std::stringstream ss;
+    ss << "Value " << value << " is not in valid range [" << min << ", " << max << "]";
+    throw std::runtime_error(ss.str());
+  }
+}
+
 int main(int argc, char** argv)
 {
   std::string input;
@@ -50,17 +61,61 @@ int main(int argc, char** argv)
   // clang-format off
   namespace po = boost::program_options;
   po::options_description desc("Options");
-  desc.add_options()("help,h", "Print help messages")
-      ("input,i", po::value<std::string>(&input)->required(), "File path to mesh used to create a convex hull.")
-      ("output,o", po::value<std::string>(&output)->required(), "File path to save the generated convex hull as a ply.")
-      ("max_convex_hulls,c", po::value<unsigned>(&(params.max_convex_hulls)), "Maximum number of convex hulls")
-      ("resolution,r", po::value<unsigned>(&(params.resolution)), "Number of voxels to use to represent the shape")
-      ("min_volume_percent_error,v", po::value<double>(&(params.minimum_volume_percent_error_allowed)), "If the voxels are within this threshold percentage of the volume of the hull, we consider this a close enough approximation")
-      ("max_recursion_depth,d", po::value<unsigned>(&(params.max_recursion_depth)), "Maximum recursion depth for convex decomposition improvement")
-      ("shrinkwrap,s", po::value<bool>(&(params.shrinkwrap)), "Shrinkwrap the voxel positions to the source mesh on output")
-      ("max_num_vertices,n", po::value<unsigned>(&(params.max_num_vertices_per_ch)), "Maximum number of vertices per convex hull")
-      ("min_edge_length,e", po::value<unsigned>(&(params.min_edge_length)), "Once a voxel patch has an edge length of less than this value in all 3 dimensions, stop recursing")
-      ("find_best_plane,p", po::value<bool>(&(params.find_best_plane)), "Flag for attempting to split planes along best location (experimental)");
+  desc.add_options()
+      (
+        "help,h",
+        "Print help messages"
+      )
+      (
+        "input,i",
+        po::value<std::string>(&input)->required(),
+        "File path to mesh used to create a convex hull."
+      )
+      (
+        "output,o",
+        po::value<std::string>(&output)->required(),
+        "File path to save the generated convex hull as a ply."
+      )
+      (
+        "max_convex_hulls,n",
+        po::value<unsigned>(&(params.max_convex_hulls))->notifier([](const unsigned& val){check_range(val, 1u, 32u);}),
+        "Maximum number of convex hulls"
+      )
+      (
+        "resolution,r",
+        po::value<unsigned>(&(params.resolution))->notifier([](const unsigned& val){check_range(val, 1u, std::numeric_limits<unsigned>::max());}),
+        "Number of voxels to use to represent the shape"
+      )
+      (
+        "min_volume_percent_error,e",
+        po::value<double>(&(params.minimum_volume_percent_error_allowed))->notifier([](const double& val){check_range(val, 0.001, 10.0);}),
+        "If the voxels are within this threshold percentage of the volume of the hull, we consider this a close enough approximation"
+      )
+      (
+        "max_recursion_depth,d",
+        po::value<unsigned>(&(params.max_recursion_depth)),
+        "Maximum recursion depth for convex decomposition improvement"
+      )
+      (
+        "shrinkwrap,s",
+        po::value<bool>(&(params.shrinkwrap)),
+        "Shrinkwrap the voxel positions to the source mesh on output"
+      )
+      (
+        "max_num_vertices,v",
+        po::value<unsigned>(&(params.max_num_vertices_per_ch))->notifier([](const unsigned& val){check_range(val, 4u, std::numeric_limits<unsigned>::max());}),
+        "Maximum number of vertices per convex hull"
+      )
+      (
+        "min_edge_length,l",
+        po::value<unsigned>(&(params.min_edge_length))->notifier([](const unsigned& val){check_range(val, 1u, std::numeric_limits<unsigned>::max());}),
+        "Once a voxel patch has an edge length of less than this value in all 3 dimensions, stop recursing"
+      )
+      (
+        "find_best_plane,p",
+        po::value<bool>(&(params.find_best_plane)),
+        "Flag for attempting to split planes along best location (experimental)"
+      );
   // clang-format on
 
   po::variables_map vm;
