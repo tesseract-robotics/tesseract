@@ -32,6 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common

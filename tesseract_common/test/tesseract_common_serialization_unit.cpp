@@ -427,7 +427,7 @@ TEST(TesseractCommonSerializeUnit, VectorXi)  // NOLINT
 TEST(TesseractCommonSerializeUnit, Vector3d)  // NOLINT
 {
   {  // Serialize empty object
-    Eigen::Vector3d ev;
+    Eigen::Vector3d ev = Eigen::Vector3d::Zero();
     {
       std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_3d_boost.xml");
       boost::archive::xml_oarchive oa(os);
@@ -497,7 +497,7 @@ TEST(TesseractCommonSerializeUnit, Vector3d)  // NOLINT
 TEST(TesseractCommonSerializeUnit, Vector4d)  // NOLINT
 {
   {  // Serialize empty object
-    Eigen::Vector4d ev;
+    Eigen::Vector4d ev = Eigen::Vector4d::Zero();
     {
       std::ofstream os(tesseract_common::getTempPath() + "eigen_vector_4d_boost.xml");
       boost::archive::xml_oarchive oa(os);
