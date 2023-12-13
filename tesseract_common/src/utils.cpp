@@ -177,6 +177,12 @@ Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Iso
   return concat(pose_err.translation(), calcRotationalError(pose_err.rotation()));
 }
 
+Eigen::VectorXd calcTransformErrorJac(const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2)
+{
+  Eigen::Isometry3d pose_err = t1.inverse() * t2;
+  return concat(pose_err.translation(), calcRotationalError2(pose_err.rotation()));
+}
+
 Eigen::Vector4d computeRandomColor()
 {
   Eigen::Vector4d c;

@@ -138,11 +138,21 @@ Eigen::Vector3d calcRotationalError2(const Eigen::Ref<const Eigen::Matrix3d>& R)
 
 /**
  * @brief Calculate error between two transforms expressed in t1 coordinate system
+ * @warning This should not be used to calculate numerical jacobian
  * @param t1 Target Transform
  * @param t2 Current Transform
- * @return error [Position, Rotational(Angle Axis)]
+ * @return error [Position, calcRotationalError(Angle Axis)]
  */
 Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2);
+
+/**
+ * @brief Calculate error between two transforms expressed in t1 coordinate system
+ * @warning This should only be used to calculate numerical jacobian
+ * @param t1 Target Transform
+ * @param t2 Current Transform
+ * @return error [Position, calcRotationalError2(Angle Axis)]
+ */
+Eigen::VectorXd calcTransformErrorJac(const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2);
 
 /**
  * @brief This computes a random color RGBA [0, 1] with alpha set to 1
