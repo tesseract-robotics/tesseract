@@ -68,8 +68,8 @@ GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene_graph*
 
       if (xml_element->Attribute("name") == nullptr || xml_element->Attribute("xyz") == nullptr ||
           (xml_element->Attribute("rpy") == nullptr && xml_element->Attribute("wxyz") == nullptr))
-        std::throw_with_nested(
-            std::runtime_error(strFormat("GroupTCPs: Invalid tcp definition for group '%s'!", group_name_string.c_str())));
+        std::throw_with_nested(std::runtime_error(
+            strFormat("GroupTCPs: Invalid tcp definition for group '%s'!", group_name_string.c_str())));
 
       std::string tcp_name_string;
       tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "name", tcp_name_string);

@@ -57,8 +57,8 @@ GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph& scene
 
     bool found = std::find(group_names.begin(), group_names.end(), group_name) != group_names.end();
     if (!found)
-      std::throw_with_nested(std::runtime_error(
-          tesseract_common::strFormat("GroupStates: State '%s' group '%s' does not exist!", state_name.c_str(), group_name.c_str())));
+      std::throw_with_nested(std::runtime_error(tesseract_common::strFormat(
+          "GroupStates: State '%s' group '%s' does not exist!", state_name.c_str(), group_name.c_str())));
 
     GroupsJointState joint_state;
 
@@ -98,8 +98,10 @@ GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph& scene
     }
 
     if (joint_state.empty())
-      std::throw_with_nested(std::runtime_error(tesseract_common::strFormat(
-          "GroupStates: State '%s' for group '%s' is missing joint elements!", state_name.c_str(), group_name.c_str())));
+      std::throw_with_nested(std::runtime_error(tesseract_common::strFormat("GroupStates: State '%s' for group '%s' is "
+                                                                            "missing joint elements!",
+                                                                            state_name.c_str(),
+                                                                            group_name.c_str())));
 
     auto gs = group_states.find(group_name);
     if (gs == group_states.end())

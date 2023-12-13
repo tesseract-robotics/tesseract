@@ -59,7 +59,7 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
     std::vector<std::string> links;
     std::vector<std::string> joints;
     std::vector<std::pair<std::string, std::string>> chains;
-    
+
     // get the links in the groups
     for (const tinyxml2::XMLElement* link_xml = xml_element->FirstChildElement("link"); link_xml != nullptr;
          link_xml = link_xml->NextSiblingElement("link"))
@@ -71,8 +71,8 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
             strFormat("Group: '%s' link element is missing or failed to parse attribute 'name'!", group_name.c_str())));
 
       if (!scene_graph.getLink(link_name))
-        std::throw_with_nested(std::runtime_error(
-            strFormat("Group: '%s' link '%s' is not known to the Scene Graph!", group_name.c_str(), link_name.c_str())));
+        std::throw_with_nested(std::runtime_error(strFormat(
+            "Group: '%s' link '%s' is not known to the Scene Graph!", group_name.c_str(), link_name.c_str())));
 
       links.push_back(link_name);
     }
@@ -84,12 +84,13 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
       std::string joint_name;
       tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(joint_xml, "name", joint_name);
       if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error(
-            strFormat("Group: '%s' joint element is missing or failed to parse attribute 'name'!", group_name.c_str())));
+        std::throw_with_nested(std::runtime_error(strFormat("Group: '%s' joint element is missing or failed to parse "
+                                                            "attribute 'name'!",
+                                                            group_name.c_str())));
 
       if (!scene_graph.getJoint(joint_name))
-        std::throw_with_nested(std::runtime_error(
-            strFormat("Group: '%s' joint '%s' is not known to the Scene Graph!", group_name.c_str(), joint_name.c_str())));
+        std::throw_with_nested(std::runtime_error(strFormat(
+            "Group: '%s' joint '%s' is not known to the Scene Graph!", group_name.c_str(), joint_name.c_str())));
 
       joints.push_back(joint_name);
     }
@@ -115,12 +116,16 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
                                                             group_name.c_str())));
 
       if (!scene_graph.getLink(base_link_name))
-        std::throw_with_nested(std::runtime_error(strFormat(
-            "Group: '%s' chain element base link '%s' is not known to the Scene Graph!", group_name.c_str(), base_link_name.c_str())));
+        std::throw_with_nested(std::runtime_error(strFormat("Group: '%s' chain element base link '%s' is not known to "
+                                                            "the Scene Graph!",
+                                                            group_name.c_str(),
+                                                            base_link_name.c_str())));
 
       if (!scene_graph.getLink(tip_link_name))
-        std::throw_with_nested(std::runtime_error(strFormat(
-            "Group: '%s' chain element tip link '%s' is not known to the Scene Graph!", group_name.c_str(), tip_link_name.c_str())));
+        std::throw_with_nested(std::runtime_error(strFormat("Group: '%s' chain element tip link '%s' is not known to "
+                                                            "the Scene Graph!",
+                                                            group_name.c_str(),
+                                                            tip_link_name.c_str())));
 
       chains.emplace_back(base_link_name, tip_link_name);
     }
