@@ -59,10 +59,6 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
 
   {
     std::vector<std::string> sections = ClassLoader::getAvailableSections(lib_name, lib_dir);
-    for (auto s : sections)
-    {
-      std::cout << "section " << s << std::endl;
-    }
     EXPECT_EQ(sections.size(), 1);
     EXPECT_EQ(sections.at(0), "TestBase");
 
