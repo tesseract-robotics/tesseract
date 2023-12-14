@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add Mac OSX support (`#969 <https://github.com/tesseract-robotics/tesseract/issues/969>`_)
+* Contributors: John Wason
+
 0.21.4 (2023-11-20)
 -------------------
 

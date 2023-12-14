@@ -2,6 +2,9 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.21.4 (2023-11-20)
 -------------------
 
