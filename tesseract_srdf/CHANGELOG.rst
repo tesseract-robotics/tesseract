@@ -2,8 +2,8 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.21.5 (2023-12-14)
+-------------------
 * Add Mac OSX support (`#969 <https://github.com/tesseract-robotics/tesseract/issues/969>`_)
 * Contributors: John Wason
 
