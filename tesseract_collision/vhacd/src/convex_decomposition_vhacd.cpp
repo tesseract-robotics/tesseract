@@ -23,8 +23,9 @@ public:
               const char* const stage,
               const char* operation) override
   {
-    std::cout << std::setfill(' ') << std::setw(3) << ceil(overallProgress) << "% " << "[ " << stage << " "
-              << std::setfill(' ') << std::setw(3) << ceil(stageProgress) << "% ] " << operation << std::endl;
+    std::cout << std::setfill(' ') << std::setw(3) << ceil(overallProgress) << "% "
+              << "[ " << stage << " " << std::setfill(' ') << std::setw(3) << ceil(stageProgress) << "% ] " << operation
+              << std::endl;
   }
 };
 
