@@ -43,6 +43,32 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
+               <axis xyz="0 0 1"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1"/>
+             <link name="l2"/>
+           </robot>)";
+    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
+    EXPECT_TRUE(sg != nullptr);
+    EXPECT_TRUE(sg->getName() == "test");
+    EXPECT_TRUE(sg->isTree());
+    EXPECT_TRUE(sg->isAcyclic());
+    EXPECT_TRUE(sg->getJoints().size() == 3);
+    EXPECT_TRUE(sg->getLinks().size() == 4);
+  }
+
+  {
+    std::string str =
+        R"(<robot name="test" extra="0 0 0">
+             <joint name="j1" type="planar">
+               <parent link="l1"/>
+               <child link="l2"/>
                <origin xyz="0 0 0" rpy="0 0 0"/>
                <dynamics damping="87.098" friction="3.1290"/>
                <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>

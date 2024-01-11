@@ -56,6 +56,34 @@ tesseract_scene_graph::SceneGraph::UPtr parseURDFFile(const std::string& path,
 void writeURDFFile(const tesseract_scene_graph::SceneGraph::ConstPtr& sg,
                    const std::string& package_path,
                    const std::string& urdf_name = "");
+
+/**
+ * @brief Splits up floating and planar joints into revolute and prismatic joints
+ * @param joint Input joint
+ * @return Pair of resulting links and joints to be added
+ */
+std::pair<std::vector<tesseract_scene_graph::Link::Ptr>, std::vector<tesseract_scene_graph::Joint::Ptr>>
+splitJoint(const tesseract_scene_graph::Joint::Ptr& joint);
+
+/**
+ * @brief Adds a link to the scene graph doing some error checking
+ * @param sg Input scene graph
+ * @param robot_name Input robot name
+ * @param l Input link
+ */
+void addLink(tesseract_scene_graph::SceneGraph::UPtr& sg,
+             const std::string& robot_name,
+             const tesseract_scene_graph::Link::Ptr& l);
+
+/**
+ * @brief Adds a joint to the scene graph doing some error checking
+ * @param sg Input scene graph
+ * @param robot_name Input robot name
+ * @param j Input joint
+ */
+void addJoint(tesseract_scene_graph::SceneGraph::UPtr& sg,
+              const std::string& robot_name,
+              const tesseract_scene_graph::Joint::Ptr& j);
 }  // namespace tesseract_urdf
 
 #endif
