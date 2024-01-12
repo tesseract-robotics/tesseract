@@ -23,9 +23,9 @@ public:
               const char* const stage,
               const char* operation) override
   {
-    std::cout << std::setfill(' ') << std::setw(3) << std::lround(overallProgress + 0.5) << "% "
-              << "[ " << stage << " " << std::setfill(' ') << std::setw(3) << lround(stageProgress + 0.5) << "% ] "
-              << operation << std::endl;
+    std::cout << std::setfill(' ') << std::setw(3) << ceil(overallProgress) << "% "
+              << "[ " << stage << " " << std::setfill(' ') << std::setw(3) << ceil(stageProgress) << "% ] " << operation
+              << std::endl;
   }
 };
 
@@ -75,9 +75,9 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
   par.m_findBestPlane = params_.find_best_plane;
   par.m_callback = &progress_callback;
 
-  bool res = interfaceVHACD->Compute(&points_local[0],
+  bool res = interfaceVHACD->Compute(points_local.data(),
                                      static_cast<unsigned int>(points_local.size() / 3),
-                                     (const uint32_t*)(&triangles_local[0]),
+                                     triangles_local.data(),
                                      static_cast<unsigned int>(triangles_local.size() / 3),
                                      par);
 
@@ -92,9 +92,9 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
 
       auto vhacd_vertices = std::make_shared<tesseract_common::VectorVector3d>();
       vhacd_vertices->reserve(ch.m_points.size());
-      for (std::size_t i = 0; i < ch.m_points.size(); ++i)
+      for (const auto& m_point : ch.m_points)
       {
-        Eigen::Vector3d v(ch.m_points[i].mX, ch.m_points[i].mY, ch.m_points[i].mZ);
+        Eigen::Vector3d v(m_point.mX, m_point.mY, m_point.mZ);
         vhacd_vertices->push_back(v);
       }
 

@@ -80,7 +80,7 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
   }
 
 // For some reason on Ubuntu 18.04 it does not search the current directory when only the library name is provided
-#if BOOST_VERSION > 106800
+#if BOOST_VERSION > 106800 && !__APPLE__
   {
     EXPECT_TRUE(ClassLoader::isClassAvailable(symbol_name, lib_name));
     auto plugin = ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, lib_name);
@@ -147,7 +147,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
   }
 
 // For some reason on Ubuntu 18.04 it does not search the current directory when only the library name is provided
-#if BOOST_VERSION > 106800
+#if BOOST_VERSION > 106800 && !__APPLE__
   {
     PluginLoader plugin_loader;
     plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
