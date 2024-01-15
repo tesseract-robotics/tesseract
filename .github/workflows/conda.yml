@@ -40,16 +40,16 @@ jobs:
         activate-environment: tesseract-build
     - name: build and test
       run: |
-        conda info
-        conda list
+        call conda info
+        call conda list
 
         mkdir conda
         xcopy /E workspace\src\tesseract\.github\workflows\conda conda
         cd conda
         New-Item -Name conda-forge.yml -ItemType File
-        conda smithy regenerate
+        call conda smithy regenerate
         
-        conda mambabuild -m .ci_support/win_64_.yaml .
+        call conda mambabuild -m .ci_support/win_64_.yaml .
 
   conda-linux:
     runs-on: ubuntu-latest
