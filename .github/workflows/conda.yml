@@ -31,7 +31,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         channel-priority: true
-        environment-file: ${{ github.workspace }}/workspace/src/tesseract/.github/workflows/conda/environment.yml
+        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
     - name: build and test
       run: |
         mamba activate test
@@ -58,7 +58,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         channel-priority: true
-        environment-file: ${{ github.workspace }}/workspace/src/tesseract/.github/workflows/conda/environment.yml
+        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
     - name: build and test
       run: |
         cp -r workspace/src/tesseract/.github/workflows/conda ./conda
