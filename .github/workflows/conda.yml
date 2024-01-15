@@ -32,11 +32,11 @@ jobs:
       with:
         channel-priority: strict
         environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
-        activate-environment: tesseract
+        activate-environment: tesseract        
         use-mamba: true
+        auto-update-conda: true
     - name: build and test
       run: |
-        conda activate tesseract
         conda info
         conda list
 
@@ -66,12 +66,12 @@ jobs:
         environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
         activate-environment: tesseract
         use-mamba: true
+        auto-update-conda: true
     - name: build and test
       run: |
-        conda activate tesseract
         conda info
         conda list
-
+        
         cp -r workspace/src/tesseract/.github/workflows/conda ./conda
         cd conda
         touch conda-forge.yml
