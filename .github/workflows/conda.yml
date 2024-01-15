@@ -30,10 +30,8 @@ jobs:
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        miniforge-variant: Mambaforge
         channel-priority: true
         channels: conda-forge
-        use-mamba: true
     - name: conda install
       run: |
         mamba activate test
@@ -64,11 +62,8 @@ jobs:
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        miniforge-variant: Mambaforge
         channel-priority: true
         channels: conda-forge
-        python-version: "3.10"
-        use-mamba: true
     - name: conda install
       run: |
         mamba update --all  -y
