@@ -31,12 +31,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         channel-priority: true
-        channels: conda-forge
-    - name: conda install
-      run: |
-        mamba activate test
-        mamba update --all  -y
-        mamba install boa conda-smithy -y
+        environment-file: ${{ github.workspace }}/.github/workflows/conda/environment.yml
     - name: build and test
       run: |
         mamba activate test
@@ -63,11 +58,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         channel-priority: true
-        channels: conda-forge
-    - name: conda install
-      run: |
-        mamba update --all  -y
-        mamba install boa conda-smithy -y
+        environment-file: ${{ github.workspace }}/.github/workflows/conda/environment.yml
     - name: build and test
       run: |
         cp -r workspace/src/tesseract/.github/workflows/conda ./conda
