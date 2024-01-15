@@ -57,16 +57,17 @@ tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_
   if (tesseract_common::QueryStringAttribute(robot, "name", robot_name) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("URDF: Missing or failed parsing attribute 'name'!"));
 
-  int old_urdf_version = 1;
-  auto version_status = robot->QueryIntAttribute("version", &old_urdf_version);
+  int urdf_version = 1;
+  auto version_status = robot->QueryIntAttribute("version", &urdf_version);
   if (version_status != tinyxml2::XML_NO_ATTRIBUTE && version_status != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(
         std::runtime_error("URDF: Failed parsing attribute 'version' for robot '" + robot_name + "'!"));
 
-  if (old_urdf_version > 1)
-    std::throw_with_nested(std::runtime_error("URDF: 'version' for robot '" + robot_name +
-                                              "' is greater than 1, this is no longer supported. Please change to 1 "
-                                              "and use `tesseract_version=\"2\"`!"));
+  if (urdf_version != 1)
+    std::throw_with_nested(
+        std::runtime_error("URDF: 'version' for robot '" + robot_name + "' is set to `" + std::to_string(urdf_version) +
+                           "', this is not supported, please set it to 1.0. If you want to use a different tesseract "
+                           "URDF parsing version use `tesseract_version=\"2\"`"));
 
   int tesseract_urdf_version = 1;
   auto tesseract_version_status = robot->QueryIntAttribute("tesseract_version", &tesseract_urdf_version);
