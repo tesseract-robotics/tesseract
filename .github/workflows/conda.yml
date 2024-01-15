@@ -17,6 +17,9 @@ on:
 jobs:
   conda-win:
     runs-on: windows-2019
+    defaults:
+      run:
+        shell: cmd /C CALL {0}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -34,6 +37,7 @@ jobs:
         environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml       
         use-mamba: true
         auto-update-conda: true
+        activate-environment: tesseract-build
     - name: build and test
       run: |
         conda info
@@ -49,6 +53,9 @@ jobs:
 
   conda-linux:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -65,6 +72,7 @@ jobs:
         environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
         use-mamba: true
         auto-update-conda: true
+        activate-environment: tesseract-build
     - name: build and test
       run: |
         conda info
