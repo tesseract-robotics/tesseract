@@ -31,8 +31,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v3
       with:
         channel-priority: strict
-        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
-        activate-environment: tesseract        
+        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml       
         use-mamba: true
         auto-update-conda: true
     - name: build and test
@@ -64,7 +63,6 @@ jobs:
       with:
         channel-priority: strict
         environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
-        activate-environment: tesseract
         use-mamba: true
         auto-update-conda: true
     - name: build and test
