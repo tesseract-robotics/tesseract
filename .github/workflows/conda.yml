@@ -32,9 +32,9 @@ jobs:
       with:
         channel-priority: true
         environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
+        activate-environment: tesseract
     - name: build and test
       run: |
-        mamba activate test
         mkdir conda
         xcopy /E workspace\src\tesseract\.github\workflows\conda conda
         cd conda
@@ -59,6 +59,7 @@ jobs:
       with:
         channel-priority: true
         environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
+        activate-environment: tesseract
     - name: build and test
       run: |
         cp -r workspace/src/tesseract/.github/workflows/conda ./conda
