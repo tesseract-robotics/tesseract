@@ -36,6 +36,7 @@ jobs:
         use-mamba: true
     - name: build and test
       run: |
+        conda activate tesseract
         conda info
         conda list
 
@@ -67,6 +68,7 @@ jobs:
         use-mamba: true
     - name: build and test
       run: |
+        conda activate tesseract
         conda info
         conda list
 
