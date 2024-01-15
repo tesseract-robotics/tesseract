@@ -28,13 +28,17 @@ jobs:
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
-        channel-priority: true
+        channel-priority: strict
         environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
         activate-environment: tesseract
+        use-mamba: true
     - name: build and test
       run: |
+        conda info
+        conda list
+
         mkdir conda
         xcopy /E workspace\src\tesseract\.github\workflows\conda conda
         cd conda
@@ -55,13 +59,17 @@ jobs:
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
-        channel-priority: true
+        channel-priority: strict
         environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
         activate-environment: tesseract
+        use-mamba: true
     - name: build and test
       run: |
+        conda info
+        conda list
+
         cp -r workspace/src/tesseract/.github/workflows/conda ./conda
         cd conda
         touch conda-forge.yml
