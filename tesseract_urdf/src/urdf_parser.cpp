@@ -63,6 +63,18 @@ tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_
     std::throw_with_nested(
         std::runtime_error("URDF: Failed parsing attribute 'version' for robot '" + robot_name + "'!"));
 
+  if (urdf_version != 1)
+    std::throw_with_nested(
+        std::runtime_error("URDF: 'version' for robot '" + robot_name + "' is set to `" + std::to_string(urdf_version) +
+                           "', this is not supported, please set it to 1.0. If you want to use a different tesseract "
+                           "URDF parsing version use `tesseract_version=\"2\"`"));
+
+  int tesseract_urdf_version = 1;
+  auto tesseract_version_status = robot->QueryIntAttribute("tesseract_version", &tesseract_urdf_version);
+  if (tesseract_version_status != tinyxml2::XML_NO_ATTRIBUTE && tesseract_version_status != tinyxml2::XML_SUCCESS)
+    std::throw_with_nested(
+        std::runtime_error("URDF: Failed parsing attribute 'tesseract_version' for robot '" + robot_name + "'!"));
+
   auto sg = std::make_unique<tesseract_scene_graph::SceneGraph>();
   sg->setName(robot_name);
 
@@ -74,7 +86,7 @@ tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_material;
     try
     {
-      m = parseMaterial(material, empty_material, true, urdf_version);
+      m = parseMaterial(material, empty_material, true, tesseract_urdf_version);
     }
     catch (...)
     {
@@ -91,7 +103,7 @@ tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_
     tesseract_scene_graph::Link::Ptr l = nullptr;
     try
     {
-      l = parseLink(link, locator, available_materials, urdf_version);
+      l = parseLink(link, locator, available_materials, tesseract_urdf_version);
     }
     catch (...)
     {
@@ -119,7 +131,7 @@ tesseract_scene_graph::SceneGraph::UPtr parseURDFString(const std::string& urdf_
     tesseract_scene_graph::Joint::Ptr j = nullptr;
     try
     {
-      j = parseJoint(joint, urdf_version);
+      j = parseJoint(joint, tesseract_urdf_version);
     }
     catch (...)
     {
