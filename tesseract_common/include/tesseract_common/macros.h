@@ -59,8 +59,7 @@
 #endif
 
 #define TESSERACT_COMMON_IGNORE_WARNINGS_POP                                                                           \
-  _Pragma("GCC diagnostic pop")                                                                                        \
-  // NOLINTEND
+  _Pragma("GCC diagnostic pop")
 
 #elif defined(_MSC_VER)
 #define DEPRECATED(X) __declspec(deprecated(X))
