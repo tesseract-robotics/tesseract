@@ -29,7 +29,7 @@ if(NOT MSVC)
   add_executable(create_convex_decomposition src/create_convex_decomposition.cpp)
   target_link_libraries(
     create_convex_decomposition
-    PUBLIC ${PROJECT_NAME}_vhacd_convex_decomposition
+    PRIVATE ${PROJECT_NAME}_vhacd_convex_decomposition
            Boost::boost
            Boost::program_options
            Eigen3::Eigen
@@ -41,7 +41,6 @@ if(NOT MSVC)
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(create_convex_decomposition PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
   target_cxx_version(create_convex_decomposition PRIVATE VERSION ${TESSERACT_CXX_VERSION})
-  target_clang_tidy(create_convex_decomposition ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 
   list(APPEND PACKAGE_LIBRARIES create_convex_decomposition)
 
