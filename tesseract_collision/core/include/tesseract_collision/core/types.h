@@ -448,7 +448,7 @@ struct CollisionCheckConfig
   /** @brief Used to configure the contact manager prior to a series of checks */
   ContactManagerConfig contact_manager_config;
 
-  /** @brief ContactRequest that will be used for this check. Default test type: FIRST*/
+  /** @brief ContactRequest that will be used for this check. Default test type: ALL*/
   ContactRequest contact_request;
 
   /** @brief Specifies the type of collision check to be performed. Default: DISCRETE */
