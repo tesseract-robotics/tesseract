@@ -44,7 +44,7 @@ jobs:
       run: |
         brew install libomp cmake automake autoconf libtool gcc ninja
     - name: vcpkg build
-      uses: johnwason/vcpkg-action@v5
+      uses: johnwason/vcpkg-action@v6
       with:
         pkgs: >-
           ${{ env.VCPKG_PKGS }}
@@ -53,6 +53,7 @@ jobs:
         token: ${{ github.token }}
         cache-key: osx-x64-vcpkg
         revision: master
+        github-binarycache: true
     - name: pip3
       run: |
         python3 -m pip install numpy setuptools wheel pytest delvewheel colcon-common-extensions vcstool
