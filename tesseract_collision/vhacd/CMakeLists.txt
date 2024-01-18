@@ -30,13 +30,13 @@ if(NOT MSVC)
   target_link_libraries(
     create_convex_decomposition
     PRIVATE ${PROJECT_NAME}_vhacd_convex_decomposition
-           Boost::boost
-           Boost::program_options
-           Eigen3::Eigen
-           tesseract::tesseract_common
-           tesseract::tesseract_geometry
-           console_bridge::console_bridge
-           Threads::Threads)
+            Boost::boost
+            Boost::program_options
+            Eigen3::Eigen
+            tesseract::tesseract_common
+            tesseract::tesseract_geometry
+            console_bridge::console_bridge
+            Threads::Threads)
   target_compile_options(create_convex_decomposition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(create_convex_decomposition PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
