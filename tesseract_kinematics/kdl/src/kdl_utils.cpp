@@ -43,8 +43,6 @@ void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
 
 void EigenToKDL(const Eigen::Isometry3d& transform, KDL::Frame& frame)
 {
-  frame.Identity();
-
   for (int i = 0; i < 3; ++i)
     frame.p[i] = transform(i, 3);
 
