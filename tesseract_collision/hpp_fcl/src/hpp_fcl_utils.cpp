@@ -131,12 +131,12 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::
                                                                static_cast<size_t>(triangles[(4 * i) + 3]));
     }
 
-    return CollisionGeometryPtr(
-        new hpp::fcl::Convex<hpp::fcl::Triangle>(false,
-                                                 const_cast<Eigen::Matrix<double, 3, 1>*>(geom->getVertices()->data()),
-                                                 vertex_count,
-                                                 tri_indices.data(),
-                                                 triangle_count));
+    return CollisionGeometryPtr(new hpp::fcl::Convex<hpp::fcl::Triangle>(
+        false,
+        const_cast<Eigen::Matrix<double, 3, 1>*>(geom->getVertices()->data()),  // NOLINT
+        vertex_count,
+        tri_indices.data(),
+        triangle_count));
   }
 
   CONSOLE_BRIDGE_logError("The mesh is empty!");
