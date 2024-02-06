@@ -53,7 +53,7 @@ jobs:
           ccache-prefix: ${{ matrix.distro }}
           vcs-file: dependencies.repos
           run-tests: false
-          upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
+          upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_PYTHON_INTERFACE=OFF
           target-path: target_ws/src
           target-args: --cmake-args ${{ matrix.env.TARGET_CMAKE_ARGS }}
 
