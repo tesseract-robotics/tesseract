@@ -11,6 +11,10 @@
     uri: https://github.com/flexible-collision-library/fcl.git
     version: 0.6.1
 - git:
+    local-name: hpp-fcl
+    uri: https://github.com/humanoid-path-planner/hpp-fcl.git
+    version: v2.4.1
+- git:
     local-name: octomap
     uri: https://github.com/OctoMap/octomap.git
     version: v1.9.8
