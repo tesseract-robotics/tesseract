@@ -56,7 +56,7 @@ void runContactManagersFactoryTest(const tesseract_common::fs::path& config_path
 
   {
     std::set<std::string> sl = factory.getSearchLibraries();
-    EXPECT_EQ(sl.size(), 2);
+    EXPECT_EQ(sl.size(), 3);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {
@@ -64,7 +64,7 @@ void runContactManagersFactoryTest(const tesseract_common::fs::path& config_path
     }
   }
 
-  EXPECT_EQ(discrete_plugins.size(), 3);
+  EXPECT_EQ(discrete_plugins.size(), 4);
   for (auto cm_it = discrete_plugins.begin(); cm_it != discrete_plugins.end(); ++cm_it)
   {
     auto name = cm_it->first.as<std::string>();
@@ -133,6 +133,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
                             search_libraries:
                               - tesseract_collision_bullet_factories
                               - tesseract_collision_fcl_factories
+                              - tesseract_collision_hpp_fcl_factories
                             discrete_plugins:
                               default: BulletDiscreteBVHManager
                               plugins:
@@ -142,6 +143,8 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
                                   class: BulletDiscreteSimpleManagerFactory
                                 FCLDiscreteBVHManager:
                                   class: FCLDiscreteBVHManagerFactory
+                                HPP_FCLDiscreteBVHManager:
+                                  class: HPP_FCLDiscreteBVHManagerFactory
                             continuous_plugins:
                               default: BulletCastBVHManager
                               plugins:
@@ -171,7 +174,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
 
   {
     std::set<std::string> sl = factory.getSearchLibraries();
-    EXPECT_EQ(sl.size(), 2);
+    EXPECT_EQ(sl.size(), 3);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {
@@ -179,7 +182,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
     }
   }
 
-  EXPECT_EQ(discrete_plugins.size(), 3);
+  EXPECT_EQ(discrete_plugins.size(), 4);
   for (auto cm_it = discrete_plugins.begin(); cm_it != discrete_plugins.end(); ++cm_it)
   {
     auto name = cm_it->first.as<std::string>();
@@ -204,7 +207,7 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   EXPECT_FALSE(factory.getSearchPaths().empty());
   EXPECT_EQ(factory.getSearchPaths().size(), 1);
   EXPECT_FALSE(factory.getSearchLibraries().empty());
-  EXPECT_EQ(factory.getSearchLibraries().size(), 2);
+  EXPECT_EQ(factory.getSearchLibraries().size(), 3);
   EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 0);
   EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 0);
   EXPECT_ANY_THROW(factory.getDefaultDiscreteContactManagerPlugin());    // NOLINT
@@ -214,11 +217,11 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
 
   factory.addSearchPath("/usr/local/lib");
   EXPECT_EQ(factory.getSearchPaths().size(), 2);
-  EXPECT_EQ(factory.getSearchLibraries().size(), 2);
+  EXPECT_EQ(factory.getSearchLibraries().size(), 3);
 
   factory.addSearchLibrary("tesseract_collision");
   EXPECT_EQ(factory.getSearchPaths().size(), 2);
-  EXPECT_EQ(factory.getSearchLibraries().size(), 3);
+  EXPECT_EQ(factory.getSearchLibraries().size(), 4);
 
   {
     tesseract_common::PluginInfoMap map = factory.getDiscreteContactManagerPlugins();
@@ -306,6 +309,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyDiscretePluginTest)  // NOLINT
                             search_libraries:
                               - tesseract_collision_bullet_factories
                               - tesseract_collision_fcl_factories
+                              - tesseract_collision_hpp_fcl_factories
                             discrete_plugins:
                               default: BulletDiscreteBVHManager
                               plugins:
@@ -314,7 +318,9 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyDiscretePluginTest)  // NOLINT
                                 BulletDiscreteSimpleManager:
                                   class: BulletDiscreteSimpleManagerFactory
                                 FCLDiscreteBVHManager:
-                                  class: FCLDiscreteBVHManagerFactory)";
+                                  class: FCLDiscreteBVHManagerFactory
+                                HPP_FCLDiscreteBVHManager:
+                                  class: HPP_FCLDiscreteBVHManagerFactory)";
 
   ContactManagersPluginFactory factory(config);
   YAML::Node plugin_config = YAML::Load(config);
@@ -336,7 +342,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyDiscretePluginTest)  // NOLINT
 
   {
     std::set<std::string> sl = factory.getSearchLibraries();
-    EXPECT_EQ(sl.size(), 2);
+    EXPECT_EQ(sl.size(), 3);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {
@@ -344,7 +350,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyDiscretePluginTest)  // NOLINT
     }
   }
 
-  EXPECT_EQ(discrete_plugins.size(), 3);
+  EXPECT_EQ(discrete_plugins.size(), 4);
   for (auto cm_it = discrete_plugins.begin(); cm_it != discrete_plugins.end(); ++cm_it)
   {
     auto name = cm_it->first.as<std::string>();
@@ -362,6 +368,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyContinuousPluginTest)  // NOLI
                             search_libraries:
                               - tesseract_collision_bullet_factories
                               - tesseract_collision_fcl_factories
+                              - tesseract_collision_hpp_fcl_factories
                             continuous_plugins:
                               default: BulletCastBVHManager
                               plugins:
@@ -390,7 +397,7 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyContinuousPluginTest)  // NOLI
 
   {
     std::set<std::string> sl = factory.getSearchLibraries();
-    EXPECT_EQ(sl.size(), 2);
+    EXPECT_EQ(sl.size(), 3);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {

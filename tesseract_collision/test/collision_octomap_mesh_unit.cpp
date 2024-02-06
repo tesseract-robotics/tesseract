@@ -7,6 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
+#include <tesseract_collision/hpp_fcl/hpp_fcl_discrete_managers.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_common/utils.h>
 
@@ -25,13 +26,20 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereMeshUnit)  /
   test_suite::runTest(checker, tesseract_common::getTempPath() + "BulletDiscreteBVHCollisionOctomapSphereMeshUnit.ply");
 }
 
-// TODO: There is an issue with fcl octomap collision type. Either with Tesseract implementation or fcl
+// // TODO: There is an issue with fcl octomap collision type. Either with Tesseract implementation or fcl
 // TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereMeshUnit)
-//{
+// {
 //  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
 //  test_suite::runTest(checker, tesseract_common::getTempPath() + "FCLDiscreteBVHCollisionOctomapSphereMeshUnit.ply");
 //  // TODO: There appears to be an issue in fcl for octomap::OcTree.
-//}
+// }
+
+// TEST(TesseractCollisionUnit, HPP_FCLDiscreteBVHCollisionOctomapSphereMeshUnit)
+// {
+//  tesseract_collision_hpp_fcl::HPP_FCLDiscreteBVHManager checker;
+//  test_suite::runTest(checker, tesseract_common::getTempPath() +
+//  "HPP_FCLDiscreteBVHCollisionOctomapSphereMeshUnit.ply");
+// }
 
 /** @brief This is to test the shape id and sub-shape id of the contact results. */
 int main(int argc, char** argv)
