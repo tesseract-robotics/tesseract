@@ -7,6 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
+#include <tesseract_collision/hpp_fcl/hpp_fcl_discrete_managers.h>
 
 using namespace tesseract_collision;
 
@@ -47,6 +48,18 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereConvexHullUnit) 
   test_suite::detail::runTestConvex1(checker);
   //  test_suite::detail::runTestConvex2(checker); FCL return incorrect results, need to create an issue on FCL
   test_suite::detail::runTestConvex3(checker);
+}
+
+TEST(TesseractCollisionUnit, HPP_FCLDiscreteBVHCollisionSphereSphereUnit)  // NOLINT
+{
+  tesseract_collision_hpp_fcl::HPP_FCLDiscreteBVHManager checker;
+  test_suite::runTest(checker, false);
+}
+
+TEST(TesseractCollisionUnit, HPP_FCLDiscreteBVHCollisionSphereSphereConvexHullUnit)  // NOLINT
+{
+  tesseract_collision_hpp_fcl::HPP_FCLDiscreteBVHManager checker;
+  test_suite::runTest(checker, false);
 }
 
 int main(int argc, char** argv)

@@ -22,6 +22,7 @@ macro(add_gtest test_name test_file)
             ${PROJECT_NAME}_test_suite
             ${PROJECT_NAME}_bullet
             ${PROJECT_NAME}_fcl
+            ${PROJECT_NAME}_hpp_fcl
             tesseract::tesseract_geometry
             tesseract::tesseract_scene_graph
             console_bridge::console_bridge
@@ -47,7 +48,8 @@ macro(add_gtest test_name test_file)
     ${PROJECT_NAME}_core
     ${PROJECT_NAME}_test_suite
     ${PROJECT_NAME}_bullet
-    ${PROJECT_NAME}_fcl)
+    ${PROJECT_NAME}_fcl
+    ${PROJECT_NAME}_hpp_fcl)
   add_dependencies(run_tests ${test_name})
 endmacro()
 

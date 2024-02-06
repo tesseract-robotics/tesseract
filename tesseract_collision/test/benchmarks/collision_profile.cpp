@@ -11,6 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/bullet/convex_hull_utils.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
+#include <tesseract_collision/hpp_fcl/hpp_fcl_discrete_managers.h>
 
 #include <tesseract_geometry/impl/sphere.h>
 
@@ -172,11 +173,14 @@ void runDiscreteProfile(bool use_single_link, bool use_convex_mesh, double conta
   auto bt_simple_checker = std::make_shared<tesseract_collision_bullet::BulletDiscreteSimpleManager>();
   auto bt_bvh_checker = std::make_shared<tesseract_collision_bullet::BulletDiscreteBVHManager>();
   auto fcl_bvh_checker = std::make_shared<tesseract_collision_fcl::FCLDiscreteBVHManager>();
+  auto hpp_fcl_bvh_checker = std::make_shared<tesseract_collision_hpp_fcl::HPP_FCLDiscreteBVHManager>();
 
   std::vector<Eigen::Isometry3d> poses = getTransforms(50);
-  std::vector<DiscreteContactManager::Ptr> checkers = { bt_simple_checker, bt_bvh_checker, fcl_bvh_checker };
-  std::vector<std::string> checker_names = { "BtSimple", "BtBVH", "FCLBVH" };
-  std::vector<long> checker_contacts = { 0, 0, 0 };
+  std::vector<DiscreteContactManager::Ptr> checkers = {
+    bt_simple_checker, bt_bvh_checker, fcl_bvh_checker, hpp_fcl_bvh_checker
+  };
+  std::vector<std::string> checker_names = { "BtSimple", "BtBVH", "FCLBVH", "HPP_FCLBHV" };
+  std::vector<long> checker_contacts = { 0, 0, 0, 0 };
 
   std::printf("Total number of shape: %d\n", int(DIM * DIM * DIM));
   //  for (std::size_t i = 0; i < checkers.size(); ++i)

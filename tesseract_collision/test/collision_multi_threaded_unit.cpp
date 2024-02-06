@@ -7,6 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
+#include <tesseract_collision/hpp_fcl/hpp_fcl_discrete_managers.h>
 
 using namespace tesseract_collision;
 
@@ -46,6 +47,17 @@ TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedUn
   test_suite::runTest(checker);
 }
 
+TEST(TesseractCollisionMultiThreadedUnit, HPP_FCLDiscreteBVHCollisionMultiThreadedConvexHullUnit)  // NOLINT
+{
+  tesseract_collision_hpp_fcl::HPP_FCLDiscreteBVHManager checker;
+  test_suite::runTest(checker, true);
+}
+
+TEST(TesseractCollisionMultiThreadedUnit, HPP_FCLDiscreteBVHCollisionMultiThreadedUnit)  // NOLINT
+{
+  tesseract_collision_hpp_fcl::HPP_FCLDiscreteBVHManager checker;
+  test_suite::runTest(checker);
+}
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
