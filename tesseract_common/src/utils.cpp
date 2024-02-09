@@ -123,7 +123,7 @@ Eigen::VectorXd concat(const Eigen::VectorXd& a, const Eigen::VectorXd& b)
   return out;
 }
 
-Eigen::Vector3d calcRotationalError(const Eigen::Ref<const Eigen::Matrix3d>& R)
+std::pair<Eigen::Vector3d, double> calcRotationalErrorDecomposed(const Eigen::Ref<const Eigen::Matrix3d>& R)
 {
   Eigen::Quaterniond q(R);
   Eigen::AngleAxisd r12(q);
@@ -144,31 +144,13 @@ Eigen::Vector3d calcRotationalError(const Eigen::Ref<const Eigen::Matrix3d>& R)
 
   assert(std::abs(angle) <= M_PI);
 
-  return axis * angle;
+  return { axis, angle };
 }
 
-Eigen::Vector3d calcRotationalError2(const Eigen::Ref<const Eigen::Matrix3d>& R)
+Eigen::Vector3d calcRotationalError(const Eigen::Ref<const Eigen::Matrix3d>& R)
 {
-  Eigen::Quaterniond q(R);
-  Eigen::AngleAxisd r12(q);
-
-  // Eigen angle axis flips the sign of axis so rotation is always positive which is
-  // not ideal for numerical differentiation.
-  int s = (q.vec().dot(r12.axis()) < 0) ? -1 : 1;
-
-  // Make sure that the angle is on [0, 2 * pi]
-  const static double two_pi = 2.0 * M_PI;
-  double angle = s * r12.angle();
-  Eigen::Vector3d axis{ s * r12.axis() };
-  angle = copysign(fmod(fabs(angle), two_pi), angle);
-  if (angle < 0)
-    angle += two_pi;
-  else if (angle > two_pi)
-    angle -= two_pi;
-
-  assert(angle <= two_pi && angle >= 0);
-
-  return axis * angle;
+  std::pair<Eigen::Vector3d, double> data = calcRotationalErrorDecomposed(R);
+  return data.first * data.second;
 }
 
 Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2)
@@ -177,10 +159,74 @@ Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Iso
   return concat(pose_err.translation(), calcRotationalError(pose_err.rotation()));
 }
 
-Eigen::VectorXd calcTransformErrorJac(const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2)
+Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
+                                               const Eigen::Isometry3d& source,
+                                               const Eigen::Isometry3d& source_perturbed)
 {
-  Eigen::Isometry3d pose_err = t1.inverse() * t2;
-  return concat(pose_err.translation(), calcRotationalError2(pose_err.rotation()));
+  Eigen::Isometry3d pose_err = target.inverse() * source;
+  std::pair<Eigen::Vector3d, double> pose_rotation_err = calcRotationalErrorDecomposed(pose_err.rotation());
+  Eigen::VectorXd err = concat(pose_err.translation(), pose_rotation_err.first * pose_rotation_err.second);
+
+  Eigen::Isometry3d perturbed_pose_err = target.inverse() * source_perturbed;
+  std::pair<Eigen::Vector3d, double> perturbed_pose_rotation_err =
+      calcRotationalErrorDecomposed(perturbed_pose_err.rotation());
+
+  // They should always pointing in the same direction
+#ifndef NDEBUG
+  if (std::abs(pose_rotation_err.second) > 0.01 && perturbed_pose_rotation_err.first.dot(pose_rotation_err.first) < 0)
+    throw std::runtime_error("calcJacobianTransformErrorDiff, angle axes are pointing in oposite directions!");
+#endif
+
+  // Angle axis has a discontinity at PI so need to correctly handle this calculating jacobian difference
+  Eigen::VectorXd perturbed_err;
+  if (perturbed_pose_rotation_err.second > M_PI_2 && pose_rotation_err.second < -M_PI_2)
+    perturbed_err = concat(perturbed_pose_err.translation(),
+                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second - 2 * M_PI));
+  else if (perturbed_pose_rotation_err.second < -M_PI_2 && pose_rotation_err.second > M_PI_2)
+    perturbed_err = concat(perturbed_pose_err.translation(),
+                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second + 2 * M_PI));
+  else
+    perturbed_err = concat(perturbed_pose_err.translation(),
+                           perturbed_pose_rotation_err.first * perturbed_pose_rotation_err.second);
+
+  return (perturbed_err - err);
+}
+
+Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
+                                               const Eigen::Isometry3d& target_perturbed,
+                                               const Eigen::Isometry3d& source,
+                                               const Eigen::Isometry3d& source_perturbed)
+{
+  Eigen::Isometry3d pose_err = target.inverse() * source;
+  std::pair<Eigen::Vector3d, double> pose_rotation_err = calcRotationalErrorDecomposed(pose_err.rotation());
+  Eigen::VectorXd err = concat(pose_err.translation(), pose_rotation_err.first * pose_rotation_err.second);
+
+  Eigen::Isometry3d perturbed_pose_err = target_perturbed.inverse() * source_perturbed;
+  std::pair<Eigen::Vector3d, double> perturbed_pose_rotation_err =
+      calcRotationalErrorDecomposed(perturbed_pose_err.rotation());
+
+  // They should always pointing in the same direction
+#ifndef NDEBUG
+  if (std::abs(pose_rotation_err.second) > 0.01 && perturbed_pose_rotation_err.first.dot(pose_rotation_err.first) < 0)
+    throw std::runtime_error("calcJacobianTransformErrorDiff, angle axes are pointing in oposite directions!");
+#endif
+
+  Eigen::Isometry3d ttp = target.inverse() * target_perturbed;
+  // The reason for premultiplying translation with ttp.rotation() is because the translation error needs to be in the
+  // target frame coordinates Angle axis has a discontinity at PI so need to correctly handle this calculating jacobian
+  // difference
+  Eigen::VectorXd perturbed_err;
+  if (perturbed_pose_rotation_err.second > M_PI_2 && pose_rotation_err.second < -M_PI_2)
+    perturbed_err = concat(ttp.rotation() * perturbed_pose_err.translation(),
+                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second - 2 * M_PI));
+  else if (perturbed_pose_rotation_err.second < -M_PI_2 && pose_rotation_err.second > M_PI_2)
+    perturbed_err = concat(ttp.rotation() * perturbed_pose_err.translation(),
+                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second + 2 * M_PI));
+  else
+    perturbed_err = concat(ttp.rotation() * perturbed_pose_err.translation(),
+                           perturbed_pose_rotation_err.first * perturbed_pose_rotation_err.second);
+
+  return (perturbed_err - err);
 }
 
 Eigen::Vector4d computeRandomColor()
