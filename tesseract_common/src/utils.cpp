@@ -211,19 +211,16 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
     throw std::runtime_error("calcJacobianTransformErrorDiff, angle axes are pointing in oposite directions!");
 #endif
 
-  Eigen::Isometry3d ttp = target.inverse() * target_perturbed;
-  // The reason for premultiplying translation with ttp.rotation() is because the translation error needs to be in the
-  // target frame coordinates Angle axis has a discontinity at PI so need to correctly handle this calculating jacobian
-  // difference
+  // Angle axis has a discontinity at PI so need to correctly handle this calculating  jacobian difference
   Eigen::VectorXd perturbed_err;
   if (perturbed_pose_rotation_err.second > M_PI_2 && pose_rotation_err.second < -M_PI_2)
-    perturbed_err = concat(ttp.rotation() * perturbed_pose_err.translation(),
+    perturbed_err = concat(perturbed_pose_err.translation(),
                            perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second - 2 * M_PI));
   else if (perturbed_pose_rotation_err.second < -M_PI_2 && pose_rotation_err.second > M_PI_2)
-    perturbed_err = concat(ttp.rotation() * perturbed_pose_err.translation(),
+    perturbed_err = concat(perturbed_pose_err.translation(),
                            perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second + 2 * M_PI));
   else
-    perturbed_err = concat(ttp.rotation() * perturbed_pose_err.translation(),
+    perturbed_err = concat(perturbed_pose_err.translation(),
                            perturbed_pose_rotation_err.first * perturbed_pose_rotation_err.second);
 
   return (perturbed_err - err);

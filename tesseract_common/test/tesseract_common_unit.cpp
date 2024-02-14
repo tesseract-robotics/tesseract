@@ -2198,16 +2198,16 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
   }
 }
 
-void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
+void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
 {
   Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
   const double eps = 0.001;
   {  // X-Axis positive
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitX());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitX());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitX());
+    Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitX()) * target_tf;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitX());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
@@ -2217,9 +2217,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
   {  // X-Axis negative
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitX());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitX());
+    Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX()) * target_tf;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitX());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
@@ -2229,9 +2229,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
   {  // X-Axis positive and negative
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitX());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitX());
+    Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX()) * target_tf;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitX());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitX());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
@@ -2241,22 +2241,23 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
   {  // X-Axis translation
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitX());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitX());
-    source_tf_perturbed.translation() += Eigen::Vector3d(eps, -eps, eps);
+    Eigen::Isometry3d target_tf_perturbed =
+        Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX()) * target_tf * Eigen::Translation3d(eps, -eps, eps);
+    ;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitX());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(eps, -eps, eps)));
+    EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(-eps, eps, -eps)));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(-2 * eps, 0, 0)));
   }
 
   {  // Y-Axis positive
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitY());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitY());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitY());
+    Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitY()) * target_tf;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitY());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
@@ -2266,9 +2267,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
   {  // Y-Axis negative
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitY());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitY());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitY());
+    Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitY()) * target_tf;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitY());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
@@ -2278,9 +2279,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
   {  // Y-Axis positive and negative
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitY());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitY());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitY());
+    Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitY()) * target_tf;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitY());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitY());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
@@ -2290,22 +2291,22 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
   {  // Y-Axis translation
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitY());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitY());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitY());
-    source_tf_perturbed.translation() += Eigen::Vector3d(-eps, eps, -eps);
+    Eigen::Isometry3d target_tf_perturbed =
+        Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitY()) * target_tf * Eigen::Translation3d(-eps, eps, -eps);
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitY());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(-eps, eps, -eps)));
+    EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(eps, -eps, eps)));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, -2 * eps, 0)));
   }
 
   {  // Z-Axis positive
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitZ());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitZ());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitZ());
+    Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitZ()) * target_tf;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitZ());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
@@ -2315,9 +2316,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
   {  // Z-Axis negative
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitZ());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitZ());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitZ());
+    Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitZ()) * target_tf;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitZ());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
@@ -2327,9 +2328,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
   {  // Z-Axis positive and negative
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitZ());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitZ());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitZ());
+    Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitZ()) * target_tf;
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitZ());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitZ());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
@@ -2339,13 +2340,13 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double anlge)
   {  // Z-Axis translation
     Eigen::Isometry3d target_tf{ identity };
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
-    Eigen::Isometry3d target_tf_perturbed = target_tf * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitZ());
-    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitZ());
-    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitZ());
-    source_tf_perturbed.translation() += Eigen::Vector3d(-eps, -eps, eps);
+    Eigen::Isometry3d target_tf_perturbed =
+        Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitZ()) * target_tf * Eigen::Translation3d(-eps, -eps, eps);
+    Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ());
+    Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitZ());
     Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(-eps, -eps, eps)));
+    EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(eps, eps, -eps)));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 0, -2 * eps)));
   }
 }
