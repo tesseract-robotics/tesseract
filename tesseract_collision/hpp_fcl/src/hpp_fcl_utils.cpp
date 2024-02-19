@@ -117,26 +117,28 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::
 {
   int vertex_count = geom->getVertexCount();
   int triangle_count = geom->getFaceCount();
-  const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
   const Eigen::VectorXi& triangles = *(geom->getFaces());
 
   if (vertex_count > 0 && triangle_count > 0)
   {
-    std::vector<hpp::fcl::Triangle> tri_indices(static_cast<size_t>(triangle_count));
+    // TODO: This is just a copy to get rid of the constness
+    auto vertices = std::make_shared<std::vector<hpp::fcl::Vec3f>>(static_cast<size_t>(vertex_count));
+    for (int i = 0; i < vertex_count; ++i)
+    {
+      vertices->at(static_cast<size_t>(i)) = geom->getVertices()->at(i);
+    }
+
+    auto tri_indices = std::make_shared<std::vector<hpp::fcl::Triangle>>(static_cast<size_t>(triangle_count));
     for (int i = 0; i < triangle_count; ++i)
     {
       assert(triangles[4L * i] == 3);
-      tri_indices[static_cast<size_t>(i)] = hpp::fcl::Triangle(static_cast<size_t>(triangles[(4 * i) + 1]),
-                                                               static_cast<size_t>(triangles[(4 * i) + 2]),
-                                                               static_cast<size_t>(triangles[(4 * i) + 3]));
+      tri_indices->at(static_cast<size_t>(i)) = hpp::fcl::Triangle(static_cast<size_t>(triangles[(4 * i) + 1]),
+                                                                   static_cast<size_t>(triangles[(4 * i) + 2]),
+                                                                   static_cast<size_t>(triangles[(4 * i) + 3]));
     }
 
-    return CollisionGeometryPtr(new hpp::fcl::Convex<hpp::fcl::Triangle>(
-        false,
-        const_cast<Eigen::Matrix<double, 3, 1>*>(geom->getVertices()->data()),  // NOLINT
-        vertex_count,
-        tri_indices.data(),
-        triangle_count));
+    return CollisionGeometryPtr(
+        new hpp::fcl::Convex<hpp::fcl::Triangle>(vertices, vertex_count, tri_indices, triangle_count));
   }
 
   CONSOLE_BRIDGE_logError("The mesh is empty!");
@@ -326,7 +328,8 @@ bool DistanceCollisionCallback::collide(hpp::fcl::CollisionObject* o1, hpp::fcl:
     contact.type_id[0] = cd1->getTypeID();
     contact.type_id[1] = cd2->getTypeID();
     contact.distance = fcl_result.min_distance;
-    contact.normal = (fcl_result.min_distance * (contact.nearest_points[1] - contact.nearest_points[0])).normalized();
+    // contact.normal = (fcl_result.min_distance * (contact.nearest_points[1] - contact.nearest_points[0])).normalized();
+    contact.normal = fcl_result.normal;
 
     ObjectPairKey pc = tesseract_common::makeOrderedLinkPair(cd1->getName(), cd2->getName());
     const auto it = cdata->res->find(pc);

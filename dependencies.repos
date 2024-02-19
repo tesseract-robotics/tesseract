@@ -13,7 +13,7 @@
 - git:
     local-name: hpp-fcl
     uri: https://github.com/humanoid-path-planner/hpp-fcl.git
-    version: v2.4.1
+    version: devel
 - git:
     local-name: octomap
     uri: https://github.com/OctoMap/octomap.git
