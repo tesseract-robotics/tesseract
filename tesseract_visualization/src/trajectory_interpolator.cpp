@@ -38,7 +38,7 @@ TrajectoryInterpolator::TrajectoryInterpolator(tesseract_common::JointTrajectory
   double total_time = 0;
   bool overwrite_dt = false;
   // Check if time is populated
-  if (!trajectory_.empty() && (trajectory_.back().time - trajectory_.front().time) < 1e-3)
+  if ((trajectory_.size() > 1) && (trajectory_.back().time - trajectory_.front().time) < 1e-3)
     overwrite_dt = true;
 
   bool initial_state = true;
