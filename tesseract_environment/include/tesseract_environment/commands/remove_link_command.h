@@ -69,6 +69,5 @@ private:
 }  // namespace tesseract_environment
 
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_environment::RemoveLinkCommand, "RemoveLinkCommand")
 #endif  // TESSERACT_ENVIRONMENT_REMOVE_LINK_COMMAND_H

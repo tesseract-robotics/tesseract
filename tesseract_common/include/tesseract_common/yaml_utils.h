@@ -30,10 +30,10 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <yaml-cpp/yaml.h>
 #include <set>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/types.h>
+#include <tesseract_common/plugin_info.h>
+#include <tesseract_common/calibration_info.h>
 #include <tesseract_common/utils.h>
 
 namespace tesseract_common

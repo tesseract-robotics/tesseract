@@ -62,7 +62,7 @@ public:
 
   void plotMarker(const Marker& marker, std::string ns = "") override;
 
-  void plotMarkers(const std::vector<Marker::Ptr>& markers, std::string ns = "") override;
+  void plotMarkers(const std::vector<std::shared_ptr<Marker>>& markers, std::string ns = "") override;
 
   void clear(std::string ns = "") override;
 

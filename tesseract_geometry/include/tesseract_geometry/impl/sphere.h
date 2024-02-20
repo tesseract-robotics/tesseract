@@ -43,13 +43,13 @@ public:
   using Ptr = std::shared_ptr<Sphere>;
   using ConstPtr = std::shared_ptr<const Sphere>;
 
-  explicit Sphere(double r) : Geometry(GeometryType::SPHERE), r_(r) {}
+  explicit Sphere(double r);
   Sphere() = default;
   ~Sphere() override = default;
 
-  double getRadius() const { return r_; }
+  double getRadius() const;
 
-  Geometry::Ptr clone() const override final { return std::make_shared<Sphere>(r_); }
+  Geometry::Ptr clone() const override final;
   bool operator==(const Sphere& rhs) const;
   bool operator!=(const Sphere& rhs) const;
 

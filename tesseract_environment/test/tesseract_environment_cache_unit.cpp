@@ -11,6 +11,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/environment_cache.h>
+#include <tesseract_environment/commands/add_link_command.h>
+
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/link.h>
+
+#include <tesseract_srdf/srdf_model.h>
+
 #include <tesseract_support/tesseract_support_resource_locator.h>
 
 using namespace tesseract_scene_graph;

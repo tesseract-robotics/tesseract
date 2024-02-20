@@ -73,7 +73,6 @@ private:
 }  // namespace tesseract_environment
 
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeJointAccelerationLimitsCommand,
                         "ChangeJointAccelerationLimitsCommand")
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_ACCELERATION_LIMITS_COMMAND_H

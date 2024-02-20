@@ -39,7 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/joint.h>
+#include <tesseract_scene_graph/fwd.h>
 
 namespace tesseract_scene_graph
 {
@@ -137,7 +137,7 @@ public:
    *
    * @param static_tf The new static transformation
    */
-  virtual void setStaticTransformation(Eigen::Isometry3d static_tf) = 0;
+  virtual void setStaticTransformation(const Eigen::Isometry3d& static_tf) = 0;
 
   /**
    * @brief Get the nodes static transformation

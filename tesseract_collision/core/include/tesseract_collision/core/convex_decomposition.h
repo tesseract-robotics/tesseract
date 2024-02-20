@@ -26,10 +26,9 @@
 #ifndef TESSERACT_COLLISION_CONVEX_DECOMPOSITION_H
 #define TESSERACT_COLLISION_CONVEX_DECOMPOSITION_H
 
-#include <vector>
 #include <memory>
-#include <tesseract_common/types.h>
-#include <tesseract_geometry/impl/convex_mesh.h>
+#include <tesseract_common/eigen_types.h>
+#include <tesseract_geometry/fwd.h>
 
 namespace tesseract_collision
 {
@@ -53,8 +52,8 @@ public:
    * index
    * @return
    */
-  virtual std::vector<tesseract_geometry::ConvexMesh::Ptr> compute(const tesseract_common::VectorVector3d& vertices,
-                                                                   const Eigen::VectorXi& faces) const = 0;
+  virtual std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>>
+  compute(const tesseract_common::VectorVector3d& vertices, const Eigen::VectorXi& faces) const = 0;
 };
 
 }  // namespace tesseract_collision

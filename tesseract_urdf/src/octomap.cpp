@@ -51,13 +51,13 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctomap(const tinyxml2::XML
   if (tesseract_common::QueryStringAttribute(xml_element, "shape_type", shape_type) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Octomap: Missing or failed parsing attribute 'shape_type'!"));
 
-  tesseract_geometry::Octree::SubType sub_type{ tesseract_geometry::Octree::SubType::BOX };
+  tesseract_geometry::OctreeSubType sub_type{ tesseract_geometry::OctreeSubType::BOX };
   if (shape_type == "box")
-    sub_type = tesseract_geometry::Octree::SubType::BOX;
+    sub_type = tesseract_geometry::OctreeSubType::BOX;
   else if (shape_type == "sphere_inside")
-    sub_type = tesseract_geometry::Octree::SubType::SPHERE_INSIDE;
+    sub_type = tesseract_geometry::OctreeSubType::SPHERE_INSIDE;
   else if (shape_type == "sphere_outside")
-    sub_type = tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE;
+    sub_type = tesseract_geometry::OctreeSubType::SPHERE_OUTSIDE;
   else
     std::throw_with_nested(std::runtime_error("Octomap: Invalid sub shape type, must be 'box', 'sphere_inside', or "
                                               "'sphere_outside'!"));
@@ -106,11 +106,11 @@ tinyxml2::XMLElement* tesseract_urdf::writeOctomap(const std::shared_ptr<const t
   tinyxml2::XMLElement* xml_element = doc.NewElement("octree");
 
   std::string type_string;
-  if (octree->getSubType() == tesseract_geometry::Octree::SubType::BOX)
+  if (octree->getSubType() == tesseract_geometry::OctreeSubType::BOX)
     type_string = "box";
-  else if (octree->getSubType() == tesseract_geometry::Octree::SubType::SPHERE_INSIDE)
+  else if (octree->getSubType() == tesseract_geometry::OctreeSubType::SPHERE_INSIDE)
     type_string = "sphere_inside";
-  else if (octree->getSubType() == tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE)
+  else if (octree->getSubType() == tesseract_geometry::OctreeSubType::SPHERE_OUTSIDE)
     type_string = "sphere_outside";
   else
     std::throw_with_nested(std::runtime_error("Octree subtype is invalid and cannot be converted to XML"));

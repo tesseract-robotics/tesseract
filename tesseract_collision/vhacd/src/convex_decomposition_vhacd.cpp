@@ -1,10 +1,12 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
+#include <iomanip>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/bullet/convex_hull_utils.h>
 #include <tesseract_collision/vhacd/convex_decomposition_vhacd.h>
+#include <tesseract_geometry/impl/convex_mesh.h>
 
 namespace tesseract_collision
 {
@@ -31,7 +33,7 @@ public:
 
 ConvexDecompositionVHACD::ConvexDecompositionVHACD(const VHACDParameters& params) : params_(params) {}
 
-std::vector<tesseract_geometry::ConvexMesh::Ptr>
+std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh> >
 ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertices, const Eigen::VectorXi& faces) const
 {
   params_.print();

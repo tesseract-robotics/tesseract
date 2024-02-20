@@ -9,8 +9,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/commands.h>
 #include <tesseract_environment/environment.h>
+#include <tesseract_environment/commands/add_link_command.h>
+
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/link.h>
+
+#include <tesseract_srdf/srdf_model.h>
+
+#include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
+
 #include <tesseract_support/tesseract_support_resource_locator.h>
 
 using namespace tesseract_scene_graph;

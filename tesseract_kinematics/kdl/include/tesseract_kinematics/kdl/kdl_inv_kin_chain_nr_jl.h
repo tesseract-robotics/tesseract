@@ -27,17 +27,14 @@
 #define TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_NR_JL_H
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <kdl/chain.hpp>
 #include <kdl/chainiksolverpos_nr_jl.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
-#include <console_bridge/console.h>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
-#include <tesseract_scene_graph/graph.h>
 
 namespace tesseract_kinematics
 {

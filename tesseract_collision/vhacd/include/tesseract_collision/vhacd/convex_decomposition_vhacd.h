@@ -72,8 +72,8 @@ public:
   ConvexDecompositionVHACD() = default;
   ConvexDecompositionVHACD(const VHACDParameters& params);
 
-  std::vector<tesseract_geometry::ConvexMesh::Ptr> compute(const tesseract_common::VectorVector3d& vertices,
-                                                           const Eigen::VectorXi& faces) const override;
+  std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>> compute(const tesseract_common::VectorVector3d& vertices,
+                                                                       const Eigen::VectorXi& faces) const override;
 
 private:
   VHACDParameters params_;

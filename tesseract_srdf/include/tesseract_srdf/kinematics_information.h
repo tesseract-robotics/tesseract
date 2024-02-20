@@ -32,11 +32,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <set>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/types.h>
-#include <tesseract_common/utils.h>
+#include <tesseract_common/eigen_types.h>
+#include <tesseract_common/plugin_info.h>
 
 namespace tesseract_srdf
 {
@@ -152,6 +153,5 @@ private:
 }  // namespace tesseract_srdf
 
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_srdf::KinematicsInformation, "KinematicsInformation")
 #endif  // TESSERACT_SRDF_KINEMATICS_INFORMATION_H

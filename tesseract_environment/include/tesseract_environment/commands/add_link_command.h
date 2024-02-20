@@ -33,8 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
-#include <tesseract_scene_graph/joint.h>
-#include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/fwd.h>
 
 namespace tesseract_environment
 {
@@ -90,16 +89,16 @@ public:
                  const tesseract_scene_graph::Joint& joint,
                  bool replace_allowed = false);
 
-  const tesseract_scene_graph::Link::ConstPtr& getLink() const;
-  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const;
+  const std::shared_ptr<const tesseract_scene_graph::Link>& getLink() const;
+  const std::shared_ptr<const tesseract_scene_graph::Joint>& getJoint() const;
   bool replaceAllowed() const;
 
   bool operator==(const AddLinkCommand& rhs) const;
   bool operator!=(const AddLinkCommand& rhs) const;
 
 private:
-  tesseract_scene_graph::Link::ConstPtr link_;
-  tesseract_scene_graph::Joint::ConstPtr joint_;
+  std::shared_ptr<const tesseract_scene_graph::Link> link_;
+  std::shared_ptr<const tesseract_scene_graph::Joint> joint_;
   bool replace_allowed_{ false };
 
   friend class boost::serialization::access;
@@ -109,7 +108,6 @@ private:
 }  // namespace tesseract_environment
 
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddLinkCommand, "AddLinkCommand")
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_COMMAND_H

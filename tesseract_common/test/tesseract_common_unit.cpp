@@ -4,6 +4,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <type_traits>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
@@ -655,7 +656,7 @@ TEST(TesseractCommonUnit, QueryStringValueUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    tinyxml2::XMLError status = tesseract_common::QueryStringValue(element, string_value);
+    int status = tesseract_common::QueryStringValue(element, string_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_TRUE(string_value == "box");
   }
@@ -672,7 +673,7 @@ TEST(TesseractCommonUnit, QueryStringTextUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    tinyxml2::XMLError status = tesseract_common::QueryStringText(element, string_value);
+    int status = tesseract_common::QueryStringText(element, string_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_TRUE(string_value == "Test");
   }
@@ -686,7 +687,7 @@ TEST(TesseractCommonUnit, QueryStringTextUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    tinyxml2::XMLError status = tesseract_common::QueryStringText(element, string_value);
+    int status = tesseract_common::QueryStringText(element, string_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 }
@@ -702,7 +703,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    tinyxml2::XMLError status = tesseract_common::QueryStringAttribute(element, "name", string_value);
+    int status = tesseract_common::QueryStringAttribute(element, "name", string_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_TRUE(string_value == "test");
   }
@@ -716,7 +717,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    tinyxml2::XMLError status = tesseract_common::QueryStringAttribute(element, "name", string_value);
+    int status = tesseract_common::QueryStringAttribute(element, "name", string_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 }
@@ -759,7 +760,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(element, "name", string_value);
+    int status = tesseract_common::QueryStringAttributeRequired(element, "name", string_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_TRUE(string_value == "test");
   }
@@ -773,7 +774,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(element, "missing", string_value);
+    int status = tesseract_common::QueryStringAttributeRequired(element, "missing", string_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 }
@@ -789,7 +790,7 @@ TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     double double_value{ 0 };
-    tinyxml2::XMLError status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
+    int status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_NEAR(double_value, 1.5, 1e-6);
   }
@@ -803,7 +804,7 @@ TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     double double_value{ 0 };
-    tinyxml2::XMLError status = tesseract_common::QueryDoubleAttributeRequired(element, "missing", double_value);
+    int status = tesseract_common::QueryDoubleAttributeRequired(element, "missing", double_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 
@@ -816,7 +817,7 @@ TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     double double_value{ 0 };
-    tinyxml2::XMLError status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
+    int status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
     EXPECT_TRUE(status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE);
   }
 }
@@ -832,7 +833,7 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     int int_value{ 0 };
-    tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
+    int status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_NEAR(int_value, 1, 1e-6);
   }
@@ -846,7 +847,7 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     int int_value{ 0 };
-    tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "missing", int_value);
+    int status = tesseract_common::QueryIntAttributeRequired(element, "missing", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 
@@ -859,7 +860,7 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     int int_value{ 0 };
-    tinyxml2::XMLError status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
+    int status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE);
   }
 }

@@ -1,7 +1,10 @@
 #include <console_bridge/console.h>
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/joint.h>
 #include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_common/utils.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_srdf/utils.h>
 #include <tesseract_support/tesseract_support_resource_locator.h>

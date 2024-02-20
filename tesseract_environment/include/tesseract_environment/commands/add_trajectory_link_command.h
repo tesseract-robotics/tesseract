@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
-#include <tesseract_scene_graph/joint.h>
 #include <tesseract_common/joint_state.h>
 
 namespace tesseract_environment
@@ -92,7 +91,6 @@ private:
 }  // namespace tesseract_environment
 
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddTrajectoryLinkCommand, "AddTrajectoryLinkCommand")
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_TRAJECTORY_LINK_COMMAND_H

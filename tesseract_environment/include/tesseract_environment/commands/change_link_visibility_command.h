@@ -68,6 +68,5 @@ private:
 }  // namespace tesseract_environment
 
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeLinkVisibilityCommand, "ChangeLinkVisibilityCommand")
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_LINK_VISIBILITY_COMMAND_H

@@ -31,7 +31,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_common/utils.h>
 
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/joint.h>
+#include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/kdl_parser.h>
+
+#include <tesseract_state_solver/kdl/kdl_state_solver.h>
 
 namespace tesseract_kinematics
 {
@@ -94,6 +99,8 @@ JointGroup::JointGroup(std::string name,
   if (static_link_names_.size() + active_link_names.size() != scene_graph.getLinks().size())
     throw std::runtime_error("JointGroup: Static link names are not correct!");
 }
+
+JointGroup::~JointGroup() = default;
 
 JointGroup::JointGroup(const JointGroup& other) { *this = other; }
 

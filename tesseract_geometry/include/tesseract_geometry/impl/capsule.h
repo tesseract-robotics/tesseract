@@ -43,14 +43,14 @@ public:
   using Ptr = std::shared_ptr<Capsule>;
   using ConstPtr = std::shared_ptr<const Capsule>;
 
-  Capsule(double r, double l) : Geometry(GeometryType::CAPSULE), r_(r), l_(l) {}
+  Capsule(double r, double l);
   Capsule() = default;
   ~Capsule() override = default;
 
-  double getRadius() const { return r_; }
-  double getLength() const { return l_; }
+  double getRadius() const;
+  double getLength() const;
 
-  Geometry::Ptr clone() const override final { return std::make_shared<Capsule>(r_, l_); }
+  Geometry::Ptr clone() const override final;
   bool operator==(const Capsule& rhs) const;
   bool operator!=(const Capsule& rhs) const;
 

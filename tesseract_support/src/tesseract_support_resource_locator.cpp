@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_support/tesseract_support_resource_locator.h>
+#include <tesseract_common/filesystem.h>
 
 namespace tesseract_common
 {

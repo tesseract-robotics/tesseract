@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/material.h>
 #include <tesseract_urdf/geometry.h>
 #include <tesseract_scene_graph/link.h>
+#include <tesseract_geometry/geometry.h>
 #include <tesseract_common/resource_locator.h>
 
 std::vector<tesseract_scene_graph::Visual::Ptr>
@@ -67,7 +68,7 @@ tesseract_urdf::parseVisual(const tinyxml2::XMLElement* xml_element,
   }
 
   // get material
-  tesseract_scene_graph::Material::Ptr visual_material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
+  tesseract_scene_graph::Material::Ptr visual_material = tesseract_scene_graph::Material::getDefaultMaterial();
   const tinyxml2::XMLElement* material = xml_element->FirstChildElement("material");
   if (material != nullptr)
   {

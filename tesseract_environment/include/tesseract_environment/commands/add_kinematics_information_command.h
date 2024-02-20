@@ -65,6 +65,5 @@ private:
 }  // namespace tesseract_environment
 
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddKinematicsInformationCommand, "AddKinematicsInformationCommand")
 #endif  // TESSERACT_ENVIRONMENT_ADD_KINEMATICS_INFORMATION_COMMAND_H

@@ -34,14 +34,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/eigen_serialization.h>
-#include <tesseract_common/types.h>
-#include <tesseract_common/resource_locator.h>
+#include <tesseract_common/fwd.h>
+#include <tesseract_common/eigen_types.h>
+
 #include <tesseract_geometry/geometry.h>
-#include <tesseract_geometry/impl/mesh_material.h>
 
 namespace tesseract_geometry
 {
+class MeshMaterial;
+class MeshTexture;
+
 class PolygonMesh : public Geometry
 {
 public:
@@ -69,31 +71,13 @@ public:
    */
   PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
               std::shared_ptr<const Eigen::VectorXi> faces,
-              tesseract_common::Resource::ConstPtr resource = nullptr,
+              std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
               const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),  // NOLINT
               std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
               std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
-              MeshMaterial::Ptr mesh_material = nullptr,
-              std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr,
-              GeometryType type = GeometryType::POLYGON_MESH)
-    : Geometry(type)
-    , vertices_(std::move(vertices))
-    , faces_(std::move(faces))
-    , vertex_count_(static_cast<int>(vertices_->size()))
-    , resource_(std::move(resource))
-    , scale_(scale)
-    , normals_(std::move(normals))
-    , vertex_colors_(std::move(vertex_colors))
-    , mesh_material_(std::move(mesh_material))
-    , mesh_textures_(std::move(mesh_textures))
-  {
-    for (int i = 0; i < faces_->size(); ++i)
-    {
-      ++face_count_;
-      int num_verts = (*faces_)(i);  // NOLINT
-      i += num_verts;
-    }
-  }
+              std::shared_ptr<MeshMaterial> mesh_material = nullptr,
+              std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr,
+              GeometryType type = GeometryType::POLYGON_MESH);
 
   /**
    * @brief Polygon Mesh geometry
@@ -115,26 +99,13 @@ public:
   PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
               std::shared_ptr<const Eigen::VectorXi> faces,
               int face_count,
-              tesseract_common::Resource::ConstPtr resource = nullptr,
+              std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
               const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),  // NOLINT
               std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
               std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
-              MeshMaterial::Ptr mesh_material = nullptr,
-              std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr,
-              GeometryType type = GeometryType::POLYGON_MESH)
-    : Geometry(type)
-    , vertices_(std::move(vertices))
-    , faces_(std::move(faces))
-    , vertex_count_(static_cast<int>(vertices_->size()))
-    , face_count_(face_count)
-    , resource_(std::move(resource))
-    , scale_(scale)
-    , normals_(std::move(normals))
-    , vertex_colors_(std::move(vertex_colors))
-    , mesh_material_(std::move(mesh_material))
-    , mesh_textures_(std::move(mesh_textures))
-  {
-  }
+              std::shared_ptr<MeshMaterial> mesh_material = nullptr,
+              std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr,
+              GeometryType type = GeometryType::POLYGON_MESH);
 
   PolygonMesh() = default;
   ~PolygonMesh() override = default;
@@ -143,25 +114,25 @@ public:
    * @brief Get Polygon mesh vertices
    * @return A vector of vertices
    */
-  const std::shared_ptr<const tesseract_common::VectorVector3d>& getVertices() const { return vertices_; }
+  const std::shared_ptr<const tesseract_common::VectorVector3d>& getVertices() const;
 
   /**
    * @brief Get Polygon mesh faces
    * @return A vector of face indices
    */
-  const std::shared_ptr<const Eigen::VectorXi>& getFaces() const { return faces_; }
+  const std::shared_ptr<const Eigen::VectorXi>& getFaces() const;
 
   /**
    * @brief Get vertex count
    * @return Number of vertices
    */
-  int getVertexCount() const { return vertex_count_; }
+  int getVertexCount() const;
 
   /**
    * @brief Get face count
    * @return Number of faces
    */
-  int getFaceCount() const { return face_count_; }
+  int getFaceCount() const;
 
   /**
    * @brief Get the path to file used to generate the mesh
@@ -170,13 +141,13 @@ public:
    *
    * @return Absolute path to the mesh file
    */
-  tesseract_common::Resource::ConstPtr getResource() const { return resource_; }
+  std::shared_ptr<const tesseract_common::Resource> getResource() const;
 
   /**
    * @brief Get the scale applied to file used to generate the mesh
    * @return The scale x, y, z
    */
-  const Eigen::Vector3d& getScale() const { return scale_; }
+  const Eigen::Vector3d& getScale() const;
 
   /**
    * @brief Get the vertex normal vectors
@@ -185,7 +156,7 @@ public:
    *
    * @return The vertex normal vector
    */
-  const std::shared_ptr<const tesseract_common::VectorVector3d>& getNormals() const { return normals_; }
+  const std::shared_ptr<const tesseract_common::VectorVector3d>& getNormals() const;
 
   /**
    * @brief Get the vertex colors
@@ -194,7 +165,7 @@ public:
    *
    * @return Vertex colors
    */
-  const std::shared_ptr<const tesseract_common::VectorVector4d>& getVertexColors() const { return vertex_colors_; }
+  const std::shared_ptr<const tesseract_common::VectorVector4d>& getVertexColors() const;
 
   /**
    * @brief Get material data extracted from the mesh file
@@ -204,7 +175,7 @@ public:
    *
    * @return The MeshMaterial data extracted from mesh file
    */
-  MeshMaterial::ConstPtr getMaterial() const { return mesh_material_; }
+  std::shared_ptr<const MeshMaterial> getMaterial() const;
 
   /**
    * @brief Get textures extracted from the mesh file
@@ -216,12 +187,10 @@ public:
    *
    * @return Vector of mesh textures
    */
-  const std::shared_ptr<const std::vector<MeshTexture::Ptr>>& getTextures() const { return mesh_textures_; }
+  const std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>>& getTextures() const;
 
-  Geometry::Ptr clone() const override
-  {
-    return std::make_shared<PolygonMesh>(vertices_, faces_, face_count_, resource_, scale_);
-  }
+  Geometry::Ptr clone() const override;
+
   bool operator==(const PolygonMesh& rhs) const;
   bool operator!=(const PolygonMesh& rhs) const;
 
@@ -231,12 +200,12 @@ private:
 
   int vertex_count_{ 0 };
   int face_count_{ 0 };
-  tesseract_common::Resource::ConstPtr resource_;
+  std::shared_ptr<const tesseract_common::Resource> resource_;
   Eigen::Vector3d scale_;
   std::shared_ptr<const tesseract_common::VectorVector3d> normals_;
   std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors_;
-  MeshMaterial::Ptr mesh_material_;
-  std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures_;
+  std::shared_ptr<MeshMaterial> mesh_material_;
+  std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures_;
 
   friend class boost::serialization::access;
   template <class Archive>

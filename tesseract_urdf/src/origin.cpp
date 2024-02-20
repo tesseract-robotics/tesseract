@@ -47,7 +47,7 @@ Eigen::Isometry3d tesseract_urdf::parseOrigin(const tinyxml2::XMLElement* xml_el
                                               "for origin element!"));
 
   std::string xyz_string, rpy_string, wxyz_string;
-  tinyxml2::XMLError status = tesseract_common::QueryStringAttribute(xml_element, "xyz", xyz_string);
+  int status = tesseract_common::QueryStringAttribute(xml_element, "xyz", xyz_string);
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Origin: Failed to parse attribute 'xyz'!"));
 

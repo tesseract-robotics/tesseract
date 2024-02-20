@@ -27,13 +27,16 @@
 #include <tesseract_kinematics/opw/opw_factory.h>
 #include <tesseract_kinematics/opw/opw_inv_kin.h>
 
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/scene_state.h>
+
 namespace tesseract_kinematics
 {
-InverseKinematics::UPtr OPWInvKinFactory::create(const std::string& solver_name,
-                                                 const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                 const tesseract_scene_graph::SceneState& /*scene_state*/,
-                                                 const KinematicsPluginFactory& /*plugin_factory*/,
-                                                 const YAML::Node& config) const
+std::unique_ptr<InverseKinematics> OPWInvKinFactory::create(const std::string& solver_name,
+                                                            const tesseract_scene_graph::SceneGraph& scene_graph,
+                                                            const tesseract_scene_graph::SceneState& /*scene_state*/,
+                                                            const KinematicsPluginFactory& /*plugin_factory*/,
+                                                            const YAML::Node& config) const
 {
   std::string base_link;
   std::string tip_link;

@@ -34,6 +34,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
+Box::Box(double x, double y, double z) : Geometry(GeometryType::BOX), x_(x), y_(y), z_(z) {}
+
+double Box::getX() const { return x_; }
+double Box::getY() const { return y_; }
+double Box::getZ() const { return z_; }
+
+Geometry::Ptr Box::clone() const { return std::make_shared<Box>(x_, y_, z_); }
+
 bool Box::operator==(const Box& rhs) const
 {
   bool equal = true;

@@ -25,275 +25,68 @@
  */
 
 #include <tesseract_environment/environment.h>
-#include <tesseract_environment/utils.h>
-#include <tesseract_collision/core/common.h>
-#include <tesseract_srdf/utils.h>
-#include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
-#include <tesseract_kinematics/core/validate.h>
-
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/unique_ptr.hpp>
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/vector.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_environment/utils.h>
+#include <tesseract_environment/events.h>
+#include <tesseract_environment/command.h>
+#include <tesseract_environment/commands.h>
+
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/joint.h>
+#include <tesseract_scene_graph/scene_state.h>
+
+#include <tesseract_urdf/urdf_parser.h>
+
+#include <tesseract_srdf/srdf_model.h>
+#include <tesseract_srdf/kinematics_information.h>
+#include <tesseract_srdf/utils.h>
+
+#include <tesseract_kinematics/core/joint_group.h>
+#include <tesseract_kinematics/core/kinematic_group.h>
+#include <tesseract_kinematics/core/kinematics_plugin_factory.h>
+#include <tesseract_kinematics/core/inverse_kinematics.h>
+#include <tesseract_kinematics/core/validate.h>
+
+#include <tesseract_collision/core/common.h>
+#include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
+
+#include <tesseract_common/manipulator_info.h>
+#include <tesseract_common/resource_locator.h>
+
+#include <tesseract_state_solver/mutable_state_solver.h>
+#include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
+
+#include <tesseract_collision/core/contact_managers_plugin_factory.h>
+#include <tesseract_common/collision_margin_data.h>
+
+#include <utility>
+
 namespace tesseract_environment
 {
-bool Environment::initHelper(const Commands& commands)
+void getCollisionObject(std::vector<std::shared_ptr<const tesseract_geometry::Geometry>>& shapes,
+                        tesseract_common::VectorIsometry3d& shape_poses,
+                        const tesseract_scene_graph::Link& link)
 {
-  if (commands.empty())
-    return false;
-
-  if (commands.at(0)->getType() != CommandType::ADD_SCENE_GRAPH)
+  for (const auto& c : link.collision)
   {
-    CONSOLE_BRIDGE_logError("When initializing environment from command history the first command must be type "
-                            "ADD_SCENE_GRAPH!");
-    return false;
-  }
-
-  clear();
-
-  scene_graph_ = std::make_shared<tesseract_scene_graph::SceneGraph>(
-      std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0))->getSceneGraph()->getName());
-
-  is_contact_allowed_fn_ = [this](const std::string& l1, const std::string& l2) {
-    return scene_graph_->isCollisionAllowed(l1, l2);
-  };
-
-  if (!applyCommandsHelper(commands))
-  {
-    CONSOLE_BRIDGE_logError("When initializing environment from command history, it failed to apply a command!");
-    return false;
-  }
-
-  initialized_ = true;
-  init_revision_ = revision_;
-
-  environmentChanged();
-
-  return initialized_;
-}
-
-bool Environment::init(const Commands& commands)
-{
-  bool success{ false };
-  {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    success = initHelper(commands);
-  }
-
-  // Call the event callbacks
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  triggerEnvironmentChangedCallbacks();
-  triggerCurrentStateChangedCallbacks();
-
-  return success;
-}
-
-bool Environment::init(const tesseract_scene_graph::SceneGraph& scene_graph,
-                       const tesseract_srdf::SRDFModel::ConstPtr& srdf_model)
-{
-  Commands commands = getInitCommands(scene_graph, srdf_model);
-  return init(commands);
-}
-
-bool Environment::init(const std::string& urdf_string, const tesseract_common::ResourceLocator::ConstPtr& locator)
-{
-  {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    resource_locator_ = locator;
-  }
-
-  // Parse urdf string into Scene Graph
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph;
-  try
-  {
-    scene_graph = tesseract_urdf::parseURDFString(urdf_string, *resource_locator_);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-    tesseract_common::printNestedException(e);
-    return false;
-  }
-
-  Commands commands = getInitCommands(*scene_graph);
-  return init(commands);
-}
-
-bool Environment::init(const std::string& urdf_string,
-                       const std::string& srdf_string,
-                       const tesseract_common::ResourceLocator::ConstPtr& locator)
-{
-  {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    resource_locator_ = locator;
-  }
-
-  // Parse urdf string into Scene Graph
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph;
-  try
-  {
-    scene_graph = tesseract_urdf::parseURDFString(urdf_string, *resource_locator_);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-    tesseract_common::printNestedException(e);
-    return false;
-  }
-
-  // Parse srdf string into SRDF Model
-  auto srdf = std::make_shared<tesseract_srdf::SRDFModel>();
-  try
-  {
-    srdf->initString(*scene_graph, srdf_string, *resource_locator_);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
-    tesseract_common::printNestedException(e);
-    return false;
-  }
-
-  Commands commands = getInitCommands(*scene_graph, srdf);
-  return init(commands);
-}
-
-bool Environment::init(const tesseract_common::fs::path& urdf_path,
-                       const tesseract_common::ResourceLocator::ConstPtr& locator)
-{
-  {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    resource_locator_ = locator;
-  }
-
-  // Parse urdf file into Scene Graph
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph;
-  try
-  {
-    scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), *resource_locator_);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-    tesseract_common::printNestedException(e);
-    return false;
-  }
-
-  Commands commands = getInitCommands(*scene_graph);
-  return init(commands);
-}
-
-bool Environment::init(const tesseract_common::fs::path& urdf_path,
-                       const tesseract_common::fs::path& srdf_path,
-                       const tesseract_common::ResourceLocator::ConstPtr& locator)
-{
-  {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    resource_locator_ = locator;
-  }
-
-  // Parse urdf file into Scene Graph
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph;
-  try
-  {
-    scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), *resource_locator_);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-    tesseract_common::printNestedException(e);
-    return false;
-  }
-
-  // Parse srdf file into SRDF Model
-  auto srdf = std::make_shared<tesseract_srdf::SRDFModel>();
-  try
-  {
-    srdf->initFile(*scene_graph, srdf_path.string(), *resource_locator_);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
-    tesseract_common::printNestedException(e);
-    return false;
-  }
-
-  Commands commands = getInitCommands(*scene_graph, srdf);
-  return init(commands);  // NOLINT
-}
-
-bool Environment::reset()
-{
-  bool success{ false };
-  {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-
-    Commands init_command;
-    if (commands_.empty() || !initialized_)
-      return false;
-
-    init_command.reserve(static_cast<std::size_t>(init_revision_));
-    for (std::size_t i = 0; i < static_cast<std::size_t>(init_revision_); ++i)
-      init_command.push_back(commands_[i]);
-
-    success = initHelper(init_command);
-  }
-
-  // Call the event callbacks
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  triggerCurrentStateChangedCallbacks();
-  triggerEnvironmentChangedCallbacks();
-
-  return success;
-}
-
-void Environment::clear()
-{
-  initialized_ = false;
-  revision_ = 0;
-  init_revision_ = 0;
-  scene_graph_ = nullptr;
-  state_solver_ = nullptr;
-  current_state_ = tesseract_scene_graph::SceneState();
-  commands_.clear();
-  kinematics_information_.clear();
-  kinematics_factory_ = tesseract_kinematics::KinematicsPluginFactory();
-  is_contact_allowed_fn_ = nullptr;
-  collision_margin_data_ = tesseract_collision::CollisionMarginData();
-  contact_managers_plugin_info_.clear();
-  contact_managers_factory_ = tesseract_collision::ContactManagersPluginFactory();
-
-  {
-    std::unique_lock<std::shared_mutex> lock(discrete_manager_mutex_);
-    discrete_manager_ = nullptr;
-  }
-
-  {
-    std::unique_lock<std::shared_mutex> lock(continuous_manager_mutex_);
-    continuous_manager_ = nullptr;
-  }
-
-  {
-    std::unique_lock<std::shared_mutex> lock(group_joint_names_cache_mutex_);
-    group_joint_names_cache_.clear();
-  }
-
-  {
-    std::unique_lock<std::shared_mutex> lock(joint_group_cache_mutex_);
-    joint_group_cache_.clear();
-  }
-
-  {
-    std::unique_lock<std::shared_mutex> lock(kinematic_group_cache_mutex_);
-    kinematic_group_cache_.clear();
+    shapes.push_back(c->geometry);
+    shape_poses.push_back(c->origin);
   }
 }
 
-Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                      const tesseract_srdf::SRDFModel::ConstPtr& srdf_model)
+std::vector<std::shared_ptr<const Command>>
+getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
+                const std::shared_ptr<const tesseract_srdf::SRDFModel>& srdf_model = nullptr)
 {
   Commands commands;
 
@@ -333,420 +126,463 @@ Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& s
   return commands;
 }
 
-bool Environment::isInitialized() const
+struct Environment::Implementation
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return initialized_;
-}
+  ~Implementation() = default;
 
-int Environment::getRevision() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return revision_;
-}
+  /**
+   * @brief Identifies if the object has been initialized
+   * @note This is intentionally not serialized it will auto updated
+   */
+  bool initialized{ false };
 
-Commands Environment::getCommandHistory() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return commands_;
-}
+  /**
+   * @brief This increments when the scene graph is modified
+   * @note This is intentionally not serialized it will auto updated
+   */
+  int revision{ 0 };
 
-bool Environment::applyCommands(const Commands& commands)
-{
-  bool success{ false };
+  /** @brief This is the revision number after initialization used when reset is called */
+  int init_revision{ 0 };
+
+  /** @brief The history of commands applied to the environment after initialization */
+  std::vector<std::shared_ptr<const Command>> commands{};
+
+  /**
+   * @brief Tesseract Scene Graph
+   * @note This is intentionally not serialized it will auto updated
+   */
+  std::shared_ptr<tesseract_scene_graph::SceneGraph> scene_graph{ nullptr };
+
+  /** @brief Current state of the environment */
+  tesseract_scene_graph::SceneState current_state;
+
+  /** @brief Environment timestamp */
+  std::chrono::system_clock::time_point timestamp{ std::chrono::system_clock::now() };
+
+  /** @brief Current state timestamp */
+  std::chrono::system_clock::time_point current_state_timestamp{ std::chrono::system_clock::now() };
+
+  /**
+   * @brief Tesseract State Solver
+   * @note This is intentionally not serialized it will auto updated
+   */
+  std::unique_ptr<tesseract_scene_graph::MutableStateSolver> state_solver{ nullptr };
+
+  /**
+   * @brief The function used to determine if two objects are allowed in collision
+   * @todo This needs to be switched to class so it may be serialized
+   */
+  std::function<bool(const std::string&, const std::string&)> is_contact_allowed_fn;
+
+  /**
+   * @brief A vector of user defined callbacks for locating tool center point
+   * @todo This needs to be switched to class so it may be serialized
+   */
+  std::vector<FindTCPOffsetCallbackFn> find_tcp_cb{};
+
+  /**
+   * @brief A map of user defined event callback functions
+   * @details This should not be cloned or serialized
+   */
+  std::map<std::size_t, EventCallbackFn> event_cb{};
+
+  /** @brief Used when initialized by URDF_STRING, URDF_STRING_SRDF_STRING, URDF_PATH, and URDF_PATH_SRDF_PATH */
+  std::shared_ptr<const tesseract_common::ResourceLocator> resource_locator{ nullptr };
+
+  /**
+   * @brief The collision margin data
+   * @note This is intentionally not serialized it will auto updated
+   */
+  tesseract_common::CollisionMarginData collision_margin_data;
+
+  /**
+   * @brief The kinematics information
+   * @note This is intentionally not serialized it will auto updated
+   */
+  tesseract_srdf::KinematicsInformation kinematics_information;
+
+  /**
+   * @brief The kinematics factory
+   * @note This is intentionally not serialized it will auto updated
+   */
+  tesseract_kinematics::KinematicsPluginFactory kinematics_factory;
+
+  /**
+   * @brief The contact manager information
+   * @note This is intentionally not serialized it will auto updated
+   */
+  tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info;
+
+  /**
+   * @brief The contact managers factory
+   * @note This is intentionally not serialized it will auto updated
+   */
+  tesseract_collision::ContactManagersPluginFactory contact_managers_factory;
+
+  /**
+   * @brief The discrete contact manager object
+   * @note This is intentionally not serialized it will auto updated
+   */
+  mutable std::unique_ptr<tesseract_collision::DiscreteContactManager> discrete_manager{ nullptr };
+  mutable std::shared_mutex discrete_manager_mutex;
+
+  /**
+   * @brief The continuous contact manager object
+   * @note This is intentionally not serialized it will auto updated
+   */
+  mutable std::unique_ptr<tesseract_collision::ContinuousContactManager> continuous_manager{ nullptr };
+  mutable std::shared_mutex continuous_manager_mutex;
+
+  /**
+   * @brief A cache of group joint names to provide faster access
+   * @details This will cleared when environment changes
+   * @note This is intentionally not serialized it will auto updated
+   */
+  mutable std::unordered_map<std::string, std::vector<std::string>> group_joint_names_cache{};
+  mutable std::shared_mutex group_joint_names_cache_mutex;
+
+  /**
+   * @brief A cache of joint groups to provide faster access
+   * @details This will cleared when environment changes
+   * @note This is intentionally not serialized it will auto updated
+   */
+  mutable std::unordered_map<std::string, std::unique_ptr<tesseract_kinematics::JointGroup>> joint_group_cache{};
+  mutable std::shared_mutex joint_group_cache_mutex;
+
+  /**
+   * @brief A cache of kinematic groups to provide faster access
+   * @details This will cleared when environment changes
+   * @note This is intentionally not serialized it will auto updated
+   */
+  mutable std::map<std::pair<std::string, std::string>, std::unique_ptr<tesseract_kinematics::KinematicGroup>>
+      kinematic_group_cache{};
+  mutable std::shared_mutex kinematic_group_cache_mutex;
+
+  bool operator==(const Implementation& rhs) const;
+
+  bool initHelper(const std::vector<std::shared_ptr<const Command>>& commands);
+
+  void setState(const std::unordered_map<std::string, double>& joints);
+
+  void setState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values);
+
+  Eigen::VectorXd getCurrentJointValues() const;
+
+  Eigen::VectorXd getCurrentJointValues(const std::vector<std::string>& joint_names) const;
+
+  std::vector<std::string> getStaticLinkNames(const std::vector<std::string>& joint_names) const;
+
+  void clear();
+
+  bool reset();
+
+  /** This will update the contact managers transforms */
+  void currentStateChanged();
+
+  /** This will notify the state solver that the environment has changed */
+  void environmentChanged();
+
+  /** @brief @brief Passes a current state changed event to the callbacks */
+  void triggerCurrentStateChangedCallbacks();
+
+  /** @brief Passes a environment changed event to the callbacks */
+  void triggerEnvironmentChangedCallbacks();
+
+  /** @brief Trigger both Current State and Environment changed callback */
+  void triggerCallbacks();
+
+  std::vector<std::string> getGroupJointNames(const std::string& group_name) const;
+
+  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
+
+  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& name,
+                                                                  const std::vector<std::string>& joint_names) const;
+
+  std::unique_ptr<tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
+                                                                          std::string ik_solver_name) const;
+
+  Eigen::Isometry3d findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const;
+
+  std::unique_ptr<tesseract_collision::DiscreteContactManager> getDiscreteContactManager() const;
+
+  std::unique_ptr<tesseract_collision::ContinuousContactManager> getContinuousContactManager() const;
+
+  void clearCachedDiscreteContactManager() const;
+
+  void clearCachedContinuousContactManager() const;
+
+  bool setActiveDiscreteContactManagerHelper(const std::string& name);
+
+  bool setActiveContinuousContactManagerHelper(const std::string& name);
+
+  std::unique_ptr<tesseract_collision::DiscreteContactManager>
+  getDiscreteContactManagerHelper(const std::string& name) const;
+
+  std::unique_ptr<tesseract_collision::ContinuousContactManager>
+  getContinuousContactManagerHelper(const std::string& name) const;
+
+  bool setActiveDiscreteContactManager(const std::string& name);
+
+  std::unique_ptr<tesseract_collision::DiscreteContactManager> getDiscreteContactManager(const std::string& name) const;
+
+  bool setActiveContinuousContactManager(const std::string& name);
+
+  std::unique_ptr<tesseract_collision::ContinuousContactManager>
+  getContinuousContactManager(const std::string& name) const;
+
+  bool removeLinkHelper(const std::string& name);
+
+  /** @brief Apply Command Helper which does not lock */
+  bool applyCommandsHelper(const std::vector<std::shared_ptr<const Command>>& commands);
+
+  // Command Helper function
+  bool applyAddCommand(const std::shared_ptr<const AddLinkCommand>& cmd);
+  bool applyMoveLinkCommand(const std::shared_ptr<const MoveLinkCommand>& cmd);
+  bool applyMoveJointCommand(const std::shared_ptr<const MoveJointCommand>& cmd);
+  bool applyRemoveLinkCommand(const std::shared_ptr<const RemoveLinkCommand>& cmd);
+  bool applyRemoveJointCommand(const std::shared_ptr<const RemoveJointCommand>& cmd);
+  bool applyReplaceJointCommand(const std::shared_ptr<const ReplaceJointCommand>& cmd);
+  bool applyChangeLinkOriginCommand(const std::shared_ptr<const ChangeLinkOriginCommand>& cmd);
+  bool applyChangeJointOriginCommand(const std::shared_ptr<const ChangeJointOriginCommand>& cmd);
+  bool applyChangeLinkCollisionEnabledCommand(const std::shared_ptr<const ChangeLinkCollisionEnabledCommand>& cmd);
+  bool applyChangeLinkVisibilityCommand(const std::shared_ptr<const ChangeLinkVisibilityCommand>& cmd);
+  bool applyModifyAllowedCollisionsCommand(const std::shared_ptr<const ModifyAllowedCollisionsCommand>& cmd);
+  bool applyRemoveAllowedCollisionLinkCommand(const std::shared_ptr<const RemoveAllowedCollisionLinkCommand>& cmd);
+  bool applyAddSceneGraphCommand(std::shared_ptr<const AddSceneGraphCommand> cmd);
+  bool applyChangeJointPositionLimitsCommand(const std::shared_ptr<const ChangeJointPositionLimitsCommand>& cmd);
+  bool applyChangeJointVelocityLimitsCommand(const std::shared_ptr<const ChangeJointVelocityLimitsCommand>& cmd);
+  bool
+  applyChangeJointAccelerationLimitsCommand(const std::shared_ptr<const ChangeJointAccelerationLimitsCommand>& cmd);
+  bool applyAddKinematicsInformationCommand(const std::shared_ptr<const AddKinematicsInformationCommand>& cmd);
+  bool applyChangeCollisionMarginsCommand(const std::shared_ptr<const ChangeCollisionMarginsCommand>& cmd);
+  bool applyAddContactManagersPluginInfoCommand(const std::shared_ptr<const AddContactManagersPluginInfoCommand>& cmd);
+  bool applySetActiveContinuousContactManagerCommand(
+      const std::shared_ptr<const SetActiveContinuousContactManagerCommand>& cmd);
+  bool
+  applySetActiveDiscreteContactManagerCommand(const std::shared_ptr<const SetActiveDiscreteContactManagerCommand>& cmd);
+  bool applyAddTrajectoryLinkCommand(const std::shared_ptr<const AddTrajectoryLinkCommand>& cmd);
+
+  bool applyAddLinkCommandHelper(const std::shared_ptr<const tesseract_scene_graph::Link>& link,
+                                 const std::shared_ptr<const tesseract_scene_graph::Joint>& joint,
+                                 bool replace_allowed);
+
+  std::unique_ptr<Implementation> clone() const;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void save(Archive& ar, const unsigned int /*version*/) const  // NOLINT
   {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    success = applyCommandsHelper(commands);
-  }
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  triggerEnvironmentChangedCallbacks();
-  triggerCurrentStateChangedCallbacks();
-
-  return success;
-}
-
-bool Environment::applyCommand(Command::ConstPtr command) { return applyCommands({ std::move(command) }); }
-
-tesseract_scene_graph::SceneGraph::ConstPtr Environment::getSceneGraph() const { return scene_graph_; }
-
-std::vector<std::string> Environment::getGroupJointNames(const std::string& group_name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  auto it =
-      std::find(kinematics_information_.group_names.begin(), kinematics_information_.group_names.end(), group_name);
-
-  if (it == kinematics_information_.group_names.end())
-    throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
-
-  std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex_);
-  auto cache_it = group_joint_names_cache_.find(group_name);
-  if (cache_it != group_joint_names_cache_.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache hit!", group_name.c_str());
-    return cache_it->second;
-  }
-
-  CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache miss!", group_name.c_str());
-  auto chain_it = kinematics_information_.chain_groups.find(group_name);
-  if (chain_it != kinematics_information_.chain_groups.end())
-  {
-    if (chain_it->second.size() > 1)
-      throw std::runtime_error("Environment, Groups with multiple chains is not supported!");
-
-    tesseract_scene_graph::ShortestPath path =
-        scene_graph_->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
-
-    group_joint_names_cache_[group_name] = path.active_joints;
-    return path.active_joints;
-  }
-
-  auto joint_it = kinematics_information_.joint_groups.find(group_name);
-  if (joint_it != kinematics_information_.joint_groups.end())
-  {
-    group_joint_names_cache_[group_name] = joint_it->second;
-    return joint_it->second;
-  }
-
-  auto link_it = kinematics_information_.link_groups.find(group_name);
-  if (link_it != kinematics_information_.link_groups.end())
-    throw std::runtime_error("Environment, Link groups are currently not supported!");
-
-  throw std::runtime_error("Environment, failed to get group '" + group_name + "' joint names!");
-}
-
-tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& group_name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-
-  std::unique_lock<std::shared_mutex> cache_lock(joint_group_cache_mutex_);
-  auto it = joint_group_cache_.find(group_name);
-  if (it != joint_group_cache_.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache hit!", group_name.c_str());
-    return std::make_unique<tesseract_kinematics::JointGroup>(*it->second);
-  }
-
-  CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache miss!", group_name.c_str());
-  // Store copy in cache and return
-  std::vector<std::string> joint_names = getGroupJointNames(group_name);
-  tesseract_kinematics::JointGroup::UPtr jg = getJointGroup(group_name, joint_names);
-  joint_group_cache_[group_name] = std::make_unique<tesseract_kinematics::JointGroup>(*jg);
-
-  return jg;
-}
-
-tesseract_kinematics::JointGroup::UPtr Environment::getJointGroup(const std::string& name,
-                                                                  const std::vector<std::string>& joint_names) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph_, current_state_);
-}
-
-tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const std::string& group_name,
-                                                                          std::string ik_solver_name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-
-  std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex_);
-  std::pair<std::string, std::string> key = std::make_pair(group_name, ik_solver_name);
-  auto it = kinematic_group_cache_.find(key);
-  if (it != kinematic_group_cache_.end())
-  {
-    CONSOLE_BRIDGE_logDebug(
-        "Environment, getKinematicGroup(%s, %s) cache hit!", group_name.c_str(), ik_solver_name.c_str());
-    return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
-  }
-
-  CONSOLE_BRIDGE_logDebug(
-      "Environment, getKinematicGroup(%s, %s) cache miss!", group_name.c_str(), ik_solver_name.c_str());
-  std::vector<std::string> joint_names = getGroupJointNames(group_name);
-
-  if (ik_solver_name.empty())
-    ik_solver_name = kinematics_factory_.getDefaultInvKinPlugin(group_name);
-
-  tesseract_kinematics::InverseKinematics::UPtr inv_kin =
-      kinematics_factory_.createInvKin(group_name, ik_solver_name, *scene_graph_, current_state_);
-
-  // TODO add error message
-  if (inv_kin == nullptr)
-    return nullptr;
-
-  // Store copy in cache and return
-  auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
-      group_name, joint_names, std::move(inv_kin), *scene_graph_, current_state_);
-
-  kinematic_group_cache_[key] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
-
-#ifndef NDEBUG
-  if (!tesseract_kinematics::checkKinematics(*kg))
-  {
-    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that inverse kinematics solution for a pose do not "
-                            "match forward kinematics solution. Did you change the URDF recently?");
-  }
-#endif
-
-  return kg;
-}
-
-// NOLINTNEXTLINE
-Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-
-  // If it is already an Isometry3d return the offset
-  if (manip_info.tcp_offset.index() != 0)
-    return std::get<1>(manip_info.tcp_offset);
-
-  // Check if the tcp offset name is a link in the scene, if so throw an exception
-  const std::string& tcp_offset_name = std::get<0>(manip_info.tcp_offset);
-  if (state_solver_->hasLinkName(tcp_offset_name))
-    throw std::runtime_error("The tcp offset name '" + tcp_offset_name +
-                             "' should not be an existing link in the scene. Assign it as the tcp_frame instead!");
-
-  // Check Manipulator Manager for TCP
-  if (kinematics_information_.hasGroupTCP(manip_info.manipulator, tcp_offset_name))
-    return kinematics_information_.group_tcps.at(manip_info.manipulator).at(tcp_offset_name);
-
-  // Check callbacks for TCP Offset
-  for (const auto& fn : find_tcp_cb_)
-  {
-    try
-    {
-      Eigen::Isometry3d tcp = fn(manip_info);
-      return tcp;
-    }
-    catch (...)
-    {
-      CONSOLE_BRIDGE_logDebug("User Defined Find TCP Callback Failed!");
-    }
-  }
-
-  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "'!");
-}
-
-void Environment::addFindTCPOffsetCallback(const FindTCPOffsetCallbackFn& fn)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  find_tcp_cb_.push_back(fn);
-}
-
-std::vector<FindTCPOffsetCallbackFn> Environment::getFindTCPOffsetCallbacks() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return find_tcp_cb_;
-}
-
-void Environment::addEventCallback(std::size_t hash, const EventCallbackFn& fn)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  event_cb_[hash] = fn;
-}
-
-void Environment::removeEventCallback(std::size_t hash)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  event_cb_.erase(hash);
-}
-
-void Environment::clearEventCallbacks()
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  event_cb_.clear();
-}
-
-std::map<std::size_t, EventCallbackFn> Environment::getEventCallbacks() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return event_cb_;
-}
-
-void Environment::setResourceLocator(tesseract_common::ResourceLocator::ConstPtr locator)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  resource_locator_ = std::move(locator);
-}
-
-tesseract_common::ResourceLocator::ConstPtr Environment::getResourceLocator() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return resource_locator_;
-}
-
-void Environment::setName(const std::string& name)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  scene_graph_->setName(name);
-}
-
-const std::string& Environment::getName() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return scene_graph_->getName();
-}
-
-void Environment::setState(const std::unordered_map<std::string, double>& joints)
-{
-  {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    state_solver_->setState(joints);
-    currentStateChanged();
-  }
-
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  triggerCurrentStateChangedCallbacks();
-}
-
-void Environment::setState(const std::vector<std::string>& joint_names,
-                           const Eigen::Ref<const Eigen::VectorXd>& joint_values)
-{
-  {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    state_solver_->setState(joint_names, joint_values);
-    currentStateChanged();
+    ar& BOOST_SERIALIZATION_NVP(resource_locator);
+    ar& BOOST_SERIALIZATION_NVP(commands);
+    ar& BOOST_SERIALIZATION_NVP(init_revision);
+    ar& BOOST_SERIALIZATION_NVP(current_state);
+    ar& boost::serialization::make_nvp("timestamp",
+                                       boost::serialization::make_binary_object(&timestamp, sizeof(timestamp)));
+    ar& boost::serialization::make_nvp(
+        "current_state_timestamp",
+        boost::serialization::make_binary_object(&current_state_timestamp, sizeof(current_state_timestamp)));
   }
 
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  triggerCurrentStateChangedCallbacks();
+  template <class Archive>
+  void load(Archive& ar, const unsigned int /*version*/)  // NOLINT
+  {
+    ar& BOOST_SERIALIZATION_NVP(resource_locator);
+
+    tesseract_environment::Commands commands;
+    ar& boost::serialization::make_nvp("commands", commands);
+    initHelper(commands);
+
+    ar& BOOST_SERIALIZATION_NVP(init_revision);
+
+    tesseract_scene_graph::SceneState current_state;
+    ar& boost::serialization::make_nvp("current_state", current_state);
+    setState(current_state.joints);
+
+    ar& boost::serialization::make_nvp("timestamp",
+                                       boost::serialization::make_binary_object(&timestamp, sizeof(timestamp)));
+    ar& boost::serialization::make_nvp(
+        "current_state_timestamp",
+        boost::serialization::make_binary_object(&current_state_timestamp, sizeof(current_state_timestamp)));
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version)  // NOLINT
+  {
+    boost::serialization::split_member(ar, *this, version);
+  }
+};
+
+bool Environment::Implementation::operator==(const Environment::Implementation& rhs) const
+{
+  // No need to check everything mainly the items serialized
+  bool equal = true;
+  equal &= initialized == rhs.initialized;
+  equal &= revision == rhs.revision;
+  equal &= init_revision == rhs.init_revision;
+  equal &= commands.size() == rhs.commands.size();
+  if (!equal)
+    return equal;
+
+  for (std::size_t i = 0; i < commands.size(); ++i)
+  {
+    equal &= *(commands[i]) == *(rhs.commands[i]);
+    if (!equal)
+      return equal;
+  }
+
+  equal &= current_state == rhs.current_state;
+  equal &= timestamp == rhs.timestamp;
+  equal &= current_state_timestamp == rhs.current_state_timestamp;
+
+  /** @todo uncomment after serialized */
+  //  equal &= is_contact_allowed_fn == rhs.is_contact_allowed_fn;
+  //  equal &= find_tcp_cb == rhs.find_tcp_cb;
+
+  return equal;
 }
 
-tesseract_scene_graph::SceneState Environment::getState(const std::unordered_map<std::string, double>& joints) const
+std::unique_ptr<Environment::Implementation> Environment::Implementation::clone() const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getState(joints);
+  auto cloned_env = std::make_unique<Implementation>();
+
+  std::shared_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex);
+  std::shared_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex);
+  std::shared_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex);
+  std::shared_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+  std::shared_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+
+  if (!initialized)
+    return cloned_env;
+
+  cloned_env->initialized = initialized;
+  cloned_env->init_revision = revision;
+  cloned_env->revision = revision;
+  cloned_env->commands = commands;
+  cloned_env->scene_graph = scene_graph->clone();
+  cloned_env->timestamp = timestamp;
+  cloned_env->current_state = current_state;
+  cloned_env->current_state_timestamp = current_state_timestamp;
+
+  // There is not dynamic pointer cast for std::unique_ptr
+  auto cloned_solver = state_solver->clone();
+  auto* p = dynamic_cast<tesseract_scene_graph::MutableStateSolver*>(cloned_solver.get());
+  if (p != nullptr)
+    (void)cloned_solver.release();
+
+  cloned_env->state_solver = std::unique_ptr<tesseract_scene_graph::MutableStateSolver>(p);
+  cloned_env->kinematics_information = kinematics_information;
+  cloned_env->kinematics_factory = kinematics_factory;
+  cloned_env->find_tcp_cb = find_tcp_cb;
+  cloned_env->collision_margin_data = collision_margin_data;
+
+  // Copy cache
+  cloned_env->joint_group_cache.reserve(joint_group_cache.size());
+  for (const auto& c : joint_group_cache)
+    cloned_env->joint_group_cache[c.first] = (std::make_unique<tesseract_kinematics::JointGroup>(*c.second));
+
+  for (const auto& c : kinematic_group_cache)
+    cloned_env->kinematic_group_cache[c.first] = (std::make_unique<tesseract_kinematics::KinematicGroup>(*c.second));
+
+  cloned_env->group_joint_names_cache = group_joint_names_cache;
+
+  // NOLINTNEXTLINE
+  cloned_env->is_contact_allowed_fn = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
+                                                cloned_env->scene_graph,
+                                                std::placeholders::_1,
+                                                std::placeholders::_2);
+
+  if (discrete_manager)
+  {
+    cloned_env->discrete_manager = discrete_manager->clone();
+    cloned_env->discrete_manager->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn);
+  }
+  if (continuous_manager)
+  {
+    cloned_env->continuous_manager = continuous_manager->clone();
+    cloned_env->continuous_manager->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn);
+  }
+
+  cloned_env->contact_managers_plugin_info = contact_managers_plugin_info;
+  cloned_env->contact_managers_factory = contact_managers_factory;
+
+  return cloned_env;
 }
 
-tesseract_scene_graph::SceneState Environment::getState(const std::vector<std::string>& joint_names,
-                                                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+bool Environment::Implementation::initHelper(const std::vector<std::shared_ptr<const Command>>& commands)
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getState(joint_names, joint_values);
+  if (commands.empty())
+    return false;
+
+  if (commands.at(0)->getType() != CommandType::ADD_SCENE_GRAPH)
+  {
+    CONSOLE_BRIDGE_logError("When initializing environment from command history the first command must be type "
+                            "ADD_SCENE_GRAPH!");
+    return false;
+  }
+
+  clear();
+
+  scene_graph = std::make_shared<tesseract_scene_graph::SceneGraph>(
+      std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0))->getSceneGraph()->getName());
+
+  is_contact_allowed_fn = [this](const std::string& l1, const std::string& l2) {
+    return scene_graph->isCollisionAllowed(l1, l2);
+  };
+
+  if (!applyCommandsHelper(commands))
+  {
+    CONSOLE_BRIDGE_logError("When initializing environment from command history, it failed to apply a command!");
+    return false;
+  }
+
+  initialized = true;
+  init_revision = revision;
+
+  environmentChanged();
+
+  return initialized;
 }
 
-tesseract_scene_graph::SceneState Environment::getState() const
+void Environment::Implementation::setState(const std::unordered_map<std::string, double>& joints)
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return current_state_;
+  state_solver->setState(joints);
+  currentStateChanged();
 }
 
-std::chrono::system_clock::time_point Environment::getTimestamp() const
+void Environment::Implementation::setState(const std::vector<std::string>& joint_names,
+                                           const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return timestamp_;
+  state_solver->setState(joint_names, joint_values);
+  currentStateChanged();
 }
 
-std::chrono::system_clock::time_point Environment::getCurrentStateTimestamp() const
+Eigen::VectorXd Environment::Implementation::getCurrentJointValues() const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return current_state_timestamp_;
-}
-
-tesseract_scene_graph::Link::ConstPtr Environment::getLink(const std::string& name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  tesseract_scene_graph::Link::ConstPtr link = scene_graph_->getLink(name);
-  return link;
-}
-
-tesseract_scene_graph::JointLimits::ConstPtr Environment::getJointLimits(const std::string& joint_name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return scene_graph_->getJointLimits(joint_name);
-}
-
-bool Environment::getLinkCollisionEnabled(const std::string& name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return scene_graph_->getLinkCollisionEnabled(name);
-}
-
-bool Environment::getLinkVisibility(const std::string& name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return scene_graph_->getLinkVisibility(name);
-}
-
-tesseract_common::AllowedCollisionMatrix::ConstPtr Environment::getAllowedCollisionMatrix() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return scene_graph_->getAllowedCollisionMatrix();
-}
-
-std::vector<std::string> Environment::getJointNames() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getJointNames();
-}
-
-std::vector<std::string> Environment::getActiveJointNames() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getActiveJointNames();
-}
-
-tesseract_scene_graph::Joint::ConstPtr Environment::getJoint(const std::string& name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return scene_graph_->getJoint(name);
-}
-
-Eigen::VectorXd Environment::getCurrentJointValues() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
   Eigen::VectorXd jv;
-  std::vector<std::string> active_joint_names = state_solver_->getActiveJointNames();
+  std::vector<std::string> active_joint_names = state_solver->getActiveJointNames();
   jv.resize(static_cast<long int>(active_joint_names.size()));
   for (auto j = 0U; j < active_joint_names.size(); ++j)
-    jv(j) = current_state_.joints.at(active_joint_names[j]);
+    jv(j) = current_state.joints.at(active_joint_names[j]);
 
   return jv;
 }
 
-Eigen::VectorXd Environment::getCurrentJointValues(const std::vector<std::string>& joint_names) const
+Eigen::VectorXd Environment::Implementation::getCurrentJointValues(const std::vector<std::string>& joint_names) const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
   Eigen::VectorXd jv;
   jv.resize(static_cast<long int>(joint_names.size()));
   for (auto j = 0U; j < joint_names.size(); ++j)
-    jv(j) = current_state_.joints.at(joint_names[j]);
+    jv(j) = current_state.joints.at(joint_names[j]);
 
   return jv;
 }
 
-std::string Environment::getRootLinkName() const
+std::vector<std::string>
+Environment::Implementation::getStaticLinkNames(const std::vector<std::string>& joint_names) const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return scene_graph_->getRoot();
-}
-
-std::vector<std::string> Environment::getLinkNames() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getLinkNames();
-}
-
-std::vector<std::string> Environment::getActiveLinkNames() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getActiveLinkNames();
-}
-
-std::vector<std::string> Environment::getActiveLinkNames(const std::vector<std::string>& joint_names) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return scene_graph_->getJointChildrenNames(joint_names);
-}
-
-std::vector<std::string> Environment::getStaticLinkNames() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getStaticLinkNames();
-}
-
-std::vector<std::string> Environment::getStaticLinkNames(const std::vector<std::string>& joint_names) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<std::string> active_link_names = getActiveLinkNames(joint_names);
-  std::vector<std::string> full_link_names = state_solver_->getLinkNames();
+  std::vector<std::string> active_link_names = scene_graph->getJointChildrenNames(joint_names);
+  std::vector<std::string> full_link_names = state_solver->getLinkNames();
   std::vector<std::string> static_link_names;
   static_link_names.reserve(full_link_names.size());
 
@@ -762,216 +598,370 @@ std::vector<std::string> Environment::getStaticLinkNames(const std::vector<std::
   return static_link_names;
 }
 
-tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
+void Environment::Implementation::clear()
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getLinkTransforms();
-}
+  initialized = false;
+  revision = 0;
+  init_revision = 0;
+  scene_graph = nullptr;
+  state_solver = nullptr;
+  current_state = tesseract_scene_graph::SceneState();
+  commands.clear();
+  is_contact_allowed_fn = nullptr;
+  collision_margin_data = tesseract_collision::CollisionMarginData();
+  kinematics_information.clear();
+  contact_managers_plugin_info.clear();
+  kinematics_factory = tesseract_kinematics::KinematicsPluginFactory();
+  contact_managers_factory = tesseract_collision::ContactManagersPluginFactory();
 
-Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getLinkTransform(link_name);
-}
-
-Eigen::Isometry3d Environment::getRelativeLinkTransform(const std::string& from_link_name,
-                                                        const std::string& to_link_name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->getRelativeLinkTransform(from_link_name, to_link_name);
-}
-
-tesseract_scene_graph::StateSolver::UPtr Environment::getStateSolver() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return state_solver_->clone();
-}
-
-tesseract_srdf::KinematicsInformation Environment::getKinematicsInformation() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return kinematics_information_;
-}
-
-tesseract_srdf::GroupNames Environment::getGroupNames() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return kinematics_information_.group_names;
-}
-
-tesseract_common::ContactManagersPluginInfo Environment::getContactManagersPluginInfo() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return contact_managers_plugin_info_;
-}
-
-bool Environment::setActiveDiscreteContactManager(const std::string& name)
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-  return setActiveDiscreteContactManagerHelper(name);
-}
-
-tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContactManager(const std::string& name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  tesseract_collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
-  if (manager == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
-    return nullptr;
+    std::unique_lock<std::shared_mutex> lock(discrete_manager_mutex);
+    discrete_manager = nullptr;
   }
 
-  return manager;
+  {
+    std::unique_lock<std::shared_mutex> lock(continuous_manager_mutex);
+    continuous_manager = nullptr;
+  }
+
+  {
+    std::unique_lock<std::shared_mutex> lock(group_joint_names_cache_mutex);
+    group_joint_names_cache.clear();
+  }
+
+  {
+    std::unique_lock<std::shared_mutex> lock(joint_group_cache_mutex);
+    joint_group_cache.clear();
+  }
+
+  {
+    std::unique_lock<std::shared_mutex> lock(kinematic_group_cache_mutex);
+    kinematic_group_cache.clear();
+  }
 }
 
-bool Environment::setActiveContinuousContactManager(const std::string& name)
+bool Environment::Implementation::reset()
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  std::unique_lock<std::shared_mutex> continous_lock(continuous_manager_mutex_);
-  return setActiveContinuousContactManagerHelper(name);
+  Commands init_command;
+  if (commands.empty() || !initialized)
+    return false;
+
+  init_command.reserve(static_cast<std::size_t>(init_revision));
+  for (std::size_t i = 0; i < static_cast<std::size_t>(init_revision); ++i)
+    init_command.push_back(commands[i]);
+
+  return initHelper(init_command);
 }
 
-tesseract_collision::DiscreteContactManager::UPtr Environment::getDiscreteContactManager() const
+void Environment::Implementation::currentStateChanged()
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
+  timestamp = std::chrono::system_clock::now();
+  current_state_timestamp = timestamp;
+  current_state = state_solver->getState();
+
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+  if (discrete_manager != nullptr)
+    discrete_manager->setCollisionObjectsTransform(current_state.link_transforms);
+
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+  if (continuous_manager != nullptr)
+  {
+    std::vector<std::string> active_link_names = state_solver->getActiveLinkNames();
+    for (const auto& tf : current_state.link_transforms)
+    {
+      if (std::find(active_link_names.begin(), active_link_names.end(), tf.first) != active_link_names.end())
+        continuous_manager->setCollisionObjectsTransform(tf.first, tf.second, tf.second);
+      else
+        continuous_manager->setCollisionObjectsTransform(tf.first, tf.second);
+    }
+  }
+
+  {  // Clear JointGroup and KinematicGroup
+    std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex);
+    std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex);
+    joint_group_cache.clear();
+    kinematic_group_cache.clear();
+  }
+}
+
+void Environment::Implementation::environmentChanged()
+{
+  timestamp = std::chrono::system_clock::now();
+  std::vector<std::string> active_link_names = state_solver->getActiveLinkNames();
+
+  {
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+    if (discrete_manager != nullptr)
+      discrete_manager->setActiveCollisionObjects(active_link_names);
+  }
+
+  {
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+    if (continuous_manager != nullptr)
+      continuous_manager->setActiveCollisionObjects(active_link_names);
+  }
+
+  {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
+    std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex);
+    group_joint_names_cache.clear();
+  }
+
+  currentStateChanged();
+}
+
+void Environment::Implementation::triggerCurrentStateChangedCallbacks()
+{
+  if (!event_cb.empty())
+  {
+    SceneStateChangedEvent event(current_state);
+    for (const auto& cb : event_cb)
+      cb.second(event);
+  }
+}
+
+void Environment::Implementation::triggerEnvironmentChangedCallbacks()
+{
+  if (!event_cb.empty())
+  {
+    CommandAppliedEvent event(commands, revision);
+    for (const auto& cb : event_cb)
+      cb.second(event);
+  }
+}
+
+void Environment::Implementation::triggerCallbacks()
+{
+  triggerEnvironmentChangedCallbacks();
+  triggerCurrentStateChangedCallbacks();
+}
+
+std::vector<std::string> Environment::Implementation::getGroupJointNames(const std::string& group_name) const
+{
+  auto it = std::find(kinematics_information.group_names.begin(), kinematics_information.group_names.end(), group_name);
+
+  if (it == kinematics_information.group_names.end())
+    throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
+
+  std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex);
+  auto cache_it = group_joint_names_cache.find(group_name);
+  if (cache_it != group_joint_names_cache.end())
+  {
+    CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache hit!", group_name.c_str());
+    return cache_it->second;
+  }
+
+  CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache miss!", group_name.c_str());
+  auto chain_it = kinematics_information.chain_groups.find(group_name);
+  if (chain_it != kinematics_information.chain_groups.end())
+  {
+    if (chain_it->second.size() > 1)
+      throw std::runtime_error("Environment, Groups with multiple chains is not supported!");
+
+    tesseract_scene_graph::ShortestPath path =
+        scene_graph->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
+
+    group_joint_names_cache[group_name] = path.active_joints;
+    return path.active_joints;
+  }
+
+  auto joint_it = kinematics_information.joint_groups.find(group_name);
+  if (joint_it != kinematics_information.joint_groups.end())
+  {
+    group_joint_names_cache[group_name] = joint_it->second;
+    return joint_it->second;
+  }
+
+  auto link_it = kinematics_information.link_groups.find(group_name);
+  if (link_it != kinematics_information.link_groups.end())
+    throw std::runtime_error("Environment, Link groups are currently not supported!");
+
+  throw std::runtime_error("Environment, failed to get group '" + group_name + "' joint names!");
+}
+
+std::unique_ptr<tesseract_kinematics::JointGroup>
+Environment::Implementation::getJointGroup(const std::string& group_name) const
+{
+  std::unique_lock<std::shared_mutex> cache_lock(joint_group_cache_mutex);
+  auto it = joint_group_cache.find(group_name);
+  if (it != joint_group_cache.end())
+  {
+    CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache hit!", group_name.c_str());
+    return std::make_unique<tesseract_kinematics::JointGroup>(*it->second);
+  }
+
+  CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache miss!", group_name.c_str());
+  // Store copy in cache and return
+  std::vector<std::string> joint_names = getGroupJointNames(group_name);
+  tesseract_kinematics::JointGroup::UPtr jg = getJointGroup(group_name, joint_names);
+  joint_group_cache[group_name] = std::make_unique<tesseract_kinematics::JointGroup>(*jg);
+
+  return jg;
+}
+
+std::unique_ptr<tesseract_kinematics::JointGroup>
+Environment::Implementation::getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const
+{
+  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph, current_state);
+}
+
+std::unique_ptr<tesseract_kinematics::KinematicGroup>
+Environment::Implementation::getKinematicGroup(const std::string& group_name, std::string ik_solver_name) const
+{
+  std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex);
+  std::pair<std::string, std::string> key = std::make_pair(group_name, ik_solver_name);
+  auto it = kinematic_group_cache.find(key);
+  if (it != kinematic_group_cache.end())
+  {
+    CONSOLE_BRIDGE_logDebug(
+        "Environment, getKinematicGroup(%s, %s) cache hit!", group_name.c_str(), ik_solver_name.c_str());
+    return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
+  }
+
+  CONSOLE_BRIDGE_logDebug(
+      "Environment, getKinematicGroup(%s, %s) cache miss!", group_name.c_str(), ik_solver_name.c_str());
+  std::vector<std::string> joint_names = getGroupJointNames(group_name);
+
+  if (ik_solver_name.empty())
+    ik_solver_name = kinematics_factory.getDefaultInvKinPlugin(group_name);
+
+  tesseract_kinematics::InverseKinematics::UPtr inv_kin =
+      kinematics_factory.createInvKin(group_name, ik_solver_name, *scene_graph, current_state);
+
+  // TODO add error message
+  if (inv_kin == nullptr)
+    return nullptr;
+
+  // Store copy in cache and return
+  auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
+      group_name, joint_names, std::move(inv_kin), *scene_graph, current_state);
+
+  kinematic_group_cache[key] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+
+#ifndef NDEBUG
+  if (!tesseract_kinematics::checkKinematics(*kg))
+  {
+    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that inverse kinematics solution for a pose do not "
+                            "match forward kinematics solution. Did you change the URDF recently?");
+  }
+#endif
+
+  return kg;
+}
+
+Eigen::Isometry3d Environment::Implementation::findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const
+{
+  // If it is already an Isometry3d return the offset
+  if (manip_info.tcp_offset.index() != 0)
+    return std::get<1>(manip_info.tcp_offset);
+
+  // Check if the tcp offset name is a link in the scene, if so throw an exception
+  const std::string& tcp_offset_name = std::get<0>(manip_info.tcp_offset);
+  if (state_solver->hasLinkName(tcp_offset_name))
+    throw std::runtime_error("The tcp offset name '" + tcp_offset_name +
+                             "' should not be an existing link in the scene. Assign it as the tcp_frame instead!");
+
+  // Check Manipulator Manager for TCP
+  if (kinematics_information.hasGroupTCP(manip_info.manipulator, tcp_offset_name))
+    return kinematics_information.group_tcps.at(manip_info.manipulator).at(tcp_offset_name);
+
+  // Check callbacks for TCP Offset
+  for (const auto& fn : find_tcp_cb)
+  {
+    try
+    {
+      Eigen::Isometry3d tcp = fn(manip_info);
+      return tcp;
+    }
+    catch (...)
+    {
+      CONSOLE_BRIDGE_logDebug("User Defined Find TCP Callback Failed!");
+    }
+  }
+
+  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "'!");
+}
+
+std::unique_ptr<tesseract_collision::DiscreteContactManager>
+Environment::Implementation::getDiscreteContactManager() const
+{
   {  // Clone cached manager if exists
-    std::shared_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-    if (discrete_manager_)
-      return discrete_manager_->clone();
+    std::shared_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+    if (discrete_manager)
+      return discrete_manager->clone();
   }
 
   {  // Try to create the default plugin
-    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-    const std::string& name = contact_managers_plugin_info_.discrete_plugin_infos.default_plugin;
-    discrete_manager_ = getDiscreteContactManagerHelper(name);
-    if (discrete_manager_ == nullptr)
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+    const std::string& name = contact_managers_plugin_info.discrete_plugin_infos.default_plugin;
+    discrete_manager = getDiscreteContactManagerHelper(name);
+    if (discrete_manager == nullptr)
     {
       CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
       return nullptr;
     }
   }
 
-  return discrete_manager_->clone();
+  return discrete_manager->clone();
 }
 
-void Environment::clearCachedDiscreteContactManager() const
+std::unique_ptr<tesseract_collision::ContinuousContactManager>
+Environment::Implementation::getContinuousContactManager() const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-  discrete_manager_ = nullptr;
-}
-
-tesseract_collision::ContinuousContactManager::UPtr Environment::getContinuousContactManager() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
   {  // Clone cached manager if exists
-    std::shared_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-    if (continuous_manager_)
-      return continuous_manager_->clone();
+    std::shared_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+    if (continuous_manager)
+      return continuous_manager->clone();
   }
 
   {  // Try to create the default plugin
-    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-    const std::string& name = contact_managers_plugin_info_.continuous_plugin_infos.default_plugin;
-    continuous_manager_ = getContinuousContactManagerHelper(name);
-    if (continuous_manager_ == nullptr)
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+    const std::string& name = contact_managers_plugin_info.continuous_plugin_infos.default_plugin;
+    continuous_manager = getContinuousContactManagerHelper(name);
+    if (continuous_manager == nullptr)
     {
       CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
       return nullptr;
     }
   }
 
-  return continuous_manager_->clone();
+  return continuous_manager->clone();
 }
 
-void Environment::clearCachedContinuousContactManager() const
+void Environment::Implementation::clearCachedDiscreteContactManager() const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-  continuous_manager_ = nullptr;
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+  discrete_manager = nullptr;
 }
 
-tesseract_collision::ContinuousContactManager::UPtr
-Environment::getContinuousContactManager(const std::string& name) const
+void Environment::Implementation::clearCachedContinuousContactManager() const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  tesseract_collision::ContinuousContactManager::UPtr manager = getContinuousContactManagerHelper(name);
-  if (manager == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
-    return nullptr;
-  }
-
-  return manager;
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+  continuous_manager = nullptr;
 }
 
-tesseract_common::CollisionMarginData Environment::getCollisionMarginData() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return collision_margin_data_;
-}
-
-std::shared_lock<std::shared_mutex> Environment::lockRead() const
-{
-  return std::shared_lock<std::shared_mutex>(mutex_);
-}
-
-bool Environment::operator==(const Environment& rhs) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-
-  // No need to check everything mainly the items serialized
-  bool equal = true;
-  equal &= initialized_ == rhs.initialized_;
-  equal &= revision_ == rhs.revision_;
-  equal &= init_revision_ == rhs.init_revision_;
-  equal &= commands_.size() == rhs.commands_.size();
-  if (!equal)
-    return equal;
-
-  for (std::size_t i = 0; i < commands_.size(); ++i)
-  {
-    equal &= *(commands_[i]) == *(rhs.commands_[i]);
-    if (!equal)
-      return equal;
-  }
-
-  equal &= current_state_ == rhs.current_state_;
-  equal &= timestamp_ == rhs.timestamp_;
-  equal &= current_state_timestamp_ == rhs.current_state_timestamp_;
-
-  /** @todo uncomment after serialized */
-  //  equal &= is_contact_allowed_fn_ == rhs.is_contact_allowed_fn_;
-  //  equal &= find_tcp_cb_ == rhs.find_tcp_cb_;
-
-  return equal;
-}
-bool Environment::operator!=(const Environment& rhs) const { return !operator==(rhs); }
-
-bool Environment::setActiveDiscreteContactManagerHelper(const std::string& name)
+bool Environment::Implementation::setActiveDiscreteContactManagerHelper(const std::string& name)
 {
   tesseract_collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
     std::string msg = "\n  Discrete manager with " + name + " does not exist in factory!\n";
     msg += "    Available Managers:\n";
-    for (const auto& m : contact_managers_factory_.getDiscreteContactManagerPlugins())
+    for (const auto& m : contact_managers_factory.getDiscreteContactManagerPlugins())
       msg += "      " + m.first + "\n";
 
     CONSOLE_BRIDGE_logError(msg.c_str());
     return false;
   }
 
-  contact_managers_plugin_info_.discrete_plugin_infos.default_plugin = name;
+  contact_managers_plugin_info.discrete_plugin_infos.default_plugin = name;
 
   // The calling function should be locking discrete_manager_mutex_
-  discrete_manager_ = std::move(manager);
+  discrete_manager = std::move(manager);
 
   return true;
 }
 
-bool Environment::setActiveContinuousContactManagerHelper(const std::string& name)
+bool Environment::Implementation::setActiveContinuousContactManagerHelper(const std::string& name)
 {
   tesseract_collision::ContinuousContactManager::UPtr manager = getContinuousContactManagerHelper(name);
 
@@ -979,33 +969,33 @@ bool Environment::setActiveContinuousContactManagerHelper(const std::string& nam
   {
     std::string msg = "\n  Continuous manager with " + name + " does not exist in factory!\n";
     msg += "    Available Managers:\n";
-    for (const auto& m : contact_managers_factory_.getContinuousContactManagerPlugins())
+    for (const auto& m : contact_managers_factory.getContinuousContactManagerPlugins())
       msg += "      " + m.first + "\n";
 
     CONSOLE_BRIDGE_logError(msg.c_str());
     return false;
   }
 
-  contact_managers_plugin_info_.continuous_plugin_infos.default_plugin = name;
+  contact_managers_plugin_info.continuous_plugin_infos.default_plugin = name;
 
   // The calling function should be locking continuous_manager_mutex_
-  continuous_manager_ = std::move(manager);
+  continuous_manager = std::move(manager);
 
   return true;
 }
 
-tesseract_collision::DiscreteContactManager::UPtr
-Environment::getDiscreteContactManagerHelper(const std::string& name) const
+std::unique_ptr<tesseract_collision::DiscreteContactManager>
+Environment::Implementation::getDiscreteContactManagerHelper(const std::string& name) const
 {
   tesseract_collision::DiscreteContactManager::UPtr manager =
-      contact_managers_factory_.createDiscreteContactManager(name);
+      contact_managers_factory.createDiscreteContactManager(name);
   if (manager == nullptr)
     return nullptr;
 
-  manager->setIsContactAllowedFn(is_contact_allowed_fn_);
-  if (scene_graph_ != nullptr)
+  manager->setIsContactAllowedFn(is_contact_allowed_fn);
+  if (scene_graph != nullptr)
   {
-    for (const auto& link : scene_graph_->getLinks())
+    for (const auto& link : scene_graph->getLinks())
     {
       if (!link->collision.empty())
       {
@@ -1016,29 +1006,29 @@ Environment::getDiscreteContactManagerHelper(const std::string& name) const
       }
     }
 
-    manager->setActiveCollisionObjects(state_solver_->getActiveLinkNames());
+    manager->setActiveCollisionObjects(state_solver->getActiveLinkNames());
   }
 
-  manager->setCollisionMarginData(collision_margin_data_);
+  manager->setCollisionMarginData(collision_margin_data);
 
-  manager->setCollisionObjectsTransform(current_state_.link_transforms);
+  manager->setCollisionObjectsTransform(current_state.link_transforms);
 
   return manager;
 }
 
-tesseract_collision::ContinuousContactManager::UPtr
-Environment::getContinuousContactManagerHelper(const std::string& name) const
+std::unique_ptr<tesseract_collision::ContinuousContactManager>
+Environment::Implementation::getContinuousContactManagerHelper(const std::string& name) const
 {
   tesseract_collision::ContinuousContactManager::UPtr manager =
-      contact_managers_factory_.createContinuousContactManager(name);
+      contact_managers_factory.createContinuousContactManager(name);
 
   if (manager == nullptr)
     return nullptr;
 
-  manager->setIsContactAllowedFn(is_contact_allowed_fn_);
-  if (scene_graph_ != nullptr)
+  manager->setIsContactAllowedFn(is_contact_allowed_fn);
+  if (scene_graph != nullptr)
   {
-    for (const auto& link : scene_graph_->getLinks())
+    for (const auto& link : scene_graph->getLinks())
     {
       if (!link->collision.empty())
       {
@@ -1049,13 +1039,13 @@ Environment::getContinuousContactManagerHelper(const std::string& name) const
       }
     }
 
-    manager->setActiveCollisionObjects(state_solver_->getActiveLinkNames());
+    manager->setActiveCollisionObjects(state_solver->getActiveLinkNames());
   }
 
-  manager->setCollisionMarginData(collision_margin_data_);
+  manager->setCollisionMarginData(collision_margin_data);
 
-  std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
-  for (const auto& tf : current_state_.link_transforms)
+  std::vector<std::string> active_link_names = state_solver->getActiveLinkNames();
+  for (const auto& tf : current_state.link_transforms)
   {
     if (std::find(active_link_names.begin(), active_link_names.end(), tf.first) != active_link_names.end())
       manager->setCollisionObjectsTransform(tf.first, tf.second, tf.second);
@@ -1066,195 +1056,78 @@ Environment::getContinuousContactManagerHelper(const std::string& name) const
   return manager;
 }
 
-void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
-                                     tesseract_common::VectorIsometry3d& shape_poses,
-                                     const tesseract_scene_graph::Link& link)
+bool Environment::Implementation::setActiveDiscreteContactManager(const std::string& name)
 {
-  for (const auto& c : link.collision)
-  {
-    shapes.push_back(c->geometry);
-    shape_poses.push_back(c->origin);
-  }
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+  return setActiveDiscreteContactManagerHelper(name);
 }
 
-void Environment::currentStateChanged()
+std::unique_ptr<tesseract_collision::DiscreteContactManager>
+Environment::Implementation::getDiscreteContactManager(const std::string& name) const
 {
-  timestamp_ = std::chrono::system_clock::now();
-  current_state_timestamp_ = timestamp_;
-  current_state_ = state_solver_->getState();
-
-  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-  if (discrete_manager_ != nullptr)
-    discrete_manager_->setCollisionObjectsTransform(current_state_.link_transforms);
-
-  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-  if (continuous_manager_ != nullptr)
+  tesseract_collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
+  if (manager == nullptr)
   {
-    std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
-    for (const auto& tf : current_state_.link_transforms)
-    {
-      if (std::find(active_link_names.begin(), active_link_names.end(), tf.first) != active_link_names.end())
-        continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second, tf.second);
-      else
-        continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second);
-    }
+    CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
+    return nullptr;
   }
 
-  {  // Clear JointGroup and KinematicGroup
-    std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
-    std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
-    joint_group_cache_.clear();
-    kinematic_group_cache_.clear();
-  }
+  return manager;
 }
 
-void Environment::environmentChanged()
+bool Environment::Implementation::setActiveContinuousContactManager(const std::string& name)
 {
-  timestamp_ = std::chrono::system_clock::now();
-  std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
-
-  {
-    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-    if (discrete_manager_ != nullptr)
-      discrete_manager_->setActiveCollisionObjects(active_link_names);
-  }
-
-  {
-    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-    if (continuous_manager_ != nullptr)
-      continuous_manager_->setActiveCollisionObjects(active_link_names);
-  }
-
-  {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
-    std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
-    group_joint_names_cache_.clear();
-  }
-
-  currentStateChanged();
+  std::unique_lock<std::shared_mutex> continous_lock(continuous_manager_mutex);
+  return setActiveContinuousContactManagerHelper(name);
 }
 
-void Environment::triggerCurrentStateChangedCallbacks()
+std::unique_ptr<tesseract_collision::ContinuousContactManager>
+Environment::Implementation::getContinuousContactManager(const std::string& name) const
 {
-  if (!event_cb_.empty())
+  tesseract_collision::ContinuousContactManager::UPtr manager = getContinuousContactManagerHelper(name);
+  if (manager == nullptr)
   {
-    SceneStateChangedEvent event(current_state_);
-    for (const auto& cb : event_cb_)
-      cb.second(event);
+    CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
+    return nullptr;
   }
+
+  return manager;
 }
 
-void Environment::triggerEnvironmentChangedCallbacks()
+bool Environment::Implementation::removeLinkHelper(const std::string& name)
 {
-  if (!event_cb_.empty())
-  {
-    CommandAppliedEvent event(commands_, revision_);
-    for (const auto& cb : event_cb_)
-      cb.second(event);
-  }
-}
-
-bool Environment::removeLinkHelper(const std::string& name)
-{
-  if (scene_graph_->getLink(name) == nullptr)
+  if (scene_graph->getLink(name) == nullptr)
   {
     CONSOLE_BRIDGE_logWarn("Tried to remove link (%s) that does not exist", name.c_str());
     return false;
   }
-  std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = scene_graph_->getInboundJoints(name);
+  std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = scene_graph->getInboundJoints(name);
   assert(joints.size() <= 1);
 
   // get child link names to remove
-  std::vector<std::string> child_link_names = scene_graph_->getLinkChildrenNames(name);
+  std::vector<std::string> child_link_names = scene_graph->getLinkChildrenNames(name);
 
-  scene_graph_->removeLink(name, true);
+  scene_graph->removeLink(name, true);
 
-  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-  if (discrete_manager_ != nullptr)
-    discrete_manager_->removeCollisionObject(name);
-  if (continuous_manager_ != nullptr)
-    continuous_manager_->removeCollisionObject(name);
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+  if (discrete_manager != nullptr)
+    discrete_manager->removeCollisionObject(name);
+  if (continuous_manager != nullptr)
+    continuous_manager->removeCollisionObject(name);
 
   for (const auto& link_name : child_link_names)
   {
-    if (discrete_manager_ != nullptr)
-      discrete_manager_->removeCollisionObject(link_name);
-    if (continuous_manager_ != nullptr)
-      continuous_manager_->removeCollisionObject(link_name);
+    if (discrete_manager != nullptr)
+      discrete_manager->removeCollisionObject(link_name);
+    if (continuous_manager != nullptr)
+      continuous_manager->removeCollisionObject(link_name);
   }
 
   return true;
 }
 
-Environment::UPtr Environment::clone() const
-{
-  auto cloned_env = std::make_unique<Environment>();
-
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::shared_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
-  std::shared_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
-  std::shared_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
-  std::shared_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-  std::shared_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-
-  if (!initialized_)
-    return cloned_env;
-
-  cloned_env->initialized_ = initialized_;
-  cloned_env->init_revision_ = revision_;
-  cloned_env->revision_ = revision_;
-  cloned_env->commands_ = commands_;
-  cloned_env->scene_graph_ = scene_graph_->clone();
-  cloned_env->timestamp_ = timestamp_;
-  cloned_env->current_state_ = current_state_;
-  cloned_env->current_state_timestamp_ = current_state_timestamp_;
-
-  // There is not dynamic pointer cast for std::unique_ptr
-  auto cloned_solver = state_solver_->clone();
-  auto* p = dynamic_cast<tesseract_scene_graph::MutableStateSolver*>(cloned_solver.get());
-  if (p != nullptr)
-    (void)cloned_solver.release();
-
-  cloned_env->state_solver_ = std::unique_ptr<tesseract_scene_graph::MutableStateSolver>(p);
-  cloned_env->kinematics_information_ = kinematics_information_;
-  cloned_env->kinematics_factory_ = kinematics_factory_;
-  cloned_env->find_tcp_cb_ = find_tcp_cb_;
-  cloned_env->collision_margin_data_ = collision_margin_data_;
-
-  // Copy cache
-  cloned_env->joint_group_cache_.reserve(joint_group_cache_.size());
-  for (const auto& c : joint_group_cache_)
-    cloned_env->joint_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::JointGroup>(*c.second));
-
-  for (const auto& c : kinematic_group_cache_)
-    cloned_env->kinematic_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::KinematicGroup>(*c.second));
-
-  cloned_env->group_joint_names_cache_ = group_joint_names_cache_;
-
-  // NOLINTNEXTLINE
-  cloned_env->is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
-                                                 cloned_env->scene_graph_,
-                                                 std::placeholders::_1,
-                                                 std::placeholders::_2);
-
-  if (discrete_manager_)
-  {
-    cloned_env->discrete_manager_ = discrete_manager_->clone();
-    cloned_env->discrete_manager_->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn_);
-  }
-  if (continuous_manager_)
-  {
-    cloned_env->continuous_manager_ = continuous_manager_->clone();
-    cloned_env->continuous_manager_->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn_);
-  }
-
-  cloned_env->contact_managers_plugin_info_ = contact_managers_plugin_info_;
-  cloned_env->contact_managers_factory_ = contact_managers_factory_;
-
-  return cloned_env;
-}
-
-bool Environment::applyCommandsHelper(const Commands& commands)
+bool Environment::Implementation::applyCommandsHelper(const std::vector<std::shared_ptr<const Command>>& commands)
 {
   bool success = true;
   for (const auto& command : commands)
@@ -1413,10 +1286,10 @@ bool Environment::applyCommandsHelper(const Commands& commands)
   }
 
   // Update the solver revision to match environment
-  state_solver_->setRevision(revision_);
+  state_solver->setRevision(revision);
 
   // If this is not true then the initHelper function has called applyCommand so do not call.
-  if (initialized_)
+  if (initialized)
     environmentChanged();
 
   return success;
@@ -1426,7 +1299,7 @@ bool Environment::applyCommandsHelper(const Commands& commands)
 //////////////// Internal Apply Command //////////////////////
 //////////////////////////////////////////////////////////////
 
-bool Environment::applyAddCommand(const AddLinkCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyAddCommand(const AddLinkCommand::ConstPtr& cmd)
 {
   // The command should not allow this to occur but adding an assert to catch if something changes
   assert(!(!cmd->getLink() && !cmd->getJoint()));
@@ -1436,13 +1309,13 @@ bool Environment::applyAddCommand(const AddLinkCommand::ConstPtr& cmd)
   if (!applyAddLinkCommandHelper(cmd->getLink(), cmd->getJoint(), cmd->replaceAllowed()))
     return false;
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::ConstPtr& cmd)
 {
   const tesseract_common::JointTrajectory& traj = cmd->getTrajectory();
   if (traj.empty())
@@ -1460,7 +1333,7 @@ bool Environment::applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::
     return false;
   }
 
-  const bool parent_link_exists = (scene_graph_->getLink(cmd->getParentLinkName()) != nullptr);
+  const bool parent_link_exists = (scene_graph->getLink(cmd->getParentLinkName()) != nullptr);
   if (!parent_link_exists)
   {
     CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) with parent link (%s) which does not exists.",
@@ -1469,7 +1342,7 @@ bool Environment::applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::
     return false;
   }
 
-  auto state_solver = state_solver_->clone();
+  auto state_solver_clone = state_solver->clone();
 
   auto traj_link = std::make_shared<tesseract_scene_graph::Link>(cmd->getLinkName());
   std::vector<std::string> joint_names;
@@ -1495,11 +1368,11 @@ bool Environment::applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::
       return false;
     }
 
-    tesseract_scene_graph::SceneState scene_state = state_solver->getState(state.joint_names, state.position);
+    tesseract_scene_graph::SceneState scene_state = state_solver_clone->getState(state.joint_names, state.position);
     if (joint_names.empty() || !tesseract_common::isIdentical(state.joint_names, joint_names, false))
     {
       joint_names = state.joint_names;
-      active_link_names = scene_graph_->getJointChildrenNames(joint_names);
+      active_link_names = scene_graph->getJointChildrenNames(joint_names);
 
       if (std::find(active_link_names.begin(), active_link_names.end(), cmd->getParentLinkName()) !=
           active_link_names.end())
@@ -1514,7 +1387,7 @@ bool Environment::applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::
     for (const auto& link_name : active_link_names)
     {
       Eigen::Isometry3d link_transform = parent_link_tf_inv * scene_state.link_transforms[link_name];
-      auto link = scene_graph_->getLink(link_name);
+      auto link = scene_graph->getLink(link_name);
       assert(link != nullptr);
 
       auto clone = link->clone(link_name + "_clone");
@@ -1542,15 +1415,16 @@ bool Environment::applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::
   if (!applyAddLinkCommandHelper(traj_link, traj_joint, cmd->replaceAllowed()))
     return false;
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyAddLinkCommandHelper(const tesseract_scene_graph::Link::ConstPtr& link,
-                                            const tesseract_scene_graph::Joint::ConstPtr& joint,
-                                            bool replace_allowed)
+bool Environment::Implementation::applyAddLinkCommandHelper(
+    const std::shared_ptr<const tesseract_scene_graph::Link>& link,
+    const std::shared_ptr<const tesseract_scene_graph::Joint>& joint,
+    bool replace_allowed)
 {
   bool link_exists = false;
   bool joint_exists = false;
@@ -1559,13 +1433,13 @@ bool Environment::applyAddLinkCommandHelper(const tesseract_scene_graph::Link::C
   if (link != nullptr)
   {
     link_name = link->getName();
-    link_exists = (scene_graph_->getLink(link_name) != nullptr);
+    link_exists = (scene_graph->getLink(link_name) != nullptr);
   }
 
   if (joint != nullptr)
   {
     joint_name = joint->getName();
-    joint_exists = (scene_graph_->getJoint(joint_name) != nullptr);
+    joint_exists = (scene_graph->getJoint(joint_name) != nullptr);
   }
 
   if (link_exists && !replace_allowed)
@@ -1602,15 +1476,15 @@ bool Environment::applyAddLinkCommandHelper(const tesseract_scene_graph::Link::C
 
   if (link_exists && !joint)
   {  // A link is being replaced
-    if (!scene_graph_->addLink(*link, true))
+    if (!scene_graph->addLink(*link, true))
       return false;
 
     // Solver is not affected by replace links
   }
   else if (link_exists && joint_exists)
   {  // A link and joint pair is being replaced
-    tesseract_scene_graph::Link::ConstPtr orig_link = scene_graph_->getLink(link_name);
-    tesseract_scene_graph::Joint::ConstPtr orig_joint = scene_graph_->getJoint(joint_name);
+    tesseract_scene_graph::Link::ConstPtr orig_link = scene_graph->getLink(link_name);
+    tesseract_scene_graph::Joint::ConstPtr orig_joint = scene_graph->getJoint(joint_name);
 
     if (orig_joint->child_link_name != orig_link->getName())
     {
@@ -1621,32 +1495,32 @@ bool Environment::applyAddLinkCommandHelper(const tesseract_scene_graph::Link::C
       return false;
     }
 
-    if (!scene_graph_->addLink(*link, true))
+    if (!scene_graph->addLink(*link, true))
       return false;
 
-    if (!scene_graph_->removeJoint(joint_name))
+    if (!scene_graph->removeJoint(joint_name))
     {
       // Replace with original link
-      if (!scene_graph_->addLink(*orig_link, true))
+      if (!scene_graph->addLink(*orig_link, true))
         throw std::runtime_error("Environment: Failed to replace link and joint and reset to original state.");
 
       return false;
     }
 
-    if (!scene_graph_->addJoint(*joint))
+    if (!scene_graph->addJoint(*joint))
     {
       // Replace with original link
-      if (!scene_graph_->addLink(*orig_link, true))
+      if (!scene_graph->addLink(*orig_link, true))
         throw std::runtime_error("Environment: Failed to replace link and joint reset to original state.");
 
       // Replace with original link
-      if (!scene_graph_->addJoint(*orig_joint))
+      if (!scene_graph->addJoint(*orig_joint))
         throw std::runtime_error("Environment: Failed to replace link and joint and reset to original state.");
 
       return false;
     }
 
-    if (!state_solver_->replaceJoint(*joint))
+    if (!state_solver->replaceJoint(*joint))
       throw std::runtime_error("Environment, failed to replace link and joint in state solver.");
   }
   else if (!link_exists && !joint)
@@ -1655,33 +1529,33 @@ bool Environment::applyAddLinkCommandHelper(const tesseract_scene_graph::Link::C
     tesseract_scene_graph::Joint joint(joint_name);
     joint.type = tesseract_scene_graph::JointType::FIXED;
     joint.child_link_name = link_name;
-    joint.parent_link_name = scene_graph_->getRoot();
+    joint.parent_link_name = scene_graph->getRoot();
 
-    if (!scene_graph_->addLink(*link, joint))
+    if (!scene_graph->addLink(*link, joint))
       return false;
 
-    if (!state_solver_->addLink(*link, joint))
+    if (!state_solver->addLink(*link, joint))
       throw std::runtime_error("Environment, failed to add link and joint in state solver.");
   }
   else
   {  // A new link and joint is being added
-    if (!scene_graph_->addLink(*link, *joint))
+    if (!scene_graph->addLink(*link, *joint))
       return false;
 
-    if (!state_solver_->addLink(*link, *joint))
+    if (!state_solver->addLink(*link, *joint))
       throw std::runtime_error("Environment, failed to add link and joint in state solver.");
   }
 
   // If Link existed remove it from collision before adding the replacing links geometry
   if (link_exists)
   {
-    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-    if (discrete_manager_ != nullptr)
-      discrete_manager_->removeCollisionObject(link_name);
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+    if (discrete_manager != nullptr)
+      discrete_manager->removeCollisionObject(link_name);
 
-    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-    if (continuous_manager_ != nullptr)
-      continuous_manager_->removeCollisionObject(link_name);
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+    if (continuous_manager != nullptr)
+      continuous_manager->removeCollisionObject(link_name);
   }
 
   // We have moved the original objects, get a pointer to them from scene_graph
@@ -1691,85 +1565,85 @@ bool Environment::applyAddLinkCommandHelper(const tesseract_scene_graph::Link::C
     tesseract_common::VectorIsometry3d shape_poses;
     getCollisionObject(shapes, shape_poses, *link);
 
-    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-    if (discrete_manager_ != nullptr)
-      discrete_manager_->addCollisionObject(link_name, 0, shapes, shape_poses, true);
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+    if (discrete_manager != nullptr)
+      discrete_manager->addCollisionObject(link_name, 0, shapes, shape_poses, true);
 
-    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-    if (continuous_manager_ != nullptr)
-      continuous_manager_->addCollisionObject(link_name, 0, shapes, shape_poses, true);
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+    if (continuous_manager != nullptr)
+      continuous_manager->addCollisionObject(link_name, 0, shapes, shape_poses, true);
   }
 
   return true;
 }
 
-bool Environment::applyMoveLinkCommand(const MoveLinkCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyMoveLinkCommand(const std::shared_ptr<const MoveLinkCommand>& cmd)
 {
-  if (!scene_graph_->moveLink(*cmd->getJoint()))
+  if (!scene_graph->moveLink(*cmd->getJoint()))
     return false;
 
-  if (!state_solver_->moveLink(*cmd->getJoint()))
+  if (!state_solver->moveLink(*cmd->getJoint()))
     throw std::runtime_error("Environment, failed to move link in state solver.");
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyMoveJointCommand(const MoveJointCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyMoveJointCommand(const std::shared_ptr<const MoveJointCommand>& cmd)
 {
-  if (!scene_graph_->moveJoint(cmd->getJointName(), cmd->getParentLink()))
+  if (!scene_graph->moveJoint(cmd->getJointName(), cmd->getParentLink()))
     return false;
 
-  if (!state_solver_->moveJoint(cmd->getJointName(), cmd->getParentLink()))
+  if (!state_solver->moveJoint(cmd->getJointName(), cmd->getParentLink()))
     throw std::runtime_error("Environment, failed to move joint in state solver.");
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyRemoveLinkCommand(const RemoveLinkCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyRemoveLinkCommand(const std::shared_ptr<const RemoveLinkCommand>& cmd)
 {
   if (!removeLinkHelper(cmd->getLinkName()))
     return false;
 
-  if (!state_solver_->removeLink(cmd->getLinkName()))
+  if (!state_solver->removeLink(cmd->getLinkName()))
     throw std::runtime_error("Environment, failed to remove link in state solver.");
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyRemoveJointCommand(const RemoveJointCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyRemoveJointCommand(const std::shared_ptr<const RemoveJointCommand>& cmd)
 {
-  if (scene_graph_->getJoint(cmd->getJointName()) == nullptr)
+  if (scene_graph->getJoint(cmd->getJointName()) == nullptr)
   {
     CONSOLE_BRIDGE_logWarn("Tried to remove Joint (%s) that does not exist", cmd->getJointName().c_str());
     return false;
   }
 
-  std::string target_link_name = scene_graph_->getTargetLink(cmd->getJointName())->getName();
+  std::string target_link_name = scene_graph->getTargetLink(cmd->getJointName())->getName();
 
   if (!removeLinkHelper(target_link_name))
     return false;
 
-  if (!state_solver_->removeJoint(cmd->getJointName()))
+  if (!state_solver->removeJoint(cmd->getJointName()))
     throw std::runtime_error("Environment, failed to remove joint in state solver.");
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyReplaceJointCommand(const ReplaceJointCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyReplaceJointCommand(const std::shared_ptr<const ReplaceJointCommand>& cmd)
 {
-  tesseract_scene_graph::Joint::ConstPtr current_joint = scene_graph_->getJoint(cmd->getJoint()->getName());
+  tesseract_scene_graph::Joint::ConstPtr current_joint = scene_graph->getJoint(cmd->getJoint()->getName());
   if (current_joint == nullptr)
   {
     CONSOLE_BRIDGE_logWarn("Tried to replace Joint (%s) that does not exist", cmd->getJoint()->getName().c_str());
@@ -1783,174 +1657,180 @@ bool Environment::applyReplaceJointCommand(const ReplaceJointCommand::ConstPtr& 
     return false;
   }
 
-  if (!scene_graph_->removeJoint(cmd->getJoint()->getName()))
+  if (!scene_graph->removeJoint(cmd->getJoint()->getName()))
     return false;
 
-  if (!scene_graph_->addJoint(*cmd->getJoint()))
+  if (!scene_graph->addJoint(*cmd->getJoint()))
   {
     // Add old joint back
-    if (!scene_graph_->addJoint(*current_joint))
+    if (!scene_graph->addJoint(*current_joint))
       throw std::runtime_error("Environment: Failed to add old joint back when replace failed!");
 
     return false;
   }
 
-  if (!state_solver_->replaceJoint(*cmd->getJoint()))
+  if (!state_solver->replaceJoint(*cmd->getJoint()))
     throw std::runtime_error("Environment, failed to replace joint in state solver.");
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyChangeLinkOriginCommand(const ChangeLinkOriginCommand::ConstPtr& /*cmd*/)  // NOLINT
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+bool Environment::Implementation::applyChangeLinkOriginCommand(
+    const std::shared_ptr<const ChangeLinkOriginCommand>& /*cmd*/)
 {
   throw std::runtime_error("Unhandled environment command: CHANGE_LINK_ORIGIN");
 }
 
-bool Environment::applyChangeJointOriginCommand(const ChangeJointOriginCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyChangeJointOriginCommand(const ChangeJointOriginCommand::ConstPtr& cmd)
 {
-  if (!scene_graph_->changeJointOrigin(cmd->getJointName(), cmd->getOrigin()))
+  if (!scene_graph->changeJointOrigin(cmd->getJointName(), cmd->getOrigin()))
     return false;
 
-  if (!state_solver_->changeJointOrigin(cmd->getJointName(), cmd->getOrigin()))
+  if (!state_solver->changeJointOrigin(cmd->getJointName(), cmd->getOrigin()))
     throw std::runtime_error("Environment, failed to change joint origin in state solver.");
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyChangeLinkCollisionEnabledCommand(const ChangeLinkCollisionEnabledCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyChangeLinkCollisionEnabledCommand(
+    const std::shared_ptr<const ChangeLinkCollisionEnabledCommand>& cmd)
 {
-  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-  if (discrete_manager_ != nullptr)
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+  if (discrete_manager != nullptr)
   {
     if (cmd->getEnabled())
-      discrete_manager_->enableCollisionObject(cmd->getLinkName());
+      discrete_manager->enableCollisionObject(cmd->getLinkName());
     else
-      discrete_manager_->disableCollisionObject(cmd->getLinkName());
+      discrete_manager->disableCollisionObject(cmd->getLinkName());
   }
 
-  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-  if (continuous_manager_ != nullptr)
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+  if (continuous_manager != nullptr)
   {
     if (cmd->getEnabled())
-      continuous_manager_->enableCollisionObject(cmd->getLinkName());
+      continuous_manager->enableCollisionObject(cmd->getLinkName());
     else
-      continuous_manager_->disableCollisionObject(cmd->getLinkName());
+      continuous_manager->disableCollisionObject(cmd->getLinkName());
   }
 
-  scene_graph_->setLinkCollisionEnabled(cmd->getLinkName(), cmd->getEnabled());
+  scene_graph->setLinkCollisionEnabled(cmd->getLinkName(), cmd->getEnabled());
 
-  if (scene_graph_->getLinkCollisionEnabled(cmd->getLinkName()) != cmd->getEnabled())
+  if (scene_graph->getLinkCollisionEnabled(cmd->getLinkName()) != cmd->getEnabled())
     return false;
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyChangeLinkVisibilityCommand(const ChangeLinkVisibilityCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyChangeLinkVisibilityCommand(
+    const std::shared_ptr<const ChangeLinkVisibilityCommand>& cmd)
 {
-  scene_graph_->setLinkVisibility(cmd->getLinkName(), cmd->getEnabled());
-  if (scene_graph_->getLinkVisibility(cmd->getLinkName()) != cmd->getEnabled())
+  scene_graph->setLinkVisibility(cmd->getLinkName(), cmd->getEnabled());
+  if (scene_graph->getLinkVisibility(cmd->getLinkName()) != cmd->getEnabled())
     return false;
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyModifyAllowedCollisionsCommand(const ModifyAllowedCollisionsCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyModifyAllowedCollisionsCommand(
+    const std::shared_ptr<const ModifyAllowedCollisionsCommand>& cmd)
 {
   switch (cmd->getModifyType())
   {
     case ModifyAllowedCollisionsType::REMOVE:
     {
       for (const auto& entry : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
-        scene_graph_->removeAllowedCollision(entry.first.first, entry.first.second);
+        scene_graph->removeAllowedCollision(entry.first.first, entry.first.second);
 
       break;
     }
     case ModifyAllowedCollisionsType::REPLACE:
     {
-      scene_graph_->clearAllowedCollisions();
+      scene_graph->clearAllowedCollisions();
       for (const auto& entry : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
-        scene_graph_->addAllowedCollision(entry.first.first, entry.first.second, entry.second);
+        scene_graph->addAllowedCollision(entry.first.first, entry.first.second, entry.second);
       break;
     }
     case ModifyAllowedCollisionsType::ADD:
     {
       for (const auto& entry : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
-        scene_graph_->addAllowedCollision(entry.first.first, entry.first.second, entry.second);
+        scene_graph->addAllowedCollision(entry.first.first, entry.first.second, entry.second);
 
       break;
     }
   }
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyRemoveAllowedCollisionLinkCommand(const RemoveAllowedCollisionLinkCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyRemoveAllowedCollisionLinkCommand(
+    const std::shared_ptr<const RemoveAllowedCollisionLinkCommand>& cmd)
 {
-  scene_graph_->removeAllowedCollision(cmd->getLinkName());
+  scene_graph->removeAllowedCollision(cmd->getLinkName());
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd)
+bool Environment::Implementation::applyAddSceneGraphCommand(std::shared_ptr<const AddSceneGraphCommand> cmd)
 {
-  if (scene_graph_->isEmpty() && cmd->getJoint())
+  if (scene_graph->isEmpty() && cmd->getJoint())
     return false;
 
-  std::vector<tesseract_scene_graph::Link::ConstPtr> pre_links = scene_graph_->getLinks();
-  if (scene_graph_->isEmpty())
+  std::vector<tesseract_scene_graph::Link::ConstPtr> pre_links = scene_graph->getLinks();
+  if (scene_graph->isEmpty())
   {
-    if (!scene_graph_->insertSceneGraph(*cmd->getSceneGraph(), cmd->getPrefix()))
+    if (!scene_graph->insertSceneGraph(*cmd->getSceneGraph(), cmd->getPrefix()))
       return false;
 
-    state_solver_ = std::make_unique<tesseract_scene_graph::OFKTStateSolver>(*cmd->getSceneGraph(), cmd->getPrefix());
+    state_solver = std::make_unique<tesseract_scene_graph::OFKTStateSolver>(*cmd->getSceneGraph(), cmd->getPrefix());
   }
   else if (!cmd->getJoint())
   {
     // Connect root of subgraph to graph
     tesseract_scene_graph::Joint root_joint(cmd->getPrefix() + cmd->getSceneGraph()->getName() + "_joint");
     root_joint.type = tesseract_scene_graph::JointType::FIXED;
-    root_joint.parent_link_name = scene_graph_->getRoot();
+    root_joint.parent_link_name = scene_graph->getRoot();
     root_joint.child_link_name = cmd->getPrefix() + cmd->getSceneGraph()->getRoot();
     root_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
 
     tesseract_scene_graph::SceneGraph::ConstPtr sg = cmd->getSceneGraph();
     std::string prefix = cmd->getPrefix();
     cmd = std::make_shared<AddSceneGraphCommand>(*sg, root_joint, prefix);
-    if (!scene_graph_->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
+    if (!scene_graph->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
       return false;
 
-    if (!state_solver_->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
+    if (!state_solver->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
       throw std::runtime_error("Environment, failed to insert scene graph into state solver.");
   }
   else
   {
-    if (!scene_graph_->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
+    if (!scene_graph->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
       return false;
 
-    if (!state_solver_->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
+    if (!state_solver->insertSceneGraph(*cmd->getSceneGraph(), *cmd->getJoint(), cmd->getPrefix()))
       throw std::runtime_error("Environment, failed to insert scene graph into state solver.");
   }
 
   // Now need to get list of added links to add to the contact manager
-  std::vector<tesseract_scene_graph::Link::ConstPtr> post_links = scene_graph_->getLinks();
+  std::vector<tesseract_scene_graph::Link::ConstPtr> post_links = scene_graph->getLinks();
   assert(post_links.size() > pre_links.size());
   std::sort(pre_links.begin(), pre_links.end());
   std::sort(post_links.begin(), post_links.end());
@@ -1961,8 +1841,8 @@ bool Environment::applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd)
                       pre_links.end(),
                       std::inserter(diff_links, diff_links.begin()));
 
-  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
   for (const auto& link : diff_links)
   {
     if (!link->collision.empty())
@@ -1971,174 +1851,179 @@ bool Environment::applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd)
       tesseract_common::VectorIsometry3d shape_poses;
       getCollisionObject(shapes, shape_poses, *link);
 
-      if (discrete_manager_ != nullptr)
-        discrete_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
-      if (continuous_manager_ != nullptr)
-        continuous_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+      if (discrete_manager != nullptr)
+        discrete_manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+      if (continuous_manager != nullptr)
+        continuous_manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
     }
   }
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyChangeJointPositionLimitsCommand(const ChangeJointPositionLimitsCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyChangeJointPositionLimitsCommand(
+    const std::shared_ptr<const ChangeJointPositionLimitsCommand>& cmd)
 {
   // First check if all of the joint exist
   for (const auto& jp : cmd->getLimits())
   {
-    tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph_->getJointLimits(jp.first);
+    tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph->getJointLimits(jp.first);
     if (jl == nullptr)
       return false;
   }
 
   for (const auto& jp : cmd->getLimits())
   {
-    tesseract_scene_graph::JointLimits jl_copy = *scene_graph_->getJointLimits(jp.first);
+    tesseract_scene_graph::JointLimits jl_copy = *scene_graph->getJointLimits(jp.first);
     jl_copy.lower = jp.second.first;
     jl_copy.upper = jp.second.second;
 
-    if (!scene_graph_->changeJointLimits(jp.first, jl_copy))
+    if (!scene_graph->changeJointLimits(jp.first, jl_copy))
       return false;
 
-    if (!state_solver_->changeJointPositionLimits(jp.first, jp.second.first, jp.second.second))
+    if (!state_solver->changeJointPositionLimits(jp.first, jp.second.first, jp.second.second))
       throw std::runtime_error("Environment, failed to change joint position limits in state solver.");
   }
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyChangeJointVelocityLimitsCommand(const ChangeJointVelocityLimitsCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyChangeJointVelocityLimitsCommand(
+    const std::shared_ptr<const ChangeJointVelocityLimitsCommand>& cmd)
 {
   // First check if all of the joint exist
   for (const auto& jp : cmd->getLimits())
   {
-    tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph_->getJointLimits(jp.first);
+    tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph->getJointLimits(jp.first);
     if (jl == nullptr)
       return false;
   }
 
   for (const auto& jp : cmd->getLimits())
   {
-    tesseract_scene_graph::JointLimits jl_copy = *scene_graph_->getJointLimits(jp.first);
+    tesseract_scene_graph::JointLimits jl_copy = *scene_graph->getJointLimits(jp.first);
     jl_copy.velocity = jp.second;
 
-    if (!scene_graph_->changeJointLimits(jp.first, jl_copy))
+    if (!scene_graph->changeJointLimits(jp.first, jl_copy))
       return false;
 
-    if (!state_solver_->changeJointVelocityLimits(jp.first, jp.second))
+    if (!state_solver->changeJointVelocityLimits(jp.first, jp.second))
       throw std::runtime_error("Environment, failed to change joint velocity limits in state solver.");
   }
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyChangeJointAccelerationLimitsCommand(const ChangeJointAccelerationLimitsCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyChangeJointAccelerationLimitsCommand(
+    const std::shared_ptr<const ChangeJointAccelerationLimitsCommand>& cmd)
 {
   // First check if all of the joint exist
   for (const auto& jp : cmd->getLimits())
   {
-    tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph_->getJointLimits(jp.first);
+    tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph->getJointLimits(jp.first);
     if (jl == nullptr)
       return false;
   }
 
   for (const auto& jp : cmd->getLimits())
   {
-    tesseract_scene_graph::JointLimits jl_copy = *scene_graph_->getJointLimits(jp.first);
+    tesseract_scene_graph::JointLimits jl_copy = *scene_graph->getJointLimits(jp.first);
     jl_copy.acceleration = jp.second;
 
-    if (!scene_graph_->changeJointLimits(jp.first, jl_copy))
+    if (!scene_graph->changeJointLimits(jp.first, jl_copy))
       return false;
 
-    if (!state_solver_->changeJointAccelerationLimits(jp.first, jp.second))
+    if (!state_solver->changeJointAccelerationLimits(jp.first, jp.second))
       throw std::runtime_error("Environment, failed to change joint acceleration limits in state solver.");
   }
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyAddKinematicsInformationCommand(const AddKinematicsInformationCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyAddKinematicsInformationCommand(
+    const std::shared_ptr<const AddKinematicsInformationCommand>& cmd)
 {
-  kinematics_information_.insert(cmd->getKinematicsInformation());
+  kinematics_information.insert(cmd->getKinematicsInformation());
 
   if (!cmd->getKinematicsInformation().kinematics_plugin_info.empty())
   {
     const auto& info = cmd->getKinematicsInformation().kinematics_plugin_info;
     for (const auto& search_path : info.search_paths)
-      kinematics_factory_.addSearchPath(search_path);
+      kinematics_factory.addSearchPath(search_path);
 
     for (const auto& search_library : info.search_libraries)
-      kinematics_factory_.addSearchLibrary(search_library);
+      kinematics_factory.addSearchLibrary(search_library);
 
     for (const auto& group : info.fwd_plugin_infos)
     {
       for (const auto& solver : group.second.plugins)
-        kinematics_factory_.addFwdKinPlugin(group.first, solver.first, solver.second);
+        kinematics_factory.addFwdKinPlugin(group.first, solver.first, solver.second);
 
       if (!group.second.default_plugin.empty())
-        kinematics_factory_.setDefaultFwdKinPlugin(group.first, group.second.default_plugin);
+        kinematics_factory.setDefaultFwdKinPlugin(group.first, group.second.default_plugin);
     }
 
     for (const auto& group : info.inv_plugin_infos)
     {
       for (const auto& solver : group.second.plugins)
-        kinematics_factory_.addInvKinPlugin(group.first, solver.first, solver.second);
+        kinematics_factory.addInvKinPlugin(group.first, solver.first, solver.second);
 
       if (!group.second.default_plugin.empty())
-        kinematics_factory_.setDefaultInvKinPlugin(group.first, group.second.default_plugin);
+        kinematics_factory.setDefaultInvKinPlugin(group.first, group.second.default_plugin);
     }
   }
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManagersPluginInfoCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyAddContactManagersPluginInfoCommand(
+    const std::shared_ptr<const AddContactManagersPluginInfoCommand>& cmd)
 {
   const auto& info = cmd->getContactManagersPluginInfo();
 
   if (!info.empty())
   {
-    contact_managers_plugin_info_.insert(info);
+    contact_managers_plugin_info.insert(info);
 
     for (const auto& search_path : info.search_paths)
-      contact_managers_factory_.addSearchPath(search_path);
+      contact_managers_factory.addSearchPath(search_path);
 
     for (const auto& search_library : info.search_libraries)
-      contact_managers_factory_.addSearchLibrary(search_library);
+      contact_managers_factory.addSearchLibrary(search_library);
 
     for (const auto& cm : info.discrete_plugin_infos.plugins)
-      contact_managers_factory_.addDiscreteContactManagerPlugin(cm.first, cm.second);
+      contact_managers_factory.addDiscreteContactManagerPlugin(cm.first, cm.second);
 
     if (!info.discrete_plugin_infos.default_plugin.empty())
-      contact_managers_factory_.setDefaultDiscreteContactManagerPlugin(info.discrete_plugin_infos.default_plugin);
+      contact_managers_factory.setDefaultDiscreteContactManagerPlugin(info.discrete_plugin_infos.default_plugin);
 
     for (const auto& cm : info.continuous_plugin_infos.plugins)
-      contact_managers_factory_.addContinuousContactManagerPlugin(cm.first, cm.second);
+      contact_managers_factory.addContinuousContactManagerPlugin(cm.first, cm.second);
 
     if (!info.continuous_plugin_infos.default_plugin.empty())
-      contact_managers_factory_.setDefaultContinuousContactManagerPlugin(info.continuous_plugin_infos.default_plugin);
+      contact_managers_factory.setDefaultContinuousContactManagerPlugin(info.continuous_plugin_infos.default_plugin);
   }
 
-  if (contact_managers_factory_.hasDiscreteContactManagerPlugins())
+  if (contact_managers_factory.hasDiscreteContactManagerPlugins())
   {
-    std::string discrete_default = contact_managers_factory_.getDefaultDiscreteContactManagerPlugin();
-    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-    if (discrete_manager_ == nullptr || discrete_manager_->getName() != discrete_default)
+    std::string discrete_default = contact_managers_factory.getDefaultDiscreteContactManagerPlugin();
+    std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+    if (discrete_manager == nullptr || discrete_manager->getName() != discrete_default)
       setActiveDiscreteContactManagerHelper(discrete_default);
   }
   else
@@ -2146,11 +2031,11 @@ bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManag
     CONSOLE_BRIDGE_logDebug("Environment, No discrete contact manager plugins were provided");
   }
 
-  if (contact_managers_factory_.hasContinuousContactManagerPlugins())
+  if (contact_managers_factory.hasContinuousContactManagerPlugins())
   {
-    std::string continuous_default = contact_managers_factory_.getDefaultContinuousContactManagerPlugin();
-    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-    if (continuous_manager_ == nullptr || continuous_manager_->getName() != continuous_default)
+    std::string continuous_default = contact_managers_factory.getDefaultContinuousContactManagerPlugin();
+    std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+    if (continuous_manager == nullptr || continuous_manager->getName() != continuous_default)
       setActiveContinuousContactManagerHelper(continuous_default);
   }
   else
@@ -2158,88 +2043,641 @@ bool Environment::applyAddContactManagersPluginInfoCommand(const AddContactManag
     CONSOLE_BRIDGE_logDebug("Environment, No continuous contact manager plugins were provided");
   }
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applySetActiveContinuousContactManagerCommand(
-    const SetActiveContinuousContactManagerCommand::ConstPtr& cmd)
+bool Environment::Implementation::applySetActiveContinuousContactManagerCommand(
+    const std::shared_ptr<const SetActiveContinuousContactManagerCommand>& cmd)
 {
   setActiveContinuousContactManagerHelper(cmd->getName());
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applySetActiveDiscreteContactManagerCommand(
-    const SetActiveDiscreteContactManagerCommand::ConstPtr& cmd)
+bool Environment::Implementation::applySetActiveDiscreteContactManagerCommand(
+    const std::shared_ptr<const SetActiveDiscreteContactManagerCommand>& cmd)
 {
   setActiveDiscreteContactManagerHelper(cmd->getName());
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
 }
 
-bool Environment::applyChangeCollisionMarginsCommand(const ChangeCollisionMarginsCommand::ConstPtr& cmd)
+bool Environment::Implementation::applyChangeCollisionMarginsCommand(
+    const std::shared_ptr<const ChangeCollisionMarginsCommand>& cmd)
 {
-  collision_margin_data_.apply(cmd->getCollisionMarginData(), cmd->getCollisionMarginOverrideType());
+  collision_margin_data.apply(cmd->getCollisionMarginData(), cmd->getCollisionMarginOverrideType());
 
-  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex_);
-  if (continuous_manager_ != nullptr)
-    continuous_manager_->setCollisionMarginData(collision_margin_data_, CollisionMarginOverrideType::REPLACE);
+  std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+  if (continuous_manager != nullptr)
+    continuous_manager->setCollisionMarginData(collision_margin_data, CollisionMarginOverrideType::REPLACE);
 
-  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex_);
-  if (discrete_manager_ != nullptr)
-    discrete_manager_->setCollisionMarginData(collision_margin_data_, CollisionMarginOverrideType::REPLACE);
+  std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
+  if (discrete_manager != nullptr)
+    discrete_manager->setCollisionMarginData(collision_margin_data, CollisionMarginOverrideType::REPLACE);
 
-  ++revision_;
-  commands_.push_back(cmd);
+  ++revision;
+  commands.push_back(cmd);
 
   return true;
+}
+
+Environment::Environment() : impl_(std::make_unique<Implementation>()) {}
+Environment::Environment(std::unique_ptr<Implementation> impl) : impl_(std::move(impl)) {}
+Environment::~Environment() = default;
+
+bool Environment::init(const std::vector<std::shared_ptr<const Command>>& commands)
+{
+  bool success{ false };
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    success = impl_->initHelper(commands);
+  }
+
+  // Call the event callbacks
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  impl_->triggerCallbacks();
+
+  return success;
+}
+
+bool Environment::init(const tesseract_scene_graph::SceneGraph& scene_graph,
+                       const std::shared_ptr<const tesseract_srdf::SRDFModel>& srdf_model)
+{
+  Commands commands = getInitCommands(scene_graph, srdf_model);
+  return init(commands);
+}
+
+bool Environment::init(const std::string& urdf_string,
+                       const std::shared_ptr<const tesseract_common::ResourceLocator>& locator)
+{
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    impl_->resource_locator = locator;
+  }
+
+  // Parse urdf string into Scene Graph
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+  try
+  {
+    scene_graph = tesseract_urdf::parseURDFString(urdf_string, *locator);
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    tesseract_common::printNestedException(e);
+    return false;
+  }
+
+  Commands commands = getInitCommands(*scene_graph);
+  return init(commands);
+}
+
+bool Environment::init(const std::string& urdf_string,
+                       const std::string& srdf_string,
+                       const std::shared_ptr<const tesseract_common::ResourceLocator>& locator)
+{
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    impl_->resource_locator = locator;
+  }
+
+  // Parse urdf string into Scene Graph
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+  try
+  {
+    scene_graph = tesseract_urdf::parseURDFString(urdf_string, *locator);
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    tesseract_common::printNestedException(e);
+    return false;
+  }
+
+  // Parse srdf string into SRDF Model
+  auto srdf = std::make_shared<tesseract_srdf::SRDFModel>();
+  try
+  {
+    srdf->initString(*scene_graph, srdf_string, *locator);
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    tesseract_common::printNestedException(e);
+    return false;
+  }
+
+  Commands commands = getInitCommands(*scene_graph, srdf);
+  return init(commands);
+}
+
+bool Environment::init(const tesseract_common::fs::path& urdf_path,
+                       const std::shared_ptr<const tesseract_common::ResourceLocator>& locator)
+{
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    impl_->resource_locator = locator;
+  }
+
+  // Parse urdf file into Scene Graph
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+  try
+  {
+    scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), *locator);
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    tesseract_common::printNestedException(e);
+    return false;
+  }
+
+  Commands commands = getInitCommands(*scene_graph);
+  return init(commands);
+}
+
+bool Environment::init(const tesseract_common::fs::path& urdf_path,
+                       const tesseract_common::fs::path& srdf_path,
+                       const std::shared_ptr<const tesseract_common::ResourceLocator>& locator)
+{
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    impl_->resource_locator = locator;
+  }
+
+  // Parse urdf file into Scene Graph
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+  try
+  {
+    scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), *locator);
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    tesseract_common::printNestedException(e);
+    return false;
+  }
+
+  // Parse srdf file into SRDF Model
+  auto srdf = std::make_shared<tesseract_srdf::SRDFModel>();
+  try
+  {
+    srdf->initFile(*scene_graph, srdf_path.string(), *locator);
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    tesseract_common::printNestedException(e);
+    return false;
+  }
+
+  Commands commands = getInitCommands(*scene_graph, srdf);
+  return init(commands);  // NOLINT
+}
+
+bool Environment::reset()
+{
+  bool success{ false };
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    success = impl_->reset();
+  }
+
+  // Call the event callbacks
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  impl_->triggerCallbacks();
+
+  return success;
+}
+
+void Environment::clear()
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  impl_->clear();
+}
+
+bool Environment::isInitialized() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).initialized;
+}
+
+int Environment::getRevision() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).revision;
+}
+
+std::vector<std::shared_ptr<const Command>> Environment::getCommandHistory() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).commands;
+}
+
+bool Environment::applyCommands(const std::vector<std::shared_ptr<const Command>>& commands)
+{
+  bool success{ false };
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    success = impl_->applyCommandsHelper(commands);
+  }
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  impl_->triggerCallbacks();
+
+  return success;
+}
+
+bool Environment::applyCommand(std::shared_ptr<const Command> command) { return applyCommands({ std::move(command) }); }
+
+std::shared_ptr<const tesseract_scene_graph::SceneGraph> Environment::getSceneGraph() const
+{
+  return std::as_const<Implementation>(*impl_).scene_graph;
+}
+
+std::vector<std::string> Environment::getGroupJointNames(const std::string& group_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getGroupJointNames(group_name);
+}
+
+std::unique_ptr<tesseract_kinematics::JointGroup> Environment::getJointGroup(const std::string& group_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getJointGroup(group_name);
+}
+
+std::unique_ptr<tesseract_kinematics::JointGroup>
+Environment::getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getJointGroup(name, joint_names);
+}
+
+std::unique_ptr<tesseract_kinematics::KinematicGroup>
+Environment::getKinematicGroup(const std::string& group_name, const std::string& ik_solver_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getKinematicGroup(group_name, ik_solver_name);
+}
+
+// NOLINTNEXTLINE
+Eigen::Isometry3d Environment::findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).findTCPOffset(manip_info);
+}
+
+void Environment::addFindTCPOffsetCallback(const FindTCPOffsetCallbackFn& fn)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  impl_->find_tcp_cb.push_back(fn);
+}
+
+std::vector<FindTCPOffsetCallbackFn> Environment::getFindTCPOffsetCallbacks() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).find_tcp_cb;
+}
+
+void Environment::addEventCallback(std::size_t hash, const EventCallbackFn& fn)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  impl_->event_cb[hash] = fn;
+}
+
+void Environment::removeEventCallback(std::size_t hash)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  impl_->event_cb.erase(hash);
+}
+
+void Environment::clearEventCallbacks()
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  impl_->event_cb.clear();
+}
+
+std::map<std::size_t, EventCallbackFn> Environment::getEventCallbacks() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).event_cb;
+}
+
+void Environment::setResourceLocator(std::shared_ptr<const tesseract_common::ResourceLocator> locator)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  impl_->resource_locator = std::move(locator);
+}
+
+std::shared_ptr<const tesseract_common::ResourceLocator> Environment::getResourceLocator() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).resource_locator;
+}
+
+void Environment::setName(const std::string& name)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  impl_->scene_graph->setName(name);
+}
+
+const std::string& Environment::getName() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).scene_graph->getName();
+}
+
+void Environment::setState(const std::unordered_map<std::string, double>& joints)
+{
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    impl_->setState(joints);
+  }
+
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  impl_->triggerCurrentStateChangedCallbacks();
+}
+
+void Environment::setState(const std::vector<std::string>& joint_names,
+                           const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+{
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    impl_->setState(joint_names, joint_values);
+  }
+
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  impl_->triggerCurrentStateChangedCallbacks();
+}
+
+tesseract_scene_graph::SceneState Environment::getState(const std::unordered_map<std::string, double>& joints) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getState(joints);
+}
+
+tesseract_scene_graph::SceneState Environment::getState(const std::vector<std::string>& joint_names,
+                                                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getState(joint_names, joint_values);
+}
+
+tesseract_scene_graph::SceneState Environment::getState() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).current_state;
+}
+
+std::chrono::system_clock::time_point Environment::getTimestamp() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).timestamp;
+}
+
+std::chrono::system_clock::time_point Environment::getCurrentStateTimestamp() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).current_state_timestamp;
+}
+
+std::shared_ptr<const tesseract_scene_graph::Link> Environment::getLink(const std::string& name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  tesseract_scene_graph::Link::ConstPtr link = std::as_const<Implementation>(*impl_).scene_graph->getLink(name);
+  return link;
+}
+
+std::shared_ptr<const tesseract_scene_graph::JointLimits>
+Environment::getJointLimits(const std::string& joint_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).scene_graph->getJointLimits(joint_name);
+}
+
+bool Environment::getLinkCollisionEnabled(const std::string& name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).scene_graph->getLinkCollisionEnabled(name);
+}
+
+bool Environment::getLinkVisibility(const std::string& name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).scene_graph->getLinkVisibility(name);
+}
+
+std::shared_ptr<const tesseract_common::AllowedCollisionMatrix> Environment::getAllowedCollisionMatrix() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).scene_graph->getAllowedCollisionMatrix();
+}
+
+std::vector<std::string> Environment::getJointNames() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getJointNames();
+}
+
+std::vector<std::string> Environment::getActiveJointNames() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getActiveJointNames();
+}
+
+std::shared_ptr<const tesseract_scene_graph::Joint> Environment::getJoint(const std::string& name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).scene_graph->getJoint(name);
+}
+
+Eigen::VectorXd Environment::getCurrentJointValues() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getCurrentJointValues();
+}
+
+Eigen::VectorXd Environment::getCurrentJointValues(const std::vector<std::string>& joint_names) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getCurrentJointValues(joint_names);
+}
+
+std::string Environment::getRootLinkName() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).scene_graph->getRoot();
+}
+
+std::vector<std::string> Environment::getLinkNames() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getLinkNames();
+}
+
+std::vector<std::string> Environment::getActiveLinkNames() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getActiveLinkNames();
+}
+
+std::vector<std::string> Environment::getActiveLinkNames(const std::vector<std::string>& joint_names) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).scene_graph->getJointChildrenNames(joint_names);
+}
+
+std::vector<std::string> Environment::getStaticLinkNames() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getStaticLinkNames();
+}
+
+std::vector<std::string> Environment::getStaticLinkNames(const std::vector<std::string>& joint_names) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getStaticLinkNames(joint_names);
+}
+
+tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getLinkTransforms();
+}
+
+Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getLinkTransform(link_name);
+}
+
+Eigen::Isometry3d Environment::getRelativeLinkTransform(const std::string& from_link_name,
+                                                        const std::string& to_link_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getRelativeLinkTransform(from_link_name, to_link_name);
+}
+
+std::unique_ptr<tesseract_scene_graph::StateSolver> Environment::getStateSolver() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->clone();
+}
+
+tesseract_srdf::KinematicsInformation Environment::getKinematicsInformation() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).kinematics_information;
+}
+
+std::set<std::string> Environment::getGroupNames() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).kinematics_information.group_names;
+}
+
+tesseract_common::ContactManagersPluginInfo Environment::getContactManagersPluginInfo() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).contact_managers_plugin_info;
+}
+
+bool Environment::setActiveDiscreteContactManager(const std::string& name)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  return impl_->setActiveDiscreteContactManagerHelper(name);
+}
+
+std::unique_ptr<tesseract_collision::DiscreteContactManager>
+Environment::getDiscreteContactManager(const std::string& name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getDiscreteContactManager(name);
+}
+
+bool Environment::setActiveContinuousContactManager(const std::string& name)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  return impl_->setActiveContinuousContactManagerHelper(name);
+}
+
+std::unique_ptr<tesseract_collision::ContinuousContactManager>
+Environment::getContinuousContactManager(const std::string& name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getContinuousContactManager(name);
+}
+
+std::unique_ptr<tesseract_collision::DiscreteContactManager> Environment::getDiscreteContactManager() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getDiscreteContactManager();
+}
+
+void Environment::clearCachedDiscreteContactManager() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::as_const<Implementation>(*impl_).clearCachedDiscreteContactManager();
+}
+
+std::unique_ptr<tesseract_collision::ContinuousContactManager> Environment::getContinuousContactManager() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getContinuousContactManager();
+}
+
+void Environment::clearCachedContinuousContactManager() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::as_const<Implementation>(*impl_).clearCachedContinuousContactManager();
+}
+
+tesseract_common::CollisionMarginData Environment::getCollisionMarginData() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).collision_margin_data;
+}
+
+std::shared_lock<std::shared_mutex> Environment::lockRead() const
+{
+  return std::shared_lock<std::shared_mutex>(mutex_);
+}
+
+bool Environment::operator==(const Environment& rhs) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_) == std::as_const<Implementation>(*rhs.impl_);
+}
+
+bool Environment::operator!=(const Environment& rhs) const { return !operator==(rhs); }
+
+Environment::UPtr Environment::clone() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::make_unique<Environment>(std::as_const<Implementation>(*impl_).clone());
 }
 
 template <class Archive>
 void Environment::save(Archive& ar, const unsigned int /*version*/) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-
-  ar& BOOST_SERIALIZATION_NVP(resource_locator_);
-  ar& BOOST_SERIALIZATION_NVP(commands_);
-  ar& BOOST_SERIALIZATION_NVP(init_revision_);
-  ar& BOOST_SERIALIZATION_NVP(current_state_);
-  ar& boost::serialization::make_nvp("timestamp_",
-                                     boost::serialization::make_binary_object(&timestamp_, sizeof(timestamp_)));
-  ar& boost::serialization::make_nvp(
-      "current_state_timestamp_",
-      boost::serialization::make_binary_object(&current_state_timestamp_, sizeof(current_state_timestamp_)));
+  ar& BOOST_SERIALIZATION_NVP(impl_);
 }
 
 template <class Archive>
-void Environment::load(Archive& ar, const unsigned int /*version*/)
+void Environment::load(Archive& ar, const unsigned int /*version*/)  // NOLINT
 {
-  ar& BOOST_SERIALIZATION_NVP(resource_locator_);
-
-  tesseract_environment::Commands commands;
-  ar& boost::serialization::make_nvp("commands_", commands);
-  init(commands);
-
-  ar& BOOST_SERIALIZATION_NVP(init_revision_);
-
-  tesseract_scene_graph::SceneState current_state;
-  ar& boost::serialization::make_nvp("current_state_", current_state);
-  setState(current_state.joints);
-
-  ar& boost::serialization::make_nvp("timestamp_",
-                                     boost::serialization::make_binary_object(&timestamp_, sizeof(timestamp_)));
-  ar& boost::serialization::make_nvp(
-      "current_state_timestamp_",
-      boost::serialization::make_binary_object(&current_state_timestamp_, sizeof(current_state_timestamp_)));
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  ar& BOOST_SERIALIZATION_NVP(impl_);
 }
 
 template <class Archive>

@@ -71,7 +71,6 @@ private:
 }  // namespace tesseract_environment
 
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ModifyAllowedCollisionsCommand, "ModifyAllowedCollisionsCommand")
 
 #endif  // TESSERACT_ENVIRONMENT_MODIFY_ALLOWED_COLLISIONS_MATRIX_COMMAND_H

@@ -41,6 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/ignition/conversions.h>
 #include <tesseract_geometry/geometries.h>
+#include <tesseract_scene_graph/graph.h>
 
 namespace tesseract_visualization
 {

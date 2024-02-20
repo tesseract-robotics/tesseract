@@ -28,8 +28,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_collision/core/types.h>
-#include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_collision/core/discrete_contact_manager.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision

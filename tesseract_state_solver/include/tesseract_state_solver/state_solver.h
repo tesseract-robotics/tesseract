@@ -36,9 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_common/types.h>
+#include <tesseract_common/fwd.h>
+#include <tesseract_scene_graph/fwd.h>
+#include <tesseract_common/eigen_types.h>
 
 namespace tesseract_scene_graph
 {

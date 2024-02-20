@@ -29,12 +29,13 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <deque>
 #include <shared_mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/environment.h>
 namespace tesseract_environment
 {
+class Environment;
 class EnvironmentCache
 {
 public:
@@ -69,7 +70,7 @@ public:
    * @brief This will pop an Environment object from the queue
    * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
    */
-  virtual Environment::UPtr getCachedEnvironment() const = 0;
+  virtual std::unique_ptr<Environment> getCachedEnvironment() const = 0;
 };
 
 class DefaultEnvironmentCache : public EnvironmentCache
@@ -78,7 +79,7 @@ public:
   using Ptr = std::shared_ptr<DefaultEnvironmentCache>;
   using ConstPtr = std::shared_ptr<const DefaultEnvironmentCache>;
 
-  DefaultEnvironmentCache(Environment::ConstPtr env, std::size_t cache_size = 5);
+  DefaultEnvironmentCache(std::shared_ptr<const Environment> env, std::size_t cache_size = 5);
 
   /**
    * @brief Set the cache size used to hold tesseract objects for motion planning
@@ -99,11 +100,11 @@ public:
    * @brief This will pop an Environment object from the queue
    * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
    */
-  Environment::UPtr getCachedEnvironment() const override final;
+  std::unique_ptr<Environment> getCachedEnvironment() const override final;
 
 protected:
   /** @brief The tesseract_object used to create the cache */
-  Environment::ConstPtr env_;
+  std::shared_ptr<const Environment> env_;
 
   /** @brief The assigned cache size */
   std::size_t cache_size_{ 5 };
@@ -112,7 +113,7 @@ protected:
   mutable int cache_env_revision_{ 0 };
 
   /** @brief A vector of cached Tesseract objects */
-  mutable std::deque<Environment::UPtr> cache_;
+  mutable std::deque<std::unique_ptr<Environment>> cache_;
 
   /** @brief The mutex used when reading and writing to cache_ */
   mutable std::shared_mutex cache_mutex_;

@@ -99,7 +99,10 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
-using Commands = std::vector<Command::ConstPtr>;
+using Commands = std::vector<std::shared_ptr<const Command>>;
 }  // namespace tesseract_environment
+
+#include <boost/serialization/export.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::Command, "Command")
 
 #endif  // COMMAND_H

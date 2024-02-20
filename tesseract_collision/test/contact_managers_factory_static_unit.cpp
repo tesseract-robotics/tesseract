@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/bullet/bullet_factories.h>
 
 using namespace tesseract_collision;

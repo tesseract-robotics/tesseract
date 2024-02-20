@@ -43,16 +43,16 @@ public:
   using Ptr = std::shared_ptr<Plane>;
   using ConstPtr = std::shared_ptr<const Plane>;
 
-  Plane(double a, double b, double c, double d) : Geometry(GeometryType::PLANE), a_(a), b_(b), c_(c), d_(d) {}
+  Plane(double a, double b, double c, double d);
   Plane() = default;
   ~Plane() override = default;
 
-  double getA() const { return a_; }
-  double getB() const { return b_; }
-  double getC() const { return c_; }
-  double getD() const { return d_; }
+  double getA() const;
+  double getB() const;
+  double getC() const;
+  double getD() const;
 
-  Geometry::Ptr clone() const override final { return std::make_shared<Plane>(a_, b_, c_, d_); }
+  Geometry::Ptr clone() const override final;
   bool operator==(const Plane& rhs) const;
   bool operator!=(const Plane& rhs) const;
 

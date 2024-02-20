@@ -41,16 +41,20 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <vector>
+#include <memory>
+#include <unordered_map>
+#include <Eigen/Geometry>
 
 #include <kdl/tree.hpp>
 #include <kdl/jacobian.hpp>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_scene_graph/graph.h>
 
 namespace tesseract_scene_graph
 {
+class SceneGraph;
+class Joint;
+class Inertial;
+
 /**
  * @brief Convert Eigen::Isometry3d to KDL::Frame
  * @param transform Input Eigen transform (Isometry3d)
@@ -106,14 +110,14 @@ Eigen::MatrixXd convert(const KDL::Jacobian& jacobian, const std::vector<int>& q
  * @param joint Tesseract Joint
  * @return A KDL Joint
  */
-KDL::Joint convert(const Joint::ConstPtr& joint);
+KDL::Joint convert(const std::shared_ptr<const Joint>& joint);
 
 /**
  * @brief Convert Tesseract Inertail to KDL Inertial
  * @param inertial
  * @return
  */
-KDL::RigidBodyInertia convert(const Inertial::ConstPtr& inertial);
+KDL::RigidBodyInertia convert(const std::shared_ptr<const Inertial>& inertial);
 
 /** @brief The KDLTreeData populated when parsing scene graph */
 struct KDLTreeData

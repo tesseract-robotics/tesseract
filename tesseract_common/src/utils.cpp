@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
@@ -331,7 +332,7 @@ void reorder(Eigen::Ref<Eigen::VectorXd> v, std::vector<Eigen::Index> order)
   }
 }
 
-tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLElement* xml_element, std::string& value)
+int QueryStringValue(const tinyxml2::XMLElement* xml_element, std::string& value)
 {
   if (xml_element->Value() == nullptr)
     return tinyxml2::XML_NO_ATTRIBUTE;
@@ -341,7 +342,7 @@ tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLElement* xml_element, std
   return tinyxml2::XML_SUCCESS;
 }
 
-tinyxml2::XMLError QueryStringText(const tinyxml2::XMLElement* xml_element, std::string& text)
+int QueryStringText(const tinyxml2::XMLElement* xml_element, std::string& text)
 {
   if (xml_element->GetText() == nullptr)
     return tinyxml2::XML_NO_ATTRIBUTE;
@@ -351,7 +352,7 @@ tinyxml2::XMLError QueryStringText(const tinyxml2::XMLElement* xml_element, std:
   return tinyxml2::XML_SUCCESS;
 }
 
-tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLAttribute* xml_attribute, std::string& value)
+int QueryStringValue(const tinyxml2::XMLAttribute* xml_attribute, std::string& value)
 {
   if (xml_attribute->Value() == nullptr)
     return tinyxml2::XML_WRONG_ATTRIBUTE_TYPE;
@@ -361,7 +362,7 @@ tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLAttribute* xml_attribute,
   return tinyxml2::XML_SUCCESS;
 }
 
-tinyxml2::XMLError QueryStringAttribute(const tinyxml2::XMLElement* xml_element, const char* name, std::string& value)
+int QueryStringAttribute(const tinyxml2::XMLElement* xml_element, const char* name, std::string& value)
 {
   const tinyxml2::XMLAttribute* attribute = xml_element->FindAttribute(name);
   if (attribute == nullptr)
@@ -377,11 +378,9 @@ std::string StringAttribute(const tinyxml2::XMLElement* xml_element, const char*
   return str;
 }
 
-tinyxml2::XMLError QueryStringAttributeRequired(const tinyxml2::XMLElement* xml_element,
-                                                const char* name,
-                                                std::string& value)
+int QueryStringAttributeRequired(const tinyxml2::XMLElement* xml_element, const char* name, std::string& value)
 {
-  tinyxml2::XMLError status = QueryStringAttribute(xml_element, name, value);
+  int status = QueryStringAttribute(xml_element, name, value);
 
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
   {
@@ -399,11 +398,9 @@ tinyxml2::XMLError QueryStringAttributeRequired(const tinyxml2::XMLElement* xml_
   return status;
 }
 
-tinyxml2::XMLError QueryDoubleAttributeRequired(const tinyxml2::XMLElement* xml_element,
-                                                const char* name,
-                                                double& value)
+int QueryDoubleAttributeRequired(const tinyxml2::XMLElement* xml_element, const char* name, double& value)
 {
-  tinyxml2::XMLError status = xml_element->QueryDoubleAttribute(name, &value);
+  int status = xml_element->QueryDoubleAttribute(name, &value);
 
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
   {
@@ -421,9 +418,9 @@ tinyxml2::XMLError QueryDoubleAttributeRequired(const tinyxml2::XMLElement* xml_
   return status;
 }
 
-tinyxml2::XMLError QueryIntAttributeRequired(const tinyxml2::XMLElement* xml_element, const char* name, int& value)
+int QueryIntAttributeRequired(const tinyxml2::XMLElement* xml_element, const char* name, int& value)
 {
-  tinyxml2::XMLError status = xml_element->QueryIntAttribute(name, &value);
+  int status = xml_element->QueryIntAttribute(name, &value);
 
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
   {

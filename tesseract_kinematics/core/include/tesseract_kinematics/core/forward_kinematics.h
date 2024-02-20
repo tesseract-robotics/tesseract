@@ -31,12 +31,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <Eigen/Core>
-#include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/types.h>
-#include <tesseract_scene_graph/graph.h>
+#include <tesseract_common/eigen_types.h>
+#include <tesseract_scene_graph/fwd.h>
 
 namespace tesseract_kinematics
 {
