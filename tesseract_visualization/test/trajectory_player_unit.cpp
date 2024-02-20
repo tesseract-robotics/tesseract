@@ -52,7 +52,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTest)  // NOLINT
   TrajectoryPlayer player;
   player.setTrajectory(trajectory);
 
-  EXPECT_NEAR(player.trajectoryDuration(), 9, 1e-5);
+  EXPECT_NEAR(player.trajectoryDurationEnd(), 9, 1e-5);
   EXPECT_NEAR(player.currentDuration(), 0, 1e-5);
 
   for (long i = 0; i < 10; ++i)
