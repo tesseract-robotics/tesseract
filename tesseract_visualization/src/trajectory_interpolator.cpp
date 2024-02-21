@@ -77,7 +77,7 @@ void TrajectoryInterpolator::findStateIndices(const double& duration, long& befo
     return;
   }
 
-  // Find indicies
+  // Find indices
   std::size_t index = 0;
   std::size_t num_points = trajectory_.size();
   double running_duration = 0.0;
@@ -144,19 +144,19 @@ long TrajectoryInterpolator::getStateCount() const { return static_cast<long>(tr
 
 tesseract_common::JointState TrajectoryInterpolator::interpolate(const tesseract_common::JointState& start,
                                                                  const tesseract_common::JointState& end,
-                                                                 double t)
+                                                                 double f)
 {
   assert(!start.joint_names.empty());
   assert(!end.joint_names.empty());
   assert(start.position.rows() != 0);
   assert(end.position.rows() != 0);
   tesseract_common::JointState out;
-  out.time = start.time + t;
+  out.time = start.time + (end.time - start.time) * f;
   out.joint_names = start.joint_names;
   out.position.resize(static_cast<long>(out.joint_names.size()));
 
   for (long i = 0; i < static_cast<long>(out.joint_names.size()); ++i)
-    out.position[i] = start.position[i] + (end.position[i] - start.position[i]) * t;
+    out.position[i] = start.position[i] + (end.position[i] - start.position[i]) * f;
 
   return out;
 }
