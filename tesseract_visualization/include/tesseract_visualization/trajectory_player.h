@@ -87,10 +87,10 @@ public:
   double currentDuration() const;
 
   /**
-   * @brief Get the trajectory duration at the start state
+   * @brief Get the trajectory duration at the begin state
    * @return The trajectory duration
    */
-  double trajectoryDurationStart() const;
+  double trajectoryDurationBegin() const;
 
   /**
    * @brief Get the trajectory duration at the end state

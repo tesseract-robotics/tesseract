@@ -40,7 +40,7 @@ void CheckTrajectory(const tesseract_common::JointTrajectory& trajectory, int fi
   TrajectoryPlayer player;
   player.setTrajectory(trajectory);
 
-  EXPECT_NEAR(player.trajectoryDurationStart(), first, 1e-5);
+  EXPECT_NEAR(player.trajectoryDurationBegin(), first, 1e-5);
   EXPECT_NEAR(player.trajectoryDurationEnd(), last, 1e-5);
   EXPECT_NEAR(player.currentDuration(), first, 1e-5);
 
@@ -118,7 +118,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryUntimedTest)  // NOLINT
   TrajectoryPlayer player;
   player.setTrajectory(trajectory);
 
-  EXPECT_NEAR(player.trajectoryDurationStart(), first, 1e-5);
+  EXPECT_NEAR(player.trajectoryDurationBegin(), first, 1e-5);
   EXPECT_NEAR(player.trajectoryDurationEnd(), last * auto_dt, 1e-5);
   EXPECT_NEAR(player.currentDuration(), first, 1e-5);
 

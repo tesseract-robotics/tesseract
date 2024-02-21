@@ -127,7 +127,7 @@ tesseract_common::JointState TrajectoryPlayer::getByIndex(long index) const
 
 double TrajectoryPlayer::currentDuration() const { return current_duration_; }
 
-double TrajectoryPlayer::trajectoryDurationStart() const { return trajectory_duration_start_; }
+double TrajectoryPlayer::trajectoryDurationBegin() const { return trajectory_duration_start_; }
 
 double TrajectoryPlayer::trajectoryDurationEnd() const { return trajectory_duration_end_; }
 
