@@ -87,10 +87,16 @@ public:
   double currentDuration() const;
 
   /**
-   * @brief Get the trajectory duration
+   * @brief Get the trajectory duration at the begin state
    * @return The trajectory duration
    */
-  double trajectoryDuration() const;
+  double trajectoryDurationBegin() const;
+
+  /**
+   * @brief Get the trajectory duration at the end state
+   * @return The trajectory duration
+   */
+  double trajectoryDurationEnd() const;
 
   /**
    * @brief Check if the player has the reached the end of the trajectory
@@ -118,7 +124,8 @@ public:
 
 private:
   TrajectoryInterpolator::UPtr trajectory_{ nullptr };
-  double trajectory_duration_{ 0 };
+  double trajectory_duration_start_{ 0 };
+  double trajectory_duration_end_{ 0 };
   double current_duration_{ 0 };
   double scale_{ 1 };
   bool loop_{ false };
