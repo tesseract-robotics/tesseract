@@ -26,6 +26,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/functional/hash.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/map.hpp>
@@ -45,11 +46,10 @@ namespace tesseract_common
 {
 std::size_t PairHash::operator()(const LinkNamesPair& pair) const
 {
-  thread_local std::string key;
-  key.clear();
-  key.append(pair.first);
-  key.append(pair.second);
-  return std::hash<std::string>()(key);
+  std::size_t seed{ 0 };
+  boost::hash_combine(seed, pair.first);
+  boost::hash_combine(seed, pair.second);
+  return seed;
 }
 
 LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
