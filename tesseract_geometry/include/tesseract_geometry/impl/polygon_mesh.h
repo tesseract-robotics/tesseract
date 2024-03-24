@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
@@ -38,6 +37,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/eigen_types.h>
 
 #include <tesseract_geometry/geometry.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_geometry
 {

@@ -30,8 +30,12 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <vector>
-#include <boost/serialization/access.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_common
 {

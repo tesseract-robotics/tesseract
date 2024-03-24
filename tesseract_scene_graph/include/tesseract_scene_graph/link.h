@@ -39,7 +39,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <string>
 #include <vector>
 #include <memory>
@@ -47,6 +47,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/fwd.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_scene_graph
 {
@@ -235,7 +240,6 @@ private:
 
 }  // namespace tesseract_scene_graph
 
-#include <boost/serialization/export.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Material, "Material")
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Inertial, "Inertial")
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Visual, "Visual")

@@ -39,12 +39,17 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <string>
 #include <memory>
 #include <iosfwd>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_scene_graph
 {
@@ -342,8 +347,6 @@ std::ostream& operator<<(std::ostream& os, const JointType& type);
 
 }  // namespace tesseract_scene_graph
 
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointDynamics, "JointDynamics")
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointLimits, "JointLimits")
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointSafety, "JointSafety")

@@ -3,13 +3,18 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <string>
 #include <memory>
 #include <Eigen/Core>
 #include <unordered_map>
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_common
 {
@@ -106,7 +111,6 @@ private:
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm);
 }  // namespace tesseract_common
 
-#include <boost/serialization/export.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::AllowedCollisionMatrix, "AllowedCollisionMatrix")
 
 #endif  // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H

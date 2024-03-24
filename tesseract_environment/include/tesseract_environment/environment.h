@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <functional>
 #include <vector>
 #include <string>
@@ -50,6 +49,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/filesystem.h>
 #include <tesseract_common/eigen_types.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_environment
 {

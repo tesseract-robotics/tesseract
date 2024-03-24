@@ -29,7 +29,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <string>
 #include <memory>
 #include <array>
@@ -41,6 +41,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/kinematics_information.h>
 #include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/calibration_info.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 /// Main namespace
 namespace tesseract_srdf
@@ -117,7 +122,6 @@ private:
 
 }  // namespace tesseract_srdf
 
-#include <boost/serialization/export.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_srdf::SRDFModel, "SRDFModel")
 
 #endif  // TESSERACT_SRDF_SRDF_MODEL_H

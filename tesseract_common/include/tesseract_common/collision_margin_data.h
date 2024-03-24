@@ -30,7 +30,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <Eigen/Core>
 #include <string>
 #include <unordered_map>
@@ -38,6 +38,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 #include <tesseract_common/utils.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_common
 {
@@ -172,7 +177,7 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_common
-#include <boost/serialization/export.hpp>
+
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::CollisionMarginData, "CollisionMarginData")
 
 #endif  // TESSERACT_COMMON_COLLISION_MARGIN_DATA_H

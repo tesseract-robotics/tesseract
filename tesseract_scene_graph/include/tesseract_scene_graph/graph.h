@@ -28,7 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/graph/adjacency_list.hpp>  // for customizable graphs
 #include <boost/graph/properties.hpp>
 #include <string>
@@ -39,6 +39,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/fwd.h>
 
 #ifndef SWIG
+
+namespace boost::serialization
+{
+class access;
+}
 
 /* definition of basic boost::graph properties */
 namespace boost
@@ -607,7 +612,6 @@ std::ostream& operator<<(std::ostream& os, const ShortestPath& path);
 
 }  // namespace tesseract_scene_graph
 
-#include <boost/serialization/export.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::SceneGraph, "SceneGraph")
 
 #endif  // TESSERACT_SCENE_GRAPH_GRAPH_H

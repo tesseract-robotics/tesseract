@@ -28,7 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <Eigen/Core>
 #include <vector>
 #include <map>
@@ -36,6 +36,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/eigen_types.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_common
 {
@@ -195,7 +200,6 @@ private:
 
 }  // namespace tesseract_common
 
-#include <boost/serialization/export.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::PluginInfo, "PluginInfo")
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::PluginInfoContainer, "PluginInfoContainer")
 BOOST_CLASS_EXPORT_KEY2(tesseract_common::KinematicsPluginInfo, "KinematicsPluginInfo")

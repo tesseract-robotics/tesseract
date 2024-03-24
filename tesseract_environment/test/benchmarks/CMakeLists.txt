@@ -18,7 +18,7 @@ macro(add_benchmark benchmark_name benchmark_file)
     console_bridge
     ${Boost_LIBRARIES})
   target_include_directories(${benchmark_name} PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
-  add_run_benchmark_target(${benchmark_name})
+  # add_run_benchmark_target(${benchmark_name})
   add_dependencies(${benchmark_name} ${PROJECT_NAME})
 endmacro()
 
