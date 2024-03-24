@@ -29,7 +29,7 @@ macro(add_benchmark benchmark_name benchmark_file)
     ${PROJECT_NAME}_test_suite_benchmarks
     ${PROJECT_NAME}_bullet
     ${PROJECT_NAME}_fcl)
-  # add_run_benchmark_target(${benchmark_name})
+  add_run_benchmark_target(${benchmark_name})
 endmacro()
 
 add_benchmark(${PROJECT_NAME}_bullet_discrete_simple_benchmarks bullet_discrete_simple_benchmarks.cpp)
