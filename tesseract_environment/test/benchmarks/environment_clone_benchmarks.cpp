@@ -3,6 +3,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <benchmark/benchmark.h>
 #include <algorithm>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_scene_graph/graph.h>
 #include <tesseract_environment/environment.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/urdf_parser.h>

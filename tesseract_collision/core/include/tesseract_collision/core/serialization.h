@@ -26,17 +26,7 @@
 #ifndef TESSERACT_COLLISION_SERIALIZATION_H
 #define TESSERACT_COLLISION_SERIALIZATION_H
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/tracking.hpp>
-#include <boost/serialization/tracking_enum.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/fwd.h>
 
 namespace boost::serialization
 {

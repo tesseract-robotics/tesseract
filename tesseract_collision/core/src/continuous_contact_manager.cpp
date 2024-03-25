@@ -24,7 +24,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_collision/core/utils.h>
 
 namespace tesseract_collision

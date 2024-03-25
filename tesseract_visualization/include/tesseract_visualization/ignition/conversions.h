@@ -32,8 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/ignition/entity_manager.h>
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_common/types.h>
+#include <tesseract_common/eigen_types.h>
+#include <tesseract_scene_graph/fwd.h>
 
 namespace tesseract_visualization
 {

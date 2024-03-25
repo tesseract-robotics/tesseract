@@ -32,21 +32,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/fwd.h>
+#include <tesseract_scene_graph/fwd.h>
+
 namespace tinyxml2
 {
 class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
-namespace tesseract_scene_graph
-{
-class Link;
-class Material;
-}  // namespace tesseract_scene_graph
-
-namespace tesseract_common
-{
-class ResourceLocator;
-}  // namespace tesseract_common
 
 namespace tesseract_urdf
 {

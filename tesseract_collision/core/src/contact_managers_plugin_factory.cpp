@@ -29,6 +29,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_common/plugin_loader.hpp>
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
@@ -202,7 +204,8 @@ std::string ContactManagersPluginFactory::getDefaultContinuousContactManagerPlug
   return continuous_plugin_info_.default_plugin;
 }
 
-DiscreteContactManager::UPtr ContactManagersPluginFactory::createDiscreteContactManager(const std::string& name) const
+std::unique_ptr<DiscreteContactManager>
+ContactManagersPluginFactory::createDiscreteContactManager(const std::string& name) const
 {
   auto cm_it = discrete_plugin_info_.plugins.find(name);
   if (cm_it == discrete_plugin_info_.plugins.end())
@@ -216,7 +219,7 @@ DiscreteContactManager::UPtr ContactManagersPluginFactory::createDiscreteContact
   return createDiscreteContactManager(name, cm_it->second);
 }
 
-DiscreteContactManager::UPtr
+std::unique_ptr<DiscreteContactManager>
 ContactManagersPluginFactory::createDiscreteContactManager(const std::string& name,
                                                            const tesseract_common::PluginInfo& plugin_info) const
 {
@@ -244,7 +247,7 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
   // LCOV_EXCL_STOP
 }
 
-ContinuousContactManager::UPtr
+std::unique_ptr<ContinuousContactManager>
 ContactManagersPluginFactory::createContinuousContactManager(const std::string& name) const
 {
   auto cm_it = continuous_plugin_info_.plugins.find(name);
@@ -259,7 +262,7 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
   return createContinuousContactManager(name, cm_it->second);
 }
 
-ContinuousContactManager::UPtr
+std::unique_ptr<ContinuousContactManager>
 ContactManagersPluginFactory::createContinuousContactManager(const std::string& name,
                                                              const tesseract_common::PluginInfo& plugin_info) const
 {

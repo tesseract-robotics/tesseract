@@ -25,10 +25,18 @@
  */
 
 #include <tesseract_collision/core/utils.h>
-#include <tesseract_environment/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
+#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_environment/utils.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/joint.h>
+#include <tesseract_state_solver/state_solver.h>
+#include <tesseract_kinematics/core/joint_group.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
 
 namespace tesseract_environment
 {

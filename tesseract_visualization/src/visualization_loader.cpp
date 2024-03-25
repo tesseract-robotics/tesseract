@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization_loader.h>
+#include <tesseract_visualization/visualization.h>
 #include <tesseract_common/class_loader.h>
 
 const std::string TESSERACT_IGNITION_LIBRARY_NAME = "tesseract_visualization_ignition_visualization_plugin";
@@ -48,7 +49,7 @@ VisualizationLoader::VisualizationLoader()
   search_paths.insert(TESSERACT_VISUALIZATION_PLUGIN_PATH);
 }
 
-Visualization::Ptr VisualizationLoader::get(std::string plugin_name) const
+std::shared_ptr<Visualization> VisualizationLoader::get(std::string plugin_name) const
 {
   if (plugin_name.empty())
     plugin_name = TESSERACT_IGNITION_SYMBOL_NAME;

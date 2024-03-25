@@ -29,11 +29,63 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/nvp.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/utils.h>
 #include <tesseract_geometry/impl/convex_mesh.h>
+#include <tesseract_geometry/impl/mesh_material.h>
+#include <tesseract_common/resource_locator.h>
 
 namespace tesseract_geometry
 {
+ConvexMesh::ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+                       std::shared_ptr<const Eigen::VectorXi> faces,
+                       tesseract_common::Resource::ConstPtr resource,
+                       const Eigen::Vector3d& scale,
+                       std::shared_ptr<const tesseract_common::VectorVector3d> normals,
+                       std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                       MeshMaterial::Ptr mesh_material,
+                       std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures)
+  : PolygonMesh(std::move(vertices),
+                std::move(faces),
+                std::move(resource),
+                scale,
+                std::move(normals),
+                std::move(vertex_colors),
+                std::move(mesh_material),
+                std::move(mesh_textures),
+                GeometryType::CONVEX_MESH)
+{
+}
+
+ConvexMesh::ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+                       std::shared_ptr<const Eigen::VectorXi> faces,
+                       int face_count,
+                       tesseract_common::Resource::ConstPtr resource,
+                       const Eigen::Vector3d& scale,
+                       std::shared_ptr<const tesseract_common::VectorVector3d> normals,
+                       std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                       MeshMaterial::Ptr mesh_material,
+                       std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures)
+  : PolygonMesh(std::move(vertices),
+                std::move(faces),
+                face_count,
+                std::move(resource),
+                scale,
+                std::move(normals),
+                std::move(vertex_colors),
+                std::move(mesh_material),
+                std::move(mesh_textures),
+                GeometryType::CONVEX_MESH)
+{
+}
+
+ConvexMesh::CreationMethod ConvexMesh::getCreationMethod() const { return creation_method_; }
+
+void ConvexMesh::setCreationMethod(CreationMethod method) { creation_method_ = method; }
+
+Geometry::Ptr ConvexMesh::clone() const
+{
+  return std::make_shared<ConvexMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
+}
+
 bool ConvexMesh::operator==(const ConvexMesh& rhs) const
 {
   bool equal = true;

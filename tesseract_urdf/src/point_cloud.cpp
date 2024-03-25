@@ -32,14 +32,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <pcl/io/pcd_io.h>
 #include <tesseract_common/utils.h>
 #include <tinyxml2.h>
+#include <octomap/OcTree.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_geometry/impl/octree.h>
+#include <tesseract_geometry/impl/octree_utils.h>
 #include <tesseract_urdf/point_cloud.h>
 #include <tesseract_common/resource_locator.h>
 
 tesseract_geometry::Octree::Ptr tesseract_urdf::parsePointCloud(const tinyxml2::XMLElement* xml_element,
                                                                 const tesseract_common::ResourceLocator& locator,
-                                                                tesseract_geometry::Octree::SubType shape_type,
+                                                                tesseract_geometry::OctreeSubType shape_type,
                                                                 bool prune,
                                                                 int /*version*/)
 {
@@ -68,7 +71,8 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parsePointCloud(const tinyxml2::
   if (cloud->points.empty())
     std::throw_with_nested(std::runtime_error("PointCloud: Imported point cloud from '" + filename + "' is empty!"));
 
-  auto geom = std::make_shared<tesseract_geometry::Octree>(*cloud, resolution, shape_type, prune);
+  auto octree = tesseract_geometry::createOctree(*cloud, resolution, prune);
+  auto geom = std::make_shared<tesseract_geometry::Octree>(std::move(octree), shape_type, prune);
   if (geom == nullptr)
     std::throw_with_nested(std::runtime_error("PointCloud: Failed to create Tesseract Octree Geometry from point "
                                               "cloud!"));

@@ -28,76 +28,54 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
-#include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
+namespace boost::serialization
+{
+class access;
+}
+
+namespace octomap
+{
+class OcTree;
+class OcTreeNode;
+}  // namespace octomap
+
 namespace tesseract_geometry
 {
+enum class OctreeSubType
+{
+  BOX,
+  SPHERE_INSIDE,
+  SPHERE_OUTSIDE
+};
+
 class Octree : public Geometry
 {
 public:
   using Ptr = std::shared_ptr<Octree>;
   using ConstPtr = std::shared_ptr<const Octree>;
 
-  enum SubType
-  {
-    BOX,
-    SPHERE_INSIDE,
-    SPHERE_OUTSIDE
-  };
-
-  Octree(std::shared_ptr<const octomap::OcTree> octree, const SubType sub_type)
-    : Geometry(GeometryType::OCTREE), octree_(std::move(octree)), sub_type_(sub_type)
-  {
-  }
-
-  template <typename PointT>
-  Octree(const PointT& point_cloud,
-         const double resolution,
-         const SubType sub_type,
-         const bool prune,
-         const bool binary = true)
-    : Geometry(GeometryType::OCTREE), sub_type_(sub_type), resolution_(resolution)
-  {
-    auto ot = std::make_shared<octomap::OcTree>(resolution);
-
-    for (auto& point : point_cloud.points)
-      ot->updateNode(point.x, point.y, point.z, true, true);
-
-    // Per the documentation for overload updateNode above with lazy_eval enabled this must be called after all points
-    // are added
-    ot->updateInnerOccupancy();
-    if (binary)
-    {
-      ot->toMaxLikelihood();
-      binary_octree_ = binary;
-    }
-
-    if (prune)
-    {
-      tesseract_geometry::Octree::prune(*ot);
-      pruned_ = prune;
-    }
-
-    octree_ = ot;
-  }
-
+  Octree(std::shared_ptr<const octomap::OcTree> octree,
+         OctreeSubType sub_type,
+         bool pruned = false,
+         bool binary_octree = false);
   Octree() = default;
   ~Octree() override = default;
 
-  const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
+  const std::shared_ptr<const octomap::OcTree>& getOctree() const;
 
-  SubType getSubType() const { return sub_type_; }
+  OctreeSubType getSubType() const;
 
-  bool getPruned() const { return pruned_; }
+  bool getPruned() const;
 
-  Geometry::Ptr clone() const override final { return std::make_shared<Octree>(octree_, sub_type_); }
+  Geometry::Ptr clone() const override final;
+
   bool operator==(const Octree& rhs) const;
   bool operator!=(const Octree& rhs) const;
 
@@ -114,99 +92,25 @@ public:
    *
    * @return number of sub shapes
    */
-  long calcNumSubShapes() const
-  {
-    long cnt = 0;
-    double occupancy_threshold = octree_->getOccupancyThres();
-    for (auto it = octree_->begin(static_cast<unsigned char>(octree_->getTreeDepth())), end = octree_->end(); it != end;
-         ++it)
-      if (it->getOccupancy() >= occupancy_threshold)
-        ++cnt;
-
-    return cnt;
-  }
+  long calcNumSubShapes() const;
 
 private:
   std::shared_ptr<const octomap::OcTree> octree_;
-  SubType sub_type_{ SubType::BOX };
+  OctreeSubType sub_type_{ OctreeSubType::BOX };
   double resolution_{ 0.01 };
   bool pruned_{ false };
   bool binary_octree_{ false };
 
-  static bool isNodeCollapsible(octomap::OcTree& octree, octomap::OcTreeNode* node)
-  {
-    if (!octree.nodeChildExists(node, 0))
-      return false;
+  static bool isNodeCollapsible(octomap::OcTree& octree, octomap::OcTreeNode* node);
 
-    double occupancy_threshold = octree.getOccupancyThres();
-
-    const octomap::OcTreeNode* firstChild = octree.getNodeChild(node, 0);
-    if (octree.nodeHasChildren(firstChild) || firstChild->getOccupancy() < occupancy_threshold)
-      return false;
-
-    for (unsigned int i = 1; i < 8; i++)
-    {
-      // comparison via getChild so that casts of derived classes ensure
-      // that the right == operator gets called
-      if (!octree.nodeChildExists(node, i))
-        return false;
-
-      if (octree.nodeHasChildren(octree.getNodeChild(node, i)))
-        return false;
-
-      if (octree.getNodeChild(node, i)->getOccupancy() < occupancy_threshold)
-        return false;
-    }
-
-    return true;
-  }
-
-  static bool pruneNode(octomap::OcTree& octree, octomap::OcTreeNode* node)
-  {
-    if (!isNodeCollapsible(octree, node))
-      return false;
-
-    // set value to children's values (all assumed equal)
-    node->copyData(*(octree.getNodeChild(node, 0)));
-
-    // delete children (known to be leafs at this point!)
-    for (unsigned int i = 0; i < 8; i++)
-    {
-      octree.deleteNodeChild(node, i);
-    }
-
-    return true;
-  }
+  static bool pruneNode(octomap::OcTree& octree, octomap::OcTreeNode* node);
 
   // NOLINTNEXTLINE(misc-no-recursion)
   static void pruneRecurs(octomap::OcTree& octree,
                           octomap::OcTreeNode* node,
                           unsigned int depth,
                           unsigned int max_depth,
-                          unsigned int& num_pruned)
-  {
-    assert(node);
-
-    if (depth < max_depth)
-    {
-      for (unsigned int i = 0; i < 8; i++)
-      {
-        if (octree.nodeChildExists(node, i))
-        {
-          pruneRecurs(octree, octree.getNodeChild(node, i), depth + 1, max_depth, num_pruned);
-        }
-      }
-    }  // end if depth
-
-    else
-    {
-      // max level reached
-      if (pruneNode(octree, node))
-      {
-        num_pruned++;
-      }
-    }
-  }
+                          unsigned int& num_pruned);
 
   friend class boost::serialization::access;
   template <class Archive>
@@ -227,19 +131,7 @@ public:
    *
    * @param octree The octree to be pruned.
    */
-  static void prune(octomap::OcTree& octree)
-  {
-    if (octree.getRoot() == nullptr)
-      return;
-
-    for (unsigned int depth = octree.getTreeDepth() - 1; depth > 0; --depth)
-    {
-      unsigned int num_pruned = 0;
-      pruneRecurs(octree, octree.getRoot(), 0, depth, num_pruned);
-      if (num_pruned == 0)
-        break;
-    }
-  }
+  static void prune(octomap::OcTree& octree);
 };
 }  // namespace tesseract_geometry
 

@@ -4,10 +4,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <fstream>
 #include <yaml-cpp/yaml.h>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_common/collision_margin_data.h>
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_srdf/collision_margins.h>
@@ -19,6 +21,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_srdf/utils.h>
 #include <tesseract_support/tesseract_support_resource_locator.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/joint.h>
 
 enum class ABBConfig
 {

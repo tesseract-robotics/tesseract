@@ -40,38 +40,24 @@ class Timer
 
 public:
   /** @brief Start the timer */
-  void start()
-  {
-    start_time_ = Clock::now();
-    running_ = true;
-  }
+  void start();
 
   /** @brief Stop the timer */
-  void stop()
-  {
-    end_time_ = Clock::now();
-    running_ = false;
-  }
+  void stop();
 
   /**
    * @brief Get the elapsed time in milliseconds
    * @details If timer is actively running it will use Clock::now() as the end time
    * @return The elapsed time in milliseconds
    */
-  double elapsedMilliseconds() const
-  {
-    if (running_)
-      return std::chrono::duration<double, std::milli>(Clock::now() - start_time_).count();
-
-    return std::chrono::duration<double, std::milli>(end_time_ - start_time_).count();
-  }
+  double elapsedMilliseconds() const;
 
   /**
    * @brief Get the elapsed time in seconds
    * @details If timer is actively running it will use Clock::now() as the end time
    * @return The elapsed time in seconds
    */
-  double elapsedSeconds() const { return (elapsedMilliseconds() / 1000.0); }
+  double elapsedSeconds() const;
 
 private:
   std::chrono::time_point<Clock> start_time_;

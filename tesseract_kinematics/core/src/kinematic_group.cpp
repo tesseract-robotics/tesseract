@@ -29,16 +29,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/kinematic_group.h>
+#include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/core/utils.h>
 #include <tesseract_common/utils.h>
 
-#include <tesseract_scene_graph/kdl_parser.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_state_solver/state_solver.h>
 
 namespace tesseract_kinematics
 {
+KinGroupIKInput::KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std::string tl)
+  : pose(p), working_frame(std::move(wf)), tip_link_name(std::move(tl))
+{
+}
+
 KinematicGroup::KinematicGroup(std::string name,
                                std::vector<std::string> joint_names,
-                               InverseKinematics::UPtr inv_kin,
+                               std::unique_ptr<InverseKinematics> inv_kin,
                                const tesseract_scene_graph::SceneGraph& scene_graph,
                                const tesseract_scene_graph::SceneState& scene_state)
   : JointGroup(std::move(name), joint_names, scene_graph, scene_state)
@@ -95,6 +102,8 @@ KinematicGroup::KinematicGroup(std::string name,
 }
 
 KinematicGroup::KinematicGroup(const KinematicGroup& other) : JointGroup(other) { *this = other; }
+
+KinematicGroup::~KinematicGroup() = default;
 
 KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
 {

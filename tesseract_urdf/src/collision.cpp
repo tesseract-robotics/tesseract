@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_scene_graph/link.h>
+#include <tesseract_geometry/geometry.h>
 #include <tesseract_urdf/collision.h>
 #include <tesseract_urdf/geometry.h>
 #include <tesseract_urdf/origin.h>

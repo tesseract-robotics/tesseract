@@ -31,9 +31,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gz/math/eigen3/Conversions.hh>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/joint_state.h>
+#include <tesseract_collision/core/types.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_environment/environment.h>
+
 #include <tesseract_visualization/ignition/tesseract_ignition_visualization.h>
 #include <tesseract_visualization/ignition/conversions.h>
 #include <tesseract_visualization/trajectory_player.h>
+#include <tesseract_visualization/markers/marker.h>
 #include <tesseract_visualization/markers/arrow_marker.h>
 #include <tesseract_visualization/markers/axis_marker.h>
 #include <tesseract_visualization/markers/contact_results_marker.h>
@@ -331,7 +337,8 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
   }
 }
 
-void TesseractIgnitionVisualization::plotMarkers(const std::vector<Marker::Ptr>& /*markers*/, std::string /*ns*/)
+void TesseractIgnitionVisualization::plotMarkers(const std::vector<std::shared_ptr<Marker> >& /*markers*/,
+                                                 std::string /*ns*/)
 {
   ignerr << "plotMarkers is currently not implemented!" << std::endl;
 }

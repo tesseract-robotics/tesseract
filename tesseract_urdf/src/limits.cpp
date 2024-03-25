@@ -41,7 +41,7 @@ tesseract_scene_graph::JointLimits::Ptr tesseract_urdf::parseLimits(const tinyxm
 {
   auto limits = std::make_shared<tesseract_scene_graph::JointLimits>();
 
-  tinyxml2::XMLError status = xml_element->QueryDoubleAttribute("lower", &(limits->lower));
+  int status = xml_element->QueryDoubleAttribute("lower", &(limits->lower));
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Limits: Missing or failed to parse attribute 'lower'!"));
 

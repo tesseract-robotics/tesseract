@@ -30,16 +30,23 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <array>
 #include <vector>
+#include <set>
 #include <string>
 #include <sstream>
 #include <stdexcept>
 #include <random>
 #include <Eigen/Core>
-#include <tinyxml2.h>
+#include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/allowed_collision_matrix.h>
-#include <tesseract_common/types.h>
+#include <tesseract_common/filesystem.h>
+
+namespace tinyxml2
+{
+class XMLElement;
+class XMLAttribute;
+}  // namespace tinyxml2
 
 namespace tesseract_common
 {
@@ -363,7 +370,7 @@ void reorder(Eigen::Ref<Eigen::VectorXd> v, std::vector<Eigen::Index> order);
  * @param value The value to update from the xml element
  * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE
  */
-tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLElement* xml_element, std::string& value);
+int QueryStringValue(const tinyxml2::XMLElement* xml_element, std::string& value);
 
 /**
  * @brief Query a string Text from xml element
@@ -371,7 +378,7 @@ tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLElement* xml_element, std
  * @param test The value to update from the xml element
  * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE
  */
-tinyxml2::XMLError QueryStringText(const tinyxml2::XMLElement* xml_element, std::string& text);
+int QueryStringText(const tinyxml2::XMLElement* xml_element, std::string& text);
 
 /**
  * @brief Query a string value from xml attribute
@@ -379,7 +386,7 @@ tinyxml2::XMLError QueryStringText(const tinyxml2::XMLElement* xml_element, std:
  * @param value The value to update from the xml attribute
  * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
  */
-tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLAttribute* xml_attribute, std::string& value);
+int QueryStringValue(const tinyxml2::XMLAttribute* xml_attribute, std::string& value);
 
 /**
  * @brief Query a string attribute from an xml element
@@ -389,7 +396,7 @@ tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLAttribute* xml_attribute,
  * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or
  * tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
  */
-tinyxml2::XMLError QueryStringAttribute(const tinyxml2::XMLElement* xml_element, const char* name, std::string& value);
+int QueryStringAttribute(const tinyxml2::XMLElement* xml_element, const char* name, std::string& value);
 
 /**
  * @brief Get string attribute if exist. If it does not exist it returns the default value.
@@ -412,9 +419,7 @@ std::string StringAttribute(const tinyxml2::XMLElement* xml_element, const char*
  * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or
  * tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
  */
-tinyxml2::XMLError QueryStringAttributeRequired(const tinyxml2::XMLElement* xml_element,
-                                                const char* name,
-                                                std::string& value);
+int QueryStringAttributeRequired(const tinyxml2::XMLElement* xml_element, const char* name, std::string& value);
 
 /**
  * @brief Query a double attribute from an xml element and print error log
@@ -428,9 +433,7 @@ tinyxml2::XMLError QueryStringAttributeRequired(const tinyxml2::XMLElement* xml_
  * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or
  * tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
  */
-tinyxml2::XMLError QueryDoubleAttributeRequired(const tinyxml2::XMLElement* xml_element,
-                                                const char* name,
-                                                double& value);
+int QueryDoubleAttributeRequired(const tinyxml2::XMLElement* xml_element, const char* name, double& value);
 
 /**
  * @brief Query a int attribute from an xml element and print error log
@@ -444,7 +447,7 @@ tinyxml2::XMLError QueryDoubleAttributeRequired(const tinyxml2::XMLElement* xml_
  * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or
  * tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
  */
-tinyxml2::XMLError QueryIntAttributeRequired(const tinyxml2::XMLElement* xml_element, const char* name, int& value);
+int QueryIntAttributeRequired(const tinyxml2::XMLElement* xml_element, const char* name, int& value);
 
 /**
  * @brief Check if two double are relatively equal

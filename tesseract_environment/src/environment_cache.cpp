@@ -25,11 +25,13 @@
  */
 
 #include <tesseract_environment/environment_cache.h>
+#include <tesseract_environment/environment.h>
+#include <tesseract_kinematics/core/joint_group.h>
+#include <tesseract_kinematics/core/kinematic_group.h>
 
 namespace tesseract_environment
 {
-DefaultEnvironmentCache::DefaultEnvironmentCache(tesseract_environment::Environment::ConstPtr env,
-                                                 std::size_t cache_size)
+DefaultEnvironmentCache::DefaultEnvironmentCache(std::shared_ptr<const Environment> env, std::size_t cache_size)
   : env_(std::move(env)), cache_size_(cache_size)
 {
 }
@@ -48,14 +50,14 @@ void DefaultEnvironmentCache::refreshCache() const
   refreshCacheHelper();
 }
 
-tesseract_environment::Environment::UPtr DefaultEnvironmentCache::getCachedEnvironment() const
+std::unique_ptr<Environment> DefaultEnvironmentCache::getCachedEnvironment() const
 {
   tesseract_scene_graph::SceneState current_state = env_->getState();
 
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
   refreshCacheHelper();  // This is to make sure the cached items are updated if needed
   assert(!cache_.empty());
-  tesseract_environment::Environment::UPtr t = std::move(cache_.back());
+  std::unique_ptr<Environment> t = std::move(cache_.back());
   // Update to the current joint values
   t->setState(current_state.joints);
 
@@ -66,7 +68,7 @@ tesseract_environment::Environment::UPtr DefaultEnvironmentCache::getCachedEnvir
 
 void DefaultEnvironmentCache::refreshCacheHelper() const
 {
-  tesseract_environment::Environment::UPtr env;
+  std::unique_ptr<Environment> env;
   auto lock_read = env_->lockRead();
   int rev = env_->getRevision();
   if (rev != cache_env_revision_ || cache_.empty())

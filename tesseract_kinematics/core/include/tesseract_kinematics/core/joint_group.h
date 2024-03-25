@@ -26,9 +26,11 @@
 #ifndef TESSERACT_KINEMATICS_JOINT_GROUP_H
 #define TESSERACT_KINEMATICS_JOINT_GROUP_H
 
-#include <tesseract_common/types.h>
+#include <tesseract_scene_graph/fwd.h>
+#include <tesseract_state_solver/fwd.h>
+#include <tesseract_common/eigen_types.h>
+#include <tesseract_common/kinematic_limits.h>
 #include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_state_solver/kdl/kdl_state_solver.h>
 
 namespace tesseract_kinematics
 {
@@ -51,7 +53,7 @@ public:
   using UPtr = std::unique_ptr<JointGroup>;
   using ConstUPtr = std::unique_ptr<const JointGroup>;
 
-  virtual ~JointGroup() = default;
+  virtual ~JointGroup();
   JointGroup(const JointGroup& other);
   JointGroup& operator=(const JointGroup& other);
   JointGroup(JointGroup&&) = default;
@@ -202,7 +204,7 @@ public:
 protected:
   std::string name_;
   tesseract_scene_graph::SceneState state_;
-  tesseract_scene_graph::StateSolver::UPtr state_solver_;
+  std::unique_ptr<tesseract_scene_graph::StateSolver> state_solver_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> link_names_;
   std::vector<std::string> static_link_names_;

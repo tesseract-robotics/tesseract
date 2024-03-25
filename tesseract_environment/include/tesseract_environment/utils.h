@@ -26,12 +26,18 @@
 #ifndef TESSERACT_ENVIRONMENT_CORE_UTILS_H
 #define TESSERACT_ENVIRONMENT_CORE_UTILS_H
 
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract_collision/core/types.h>
-#include <tesseract_environment/environment.h>
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <string>
+#include <vector>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_scene_graph/fwd.h>
+#include <tesseract_collision/core/fwd.h>
+#include <tesseract_state_solver/fwd.h>
+#include <tesseract_kinematics/core/fwd.h>
+
+#include <tesseract_common/eigen_types.h>
 
 namespace tesseract_environment
 {

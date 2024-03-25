@@ -28,12 +28,16 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_geometry
 {
@@ -43,15 +47,15 @@ public:
   using Ptr = std::shared_ptr<Box>;
   using ConstPtr = std::shared_ptr<const Box>;
 
-  Box(double x, double y, double z) : Geometry(GeometryType::BOX), x_(x), y_(y), z_(z) {}
+  Box(double x, double y, double z);
   Box() = default;
   ~Box() override = default;
 
-  double getX() const { return x_; }
-  double getY() const { return y_; }
-  double getZ() const { return z_; }
+  double getX() const;
+  double getY() const;
+  double getZ() const;
 
-  Geometry::Ptr clone() const override final { return std::make_shared<Box>(x_, y_, z_); }
+  Geometry::Ptr clone() const override final;
   bool operator==(const Box& rhs) const;
   bool operator!=(const Box& rhs) const;
 

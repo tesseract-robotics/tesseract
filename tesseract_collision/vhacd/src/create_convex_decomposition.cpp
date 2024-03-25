@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/vhacd/convex_decomposition_vhacd.h>
+#include <tesseract_geometry/impl/convex_mesh.h>
 
 namespace
 {
@@ -159,7 +160,8 @@ int main(int argc, char** argv)
   }
 
   tesseract_collision::ConvexDecompositionVHACD convex_decomp(params);
-  std::vector<tesseract_geometry::ConvexMesh::Ptr> convex_hulls = convex_decomp.compute(mesh_vertices, mesh_faces);
+  std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>> convex_hulls =
+      convex_decomp.compute(mesh_vertices, mesh_faces);
 
   if (convex_hulls.empty())
   {

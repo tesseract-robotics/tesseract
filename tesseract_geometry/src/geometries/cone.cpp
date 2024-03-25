@@ -34,6 +34,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
+Cone::Cone(double r, double l) : Geometry(GeometryType::CONE), r_(r), l_(l) {}
+
+double Cone::getRadius() const { return r_; }
+double Cone::getLength() const { return l_; }
+
+Geometry::Ptr Cone::clone() const { return std::make_shared<Cone>(r_, l_); }
+
 bool Cone::operator==(const Cone& rhs) const
 {
   bool equal = true;

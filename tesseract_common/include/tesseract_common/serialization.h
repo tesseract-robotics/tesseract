@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/tracking_enum.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/types.h>
+#include <tesseract_common/filesystem.h>
 #include <tesseract_common/serialization_extensions.h>
 
 // Used to replace commas in these macros to avoid them being interpreted as multiple arguments

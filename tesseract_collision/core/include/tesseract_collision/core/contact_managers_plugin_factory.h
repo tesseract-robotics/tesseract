@@ -31,13 +31,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <memory>
 #include <map>
-#include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract_collision/core/continuous_contact_manager.h>
+#include <tesseract_common/filesystem.h>
 #include <tesseract_common/plugin_loader.h>
-#include <tesseract_common/types.h>
+#include <tesseract_common/plugin_info.h>
 
 // clang-format off
 #define TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                    \
@@ -51,6 +49,8 @@ namespace tesseract_collision
 {
 /** @brief Forward declare Plugin Factory */
 class ContactManagersPluginFactory;
+class DiscreteContactManager;
+class ContinuousContactManager;
 
 /** @brief Define a discrete contact manager plugin which the factory can create an instance */
 class DiscreteContactManagerFactory
@@ -66,7 +66,7 @@ public:
    * @param name The name of the contact manager object
    * @return If failed to create, nullptr is returned.
    */
-  virtual DiscreteContactManager::UPtr create(const std::string& name, const YAML::Node& config) const = 0;
+  virtual std::unique_ptr<DiscreteContactManager> create(const std::string& name, const YAML::Node& config) const = 0;
 
 protected:
   static const std::string SECTION_NAME;
@@ -87,7 +87,8 @@ public:
    * @param name The name of the contact manager object
    * @return If failed to create, nullptr is returned.
    */
-  virtual ContinuousContactManager::UPtr create(const std::string& solver_name, const YAML::Node& config) const = 0;
+  virtual std::unique_ptr<ContinuousContactManager> create(const std::string& solver_name,
+                                                           const YAML::Node& config) const = 0;
 
 protected:
   static const std::string SECTION_NAME;
@@ -237,30 +238,30 @@ public:
    * @details This looks for discrete contact manager plugin info. If not found nullptr is returned.
    * @param name The name
    */
-  DiscreteContactManager::UPtr createDiscreteContactManager(const std::string& name) const;
+  std::unique_ptr<DiscreteContactManager> createDiscreteContactManager(const std::string& name) const;
 
   /**
    * @brief Get discrete contact manager object given plugin info
    * @param name The name
    * @param plugin_info The plugin information to create kinematics object
    */
-  DiscreteContactManager::UPtr createDiscreteContactManager(const std::string& name,
-                                                            const tesseract_common::PluginInfo& plugin_info) const;
+  std::unique_ptr<DiscreteContactManager>
+  createDiscreteContactManager(const std::string& name, const tesseract_common::PluginInfo& plugin_info) const;
 
   /**
    * @brief Get continuous contact manager object given name
    * @details This looks for continuous contact manager plugin info. If not found nullptr is returned.
    * @param name The name
    */
-  ContinuousContactManager::UPtr createContinuousContactManager(const std::string& name) const;
+  std::unique_ptr<ContinuousContactManager> createContinuousContactManager(const std::string& name) const;
 
   /**
    * @brief Get continuous contact manager object given plugin info
    * @param name The name
    * @param plugin_info The plugin information to create kinematics object
    */
-  ContinuousContactManager::UPtr createContinuousContactManager(const std::string& name,
-                                                                const tesseract_common::PluginInfo& plugin_info) const;
+  std::unique_ptr<ContinuousContactManager>
+  createContinuousContactManager(const std::string& name, const tesseract_common::PluginInfo& plugin_info) const;
 
   /**
    * @brief Save the plugin information to a yaml config file

@@ -23,12 +23,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <memory>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/rop_inv_kin.h>
+#include <tesseract_kinematics/core/forward_kinematics.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/joint.h>
+#include <tesseract_scene_graph/scene_state.h>
 
 namespace tesseract_kinematics
 {
@@ -39,7 +39,7 @@ ROPInvKin::ROPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
                      const tesseract_scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
-                     ForwardKinematics::UPtr positioner,
+                     std::unique_ptr<ForwardKinematics> positioner,
                      const Eigen::VectorXd& positioner_sample_resolution,
                      std::string solver_name)
 {
@@ -74,7 +74,7 @@ ROPInvKin::ROPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
                      const tesseract_scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
-                     ForwardKinematics::UPtr positioner,
+                     std::unique_ptr<ForwardKinematics> positioner,
                      const Eigen::MatrixX2d& positioner_sample_range,
                      const Eigen::VectorXd& positioner_sample_resolution,
                      std::string solver_name)
@@ -93,7 +93,7 @@ void ROPInvKin::init(const tesseract_scene_graph::SceneGraph& scene_graph,
                      const tesseract_scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
                      double manipulator_reach,
-                     ForwardKinematics::UPtr positioner,
+                     std::unique_ptr<ForwardKinematics> positioner,
                      const Eigen::MatrixX2d& poitioner_sample_range,
                      const Eigen::VectorXd& positioner_sample_resolution,
                      std::string solver_name)

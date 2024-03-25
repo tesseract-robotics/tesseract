@@ -36,6 +36,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_state_solver/state_solver.h>
 #include <tesseract_scene_graph/kdl_parser.h>
+#include <tesseract_scene_graph/scene_state.h>
+#include <tesseract_common/kinematic_limits.h>
 
 namespace tesseract_scene_graph
 {

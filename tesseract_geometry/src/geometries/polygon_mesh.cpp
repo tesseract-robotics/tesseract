@@ -35,10 +35,92 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 #include <tesseract_common/eigen_serialization.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_geometry/impl/polygon_mesh.h>
+#include <tesseract_geometry/impl/mesh_material.h>
 
 namespace tesseract_geometry
 {
+PolygonMesh::PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+                         std::shared_ptr<const Eigen::VectorXi> faces,
+                         std::shared_ptr<const tesseract_common::Resource> resource,
+                         const Eigen::Vector3d& scale,  // NOLINT
+                         std::shared_ptr<const tesseract_common::VectorVector3d> normals,
+                         std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                         std::shared_ptr<MeshMaterial> mesh_material,
+                         std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures,
+                         GeometryType type)
+  : Geometry(type)
+  , vertices_(std::move(vertices))
+  , faces_(std::move(faces))
+  , vertex_count_(static_cast<int>(vertices_->size()))
+  , resource_(std::move(resource))
+  , scale_(scale)
+  , normals_(std::move(normals))
+  , vertex_colors_(std::move(vertex_colors))
+  , mesh_material_(std::move(mesh_material))
+  , mesh_textures_(std::move(mesh_textures))
+{
+  for (int i = 0; i < faces_->size(); ++i)
+  {
+    ++face_count_;
+    int num_verts = (*faces_)(i);  // NOLINT
+    i += num_verts;
+  }
+}
+
+PolygonMesh::PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+                         std::shared_ptr<const Eigen::VectorXi> faces,
+                         int face_count,
+                         tesseract_common::Resource::ConstPtr resource,
+                         const Eigen::Vector3d& scale,  // NOLINT
+                         std::shared_ptr<const tesseract_common::VectorVector3d> normals,
+                         std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                         MeshMaterial::Ptr mesh_material,
+                         std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures,
+                         GeometryType type)
+  : Geometry(type)
+  , vertices_(std::move(vertices))
+  , faces_(std::move(faces))
+  , vertex_count_(static_cast<int>(vertices_->size()))
+  , face_count_(face_count)
+  , resource_(std::move(resource))
+  , scale_(scale)
+  , normals_(std::move(normals))
+  , vertex_colors_(std::move(vertex_colors))
+  , mesh_material_(std::move(mesh_material))
+  , mesh_textures_(std::move(mesh_textures))
+{
+}
+
+const std::shared_ptr<const tesseract_common::VectorVector3d>& PolygonMesh::getVertices() const { return vertices_; }
+
+const std::shared_ptr<const Eigen::VectorXi>& PolygonMesh::getFaces() const { return faces_; }
+
+int PolygonMesh::getVertexCount() const { return vertex_count_; }
+
+int PolygonMesh::getFaceCount() const { return face_count_; }
+
+tesseract_common::Resource::ConstPtr PolygonMesh::getResource() const { return resource_; }
+
+const Eigen::Vector3d& PolygonMesh::getScale() const { return scale_; }
+
+const std::shared_ptr<const tesseract_common::VectorVector3d>& PolygonMesh::getNormals() const { return normals_; }
+
+const std::shared_ptr<const tesseract_common::VectorVector4d>& PolygonMesh::getVertexColors() const
+{
+  return vertex_colors_;
+}
+
+MeshMaterial::ConstPtr PolygonMesh::getMaterial() const { return mesh_material_; }
+
+const std::shared_ptr<const std::vector<MeshTexture::Ptr>>& PolygonMesh::getTextures() const { return mesh_textures_; }
+
+Geometry::Ptr PolygonMesh::clone() const
+{
+  return std::make_shared<PolygonMesh>(vertices_, faces_, face_count_, resource_, scale_);
+}
+
 bool PolygonMesh::operator==(const PolygonMesh& rhs) const
 {
   bool equal = true;

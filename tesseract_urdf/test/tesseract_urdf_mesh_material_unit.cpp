@@ -6,6 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/mesh.h>
 #include <tesseract_geometry/impl/mesh.h>
+#include <tesseract_geometry/impl/mesh_material.h>
 #include <tesseract_support/tesseract_support_resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
 

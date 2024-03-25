@@ -45,9 +45,9 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  OFKTBaseNode(tesseract_scene_graph::JointType type, OFKTNode* parent, std::string link_name);
+  OFKTBaseNode(JointType type, OFKTNode* parent, std::string link_name);
 
-  OFKTBaseNode(tesseract_scene_graph::JointType type,
+  OFKTBaseNode(JointType type,
                OFKTNode* parent,
                std::string link_name,
                std::string joint_name,
@@ -68,7 +68,7 @@ public:
 
   bool hasJointValueChanged() const override;
 
-  void setStaticTransformation(Eigen::Isometry3d static_tf) override;
+  void setStaticTransformation(const Eigen::Isometry3d& static_tf) override;
 
   const Eigen::Isometry3d& getStaticTransformation() const override;
   const Eigen::Isometry3d& getLocalTransformation() const override;
@@ -125,7 +125,7 @@ public:
 
   void setParent(OFKTNode* parent) override;
   void storeJointValue(double joint_value) override;
-  void setStaticTransformation(Eigen::Isometry3d static_tf) override;
+  void setStaticTransformation(const Eigen::Isometry3d& static_tf) override;
   void computeAndStoreLocalTransformation() override;
   void computeAndStoreWorldTransformation() override;
   bool updateWorldTransformationRequired() const override;
@@ -150,7 +150,7 @@ public:
 
   void storeJointValue(double joint_value) override;
   double getJointValue() const override;
-  void setStaticTransformation(Eigen::Isometry3d static_tf) override;
+  void setStaticTransformation(const Eigen::Isometry3d& static_tf) override;
   void computeAndStoreLocalTransformation() override;
   Eigen::Isometry3d computeLocalTransformation(double joint_value) const override;
 

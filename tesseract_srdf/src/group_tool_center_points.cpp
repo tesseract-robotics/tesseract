@@ -56,8 +56,7 @@ GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene_graph*
        xml_group_element = xml_group_element->NextSiblingElement("group_tcps"))
   {
     std::string group_name_string;
-    tinyxml2::XMLError status =
-        tesseract_common::QueryStringAttributeRequired(xml_group_element, "group", group_name_string);
+    int status = tesseract_common::QueryStringAttributeRequired(xml_group_element, "group", group_name_string);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("GroupTCPs: Missing or failed to parse attribute 'group'!"));
 
@@ -72,7 +71,7 @@ GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene_graph*
             strFormat("GroupTCPs: Invalid tcp definition for group '%s'!", group_name_string.c_str())));
 
       std::string tcp_name_string;
-      tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "name", tcp_name_string);
+      int status = tesseract_common::QueryStringAttributeRequired(xml_element, "name", tcp_name_string);
       // LCOV_EXCL_START
       if (status != tinyxml2::XML_SUCCESS)
         std::throw_with_nested(

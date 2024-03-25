@@ -51,7 +51,7 @@ tesseract_scene_graph::JointMimic::Ptr tesseract_urdf::parseMimic(const tinyxml2
   else if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") != nullptr)
     CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'offset', using default value 1!");
 
-  tinyxml2::XMLError s = xml_element->QueryDoubleAttribute("offset", &(m->offset));
+  int s = xml_element->QueryDoubleAttribute("offset", &(m->offset));
   if (s != tinyxml2::XML_NO_ATTRIBUTE && s != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Mimic: Error parsing attribute 'offset'!"));
 

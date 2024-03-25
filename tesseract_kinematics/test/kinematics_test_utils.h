@@ -42,6 +42,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/validate.h>
 
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/joint.h>
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
 
 #include <tesseract_urdf/urdf_parser.h>

@@ -46,7 +46,7 @@ GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph& scene
        xml_element = xml_element->NextSiblingElement("group_state"))
   {
     std::string group_name, state_name;
-    tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "group", group_name);
+    int status = tesseract_common::QueryStringAttributeRequired(xml_element, "group", group_name);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("GroupStates: Missing or failed to parse attribute 'group'!"));
 

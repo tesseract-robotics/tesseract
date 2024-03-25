@@ -24,6 +24,9 @@
  * limitations under the License.
  */
 #include <tesseract_srdf/utils.h>
+#include <tesseract_common/allowed_collision_matrix.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_srdf/srdf_model.h>
 
 namespace tesseract_srdf
 {

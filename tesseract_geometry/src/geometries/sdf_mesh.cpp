@@ -29,11 +29,63 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/nvp.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/utils.h>
 #include <tesseract_geometry/impl/sdf_mesh.h>
+#include <tesseract_geometry/impl/mesh_material.h>
+#include <tesseract_common/resource_locator.h>
 
 namespace tesseract_geometry
 {
+SDFMesh::SDFMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+                 std::shared_ptr<const Eigen::VectorXi> triangles,
+                 std::shared_ptr<const tesseract_common::Resource> resource,
+                 const Eigen::Vector3d& scale,
+                 std::shared_ptr<const tesseract_common::VectorVector3d> normals,
+                 std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                 std::shared_ptr<MeshMaterial> mesh_material,
+                 std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures)
+  : PolygonMesh(std::move(vertices),
+                std::move(triangles),
+                std::move(resource),
+                scale,
+                std::move(normals),
+                std::move(vertex_colors),
+                std::move(mesh_material),
+                std::move(mesh_textures),
+                GeometryType::SDF_MESH)
+{
+  if ((static_cast<long>(getFaceCount()) * 4) != getFaces()->size())
+    std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
+}
+
+SDFMesh::SDFMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+                 std::shared_ptr<const Eigen::VectorXi> triangles,
+                 int triangle_count,
+                 std::shared_ptr<const tesseract_common::Resource> resource,
+                 const Eigen::Vector3d& scale,
+                 std::shared_ptr<const tesseract_common::VectorVector3d> normals,
+                 std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                 std::shared_ptr<MeshMaterial> mesh_material,
+                 std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures)
+  : PolygonMesh(std::move(vertices),
+                std::move(triangles),
+                triangle_count,
+                std::move(resource),
+                scale,
+                std::move(normals),
+                std::move(vertex_colors),
+                std::move(mesh_material),
+                std::move(mesh_textures),
+                GeometryType::SDF_MESH)
+{
+  if ((static_cast<long>(getFaceCount()) * 4) != getFaces()->size())
+    std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
+}
+
+Geometry::Ptr SDFMesh::clone() const
+{
+  return std::make_shared<SDFMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
+}
+
 bool SDFMesh::operator==(const SDFMesh& rhs) const
 {
   bool equal = true;

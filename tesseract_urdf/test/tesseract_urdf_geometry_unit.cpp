@@ -2,6 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <Eigen/Geometry>
+#include <octomap/OcTree.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometries.h>
@@ -347,7 +348,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
 
   {  // octree
     tesseract_geometry::Geometry::Ptr geometry = std::make_shared<tesseract_geometry::Octree>(
-        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::BOX);
+        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::OctreeSubType::BOX);
     std::string text;
     EXPECT_EQ(
         0,
@@ -358,7 +359,7 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
 
   {  // octree failed-to-write
     tesseract_geometry::Geometry::Ptr geometry = std::make_shared<tesseract_geometry::Octree>(
-        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::Octree::SubType::BOX);
+        std::make_shared<octomap::OcTree>(1.0), tesseract_geometry::OctreeSubType::BOX);
     std::string text;
     EXPECT_EQ(1,
               writeTest<tesseract_geometry::Geometry::Ptr>(

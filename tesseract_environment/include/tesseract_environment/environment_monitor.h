@@ -26,11 +26,17 @@
 #ifndef TESSERACT_ENVIRONMENT_ENVIRONMENT_MONITOR_H
 #define TESSERACT_ENVIRONMENT_ENVIRONMENT_MONITOR_H
 
-#include <tesseract_environment/environment.h>
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <chrono>
+#include <memory>
+#include <string>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+class Environment;
+
 enum class MonitoredEnvironmentMode : int
 {
   /**
@@ -70,22 +76,23 @@ public:
    * @brief Constructor
    * @param monitor_namespace A name identifying this monitor, must be unique
    */
-  EnvironmentMonitor(std::string monitor_namespace) : monitor_namespace_(monitor_namespace) {}
+  EnvironmentMonitor(std::string monitor_namespace);
 
   /**
    * @brief Constructor
    * @param env The environment to use internal to the monitor
    * @param monitor_namespace A name identifying this monitor, must be unique
    */
-  EnvironmentMonitor(tesseract_environment::Environment::Ptr env, std::string monitor_namespace)
-    : env_(std::move(env)), monitor_namespace_(monitor_namespace)
-  {
-  }
+  EnvironmentMonitor(std::shared_ptr<Environment> env, std::string monitor_namespace);
 
   virtual ~EnvironmentMonitor() = default;
+  EnvironmentMonitor(const EnvironmentMonitor&) = default;
+  EnvironmentMonitor& operator=(const EnvironmentMonitor&) = default;
+  EnvironmentMonitor(EnvironmentMonitor&&) = default;
+  EnvironmentMonitor& operator=(EnvironmentMonitor&&) = default;
 
   /** \brief Get the namespace of this monitor */
-  virtual const std::string& getNamespace() const { return monitor_namespace_; }
+  virtual const std::string& getNamespace() const;
 
   /**
    * @brief Returns an @b threadsafe reference to the current environment.
@@ -94,12 +101,12 @@ public:
    * commands to the monitored environment until the todo below is implemented.
    * @return The current environment.
    */
-  virtual tesseract_environment::Environment& environment() { return *env_; }
+  virtual Environment& environment();
 
   /**
    * @brief Returns an @b threadsafe const reference to the current environment.
    * @return The current environment.*/
-  virtual const tesseract_environment::Environment& environment() const { return *env_; }
+  virtual const Environment& environment() const;
 
   /**
    * @brief Returns an @b threadsafe shared pointer to the current environment.
@@ -108,13 +115,13 @@ public:
    * commands to the monitored environment until the todo below is implemented.
    * @return The current environment.
    */
-  virtual tesseract_environment::Environment::Ptr getEnvironment() { return env_; }
+  virtual std::shared_ptr<Environment> getEnvironment();
 
   /**
    * @brief Returns an @b threadsafe const shared point to the current environment.
    * @return The current environment.
    */
-  virtual tesseract_environment::Environment::ConstPtr getEnvironment() const { return env_; }
+  virtual std::shared_ptr<const Environment> getEnvironment() const;
 
   /**
    * @brief Wait for connection to upstream environment
@@ -185,7 +192,7 @@ public:
   virtual void shutdown() = 0;
 
 protected:
-  tesseract_environment::Environment::Ptr env_;
+  std::shared_ptr<tesseract_environment::Environment> env_;
   std::string monitor_namespace_;
   MonitoredEnvironmentMode mode_{ MonitoredEnvironmentMode::DEFAULT };
 };

@@ -1,10 +1,12 @@
 add_library(
   ${PROJECT_NAME}_core
+  src/inverse_kinematics.cpp
   src/rop_inv_kin.cpp
   src/rep_inv_kin.cpp
   src/joint_group.cpp
   src/kinematic_group.cpp
   src/kinematics_plugin_factory.cpp
+  src/utils.cpp
   src/validate.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core

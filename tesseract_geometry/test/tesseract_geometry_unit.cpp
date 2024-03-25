@@ -3,12 +3,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <memory>
-#include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_geometry/utils.h>
+#include <tesseract_geometry/impl/octree_utils.h>
 
 TEST(TesseractGeometryUnit, Instantiation)  // NOLINT
 {
@@ -25,7 +25,7 @@ TEST(TesseractGeometryUnit, Instantiation)  // NOLINT
   auto convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(vertices, faces);
   auto mesh = std::make_shared<tesseract_geometry::Mesh>(vertices, faces);
   auto sdf_mesh = std::make_shared<tesseract_geometry::SDFMesh>(vertices, faces);
-  auto octree = std::make_shared<tesseract_geometry::Octree>(nullptr, tesseract_geometry::Octree::SubType::BOX);
+  auto octree = std::make_shared<tesseract_geometry::Octree>(nullptr, tesseract_geometry::OctreeSubType::BOX);
 
   // Instead making this depend on pcl it expects the structure to have a member called points which is a vector
   // of another object with has float members x, y and z.
@@ -42,8 +42,9 @@ TEST(TesseractGeometryUnit, Instantiation)  // NOLINT
   };
 
   TestPointCloud pc;
+  auto co = tesseract_geometry::createOctree(pc, 0.01, false);
   auto octree_pc =
-      std::make_shared<tesseract_geometry::Octree>(pc, 0.01, tesseract_geometry::Octree::SubType::BOX, false);
+      std::make_shared<tesseract_geometry::Octree>(std::move(co), tesseract_geometry::OctreeSubType::BOX, false);
 }
 
 TEST(TesseractGeometryUnit, Box)  // NOLINT
@@ -380,14 +381,15 @@ TEST(TesseractGeometryUnit, Octree)  // NOLINT
   };
 
   TestPointCloud pc;
-  auto geom = std::make_shared<T>(pc, 0.01, tesseract_geometry::Octree::SubType::BOX, false);
+  auto octree = tesseract_geometry::createOctree(pc, 0.01, false);
+  auto geom = std::make_shared<T>(std::move(octree), tesseract_geometry::OctreeSubType::BOX, false);
   EXPECT_TRUE(geom->getOctree() != nullptr);
-  EXPECT_TRUE(geom->getSubType() == tesseract_geometry::Octree::SubType::BOX);
+  EXPECT_TRUE(geom->getSubType() == tesseract_geometry::OctreeSubType::BOX);
   EXPECT_EQ(geom->getType(), tesseract_geometry::GeometryType::OCTREE);
 
   auto geom_clone = geom->clone();
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getOctree() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getSubType() == tesseract_geometry::Octree::SubType::BOX);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getSubType() == tesseract_geometry::OctreeSubType::BOX);
   EXPECT_EQ(geom_clone->getType(), tesseract_geometry::GeometryType::OCTREE);
 
   // Test isIdentical

@@ -28,16 +28,20 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <memory>
 #include <string>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+namespace boost::serialization
+{
+class access;
+}
+
 namespace tesseract_geometry
 {
-enum GeometryType
+enum class GeometryType
 {
   UNINITIALIZED,
   SPHERE,
@@ -62,7 +66,7 @@ public:
   using Ptr = std::shared_ptr<Geometry>;
   using ConstPtr = std::shared_ptr<const Geometry>;
 
-  explicit Geometry(GeometryType type = GeometryType::UNINITIALIZED) : type_(type) {}
+  explicit Geometry(GeometryType type = GeometryType::UNINITIALIZED);
   virtual ~Geometry() = default;
   Geometry(const Geometry&) = default;
   Geometry& operator=(const Geometry&) = default;
@@ -90,6 +94,5 @@ using Geometrys = std::vector<Geometry::Ptr>;
 using GeometrysConst = std::vector<Geometry::ConstPtr>;
 }  // namespace tesseract_geometry
 
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Geometry, "Geometry")
 #endif  // TESSERACT_GEOMETRY_GEOMETRY_H

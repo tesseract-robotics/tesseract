@@ -27,12 +27,17 @@
 #define TESSERACT_ENVIRONMENT_REPLACE_JOINT_COMMAND_H
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <memory>
+#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
-#include <tesseract_scene_graph/joint.h>
+#include <tesseract_scene_graph/fwd.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_environment
 {
@@ -59,13 +64,13 @@ public:
    */
   ReplaceJointCommand(const tesseract_scene_graph::Joint& joint);
 
-  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const;
+  const std::shared_ptr<const tesseract_scene_graph::Joint>& getJoint() const;
 
   bool operator==(const ReplaceJointCommand& rhs) const;
   bool operator!=(const ReplaceJointCommand& rhs) const;
 
 private:
-  tesseract_scene_graph::Joint::ConstPtr joint_;
+  std::shared_ptr<const tesseract_scene_graph::Joint> joint_;
 
   friend class boost::serialization::access;
   template <class Archive>
@@ -74,7 +79,5 @@ private:
 
 }  // namespace tesseract_environment
 
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ReplaceJointCommand, "ReplaceJointCommand")
 #endif  // TESSERACT_ENVIRONMENT_REPLACE_JOINT_COMMAND_H

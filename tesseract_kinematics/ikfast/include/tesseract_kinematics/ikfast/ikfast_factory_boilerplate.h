@@ -28,6 +28,7 @@
 
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
 #include <tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp>
+#include <tesseract_scene_graph/graph.h>
 
 namespace tesseract_kinematics
 {

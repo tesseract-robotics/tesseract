@@ -31,8 +31,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/utils.h>
 #include <tesseract_environment/commands/replace_joint_command.h>
+#include <tesseract_common/utils.h>
+#include <tesseract_scene_graph/joint.h>
 
 namespace tesseract_environment
 {

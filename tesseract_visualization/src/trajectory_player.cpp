@@ -30,9 +30,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/trajectory_player.h>
+#include <tesseract_visualization/trajectory_interpolator.h>
 
 namespace tesseract_visualization
 {
+TrajectoryPlayer::TrajectoryPlayer() = default;
+TrajectoryPlayer::~TrajectoryPlayer() = default;
+
 void TrajectoryPlayer::setTrajectory(const tesseract_common::JointTrajectory& trajectory)
 {
   // Prepare the new trajectory message

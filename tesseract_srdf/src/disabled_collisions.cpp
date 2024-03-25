@@ -31,9 +31,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_srdf/disabled_collisions.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_common/allowed_collision_matrix.h>
 
 namespace tesseract_srdf
 {
@@ -48,7 +48,7 @@ tesseract_common::AllowedCollisionMatrix parseDisabledCollisions(const tesseract
        xml_element = xml_element->NextSiblingElement("disable_collisions"))
   {
     std::string link1_name, link2_name, reason;
-    tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "link1", link1_name);
+    int status = tesseract_common::QueryStringAttributeRequired(xml_element, "link1", link1_name);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'link1'!"));
 

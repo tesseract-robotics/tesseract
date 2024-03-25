@@ -27,18 +27,12 @@
 #define TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_H
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <kdl/tree.hpp>
-#include <kdl/chain.hpp>
 #include <kdl/chainiksolverpos_lma.hpp>
 #include <unordered_map>
-#include <console_bridge/console.h>
 #include <mutex>
-
-#include <tesseract_scene_graph/graph.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
-#include <tesseract_kinematics/core/types.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
 
 namespace tesseract_kinematics

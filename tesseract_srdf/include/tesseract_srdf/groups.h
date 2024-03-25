@@ -32,15 +32,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tuple>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_scene_graph/fwd.h>
 #include <tesseract_srdf/kinematics_information.h>
 
 namespace tinyxml2
 {
 class XMLElement;  // NOLINT
-}
-namespace tesseract_scene_graph
-{
-class SceneGraph;
 }
 
 namespace tesseract_srdf

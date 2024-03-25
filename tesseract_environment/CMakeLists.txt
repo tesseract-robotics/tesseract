@@ -47,7 +47,14 @@ set(COVERAGE_EXCLUDE
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 # Create interface for core
-add_library(${PROJECT_NAME} src/environment.cpp src/environment_cache.cpp src/utils.cpp)
+add_library(
+  ${PROJECT_NAME}
+  src/environment.cpp
+  src/environment_cache.cpp
+  src/environment_monitor_interface.cpp
+  src/environment_monitor.cpp
+  src/events.cpp
+  src/utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen

@@ -8,6 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/joint.h>
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointDynamicsUnit)  // NOLINT
 {

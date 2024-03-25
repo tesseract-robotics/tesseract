@@ -221,7 +221,7 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
   managed_shapes.resize(octree.getTreeDepth() + 1);
   switch (geom->getSubType())
   {
-    case tesseract_geometry::Octree::SubType::BOX:
+    case tesseract_geometry::OctreeSubType::BOX:
     {
       for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end;
            ++it)
@@ -257,7 +257,7 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
 
       return subshape;
     }
-    case tesseract_geometry::Octree::SubType::SPHERE_INSIDE:
+    case tesseract_geometry::OctreeSubType::SPHERE_INSIDE:
     {
       for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end;
            ++it)
@@ -292,7 +292,7 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
 
       return subshape;
     }
-    case tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE:
+    case tesseract_geometry::OctreeSubType::SPHERE_OUTSIDE:
     {
       for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end;
            ++it)
