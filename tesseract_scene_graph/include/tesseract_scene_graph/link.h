@@ -39,15 +39,19 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <string>
 #include <vector>
 #include <memory>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/joint.h>
-#include <tesseract_geometry/geometry.h>
+#include <tesseract_geometry/fwd.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_scene_graph
 {
@@ -60,18 +64,23 @@ public:
   using ConstPtr = std::shared_ptr<const Material>;
 
   Material() = default;
-  Material(std::string name) : name_(std::move(name)) { this->clear(); }
+  explicit Material(std::string name);
+  ~Material() = default;
 
-  const std::string& getName() const { return name_; }
+  Material(const Material&) = default;
+  Material& operator=(const Material&) = default;
+  Material(Material&&) = default;
+  Material& operator=(Material&&) = default;
+
+  const std::string& getName() const;
+
+  static std::shared_ptr<Material> getDefaultMaterial();
 
   std::string texture_filename;
   Eigen::Vector4d color;
 
-  void clear()
-  {
-    color = Eigen::Vector4d(0.5, 0.5, 0.5, 1.0);
-    texture_filename.clear();
-  }
+  void clear();
+
   bool operator==(const Material& rhs) const;
   bool operator!=(const Material& rhs) const;
 
@@ -83,10 +92,6 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
-#ifndef SWIG
-static const auto DEFAULT_TESSERACT_MATERIAL = std::make_shared<Material>("default_tesseract_material");
-#endif  // SWIG
-
 class Inertial
 {
 public:
@@ -96,6 +101,13 @@ public:
   using ConstPtr = std::shared_ptr<const Inertial>;
 
   Inertial() = default;
+  ~Inertial() = default;
+
+  Inertial(const Inertial&) = default;
+  Inertial& operator=(const Inertial&) = default;
+  Inertial(Inertial&&) = default;
+  Inertial& operator=(Inertial&&) = default;
+
   Eigen::Isometry3d origin{ Eigen::Isometry3d::Identity() };
   double mass{ 0 };
   double ixx{ 0 };
@@ -105,12 +117,8 @@ public:
   double iyz{ 0 };
   double izz{ 0 };
 
-  void clear()
-  {
-    origin.setIdentity();
-    mass = 0;
-    ixx = ixy = ixz = iyy = iyz = izz = 0;
-  }
+  void clear();
+
   bool operator==(const Inertial& rhs) const;
   bool operator!=(const Inertial& rhs) const;
 
@@ -128,21 +136,20 @@ public:
   using Ptr = std::shared_ptr<Visual>;
   using ConstPtr = std::shared_ptr<const Visual>;
 
-  Visual() { this->clear(); }
+  Visual();
+  ~Visual() = default;
+  Visual(const Visual&) = default;
+  Visual& operator=(const Visual&) = default;
+  Visual(Visual&&) = default;
+  Visual& operator=(Visual&&) = default;
+
   Eigen::Isometry3d origin;
-  tesseract_geometry::Geometry::ConstPtr geometry;
+  std::shared_ptr<const tesseract_geometry::Geometry> geometry;
 
   Material::Ptr material;
-
-  void clear()
-  {
-    origin.setIdentity();
-    material = DEFAULT_TESSERACT_MATERIAL;
-    geometry.reset();
-    name.clear();
-  }
-
   std::string name;
+
+  void clear();
 
   bool operator==(const Visual& rhs) const;
   bool operator!=(const Visual& rhs) const;
@@ -161,18 +168,18 @@ public:
   using Ptr = std::shared_ptr<Collision>;
   using ConstPtr = std::shared_ptr<const Collision>;
 
-  Collision() { this->clear(); }
+  Collision();
+  ~Collision() = default;
+  Collision(const Collision&) = default;
+  Collision& operator=(const Collision&) = default;
+  Collision(Collision&&) = default;
+  Collision& operator=(Collision&&) = default;
+
   Eigen::Isometry3d origin;
-  tesseract_geometry::Geometry::ConstPtr geometry;
-
-  void clear()
-  {
-    origin.setIdentity();
-    geometry.reset();
-    name.clear();
-  }
-
+  std::shared_ptr<const tesseract_geometry::Geometry> geometry;
   std::string name;
+
+  void clear();
 
   bool operator==(const Collision& rhs) const;
   bool operator!=(const Collision& rhs) const;
@@ -189,7 +196,7 @@ public:
   using Ptr = std::shared_ptr<Link>;
   using ConstPtr = std::shared_ptr<const Link>;
 
-  Link(std::string name) : name_(std::move(name)) { this->clear(); }
+  Link(std::string name);
   Link() = default;
   ~Link() = default;
   // Links are non-copyable as their name must be unique
@@ -199,7 +206,7 @@ public:
   Link(Link&& other) = default;
   Link& operator=(Link&& other) = default;
 
-  const std::string& getName() const { return name_; }
+  const std::string& getName() const;
 
   /// inertial element
   Inertial::Ptr inertial;
@@ -210,12 +217,7 @@ public:
   /// Collision Elements
   std::vector<Collision::Ptr> collision;
 
-  void clear()
-  {
-    this->inertial.reset();
-    this->collision.clear();
-    this->visual.clear();
-  }
+  void clear();
 
   bool operator==(const Link& rhs) const;
   bool operator!=(const Link& rhs) const;
@@ -224,26 +226,10 @@ public:
    * @brief Clone the link keeping the name.
    * @return Cloned link
    */
-  Link clone() const { return clone(name_); }
+  Link clone() const;
 
   /** Perform a copy of link, changing its name **/
-  Link clone(const std::string& name) const
-  {
-    Link ret(name);
-    if (this->inertial)
-    {
-      ret.inertial = std::make_shared<Inertial>(*(this->inertial));
-    }
-    for (const auto& c : this->collision)
-    {
-      ret.collision.push_back(std::make_shared<Collision>(*c));
-    }
-    for (const auto& v : this->visual)
-    {
-      ret.visual.push_back(std::make_shared<Visual>(*v));
-    }
-    return ret;
-  }
+  Link clone(const std::string& name) const;
 
 private:
   std::string name_;
@@ -254,8 +240,6 @@ private:
 
 }  // namespace tesseract_scene_graph
 
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/tracking.hpp>
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Material, "Material")
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Inertial, "Inertial")
 BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Visual, "Visual")

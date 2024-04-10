@@ -27,13 +27,15 @@
 #define TESSERACT_SRDF_UTILS_H
 
 #include <functional>
-#include <tesseract_common/allowed_collision_matrix.h>
+
 #include <tesseract_common/types.h>
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_srdf/srdf_model.h>
+#include <tesseract_common/allowed_collision_matrix.h>
+#include <tesseract_scene_graph/fwd.h>
 
 namespace tesseract_srdf
 {
+class SRDFModel;
+
 /**
  * @brief Add allowed collisions to the scene graph
  * @param scene_graph The scene graph to add allowed collisions data

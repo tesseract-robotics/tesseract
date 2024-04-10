@@ -28,12 +28,16 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_geometry
 {
@@ -43,13 +47,13 @@ public:
   using Ptr = std::shared_ptr<Sphere>;
   using ConstPtr = std::shared_ptr<const Sphere>;
 
-  explicit Sphere(double r) : Geometry(GeometryType::SPHERE), r_(r) {}
+  explicit Sphere(double r);
   Sphere() = default;
   ~Sphere() override = default;
 
-  double getRadius() const { return r_; }
+  double getRadius() const;
 
-  Geometry::Ptr clone() const override final { return std::make_shared<Sphere>(r_); }
+  Geometry::Ptr clone() const override final;
   bool operator==(const Sphere& rhs) const;
   bool operator!=(const Sphere& rhs) const;
 

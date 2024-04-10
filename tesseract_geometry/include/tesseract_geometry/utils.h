@@ -26,10 +26,10 @@
 #ifndef TESSERACT_GEOMETRY_UTILS_H
 #define TESSERACT_GEOMETRY_UTILS_H
 
-#include <tesseract_geometry/geometry.h>
-
 namespace tesseract_geometry
 {
+class Geometry;
+
 /**
  * @brief Check if two Geometries are identical
  * @param geom1 First Geometry

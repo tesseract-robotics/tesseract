@@ -161,6 +161,6 @@ tesseract_common::JointState TrajectoryInterpolator::interpolate(const tesseract
   return out;
 }
 
-bool TrajectoryInterpolator::empty() const { return trajectory_.empty(); };
+bool TrajectoryInterpolator::empty() const { return trajectory_.empty(); }
 
 }  // namespace tesseract_visualization

@@ -4,11 +4,11 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
-
+#include <memory>
 // #include <assimp/scene.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/impl/polygon_mesh.h>
+#include <tesseract_geometry/fwd.h>
 
 namespace tesseract_urdf
 {

@@ -39,6 +39,130 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+CollisionMarginData::CollisionMarginData(double default_collision_margin)
+  : default_collision_margin_(default_collision_margin), max_collision_margin_(default_collision_margin)
+{
+}
+
+CollisionMarginData::CollisionMarginData(double default_collision_margin,
+                                         PairsCollisionMarginData pair_collision_margins)
+  : default_collision_margin_(default_collision_margin), lookup_table_(std::move(pair_collision_margins))
+{
+  updateMaxCollisionMargin();
+}
+
+CollisionMarginData::CollisionMarginData(PairsCollisionMarginData pair_collision_margins)
+  : lookup_table_(std::move(pair_collision_margins))
+{
+  updateMaxCollisionMargin();
+}
+
+void CollisionMarginData::setDefaultCollisionMargin(double default_collision_margin)
+{
+  default_collision_margin_ = default_collision_margin;
+  updateMaxCollisionMargin();
+}
+
+double CollisionMarginData::getDefaultCollisionMargin() const { return default_collision_margin_; }
+
+void CollisionMarginData::setPairCollisionMargin(const std::string& obj1,
+                                                 const std::string& obj2,
+                                                 double collision_margin)
+{
+  auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
+  lookup_table_[key] = collision_margin;
+  updateMaxCollisionMargin();
+}
+
+double CollisionMarginData::getPairCollisionMargin(const std::string& obj1, const std::string& obj2) const
+{
+  thread_local LinkNamesPair key;
+  tesseract_common::makeOrderedLinkPair(key, obj1, obj2);
+  const auto it = lookup_table_.find(key);
+
+  if (it != lookup_table_.end())
+    return it->second;
+
+  return default_collision_margin_;
+}
+
+const PairsCollisionMarginData& CollisionMarginData::getPairCollisionMargins() const { return lookup_table_; }
+
+double CollisionMarginData::getMaxCollisionMargin() const { return max_collision_margin_; }
+
+void CollisionMarginData::incrementMargins(const double& increment)
+{
+  default_collision_margin_ += increment;
+  max_collision_margin_ += increment;
+  for (auto& pair : lookup_table_)
+    pair.second += increment;
+}
+
+void CollisionMarginData::scaleMargins(const double& scale)
+{
+  default_collision_margin_ *= scale;
+  max_collision_margin_ *= scale;
+  for (auto& pair : lookup_table_)
+    pair.second *= scale;
+}
+
+void CollisionMarginData::apply(const CollisionMarginData& collision_margin_data,
+                                CollisionMarginOverrideType override_type)
+{
+  switch (override_type)
+  {
+    case CollisionMarginOverrideType::REPLACE:
+    {
+      *this = collision_margin_data;
+      break;
+    }
+    case CollisionMarginOverrideType::MODIFY:
+    {
+      default_collision_margin_ = collision_margin_data.default_collision_margin_;
+
+      for (const auto& p : collision_margin_data.lookup_table_)
+        lookup_table_[p.first] = p.second;
+
+      updateMaxCollisionMargin();
+      break;
+    }
+    case CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN:
+    {
+      default_collision_margin_ = collision_margin_data.default_collision_margin_;
+      updateMaxCollisionMargin();
+      break;
+    }
+    case CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN:
+    {
+      lookup_table_ = collision_margin_data.lookup_table_;
+      updateMaxCollisionMargin();
+      break;
+    }
+    case CollisionMarginOverrideType::MODIFY_PAIR_MARGIN:
+    {
+      for (const auto& p : collision_margin_data.lookup_table_)
+        lookup_table_[p.first] = p.second;
+
+      updateMaxCollisionMargin();
+      break;
+    }
+    case CollisionMarginOverrideType::NONE:
+    {
+      break;
+    }
+  }
+}
+
+void CollisionMarginData::updateMaxCollisionMargin()
+{
+  max_collision_margin_ = default_collision_margin_;
+  for (const auto& p : lookup_table_)
+  {
+    if (p.second > max_collision_margin_)
+      max_collision_margin_ = p.second;
+  }
+}
+
 bool CollisionMarginData::operator==(const CollisionMarginData& rhs) const
 {
   bool ret_val = true;

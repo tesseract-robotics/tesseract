@@ -26,10 +26,11 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/graph/directed_graph.hpp>  // A subclass to provide reasonable arguments to adjacency_list for a typical directed graph
+#include <boost/graph/depth_first_search.hpp>
+#include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/adj_list_serialize.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
-#include <fstream>
-#include <console_bridge/console.h>
 #include <boost/graph/undirected_graph.hpp>
 #include <boost/graph/copy.hpp>
 #include <boost/serialization/access.hpp>
@@ -37,6 +38,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/split_member.hpp>
+#include <fstream>
+#include <console_bridge/console.h>
 #if (BOOST_VERSION >= 107400) && (BOOST_VERSION < 107500)
 #include <boost/serialization/library_version_type.hpp>
 #endif
@@ -45,10 +48,123 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/joint.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/utils.h>
 
 namespace tesseract_scene_graph
 {
+struct cycle_detector : public boost::dfs_visitor<>
+{
+  cycle_detector(bool& ascyclic) : ascyclic_(ascyclic) {}
+
+  template <class e, class g>
+  void back_edge(e, g&)
+  {
+    ascyclic_ = false;
+  }
+
+protected:
+  bool& ascyclic_;
+};
+
+struct tree_detector : public boost::dfs_visitor<>
+{
+  tree_detector(bool& tree) : tree_(tree) {}
+
+  template <class u, class g>
+  void discover_vertex(u vertex, const g& graph)
+  {
+    auto num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
+
+    if (num_in_edges > 1)
+    {
+      tree_ = false;
+      return;
+    }
+
+    // Check if more that one root exist
+    if (num_in_edges == 0 && found_root_)
+    {
+      tree_ = false;
+      return;
+    }
+
+    if (num_in_edges == 0)
+      found_root_ = true;
+
+    // Check if not vertex is unused.
+    if (num_in_edges == 0 && boost::out_degree(vertex, graph) == 0)
+    {
+      tree_ = false;
+      return;
+    }
+  }
+
+  template <class e, class g>
+  void back_edge(e, const g&)
+  {
+    tree_ = false;
+  }
+
+protected:
+  bool& tree_;
+  bool found_root_{ false };
+};
+
+struct children_detector : public boost::default_bfs_visitor
+{
+  children_detector(std::vector<std::string>& children) : children_(children) {}
+
+  template <class u, class g>
+  void discover_vertex(u vertex, const g& graph)
+  {
+    children_.push_back(boost::get(boost::vertex_link, graph)[vertex]->getName());
+  }
+
+protected:
+  std::vector<std::string>& children_;
+};
+
+struct adjacency_detector : public boost::default_bfs_visitor
+{
+  adjacency_detector(std::unordered_map<std::string, std::string>& adjacency_map,
+                     std::map<SceneGraph::Vertex, boost::default_color_type>& color_map,
+                     const std::string& base_link_name,
+                     const std::vector<std::string>& terminate_on_links)
+    : adjacency_map_(adjacency_map)
+    , color_map_(color_map)
+    , base_link_name_(base_link_name)
+    , terminate_on_links_(terminate_on_links)
+  {
+  }
+
+  template <class u, class g>
+  void examine_vertex(u vertex, const g& graph)
+  {
+    for (auto vd : boost::make_iterator_range(adjacent_vertices(vertex, graph)))
+    {
+      std::string adj_link = boost::get(boost::vertex_link, graph)[vd]->getName();
+      if (std::find(terminate_on_links_.begin(), terminate_on_links_.end(), adj_link) != terminate_on_links_.end())
+        color_map_[vd] = boost::default_color_type::black_color;
+    }
+  }
+
+  template <class u, class g>
+  void discover_vertex(u vertex, const g& graph)
+  {
+    std::string adj_link = boost::get(boost::vertex_link, graph)[vertex]->getName();
+    adjacency_map_[adj_link] = base_link_name_;
+  }
+
+protected:
+  std::unordered_map<std::string, std::string>& adjacency_map_;
+  std::map<SceneGraph::Vertex, boost::default_color_type>& color_map_;
+  const std::string& base_link_name_;
+  const std::vector<std::string>& terminate_on_links_;
+};
+
 using UGraph =
     boost::adjacency_list<boost::listS, boost::listS, boost::undirectedS, VertexProperty, EdgeProperty, GraphProperty>;
 
@@ -181,7 +297,7 @@ bool SceneGraph::addLink(const Link& link, const Joint& joint)
   return true;
 }
 
-bool SceneGraph::addLinkHelper(const Link::Ptr& link_ptr, bool replace_allowed)
+bool SceneGraph::addLinkHelper(const std::shared_ptr<Link>& link_ptr, bool replace_allowed)
 {
   auto found = link_map_.find(link_ptr->getName());
   bool link_exists = (found != link_map_.end());
@@ -211,7 +327,7 @@ bool SceneGraph::addLinkHelper(const Link::Ptr& link_ptr, bool replace_allowed)
   return true;
 }
 
-Link::ConstPtr SceneGraph::getLink(const std::string& name) const
+std::shared_ptr<const Link> SceneGraph::getLink(const std::string& name) const
 {
   auto found = link_map_.find(name);
   if (found == link_map_.end())
@@ -220,7 +336,7 @@ Link::ConstPtr SceneGraph::getLink(const std::string& name) const
   return found->second.first;
 }
 
-std::vector<Link::ConstPtr> SceneGraph::getLinks() const
+std::vector<std::shared_ptr<const Link>> SceneGraph::getLinks() const
 {
   std::vector<Link::ConstPtr> links;
   links.reserve(link_map_.size());
@@ -230,7 +346,7 @@ std::vector<Link::ConstPtr> SceneGraph::getLinks() const
   return links;
 }
 
-std::vector<Link::ConstPtr> SceneGraph::getLeafLinks() const
+std::vector<std::shared_ptr<const Link>> SceneGraph::getLeafLinks() const
 {
   std::vector<Link::ConstPtr> links;
   links.reserve(link_map_.size());
@@ -345,7 +461,7 @@ bool SceneGraph::addJoint(const Joint& joint)
   return addJointHelper(joint_ptr);
 }
 
-bool SceneGraph::addJointHelper(const Joint::Ptr& joint_ptr)
+bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
 {
   auto parent = link_map_.find(joint_ptr->parent_link_name);
   auto child = link_map_.find(joint_ptr->child_link_name);
@@ -404,7 +520,7 @@ bool SceneGraph::addJointHelper(const Joint::Ptr& joint_ptr)
   return true;
 }
 
-Joint::ConstPtr SceneGraph::getJoint(const std::string& name) const
+std::shared_ptr<const Joint> SceneGraph::getJoint(const std::string& name) const
 {
   auto found = joint_map_.find(name);
   if (found == joint_map_.end())
@@ -464,7 +580,7 @@ bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_li
   return addJointHelper(joint);
 }
 
-std::vector<Joint::ConstPtr> SceneGraph::getJoints() const
+std::vector<std::shared_ptr<const Joint>> SceneGraph::getJoints() const
 {
   std::vector<Joint::ConstPtr> joints;
   joints.reserve(joint_map_.size());
@@ -474,7 +590,7 @@ std::vector<Joint::ConstPtr> SceneGraph::getJoints() const
   return joints;
 }
 
-std::vector<Joint::ConstPtr> SceneGraph::getActiveJoints() const
+std::vector<std::shared_ptr<const Joint>> SceneGraph::getActiveJoints() const
 {
   std::vector<Joint::ConstPtr> joints;
   joints.reserve(joint_map_.size());
@@ -610,7 +726,7 @@ bool SceneGraph::changeJointAccelerationLimits(const std::string& name, double l
   return true;
 }
 
-JointLimits::ConstPtr SceneGraph::getJointLimits(const std::string& name)
+std::shared_ptr<const JointLimits> SceneGraph::getJointLimits(const std::string& name)
 {
   auto found = joint_map_.find(name);
 
@@ -624,7 +740,10 @@ JointLimits::ConstPtr SceneGraph::getJointLimits(const std::string& name)
   return found->second.first->limits;
 }
 
-void SceneGraph::setAllowedCollisionMatrix(tesseract_common::AllowedCollisionMatrix::Ptr acm) { acm_ = std::move(acm); }
+void SceneGraph::setAllowedCollisionMatrix(std::shared_ptr<tesseract_common::AllowedCollisionMatrix> acm)
+{
+  acm_ = std::move(acm);
+}
 
 void SceneGraph::addAllowedCollision(const std::string& link_name1,
                                      const std::string& link_name2,
@@ -647,25 +766,28 @@ bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::st
   return acm_->isCollisionAllowed(link_name1, link_name2);
 }
 
-tesseract_common::AllowedCollisionMatrix::ConstPtr SceneGraph::getAllowedCollisionMatrix() const { return acm_; }
+std::shared_ptr<const tesseract_common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() const
+{
+  return acm_;
+}
 
-tesseract_common::AllowedCollisionMatrix::Ptr SceneGraph::getAllowedCollisionMatrix() { return acm_; }
+std::shared_ptr<tesseract_common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() { return acm_; }
 
-Link::ConstPtr SceneGraph::getSourceLink(const std::string& joint_name) const
+std::shared_ptr<const Link> SceneGraph::getSourceLink(const std::string& joint_name) const
 {
   Edge e = getEdge(joint_name);
   Vertex v = boost::source(e, *this);
   return boost::get(boost::vertex_link, *this)[v];
 }
 
-Link::ConstPtr SceneGraph::getTargetLink(const std::string& joint_name) const
+std::shared_ptr<const Link> SceneGraph::getTargetLink(const std::string& joint_name) const
 {
   Edge e = getEdge(joint_name);
   Vertex v = boost::target(e, *this);
   return boost::get(boost::vertex_link, *this)[v];
 }
 
-std::vector<Joint::ConstPtr> SceneGraph::getInboundJoints(const std::string& link_name) const
+std::vector<std::shared_ptr<const Joint>> SceneGraph::getInboundJoints(const std::string& link_name) const
 {
   std::vector<Joint::ConstPtr> joints;
   Vertex vertex = getVertex(link_name);
@@ -685,7 +807,7 @@ std::vector<Joint::ConstPtr> SceneGraph::getInboundJoints(const std::string& lin
   return joints;
 }
 
-std::vector<Joint::ConstPtr> SceneGraph::getOutboundJoints(const std::string& link_name) const
+std::vector<std::shared_ptr<const Joint>> SceneGraph::getOutboundJoints(const std::string& link_name) const
 {
   std::vector<Joint::ConstPtr> joints;
   Vertex vertex = getVertex(link_name);
@@ -1119,6 +1241,32 @@ void SceneGraph::rebuildLinkAndJointMaps()
   }
 }
 
+std::vector<std::string> SceneGraph::getLinkChildrenHelper(Vertex start_vertex) const
+{
+  const auto& graph = static_cast<const Graph&>(*this);
+  std::vector<std::string> child_link_names;
+
+  std::map<Vertex, size_t> index_map;
+  boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
+
+  std::map<Vertex, boost::default_color_type> color_map;
+  boost::associative_property_map<std::map<Vertex, boost::default_color_type>> prop_color_map(color_map);
+
+  int c = 0;
+  Graph::vertex_iterator i, iend;
+  for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
+    boost::put(prop_index_map, *i, c);
+
+  children_detector vis(child_link_names);
+  // NOLINTNEXTLINE
+  boost::breadth_first_search(
+      graph,
+      start_vertex,
+      boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map).color_map(prop_color_map));
+
+  return child_link_names;
+}
+
 bool SceneGraph::operator==(const SceneGraph& rhs) const
 {
   using namespace tesseract_common;
@@ -1163,6 +1311,22 @@ template <class Archive>
 void SceneGraph::serialize(Archive& ar, const unsigned int version)
 {
   boost::serialization::split_member(ar, *this, version);
+}
+
+std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
+{
+  os << "Links:" << std::endl;
+  for (const auto& l : path.links)
+    os << "  " << l << std::endl;
+
+  os << "Joints:" << std::endl;
+  for (const auto& j : path.joints)
+    os << "  " << j << std::endl;
+
+  os << "Active Joints:" << std::endl;
+  for (const auto& j : path.active_joints)
+    os << "  " << j << std::endl;
+  return os;
 }
 
 }  // namespace tesseract_scene_graph

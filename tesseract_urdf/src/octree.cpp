@@ -32,15 +32,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/iostreams/stream.hpp>
 #include <tesseract_common/utils.h>
 #include <tinyxml2.h>
+#include <octomap/OcTree.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_geometry/impl/octree.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/octree.h>
 #include <tesseract_urdf/utils.h>
 
 tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctree(const tinyxml2::XMLElement* xml_element,
                                                             const tesseract_common::ResourceLocator& locator,
-                                                            tesseract_geometry::Octree::SubType shape_type,
+                                                            tesseract_geometry::OctreeSubType shape_type,
                                                             bool prune,
                                                             int /*version*/)
 {

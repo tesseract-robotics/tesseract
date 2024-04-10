@@ -12,6 +12,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/joint.h>
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
 #include <tesseract_support/tesseract_support_resource_locator.h>
 

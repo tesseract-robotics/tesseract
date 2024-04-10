@@ -60,7 +60,7 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
     std::throw_with_nested(std::runtime_error("Geometry: Error missing 'geometry' element!"));
 
   std::string geometry_type;
-  tinyxml2::XMLError status = tesseract_common::QueryStringValue(geometry, geometry_type);
+  int status = tesseract_common::QueryStringValue(geometry, geometry_type);
   if (status != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Geometry: Error parsing 'geometry' element, invalid geometry type!"));
 

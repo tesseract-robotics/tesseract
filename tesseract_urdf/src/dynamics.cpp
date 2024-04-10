@@ -45,7 +45,7 @@ tesseract_scene_graph::JointDynamics::Ptr tesseract_urdf::parseDynamics(const ti
 
   auto dynamics = std::make_shared<tesseract_scene_graph::JointDynamics>();
 
-  tinyxml2::XMLError status = xml_element->QueryDoubleAttribute("damping", &(dynamics->damping));
+  int status = xml_element->QueryDoubleAttribute("damping", &(dynamics->damping));
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Dynamics: Error parsing attribute 'damping'!"));
 

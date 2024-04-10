@@ -30,11 +30,13 @@
 #include <typeindex>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/assume_abstract.hpp>
 #include <boost/serialization/unique_ptr.hpp>
-#include <tesseract_common/serialization.h>
 
 namespace tesseract_common
 {
+struct Serialization;
+
 /** @brief This is the interface that all type erasures interfaces must inherit from */
 struct TypeErasureInterface
 {
@@ -59,7 +61,9 @@ private:
   friend class boost::serialization::access;
   friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& /*ar*/, const unsigned int /*version*/){};  // NOLINT
+  void serialize(Archive& /*ar*/, const unsigned int /*version*/)
+  {
+  }  // NOLINT
 };
 
 template <typename ConcreteType, typename ConceptInterface>
@@ -150,7 +154,7 @@ public:
   {
   }
 
-  TypeErasureBase() : value_(nullptr){};  // NOLINT
+  TypeErasureBase() : value_(nullptr) {}  // NOLINT
 
   // Destructor
   ~TypeErasureBase() = default;

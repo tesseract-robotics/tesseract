@@ -57,6 +57,53 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
   return true;
 }
 
+void AllowedCollisionMatrix::addAllowedCollision(const std::string& link_name1,
+                                                 const std::string& link_name2,
+                                                 const std::string& reason)
+{
+  auto link_pair = tesseract_common::makeOrderedLinkPair(link_name1, link_name2);
+  lookup_table_[link_pair] = reason;
+}
+
+const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions() const { return lookup_table_; }
+
+void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
+{
+  auto link_pair = tesseract_common::makeOrderedLinkPair(link_name1, link_name2);
+  lookup_table_.erase(link_pair);
+}
+
+void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name)
+{
+  for (auto it = lookup_table_.begin(); it != lookup_table_.end() /* not hoisted */; /* no increment */)
+  {
+    if (it->first.first == link_name || it->first.second == link_name)
+    {
+      it = lookup_table_.erase(it);
+    }
+    else
+    {
+      ++it;
+    }
+  }
+}
+
+bool AllowedCollisionMatrix::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
+{
+  thread_local LinkNamesPair link_pair;
+  tesseract_common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
+  return (lookup_table_.find(link_pair) != lookup_table_.end());
+}
+
+void AllowedCollisionMatrix::clearAllowedCollisions() { lookup_table_.clear(); }
+
+void AllowedCollisionMatrix::insertAllowedCollisionMatrix(const AllowedCollisionMatrix& acm)
+{
+  lookup_table_.insert(acm.getAllAllowedCollisions().begin(), acm.getAllAllowedCollisions().end());
+}
+
+void AllowedCollisionMatrix::reserveAllowedCollisionMatrix(std::size_t size) { lookup_table_.reserve(size); }
+
 bool AllowedCollisionMatrix::operator==(const AllowedCollisionMatrix& rhs) const
 {
   bool equal = true;
@@ -70,6 +117,13 @@ template <class Archive>
 void AllowedCollisionMatrix::serialize(Archive& ar, const unsigned int /*version*/)
 {
   ar& BOOST_SERIALIZATION_NVP(lookup_table_);
+}
+
+std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
+{
+  for (const auto& pair : acm.getAllAllowedCollisions())
+    os << "link=" << pair.first.first << " link=" << pair.first.second << " reason=" << pair.second << std::endl;
+  return os;
 }
 }  // namespace tesseract_common
 

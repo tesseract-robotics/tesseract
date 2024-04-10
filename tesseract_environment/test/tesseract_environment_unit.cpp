@@ -5,19 +5,41 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <omp.h>
 #include <cmath>
+#include <fstream>
+#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/urdf_parser.h>
+
+#include <tesseract_srdf/srdf_model.h>
+
 #include <tesseract_geometry/impl/box.h>
 #include <tesseract_geometry/impl/sphere.h>
+
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/utils.h>
+
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/joint.h>
+#include <tesseract_scene_graph/scene_state.h>
+
+#include <tesseract_state_solver/state_solver.h>
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
+
+#include <tesseract_kinematics/core/joint_group.h>
+#include <tesseract_kinematics/core/kinematic_group.h>
+
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_environment/commands.h>
+#include <tesseract_collision/core/types.h>
+
 #include <tesseract_environment/environment.h>
+#include <tesseract_environment/command.h>
+#include <tesseract_environment/commands.h>
 #include <tesseract_environment/utils.h>
+
 #include <tesseract_support/tesseract_support_resource_locator.h>
 
 using namespace tesseract_scene_graph;

@@ -30,10 +30,15 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <memory>
 #include <vector>
+#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_environment
 {
@@ -99,7 +104,9 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
-using Commands = std::vector<Command::ConstPtr>;
+using Commands = std::vector<std::shared_ptr<const Command>>;
 }  // namespace tesseract_environment
+
+BOOST_CLASS_EXPORT_KEY2(tesseract_environment::Command, "Command")
 
 #endif  // COMMAND_H

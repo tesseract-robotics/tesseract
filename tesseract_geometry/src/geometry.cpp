@@ -33,12 +33,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-bool Geometry::operator==(const Geometry& rhs) const
-{
-  bool equal = true;
-  equal &= type_ == rhs.type_;
-  return equal;
-}
+Geometry::Geometry(GeometryType type) : type_(type) {}
+
+bool Geometry::operator==(const Geometry& rhs) const { return (type_ == rhs.type_); }
 bool Geometry::operator!=(const Geometry& rhs) const { return !operator==(rhs); }  // LCOV_EXCL_LINE
 
 template <class Archive>

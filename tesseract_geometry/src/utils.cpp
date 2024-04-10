@@ -27,6 +27,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
+#include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/utils.h>

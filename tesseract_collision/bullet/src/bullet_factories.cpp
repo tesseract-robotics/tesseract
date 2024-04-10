@@ -36,6 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
 #include <tesseract_collision/bullet/tesseract_collision_configuration.h>
 
+#include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
+
 namespace tesseract_collision::tesseract_collision_bullet
 {
 TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
@@ -59,26 +62,26 @@ TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
   return config_info;
 }
 
-DiscreteContactManager::UPtr BulletDiscreteBVHManagerFactory::create(const std::string& name,
-                                                                     const YAML::Node& config) const
+std::unique_ptr<tesseract_collision::DiscreteContactManager>
+BulletDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Node& config) const
 {
   return std::make_unique<BulletDiscreteBVHManager>(name, getConfigInfo(config));
 }
 
-DiscreteContactManager::UPtr BulletDiscreteSimpleManagerFactory::create(const std::string& name,
-                                                                        const YAML::Node& config) const
+std::unique_ptr<DiscreteContactManager> BulletDiscreteSimpleManagerFactory::create(const std::string& name,
+                                                                                   const YAML::Node& config) const
 {
   return std::make_unique<BulletDiscreteSimpleManager>(name, getConfigInfo(config));
 }
 
-ContinuousContactManager::UPtr BulletCastBVHManagerFactory::create(const std::string& name,
-                                                                   const YAML::Node& config) const
+std::unique_ptr<ContinuousContactManager> BulletCastBVHManagerFactory::create(const std::string& name,
+                                                                              const YAML::Node& config) const
 {
   return std::make_unique<BulletCastBVHManager>(name, getConfigInfo(config));
 }
 
-ContinuousContactManager::UPtr BulletCastSimpleManagerFactory::create(const std::string& name,
-                                                                      const YAML::Node& config) const
+std::unique_ptr<ContinuousContactManager> BulletCastSimpleManagerFactory::create(const std::string& name,
+                                                                                 const YAML::Node& config) const
 {
   return std::make_unique<BulletCastSimpleManager>(name, getConfigInfo(config));
 }

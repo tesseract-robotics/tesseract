@@ -30,13 +30,17 @@
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr_jl.h>
 
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/scene_state.h>
+
 namespace tesseract_kinematics
 {
-ForwardKinematics::UPtr KDLFwdKinChainFactory::create(const std::string& solver_name,
-                                                      const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                      const tesseract_scene_graph::SceneState& /*scene_state*/,
-                                                      const KinematicsPluginFactory& /*plugin_factory*/,
-                                                      const YAML::Node& config) const
+std::unique_ptr<ForwardKinematics>
+KDLFwdKinChainFactory::create(const std::string& solver_name,
+                              const tesseract_scene_graph::SceneGraph& scene_graph,
+                              const tesseract_scene_graph::SceneState& /*scene_state*/,
+                              const KinematicsPluginFactory& /*plugin_factory*/,
+                              const YAML::Node& config) const
 {
   std::string base_link;
   std::string tip_link;
@@ -62,11 +66,12 @@ ForwardKinematics::UPtr KDLFwdKinChainFactory::create(const std::string& solver_
   return std::make_unique<KDLFwdKinChain>(scene_graph, base_link, tip_link, solver_name);
 }
 
-InverseKinematics::UPtr KDLInvKinChainLMAFactory::create(const std::string& solver_name,
-                                                         const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                         const tesseract_scene_graph::SceneState& /*scene_state*/,
-                                                         const KinematicsPluginFactory& /*plugin_factory*/,
-                                                         const YAML::Node& config) const
+std::unique_ptr<InverseKinematics>
+KDLInvKinChainLMAFactory::create(const std::string& solver_name,
+                                 const tesseract_scene_graph::SceneGraph& scene_graph,
+                                 const tesseract_scene_graph::SceneState& /*scene_state*/,
+                                 const KinematicsPluginFactory& /*plugin_factory*/,
+                                 const YAML::Node& config) const
 {
   std::string base_link;
   std::string tip_link;
@@ -92,11 +97,12 @@ InverseKinematics::UPtr KDLInvKinChainLMAFactory::create(const std::string& solv
   return std::make_unique<KDLInvKinChainLMA>(scene_graph, base_link, tip_link, solver_name);
 }
 
-InverseKinematics::UPtr KDLInvKinChainNRFactory::create(const std::string& solver_name,
-                                                        const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                        const tesseract_scene_graph::SceneState& /*scene_state*/,
-                                                        const KinematicsPluginFactory& /*plugin_factory*/,
-                                                        const YAML::Node& config) const
+std::unique_ptr<InverseKinematics>
+KDLInvKinChainNRFactory::create(const std::string& solver_name,
+                                const tesseract_scene_graph::SceneGraph& scene_graph,
+                                const tesseract_scene_graph::SceneState& /*scene_state*/,
+                                const KinematicsPluginFactory& /*plugin_factory*/,
+                                const YAML::Node& config) const
 {
   std::string base_link;
   std::string tip_link;
@@ -122,11 +128,12 @@ InverseKinematics::UPtr KDLInvKinChainNRFactory::create(const std::string& solve
   return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, solver_name);
 }
 
-InverseKinematics::UPtr KDLInvKinChainNR_JLFactory::create(const std::string& solver_name,
-                                                           const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                           const tesseract_scene_graph::SceneState& /*scene_state*/,
-                                                           const KinematicsPluginFactory& /*plugin_factory*/,
-                                                           const YAML::Node& config) const
+std::unique_ptr<InverseKinematics>
+KDLInvKinChainNR_JLFactory::create(const std::string& solver_name,
+                                   const tesseract_scene_graph::SceneGraph& scene_graph,
+                                   const tesseract_scene_graph::SceneState& /*scene_state*/,
+                                   const KinematicsPluginFactory& /*plugin_factory*/,
+                                   const YAML::Node& config) const
 {
   std::string base_link;
   std::string tip_link;

@@ -87,8 +87,12 @@ configure_package(
   CFG_EXTRAS cmake/tesseract_srdf-extras.cmake)
 
 # Mark cpp header files for installation
-install(FILES include/${PROJECT_NAME}/srdf_model.h include/${PROJECT_NAME}/kinematics_information.h
-              include/${PROJECT_NAME}/utils.h DESTINATION include/${PROJECT_NAME})
+install(
+  FILES include/${PROJECT_NAME}/srdf_model.h
+        include/${PROJECT_NAME}/kinematics_information.h
+        include/${PROJECT_NAME}/utils.h
+        include/${PROJECT_NAME}/fwd.h
+  DESTINATION include/${PROJECT_NAME})
 
 # ADD Examples
 if(TESSERACT_ENABLE_EXAMPLES OR TESSERACT_SRDF_ENABLE_EXAMPLES)

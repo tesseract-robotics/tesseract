@@ -27,18 +27,18 @@
 #define TESSERACT_GEOMETRY_MESH_H
 
 #include <tesseract_common/macros.h>
-#include <tesseract_common/resource_locator.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/types.h>
-#include <tesseract_geometry/geometry.h>
-#include <tesseract_geometry/impl/mesh_material.h>
 #include <tesseract_geometry/impl/polygon_mesh.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_geometry
 {
@@ -68,26 +68,12 @@ public:
    */
   Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
        std::shared_ptr<const Eigen::VectorXi> triangles,
-       tesseract_common::Resource::Ptr resource = nullptr,
+       std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
        const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
        std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
        std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
-       MeshMaterial::Ptr mesh_material = nullptr,
-       std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
-    : PolygonMesh(std::move(vertices),
-                  std::move(triangles),
-                  std::move(resource),
-                  scale,
-                  std::move(normals),
-                  std::move(vertex_colors),
-                  std::move(mesh_material),
-                  std::move(mesh_textures),
-                  GeometryType::MESH)
-  {
-    if ((static_cast<long>(getFaceCount()) * 4) != getFaces()->size())
-      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
-  }
-
+       std::shared_ptr<MeshMaterial> mesh_material = nullptr,
+       std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
   /**
    * @brief Mesh geometry
    * @param vertices A vector of vertices associated with the mesh
@@ -107,60 +93,18 @@ public:
   Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
        std::shared_ptr<const Eigen::VectorXi> triangles,
        int triangle_count,
-       tesseract_common::Resource::ConstPtr resource = nullptr,
+       std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
        const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
        std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
        std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
-       MeshMaterial::Ptr mesh_material = nullptr,
-       std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
-    : PolygonMesh(std::move(vertices),
-                  std::move(triangles),
-                  triangle_count,
-                  std::move(resource),
-                  scale,
-                  std::move(normals),
-                  std::move(vertex_colors),
-                  std::move(mesh_material),
-                  std::move(mesh_textures),
-                  GeometryType::MESH)
-  {
-    if ((static_cast<long>(getFaceCount()) * 4) != getFaces()->size())
-      std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
-  }
+       std::shared_ptr<MeshMaterial> mesh_material = nullptr,
+       std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
 
   Mesh() = default;
   ~Mesh() override = default;
 
-  Geometry::Ptr clone() const override
-  {
-    // getMaterial returns a pointer-to-const, so deference and make_shared, but also guard against nullptr
-    std::shared_ptr<Mesh> ptr;
-    if (getMaterial() != nullptr)
-    {
-      ptr = std::make_shared<Mesh>(getVertices(),
-                                   getFaces(),
-                                   getFaceCount(),
-                                   getResource(),
-                                   getScale(),
-                                   getNormals(),
-                                   getVertexColors(),
-                                   std::make_shared<MeshMaterial>(*getMaterial()),
-                                   getTextures());
-    }
-    else
-    {
-      ptr = std::make_shared<Mesh>(getVertices(),
-                                   getFaces(),
-                                   getFaceCount(),
-                                   getResource(),
-                                   getScale(),
-                                   getNormals(),
-                                   getVertexColors(),
-                                   nullptr,
-                                   getTextures());
-    }
-    return ptr;
-  }
+  Geometry::Ptr clone() const override final;
+
   bool operator==(const Mesh& rhs) const;
   bool operator!=(const Mesh& rhs) const;
 

@@ -24,7 +24,8 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   /////////////////////////////////////////////////////////////////
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/blender_monkey.bt";
   auto ot = std::make_shared<octomap::OcTree>(path);
-  CollisionShapePtr dense_octomap = std::make_shared<tesseract_geometry::Octree>(ot, tesseract_geometry::Octree::BOX);
+  CollisionShapePtr dense_octomap =
+      std::make_shared<tesseract_geometry::Octree>(ot, tesseract_geometry::OctreeSubType::BOX);
   Eigen::Isometry3d octomap_pose;
   octomap_pose.setIdentity();
 

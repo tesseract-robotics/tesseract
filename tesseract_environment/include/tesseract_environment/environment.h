@@ -25,32 +25,35 @@
  */
 #ifndef TESSERACT_ENVIRONMENT_ENVIRONMENT_H
 #define TESSERACT_ENVIRONMENT_ENVIRONMENT_H
+
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <functional>
 #include <vector>
 #include <string>
-#include <shared_mutex>
 #include <chrono>
-#include <console_bridge/console.h>
+#include <set>
+#include <memory>
+#include <shared_mutex>
+#include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/commands.h>
-#include <tesseract_environment/events.h>
-#include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_collision/core/contact_managers_plugin_factory.h>
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_state_solver/mutable_state_solver.h>
-#include <tesseract_urdf/urdf_parser.h>
-#include <tesseract_srdf/srdf_model.h>
-#include <tesseract_common/resource_locator.h>
-#include <tesseract_common/manipulator_info.h>
-#include <tesseract_common/types.h>
-#include <tesseract_common/utils.h>
-#include <tesseract_kinematics/core/joint_group.h>
-#include <tesseract_kinematics/core/kinematic_group.h>
-#include <tesseract_kinematics/core/kinematics_plugin_factory.h>
+#include <tesseract_common/fwd.h>
+#include <tesseract_geometry/fwd.h>
+#include <tesseract_scene_graph/fwd.h>
+#include <tesseract_state_solver/fwd.h>
+#include <tesseract_srdf/fwd.h>
+#include <tesseract_kinematics/core/fwd.h>
+#include <tesseract_collision/core/fwd.h>
+#include <tesseract_environment/fwd.h>
+
+#include <tesseract_common/filesystem.h>
+#include <tesseract_common/eigen_types.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_environment
 {
@@ -60,6 +63,8 @@ namespace tesseract_environment
  * The function should throw and exception if not located
  */
 using FindTCPOffsetCallbackFn = std::function<Eigen::Isometry3d(const tesseract_common::ManipulatorInfo&)>;
+
+using EventCallbackFn = std::function<void(const Event& event)>;
 
 class Environment
 {
@@ -74,8 +79,8 @@ public:
   using ConstUPtr = std::unique_ptr<const Environment>;
 
   /** @brief Default constructor */
-  Environment() = default;
-  virtual ~Environment() = default;
+  Environment();
+  virtual ~Environment();
   Environment(const Environment&) = delete;
   Environment& operator=(const Environment&) = delete;
   Environment(Environment&&) = delete;
@@ -89,7 +94,7 @@ public:
    * @param scene_graph The scene graph to initialize the environment.
    * @return True if successful, otherwise false
    */
-  bool init(const Commands& commands);
+  bool init(const std::vector<std::shared_ptr<const Command>>& commands);
 
   /**
    * @brief Initialize the Environment
@@ -100,19 +105,20 @@ public:
    * @return True if successful, otherwise false
    */
   bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const tesseract_srdf::SRDFModel::ConstPtr& srdf_model = nullptr);
+            const std::shared_ptr<const tesseract_srdf::SRDFModel>& srdf_model = nullptr);
 
-  bool init(const std::string& urdf_string, const tesseract_common::ResourceLocator::ConstPtr& locator);
+  bool init(const std::string& urdf_string, const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
   bool init(const std::string& urdf_string,
             const std::string& srdf_string,
-            const tesseract_common::ResourceLocator::ConstPtr& locator);
+            const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
-  bool init(const tesseract_common::fs::path& urdf_path, const tesseract_common::ResourceLocator::ConstPtr& locator);
+  bool init(const tesseract_common::fs::path& urdf_path,
+            const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
   bool init(const tesseract_common::fs::path& urdf_path,
             const tesseract_common::fs::path& srdf_path,
-            const tesseract_common::ResourceLocator::ConstPtr& locator);
+            const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
   /**
    * @brief Clone the environment
@@ -143,7 +149,7 @@ public:
    * @brief Get Environment command history post initialization
    * @return List of commands
    */
-  Commands getCommandHistory() const;
+  std::vector<std::shared_ptr<const Command>> getCommandHistory() const;
 
   /**
    * @brief Applies the commands to the environment
@@ -151,7 +157,7 @@ public:
    * @return true if successful. If returned false, then only a partial set of commands have been applied. Call
    * getCommandHistory to check. Some commands are not checked for success
    */
-  bool applyCommands(const Commands& commands);
+  bool applyCommands(const std::vector<std::shared_ptr<const Command>>& commands);
 
   /**
    * @brief Apply command to the environment
@@ -159,13 +165,13 @@ public:
    * @return true if successful. If returned false, then the command have not been applied.
    * Some type of Command are not checked for success
    */
-  bool applyCommand(Command::ConstPtr command);
+  bool applyCommand(std::shared_ptr<const Command> command);
 
   /**
    * @brief Get the Scene Graph
    * @return SceneGraphConstPtr
    */
-  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
+  std::shared_ptr<const tesseract_scene_graph::SceneGraph> getSceneGraph() const;
 
   /**
    * @brief Get a groups joint names
@@ -179,7 +185,7 @@ public:
    * @param group_name The group name
    * @return A joint group
    */
-  tesseract_kinematics::JointGroup::UPtr getJointGroup(const std::string& group_name) const;
+  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
 
   /**
    * @brief Get a joint group given a vector of joint names
@@ -187,8 +193,8 @@ public:
    * @param joint_names The joint names that make up the group
    * @return A joint group
    */
-  tesseract_kinematics::JointGroup::UPtr getJointGroup(const std::string& name,
-                                                       const std::vector<std::string>& joint_names) const;
+  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& name,
+                                                                  const std::vector<std::string>& joint_names) const;
 
   /**
    * @brief Get a kinematic group given group name and solver name
@@ -197,8 +203,8 @@ public:
    * @param ik_solver_name The IK solver name
    * @return A kinematics group
    */
-  tesseract_kinematics::KinematicGroup::UPtr getKinematicGroup(const std::string& group_name,
-                                                               std::string ik_solver_name = "") const;
+  std::unique_ptr<tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
+                                                                          const std::string& ik_solver_name = "") const;
 
   /**
    * @brief Find tool center point provided in the manipulator info
@@ -257,14 +263,14 @@ public:
    * @brief Set resource locator for environment
    * @param locator The resource locator
    */
-  void setResourceLocator(tesseract_common::ResourceLocator::ConstPtr locator);
+  void setResourceLocator(std::shared_ptr<const tesseract_common::ResourceLocator> locator);
 
   /**
    * @brief Get the resource locator assigned
    * @details This can be a nullptr
    * @return The resource locator assigned to the environment
    */
-  tesseract_common::ResourceLocator::ConstPtr getResourceLocator() const;
+  std::shared_ptr<const tesseract_common::ResourceLocator> getResourceLocator() const;
 
   /** @brief Give the environment a name */
   void setName(const std::string& name);
@@ -311,21 +317,21 @@ public:
    * @param name The name of the link
    * @return Return nullptr if link name does not exists, otherwise a pointer to the link
    */
-  tesseract_scene_graph::Link::ConstPtr getLink(const std::string& name) const;
+  std::shared_ptr<const tesseract_scene_graph::Link> getLink(const std::string& name) const;
 
   /**
    * @brief Get joint by name
    * @param name The name of the joint
    * @return Joint Const Pointer
    */
-  tesseract_scene_graph::Joint::ConstPtr getJoint(const std::string& name) const;
+  std::shared_ptr<const tesseract_scene_graph::Joint> getJoint(const std::string& name) const;
 
   /**
    * @brief Gets the limits associated with a joint
    * @param joint_name Name of the joint to be updated
    * @return The joint limits set for the given joint
    */
-  tesseract_scene_graph::JointLimits::ConstPtr getJointLimits(const std::string& joint_name) const;
+  std::shared_ptr<const tesseract_scene_graph::JointLimits> getJointLimits(const std::string& joint_name) const;
 
   /**
    * @brief Get whether a link should be considered during collision checking
@@ -343,7 +349,7 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  tesseract_common::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
+  std::shared_ptr<const tesseract_common::AllowedCollisionMatrix> getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get a vector of joint names in the environment
@@ -444,7 +450,7 @@ public:
    *
    * @return A clone of the environments state solver
    */
-  tesseract_scene_graph::StateSolver::UPtr getStateSolver() const;
+  std::unique_ptr<tesseract_scene_graph::StateSolver> getStateSolver() const;
 
   /**
    * @brief Get the kinematics information
@@ -456,7 +462,7 @@ public:
    * @brief Get the available group names
    * @return The group names
    */
-  tesseract_srdf::GroupNames getGroupNames() const;
+  std::set<std::string> getGroupNames() const;
 
   /**
    * @brief Get the contact managers plugin information
@@ -472,7 +478,7 @@ public:
   bool setActiveDiscreteContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active discrete contact manager */
-  tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManager() const;
+  std::unique_ptr<tesseract_collision::DiscreteContactManager> getDiscreteContactManager() const;
 
   /**
    * @brief Set the cached internal copy of the environments active discrete contact manager not nullptr
@@ -481,7 +487,7 @@ public:
   void clearCachedDiscreteContactManager() const;
 
   /** @brief Get a copy of the environments available discrete contact manager by name */
-  tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManager(const std::string& name) const;
+  std::unique_ptr<tesseract_collision::DiscreteContactManager> getDiscreteContactManager(const std::string& name) const;
 
   /**
    * @brief Set the active continuous contact manager
@@ -491,7 +497,7 @@ public:
   bool setActiveContinuousContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active continuous contact manager */
-  tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManager() const;
+  std::unique_ptr<tesseract_collision::ContinuousContactManager> getContinuousContactManager() const;
 
   /**
    * @brief Set the cached internal copy of the environments active continuous contact manager not nullptr
@@ -500,7 +506,8 @@ public:
   void clearCachedContinuousContactManager() const;
 
   /** @brief Get a copy of the environments available continuous contact manager by name */
-  tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManager(const std::string& name) const;
+  std::unique_ptr<tesseract_collision::ContinuousContactManager>
+  getContinuousContactManager(const std::string& name) const;
 
   /** @brief Get the environment collision margin data */
   tesseract_common::CollisionMarginData getCollisionMarginData() const;
@@ -520,205 +527,13 @@ public:
   bool operator==(const Environment& rhs) const;
   bool operator!=(const Environment& rhs) const;
 
-protected:
-  /**
-   * @brief Identifies if the object has been initialized
-   * @note This is intentionally not serialized it will auto updated
-   */
-  bool initialized_{ false };
-
-  /**
-   * @brief This increments when the scene graph is modified
-   * @note This is intentionally not serialized it will auto updated
-   */
-  int revision_{ 0 };
-
-  /** @brief This is the revision number after initialization used when reset is called */
-  int init_revision_{ 0 };
-
-  /** @brief The history of commands applied to the environment after initialization */
-  Commands commands_{};
-
-  /**
-   * @brief Tesseract Scene Graph
-   * @note This is intentionally not serialized it will auto updated
-   */
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph_{ nullptr };
-
-  /**
-   * @brief The kinematics information
-   * @note This is intentionally not serialized it will auto updated
-   */
-  tesseract_srdf::KinematicsInformation kinematics_information_;
-
-  /**
-   * @brief The kinematics factory
-   * @note This is intentionally not serialized it will auto updated
-   */
-  tesseract_kinematics::KinematicsPluginFactory kinematics_factory_;
-
-  /** @brief Current state of the environment */
-  tesseract_scene_graph::SceneState current_state_;
-
-  /** @brief Environment timestamp */
-  std::chrono::system_clock::time_point timestamp_{ std::chrono::system_clock::now() };
-
-  /** @brief Current state timestamp */
-  std::chrono::system_clock::time_point current_state_timestamp_{ std::chrono::system_clock::now() };
-
-  /**
-   * @brief Tesseract State Solver
-   * @note This is intentionally not serialized it will auto updated
-   */
-  tesseract_scene_graph::MutableStateSolver::UPtr state_solver_{ nullptr };
-
-  /**
-   * @brief The function used to determine if two objects are allowed in collision
-   * @todo This needs to be switched to class so it may be serialized
-   */
-  tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;
-
-  /**
-   * @brief A vector of user defined callbacks for locating tool center point
-   * @todo This needs to be switched to class so it may be serialized
-   */
-  std::vector<FindTCPOffsetCallbackFn> find_tcp_cb_{};
-
-  /**
-   * @brief A map of user defined event callback functions
-   * @details This should not be cloned or serialized
-   */
-  std::map<std::size_t, EventCallbackFn> event_cb_{};
-
-  /** @brief Used when initialized by URDF_STRING, URDF_STRING_SRDF_STRING, URDF_PATH, and URDF_PATH_SRDF_PATH */
-  tesseract_common::ResourceLocator::ConstPtr resource_locator_{ nullptr };
-
-  /**
-   * @brief The contact manager information
-   * @note This is intentionally not serialized it will auto updated
-   */
-  tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info_;
-
-  /**
-   * @brief The contact managers factory
-   * @note This is intentionally not serialized it will auto updated
-   */
-  tesseract_collision::ContactManagersPluginFactory contact_managers_factory_;
-
-  /**
-   * @brief The collision margin data
-   * @note This is intentionally not serialized it will auto updated
-   */
-  tesseract_collision::CollisionMarginData collision_margin_data_;
-
-  /**
-   * @brief The discrete contact manager object
-   * @note This is intentionally not serialized it will auto updated
-   */
-  mutable tesseract_collision::DiscreteContactManager::UPtr discrete_manager_{ nullptr };
-  mutable std::shared_mutex discrete_manager_mutex_;
-
-  /**
-   * @brief The continuous contact manager object
-   * @note This is intentionally not serialized it will auto updated
-   */
-  mutable tesseract_collision::ContinuousContactManager::UPtr continuous_manager_{ nullptr };
-  mutable std::shared_mutex continuous_manager_mutex_;
-
-  /**
-   * @brief A cache of group joint names to provide faster access
-   * @details This will cleared when environment changes
-   * @note This is intentionally not serialized it will auto updated
-   */
-  mutable std::unordered_map<std::string, std::vector<std::string>> group_joint_names_cache_{};
-  mutable std::shared_mutex group_joint_names_cache_mutex_;
-
-  /**
-   * @brief A cache of joint groups to provide faster access
-   * @details This will cleared when environment changes
-   * @note This is intentionally not serialized it will auto updated
-   */
-  mutable std::unordered_map<std::string, tesseract_kinematics::JointGroup::UPtr> joint_group_cache_{};
-  mutable std::shared_mutex joint_group_cache_mutex_;
-
-  /**
-   * @brief A cache of kinematic groups to provide faster access
-   * @details This will cleared when environment changes
-   * @note This is intentionally not serialized it will auto updated
-   */
-  mutable std::map<std::pair<std::string, std::string>, tesseract_kinematics::KinematicGroup::UPtr>
-      kinematic_group_cache_{};
-  mutable std::shared_mutex kinematic_group_cache_mutex_;
-
+private:
   /** @brief The environment can be accessed from multiple threads, need use mutex throughout */
   mutable std::shared_mutex mutex_;
 
-  /** This will update the contact managers transforms */
-  void currentStateChanged();
-
-  /** This will notify the state solver that the environment has changed */
-  void environmentChanged();
-
-  /**
-   * @brief @brief Passes a current state changed event to the callbacks
-   * @note This does not take a lock
-   */
-  void triggerCurrentStateChangedCallbacks();
-
-  /**
-   * @brief Passes a environment changed event to the callbacks
-   * @note This does not take a lock
-   */
-  void triggerEnvironmentChangedCallbacks();
-
-private:
-  bool removeLinkHelper(const std::string& name);
-
-  static void getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
-                                 tesseract_common::VectorIsometry3d& shape_poses,
-                                 const tesseract_scene_graph::Link& link);
-
-  bool setActiveDiscreteContactManagerHelper(const std::string& name);
-  bool setActiveContinuousContactManagerHelper(const std::string& name);
-
-  tesseract_collision::DiscreteContactManager::UPtr getDiscreteContactManagerHelper(const std::string& name) const;
-
-  tesseract_collision::ContinuousContactManager::UPtr getContinuousContactManagerHelper(const std::string& name) const;
-
-  bool initHelper(const Commands& commands);
-  static Commands getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                  const tesseract_srdf::SRDFModel::ConstPtr& srdf_model = nullptr);
-
-  /** @brief Apply Command Helper which does not lock */
-  bool applyCommandsHelper(const Commands& commands);
-
-  // Command Helper function
-  bool applyAddCommand(const AddLinkCommand::ConstPtr& cmd);
-  bool applyMoveLinkCommand(const MoveLinkCommand::ConstPtr& cmd);
-  bool applyMoveJointCommand(const MoveJointCommand::ConstPtr& cmd);
-  bool applyRemoveLinkCommand(const RemoveLinkCommand::ConstPtr& cmd);
-  bool applyRemoveJointCommand(const RemoveJointCommand::ConstPtr& cmd);
-  bool applyReplaceJointCommand(const ReplaceJointCommand::ConstPtr& cmd);
-  bool applyChangeLinkOriginCommand(const ChangeLinkOriginCommand::ConstPtr& cmd);
-  bool applyChangeJointOriginCommand(const ChangeJointOriginCommand::ConstPtr& cmd);
-  bool applyChangeLinkCollisionEnabledCommand(const ChangeLinkCollisionEnabledCommand::ConstPtr& cmd);
-  bool applyChangeLinkVisibilityCommand(const ChangeLinkVisibilityCommand::ConstPtr& cmd);
-  bool applyModifyAllowedCollisionsCommand(const ModifyAllowedCollisionsCommand::ConstPtr& cmd);
-  bool applyRemoveAllowedCollisionLinkCommand(const RemoveAllowedCollisionLinkCommand::ConstPtr& cmd);
-  bool applyAddSceneGraphCommand(AddSceneGraphCommand::ConstPtr cmd);
-  bool applyChangeJointPositionLimitsCommand(const ChangeJointPositionLimitsCommand::ConstPtr& cmd);
-  bool applyChangeJointVelocityLimitsCommand(const ChangeJointVelocityLimitsCommand::ConstPtr& cmd);
-  bool applyChangeJointAccelerationLimitsCommand(const ChangeJointAccelerationLimitsCommand::ConstPtr& cmd);
-  bool applyAddKinematicsInformationCommand(const AddKinematicsInformationCommand::ConstPtr& cmd);
-  bool applyChangeCollisionMarginsCommand(const ChangeCollisionMarginsCommand::ConstPtr& cmd);
-  bool applyAddContactManagersPluginInfoCommand(const AddContactManagersPluginInfoCommand::ConstPtr& cmd);
-  bool applySetActiveContinuousContactManagerCommand(const SetActiveContinuousContactManagerCommand::ConstPtr& cmd);
-  bool applySetActiveDiscreteContactManagerCommand(const SetActiveDiscreteContactManagerCommand::ConstPtr& cmd);
-  bool applyAddTrajectoryLinkCommand(const AddTrajectoryLinkCommand::ConstPtr& cmd);
-
-  bool applyAddLinkCommandHelper(const tesseract_scene_graph::Link::ConstPtr& link,
-                                 const tesseract_scene_graph::Joint::ConstPtr& joint,
-                                 bool replace_allowed);
+  /** @brief This hides specific implemenation details to allow forward declarations */
+  struct Implementation;
+  std::unique_ptr<Implementation> impl_;
 
   friend class boost::serialization::access;
   template <class Archive>
@@ -729,6 +544,10 @@ private:
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
+
+public:
+  /** @brief This should only be used by the clone method */
+  explicit Environment(std::unique_ptr<Implementation> impl);
 };
 }  // namespace tesseract_environment
 

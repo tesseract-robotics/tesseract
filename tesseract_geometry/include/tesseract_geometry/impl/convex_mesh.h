@@ -28,15 +28,17 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/geometry.h>
-#include <tesseract_geometry/impl/mesh_material.h>
 #include <tesseract_geometry/impl/polygon_mesh.h>
+
+namespace boost::serialization
+{
+class access;
+}
 
 namespace tesseract_geometry
 {
@@ -74,23 +76,12 @@ public:
    */
   ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
              std::shared_ptr<const Eigen::VectorXi> faces,
-             tesseract_common::Resource::ConstPtr resource = nullptr,
+             std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
              const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
              std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
              std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
-             MeshMaterial::Ptr mesh_material = nullptr,
-             std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
-    : PolygonMesh(std::move(vertices),
-                  std::move(faces),
-                  std::move(resource),
-                  scale,
-                  std::move(normals),
-                  std::move(vertex_colors),
-                  std::move(mesh_material),
-                  std::move(mesh_textures),
-                  GeometryType::CONVEX_MESH)
-  {
-  }
+             std::shared_ptr<MeshMaterial> mesh_material = nullptr,
+             std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
 
   /**
    * @brief Convex Mesh geometry
@@ -112,24 +103,12 @@ public:
   ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
              std::shared_ptr<const Eigen::VectorXi> faces,
              int face_count,
-             tesseract_common::Resource::ConstPtr resource = nullptr,
+             std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
              const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
              std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
              std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
-             MeshMaterial::Ptr mesh_material = nullptr,
-             std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures = nullptr)
-    : PolygonMesh(std::move(vertices),
-                  std::move(faces),
-                  face_count,
-                  std::move(resource),
-                  scale,
-                  std::move(normals),
-                  std::move(vertex_colors),
-                  std::move(mesh_material),
-                  std::move(mesh_textures),
-                  GeometryType::CONVEX_MESH)
-  {
-  }
+             std::shared_ptr<MeshMaterial> mesh_material = nullptr,
+             std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
 
   ConvexMesh() = default;
   ~ConvexMesh() override = default;
@@ -139,19 +118,17 @@ public:
    * @note This used when writing back out to urdf
    * @return The CreationMethod
    */
-  CreationMethod getCreationMethod() const { return creation_method_; }
+  CreationMethod getCreationMethod() const;
 
   /**
    * @brief Set the method used to create the convex mesh
    * @note This used when writing back out to urdf
    * @param value The CreationMethod
    */
-  void setCreationMethod(CreationMethod method) { creation_method_ = method; }
+  void setCreationMethod(CreationMethod method);
 
-  Geometry::Ptr clone() const override
-  {
-    return std::make_shared<ConvexMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
-  }
+  Geometry::Ptr clone() const override;
+
   bool operator==(const ConvexMesh& rhs) const;
   bool operator!=(const ConvexMesh& rhs) const;
 

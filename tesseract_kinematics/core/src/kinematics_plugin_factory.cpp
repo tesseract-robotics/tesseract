@@ -28,6 +28,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_kinematics/core/inverse_kinematics.h>
+#include <tesseract_kinematics/core/forward_kinematics.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/scene_state.h>
 #include <tesseract_common/plugin_loader.hpp>
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
@@ -209,7 +213,7 @@ std::string KinematicsPluginFactory::getDefaultInvKinPlugin(const std::string& g
   return group_it->second.default_plugin;
 }
 
-ForwardKinematics::UPtr
+std::unique_ptr<ForwardKinematics>
 KinematicsPluginFactory::createFwdKin(const std::string& group_name,
                                       const std::string& solver_name,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -238,7 +242,7 @@ KinematicsPluginFactory::createFwdKin(const std::string& group_name,
   return createFwdKin(solver_name, solver_it->second, scene_graph, scene_state);
 }
 
-ForwardKinematics::UPtr
+std::unique_ptr<ForwardKinematics>
 KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
                                       const tesseract_common::PluginInfo& plugin_info,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -266,7 +270,7 @@ KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
   }
 }
 
-InverseKinematics::UPtr
+std::unique_ptr<InverseKinematics>
 KinematicsPluginFactory::createInvKin(const std::string& group_name,
                                       const std::string& solver_name,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -295,7 +299,7 @@ KinematicsPluginFactory::createInvKin(const std::string& group_name,
   return createInvKin(solver_name, solver_it->second, scene_graph, scene_state);
 }
 
-InverseKinematics::UPtr
+std::unique_ptr<InverseKinematics>
 KinematicsPluginFactory::createInvKin(const std::string& solver_name,
                                       const tesseract_common::PluginInfo& plugin_info,
                                       const tesseract_scene_graph::SceneGraph& scene_graph,
