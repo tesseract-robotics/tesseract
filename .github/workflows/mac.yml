@@ -43,6 +43,10 @@ jobs:
     - name: brew
       run: |
         brew install libomp cmake automake autoconf libtool gcc ninja
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.28.x'
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v6
       with:

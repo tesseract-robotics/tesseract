@@ -26,6 +26,11 @@ jobs:
       with:
         path: target_ws/src
 
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.28.x'
+
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v6
       with:
@@ -36,6 +41,7 @@ jobs:
         cache-key: ci-${{ matrix.os }}
         github-binarycache: true
         revision: 2024.01.12
+
     - name: configure-msvc
       uses: ilammy/msvc-dev-cmd@v1
       with:
