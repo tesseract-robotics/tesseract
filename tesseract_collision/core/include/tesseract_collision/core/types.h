@@ -140,16 +140,16 @@ using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
 /**
  * @brief This structure hold contact results for link pairs
  * @details A custom class was implemented to avoid a large number of heap allocations during motion which avoids full
- * clearing the map. This class provides methods const container methods for access the internal unordered_map and has
+ * clearing the map. This class provides methods const container methods for access the internal map and has
  * two distinct different when it comes to the clear, size and release methods.
  *
- * The clear method does not call clear on the unordered_map but instead it loops over all entries and calls clear on
+ * The clear method does not call clear on the map but instead it loops over all entries and calls clear on
  * the vector being stored. This allows the memory to remain with the map and not get release for each of the vectors
  * stored in the map.
  *
  * The size method loops over the map and counts those that have vectors which are not empty.
  *
- * The release method actually calls clear on the internal unordered_map relasing all memory.
+ * The release method actually calls clear on the internal map relasing all memory.
  *
  * @todo This should be updated to leverage a object pool for `ContactResultVector` where in the set and add methods
  * it would check it the pair exists and if not it would pull from the object pool.
