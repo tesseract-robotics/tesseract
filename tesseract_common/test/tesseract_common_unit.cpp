@@ -420,45 +420,45 @@ TEST(TesseractCommonUnit, boundsUnit)  // NOLINT
   limits.col(0) = -Eigen::VectorXd::Ones(6);
   limits.col(1) = Eigen::VectorXd::Ones(6);
 
-  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
-  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
-  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforcePositionLimits<double>(v, limits);
-  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
+  EXPECT_TRUE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
+  EXPECT_FALSE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforceLimits<double>(v, limits);
+  EXPECT_TRUE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
 
   v = -Eigen::VectorXd::Ones(6);
   v = v.array() - std::numeric_limits<float>::epsilon();
 
-  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
-  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
-  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforcePositionLimits<double>(v, limits);
-  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
+  EXPECT_TRUE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
+  EXPECT_FALSE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforceLimits<double>(v, limits);
+  EXPECT_TRUE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
 
   // Check that clamp is done correctly on both sides
   v = Eigen::VectorXd::Constant(6, -2);
-  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
-  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforcePositionLimits<double>(v, limits);
+  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforceLimits<double>(v, limits);
   ASSERT_EQ((v - limits.col(0)).norm(), 0);
 
   v = Eigen::VectorXd::Constant(6, 2);
-  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
-  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforcePositionLimits<double>(v, limits);
+  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforceLimits<double>(v, limits);
   ASSERT_EQ((v - limits.col(1)).norm(), 0);
 
   v = Eigen::VectorXd::Ones(6);
   v = v.array() - std::numeric_limits<float>::epsilon();
-  EXPECT_TRUE(tesseract_common::isWithinPositionLimits<double>(v, limits));
+  EXPECT_TRUE(tesseract_common::isWithinLimits<double>(v, limits));
 
   v = Eigen::VectorXd::Ones(6);
   v(3) = v(3) + std::numeric_limits<float>::epsilon();
-  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
 
   v = -Eigen::VectorXd::Ones(6);
   v(3) = v(3) - std::numeric_limits<float>::epsilon();
-  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
 }
 
 TEST(TesseractCommonUnit, isIdenticalUnit)  // NOLINT

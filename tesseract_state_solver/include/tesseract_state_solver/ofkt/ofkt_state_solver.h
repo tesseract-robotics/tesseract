@@ -145,6 +145,8 @@ public:
 
   bool changeJointAccelerationLimits(const std::string& name, double limit) override final;
 
+  bool changeJointJerkLimits(const std::string& name, double limit) override final;
+
   bool insertSceneGraph(const SceneGraph& scene_graph,
                         const Joint& joint,
                         const std::string& prefix = "") override final;

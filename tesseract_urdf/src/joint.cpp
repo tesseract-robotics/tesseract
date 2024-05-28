@@ -302,7 +302,8 @@ tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tes
   {
     if (joint->limits != nullptr && (!tesseract_common::almostEqualRelativeAndAbs(joint->limits->effort, 0.0) ||
                                      !tesseract_common::almostEqualRelativeAndAbs(joint->limits->velocity, 0.0) ||
-                                     !tesseract_common::almostEqualRelativeAndAbs(joint->limits->acceleration, 0.0)))
+                                     !tesseract_common::almostEqualRelativeAndAbs(joint->limits->acceleration, 0.0) ||
+                                     !tesseract_common::almostEqualRelativeAndAbs(joint->limits->jerk, 0.0)))
     {
       tinyxml2::XMLElement* xml_limits = writeLimits(joint->limits, doc);
       xml_element->InsertEndChild(xml_limits);

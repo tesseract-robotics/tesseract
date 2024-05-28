@@ -74,8 +74,8 @@ std::ostream& operator<<(std::ostream& os, const JointDynamics& dynamics)
 /******              JointLimits                     *****/
 /*********************************************************/
 
-JointLimits::JointLimits(double l, double u, double e, double v, double a)
-  : lower(l), upper(u), effort(e), velocity(v), acceleration(a)
+JointLimits::JointLimits(double l, double u, double e, double v, double a, double j)
+  : lower(l), upper(u), effort(e), velocity(v), acceleration(a), jerk(j)
 {
 }
 
@@ -86,6 +86,7 @@ void JointLimits::clear()
   effort = 0;
   velocity = 0;
   acceleration = 0;
+  jerk = 0;
 }
 
 bool JointLimits::operator==(const JointLimits& rhs) const
@@ -96,6 +97,7 @@ bool JointLimits::operator==(const JointLimits& rhs) const
   equal &= tesseract_common::almostEqualRelativeAndAbs(effort, rhs.effort);
   equal &= tesseract_common::almostEqualRelativeAndAbs(velocity, rhs.velocity);
   equal &= tesseract_common::almostEqualRelativeAndAbs(acceleration, rhs.acceleration);
+  equal &= tesseract_common::almostEqualRelativeAndAbs(jerk, rhs.jerk);
 
   return equal;
 }
@@ -109,12 +111,14 @@ void JointLimits::serialize(Archive& ar, const unsigned int /*version*/)
   ar& BOOST_SERIALIZATION_NVP(effort);
   ar& BOOST_SERIALIZATION_NVP(velocity);
   ar& BOOST_SERIALIZATION_NVP(acceleration);
+  ar& BOOST_SERIALIZATION_NVP(jerk);
 }
 
 std::ostream& operator<<(std::ostream& os, const JointLimits& limits)
 {
   os << "lower=" << limits.lower << " upper=" << limits.upper << " effort=" << limits.effort
-     << " velocity=" << limits.velocity << " acceleration=" << limits.acceleration;
+     << " velocity=" << limits.velocity << " acceleration=" << limits.acceleration << " jerk=" << limits.jerk;
+  ;
   return os;
 }
 

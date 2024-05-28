@@ -140,6 +140,14 @@ public:
   virtual bool changeJointAccelerationLimits(const std::string& name, double limit) = 0;
 
   /**
+   * @brief Changes the jerk limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @param limits New jerk limits to be set as the joint limits
+   * @return
+   */
+  virtual bool changeJointJerkLimits(const std::string& name, double limit) = 0;
+
+  /**
    * @brief Merge a scene into the current solver
    * @param scene_graph Const ref to the graph to be merged
    * @param joint The joint that connects current scene with the inserted scene

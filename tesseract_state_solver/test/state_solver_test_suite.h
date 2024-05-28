@@ -181,8 +181,12 @@ inline void runCompareStateSolverLimits(const SceneGraph& scene_graph, const Sta
     const auto& scene_joint = scene_graph.getJoint(comp_joint_names[static_cast<std::size_t>(i)]);
     EXPECT_NEAR(limits.joint_limits(i, 0), scene_joint->limits->lower, 1e-5);
     EXPECT_NEAR(limits.joint_limits(i, 1), scene_joint->limits->upper, 1e-5);
-    EXPECT_NEAR(limits.velocity_limits(i), scene_joint->limits->velocity, 1e-5);
-    EXPECT_NEAR(limits.acceleration_limits(i), scene_joint->limits->acceleration, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(i, 0), -scene_joint->limits->velocity, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(i, 1), scene_joint->limits->velocity, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(i, 0), -scene_joint->limits->acceleration, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(i, 1), scene_joint->limits->acceleration, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(i, 0), -scene_joint->limits->jerk, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(i, 1), scene_joint->limits->jerk, 1e-5);
   }
 }
 
@@ -1464,14 +1468,17 @@ void runChangeJointLimitsTest()
   double new_upper = 2.0;
   double new_velocity = 3.0;
   double new_acceleration = 4.0;
+  double new_jerk = 5.0;
 
   scene_graph->changeJointPositionLimits("joint_a1", new_lower, new_upper);
   scene_graph->changeJointVelocityLimits("joint_a1", new_velocity);
   scene_graph->changeJointAccelerationLimits("joint_a1", new_acceleration);
+  scene_graph->changeJointJerkLimits("joint_a1", new_jerk);
 
   EXPECT_TRUE(state_solver.changeJointPositionLimits("joint_a1", new_lower, new_upper));
   EXPECT_TRUE(state_solver.changeJointVelocityLimits("joint_a1", new_velocity));
   EXPECT_TRUE(state_solver.changeJointAccelerationLimits("joint_a1", new_acceleration));
+  EXPECT_TRUE(state_solver.changeJointJerkLimits("joint_a1", new_jerk));
 
   {
     std::vector<std::string> joint_names = state_solver.getActiveJointNames();
@@ -1479,8 +1486,12 @@ void runChangeJointLimitsTest()
     auto limits = state_solver.getLimits();
     EXPECT_NEAR(limits.joint_limits(idx, 0), new_lower, 1e-5);
     EXPECT_NEAR(limits.joint_limits(idx, 1), new_upper, 1e-5);
-    EXPECT_NEAR(limits.velocity_limits(idx), new_velocity, 1e-5);
-    EXPECT_NEAR(limits.acceleration_limits(idx), new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(idx, 0), -new_velocity, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(idx, 1), new_velocity, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(idx, 0), -new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(idx, 1), new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(idx, 0), -new_jerk, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(idx, 1), new_jerk, 1e-5);
   }
 
   {  // Test Clone
@@ -1492,8 +1503,12 @@ void runChangeJointLimitsTest()
     auto limits = state_solver_clone.getLimits();
     EXPECT_NEAR(limits.joint_limits(idx, 0), new_lower, 1e-5);
     EXPECT_NEAR(limits.joint_limits(idx, 1), new_upper, 1e-5);
-    EXPECT_NEAR(limits.velocity_limits(idx), new_velocity, 1e-5);
-    EXPECT_NEAR(limits.acceleration_limits(idx), new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(idx, 0), -new_velocity, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(idx, 1), new_velocity, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(idx, 0), -new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(idx, 1), new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(idx, 0), -new_jerk, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(idx, 1), new_jerk, 1e-5);
   }
 
   // Joint does not exist
@@ -1501,9 +1516,11 @@ void runChangeJointLimitsTest()
   double new_upper_err = 2.0 * 10;
   double new_velocity_err = 3.0 * 10;
   double new_acceleration_err = 4.0 * 10;
+  double new_jerk_err = 5.0 * 10;
   EXPECT_FALSE(state_solver.changeJointPositionLimits("joint_does_not_exist", new_lower_err, new_upper_err));
   EXPECT_FALSE(state_solver.changeJointVelocityLimits("joint_does_not_exist", new_velocity_err));
   EXPECT_FALSE(state_solver.changeJointAccelerationLimits("joint_does_not_exist", new_acceleration_err));
+  EXPECT_FALSE(state_solver.changeJointJerkLimits("joint_does_not_exist", new_jerk_err));
 
   {
     std::vector<std::string> joint_names = state_solver.getActiveJointNames();
@@ -1511,8 +1528,12 @@ void runChangeJointLimitsTest()
     auto limits = state_solver.getLimits();
     EXPECT_NEAR(limits.joint_limits(idx, 0), new_lower, 1e-5);
     EXPECT_NEAR(limits.joint_limits(idx, 1), new_upper, 1e-5);
-    EXPECT_NEAR(limits.velocity_limits(idx), new_velocity, 1e-5);
-    EXPECT_NEAR(limits.acceleration_limits(idx), new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(idx, 0), -new_velocity, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(idx, 1), new_velocity, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(idx, 0), -new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(idx, 1), new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(idx, 0), -new_jerk, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(idx, 1), new_jerk, 1e-5);
   }
 
   {  // Test Clone
@@ -1524,8 +1545,12 @@ void runChangeJointLimitsTest()
     auto limits = state_solver_clone.getLimits();
     EXPECT_NEAR(limits.joint_limits(idx, 0), new_lower, 1e-5);
     EXPECT_NEAR(limits.joint_limits(idx, 1), new_upper, 1e-5);
-    EXPECT_NEAR(limits.velocity_limits(idx), new_velocity, 1e-5);
-    EXPECT_NEAR(limits.acceleration_limits(idx), new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(idx, 0), -new_velocity, 1e-5);
+    EXPECT_NEAR(limits.velocity_limits(idx, 1), new_velocity, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(idx, 0), -new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.acceleration_limits(idx, 1), new_acceleration, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(idx, 0), -new_jerk, 1e-5);
+    EXPECT_NEAR(limits.jerk_limits(idx, 1), new_jerk, 1e-5);
   }
 }
 

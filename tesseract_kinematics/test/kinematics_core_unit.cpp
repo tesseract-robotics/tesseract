@@ -171,7 +171,7 @@ void runRedundantSolutionsTest()
     {  // Test when initial solution is at the lower limit
       std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
           tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
-      if (tesseract_common::satisfiesPositionLimits<double>(q.template cast<double>(), limits, max_diff))
+      if (tesseract_common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
         solutions.push_back(q);
 
       EXPECT_EQ(solutions.size(), 8);
@@ -182,7 +182,7 @@ void runRedundantSolutionsTest()
       limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
       std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
           tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
-      if (tesseract_common::satisfiesPositionLimits<double>(q.template cast<double>(), limits, max_diff))
+      if (tesseract_common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
         solutions.push_back(q);
 
       EXPECT_EQ(solutions.size(), 27);
@@ -195,7 +195,7 @@ void runRedundantSolutionsTest()
 
       std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
           tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
-      if (tesseract_common::satisfiesPositionLimits<double>(q.template cast<double>(), limits, max_diff))
+      if (tesseract_common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
         solutions.push_back(q);
 
       EXPECT_EQ(solutions.size(), 27);
@@ -217,7 +217,7 @@ void runRedundantSolutionsTest()
 
     std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
         tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
-    if (tesseract_common::satisfiesPositionLimits<double>(q.template cast<double>(), limits, max_diff))
+    if (tesseract_common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
       solutions.push_back(q);
 
     EXPECT_EQ(solutions.size(), 27);

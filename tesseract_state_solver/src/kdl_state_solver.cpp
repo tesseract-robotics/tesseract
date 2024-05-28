@@ -255,8 +255,9 @@ bool KDLStateSolver::processKDLData(const tesseract_scene_graph::SceneGraph& sce
   current_state_ = SceneState();
   kdl_jnt_array_.resize(data_.tree.getNrOfJoints());
   limits_.joint_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
-  limits_.velocity_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()));
-  limits_.acceleration_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()));
+  limits_.velocity_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
+  limits_.acceleration_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
+  limits_.jerk_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
   joint_qnr_.resize(data_.tree.getNrOfJoints());
   joint_to_qnr_.clear();
   size_t j = 0;
@@ -277,8 +278,12 @@ bool KDLStateSolver::processKDLData(const tesseract_scene_graph::SceneGraph& sce
     const auto& sj = scene_graph.getJoint(jnt.getName());
     limits_.joint_limits(static_cast<long>(j), 0) = sj->limits->lower;
     limits_.joint_limits(static_cast<long>(j), 1) = sj->limits->upper;
-    limits_.velocity_limits(static_cast<long>(j)) = sj->limits->velocity;
-    limits_.acceleration_limits(static_cast<long>(j)) = sj->limits->acceleration;
+    limits_.velocity_limits(static_cast<long>(j), 0) = -sj->limits->velocity;
+    limits_.velocity_limits(static_cast<long>(j), 1) = sj->limits->velocity;
+    limits_.acceleration_limits(static_cast<long>(j), 0) = -sj->limits->acceleration;
+    limits_.acceleration_limits(static_cast<long>(j), 1) = sj->limits->acceleration;
+    limits_.jerk_limits(static_cast<long>(j), 0) = -sj->limits->jerk;
+    limits_.jerk_limits(static_cast<long>(j), 1) = sj->limits->jerk;
 
     j++;
   }

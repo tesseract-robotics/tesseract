@@ -45,10 +45,13 @@ struct KinematicLimits
   Eigen::MatrixX2d joint_limits;
 
   /** @brief The velocity limits */
-  Eigen::VectorXd velocity_limits;
+  Eigen::MatrixX2d velocity_limits;
 
   /** @brief The acceleration limits */
-  Eigen::VectorXd acceleration_limits;
+  Eigen::MatrixX2d acceleration_limits;
+
+  /** @brief The jerk limits */
+  Eigen::MatrixX2d jerk_limits;
 
   void resize(Eigen::Index size);
 
@@ -62,40 +65,40 @@ private:
 };
 
 /**
- * @brief Check if within position limits
- * @param joint_positions The joint position to check
- * @param position_limits The joint limits to perform check
+ * @brief Check if within limits
+ * @param joint_positions The values to check
+ * @param position_limits The limits to perform check
  * @return
  */
 template <typename FloatType>
-bool isWithinPositionLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& joint_positions,
-                            const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits)
+bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& values,
+                    const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& limits)
 {
-  auto p = joint_positions.array();
-  auto l0 = position_limits.col(0).array();
-  auto l1 = position_limits.col(1).array();
+  auto p = values.array();
+  auto l0 = limits.col(0).array();
+  auto l1 = limits.col(1).array();
   return (!(p > l1).any() && !(p < l0).any());
 }
 
 /**
- * @brief Check if joint position is within bounds or relatively equal to a limit
- * @param joint_positions The joint position to check
- * @param joint_limits The joint limits to perform check
- * @param max_diff The max diff when comparing position to limit value max(abs(position - limit)) <= max_diff, if true
+ * @brief Check if values are within bounds or relatively equal to a limit
+ * @param values The values to check
+ * @param limits The limits to perform check
+ * @param max_diff The max diff when comparing value to limit value max(abs(value - limit)) <= max_diff, if true
  * they are considered equal
- * @param max_rel_diff The max relative diff between position and limit abs(position - limit) <= largest * max_rel_diff,
- * if true considered equal. The largest is the largest of the absolute values of position and limit.
- * @return True if the all position are within the limits or relatively equal to the limit, otherwise false.
+ * @param max_rel_diff The max relative diff between value and limit abs(value - limit) <= largest * max_rel_diff,
+ * if true considered equal. The largest is the largest of the absolute values of value and limit.
+ * @return True if the all values are within the limits or relatively equal to the limit, otherwise false.
  */
 template <typename FloatType>
-bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& joint_positions,
-                             const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits,
-                             const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& max_diff,
-                             const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& max_rel_diff)
+bool satisfiesLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& values,
+                     const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& limits,
+                     const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& max_diff,
+                     const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& max_rel_diff)
 {
-  auto p = joint_positions.array();
-  auto l0 = position_limits.col(0).array();
-  auto l1 = position_limits.col(1).array();
+  auto p = values.array();
+  auto l0 = limits.col(0).array();
+  auto l1 = limits.col(1).array();
   auto md = max_diff.array();
   auto mrd = max_rel_diff.array();
 
@@ -113,38 +116,37 @@ bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eig
 }
 
 /**
- * @brief Check if joint position is within bounds or relatively equal to a limit
- * @param joint_positions The joint position to check
- * @param joint_limits The joint limits to perform check
- * @param max_diff The max diff when comparing position to limit value max(abs(position - limit)) <= max_diff, if true
+ * @brief Check if values is within bounds or relatively equal to a limit
+ * @param values The values to check
+ * @param limits The limits to perform check
+ * @param max_diff The max diff when comparing value to limit value max(abs(value - limit)) <= max_diff, if true
  * they are considered equal
- * @param max_rel_diff The max relative diff between position and limit abs(position - limit) <= largest * max_rel_diff,
- * if true considered equal. The largest is the largest of the absolute values of position and limit.
- * @return True if the all position are within the limits or relatively equal to the limit, otherwise false.
+ * @param max_rel_diff The max relative diff between value and limit abs(value - limit) <= largest * max_rel_diff,
+ * if true considered equal. The largest is the largest of the absolute values of value and limit.
+ * @return True if the all values are within the limits or relatively equal to the limit, otherwise false.
  */
 template <typename FloatType>
-bool satisfiesPositionLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& joint_positions,
-                             const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits,
-                             FloatType max_diff = static_cast<FloatType>(1e-6),
-                             FloatType max_rel_diff = std::numeric_limits<FloatType>::epsilon())
+bool satisfiesLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& values,
+                     const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& limits,
+                     FloatType max_diff = static_cast<FloatType>(1e-6),
+                     FloatType max_rel_diff = std::numeric_limits<FloatType>::epsilon())
 {
-  const auto eigen_max_diff = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(joint_positions.size(), max_diff);
-  const auto eigen_max_rel_diff =
-      Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(joint_positions.size(), max_rel_diff);
+  const auto eigen_max_diff = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(values.size(), max_diff);
+  const auto eigen_max_rel_diff = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(values.size(), max_rel_diff);
   // NOLINTNEXTLINE(clang-analyzer-core.uninitialized.UndefReturn)
-  return satisfiesPositionLimits<FloatType>(joint_positions, position_limits, eigen_max_diff, eigen_max_rel_diff);
+  return satisfiesLimits<FloatType>(values, limits, eigen_max_diff, eigen_max_rel_diff);
 }
 
 /**
- * @brief Enforce position to be within the provided limits
- * @param joint_positions The joint position to enforce bounds on
- * @param joint_limits The limits to perform check
+ * @brief Enforce values to be within the provided limits
+ * @param values The values to enforce bounds on
+ * @param limits The limits to perform check
  */
 template <typename FloatType>
-void enforcePositionLimits(Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> joint_positions,
-                           const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits)
+void enforceLimits(Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> values,
+                   const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& limits)
 {
-  joint_positions = joint_positions.array().min(position_limits.col(1).array()).max(position_limits.col(0).array());
+  values = values.array().min(limits.col(1).array()).max(limits.col(0).array());
 }
 }  // namespace tesseract_common
 

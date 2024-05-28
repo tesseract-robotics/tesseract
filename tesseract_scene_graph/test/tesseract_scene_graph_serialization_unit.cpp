@@ -52,7 +52,7 @@ TEST(TesseractSceneGraphSerializationUnit, JointDynamics)  // NOLINT
 
 TEST(TesseractSceneGraphSerializationUnit, JointLimits)  // NOLINT
 {
-  auto object = std::make_shared<JointLimits>(1.1, 2.2, 3.3, 4.4, 5.5);
+  auto object = std::make_shared<JointLimits>(1.1, 2.2, 3.3, 4.4, 5.5, 6.5);
   tesseract_common::testSerialization<JointLimits>(*object, "JointLimits");
 }
 
@@ -83,7 +83,7 @@ TEST(TesseractSceneGraphSerializationUnit, Joint)  // NOLINT
   object->parent_link_name = "parent_name";
   object->parent_to_joint_origin_transform.translate(Eigen::Vector3d(5.5, 6.6, 7.7));
   object->dynamics = std::make_shared<JointDynamics>(1.1, 2.2);
-  object->limits = std::make_shared<JointLimits>(1.1, 2.2, 3.3, 4.4, 5.5);
+  object->limits = std::make_shared<JointLimits>(1.1, 2.2, 3.3, 4.4, 5.5, 6.5);
   object->safety = std::make_shared<JointSafety>(1.1, 2.2, 3.3, 4.4);
   object->calibration = std::make_shared<JointCalibration>(1.1, 2.2, 3.3);
   object->mimic = std::make_shared<JointMimic>(1.1, 2.2, "mimic_name");
@@ -186,7 +186,7 @@ tesseract_scene_graph::SceneGraph createTestSceneGraph()
   joint_2.parent_link_name = "link_2";
   joint_2.child_link_name = "link_3";
   joint_2.type = JointType::PLANAR;
-  joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
   EXPECT_TRUE(g.addJoint(joint_2));
 
   Joint joint_3("joint_3");
@@ -201,7 +201,7 @@ tesseract_scene_graph::SceneGraph createTestSceneGraph()
   joint_4.parent_link_name = "link_2";
   joint_4.child_link_name = "link_5";
   joint_4.type = JointType::REVOLUTE;
-  joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
   EXPECT_TRUE(g.addJoint(joint_4));
 
   g.addAllowedCollision("link_1", "link_2", "Adjacent");

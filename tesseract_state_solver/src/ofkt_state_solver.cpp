@@ -670,7 +670,8 @@ bool OFKTStateSolver::changeJointVelocityLimits(const std::string& name, double 
 
   long idx = std::distance(active_joint_names_.begin(),
                            std::find(active_joint_names_.begin(), active_joint_names_.end(), name));
-  limits_.velocity_limits(idx) = limit;
+  limits_.velocity_limits(idx, 0) = -limit;
+  limits_.velocity_limits(idx, 1) = limit;
   return true;
 }
 
@@ -687,7 +688,26 @@ bool OFKTStateSolver::changeJointAccelerationLimits(const std::string& name, dou
 
   long idx = std::distance(active_joint_names_.begin(),
                            std::find(active_joint_names_.begin(), active_joint_names_.end(), name));
-  limits_.acceleration_limits(idx) = limit;
+  limits_.acceleration_limits(idx, 0) = -limit;
+  limits_.acceleration_limits(idx, 1) = limit;
+  return true;
+}
+
+bool OFKTStateSolver::changeJointJerkLimits(const std::string& name, double limit)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  auto it = nodes_.find(name);
+  if (it == nodes_.end())
+  {
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
+                            name.c_str());
+    return false;
+  }
+
+  long idx = std::distance(active_joint_names_.begin(),
+                           std::find(active_joint_names_.begin(), active_joint_names_.end(), name));
+  limits_.jerk_limits(idx, 0) = -limit;
+  limits_.jerk_limits(idx, 1) = limit;
   return true;
 }
 
@@ -986,8 +1006,9 @@ void OFKTStateSolver::removeJointHelper(const std::vector<std::string>& removed_
 
     tesseract_common::KinematicLimits l1;
     l1.joint_limits.resize(static_cast<long int>(active_joint_names_.size()), 2);
-    l1.velocity_limits.resize(static_cast<long int>(active_joint_names_.size()));
-    l1.acceleration_limits.resize(static_cast<long int>(active_joint_names_.size()));
+    l1.velocity_limits.resize(static_cast<long int>(active_joint_names_.size()), 2);
+    l1.acceleration_limits.resize(static_cast<long int>(active_joint_names_.size()), 2);
+    l1.jerk_limits.resize(static_cast<long int>(active_joint_names_.size()), 2);
 
     long cnt = 0;
     for (long i = 0; i < limits_.joint_limits.rows(); ++i)
@@ -996,8 +1017,9 @@ void OFKTStateSolver::removeJointHelper(const std::vector<std::string>& removed_
           removed_active_joints_indices.end())
       {
         l1.joint_limits.row(cnt) = limits_.joint_limits.row(i);
-        l1.velocity_limits(cnt) = limits_.velocity_limits(i);
-        l1.acceleration_limits(cnt) = limits_.acceleration_limits(i);
+        l1.velocity_limits.row(cnt) = limits_.velocity_limits.row(i);
+        l1.acceleration_limits.row(cnt) = limits_.acceleration_limits.row(i);
+        l1.jerk_limits.row(cnt) = limits_.jerk_limits.row(i);
         ++cnt;
       }
     }
@@ -1131,20 +1153,26 @@ void OFKTStateSolver::addNewJointLimits(const std::vector<std::shared_ptr<const 
     tesseract_common::KinematicLimits l;
     long s = limits_.joint_limits.rows() + static_cast<long>(new_joint_limits.size());
     l.joint_limits.resize(s, 2);
-    l.velocity_limits.resize(s);
-    l.acceleration_limits.resize(s);
+    l.velocity_limits.resize(s, 2);
+    l.acceleration_limits.resize(s, 2);
+    l.jerk_limits.resize(s, 2);
 
     l.joint_limits.block(0, 0, limits_.joint_limits.rows(), 2) = limits_.joint_limits;
-    l.velocity_limits.head(limits_.joint_limits.rows()) = limits_.velocity_limits;
-    l.acceleration_limits.head(limits_.joint_limits.rows()) = limits_.acceleration_limits;
+    l.velocity_limits.block(0, 0, limits_.velocity_limits.rows(), 2) = limits_.velocity_limits;
+    l.acceleration_limits.block(0, 0, limits_.acceleration_limits.rows(), 2) = limits_.acceleration_limits;
+    l.jerk_limits.block(0, 0, limits_.jerk_limits.rows(), 2) = limits_.jerk_limits;
 
     long cnt = limits_.joint_limits.rows();
     for (const auto& limits : new_joint_limits)
     {
       l.joint_limits(cnt, 0) = limits->lower;
       l.joint_limits(cnt, 1) = limits->upper;
-      l.velocity_limits(cnt) = limits->velocity;
-      l.acceleration_limits(cnt) = limits->acceleration;
+      l.velocity_limits(cnt, 0) = -limits->velocity;
+      l.velocity_limits(cnt, 1) = limits->velocity;
+      l.acceleration_limits(cnt, 0) = -limits->acceleration;
+      l.acceleration_limits(cnt, 1) = limits->acceleration;
+      l.jerk_limits(cnt, 0) = -limits->jerk;
+      l.jerk_limits(cnt, 1) = limits->jerk;
       ++cnt;
     }
     limits_ = l;
