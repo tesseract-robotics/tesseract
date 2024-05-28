@@ -37,8 +37,9 @@ namespace tesseract_common
 void KinematicLimits::resize(Eigen::Index size)
 {
   joint_limits.resize(size, 2);
-  velocity_limits.resize(size);
-  acceleration_limits.resize(size);
+  velocity_limits.resize(size, 2);
+  acceleration_limits.resize(size, 2);
+  jerk_limits.resize(size, 2);
 }
 
 bool KinematicLimits::operator==(const KinematicLimits& rhs) const
@@ -47,6 +48,7 @@ bool KinematicLimits::operator==(const KinematicLimits& rhs) const
   ret_val &= (joint_limits.isApprox(rhs.joint_limits, 1e-5));
   ret_val &= (velocity_limits.isApprox(rhs.velocity_limits, 1e-5));
   ret_val &= (acceleration_limits.isApprox(rhs.acceleration_limits, 1e-5));
+  ret_val &= (jerk_limits.isApprox(rhs.jerk_limits, 1e-5));
   return ret_val;
 }
 
@@ -58,47 +60,40 @@ void KinematicLimits::serialize(Archive& ar, const unsigned int /*version*/)  //
   ar& BOOST_SERIALIZATION_NVP(joint_limits);
   ar& BOOST_SERIALIZATION_NVP(velocity_limits);
   ar& BOOST_SERIALIZATION_NVP(acceleration_limits);
+  ar& BOOST_SERIALIZATION_NVP(jerk_limits);
 }
 
-template bool
-isWithinPositionLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& joint_positions,
-                              const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& position_limits);
+template bool isWithinLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& values,
+                                    const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& limits);
 
-template bool
-isWithinPositionLimits<double>(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& joint_positions,
-                               const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& position_limits);
+template bool isWithinLimits<double>(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& values,
+                                     const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& limits);
 
-template bool
-satisfiesPositionLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& joint_positions,
-                               const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& position_limits,
-                               float max_diff,
-                               float max_rel_diff);
+template bool satisfiesLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& values,
+                                     const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& limits,
+                                     float max_diff,
+                                     float max_rel_diff);
 
-template bool
-satisfiesPositionLimits<double>(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& joint_positions,
-                                const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& position_limits,
-                                double max_diff,
-                                double max_rel_diff);
+template bool satisfiesLimits<double>(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& values,
+                                      const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& limits,
+                                      double max_diff,
+                                      double max_rel_diff);
 
-template bool
-satisfiesPositionLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& joint_positions,
-                               const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& position_limits,
-                               const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& max_diff,
-                               const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& max_rel_diff);
+template bool satisfiesLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& values,
+                                     const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& limits,
+                                     const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& max_diff,
+                                     const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& max_rel_diff);
 
-template bool
-satisfiesPositionLimits<double>(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& joint_positions,
-                                const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& position_limits,
-                                const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& max_diff,
-                                const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& max_rel_diff);
+template bool satisfiesLimits<double>(const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& values,
+                                      const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& limits,
+                                      const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& max_diff,
+                                      const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 1>>& max_rel_diff);
 
-template void
-enforcePositionLimits<float>(Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, 1>> joint_positions,
-                             const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& position_limits);
+template void enforceLimits<float>(Eigen::Ref<Eigen::Matrix<float, Eigen::Dynamic, 1>> values,
+                                   const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& limits);
 
-template void
-enforcePositionLimits<double>(Eigen::Ref<Eigen::Matrix<double, Eigen::Dynamic, 1>> joint_positions,
-                              const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& position_limits);
+template void enforceLimits<double>(Eigen::Ref<Eigen::Matrix<double, Eigen::Dynamic, 1>> values,
+                                    const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& limits);
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>

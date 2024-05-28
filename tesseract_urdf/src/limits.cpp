@@ -61,6 +61,12 @@ tesseract_scene_graph::JointLimits::Ptr tesseract_urdf::parseLimits(const tinyxm
   else if (status != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Limits: Failed to parse attribute 'acceleration'!"));
 
+  status = xml_element->QueryDoubleAttribute("jerk", &(limits->jerk));
+  if (status == tinyxml2::XML_NO_ATTRIBUTE)
+    limits->jerk = 1000;
+  else if (status != tinyxml2::XML_SUCCESS)
+    std::throw_with_nested(std::runtime_error("Limits: Failed to parse attribute 'jerk'!"));
+
   return limits;
 }
 
@@ -88,6 +94,11 @@ tesseract_urdf::writeLimits(const std::shared_ptr<const tesseract_scene_graph::J
   if (!tesseract_common::almostEqualRelativeAndAbs(limits->acceleration, 0.0) &&
       !tesseract_common::almostEqualRelativeAndAbs(limits->acceleration, limits->velocity * 0.5))
     xml_element->SetAttribute("acceleration", toString(limits->acceleration).c_str());
+
+  // Write out nonzero jerk (Tesseract-exclusive)
+  if (!tesseract_common::almostEqualRelativeAndAbs(limits->jerk, 0.0) &&
+      !tesseract_common::almostEqualRelativeAndAbs(limits->jerk, 1000))
+    xml_element->SetAttribute("jerk", toString(limits->jerk).c_str());
 
   return xml_element;
 }

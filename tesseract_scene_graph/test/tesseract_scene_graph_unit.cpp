@@ -66,7 +66,7 @@ tesseract_scene_graph::SceneGraph createTestSceneGraph()
   joint_2.parent_link_name = "link_2";
   joint_2.child_link_name = "link_3";
   joint_2.type = JointType::PLANAR;
-  joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 6);
   EXPECT_TRUE(g.addJoint(joint_2));
 
   Joint joint_3("joint_3");
@@ -81,7 +81,7 @@ tesseract_scene_graph::SceneGraph createTestSceneGraph()
   joint_4.parent_link_name = "link_2";
   joint_4.child_link_name = "link_5";
   joint_4.type = JointType::REVOLUTE;
-  joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
   EXPECT_TRUE(g.addJoint(joint_4));
 
   g.addAllowedCollision("link_1", "link_2", "Adjacent");
@@ -631,6 +631,27 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointAccelerationLimitsUn
   EXPECT_FALSE(g.changeJointAccelerationLimits("joint_3", 20));
 }
 
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointJerkLimitsUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g = createTestSceneGraph();
+
+  Joint::ConstPtr j = g.getJoint("joint_4");
+  EXPECT_EQ(g.getLinks().size(), 5);
+  EXPECT_EQ(g.getJoints().size(), 4);
+  EXPECT_TRUE(g.changeJointJerkLimits("joint_4", 20));
+  EXPECT_DOUBLE_EQ(j->limits->jerk, 20);
+  EXPECT_EQ(g.getLinks().size(), 5);
+  EXPECT_EQ(g.getJoints().size(), 4);
+
+  // Joint does not exist
+  EXPECT_FALSE(g.changeJointJerkLimits("joint_does_not_exist", 20));
+
+  // Cannot change limits of fixed or floating joint
+  EXPECT_FALSE(g.changeJointJerkLimits("joint_1", 20));
+  EXPECT_FALSE(g.changeJointJerkLimits("joint_3", 20));
+}
+
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveJointUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
@@ -727,7 +748,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddJointUnit)  // NOLINT
   joint_8.parent_link_name = "link_7";
   joint_8.child_link_name = "link_6";
   joint_8.type = JointType::CONTINUOUS;
-  joint_8.limits = std::make_shared<JointLimits>(0, 0, 0, 2, 1);
+  joint_8.limits = std::make_shared<JointLimits>(0, 0, 0, 2, 1, 0.5);
   EXPECT_TRUE(g.addJoint(joint_8));
   EXPECT_EQ(g.getJoints().size(), 6);
   EXPECT_TRUE(g.getJoint("joint_7")->limits != nullptr);
@@ -816,7 +837,7 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraph()
   joint_1.parent_link_name = "link_1";
   joint_1.child_link_name = "link_2";
   joint_1.type = JointType::REVOLUTE;
-  joint_1.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  joint_1.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
   EXPECT_TRUE(g.addJoint(joint_1));
 
   Joint joint_2("joint_2");
@@ -824,7 +845,7 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraph()
   joint_2.parent_link_name = "link_2";
   joint_2.child_link_name = "link_3";
   joint_2.type = JointType::REVOLUTE;
-  joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
   EXPECT_TRUE(g.addJoint(joint_2));
 
   Joint joint_3("joint_3");
@@ -832,7 +853,7 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraph()
   joint_3.parent_link_name = "link_3";
   joint_3.child_link_name = "link_4";
   joint_3.type = JointType::REVOLUTE;
-  joint_3.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  joint_3.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
   EXPECT_TRUE(g.addJoint(joint_3));
 
   Joint joint_4("joint_4");
@@ -840,7 +861,7 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraph()
   joint_4.parent_link_name = "link_2";
   joint_4.child_link_name = "link_5";
   joint_4.type = JointType::REVOLUTE;
-  joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+  joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
   EXPECT_TRUE(g.addJoint(joint_4));
 
   return g;
@@ -886,7 +907,7 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraphForSubTree()
     joint_1.parent_link_name = p + "link_1";
     joint_1.child_link_name = p + "link_2";
     joint_1.type = JointType::REVOLUTE;
-    joint_1.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+    joint_1.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
     EXPECT_TRUE(g.addJoint(joint_1));
 
     Joint joint_2(p + "joint_2");
@@ -894,7 +915,7 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraphForSubTree()
     joint_2.parent_link_name = p + "link_2";
     joint_2.child_link_name = p + "link_3";
     joint_2.type = JointType::REVOLUTE;
-    joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+    joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
     EXPECT_TRUE(g.addJoint(joint_2));
 
     Joint joint_3(p + "joint_3");
@@ -902,7 +923,7 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraphForSubTree()
     joint_3.parent_link_name = p + "link_3";
     joint_3.child_link_name = p + "link_4";
     joint_3.type = JointType::REVOLUTE;
-    joint_3.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+    joint_3.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
     EXPECT_TRUE(g.addJoint(joint_3));
 
     Joint joint_4(p + "joint_4");
@@ -910,7 +931,7 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraphForSubTree()
     joint_4.parent_link_name = p + "link_2";
     joint_4.child_link_name = p + "link_5";
     joint_4.type = JointType::REVOLUTE;
-    joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3);
+    joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
     EXPECT_TRUE(g.addJoint(joint_4));
   }
 

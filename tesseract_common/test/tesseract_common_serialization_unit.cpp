@@ -60,8 +60,8 @@ TEST(TesseractCommonSerializeUnit, KinematicLimits)  // NOLINT
   EXPECT_EQ(limits.acceleration_limits.rows(), 3);
 
   limits.joint_limits << -5, 5, -5, 5, -5, 5;
-  limits.velocity_limits = Eigen::VectorXd::Constant(3, 6);
-  limits.acceleration_limits = Eigen::VectorXd::Constant(3, 7);
+  limits.velocity_limits << -6, 6, -6, 6, -6, 6;
+  limits.acceleration_limits << -7, 7, -7, 7, -7, 7;
 
   tesseract_common::testSerialization<KinematicLimits>(limits, "KinematicLimits");
 }

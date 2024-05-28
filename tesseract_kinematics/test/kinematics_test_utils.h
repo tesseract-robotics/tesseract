@@ -242,8 +242,12 @@ inline tesseract_common::KinematicLimits getTargetLimits(const tesseract_scene_g
     auto joint = scene_graph.getJoint(joint_names[static_cast<std::size_t>(i)]);
     limits.joint_limits(i, 0) = joint->limits->lower;
     limits.joint_limits(i, 1) = joint->limits->upper;
-    limits.velocity_limits(i) = joint->limits->velocity;
-    limits.acceleration_limits(i) = joint->limits->acceleration;
+    limits.velocity_limits(i, 0) = -joint->limits->velocity;
+    limits.velocity_limits(i, 1) = joint->limits->velocity;
+    limits.acceleration_limits(i, 0) = -joint->limits->acceleration;
+    limits.acceleration_limits(i, 1) = joint->limits->acceleration;
+    limits.jerk_limits(i, 0) = -joint->limits->jerk;
+    limits.jerk_limits(i, 1) = joint->limits->jerk;
   }
 
   return limits;
@@ -372,14 +376,22 @@ inline void runKinJointLimitsTest(const tesseract_common::KinematicLimits& limit
   EXPECT_EQ(limits.joint_limits.rows(), target_limits.joint_limits.rows());
   EXPECT_EQ(limits.velocity_limits.rows(), target_limits.velocity_limits.rows());
   EXPECT_EQ(limits.acceleration_limits.rows(), target_limits.acceleration_limits.rows());
+  EXPECT_EQ(limits.jerk_limits.rows(), target_limits.jerk_limits.rows());
 
   // Check limits
   for (Eigen::Index i = 0; i < limits.joint_limits.rows(); ++i)
   {
     EXPECT_NEAR(limits.joint_limits(i, 0), target_limits.joint_limits(i, 0), 1e-6);
     EXPECT_NEAR(limits.joint_limits(i, 1), target_limits.joint_limits(i, 1), 1e-6);
-    EXPECT_NEAR(limits.velocity_limits(i), target_limits.velocity_limits(i), 1e-6);
-    EXPECT_NEAR(limits.acceleration_limits(i), target_limits.acceleration_limits(i), 1e-6);
+
+    EXPECT_NEAR(limits.velocity_limits(i, 0), target_limits.velocity_limits(i, 0), 1e-6);
+    EXPECT_NEAR(limits.velocity_limits(i, 1), target_limits.velocity_limits(i, 1), 1e-6);
+
+    EXPECT_NEAR(limits.acceleration_limits(i, 0), target_limits.acceleration_limits(i, 0), 1e-6);
+    EXPECT_NEAR(limits.acceleration_limits(i, 1), target_limits.acceleration_limits(i, 1), 1e-6);
+
+    EXPECT_NEAR(limits.jerk_limits(i, 0), target_limits.jerk_limits(i, 0), 1e-6);
+    EXPECT_NEAR(limits.jerk_limits(i, 1), target_limits.jerk_limits(i, 1), 1e-6);
   }
 }
 
@@ -396,14 +408,22 @@ inline void runKinSetJointLimitsTest(tesseract_kinematics::KinematicGroup& kin_g
   EXPECT_TRUE(limits.joint_limits.rows() > 0);
   EXPECT_TRUE(limits.velocity_limits.rows() > 0);
   EXPECT_TRUE(limits.acceleration_limits.rows() > 0);
+  EXPECT_TRUE(limits.jerk_limits.rows() > 0);
 
   // Check limits
   for (Eigen::Index i = 0; i < limits.joint_limits.rows(); ++i)
   {
     limits.joint_limits(i, 0) = -5.0 - double(i);
     limits.joint_limits(i, 1) = 5.0 + double(i);
-    limits.velocity_limits(i) = 10.0 + double(i);
-    limits.acceleration_limits(i) = 5.0 + double(i);
+
+    limits.velocity_limits(i, 0) = -10.0 - double(i);
+    limits.velocity_limits(i, 1) = 10.0 + double(i);
+
+    limits.acceleration_limits(i, 0) = -5.0 - double(i);
+    limits.acceleration_limits(i, 1) = 5.0 + double(i);
+
+    limits.jerk_limits(i, 0) = -5.0 - double(i);
+    limits.jerk_limits(i, 1) = 5.0 + double(i);
   }
 
   kin_group.setLimits(limits);

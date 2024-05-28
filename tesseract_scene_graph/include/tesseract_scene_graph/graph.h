@@ -347,6 +347,14 @@ public:
   bool changeJointAccelerationLimits(const std::string& name, double limit);
 
   /**
+   * @brief Changes the jerk limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @param limits New jerk limits to be set as the joint limits
+   * @return
+   */
+  bool changeJointJerkLimits(const std::string& name, double limit);
+
+  /**
    * @brief Gets the limits of the joint specified by name
    * @param name Name of the joint which limits will be retrieved
    * @return Limits of the joint. Returns nullptr is joint is not found.

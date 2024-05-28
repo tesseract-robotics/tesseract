@@ -500,7 +500,7 @@ bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
   {
     if (joint_ptr->limits == nullptr)
     {
-      joint_ptr->limits = std::make_shared<JointLimits>(-4 * M_PI, 4 * M_PI, 0, 2, 1);
+      joint_ptr->limits = std::make_shared<JointLimits>(-4 * M_PI, 4 * M_PI, 0, 2, 1, 1000);
     }
     else if (tesseract_common::almostEqualRelativeAndAbs(joint_ptr->limits->lower, joint_ptr->limits->upper, 1e-5))
     {
@@ -651,6 +651,7 @@ bool SceneGraph::changeJointLimits(const std::string& name, const JointLimits& l
   found->second.first->limits->effort = limits.effort;
   found->second.first->limits->velocity = limits.velocity;
   found->second.first->limits->acceleration = limits.acceleration;
+  found->second.first->limits->jerk = limits.jerk;
 
   return true;
 }
@@ -722,6 +723,32 @@ bool SceneGraph::changeJointAccelerationLimits(const std::string& name, double l
     found->second.first->limits = std::make_shared<JointLimits>();
 
   found->second.first->limits->acceleration = limit;
+
+  return true;
+}
+
+bool SceneGraph::changeJointJerkLimits(const std::string& name, double limit)
+{
+  auto found = joint_map_.find(name);
+
+  if (found == joint_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Jerk limit with name (%s) which does not exist in scene "
+                           "graph.",
+                           name.c_str());
+    return false;
+  }
+
+  if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Jerk limit for a fixed or floating joint type.", name.c_str());
+    return false;
+  }
+
+  if (found->second.first->limits == nullptr)
+    found->second.first->limits = std::make_shared<JointLimits>();
+
+  found->second.first->limits->jerk = limit;
 
   return true;
 }
