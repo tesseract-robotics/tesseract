@@ -70,6 +70,15 @@ void testSerialization(const SerializableType& object, const std::string& typena
     SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringXML<SerializableType>(object_string) };
     EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
   }
+
+  {  // Archive program to binary data
+    std::vector<std::uint8_t> object_data =
+        tesseract_common::Serialization::toArchiveBinaryData<SerializableType>(object, typename_string);
+    EXPECT_FALSE(object_data.empty());
+
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveBinaryData<SerializableType>(object_data) };
+    EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
+  }
 }
 
 /**
@@ -107,6 +116,17 @@ void testSerializationPtr(const std::shared_ptr<SerializableType>& object, const
 
     auto nobject =
         tesseract_common::Serialization::fromArchiveStringXML<std::shared_ptr<SerializableType>>(object_string);
+    EXPECT_FALSE(*object != *nobject);  // Using != because it call == for code coverage
+  }
+
+  {  // Archive program to binary data
+    std::vector<std::uint8_t> object_data =
+        tesseract_common::Serialization::toArchiveBinaryData<std::shared_ptr<SerializableType>>(object,
+                                                                                                typename_string);
+    EXPECT_FALSE(object_data.empty());
+
+    auto nobject =
+        tesseract_common::Serialization::fromArchiveBinaryData<std::shared_ptr<SerializableType>>(object_data);
     EXPECT_FALSE(*object != *nobject);  // Using != because it call == for code coverage
   }
 }
@@ -156,6 +176,20 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
 
     auto nobject =
         tesseract_common::Serialization::fromArchiveStringXML<std::shared_ptr<SerializableTypeBase>>(object_string);
+    auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
+
+    auto object_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(object);
+    EXPECT_FALSE(*object_derived != *nobject_derived);  // Using != because it call == for code coverage
+  }
+
+  {  // Archive program to binary data
+    std::vector<std::uint8_t> object_data =
+        tesseract_common::Serialization::toArchiveBinaryData<std::shared_ptr<SerializableTypeBase>>(object,
+                                                                                                    typename_string);
+    EXPECT_FALSE(object_data.empty());
+
+    auto nobject =
+        tesseract_common::Serialization::fromArchiveBinaryData<std::shared_ptr<SerializableTypeBase>>(object_data);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
     auto object_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(object);

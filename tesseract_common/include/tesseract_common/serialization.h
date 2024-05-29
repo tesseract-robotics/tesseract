@@ -157,6 +157,28 @@ struct Serialization
   }
 
   template <typename SerializableType>
+  static std::vector<std::uint8_t> toArchiveBinaryData(const SerializableType& archive_type,
+                                                       const std::string& name = "")
+  {
+    std::stringstream ss;
+    {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
+      boost::archive::xml_oarchive oa(ss);
+
+      // Boost uses the same function for serialization and deserialization so it requires a non-const reference
+      // Because we are only serializing here it is safe to cast away const
+      if (name.empty())
+        oa << boost::serialization::make_nvp<SerializableType>("archive_type",
+                                                               const_cast<SerializableType&>(archive_type));  // NOLINT
+      else
+        oa << boost::serialization::make_nvp<SerializableType>(name.c_str(),
+                                                               const_cast<SerializableType&>(archive_type));  // NOLINT
+    }
+
+    std::string data = ss.str();
+    return std::vector<std::uint8_t>(data.begin(), data.end());
+  }
+
+  template <typename SerializableType>
   static SerializableType fromArchiveStringXML(const std::string& archive_xml)
   {
     SerializableType archive_type;
@@ -194,6 +216,21 @@ struct Serialization
       std::ifstream ifs(file_path, std::ios_base::binary);
       assert(ifs.good());
       boost::archive::binary_iarchive ia(ifs);
+      ia >> BOOST_SERIALIZATION_NVP(archive_type);
+    }
+
+    return archive_type;
+  }
+
+  template <typename SerializableType>
+  static SerializableType fromArchiveBinaryData(const std::vector<std::uint8_t>& archive_binary)
+  {
+    SerializableType archive_type;
+
+    {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
+      std::stringstream ss;
+      std::copy(archive_binary.begin(), archive_binary.end(), std::ostreambuf_iterator<char>(ss));
+      boost::archive::xml_iarchive ia(ss);
       ia >> BOOST_SERIALIZATION_NVP(archive_type);
     }
 
