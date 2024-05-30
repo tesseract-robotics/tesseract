@@ -80,7 +80,7 @@ macro(tesseract_variables)
           -Wsign-conversion
           -Wno-sign-compare
           -Wnon-virtual-dtor)
-      exec_program(uname ARGS -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
+      execute_process(COMMAND uname -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
       if(NOT
          CMAKE_SYSTEM_NAME2
          MATCHES
@@ -117,7 +117,7 @@ macro(tesseract_variables)
           -Werror=sign-conversion
           -Wno-sign-compare
           -Werror=non-virtual-dtor)
-      exec_program(uname ARGS -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
+      execute_process(COMMAND uname -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
       if(NOT
          CMAKE_SYSTEM_NAME2
          MATCHES
