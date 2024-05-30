@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [focal, jammy]
+        distro: [focal, jammy, noble]
     container:
       image: ubuntu:${{ matrix.distro }}
       env:
