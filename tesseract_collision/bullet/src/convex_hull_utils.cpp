@@ -68,8 +68,7 @@ int createConvexHull(tesseract_common::VectorVector3d& vertices,
   for (int i = 0; i < num_verts; i++)
   {
     btVector3& v = conv.vertices[i];
-    vertices.push_back(
-        Eigen::Vector3d(static_cast<double>(v.getX()), static_cast<double>(v.getY()), static_cast<double>(v.getZ())));
+    vertices.emplace_back(static_cast<double>(v.getX()), static_cast<double>(v.getY()), static_cast<double>(v.getZ()));
   }
 
   auto num_faces = static_cast<size_t>(conv.faces.size());

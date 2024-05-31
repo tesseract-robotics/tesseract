@@ -164,10 +164,16 @@ public:
 
     if (TestAabbAgainstAabb2(aabbMin0, aabbMax0, aabbMin1, aabbMax1))
     {
+      btTransform preTransform = childTrans;
+      if (this->m_compoundColObjWrap->m_preTransform != nullptr)
+      {
+        preTransform = preTransform * (*(this->m_compoundColObjWrap->m_preTransform));
+      }
       btCollisionObjectWrapper compoundWrap(this->m_compoundColObjWrap,
                                             childShape,
                                             m_compoundColObjWrap->getCollisionObject(),
                                             newChildWorldTrans,
+                                            preTransform,
                                             -1,
                                             index);
 
