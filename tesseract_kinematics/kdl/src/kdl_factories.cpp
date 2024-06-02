@@ -93,16 +93,10 @@ KDLInvKinChainLMAFactory::create(const std::string& solver_name,
     if (YAML::Node n = config["task_weights"])
     {
       // Make sure the length matches the constructor interface
-      if (n.size() != kdl_config.task_weights.size())
-      {
-        std::ostringstream what;
-        what << "KDLInvKinChainLMAFactory, size of task_weights needs to be " << kdl_config.task_weights.size();
-        throw std::runtime_error(what.str());
-      }
+      if (n.size() != 6)
+        throw std::runtime_error("KDLInvKinChainLMAFactory, size of task_weights needs to be 6");
 
-      auto w = 0;
-      for (auto const& v : n)
-        kdl_config.task_weights(w++) = v.as<double>();
+      kdl_config.task_weights = n.as<std::array<double, 6>>();
     }
 
     if (YAML::Node n = config["eps"])

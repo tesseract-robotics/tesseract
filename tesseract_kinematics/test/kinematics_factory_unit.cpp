@@ -1138,7 +1138,25 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
                    class: KDLInvKinChainNR_JLFactory
                    config:
                      base_link: base_link
-                     tip_link: tool0)";
+                     tip_link: tool0
+                 KDLInvKinChainLMA_AllParams:
+                   class: KDLInvKinChainLMAFactory
+                   config:
+                     base_link: base_link
+                     tip_link: tool0
+                     task_weights: [1, 1, 1, 0.1, 0.1, 0.1]
+                     eps: 1e-5
+                     max_iterations: 500
+                     eps_joints: 1e-15
+                 KDLInvKinChainNR_AllParams:
+                   class: KDLInvKinChainNRFactory
+                   config:
+                     base_link: base_link
+                     tip_link: tool0
+                     velocity_eps: 0.00001
+                     velocity_iterations: 150
+                     position_eps: 1e-6
+                     position_iterations: 100)";
 
   {
     KinematicsPluginFactory factory(YAML::Load(yaml_string));

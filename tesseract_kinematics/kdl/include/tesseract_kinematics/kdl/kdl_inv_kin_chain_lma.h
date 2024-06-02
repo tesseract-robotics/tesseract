@@ -29,6 +29,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/chainiksolverpos_lma.hpp>
 #include <unordered_map>
+#include <array>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -64,13 +65,10 @@ public:
    */
   struct Config
   {
-    Eigen::Matrix<double, 6, 1> task_weights{ std::vector<double>{ 1.0, 1.0, 1.0, 0.1, 0.1, 0.1 }.data() };
+    std::array<double, 6> task_weights{ 1.0, 1.0, 1.0, 0.1, 0.1, 0.1 };
     double eps{ 1E-5 };
     int max_iterations{ 500 };
     double eps_joints{ 1E-15 };
-
-  public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 
   ~KDLInvKinChainLMA() override = default;
@@ -90,7 +88,7 @@ public:
   KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
                     const std::string& base_link,
                     const std::string& tip_link,
-                    const Config& kdl_config,
+                    Config kdl_config,
                     std::string solver_name = KDL_INV_KIN_CHAIN_LMA_SOLVER_NAME);
 
   /**
@@ -102,7 +100,7 @@ public:
    */
   KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
                     const std::vector<std::pair<std::string, std::string> >& chains,
-                    const Config& kdl_config,
+                    Config kdl_config,
                     std::string solver_name = KDL_INV_KIN_CHAIN_LMA_SOLVER_NAME);
 
   IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,

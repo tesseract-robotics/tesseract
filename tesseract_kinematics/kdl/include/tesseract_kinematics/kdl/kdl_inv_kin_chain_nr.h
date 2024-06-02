@@ -90,7 +90,7 @@ public:
   KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scene_graph,
                    const std::string& base_link,
                    const std::string& tip_link,
-                   const Config& kdl_config,
+                   Config kdl_config,
                    std::string solver_name = KDL_INV_KIN_CHAIN_NR_SOLVER_NAME);
 
   /**
@@ -102,7 +102,7 @@ public:
    */
   KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scene_graph,
                    const std::vector<std::pair<std::string, std::string> >& chains,
-                   const Config& kdl_config,
+                   Config kdl_config,
                    std::string solver_name = KDL_INV_KIN_CHAIN_NR_SOLVER_NAME);
 
   IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
