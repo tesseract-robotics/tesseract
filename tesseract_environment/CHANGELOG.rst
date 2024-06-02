@@ -2,6 +2,13 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add more clone benchmarks
+* Leverage forward declarations to improve compile times (`#990 <https://github.com/tesseract-robotics/tesseract/issues/990>`_)
+* Add kinematics benchmarks
+* Contributors: Levi Armstrong
+
 0.21.5 (2023-12-14)
 -------------------
 

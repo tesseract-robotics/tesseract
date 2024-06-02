@@ -2,6 +2,18 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix deprecated exec_program command (`#1004 <https://github.com/tesseract-robotics/tesseract/issues/1004>`_)
+* Add binary data serialization support functions
+* Add support for jerk limits
+* Leverage forward declarations to improve compile times (`#990 <https://github.com/tesseract-robotics/tesseract/issues/990>`_)
+* Faster pair hash for ACM
+* Fix bug in calcJacobianTransformErrorDiff
+* Correctly handle angle axis singularity when calculating numerical jacobian
+* Added application for performing convex decomposition (`#968 <https://github.com/tesseract-robotics/tesseract/issues/968>`_)
+* Contributors: Levi Armstrong, Michael Ripperger, Roelof Oomen
+
 0.21.5 (2023-12-14)
 -------------------
 * Add Mac OSX support (`#969 <https://github.com/tesseract-robotics/tesseract/issues/969>`_)

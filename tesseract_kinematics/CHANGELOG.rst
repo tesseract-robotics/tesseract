@@ -2,6 +2,16 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add the ability to change KDL parameters from kinematics configuration (`#843 <https://github.com/tesseract-robotics/tesseract/issues/843>`_)
+  Co-authored-by: Levi Armstrong <levi.armstrong@gmail.com>
+* Add support for jerk limits
+* Leverage forward declarations to improve compile times (`#990 <https://github.com/tesseract-robotics/tesseract/issues/990>`_)
+* Remove ineffective frame.Identity() call
+  See `#984 <https://github.com/tesseract-robotics/tesseract/issues/984>`_
+* Contributors: Levi Armstrong, Roelof, Sean Cardello
+
 0.21.5 (2023-12-14)
 -------------------
 
