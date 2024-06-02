@@ -2,8 +2,8 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.22.0 (2024-06-02)
+-------------------
 * Add support for jerk limits
 * Leverage forward declarations to improve compile times (`#990 <https://github.com/tesseract-robotics/tesseract/issues/990>`_)
 * Update URDF Robot version tag to 'tesseract_version' for ROS2 compatibilty (`#979 <https://github.com/tesseract-robotics/tesseract/issues/979>`_)

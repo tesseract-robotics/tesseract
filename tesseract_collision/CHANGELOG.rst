@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.22.0 (2024-06-02)
+-------------------
 * Fix 2 for older bullet versions (e.g. on Ubuntu Focal)
 * Fix for older bullet versions (e.g. on Ubuntu Focal)
 * - Apply [bugfix](https://github.com/bulletphysics/bullet3/commit/fce12964139c8073676a50db0201c1460ad3fcad) and [bugfix](https://github.com/bulletphysics/bullet3/commit/a808d7489500935ac6665dcfe930c43a2008566b) from bullet
