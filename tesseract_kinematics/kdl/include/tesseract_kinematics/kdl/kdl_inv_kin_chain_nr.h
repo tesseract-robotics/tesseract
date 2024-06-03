@@ -30,7 +30,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/chainiksolverpos_nr.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
-#include <unordered_map>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -60,7 +59,7 @@ public:
    * @brief The Config struct
    *
    * This contains parameters that can be used to customize the KDL solver for your application.
-   * They are ultimately passed to the constuctors of the undelying ChainIkSolver.
+   * They are ultimately passed to the constuctors of the underlying ChainIkSolver.
    * The NR version creates both position and velocity solvers with different defaults for each.
    *
    * The defaults provided here are the same defaults imposed by the KDL library.

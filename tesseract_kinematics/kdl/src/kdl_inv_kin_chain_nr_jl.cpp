@@ -40,8 +40,9 @@ using Eigen::VectorXd;
 
 KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const tesseract_scene_graph::SceneGraph& scene_graph,
                                          const std::vector<std::pair<std::string, std::string>>& chains,
+                                         Config kdl_config,
                                          std::string solver_name)
-  : solver_name_(std::move(solver_name))
+  : kdl_config_(kdl_config), solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
@@ -51,16 +52,23 @@ KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const tesseract_scene_graph::SceneGraph
 
   // Create KDL FK and IK Solver
   fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
-  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(kdl_data_.robot_chain);
-  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR_JL>(
-      kdl_data_.robot_chain, kdl_data_.q_min, kdl_data_.q_max, *fk_solver_, *ik_vel_solver_);
+  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(
+      kdl_data_.robot_chain, kdl_config_.vel_eps, kdl_config_.vel_iterations);
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR_JL>(kdl_data_.robot_chain,
+                                                             kdl_data_.q_min,
+                                                             kdl_data_.q_max,
+                                                             *fk_solver_,
+                                                             *ik_vel_solver_,
+                                                             kdl_config_.pos_iterations,
+                                                             kdl_config_.pos_eps);
 }
 
 KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const tesseract_scene_graph::SceneGraph& scene_graph,
                                          const std::string& base_link,
                                          const std::string& tip_link,
+                                         Config kdl_config,
                                          std::string solver_name)
-  : KDLInvKinChainNR_JL(scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
+  : KDLInvKinChainNR_JL(scene_graph, { std::make_pair(base_link, tip_link) }, kdl_config, std::move(solver_name))
 {
 }
 
@@ -71,10 +79,17 @@ KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const KDLInvKinChainNR_JL& other) { *th
 KDLInvKinChainNR_JL& KDLInvKinChainNR_JL::operator=(const KDLInvKinChainNR_JL& other)
 {
   kdl_data_ = other.kdl_data_;
+  kdl_config_ = other.kdl_config_;
   fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
-  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(kdl_data_.robot_chain);
-  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR_JL>(
-      kdl_data_.robot_chain, kdl_data_.q_min, kdl_data_.q_max, *fk_solver_, *ik_vel_solver_);
+  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(
+      kdl_data_.robot_chain, kdl_config_.vel_eps, kdl_config_.vel_iterations);
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR_JL>(kdl_data_.robot_chain,
+                                                             kdl_data_.q_min,
+                                                             kdl_data_.q_max,
+                                                             *fk_solver_,
+                                                             *ik_vel_solver_,
+                                                             kdl_config_.pos_iterations,
+                                                             kdl_config_.pos_eps);
   solver_name_ = other.solver_name_;
 
   return *this;
@@ -85,7 +100,8 @@ IKSolutions KDLInvKinChainNR_JL::calcInvKinHelper(const Eigen::Isometry3d& pose,
                                                   int /*segment_num*/) const
 {
   assert(std::abs(1.0 - pose.matrix().determinant()) < 1e-6);  // NOLINT
-  KDL::JntArray kdl_seed, kdl_solution;
+  KDL::JntArray kdl_seed;
+  KDL::JntArray kdl_solution;
   EigenToKDL(seed, kdl_seed);
   kdl_solution.resize(static_cast<unsigned>(seed.size()));
   Eigen::VectorXd solution(seed.size());
@@ -105,30 +121,30 @@ IKSolutions KDLInvKinChainNR_JL::calcInvKinHelper(const Eigen::Isometry3d& pose,
     // LCOV_EXCL_START
     if (status == KDL::ChainIkSolverPos_NR_JL::E_DEGRADED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, solution converged to <eps in maxiter, but solution is "
-                              "degraded in quality (e.g. pseudo-inverse in iksolver is singular)");
+      CONSOLE_BRIDGE_logDebug("KDL NR_JL Failed to calculate IK, solution converged to <eps in maxiter, but solution "
+                              "is degraded in quality (e.g. pseudo-inverse in iksolver is singular)");
     }
     else if (status == KDL::ChainIkSolverPos_NR_JL::E_IKSOLVERVEL_FAILED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, velocity IK solver failed");
+      CONSOLE_BRIDGE_logDebug("KDL NR_JL Failed to calculate IK, velocity IK solver failed");
     }
     else if (status == KDL::ChainIkSolverPos_NR_JL::E_FKSOLVERPOS_FAILED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, position FK solver failed");
+      CONSOLE_BRIDGE_logDebug("KDL NR_JL Failed to calculate IK, position FK solver failed");
     }
     else if (status == KDL::ChainIkSolverPos_NR_JL::E_NO_CONVERGE)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, no solution found");
+      CONSOLE_BRIDGE_logDebug("KDL NR_JL Failed to calculate IK, no solution found");
     }
 #ifndef KDL_LESS_1_4_0
     else if (status == KDL::ChainIkSolverPos_NR_JL::E_MAX_ITERATIONS_EXCEEDED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, max iteration exceeded");
+      CONSOLE_BRIDGE_logDebug("KDL NR_JL Failed to calculate IK, max iteration exceeded");
     }
 #endif
     else
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK");
+      CONSOLE_BRIDGE_logDebug("KDL NR_JL Failed to calculate IK");
     }
     // LCOV_EXCL_STOP
     return {};

@@ -1156,6 +1156,15 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
                      velocity_eps: 0.00001
                      velocity_iterations: 150
                      position_eps: 1e-6
+                     position_iterations: 100
+                 KDLInvKinChainNR_JL_AllParams:
+                   class: KDLInvKinChainNR_JLFactory
+                   config:
+                     base_link: base_link
+                     tip_link: tool0
+                     velocity_eps: 0.00001
+                     velocity_iterations: 150
+                     position_eps: 1e-6
                      position_iterations: 100)";
 
   {

@@ -42,7 +42,7 @@ KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scen
                                    const std::vector<std::pair<std::string, std::string>>& chains,
                                    Config kdl_config,
                                    std::string solver_name)
-  : kdl_config_(std::move(kdl_config)), solver_name_(std::move(solver_name))
+  : kdl_config_(kdl_config), solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
@@ -63,10 +63,7 @@ KDLInvKinChainNR::KDLInvKinChainNR(const tesseract_scene_graph::SceneGraph& scen
                                    const std::string& tip_link,
                                    Config kdl_config,
                                    std::string solver_name)
-  : KDLInvKinChainNR(scene_graph,
-                     { std::make_pair(base_link, tip_link) },
-                     std::move(kdl_config),
-                     std::move(solver_name))
+  : KDLInvKinChainNR(scene_graph, { std::make_pair(base_link, tip_link) }, kdl_config, std::move(solver_name))
 {
 }
 
@@ -93,13 +90,14 @@ IKSolutions KDLInvKinChainNR::calcInvKinHelper(const Eigen::Isometry3d& pose,
                                                int /*segment_num*/) const
 {
   assert(std::abs(1.0 - pose.matrix().determinant()) < 1e-6);  // NOLINT
-  KDL::JntArray kdl_seed, kdl_solution;
+  KDL::JntArray kdl_seed;
+  KDL::JntArray kdl_solution;
   EigenToKDL(seed, kdl_seed);
   kdl_solution.resize(static_cast<unsigned>(seed.size()));
   Eigen::VectorXd solution(seed.size());
 
   // run IK solver
-  // TODO: Need to update to handle seg number. Neet to create an IK solver for each seg.
+  // TODO: Need to update to handle seg number. Need to create an IK solver for each seg.
   KDL::Frame kdl_pose;
   EigenToKDL(pose, kdl_pose);
   int status{ -1 };
