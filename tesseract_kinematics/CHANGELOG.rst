@@ -2,6 +2,12 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* - Also add KDL parameters to KDLInvKinChainNR_JL (see `#843 <https://github.com/tesseract-robotics/tesseract/issues/843>`_)
+  - Some clang_tidy and typo fixes
+* Contributors: Roelof Oomen
+
 0.22.0 (2024-06-02)
 -------------------
 * Add the ability to change KDL parameters from kinematics configuration (`#843 <https://github.com/tesseract-robotics/tesseract/issues/843>`_)

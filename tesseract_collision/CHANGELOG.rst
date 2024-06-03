@@ -2,6 +2,9 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.22.0 (2024-06-02)
 -------------------
 * Fix 2 for older bullet versions (e.g. on Ubuntu Focal)
