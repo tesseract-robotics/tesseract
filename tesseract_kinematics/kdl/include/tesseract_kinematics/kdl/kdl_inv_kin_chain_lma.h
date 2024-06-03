@@ -28,7 +28,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/chainiksolverpos_lma.hpp>
-#include <unordered_map>
 #include <array>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -59,7 +58,7 @@ public:
    * @brief The Config struct
    *
    * This contains parameters that can be used to customize the KDL solver for your application.
-   * They are ultimately passed to the constuctor of the undelying ChainIkSolver.
+   * They are ultimately passed to the constuctor of the underlying ChainIkSolver.
    *
    * The defaults provided here are the same defaults imposed by the KDL library.
    */

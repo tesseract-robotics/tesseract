@@ -30,7 +30,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
-#include <unordered_map>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
