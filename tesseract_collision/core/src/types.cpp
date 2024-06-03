@@ -708,4 +708,51 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
   return ss;
 }
 
+std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
+{
+  // Count all links that experienced a collision
+  std::unordered_map<std::string, int> link_collision_count;
+  for (const auto& step : steps)
+  {
+    for (const auto& substep : step.substeps)
+    {
+      for (const auto& contact_pair : substep.contacts.getContainer())
+      {
+        const auto& link_pair = contact_pair.first;
+        link_collision_count[link_pair.first]++;
+        link_collision_count[link_pair.second]++;
+      }
+    }
+  }
+
+  // Determine the maximum width for the link name column to have a clean output
+  size_t max_link_name_length = 0;
+  for (const auto& entry : link_collision_count)
+  {
+    if (entry.first.size() > max_link_name_length)
+      max_link_name_length = entry.first.size();
+  }
+
+  // Adjust the width to have some extra space after the longest link name
+  const size_t column_width = max_link_name_length + 2;
+
+  // Create a vector of pairs and sort it by frequency in descending order
+  std::vector<std::pair<std::string, int>> sorted_collisions(link_collision_count.begin(), link_collision_count.end());
+  std::sort(sorted_collisions.begin(), sorted_collisions.end(), [](const auto& a, const auto& b) {
+    return b.second < a.second;
+  });
+
+  // Create a string stream to store the table
+  std::stringstream ss;
+  ss << std::left << std::setw(static_cast<int>(column_width)) << "Link Name"
+     << "Collisions" << std::endl;
+  ss << std::string(column_width + 10, '-') << std::endl;
+  for (const auto& entry : sorted_collisions)
+  {
+    ss << std::left << std::setw(static_cast<int>(column_width)) << entry.first << entry.second << std::endl;
+  }
+
+  return ss;
+}
+
 }  // namespace tesseract_collision
