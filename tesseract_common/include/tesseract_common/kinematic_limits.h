@@ -104,12 +104,12 @@ bool satisfiesLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dyna
 
   auto lower_diff_abs = (p - l0).abs();
   auto lower_diff = (lower_diff_abs <= md);
-  auto lower_relative_diff = (lower_diff_abs <= mrd * p.abs().max(l0.abs()));
+  auto lower_relative_diff = (lower_diff_abs <= mrd * (p.abs().max)(l0.abs()));
   auto lower_check = p > l0 || lower_diff || lower_relative_diff;
 
   auto upper_diff_abs = (p - l1).abs();
   auto upper_diff = (upper_diff_abs <= md);
-  auto upper_relative_diff = (upper_diff_abs <= mrd * p.abs().max(l1.abs()));
+  auto upper_relative_diff = (upper_diff_abs <= mrd * (p.abs().max)(l1.abs()));
   auto upper_check = p < l1 || upper_diff || upper_relative_diff;
 
   return (lower_check.all() && upper_check.all());
@@ -146,7 +146,7 @@ template <typename FloatType>
 void enforceLimits(Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> values,
                    const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& limits)
 {
-  values = values.array().min(limits.col(1).array()).max(limits.col(0).array());
+  values = ((values.array().min)(limits.col(1).array()).max)(limits.col(0).array());
 }
 }  // namespace tesseract_common
 
