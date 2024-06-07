@@ -28,6 +28,8 @@
 
 #include <memory>
 #include <typeindex>
+#include <boost/stacktrace.hpp>
+#include <boost/core/demangle.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/assume_abstract.hpp>
@@ -217,10 +219,11 @@ public:
   T& as()
   {
     if (getType() != typeid(T))
-      throw std::runtime_error("TypeErasureBase, tried to cast '" + std::string(getType().name()) + "' to '" +
-                               std::string(typeid(T).name()) + "'!");
+      throw std::runtime_error("TypeErasureBase, tried to cast '" + boost::core::demangle(getType().name()) + "' to '" +
+                               boost::core::demangle(typeid(T).name()) + "'\nBacktrace:\n" +
+                               boost::stacktrace::to_string(boost::stacktrace::stacktrace()) + "\n");
 
-    auto* p = static_cast<uncvref_t<T>*>(value_->recover());
+    auto* p = static_cast<uncvref_t<T>*>(value_->recover());  // NOLINT
     return *p;
   }
 
@@ -228,10 +231,11 @@ public:
   const T& as() const
   {
     if (getType() != typeid(T))
-      throw std::runtime_error("TypeErasureBase, tried to cast '" + std::string(getType().name()) + "' to '" +
-                               std::string(typeid(T).name()) + "'!");
+      throw std::runtime_error("TypeErasureBase, tried to cast '" + boost::core::demangle(getType().name()) + "' to '" +
+                               boost::core::demangle(typeid(T).name()) + "'\nBacktrace:\n" +
+                               boost::stacktrace::to_string(boost::stacktrace::stacktrace()) + "\n");
 
-    const auto* p = static_cast<const uncvref_t<T>*>(value_->recover());
+    const auto* p = static_cast<const uncvref_t<T>*>(value_->recover());  // NOLINT
     return *p;
   }
 

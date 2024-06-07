@@ -77,14 +77,14 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point)
 {
   Eigen::VectorXd njvals;
-  double delta = 1e-8;
+  constexpr double delta = 1e-8;
   tesseract_common::TransformMap poses = joint_group.calcFwdKin(joint_values);
   Eigen::Isometry3d pose = change_base * poses[link_name];
 
   for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
   {
     njvals = joint_values;
-    njvals[i] += delta;
+    njvals(i) += delta;  // NOLINT
     tesseract_common::TransformMap updated_poses = joint_group.calcFwdKin(njvals);
     Eigen::Isometry3d updated_pose = change_base * updated_poses[link_name];
 
@@ -227,6 +227,7 @@ Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacob
   manip.m_linear = fn(a_linear);
   manip.m_angular = fn(a_angular);
 
+  // NOLINTNEXTLINE
   Eigen::MatrixXd a_inv = a.inverse();
   Eigen::MatrixXd a_linear_inv = a_linear.inverse();
   Eigen::MatrixXd a_angular_inv = a_angular.inverse();
