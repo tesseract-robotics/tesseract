@@ -12,7 +12,29 @@ endif()
 include(cmake/tesseract_macros.cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-find_package(Boost REQUIRED COMPONENTS system filesystem serialization)
+if(WIN32)
+  # Need to have John Wason look into making this work on windows
+  set(TESSERACT_BACKTRACE_DEFINITION "") # BOOST_STACKTRACE_USE_WINDBG
+  set(TESSERACT_BACKTRACE_COMPONENT "") # stacktrace_windbg
+  set(TESSERACT_BACKTRACE_LIB "") # Boost::stacktrace_windbg
+else()
+  find_file(BACKTRACE_INCLUDE_FILE backtrace.h PATHS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+  if(BACKTRACE_INCLUDE_FILE)
+    set(TESSERACT_BACKTRACE_DEFINITION BOOST_STACKTRACE_USE_BACKTRACE
+                                       BOOST_STACKTRACE_BACKTRACE_INCLUDE_FILE="${BACKTRACE_INCLUDE_FILE}")
+  else()
+    set(TESSERACT_BACKTRACE_DEFINITION BOOST_STACKTRACE_USE_BACKTRACE)
+  endif()
+  set(TESSERACT_BACKTRACE_COMPONENT stacktrace_backtrace)
+  set(TESSERACT_BACKTRACE_LIB Boost::stacktrace_backtrace)
+endif()
+
+find_package(
+  Boost REQUIRED
+  COMPONENTS system
+             filesystem
+             serialization
+             ${TESSERACT_BACKTRACE_COMPONENT})
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
@@ -66,10 +88,11 @@ target_link_libraries(
          Boost::system
          Boost::filesystem
          Boost::serialization
+         ${TESSERACT_BACKTRACE_LIB}
          console_bridge::console_bridge
          yaml-cpp)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_BACKTRACE_DEFINITION})
 target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
