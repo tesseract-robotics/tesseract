@@ -712,7 +712,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
 {
   // Create a map to assign an index to each unique link name
   std::unordered_map<std::string, std::size_t> link_index_map;
-  int index = 0;
+  std::size_t index = 0;
   for (const auto& step : steps)
   {
     for (const auto& substep : step.substeps)
