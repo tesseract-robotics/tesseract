@@ -40,14 +40,14 @@ template <class Archive>
 void save(Archive& ar, const CommandType& g, const unsigned int /*version*/)
 {
   int value = static_cast<int>(g);
-  ar &= BOOST_SERIALIZATION_NVP(value);
+  ar& BOOST_SERIALIZATION_NVP(value);
 }
 
 template <class Archive>
 void load(Archive& ar, CommandType& g, const unsigned int /*version*/)
 {
   int value = 0;
-  ar &= BOOST_SERIALIZATION_NVP(value);
+  ar& BOOST_SERIALIZATION_NVP(value);
   g = static_cast<CommandType>(value);
 }
 
