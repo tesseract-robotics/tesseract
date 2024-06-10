@@ -762,7 +762,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   }
 
   // Determine the maximum width for the link name column
-  size_t max_link_name_length = 0;
+  std::size_t max_link_name_length = 0;
   for (const auto& entry : link_index_map)
   {
     if (entry.first.size() > max_link_name_length)
@@ -775,7 +775,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   // Prepare the header row
   ss << std::setw(column_width + 5) << " "
      << "|";
-  for (size_t i = 0; i < link_index_map.size(); ++i)
+  for (std::size_t i = 0; i < link_index_map.size(); ++i)
   {
     ss << std::setw(5) << i << "|";
   }
@@ -784,7 +784,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   // Prepare the separator row
   ss << std::setw(column_width + 5) << " "
      << "|";
-  for (size_t i = 0; i < link_index_map.size(); ++i)
+  for (std::size_t i = 0; i < link_index_map.size(); ++i)
   {
     ss << std::setw(5) << "-----"
        << "|";
@@ -798,19 +798,15 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
     link_names[entry.second] = entry.first;
   }
 
-  for (size_t i = 0; i < link_names.size(); ++i)
+  for (std::size_t i = 0; i < link_names.size(); ++i)
   {
     ss << std::setw(5) << i << std::setw(column_width) << link_names[i] << "|";
-    for (size_t j = 0; j < link_names.size(); ++j)
+    for (std::size_t j = 0; j < link_names.size(); ++j)
     {
       if (i == j)
-      {
         break;
-      }
-      else
-      {
-        ss << std::setw(5) << collision_matrix[i][j] << "|";
-      }
+
+      ss << std::setw(5) << collision_matrix[i][j] << "|";
     }
     ss << std::endl;
   }
