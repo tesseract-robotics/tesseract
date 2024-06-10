@@ -708,4 +708,110 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
   return ss;
 }
 
+std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
+{
+  // Create a map to assign an index to each unique link name
+  std::unordered_map<std::string, std::size_t> link_index_map;
+  std::size_t index = 0;
+  for (const auto& step : steps)
+  {
+    for (const auto& substep : step.substeps)
+    {
+      for (const auto& contact_pair : substep.contacts.getContainer())
+      {
+        const auto& link_pair = contact_pair.first;
+        if (link_index_map.find(link_pair.first) == link_index_map.end())
+        {
+          link_index_map[link_pair.first] = index++;
+        }
+        if (link_index_map.find(link_pair.second) == link_index_map.end())
+        {
+          link_index_map[link_pair.second] = index++;
+        }
+      }
+    }
+  }
+
+  // Create a matrix to store the collision counts
+  std::size_t size = link_index_map.size();
+  std::vector<std::vector<int>> collision_matrix(size, std::vector<int>(size, 0));
+
+  // Populate the matrix with collision counts
+  for (const auto& step : steps)
+  {
+    for (const auto& substep : step.substeps)
+    {
+      for (const auto& contact_pair : substep.contacts.getContainer())
+      {
+        const auto& link_pair = contact_pair.first;
+        std::size_t row = link_index_map[link_pair.first];
+        std::size_t col = link_index_map[link_pair.second];
+        collision_matrix[row][col]++;
+        collision_matrix[col][row]++;
+      }
+    }
+  }
+
+  // Create a string stream to store the matrix
+  std::stringstream ss;
+
+  if (link_index_map.empty())
+  {
+    ss << "No contacts detected" << std::endl;
+    return ss;
+  }
+
+  // Determine the maximum width for the link name column
+  std::size_t max_link_name_length = 0;
+  for (const auto& entry : link_index_map)
+  {
+    if (entry.first.size() > max_link_name_length)
+      max_link_name_length = entry.first.size();
+  }
+
+  // Adjust the width to have some extra space after the longest link name
+  const int column_width = static_cast<int>(max_link_name_length) + 2;
+
+  // Prepare the header row
+  ss << std::setw(column_width + 5) << " "
+     << "|";
+  for (std::size_t i = 0; i < link_index_map.size(); ++i)
+  {
+    ss << std::setw(5) << i << "|";
+  }
+  ss << std::endl;
+
+  // Prepare the separator row
+  ss << std::setw(column_width + 5) << " "
+     << "|";
+  for (std::size_t i = 0; i < link_index_map.size(); ++i)
+  {
+    ss << std::setw(5) << "-----"
+       << "|";
+  }
+  ss << std::endl;
+
+  // Prepare the data rows
+  std::vector<std::string> link_names(link_index_map.size());
+  for (const auto& entry : link_index_map)
+  {
+    link_names[entry.second] = entry.first;
+  }
+
+  for (std::size_t i = 0; i < link_names.size(); ++i)
+  {
+    ss << std::setw(5) << i << std::setw(column_width) << link_names[i] << "|";
+    for (std::size_t j = 0; j < link_names.size(); ++j)
+    {
+      if (i == j)
+        break;
+
+      ss << std::setw(5) << collision_matrix[i][j] << "|";
+    }
+    ss << std::endl;
+  }
+
+  return ss;
+}
+
 }  // namespace tesseract_collision
