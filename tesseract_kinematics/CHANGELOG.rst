@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.22.2 (2024-06-10)
+-------------------
 * Add backtrace to type erasure casting to quickly identify where the issue location
 * Contributors: Levi Armstrong
 

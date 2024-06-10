@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.22.2 (2024-06-10)
+-------------------
 * Fix command serialization
 * Contributors: Levi Armstrong
 

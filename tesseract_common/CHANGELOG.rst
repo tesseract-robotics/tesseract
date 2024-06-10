@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.22.2 (2024-06-10)
+-------------------
 * Fix windows issue in kinematics_limits.h with using eigen array max and min
 * Add backtrace to type erasure casting to quickly identify where the issue location
 * Contributors: Levi Armstrong
