@@ -2,6 +2,11 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add backtrace to type erasure casting to quickly identify where the issue location
+* Contributors: Levi Armstrong
+
 0.22.1 (2024-06-03)
 -------------------
 * - Also add KDL parameters to KDLInvKinChainNR_JL (see `#843 <https://github.com/tesseract-robotics/tesseract/issues/843>`_)

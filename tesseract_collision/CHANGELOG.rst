@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add ability to briefly summarize trajectory collisions (`#1011 <https://github.com/tesseract-robotics/tesseract/issues/1011>`_)
+* Contributors: Tyler Marr
+
 0.22.1 (2024-06-03)
 -------------------
 
