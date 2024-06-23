@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [focal, jammy]
+        distro: [focal, jammy, noble]
     container:
       image: ubuntu:${{ matrix.distro }}
       env:
@@ -44,7 +44,7 @@ jobs:
           apt install -y liboctomap-dev
 
       - name: Build and Tests
-        uses: tesseract-robotics/colcon-action@v1
+        uses: tesseract-robotics/colcon-action@v8
         with:
           ccache-prefix: ${{ matrix.distro }}
           vcs-file: dependencies.repos
