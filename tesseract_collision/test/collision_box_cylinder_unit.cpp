@@ -7,6 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
+#include <tesseract_collision/hpp_fcl/hpp_fcl_discrete_managers.h>
 
 using namespace tesseract_collision;
 
@@ -22,14 +23,20 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxCylinderUnit)  // NOLI
   test_suite::runTest(checker);
 }
 
-// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCylinderUnit)
-//{
-// TODO: Currently this fails when using FCL. An issue has been created
-//       and they are currently addressing the issue.
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCylinderUnit)
+{
+  // TODO: Currently this fails when using FCL. An issue has been created
+  //       and they are currently addressing the issue.
 
-//  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
-//  runTest(checker);
-//}
+  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
+  test_suite::runTest(checker);
+}
+
+TEST(TesseractCollisionUnit, HPP_FCLDiscreteBVHCollisionBoxCylinderUnit)
+{
+  tesseract_collision_hpp_fcl::HPP_FCLDiscreteBVHManager checker;
+  test_suite::runTest(checker);
+}
 
 int main(int argc, char** argv)
 {
