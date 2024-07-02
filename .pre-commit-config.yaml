@@ -1,0 +1,61 @@
+exclude: ^.*\.dae$
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: "v4.5.0"
+  hooks:
+  - id: check-added-large-files
+  - id: check-case-conflict
+  - id: check-merge-conflict
+  - id: check-symlinks
+  - id: check-yaml
+    exclude: .clang-format
+    args: ['--unsafe']
+  - id: check-ast
+  - id: check-docstring-first
+  - id: debug-statements
+  - id: end-of-file-fixer
+  - id: mixed-line-ending
+  - id: trailing-whitespace
+  - id: fix-byte-order-marker
+  - id: check-executables-have-shebangs
+  - id: check-shebang-scripts-are-executable
+  - id: check-json
+  - id: check-toml
+  - id: check-xml
+  - id: detect-private-key
+  - id: no-commit-to-branch
+    args: ['--branch', 'master']
+  - id: forbid-submodules
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: v14.0.6
+  hooks:
+  - id: clang-format
+    types_or: [c++, c, java, c#]
+- repo: https://github.com/hhatto/autopep8
+  rev: v2.0.4
+  hooks:
+  - id: autopep8
+    args: ["--ignore=E402", "-i", "--max-line-length=120"]
+- repo: https://github.com/Kr4is/cmake-format-precommit
+  rev: b912a5a5bce3c479f4cb52763979cc5a8319eb44
+  hooks:
+  - id: cmake-format
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.12.0
+  hooks:
+  - id: pretty-format-yaml
+    args: [--autofix, --indent, '2', '--preserve-quotes']
+    exclude: ^\.clang.*$
+# - repo: https://github.com/efrecon/pre-commit-hook-lxml
+#   rev: v0.1.1
+#   hooks:
+#   - id: format-xml
+#     exclude: ^.*\.svg$
+- repo: local
+  hooks:
+  - id: dos2unix
+    name: dos2unix
+    entry: dos2unix
+    args: ["-n", "-o"]
+    files: '\.(c|cpp|h|hpp|java|cs|i|m|cmake|txt|css|js|ts|html|md|txt|py|yaml|yml|csproj|rst|py\.in|csproj\.in)$'
+    language: system
