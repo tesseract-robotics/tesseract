@@ -4,6 +4,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <type_traits>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -410,6 +411,64 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 
   // Test bad cast
   EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
+}
+
+TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
+{
+  tesseract_common::AnyPoly any_type;
+  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
+
+  tesseract_common::JointState joint_state;
+  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
+  joint_state.position = Eigen::VectorXd::Constant(3, 5);
+  joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
+  joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
+  joint_state.effort = Eigen::VectorXd::Constant(3, 8);
+  joint_state.time = 100;
+
+  auto joint_state_ptr = std::make_shared<tesseract_common::JointState>(joint_state);
+  any_type = joint_state_ptr;
+  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(std::shared_ptr<tesseract_common::JointState>)));
+  EXPECT_TRUE(*any_type.as<std::shared_ptr<tesseract_common::JointState>>() == joint_state);
+  EXPECT_TRUE(any_type.as<std::shared_ptr<tesseract_common::JointState>>() == joint_state_ptr);
+
+  // Check clone
+  tesseract_common::AnyPoly any_copy = any_type;
+  EXPECT_TRUE(any_copy == any_type);
+
+  // Check to make sure it is not making a copy during cast
+  auto& any_type_ref1 = any_type.as<std::shared_ptr<tesseract_common::JointState>>();
+  auto& any_type_ref2 = any_type.as<std::shared_ptr<tesseract_common::JointState>>();
+  auto& any_copy_ref = any_copy.as<std::shared_ptr<tesseract_common::JointState>>();
+  EXPECT_TRUE(&any_type_ref1 == &any_type_ref2);
+  EXPECT_TRUE(&any_type_ref1 != &any_copy_ref);
+  EXPECT_TRUE(&any_type_ref2 != &any_copy_ref);
+
+  const auto& any_type_const_ref1 = any_type.as<std::shared_ptr<tesseract_common::JointState>>();
+  const auto& any_type_const_ref2 = any_type.as<std::shared_ptr<tesseract_common::JointState>>();
+  EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
+
+  {
+    std::ofstream os(tesseract_common::getTempPath() + "any_shared_ptr_type_boost.xml");
+    boost::archive::xml_oarchive oa(os);
+    oa << BOOST_SERIALIZATION_NVP(any_type);
+  }
+
+  tesseract_common::AnyPoly nany_type;
+  {
+    std::ifstream ifs(tesseract_common::getTempPath() + "any_shared_ptr_type_boost.xml");
+    assert(ifs.good());
+    boost::archive::xml_iarchive ia(ifs);
+
+    // restore the schedule from the archive
+    ia >> BOOST_SERIALIZATION_NVP(nany_type);
+  }
+
+  EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(std::shared_ptr<tesseract_common::JointState>)));
+  EXPECT_TRUE(*nany_type.as<std::shared_ptr<tesseract_common::JointState>>() == joint_state);
+
+  // Test bad cast
+  EXPECT_ANY_THROW(nany_type.as<tesseract_common::JointState>());  // NOLINT
 }
 
 TEST(TesseractCommonUnit, boundsUnit)  // NOLINT
