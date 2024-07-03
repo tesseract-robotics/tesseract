@@ -29,6 +29,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <boost/concept_check.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
