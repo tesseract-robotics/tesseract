@@ -42,19 +42,32 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
   using C##AnyInstanceBase = tesseract_common::TypeErasureInstance<C, tesseract_common::TypeErasureInterface>;         \
   using C##AnyInstance = tesseract_common::detail_any::AnyInstance<C>;                                                 \
   using C##AnyInstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<C##AnyInstance>;                          \
+  using C##SharedPtrAnyInstanceBase =                                                                                  \
+      tesseract_common::TypeErasureInstance<std::shared_ptr<C>, tesseract_common::TypeErasureInterface>; /* NOLINT */  \
+  using C##SharedPtrAnyInstance = tesseract_common::detail_any::AnyInstance<std::shared_ptr<C>>;         /* NOLINT */  \
+  using C##SharedPtrAnyInstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<C##SharedPtrAnyInstance>;        \
   }                                                                                                                    \
   BOOST_CLASS_EXPORT_KEY(N::C##AnyInstanceBase)                                                                        \
   BOOST_CLASS_EXPORT_KEY(N::C##AnyInstance)                                                                            \
   BOOST_CLASS_EXPORT_KEY(N::C##AnyInstanceWrapper)                                                                     \
+  BOOST_CLASS_EXPORT_KEY(N::C##SharedPtrAnyInstanceBase)                                                               \
+  BOOST_CLASS_EXPORT_KEY(N::C##SharedPtrAnyInstance)                                                                   \
+  BOOST_CLASS_EXPORT_KEY(N::C##SharedPtrAnyInstanceWrapper)                                                            \
   BOOST_CLASS_TRACKING(N::C##AnyInstanceBase, boost::serialization::track_never)                                       \
   BOOST_CLASS_TRACKING(N::C##AnyInstance, boost::serialization::track_never)                                           \
-  BOOST_CLASS_TRACKING(N::C##AnyInstanceWrapper, boost::serialization::track_never)
+  BOOST_CLASS_TRACKING(N::C##AnyInstanceWrapper, boost::serialization::track_never)                                    \
+  BOOST_CLASS_TRACKING(N::C##SharedPtrAnyInstanceBase, boost::serialization::track_never)                              \
+  BOOST_CLASS_TRACKING(N::C##SharedPtrAnyInstance, boost::serialization::track_never)                                  \
+  BOOST_CLASS_TRACKING(N::C##SharedPtrAnyInstanceWrapper, boost::serialization::track_never)
 
 /** @brief If shared library, this must go in the cpp after the implicit instantiation of the serialize function */
 #define TESSERACT_ANY_EXPORT_IMPLEMENT(inst)                                                                           \
   BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstanceBase)                                                                  \
   BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstance)                                                                      \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstanceWrapper)
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstanceWrapper)                                                               \
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##SharedPtrAnyInstanceBase)                                                         \
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##SharedPtrAnyInstance)                                                             \
+  BOOST_CLASS_EXPORT_IMPLEMENT(inst##SharedPtrAnyInstanceWrapper)
 
 /**
  * @brief This should not be used within shared libraries use the two above.
