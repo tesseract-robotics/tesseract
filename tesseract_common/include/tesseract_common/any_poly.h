@@ -29,7 +29,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 #include <boost/concept_check.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -37,46 +36,33 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/type_erasure.h>
 
 /** @brief If shared library, this must go in the header after the class definition */
-#define TESSERACT_ANY_EXPORT_KEY(N, C)                                                                                 \
-  namespace N                                                                                                          \
+#define TESSERACT_ANY_EXPORT_KEY(C, K)                                                                                 \
+  namespace tesseract_serialization::any_poly                                                                          \
   {                                                                                                                    \
-  using C##AnyInstanceBase = tesseract_common::TypeErasureInstance<C, tesseract_common::TypeErasureInterface>;         \
-  using C##AnyInstance = tesseract_common::detail_any::AnyInstance<C>;                                                 \
-  using C##AnyInstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<C##AnyInstance>;                          \
-  using C##SharedPtrAnyInstanceBase =                                                                                  \
-      tesseract_common::TypeErasureInstance<std::shared_ptr<C>, tesseract_common::TypeErasureInterface>; /* NOLINT */  \
-  using C##SharedPtrAnyInstance = tesseract_common::detail_any::AnyInstance<std::shared_ptr<C>>;         /* NOLINT */  \
-  using C##SharedPtrAnyInstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<C##SharedPtrAnyInstance>;        \
+  using K##AnyInstanceBase = tesseract_common::TypeErasureInstance<C, tesseract_common::TypeErasureInterface>;         \
+  using K##AnyInstance = tesseract_common::detail_any::AnyInstance<C>;                                                 \
+  using K##AnyInstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<K##AnyInstance>;                          \
   }                                                                                                                    \
-  BOOST_CLASS_EXPORT_KEY(N::C##AnyInstanceBase)                                                                        \
-  BOOST_CLASS_EXPORT_KEY(N::C##AnyInstance)                                                                            \
-  BOOST_CLASS_EXPORT_KEY(N::C##AnyInstanceWrapper)                                                                     \
-  BOOST_CLASS_EXPORT_KEY(N::C##SharedPtrAnyInstanceBase)                                                               \
-  BOOST_CLASS_EXPORT_KEY(N::C##SharedPtrAnyInstance)                                                                   \
-  BOOST_CLASS_EXPORT_KEY(N::C##SharedPtrAnyInstanceWrapper)                                                            \
-  BOOST_CLASS_TRACKING(N::C##AnyInstanceBase, boost::serialization::track_never)                                       \
-  BOOST_CLASS_TRACKING(N::C##AnyInstance, boost::serialization::track_never)                                           \
-  BOOST_CLASS_TRACKING(N::C##AnyInstanceWrapper, boost::serialization::track_never)                                    \
-  BOOST_CLASS_TRACKING(N::C##SharedPtrAnyInstanceBase, boost::serialization::track_never)                              \
-  BOOST_CLASS_TRACKING(N::C##SharedPtrAnyInstance, boost::serialization::track_never)                                  \
-  BOOST_CLASS_TRACKING(N::C##SharedPtrAnyInstanceWrapper, boost::serialization::track_never)
+  BOOST_CLASS_EXPORT_KEY(tesseract_serialization::any_poly::K##AnyInstanceBase)                                        \
+  BOOST_CLASS_EXPORT_KEY(tesseract_serialization::any_poly::K##AnyInstance)                                            \
+  BOOST_CLASS_EXPORT_KEY(tesseract_serialization::any_poly::K##AnyInstanceWrapper)                                     \
+  BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstanceBase, boost::serialization::track_never)       \
+  BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstance, boost::serialization::track_never)           \
+  BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstanceWrapper, boost::serialization::track_never)
 
 /** @brief If shared library, this must go in the cpp after the implicit instantiation of the serialize function */
-#define TESSERACT_ANY_EXPORT_IMPLEMENT(inst)                                                                           \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstanceBase)                                                                  \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstance)                                                                      \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##AnyInstanceWrapper)                                                               \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##SharedPtrAnyInstanceBase)                                                         \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##SharedPtrAnyInstance)                                                             \
-  BOOST_CLASS_EXPORT_IMPLEMENT(inst##SharedPtrAnyInstanceWrapper)
+#define TESSERACT_ANY_EXPORT_IMPLEMENT(K)                                                                              \
+  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstanceBase)                                  \
+  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstance)                                      \
+  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstanceWrapper)
 
 /**
  * @brief This should not be used within shared libraries use the two above.
  * If not in a shared library it can go in header or cpp
  */
-#define TESSERACT_ANY_EXPORT(N, C)                                                                                     \
-  TESSERACT_ANY_EXPORT_KEY(N, C)                                                                                       \
-  TESSERACT_ANY_EXPORT_IMPLEMENT(N::C)
+#define TESSERACT_ANY_EXPORT(C, K)                                                                                     \
+  TESSERACT_ANY_EXPORT_KEY(C, K)                                                                                       \
+  TESSERACT_ANY_EXPORT_IMPLEMENT(K)
 
 namespace tesseract_common::detail_any
 {
