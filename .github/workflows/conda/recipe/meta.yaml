@@ -22,6 +22,7 @@ requirements:
       - {{ cdt('mesa-dri-drivers') }}    # [linux]
     host:
       - boost-cpp 
+      - libboost-headers
       - eigen 
       - tinyxml2
       - console_bridge
