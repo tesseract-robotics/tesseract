@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - 'tesseract**'
+      - '.github/workflows/conda/**'
       - '.github/workflows/conda.yml'
       - '**.repos'
   release:
