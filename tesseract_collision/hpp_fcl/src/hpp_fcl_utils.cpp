@@ -149,7 +149,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Octree::Cons
 {
   switch (geom->getSubType())
   {
-    case tesseract_geometry::Octree::SubType::BOX:
+    case tesseract_geometry::OctreeSubType::BOX:
     {
       return CollisionGeometryPtr(new hpp::fcl::OcTree(geom->getOctree()));
     }

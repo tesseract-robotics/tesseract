@@ -26,11 +26,12 @@
 
 #include <tesseract_collision/hpp_fcl/hpp_fcl_factories.h>
 #include <tesseract_collision/hpp_fcl/hpp_fcl_discrete_managers.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
 
 namespace tesseract_collision::tesseract_collision_hpp_fcl
 {
-DiscreteContactManager::UPtr HPP_FCLDiscreteBVHManagerFactory::create(const std::string& name,
-                                                                      const YAML::Node& /*config*/) const
+std::unique_ptr<tesseract_collision::DiscreteContactManager>
+HPP_FCLDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Node& /*config*/) const
 {
   return std::make_unique<HPP_FCLDiscreteBVHManager>(name);
 }
@@ -42,4 +43,4 @@ TESSERACT_PLUGIN_ANCHOR_IMPL(HPP_FCLFactoriesAnchor)  // LCOV_EXCL_LINE
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(
     tesseract_collision::tesseract_collision_hpp_fcl::HPP_FCLDiscreteBVHManagerFactory,
-    HPP_FCLDiscreteBVHManagerFactory);
+    HPP_FCLDiscreteBVHManagerFactory)
