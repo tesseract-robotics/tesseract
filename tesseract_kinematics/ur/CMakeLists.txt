@@ -47,10 +47,18 @@ install(
   PATTERN "*.h"
   PATTERN "*.hpp")
 
+# Plugin should not be export only installed
+install(
+  TARGETS ${PROJECT_NAME}_ur_factory
+  COMPONENT ur
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
 configure_component(
   COMPONENT ur
   NAMESPACE tesseract
-  TARGETS ${PROJECT_NAME}_ur ${PROJECT_NAME}_ur_factory
+  TARGETS ${PROJECT_NAME}_ur
   DEPENDENCIES "tesseract_kinematics COMPONENTS core")
 
 if(TESSERACT_PACKAGE)
