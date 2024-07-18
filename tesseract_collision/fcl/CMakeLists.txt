@@ -48,16 +48,25 @@ set(CONTACT_MANAGERS_PLUGINS ${CONTACT_MANAGERS_PLUGINS} "${PROJECT_NAME}_fcl_fa
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT fcl
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
   PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
+# Plugin should not be export only installed
+install(
+  TARGETS ${PROJECT_NAME}_fcl_factories
+  COMPONENT fcl
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
 configure_component(
   COMPONENT fcl
   NAMESPACE tesseract
-  TARGETS ${PROJECT_NAME}_fcl ${PROJECT_NAME}_fcl_factories
+  TARGETS ${PROJECT_NAME}_fcl
   DEPENDENCIES "tesseract_collision COMPONENTS core" "fcl 0.6")
 
 if(TESSERACT_PACKAGE)

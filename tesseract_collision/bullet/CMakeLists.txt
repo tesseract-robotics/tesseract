@@ -118,16 +118,25 @@ set(CONTACT_MANAGERS_PLUGINS ${CONTACT_MANAGERS_PLUGINS} "${PROJECT_NAME}_bullet
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT bullet
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
   PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
+# Plugin should not be export only installed
+install(
+  TARGETS ${PROJECT_NAME}_bullet_factories
+  COMPONENT bullet
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
 configure_component(
   COMPONENT bullet
   NAMESPACE tesseract
-  TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_bullet_factories
+  TARGETS ${PROJECT_NAME}_bullet
   DEPENDENCIES "tesseract_collision COMPONENTS core"
   CFG_EXTRAS cmake/bullet-extras.cmake)
 
