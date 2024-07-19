@@ -39,6 +39,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_common
 {
 /**
+ * @brief Check node map for unknown keys
+ * @param node The node to check
+ * @param expected_keys The expected keys
+ */
+inline void checkForUnknownKeys(const YAML::Node& node, const std::set<std::string>& expected_keys)
+{
+  if (!node.IsMap())
+    throw std::runtime_error("checkForUnknownKeys, node should be a map");
+
+  for (YAML::const_iterator it = node.begin(); it != node.end(); ++it)
+  {
+    std::string key = it->first.as<std::string>();
+    if (expected_keys.find(key) == expected_keys.end())
+      throw std::runtime_error("checkForUnknownKeys, unknown key: " + key);
+  }
+}
+
+/**
  * @brief Converts a YAML::Node to a yaml string
  * @param node Input node
  * @return String containing the yaml
