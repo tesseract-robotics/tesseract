@@ -50,7 +50,7 @@ inline void checkForUnknownKeys(const YAML::Node& node, const std::set<std::stri
 
   for (YAML::const_iterator it = node.begin(); it != node.end(); ++it)
   {
-    std::string key = it->first.as<std::string>();
+    auto key = it->first.as<std::string>();
     if (expected_keys.find(key) == expected_keys.end())
       throw std::runtime_error("checkForUnknownKeys, unknown key: " + key);
   }

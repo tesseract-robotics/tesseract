@@ -26,6 +26,8 @@
 
 #include <tesseract_common/any_poly.h>
 
+#include <boost/serialization/unordered_map.hpp>
+
 namespace tesseract_common
 {
 template <class Archive>
@@ -42,3 +44,17 @@ TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyPoly)
 
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyPolyBase)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyPoly)
+
+TESSERACT_ANY_EXPORT_IMPLEMENT(IntegralBool)
+TESSERACT_ANY_EXPORT_IMPLEMENT(IntegralInt)
+TESSERACT_ANY_EXPORT_IMPLEMENT(IntegralUnsigned)
+TESSERACT_ANY_EXPORT_IMPLEMENT(IntegralDouble)
+TESSERACT_ANY_EXPORT_IMPLEMENT(IntegralFloat)
+TESSERACT_ANY_EXPORT_IMPLEMENT(StdString)
+
+TESSERACT_ANY_EXPORT_IMPLEMENT(StdUnorderedMapStringString)
+TESSERACT_ANY_EXPORT_IMPLEMENT(StdUnorderedMapStringBool)
+TESSERACT_ANY_EXPORT_IMPLEMENT(StdUnorderedMapStringInt)
+TESSERACT_ANY_EXPORT_IMPLEMENT(StdUnorderedMapStringUnsigned)
+TESSERACT_ANY_EXPORT_IMPLEMENT(StdUnorderedMapStringDouble)
+TESSERACT_ANY_EXPORT_IMPLEMENT(StdUnorderedMapStringFloat)
