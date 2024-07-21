@@ -74,7 +74,7 @@ struct TypeErasureInstance : ConceptInterface
   using ConceptValueType = ConcreteType;
   using ConceptInterfaceType = ConceptInterface;
 
-  TypeErasureInstance() = default;
+  TypeErasureInstance() = default;  // NOLINT(cppcoreguidelines-pro-type-member-init)
 
   explicit TypeErasureInstance(ConcreteType value) : value_(std::move(value)) {}
 

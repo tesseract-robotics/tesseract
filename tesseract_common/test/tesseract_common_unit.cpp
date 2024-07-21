@@ -414,6 +414,104 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
 }
 
+template <typename T>
+void runAnyPolyIntegralTest(T value, const std::string& type_str)
+{
+  tesseract_common::AnyPoly any_type{ value };
+  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(T)));
+  EXPECT_TRUE(any_type.as<T>() == value);
+
+  // Check clone
+  tesseract_common::AnyPoly any_copy = any_type;
+  EXPECT_TRUE(any_copy == any_type);
+  EXPECT_TRUE(any_copy.as<T>() == value);
+
+  const std::string filepath{ tesseract_common::getTempPath() + "any_" + type_str + "_type_boost.xml" };
+  {
+    std::ofstream os(filepath);
+    boost::archive::xml_oarchive oa(os);
+    oa << BOOST_SERIALIZATION_NVP(any_type);
+  }
+
+  tesseract_common::AnyPoly nany_type;
+  {
+    std::ifstream ifs(filepath);
+    assert(ifs.good());
+    boost::archive::xml_iarchive ia(ifs);
+
+    // restore the schedule from the archive
+    ia >> BOOST_SERIALIZATION_NVP(nany_type);
+  }
+
+  EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(T)));
+  EXPECT_TRUE(nany_type.as<T>() == value);
+
+  // Test bad cast
+  EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
+}
+
+TEST(TesseractCommonUnit, anyIntegralTypesUnit)  // NOLINT
+{
+  runAnyPolyIntegralTest<bool>(true, "bool");
+  runAnyPolyIntegralTest<int>(-10, "int");
+  runAnyPolyIntegralTest<unsigned>(5, "unsigned");
+  runAnyPolyIntegralTest<double>(1.2, "double");
+  runAnyPolyIntegralTest<float>(-0.2F, "float");
+  runAnyPolyIntegralTest<std::string>("this", "string");
+}
+
+template <typename T>
+void runAnyPolyUnorderedMapIntegralTest(T value, const std::string& type_str)
+{
+  std::unordered_map<std::string, T> data;
+  data["test"] = value;
+  tesseract_common::AnyPoly any_type{ data };
+  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(std::unordered_map<std::string, T>)));
+  bool check = any_type.as<std::unordered_map<std::string, T>>() == data;
+  EXPECT_TRUE(check);
+
+  // Check clone
+  tesseract_common::AnyPoly any_copy = any_type;
+  EXPECT_TRUE(any_copy == any_type);
+  check = any_copy.as<std::unordered_map<std::string, T>>() == data;
+  EXPECT_TRUE(check);
+
+  const std::string filepath{ tesseract_common::getTempPath() + "any_unordered_map_string_" + type_str +
+                              "_type_boost.xml" };
+  {
+    std::ofstream os(filepath);
+    boost::archive::xml_oarchive oa(os);
+    oa << BOOST_SERIALIZATION_NVP(any_type);
+  }
+
+  tesseract_common::AnyPoly nany_type;
+  {
+    std::ifstream ifs(filepath);
+    assert(ifs.good());
+    boost::archive::xml_iarchive ia(ifs);
+
+    // restore the schedule from the archive
+    ia >> BOOST_SERIALIZATION_NVP(nany_type);
+  }
+
+  EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(std::unordered_map<std::string, T>)));
+  check = nany_type.as<std::unordered_map<std::string COMMA T>>() == data;
+  EXPECT_TRUE(check);
+
+  // Test bad cast
+  EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
+}
+
+TEST(TesseractCommonUnit, anyUnorderedMapIntegralTypesUnit)  // NOLINT
+{
+  runAnyPolyUnorderedMapIntegralTest<bool>(true, "bool");
+  runAnyPolyUnorderedMapIntegralTest<int>(-10, "int");
+  runAnyPolyUnorderedMapIntegralTest<unsigned>(5, "unsigned");
+  runAnyPolyUnorderedMapIntegralTest<double>(1.2, "double");
+  runAnyPolyUnorderedMapIntegralTest<float>(-0.2F, "float");
+  runAnyPolyUnorderedMapIntegralTest<std::string>("this", "string");
+}
+
 TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
 {
   tesseract_common::AnyPoly any_type;
