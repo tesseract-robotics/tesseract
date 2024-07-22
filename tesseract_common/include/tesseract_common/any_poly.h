@@ -143,11 +143,13 @@ TESSERACT_ANY_EXPORT_KEY(unsigned, IntegralUnsigned)
 TESSERACT_ANY_EXPORT_KEY(double, IntegralDouble)
 TESSERACT_ANY_EXPORT_KEY(float, IntegralFloat)
 TESSERACT_ANY_EXPORT_KEY(std::string, StdString)
+TESSERACT_ANY_EXPORT_KEY(std::size_t, StdSizeT)
 TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA std::string>, StdUnorderedMapStringString)
 TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA bool>, StdUnorderedMapStringBool)
 TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA int>, StdUnorderedMapStringInt)
 TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA unsigned>, StdUnorderedMapStringUnsigned)
 TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA double>, StdUnorderedMapStringDouble)
 TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA float>, StdUnorderedMapStringFloat)
+TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA std::size_t>, StdUnorderedMapStringStdSizeT)
 
 #endif  // TESSERACT_COMMON_ANY_POLY_H

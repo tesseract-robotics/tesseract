@@ -458,6 +458,7 @@ TEST(TesseractCommonUnit, anyIntegralTypesUnit)  // NOLINT
   runAnyPolyIntegralTest<double>(1.2, "double");
   runAnyPolyIntegralTest<float>(-0.2F, "float");
   runAnyPolyIntegralTest<std::string>("this", "string");
+  runAnyPolyIntegralTest<std::size_t>(10, "std_size_t");
 }
 
 template <typename T>
@@ -510,6 +511,7 @@ TEST(TesseractCommonUnit, anyUnorderedMapIntegralTypesUnit)  // NOLINT
   runAnyPolyUnorderedMapIntegralTest<double>(1.2, "double");
   runAnyPolyUnorderedMapIntegralTest<float>(-0.2F, "float");
   runAnyPolyUnorderedMapIntegralTest<std::string>("this", "string");
+  runAnyPolyUnorderedMapIntegralTest<std::size_t>(10, "std_size_t");
 }
 
 TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
