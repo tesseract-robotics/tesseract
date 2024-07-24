@@ -2,6 +2,12 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Do not export plugin libraries (`#1028 <https://github.com/tesseract-robotics/tesseract/issues/1028>`_)
+* Fixes for building on Ubuntu Noble (`#1016 <https://github.com/tesseract-robotics/tesseract/issues/1016>`_)
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.22.2 (2024-06-10)
 -------------------
 * Add backtrace to type erasure casting to quickly identify where the issue location

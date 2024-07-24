@@ -2,6 +2,19 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add any poly support to manipulator info
+* Add std::size_t to any poly types
+* Add integral any poly types
+* Add checkForUnknownKeys to yaml utils
+* Handle edge case in calcJacobianTransformErrorDiff
+* Improve any poly serialization macros
+* Fixes for building on Ubuntu Noble (`#1016 <https://github.com/tesseract-robotics/tesseract/issues/1016>`_)
+* Add missing serialization header to AnyPoly
+* Add support for shared pointers to tesseract_common::AnyPoly
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.22.2 (2024-06-10)
 -------------------
 * Fix windows issue in kinematics_limits.h with using eigen array max and min

@@ -2,6 +2,12 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add any poly support for environment
+* Fixes for building on Ubuntu Noble (`#1016 <https://github.com/tesseract-robotics/tesseract/issues/1016>`_)
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.22.2 (2024-06-10)
 -------------------
 * Fix command serialization
