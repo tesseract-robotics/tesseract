@@ -49,6 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/filesystem.h>
 #include <tesseract_common/eigen_types.h>
+#include <tesseract_common/any_poly.h>
 
 namespace boost::serialization
 {
@@ -551,4 +552,7 @@ public:
 };
 }  // namespace tesseract_environment
 
+TESSERACT_ANY_EXPORT_KEY(std::shared_ptr<const tesseract_environment::Environment>,
+                         TesseractEnvironmentEnvironmentConstSharedPtr)
+TESSERACT_ANY_EXPORT_KEY(std::shared_ptr<tesseract_environment::Environment>, TesseractEnvironmentEnvironmentSharedPtr)
 #endif  // TESSERACT_ENVIRONMENT_ENVIRONMENT_H

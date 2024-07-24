@@ -2691,3 +2691,6 @@ void Environment::serialize(Archive& ar, const unsigned int version)
 
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::Environment)
+
+TESSERACT_ANY_EXPORT_IMPLEMENT(TesseractEnvironmentEnvironmentConstSharedPtr)
+TESSERACT_ANY_EXPORT_IMPLEMENT(TesseractEnvironmentEnvironmentSharedPtr)
