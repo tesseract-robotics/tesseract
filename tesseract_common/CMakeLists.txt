@@ -12,12 +12,18 @@ endif()
 include(cmake/tesseract_macros.cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-if(WIN32)
-  # Need to have John Wason look into making this work on windows
-  set(TESSERACT_BACKTRACE_DEFINITION "") # BOOST_STACKTRACE_USE_WINDBG
-  set(TESSERACT_BACKTRACE_COMPONENT "") # stacktrace_windbg
-  set(TESSERACT_BACKTRACE_LIB "") # Boost::stacktrace_windbg
-else()
+find_package(
+  Boost REQUIRED
+  COMPONENTS system
+             filesystem
+             serialization
+             stacktrace_noop
+  OPTIONAL_COMPONENTS stacktrace_backtrace stacktrace_basic)
+find_package(Eigen3 REQUIRED)
+find_package(TinyXML2 REQUIRED)
+find_package(yaml-cpp REQUIRED)
+
+if(TARGET Boost::stacktrace_backtrace)
   find_file(BACKTRACE_INCLUDE_FILE backtrace.h PATHS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
   if(BACKTRACE_INCLUDE_FILE)
     set(TESSERACT_BACKTRACE_DEFINITION BOOST_STACKTRACE_USE_BACKTRACE
@@ -27,17 +33,15 @@ else()
   endif()
   set(TESSERACT_BACKTRACE_COMPONENT stacktrace_backtrace)
   set(TESSERACT_BACKTRACE_LIB Boost::stacktrace_backtrace)
+elseif(TARGET Boost::stacktrace_basic)
+  set(TESSERACT_BACKTRACE_DEFINITION "")
+  set(TESSERACT_BACKTRACE_COMPONENT "stacktrace_basic")
+  set(TESSERACT_BACKTRACE_LIB "Boost::stacktrace_basic")
+elseif(TARGET Boost::stacktrace_noop)
+  set(TESSERACT_BACKTRACE_DEFINITION BOOST_STACKTRACE_USE_NOOP)
+  set(TESSERACT_BACKTRACE_COMPONENT "stacktrace_noop")
+  set(TESSERACT_BACKTRACE_LIB "Boost::stacktrace_noop")
 endif()
-
-find_package(
-  Boost REQUIRED
-  COMPONENTS system
-             filesystem
-             serialization
-             ${TESSERACT_BACKTRACE_COMPONENT})
-find_package(Eigen3 REQUIRED)
-find_package(TinyXML2 REQUIRED)
-find_package(yaml-cpp REQUIRED)
 
 find_package(console_bridge REQUIRED)
 if(NOT TARGET console_bridge::console_bridge)
