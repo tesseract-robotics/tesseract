@@ -40,7 +40,6 @@ jobs:
         token: ${{ github.token }}
         cache-key: ci-${{ matrix.os }}
         github-binarycache: true
-        revision: 2024.01.12
 
     - name: configure-msvc
       uses: ilammy/msvc-dev-cmd@v1
