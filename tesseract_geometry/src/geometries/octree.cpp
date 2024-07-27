@@ -255,5 +255,5 @@ void Octree::serialize(Archive& ar, const unsigned int version)
 }  // namespace tesseract_geometry
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(tesseract_geometry::Octree)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::Octree)
+TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(tesseract_geometry::Octree)

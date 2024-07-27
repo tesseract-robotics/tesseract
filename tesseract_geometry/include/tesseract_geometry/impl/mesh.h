@@ -115,5 +115,5 @@ private:
 };
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Mesh, "Mesh")
+BOOST_CLASS_EXPORT_KEY(tesseract_geometry::Mesh)
 #endif

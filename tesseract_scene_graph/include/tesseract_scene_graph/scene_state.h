@@ -87,5 +87,5 @@ private:
 };
 }  // namespace tesseract_scene_graph
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::SceneState, "SceneState")
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::SceneState)
 #endif  // TESSERACT_SCENE_GRAPH_SCENE_STATE_H

@@ -385,20 +385,16 @@ std::ostream& operator<<(std::ostream& os, const JointType& type)
 }  // namespace tesseract_scene_graph
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointDynamics)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointDynamics)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointLimits)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointLimits)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointSafety)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointSafety)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointCalibration)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointCalibration)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointMimic)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointMimic)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Joint)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Joint)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointDynamics)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointLimits)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointSafety)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointCalibration)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointMimic)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Joint)

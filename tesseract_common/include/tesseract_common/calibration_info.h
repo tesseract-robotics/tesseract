@@ -74,6 +74,6 @@ private:
 };
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_common::CalibrationInfo, "CalibrationInfo")
+BOOST_CLASS_EXPORT_KEY(tesseract_common::CalibrationInfo)
 
 #endif  // TESSERACT_COMMON_CALIBRATION_INFO_H

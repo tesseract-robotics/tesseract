@@ -2690,6 +2690,7 @@ void Environment::serialize(Archive& ar, const unsigned int version)
 }  // namespace tesseract_environment
 
 #include <tesseract_common/serialization.h>
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::Environment)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::Environment)
 
 TESSERACT_ANY_EXPORT_IMPLEMENT(TesseractEnvironmentEnvironmentConstSharedPtr)

@@ -73,5 +73,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::MoveLinkCommand, "MoveLinkCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::MoveLinkCommand)
 #endif  // TESSERACT_ENVIRONMENT_MOVE_LINK_COMMAND_H

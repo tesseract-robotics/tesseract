@@ -69,6 +69,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::SetActiveDiscreteContactManagerCommand,
-                        "SetActiveDiscreteContactManagerCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::SetActiveDiscreteContactManagerCommand)
 #endif  // TESSERACT_ENVIRONMENT_SET_ACTIVE_DISCRETE_CONTACT_MANAGER_COMMAND_H

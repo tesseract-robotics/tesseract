@@ -62,5 +62,5 @@ void RemoveJointCommand::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_environment
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::RemoveJointCommand)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::RemoveJointCommand)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::RemoveJointCommand)

@@ -57,6 +57,6 @@ private:
 };
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_common::TesseractSupportResourceLocator, "TesseractSupportResourceLocator")
+BOOST_CLASS_EXPORT_KEY(tesseract_common::TesseractSupportResourceLocator)
 
 #endif  // TESSERACT_SUPPORT_TESSERACT_SUPPORT_RESOURCE_LOCATOR_H

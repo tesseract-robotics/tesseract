@@ -68,5 +68,5 @@ private:
 };
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::Capsule, "Capsule")
+BOOST_CLASS_EXPORT_KEY(tesseract_geometry::Capsule)
 #endif  // TESSERACT_GEOMETRY_CAPSULE_H

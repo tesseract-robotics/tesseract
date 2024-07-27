@@ -93,6 +93,6 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddSceneGraphCommand, "AddSceneGraphCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::AddSceneGraphCommand)
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_SCENE_GRAPH_COMMAND_H

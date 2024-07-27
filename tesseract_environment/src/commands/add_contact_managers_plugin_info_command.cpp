@@ -74,5 +74,5 @@ void AddContactManagersPluginInfoCommand::serialize(Archive& ar, const unsigned 
 }  // namespace tesseract_environment
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::AddContactManagersPluginInfoCommand)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::AddContactManagersPluginInfoCommand)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::AddContactManagersPluginInfoCommand)

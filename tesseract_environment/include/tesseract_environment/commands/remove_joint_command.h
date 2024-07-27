@@ -72,5 +72,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::RemoveJointCommand, "RemoveJointCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::RemoveJointCommand)
 #endif  // TESSERACT_ENVIRONMENT_REMOVE_JOINT_COMMAND_H

@@ -218,5 +218,5 @@ private:
 
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::PolygonMesh, "PolygonMesh")
+BOOST_CLASS_EXPORT_KEY(tesseract_geometry::PolygonMesh)
 #endif  // POLYGON_MESH_H

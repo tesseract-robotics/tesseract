@@ -69,5 +69,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::RemoveAllowedCollisionLinkCommand, "RemoveAllowedCollisionLinkCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::RemoveAllowedCollisionLinkCommand)
 #endif  // TESSERACT_ENVIRONMENT_REMOVE_ALLOWED_COLLISION_LINK_COMMAND_H

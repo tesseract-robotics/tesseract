@@ -107,6 +107,6 @@ private:
 using Commands = std::vector<std::shared_ptr<const Command>>;
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::Command, "Command")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::Command)
 
 #endif  // COMMAND_H

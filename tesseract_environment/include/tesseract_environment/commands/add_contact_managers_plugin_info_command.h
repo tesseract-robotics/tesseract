@@ -69,7 +69,6 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddContactManagersPluginInfoCommand,
-                        "AddContactManagersPluginInfoCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::AddContactManagersPluginInfoCommand)
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_CONTACT_MANAGERS_PLUGIN_INFO_COMMAND_H

@@ -80,5 +80,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeJointOriginCommand, "ChangeJointOriginCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeJointOriginCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_ORIGIN_COMMAND_H

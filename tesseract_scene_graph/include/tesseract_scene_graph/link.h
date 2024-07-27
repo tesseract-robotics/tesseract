@@ -240,10 +240,10 @@ private:
 
 }  // namespace tesseract_scene_graph
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Material, "Material")
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Inertial, "Inertial")
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Visual, "Visual")
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Collision, "Collision")
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Link, "Link")
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Material)
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Inertial)
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Visual)
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Collision)
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Link)
 
 #endif  // TESSERACT_SCENE_GRAPH_LINK_H

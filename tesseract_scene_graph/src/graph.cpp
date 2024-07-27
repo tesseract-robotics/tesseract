@@ -1359,5 +1359,5 @@ std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 }  // namespace tesseract_scene_graph
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(tesseract_scene_graph::SceneGraph)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::SceneGraph)
+TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(tesseract_scene_graph::SceneGraph)

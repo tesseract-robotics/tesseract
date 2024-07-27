@@ -39,11 +39,11 @@ void AnyPoly::serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyPolyBase)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyPoly)
-
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyPolyBase)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyPoly)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyPolyBase)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyPoly)
 
 TESSERACT_ANY_EXPORT_IMPLEMENT(IntegralBool)
 TESSERACT_ANY_EXPORT_IMPLEMENT(IntegralInt)

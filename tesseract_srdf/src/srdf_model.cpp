@@ -459,5 +459,5 @@ void SRDFModel::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_srdf
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_srdf::SRDFModel)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_srdf::SRDFModel)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_srdf::SRDFModel)

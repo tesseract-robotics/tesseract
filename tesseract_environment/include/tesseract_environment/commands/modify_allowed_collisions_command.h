@@ -75,6 +75,6 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ModifyAllowedCollisionsCommand, "ModifyAllowedCollisionsCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::ModifyAllowedCollisionsCommand)
 
 #endif  // TESSERACT_ENVIRONMENT_MODIFY_ALLOWED_COLLISIONS_MATRIX_COMMAND_H

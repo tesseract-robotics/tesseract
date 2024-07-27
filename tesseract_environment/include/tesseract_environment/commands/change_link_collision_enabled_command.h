@@ -72,5 +72,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeLinkCollisionEnabledCommand, "ChangeLinkCollisionEnabledCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeLinkCollisionEnabledCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_LINK_COLLISION_ENABLED_COMMAND_H

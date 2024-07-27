@@ -620,6 +620,6 @@ std::ostream& operator<<(std::ostream& os, const ShortestPath& path);
 
 }  // namespace tesseract_scene_graph
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::SceneGraph, "SceneGraph")
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::SceneGraph)
 
 #endif  // TESSERACT_SCENE_GRAPH_GRAPH_H

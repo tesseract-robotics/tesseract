@@ -78,5 +78,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeJointPositionLimitsCommand, "ChangeJointPositionLimitsCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeJointPositionLimitsCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_POSITION_LIMITS_COMMAND_H
