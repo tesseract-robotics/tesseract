@@ -38,9 +38,11 @@ jobs:
           - runner: macos-12
             vcpkg_triplet: x64-osx-dynamic-release
             arch: x64
+            homebrew_root: /usr/local
           - runner: macos-14
             vcpkg_triplet: arm64-osx-dynamic-release
             arch: arm64
+            homebrew_root: /opt/homebrew
     runs-on: ${{ matrix.config.runner }}
     steps:
     - uses: actions/checkout@v2
@@ -71,10 +73,6 @@ jobs:
     - name: pip3
       run: |
         python3 -m pip install numpy setuptools wheel pytest delvewheel colcon-common-extensions vcstool
-    - if: matrix.config.arch == 'arm64'
-      # workaround for dumb cmake configuration error in openmp
-      run: |
-        sudo mkdir -p /usr/local/opt/libomp/include
     - name: vcs import
       working-directory: ws/src
       run: vcs import --input tesseract/.github/workflows/windows_dependencies.repos
@@ -93,11 +91,11 @@ jobs:
             -DBUILD_SHARED_LIBS=ON -DTESSERACT_ENABLE_EXAMPLES=OFF \
             -DVCPKG_APPLOCAL_DEPS=OFF -DTESSERACT_ENABLE_TESTING=ON \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
-            -DOpenMP_CXX_INCLUDE_DIR=/usr/local/opt/libomp/include \
-            -DOpenMP_C_INCLUDE_DIR=/usr/local/opt/libomp/include \
+            -DOpenMP_CXX_INCLUDE_DIR=${{ matrix.config.homebrew_root }}/opt/libomp/include \
+            -DOpenMP_C_INCLUDE_DIR=${{ matrix.config.homebrew_root }}/opt/libomp/include \
             -DOpenMP_CXX_LIB_NAMES=libomp -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp" \
             -DOpenMP_C_LIB_NAMES=libomp -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp" \
-            -DOpenMP_libomp_LIBRARY=/usr/local/opt/libomp/lib/libomp.dylib
+            -DOpenMP_libomp_LIBRARY=${{ matrix.config.homebrew_root }}/opt/libomp/lib/libomp.dylib
     - name: colcon test
       working-directory: ws
       run: |
