@@ -179,5 +179,7 @@ void JointTrajectory::serialize(Archive& ar, const unsigned int version)  // NOL
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointState)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointTrajectory)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointState)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointTrajectory)

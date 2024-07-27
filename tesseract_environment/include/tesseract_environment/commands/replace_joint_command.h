@@ -79,5 +79,5 @@ private:
 
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ReplaceJointCommand, "ReplaceJointCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::ReplaceJointCommand)
 #endif  // TESSERACT_ENVIRONMENT_REPLACE_JOINT_COMMAND_H

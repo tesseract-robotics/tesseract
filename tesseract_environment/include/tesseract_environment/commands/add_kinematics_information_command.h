@@ -69,5 +69,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddKinematicsInformationCommand, "AddKinematicsInformationCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::AddKinematicsInformationCommand)
 #endif  // TESSERACT_ENVIRONMENT_ADD_KINEMATICS_INFORMATION_COMMAND_H

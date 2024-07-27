@@ -122,6 +122,6 @@ private:
 
 }  // namespace tesseract_srdf
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_srdf::SRDFModel, "SRDFModel")
+BOOST_CLASS_EXPORT_KEY(tesseract_srdf::SRDFModel)
 
 #endif  // TESSERACT_SRDF_SRDF_MODEL_H

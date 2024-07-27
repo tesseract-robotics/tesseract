@@ -200,10 +200,10 @@ private:
 
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_common::PluginInfo, "PluginInfo")
-BOOST_CLASS_EXPORT_KEY2(tesseract_common::PluginInfoContainer, "PluginInfoContainer")
-BOOST_CLASS_EXPORT_KEY2(tesseract_common::KinematicsPluginInfo, "KinematicsPluginInfo")
-BOOST_CLASS_EXPORT_KEY2(tesseract_common::ContactManagersPluginInfo, "ContactManagersPluginInfo")
-BOOST_CLASS_EXPORT_KEY2(tesseract_common::TaskComposerPluginInfo, "TaskComposerPluginInfo")
+BOOST_CLASS_EXPORT_KEY(tesseract_common::PluginInfo)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::PluginInfoContainer)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::KinematicsPluginInfo)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::ContactManagersPluginInfo)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::TaskComposerPluginInfo)
 
 #endif  // TESSERACT_COMMON_PLUGIN_INFO_H

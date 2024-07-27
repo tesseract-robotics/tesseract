@@ -75,6 +75,6 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::MoveJointCommand, "MoveJointCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::MoveJointCommand)
 
 #endif  // TESSERACT_ENVIRONMENT_MOVE_JOINT_COMMAND_H

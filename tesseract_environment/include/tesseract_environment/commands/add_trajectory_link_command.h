@@ -95,6 +95,6 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::AddTrajectoryLinkCommand, "AddTrajectoryLinkCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::AddTrajectoryLinkCommand)
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_TRAJECTORY_LINK_COMMAND_H

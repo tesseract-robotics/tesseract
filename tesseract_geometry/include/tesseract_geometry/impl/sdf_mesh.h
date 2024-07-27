@@ -115,5 +115,5 @@ private:
 };
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::SDFMesh, "SDFMesh")
+BOOST_CLASS_EXPORT_KEY(tesseract_geometry::SDFMesh)
 #endif

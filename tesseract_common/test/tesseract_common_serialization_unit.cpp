@@ -723,8 +723,8 @@ struct TestAtomic
   }
 };
 
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(TestAtomic)
 BOOST_CLASS_EXPORT_IMPLEMENT(TestAtomic)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(TestAtomic)
 
 TEST(TesseractCommonSerializeUnit, StdAtomic)  // NOLINT
 {

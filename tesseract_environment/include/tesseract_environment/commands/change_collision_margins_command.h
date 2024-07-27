@@ -81,5 +81,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeCollisionMarginsCommand, "ChangeCollisionMarginsCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeCollisionMarginsCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_COLLISION_MARGINS_COMMAND_H

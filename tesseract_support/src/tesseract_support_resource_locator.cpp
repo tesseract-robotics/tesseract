@@ -71,5 +71,5 @@ void TesseractSupportResourceLocator::serialize(Archive& ar, const unsigned int 
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::TesseractSupportResourceLocator)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::TesseractSupportResourceLocator)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::TesseractSupportResourceLocator)

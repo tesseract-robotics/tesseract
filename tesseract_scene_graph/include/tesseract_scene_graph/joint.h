@@ -348,11 +348,11 @@ std::ostream& operator<<(std::ostream& os, const JointType& type);
 
 }  // namespace tesseract_scene_graph
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointDynamics, "JointDynamics")
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointLimits, "JointLimits")
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointSafety, "JointSafety")
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointCalibration, "JointCalibration")
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::JointMimic, "JointMimic")
-BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::Joint, "Joint")
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointDynamics)
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointLimits)
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointSafety)
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointCalibration)
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointMimic)
+BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Joint)
 
 #endif  // TESSERACT_SCENE_GRAPH_JOINT_H

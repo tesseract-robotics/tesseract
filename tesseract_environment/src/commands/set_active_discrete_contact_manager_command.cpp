@@ -70,5 +70,5 @@ void SetActiveDiscreteContactManagerCommand::serialize(Archive& ar, const unsign
 }  // namespace tesseract_environment
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::SetActiveDiscreteContactManagerCommand)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::SetActiveDiscreteContactManagerCommand)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::SetActiveDiscreteContactManagerCommand)

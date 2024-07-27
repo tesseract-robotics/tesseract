@@ -99,5 +99,6 @@ private:
 };
 }  // namespace tesseract_common
 
+BOOST_CLASS_EXPORT_KEY(tesseract_common::ManipulatorInfo)
 TESSERACT_ANY_EXPORT_KEY(tesseract_common::ManipulatorInfo, TesseractCommonManipulatorInfo)
 #endif  // TESSERACT_COMMON_MANIPULATOR_INFO_H

@@ -72,5 +72,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeLinkVisibilityCommand, "ChangeLinkVisibilityCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeLinkVisibilityCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_LINK_VISIBILITY_COMMAND_H

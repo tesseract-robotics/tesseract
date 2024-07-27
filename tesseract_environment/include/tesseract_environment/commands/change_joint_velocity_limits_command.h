@@ -77,5 +77,5 @@ private:
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::ChangeJointVelocityLimitsCommand, "ChangeJointVelocityLimitsCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeJointVelocityLimitsCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_VELOCITY_LIMITS_COMMAND_H

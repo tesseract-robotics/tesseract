@@ -29,6 +29,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <boost/serialization/export.hpp>
 #include <boost/serialization/base_object.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -149,5 +150,7 @@ void enforceLimits(Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> value
   values = ((values.array().min)(limits.col(1).array()).max)(limits.col(0).array());
 }
 }  // namespace tesseract_common
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::KinematicLimits)
 
 #endif  // TESSERACT_COMMON_KINEMATIC_LIMITS_H

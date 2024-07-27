@@ -111,6 +111,6 @@ private:
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm);
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_common::AllowedCollisionMatrix, "AllowedCollisionMatrix")
+BOOST_CLASS_EXPORT_KEY(tesseract_common::AllowedCollisionMatrix)
 
 #endif  // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H

@@ -177,7 +177,5 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_common
-
-BOOST_CLASS_EXPORT_KEY2(tesseract_common::CollisionMarginData, "CollisionMarginData")
-
+BOOST_CLASS_EXPORT_KEY(tesseract_common::CollisionMarginData)
 #endif  // TESSERACT_COMMON_COLLISION_MARGIN_DATA_H

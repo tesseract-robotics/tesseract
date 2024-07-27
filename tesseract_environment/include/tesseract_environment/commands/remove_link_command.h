@@ -73,5 +73,5 @@ private:
 
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY2(tesseract_environment::RemoveLinkCommand, "RemoveLinkCommand")
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::RemoveLinkCommand)
 #endif  // TESSERACT_ENVIRONMENT_REMOVE_LINK_COMMAND_H

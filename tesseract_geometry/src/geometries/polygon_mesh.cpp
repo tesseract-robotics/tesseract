@@ -151,5 +151,5 @@ void PolygonMesh::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_geometry
 
 #include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::PolygonMesh)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::PolygonMesh)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::PolygonMesh)
