@@ -71,6 +71,10 @@ jobs:
     - name: pip3
       run: |
         python3 -m pip install numpy setuptools wheel pytest delvewheel colcon-common-extensions vcstool
+    - if: matrix.config.arch == 'arm64'
+      # workaround for dumb cmake configuration error in openmp
+      run: |
+        sudo mkdir -p /usr/local/opt/libomp/include
     - name: vcs import
       working-directory: ws/src
       run: vcs import --input tesseract/.github/workflows/windows_dependencies.repos
