@@ -109,7 +109,7 @@ void GeneralResourceLocator::processToken(const std::string& token)
         if (package_paths_.find(dir_name) == package_paths_.end())
           package_paths_[dir_name] = dir->path().string();
 
-        dir.no_push();  // don't recurse into this directory.
+        dir.disable_recursion_pending();  // don't recurse into this directory.
       }
 
       ++dir;
@@ -153,7 +153,7 @@ std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::stri
     }
   }
 
-  if (!tesseract_common::fs::path(mod_url).is_complete())
+  if (!tesseract_common::fs::path(mod_url).is_absolute())
   {
     CONSOLE_BRIDGE_logWarn("Resource not handled: %s", mod_url.c_str());
     return nullptr;
