@@ -40,7 +40,7 @@ public:
       mod_url = package_path + mod_url;
     }
 
-    if (!tesseract_common::fs::path(mod_url).is_complete())
+    if (!tesseract_common::fs::path(mod_url).is_absolute())
       return nullptr;
 
     return std::make_shared<tesseract_common::SimpleLocatedResource>(
