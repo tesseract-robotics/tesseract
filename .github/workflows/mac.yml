@@ -18,7 +18,7 @@ on:
 
 env:
   VCPKG_PKGS: >- 
-    boost-dll boost-program-options
+    boost-dll boost-program-options boost-stacktrace
     boost-serialization boost-filesystem
     tinyxml2 console-bridge assimp
     urdfdom octomap orocos-kdl pcl
