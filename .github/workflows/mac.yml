@@ -18,7 +18,7 @@ on:
 
 env:
   VCPKG_PKGS: >- 
-    boost-dll boost-program-options
+    boost-dll boost-program-options boost-stacktrace
     boost-serialization boost-filesystem
     tinyxml2 console-bridge assimp
     urdfdom octomap orocos-kdl pcl
@@ -31,7 +31,19 @@ env:
 
 jobs:
   build-macos:
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - runner: macos-12
+            vcpkg_triplet: x64-osx-dynamic-release
+            arch: x64
+            homebrew_root: /usr/local
+          - runner: macos-14
+            vcpkg_triplet: arm64-osx-dynamic-release
+            arch: arm64
+            homebrew_root: /opt/homebrew
+    runs-on: ${{ matrix.config.runner }}
     steps:
     - uses: actions/checkout@v2
       with:
@@ -52,10 +64,10 @@ jobs:
       with:
         pkgs: >-
           ${{ env.VCPKG_PKGS }}
-        triplet: x64-osx-dynamic-release
+        triplet: ${{ matrix.config.vcpkg_triplet }}
         extra-args: --clean-after-build --overlay-triplets=${{ github.workspace }}/ws/src/tesseract/.github/workflows/vcpkg_triplets
         token: ${{ github.token }}
-        cache-key: osx-x64-vcpkg
+        cache-key: osx-${{ matrix.config.arch }}-vcpkg
         revision: master
         github-binarycache: true
     - name: pip3
@@ -67,8 +79,8 @@ jobs:
     - name: colcon build
       working-directory: ws
       run: |
-        export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GITHUB_WORKSPACE/vcpkg/installed/x64-osx-dynamic-release/lib
-        export CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/x64-osx-dynamic-release
+        export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GITHUB_WORKSPACE/vcpkg/installed/${{ matrix.config.vcpkg_triplet }}/lib
+        export CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/${{ matrix.config.vcpkg_triplet }}
 
         colcon build --merge-install \
             --packages-ignore tesseract_examples trajopt_ifopt trajopt_sqp ifopt vhacd tesseract_python \
@@ -79,16 +91,16 @@ jobs:
             -DBUILD_SHARED_LIBS=ON -DTESSERACT_ENABLE_EXAMPLES=OFF \
             -DVCPKG_APPLOCAL_DEPS=OFF -DTESSERACT_ENABLE_TESTING=ON \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
-            -DOpenMP_CXX_INCLUDE_DIR=/usr/local/opt/libomp/include \
-            -DOpenMP_C_INCLUDE_DIR=/usr/local/opt/libomp/include \
+            -DOpenMP_CXX_INCLUDE_DIR=${{ matrix.config.homebrew_root }}/opt/libomp/include \
+            -DOpenMP_C_INCLUDE_DIR=${{ matrix.config.homebrew_root }}/opt/libomp/include \
             -DOpenMP_CXX_LIB_NAMES=libomp -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp" \
             -DOpenMP_C_LIB_NAMES=libomp -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp" \
-            -DOpenMP_libomp_LIBRARY=/usr/local/opt/libomp/lib/libomp.dylib
+            -DOpenMP_libomp_LIBRARY=${{ matrix.config.homebrew_root }}/opt/libomp/lib/libomp.dylib
     - name: colcon test
       working-directory: ws
       run: |
-        export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GITHUB_WORKSPACE/vcpkg/installed/x64-osx-dynamic-release/lib
-        export CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/x64-osx-dynamic-release
+        export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GITHUB_WORKSPACE/vcpkg/installed/${{ matrix.config.vcpkg_triplet }}/lib
+        export CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/vcpkg/installed/${{ matrix.config.vcpkg_triplet }}
 
         colcon test --merge-install \
             --packages-ignore tesseract_examples trajopt_ifopt trajopt_sqp ifopt vhacd tesseract_python \
