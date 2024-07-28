@@ -2,6 +2,11 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Cleanup boost serialization
+* Contributors: Levi Armstrong
+
 0.23.0 (2024-07-24)
 -------------------
 

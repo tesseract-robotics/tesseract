@@ -2,6 +2,16 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Cleanup boost serialization
+* Use latest vcpkg release for GitHub Action (`#1035 <https://github.com/tesseract-robotics/tesseract/issues/1035>`_)
+  * Use latest vcpkg release in windows action
+  * ci
+  * Fix deprecated boost filesystem functions
+* Fix use of boost stacktrace
+* Contributors: John Wason, Levi Armstrong
+
 0.23.0 (2024-07-24)
 -------------------
 * Add any poly support to manipulator info
