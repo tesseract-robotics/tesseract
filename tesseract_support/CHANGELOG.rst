@@ -2,8 +2,8 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.23.1 (2024-07-28)
+-------------------
 * Cleanup boost serialization
 * Use latest vcpkg release for GitHub Action (`#1035 <https://github.com/tesseract-robotics/tesseract/issues/1035>`_)
   * Use latest vcpkg release in windows action

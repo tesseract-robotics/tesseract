@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.23.1 (2024-07-28)
+-------------------
 * Cleanup boost serialization
 * Contributors: Levi Armstrong
 

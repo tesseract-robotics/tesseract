@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.23.1 (2024-07-28)
+-------------------
 * Cleanup boost serialization
 * Add export implementation environment command
 * Contributors: Levi Armstrong
