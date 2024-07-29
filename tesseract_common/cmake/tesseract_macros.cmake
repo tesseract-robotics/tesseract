@@ -95,12 +95,13 @@ macro(tesseract_variables)
              "unknown")
         set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
       endif()
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang.*")
       set(TESSERACT_COMPILE_OPTIONS_PRIVATE
           -Wall
           -Wextra
           -Wconversion
           -Wsign-conversion)
+      set(TESSERACT_COMPILE_DEFINITIONS "BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED")
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
       set(TESSERACT_COMPILE_DEFINITIONS "_USE_MATH_DEFINES=ON")
@@ -132,12 +133,13 @@ macro(tesseract_variables)
              "unknown")
         set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
       endif()
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang.*")
       set(TESSERACT_COMPILE_OPTIONS_PRIVATE
           -Werror=all
           -Werror=extra
           -Werror=conversion
           -Werror=sign-conversion)
+      set(TESSERACT_COMPILE_DEFINITIONS "BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED")
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
       set(TESSERACT_COMPILE_DEFINITIONS "_USE_MATH_DEFINES=ON")
