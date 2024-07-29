@@ -332,7 +332,8 @@ struct convert<Eigen::VectorXd>
   static Node encode(const Eigen::VectorXd& rhs)
   {
     Node node;
-    for (long i = 0; i < rhs.size(); ++i)
+    long l = static_cast<Eigen::Index>(rhs.size());
+    for (long i = 0; i < l; ++i)
       node.push_back(rhs(i));
 
     return node;
@@ -344,7 +345,8 @@ struct convert<Eigen::VectorXd>
       return false;
 
     rhs.resize(static_cast<Eigen::Index>(node.size()));
-    for (long i = 0; i < node.size(); ++i)
+    long l = static_cast<Eigen::Index>(node.size());
+    for (long i = 0; i < l; ++i)
       rhs(i) = node[i].as<double>();
 
     return true;

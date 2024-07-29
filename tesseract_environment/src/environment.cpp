@@ -1362,7 +1362,7 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
       return false;
     }
 
-    if (state.joint_names.size() != state.position.size())
+    if (static_cast<Eigen::Index>(state.joint_names.size()) != state.position.size())
     {
       CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) where joint names and position are different sizes.",
                              cmd->getLinkName().c_str());
