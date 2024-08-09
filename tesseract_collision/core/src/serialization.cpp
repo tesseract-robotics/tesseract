@@ -121,3 +121,7 @@ void serialize(Archive& ar, tesseract_collision::ContactResultMap& g, const unsi
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactResult)
 TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactResultMap)
+
+TESSERACT_ANY_EXPORT_IMPLEMENT(TesseractCollisionContactResult)
+TESSERACT_ANY_EXPORT_IMPLEMENT(TesseractCollisionContactResultMap)
+TESSERACT_ANY_EXPORT_IMPLEMENT(TesseractCollisionContactResultMapVector)
