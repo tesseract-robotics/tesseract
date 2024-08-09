@@ -58,6 +58,32 @@ void ContactResult::clear()
   single_contact_point = false;
 }
 
+bool ContactResult::operator==(const ContactResult& rhs) const
+{
+  bool ret_val = true;
+  ret_val &= tesseract_common::almostEqualRelativeAndAbs(distance, rhs.distance);
+  ret_val &= tesseract_common::almostEqualRelativeAndAbs(nearest_points[0], rhs.nearest_points[0]);
+  ret_val &= tesseract_common::almostEqualRelativeAndAbs(nearest_points[1], rhs.nearest_points[1]);
+  ret_val &= tesseract_common::almostEqualRelativeAndAbs(nearest_points_local[0], rhs.nearest_points_local[0]);
+  ret_val &= tesseract_common::almostEqualRelativeAndAbs(nearest_points_local[1], rhs.nearest_points_local[1]);
+  ret_val &= transform[0].isApprox(rhs.transform[0]);
+  ret_val &= transform[1].isApprox(rhs.transform[1]);
+  ret_val &= (link_names == rhs.link_names);
+  ret_val &= (shape_id == rhs.shape_id);
+  ret_val &= (subshape_id == rhs.subshape_id);
+  ret_val &= (type_id == rhs.type_id);
+  ret_val &= tesseract_common::almostEqualRelativeAndAbs(normal, rhs.normal);
+  ret_val &= tesseract_common::almostEqualRelativeAndAbs(cc_time[0], rhs.cc_time[0]);
+  ret_val &= tesseract_common::almostEqualRelativeAndAbs(cc_time[1], rhs.cc_time[1]);
+  ret_val &= (cc_type == rhs.cc_type);
+  ret_val &= cc_transform[0].isApprox(rhs.cc_transform[0]);
+  ret_val &= cc_transform[1].isApprox(rhs.cc_transform[1]);
+  ret_val &= (single_contact_point == rhs.single_contact_point);
+
+  return ret_val;
+}
+bool ContactResult::operator!=(const ContactResult& rhs) const { return !operator==(rhs); }
+
 ContactRequest::ContactRequest(ContactTestType type) : type(type) {}
 
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactResult result)
@@ -275,6 +301,12 @@ void ContactResultMap::filter(const FilterFn& filter)
   count_ -= static_cast<long>(removed_cnt);
   assert(count_ >= 0);
 }
+
+bool ContactResultMap::operator==(const ContactResultMap& rhs) const
+{
+  return ((data_ == rhs.data_) && (count_ == rhs.count_));
+}
+bool ContactResultMap::operator!=(const ContactResultMap& rhs) const { return !operator==(rhs); }
 
 ContactTestData::ContactTestData(const std::vector<std::string>& active,
                                  CollisionMarginData collision_margin_data,

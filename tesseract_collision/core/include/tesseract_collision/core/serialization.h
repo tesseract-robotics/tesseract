@@ -26,7 +26,9 @@
 #ifndef TESSERACT_COLLISION_SERIALIZATION_H
 #define TESSERACT_COLLISION_SERIALIZATION_H
 
-#include <tesseract_collision/core/fwd.h>
+#include <tesseract_collision/core/types.h>
+#include <tesseract_common/any_poly.h>
+#include <vector>
 
 namespace boost::serialization
 {
@@ -52,5 +54,9 @@ void load(Archive& ar, tesseract_collision::ContactResultMap& g, const unsigned 
 template <class Archive>
 void serialize(Archive& ar, tesseract_collision::ContactResultMap& g, const unsigned int version);  // NOLINT
 }  // namespace boost::serialization
+
+TESSERACT_ANY_EXPORT_KEY(tesseract_collision::ContactResult, TesseractCollisionContactResult)
+TESSERACT_ANY_EXPORT_KEY(tesseract_collision::ContactResultMap, TesseractCollisionContactResultMap)
+TESSERACT_ANY_EXPORT_KEY(std::vector<tesseract_collision::ContactResultMap>, TesseractCollisionContactResultMapVector)
 
 #endif  // TESSERACT_COLLISION_SERIALIZATION_H

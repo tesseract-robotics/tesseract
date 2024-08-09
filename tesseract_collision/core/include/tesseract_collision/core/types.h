@@ -133,6 +133,9 @@ struct ContactResult
 
   /** @brief reset to default values */
   void clear();
+
+  bool operator==(const ContactResult& rhs) const;
+  bool operator!=(const ContactResult& rhs) const;
 };
 
 using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
@@ -283,6 +286,9 @@ public:
   /** @brief access specified element with bounds checking */
   const ContactResultVector& at(const KeyType& key) const;
   ConstIteratorType find(const KeyType& key) const;
+
+  bool operator==(const ContactResultMap& rhs) const;
+  bool operator!=(const ContactResultMap& rhs) const;
 
 private:
   ContainerType data_;
