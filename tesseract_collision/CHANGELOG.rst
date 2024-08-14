@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add any poly support for collision types
+* Contributors: Levi Armstrong
+
 0.23.1 (2024-07-28)
 -------------------
 
