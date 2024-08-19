@@ -457,7 +457,7 @@ std::unique_ptr<Environment::Implementation> Environment::Implementation::clone(
     return cloned_env;
 
   cloned_env->initialized = initialized;
-  cloned_env->init_revision = revision;
+  cloned_env->init_revision = init_revision;
   cloned_env->revision = revision;
   cloned_env->commands = commands;
   cloned_env->scene_graph = scene_graph->clone();
@@ -2276,6 +2276,12 @@ int Environment::getRevision() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).revision;
+}
+
+int Environment::getInitRevision() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).init_revision;
 }
 
 std::vector<std::shared_ptr<const Command>> Environment::getCommandHistory() const
