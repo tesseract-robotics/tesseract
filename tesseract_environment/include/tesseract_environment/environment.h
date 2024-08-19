@@ -147,6 +147,12 @@ public:
   int getRevision() const;
 
   /**
+   * @brief Get the initialization revision number
+   * @return Initialization revision number
+   */
+  int getInitRevision() const;
+
+  /**
    * @brief Get Environment command history post initialization
    * @return List of commands
    */
