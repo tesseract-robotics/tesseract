@@ -2,6 +2,9 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.24.0 (2024-08-14)
 -------------------
 * Fix clang detection on Mac OS (`#1038 <https://github.com/tesseract-robotics/tesseract/issues/1038>`_)
