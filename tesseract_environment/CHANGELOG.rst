@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.24.1 (2024-08-19)
+-------------------
 * Expose environment init revision
 * Contributors: Levi Armstrong
 
