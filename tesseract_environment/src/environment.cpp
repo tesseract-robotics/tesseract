@@ -301,7 +301,8 @@ struct Environment::Implementation
                                                                   const std::vector<std::string>& joint_names) const;
 
   std::unique_ptr<tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
-                                                                          std::string ik_solver_name) const;
+                                                                          std::string ik_solver_name,
+                                                                          bool check_kinematics) const;
 
   Eigen::Isometry3d findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const;
 
@@ -806,7 +807,7 @@ Environment::Implementation::getJointGroup(const std::string& name, const std::v
 }
 
 std::unique_ptr<tesseract_kinematics::KinematicGroup>
-Environment::Implementation::getKinematicGroup(const std::string& group_name, std::string ik_solver_name) const
+Environment::Implementation::getKinematicGroup(const std::string& group_name, std::string ik_solver_name, bool check_kinematics) const
 {
   std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex);
   std::pair<std::string, std::string> key = std::make_pair(group_name, ik_solver_name);
@@ -839,7 +840,7 @@ Environment::Implementation::getKinematicGroup(const std::string& group_name, st
   kinematic_group_cache[key] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
 
 #ifndef NDEBUG
-  if (!tesseract_kinematics::checkKinematics(*kg))
+  if (check_kinematics && !tesseract_kinematics::checkKinematics(*kg))
   {
     CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that inverse kinematics solution for a pose do not "
                             "match forward kinematics solution. Did you change the URDF recently?");
@@ -2324,10 +2325,10 @@ Environment::getJointGroup(const std::string& name, const std::vector<std::strin
 }
 
 std::unique_ptr<tesseract_kinematics::KinematicGroup>
-Environment::getKinematicGroup(const std::string& group_name, const std::string& ik_solver_name) const
+Environment::getKinematicGroup(const std::string& group_name, const std::string& ik_solver_name, bool check_kinematics) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::as_const<Implementation>(*impl_).getKinematicGroup(group_name, ik_solver_name);
+  return std::as_const<Implementation>(*impl_).getKinematicGroup(group_name, ik_solver_name, check_kinematics);
 }
 
 // NOLINTNEXTLINE

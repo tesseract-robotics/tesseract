@@ -204,7 +204,8 @@ public:
    * @return A kinematics group
    */
   std::unique_ptr<tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
-                                                                          const std::string& ik_solver_name = "") const;
+                                                                          const std::string& ik_solver_name = "",
+                                                                          bool check_kinematics = true) const;
 
   /**
    * @brief Find tool center point provided in the manipulator info
