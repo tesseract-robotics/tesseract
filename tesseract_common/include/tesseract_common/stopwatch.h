@@ -1,6 +1,6 @@
 /**
- * @file timer.h
- * @brief Simple timer class using chrono
+ * @file stopwatch.h
+ * @brief Simple stopwatch class using chrono
  *
  * @author Levi Armstrong
  * @date February 2, 2021
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMON_TIMER_H
-#define TESSERACT_COMMON_TIMER_H
+#ifndef TESSERACT_COMMON_STOPWATCH_H
+#define TESSERACT_COMMON_STOPWATCH_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -33,10 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-/** @brief A simple timer class leveraging chrono high resolution clock */
-class Timer
+/** @brief A simple stopwatch class leveraging chrono high resolution clock */
+class Stopwatch
 {
-  using Clock = std::chrono::high_resolution_clock;
+  using Clock = std::chrono::steady_clock;
 
 public:
   /** @brief Start the timer */

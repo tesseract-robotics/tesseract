@@ -1,6 +1,6 @@
 /**
- * @file timer.cpp
- * @brief Simple timer class using chrono
+ * @file stopwatch.cpp
+ * @brief Simple stopwatch class using chrono
  *
  * @author Levi Armstrong
  * @date February 2, 2021
@@ -24,23 +24,23 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/timer.h>
+#include <tesseract_common/stopwatch.h>
 
 namespace tesseract_common
 {
-void Timer::start()
+void Stopwatch::start()
 {
   start_time_ = Clock::now();
   running_ = true;
 }
 
-void Timer::stop()
+void Stopwatch::stop()
 {
   end_time_ = Clock::now();
   running_ = false;
 }
 
-double Timer::elapsedMilliseconds() const
+double Stopwatch::elapsedMilliseconds() const
 {
   if (running_)
     return std::chrono::duration<double, std::milli>(Clock::now() - start_time_).count();
@@ -48,6 +48,6 @@ double Timer::elapsedMilliseconds() const
   return std::chrono::duration<double, std::milli>(end_time_ - start_time_).count();
 }
 
-double Timer::elapsedSeconds() const { return (elapsedMilliseconds() / 1000.0); }
+double Stopwatch::elapsedSeconds() const { return (elapsedMilliseconds() / 1000.0); }
 
 }  // namespace tesseract_common
