@@ -72,7 +72,7 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
   for (const tinyxml2::XMLElement* visual = xml_element->FirstChildElement("visual"); visual != nullptr;
        visual = visual->NextSiblingElement("visual"))
   {
-    std::vector<tesseract_scene_graph::Visual::Ptr> temp_visual;
+    tesseract_scene_graph::Visual::Ptr temp_visual;
     try
     {
       temp_visual = parseVisual(visual, locator, available_materials, version);
@@ -82,14 +82,14 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Link: Error parsing 'visual' element for link '" + link_name + "'!"));
     }
 
-    l->visual.insert(l->visual.end(), temp_visual.begin(), temp_visual.end());
+    l->visual.push_back(temp_visual);
   }
 
   // get collision if exists
   for (const tinyxml2::XMLElement* collision = xml_element->FirstChildElement("collision"); collision != nullptr;
        collision = collision->NextSiblingElement("collision"))
   {
-    std::vector<tesseract_scene_graph::Collision::Ptr> temp_collision;
+    tesseract_scene_graph::Collision::Ptr temp_collision;
     try
     {
       temp_collision = parseCollision(collision, locator, version);
@@ -100,7 +100,7 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
           std::runtime_error("Link: Error parsing 'collision' element for link '" + link_name + "'!"));
     }
 
-    l->collision.insert(l->collision.end(), temp_collision.begin(), temp_collision.end());
+    l->collision.push_back(temp_collision);
   }
 
   return l;

@@ -50,6 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/Gimpact/btTriangleShapeEx.h>
 #include <boost/thread/mutex.hpp>
 #include <memory>
+#include <stdexcept>
 #include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -399,6 +400,10 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConst
       shape->setMargin(BULLET_MARGIN);
       break;
     }
+    case tesseract_geometry::GeometryType::COMPOUND_MESH:
+    {
+      throw std::runtime_error("CompundMesh type should not be passed to this function!");
+    }
     // LCOV_EXCL_START
     default:
     {
@@ -445,7 +450,8 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
   m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter;
 
-  if (m_shapes.size() == 1 && m_shape_poses[0].matrix().isIdentity())
+  if (m_shapes.size() == 1 && m_shape_poses[0].matrix().isIdentity() &&
+      m_shapes[0]->getType() != tesseract_geometry::GeometryType::COMPOUND_MESH)
   {
     std::shared_ptr<btCollisionShape> shape = createShapePrimitive(m_shapes[0], this, 0);
     manage(shape);
@@ -461,14 +467,32 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                          // effect when negative
     setCollisionShape(compound.get());
 
+    int shape_id{ 0 };
     for (std::size_t j = 0; j < m_shapes.size(); ++j)
     {
-      std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(m_shapes[j], this, static_cast<int>(j));
-      if (subshape != nullptr)
+      if (m_shapes[j]->getType() == tesseract_geometry::GeometryType::COMPOUND_MESH)
       {
-        manage(subshape);
-        btTransform geomTrans = convertEigenToBt(m_shape_poses[j]);
-        compound->addChildShape(geomTrans, subshape.get());
+        const auto& meshes = std::static_pointer_cast<const tesseract_geometry::CompoundMesh>(m_shapes[j])->getMeshes();
+        for (const auto& mesh : meshes)
+        {
+          std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(mesh, this, shape_id++);
+          if (subshape != nullptr)
+          {
+            manage(subshape);
+            btTransform geomTrans = convertEigenToBt(m_shape_poses[j]);
+            compound->addChildShape(geomTrans, subshape.get());
+          }
+        }
+      }
+      else
+      {
+        std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(m_shapes[j], this, shape_id++);
+        if (subshape != nullptr)
+        {
+          manage(subshape);
+          btTransform geomTrans = convertEigenToBt(m_shape_poses[j]);
+          compound->addChildShape(geomTrans, subshape.get());
+        }
       }
     }
   }

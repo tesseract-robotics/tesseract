@@ -28,6 +28,7 @@
 
 #include <tesseract_geometry/impl/box.h>
 #include <tesseract_geometry/impl/capsule.h>
+#include <tesseract_geometry/impl/compound_mesh.h>
 #include <tesseract_geometry/impl/cone.h>
 #include <tesseract_geometry/impl/convex_mesh.h>
 #include <tesseract_geometry/impl/cylinder.h>

@@ -47,14 +47,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/sdf_mesh.h>
 #include <tesseract_urdf/sphere.h>
 
-std::vector<tesseract_geometry::Geometry::Ptr>
-tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
-                              const tesseract_common::ResourceLocator& locator,
-                              bool visual,
-                              int version)
+tesseract_geometry::Geometry::Ptr tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
+                                                                const tesseract_common::ResourceLocator& locator,
+                                                                bool visual,
+                                                                int version)
 {
-  std::vector<tesseract_geometry::Geometry::Ptr> geometries;
-
   const tinyxml2::XMLElement* geometry = xml_element->FirstChildElement();
   if (geometry == nullptr)
     std::throw_with_nested(std::runtime_error("Geometry: Error missing 'geometry' element!"));
@@ -76,9 +73,10 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'sphere'!"));
     }
 
-    geometries = { sphere };
+    return sphere;
   }
-  else if (geometry_type == "box")
+
+  if (geometry_type == "box")
   {
     tesseract_geometry::Box::Ptr box;
     try
@@ -90,9 +88,10 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'box'!"));
     }
 
-    geometries = { box };
+    return box;
   }
-  else if (geometry_type == "cylinder")
+
+  if (geometry_type == "cylinder")
   {
     tesseract_geometry::Cylinder::Ptr cylinder;
     try
@@ -104,9 +103,10 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'cylinder'!"));
     }
 
-    geometries = { cylinder };
+    return cylinder;
   }
-  else if (geometry_type == "cone")
+
+  if (geometry_type == "cone")
   {
     tesseract_geometry::Cone::Ptr cone;
     try
@@ -118,9 +118,10 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'cone'!"));
     }
 
-    geometries = { cone };
+    return cone;
   }
-  else if (geometry_type == "capsule")
+
+  if (geometry_type == "capsule")
   {
     tesseract_geometry::Capsule::Ptr capsule;
     try
@@ -132,9 +133,10 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'capsule'!"));
     }
 
-    geometries = { capsule };
+    return capsule;
   }
-  else if (geometry_type == "octomap")
+
+  if (geometry_type == "octomap")
   {
     tesseract_geometry::Octree::Ptr octree;
     try
@@ -146,9 +148,10 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'octomap'!"));
     }
 
-    geometries = { octree };
+    return octree;
   }
-  else if (geometry_type == "mesh")
+
+  if (geometry_type == "mesh")
   {
     std::vector<tesseract_geometry::Mesh::Ptr> meshes;
     try
@@ -160,17 +163,31 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'mesh'!"));
     }
 
+    if (meshes.size() > 1)
+    {
+      std::vector<std::shared_ptr<tesseract_geometry::PolygonMesh>> poly_meshes;
+      poly_meshes.reserve(meshes.size());
+
+      if (version < 2 && !visual)
+      {
+        for (const auto& mesh : meshes)
+          poly_meshes.push_back(tesseract_collision::makeConvexMesh(*mesh));
+      }
+      else
+      {
+        for (const auto& mesh : meshes)
+          poly_meshes.push_back(mesh);
+      }
+      return std::make_shared<tesseract_geometry::CompoundMesh>(poly_meshes);
+    }
+
     if (version < 2 && !visual)
-    {
-      for (const auto& mesh : meshes)
-        geometries.push_back(tesseract_collision::makeConvexMesh(*mesh));
-    }
-    else
-    {
-      geometries = std::vector<tesseract_geometry::Geometry::Ptr>(meshes.begin(), meshes.end());
-    }
+      return tesseract_collision::makeConvexMesh(*meshes.front());
+
+    return meshes.front();
   }
-  else if (geometry_type == "convex_mesh")
+
+  if (geometry_type == "convex_mesh")
   {
     std::vector<tesseract_geometry::ConvexMesh::Ptr> meshes;
     try
@@ -182,9 +199,13 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'convex_mesh'!"));
     }
 
-    geometries = std::vector<tesseract_geometry::Geometry::Ptr>(meshes.begin(), meshes.end());
+    if (meshes.size() > 1)
+      return std::make_shared<tesseract_geometry::CompoundMesh>(meshes);
+
+    return meshes.front();
   }
-  else if (geometry_type == "sdf_mesh")
+
+  if (geometry_type == "sdf_mesh")
   {
     std::vector<tesseract_geometry::SDFMesh::Ptr> meshes;
     try
@@ -196,14 +217,13 @@ tesseract_urdf::parseGeometry(const tinyxml2::XMLElement* xml_element,
       std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'sdf_mesh'!"));
     }
 
-    geometries = std::vector<tesseract_geometry::Geometry::Ptr>(meshes.begin(), meshes.end());
-  }
-  else
-  {
-    std::throw_with_nested(std::runtime_error("Geometry: Invalid geometry type '" + geometry_type + "'!"));
+    if (meshes.size() > 1)
+      return std::make_shared<tesseract_geometry::CompoundMesh>(meshes);
+
+    return meshes.front();
   }
 
-  return geometries;
+  std::throw_with_nested(std::runtime_error("Geometry: Invalid geometry type '" + geometry_type + "'!"));
 }
 
 tinyxml2::XMLElement* tesseract_urdf::writeGeometry(const std::shared_ptr<const tesseract_geometry::Geometry>& geometry,

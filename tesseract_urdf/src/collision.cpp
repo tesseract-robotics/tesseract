@@ -40,13 +40,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/geometry.h>
 #include <tesseract_urdf/origin.h>
 
-std::vector<tesseract_scene_graph::Collision::Ptr>
-tesseract_urdf::parseCollision(const tinyxml2::XMLElement* xml_element,
-                               const tesseract_common::ResourceLocator& locator,
-                               int version)
+tesseract_scene_graph::Collision::Ptr tesseract_urdf::parseCollision(const tinyxml2::XMLElement* xml_element,
+                                                                     const tesseract_common::ResourceLocator& locator,
+                                                                     int version)
 {
-  std::vector<tesseract_scene_graph::Collision::Ptr> collisions;
-
   // get name
   std::string collision_name = tesseract_common::StringAttribute(xml_element, "name", "");
 
@@ -70,43 +67,22 @@ tesseract_urdf::parseCollision(const tinyxml2::XMLElement* xml_element,
   if (geometry == nullptr)
     std::throw_with_nested(std::runtime_error("Collision: Error missing 'geometry' element!"));
 
-  std::vector<tesseract_geometry::Geometry::Ptr> geometries;
+  tesseract_geometry::Geometry::Ptr geom;
   try
   {
-    geometries = parseGeometry(geometry, locator, false, version);
+    geom = parseGeometry(geometry, locator, false, version);
   }
   catch (...)
   {
     std::throw_with_nested(std::runtime_error("Collision: Error parsing 'geometry' element!"));
   }
 
-  if (geometries.size() == 1)
-  {
-    auto collision = std::make_shared<tesseract_scene_graph::Collision>();
-    collision->name = collision_name;
-    collision->origin = collision_origin;
-    collision->geometry = geometries[0];
-    collisions.push_back(collision);
-  }
-  else
-  {
-    int i = 0;
-    for (const auto& g : geometries)
-    {
-      auto collision = std::make_shared<tesseract_scene_graph::Collision>();
+  auto collision = std::make_shared<tesseract_scene_graph::Collision>();
+  collision->name = collision_name;
+  collision->origin = collision_origin;
+  collision->geometry = geom;
 
-      if (collision_name.empty())
-        collision->name = collision_name;
-      else
-        collision->name = collision_name + "_" + std::to_string(i);
-
-      collision->origin = collision_origin;
-      collision->geometry = g;
-      collisions.push_back(collision);
-    }
-  }
-
-  return collisions;
+  return collision;
 }
 
 tinyxml2::XMLElement*
