@@ -49,9 +49,9 @@ namespace tesseract_urdf
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
  * @param version The version number
- * @return A vector tesseract_scene_graph Visual objects
+ * @return A Visual object
  */
-std::vector<std::shared_ptr<tesseract_scene_graph::Visual>>
+std::shared_ptr<tesseract_scene_graph::Visual>
 parseVisual(const tinyxml2::XMLElement* xml_element,
             const tesseract_common::ResourceLocator& locator,
             std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,

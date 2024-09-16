@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/box.h>
+#include <tesseract_geometry/impl/compound_mesh.h>
 #include <tesseract_urdf/box.h>
 #include <tesseract_urdf/visual.h>
 #include <tesseract_support/tesseract_support_resource_locator.h>
@@ -24,13 +25,12 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                              <color rgba="0 1.0 1.0 1.0"/>
                            </material>
                          </visual>)";
-    std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    EXPECT_TRUE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+    tesseract_scene_graph::Visual::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Visual::Ptr>(
         elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
-    EXPECT_TRUE(elem.size() == 1);
-    EXPECT_TRUE(elem[0]->geometry != nullptr);
-    EXPECT_TRUE(elem[0]->material != nullptr);
-    EXPECT_FALSE(elem[0]->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
+    EXPECT_TRUE(elem->geometry != nullptr);
+    EXPECT_TRUE(elem->material != nullptr);
+    EXPECT_FALSE(elem->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
   {
@@ -43,13 +43,12 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                              <color rgba="0 1.0 1.0 1.0"/>
                            </material>
                          </visual>)";
-    std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    EXPECT_TRUE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+    tesseract_scene_graph::Visual::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Visual::Ptr>(
         elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
-    EXPECT_TRUE(elem.size() == 1);
-    EXPECT_TRUE(elem[0]->geometry != nullptr);
-    EXPECT_TRUE(elem[0]->material != nullptr);
-    EXPECT_TRUE(elem[0]->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
+    EXPECT_TRUE(elem->geometry != nullptr);
+    EXPECT_TRUE(elem->material != nullptr);
+    EXPECT_TRUE(elem->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
   {
@@ -59,13 +58,12 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                              <box size="1 2 3" />
                            </geometry>
                          </visual>)";
-    std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    EXPECT_TRUE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+    tesseract_scene_graph::Visual::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Visual::Ptr>(
         elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
-    EXPECT_TRUE(elem.size() == 1);
-    EXPECT_TRUE(elem[0]->geometry != nullptr);
-    EXPECT_TRUE(elem[0]->material != nullptr);
-    EXPECT_TRUE(elem[0]->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
+    EXPECT_TRUE(elem->geometry != nullptr);
+    EXPECT_TRUE(elem->material != nullptr);
+    EXPECT_TRUE(elem->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
   {
@@ -75,8 +73,8 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                              <color rgba="0 1.0 1.0 1.0"/>
                            </material>
                          </visual>)";
-    std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    EXPECT_FALSE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+    tesseract_scene_graph::Visual::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Visual::Ptr>(
         elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
   }
 
@@ -87,8 +85,8 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
                              <box />
                            </geometry>
                          </visual>)";
-    std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    EXPECT_FALSE(runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+    tesseract_scene_graph::Visual::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Visual::Ptr>(
         elem, &tesseract_urdf::parseVisual, str, "visual", resource_locator, empty_available_materials, 2));
   }
 }

@@ -50,6 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fcl/geometry/shape/capsule-inl.h>
 #include <fcl/geometry/octree/octree-inl.h>
 #include <memory>
+#include <stdexcept>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/fcl/fcl_utils.h>
@@ -189,6 +190,10 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
     case tesseract_geometry::GeometryType::OCTREE:
     {
       return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom));
+    }
+    case tesseract_geometry::GeometryType::COMPOUND_MESH:
+    {
+      throw std::runtime_error("CompundMesh type should not be passed to this function!");
     }
     default:
     {
@@ -349,16 +354,37 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   collision_objects_raw_.reserve(shapes_.size());
   for (std::size_t i = 0; i < shapes_.size(); ++i)  // NOLINT
   {
-    CollisionGeometryPtr subshape = createShapePrimitive(shapes_[i]);
-    if (subshape != nullptr)
+    if (shapes_[i]->getType() == tesseract_geometry::GeometryType::COMPOUND_MESH)
     {
-      collision_geometries_.push_back(subshape);
-      auto co = std::make_shared<FCLCollisionObjectWrapper>(subshape);
-      co->setUserData(this);
-      co->setTransform(shape_poses_[i]);
-      co->updateAABB();
-      collision_objects_.push_back(co);
-      collision_objects_raw_.push_back(co.get());
+      const auto& meshes = std::static_pointer_cast<const tesseract_geometry::CompoundMesh>(shapes_[i])->getMeshes();
+      for (const auto& mesh : meshes)
+      {
+        CollisionGeometryPtr subshape = createShapePrimitive(mesh);
+        if (subshape != nullptr)
+        {
+          collision_geometries_.push_back(subshape);
+          auto co = std::make_shared<FCLCollisionObjectWrapper>(subshape);
+          co->setUserData(this);
+          co->setTransform(shape_poses_[i]);
+          co->updateAABB();
+          collision_objects_.push_back(co);
+          collision_objects_raw_.push_back(co.get());
+        }
+      }
+    }
+    else
+    {
+      CollisionGeometryPtr subshape = createShapePrimitive(shapes_[i]);
+      if (subshape != nullptr)
+      {
+        collision_geometries_.push_back(subshape);
+        auto co = std::make_shared<FCLCollisionObjectWrapper>(subshape);
+        co->setUserData(this);
+        co->setTransform(shape_poses_[i]);
+        co->updateAABB();
+        collision_objects_.push_back(co);
+        collision_objects_raw_.push_back(co.get());
+      }
     }
   }
 }

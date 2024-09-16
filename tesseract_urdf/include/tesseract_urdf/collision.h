@@ -48,10 +48,11 @@ namespace tesseract_urdf
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
  * @param version The version number
- * @return A vector tesseract_scene_graph Collision objects
+ * @return A Collision object
  */
-std::vector<std::shared_ptr<tesseract_scene_graph::Collision>>
-parseCollision(const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, int version);
+std::shared_ptr<tesseract_scene_graph::Collision> parseCollision(const tinyxml2::XMLElement* xml_element,
+                                                                 const tesseract_common::ResourceLocator& locator,
+                                                                 int version);
 
 /**
  * @brief writeCollision Write collision object to URDF XML

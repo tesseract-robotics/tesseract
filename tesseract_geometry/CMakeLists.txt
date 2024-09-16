@@ -67,6 +67,7 @@ add_library(
   src/utils.cpp
   src/geometries/box.cpp
   src/geometries/capsule.cpp
+  src/geometries/compound_mesh.cpp
   src/geometries/cone.cpp
   src/geometries/convex_mesh.cpp
   src/geometries/cylinder.cpp

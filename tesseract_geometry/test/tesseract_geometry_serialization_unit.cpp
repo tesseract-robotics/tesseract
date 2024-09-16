@@ -71,6 +71,22 @@ TEST(TesseractGeometrySerializeUnit, ConvexMesh)  // NOLINT
   tesseract_common::testSerializationDerivedClass<PolygonMesh, ConvexMesh>(object.front(), "ConvexMesh");
 }
 
+TEST(TesseractGeometrySerializeUnit, CompoundConvexMesh)  // NOLINT
+{
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
+  tesseract_common::TesseractSupportResourceLocator locator;
+  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>(
+      locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
+  std::vector<tesseract_geometry::PolygonMesh::Ptr> meshes;
+  meshes.push_back(object.front());
+  meshes.push_back(object.front());
+  meshes.push_back(object.front());
+
+  auto compound_object = std::make_shared<CompoundMesh>(meshes);
+  tesseract_common::testSerialization<CompoundMesh>(*compound_object, "CompundConvexMesh");
+  tesseract_common::testSerializationDerivedClass<Geometry, CompoundMesh>(compound_object, "CompundConvexMesh");
+}
+
 TEST(TesseractGeometrySerializeUnit, Cylinder)  // NOLINT
 {
   auto object = std::make_shared<Cylinder>(3.3, 4.4);
@@ -87,6 +103,22 @@ TEST(TesseractGeometrySerializeUnit, Mesh)  // NOLINT
   tesseract_common::testSerialization<Mesh>(*object.front(), "Mesh");
   tesseract_common::testSerializationDerivedClass<Geometry, Mesh>(object.front(), "Mesh");
   tesseract_common::testSerializationDerivedClass<PolygonMesh, Mesh>(object.front(), "Mesh");
+}
+
+TEST(TesseractGeometrySerializeUnit, CompoundMesh)  // NOLINT
+{
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
+  tesseract_common::TesseractSupportResourceLocator locator;
+  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
+      locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
+  std::vector<tesseract_geometry::PolygonMesh::Ptr> meshes;
+  meshes.push_back(object.front());
+  meshes.push_back(object.front());
+  meshes.push_back(object.front());
+
+  auto compound_object = std::make_shared<CompoundMesh>(meshes);
+  tesseract_common::testSerialization<CompoundMesh>(*compound_object, "CompoundMesh");
+  tesseract_common::testSerializationDerivedClass<Geometry, CompoundMesh>(compound_object, "CompoundMesh");
 }
 
 TEST(TesseractGeometrySerializeUnit, Octree)  // NOLINT

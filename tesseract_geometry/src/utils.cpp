@@ -137,6 +137,12 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
       if (s1.getFaceCount() != s2.getFaceCount())
         return false;
 
+      if (s1.getFaces() != s2.getFaces())
+        return false;
+
+      if (s1.getVertices() != s2.getVertices())
+        return false;
+
       break;
     }
     case GeometryType::CONVEX_MESH:
@@ -150,6 +156,12 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
       if (s1.getFaceCount() != s2.getFaceCount())
         return false;
 
+      if (s1.getFaces() != s2.getFaces())
+        return false;
+
+      if (s1.getVertices() != s2.getVertices())
+        return false;
+
       break;
     }
     case GeometryType::SDF_MESH:
@@ -161,6 +173,12 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
         return false;
 
       if (s1.getFaceCount() != s2.getFaceCount())
+        return false;
+
+      if (s1.getFaces() != s2.getFaces())
+        return false;
+
+      if (s1.getVertices() != s2.getVertices())
         return false;
 
       break;
@@ -200,6 +218,28 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
 
       if (s1.getFaceCount() != s2.getFaceCount())
         return false;
+
+      if (s1.getFaces() != s2.getFaces())
+        return false;
+
+      if (s1.getVertices() != s2.getVertices())
+        return false;
+
+      break;
+    }
+    case GeometryType::COMPOUND_MESH:
+    {
+      const auto& s1 = static_cast<const CompoundMesh&>(geom1);
+      const auto& s2 = static_cast<const CompoundMesh&>(geom2);
+
+      if (s1.getMeshes().size() != s2.getMeshes().size())
+        return false;
+
+      for (std::size_t i = 0; i < s1.getMeshes().size(); ++i)
+      {
+        if (!isIdentical(*s1.getMeshes()[i], *s2.getMeshes()[i]))
+          return false;
+      }
 
       break;
     }

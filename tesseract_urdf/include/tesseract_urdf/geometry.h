@@ -51,11 +51,10 @@ namespace tesseract_urdf
  * @param version The version number
  * @return A Tesseract Geometry
  */
-std::vector<std::shared_ptr<tesseract_geometry::Geometry>>
-parseGeometry(const tinyxml2::XMLElement* xml_element,
-              const tesseract_common::ResourceLocator& locator,
-              bool visual,
-              int version);
+std::shared_ptr<tesseract_geometry::Geometry> parseGeometry(const tinyxml2::XMLElement* xml_element,
+                                                            const tesseract_common::ResourceLocator& locator,
+                                                            bool visual,
+                                                            int version);
 
 /**
  * @brief writeGeometry Write geometry to URDF XML
