@@ -17,6 +17,8 @@ colcon build --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
    -DSETUPTOOLS_DEB_LAYOUT=OFF \
    -DTESSERACT_ENABLE_TESTING=ON
 
+source "$PREFIX/opt/tesseract_robotics/setup.sh"
+
 colcon test --event-handlers console_direct+ --return-code-on-test-failure \
    --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp tesseract_common \
    --merge-install --install-base="$PREFIX/opt/tesseract_robotics" 
