@@ -2,8 +2,8 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.25.0 (2024-09-28)
+-------------------
 * Add geometry type CompoundMesh
 * Contributors: Levi Armstrong
 

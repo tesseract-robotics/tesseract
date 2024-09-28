@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.25.0 (2024-09-28)
+-------------------
 * Only run kinematic check when testing is enabled and debug is enabled
 * Contributors: Levi Armstrong
 

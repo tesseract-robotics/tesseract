@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.25.0 (2024-09-28)
+-------------------
 * Add missing package libraries cmake variable
 * Add timer class with callback
 * Rename Timer to Stopwatch
