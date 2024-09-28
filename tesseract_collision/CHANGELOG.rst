@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add geometry type CompoundMesh
+* Contributors: Levi Armstrong
+
 0.24.1 (2024-08-19)
 -------------------
 
