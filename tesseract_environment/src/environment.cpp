@@ -838,7 +838,7 @@ Environment::Implementation::getKinematicGroup(const std::string& group_name, st
 
   kinematic_group_cache[key] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && TESSERACT_ENABLE_TESTING
   if (!tesseract_kinematics::checkKinematics(*kg))
   {
     CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that inverse kinematics solution for a pose do not "
