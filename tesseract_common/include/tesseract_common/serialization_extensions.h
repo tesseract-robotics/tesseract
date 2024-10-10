@@ -47,8 +47,9 @@ struct extension
     using extension_type = typename U::extenstion;
   };
 
-  using extension_type = typename boost::mpl::
-      eval_if<has_member_extension_type<T>, traits_class_extension<T>, boost::mpl::string<'t', 'r', 's', 'x'>>::type;
+  using extension_type = typename boost::mpl::eval_if<has_member_extension_type<T>,
+                                                      traits_class_extension<T>,
+                                                      boost::mpl::string<'.', 't', 'r', 's', 'x'>>::type;
 
   static constexpr const char* value = boost::mpl::c_str<extension::extension_type>::value;
 };
@@ -65,8 +66,9 @@ struct extension
     using extension_type = typename U::extenstion;
   };
 
-  using extension_type = typename boost::mpl::
-      eval_if<has_member_extension_type<T>, traits_class_extension<T>, boost::mpl::string<'t', 'r', 's', 'b'>>::type;
+  using extension_type = typename boost::mpl::eval_if<has_member_extension_type<T>,
+                                                      traits_class_extension<T>,
+                                                      boost::mpl::string<'.', 't', 'r', 's', 'b'>>::type;
 
   static constexpr const char* value = boost::mpl::c_str<extension::extension_type>::value;
 };
@@ -75,6 +77,7 @@ struct extension
 
 /**
  * @brief A macro for defining serialization extension for classes
+ * @details The extension should include the '.', for example .yaml
  * @param T the class to define extensions for
  * @param X the xml serialziation extension for the provided class
  * @param B the binary serialzation extension for the provided class
@@ -88,6 +91,7 @@ struct extension
   struct extension<T>                                                                                                  \
   {                                                                                                                    \
     static constexpr const char* value = X;                                                                            \
+    static_assert(value[0] == '.', "XML extension value must start with a '.'");                                       \
   };                                                                                                                   \
   }                                                                                                                    \
   namespace serialization::binary                                                                                      \
@@ -96,6 +100,7 @@ struct extension
   struct extension<T>                                                                                                  \
   {                                                                                                                    \
     static constexpr const char* value = B;                                                                            \
+    static_assert(value[0] == '.', "Binary extension value must start with a '.'");                                    \
   };                                                                                                                   \
   }                                                                                                                    \
   }

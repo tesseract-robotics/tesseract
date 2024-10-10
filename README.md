@@ -140,8 +140,10 @@ NOTE: Must be a clean build when generating a code coverage report. Also must bu
 This package leverages boost serialization. When adding new classes which may be inherited from and then serialized as the base type it is imported to add the following macros for the base type and all derived types.
 
 - Header
-  - `BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::JointLimits) // Only if abstract`
-  - `BOOST_CLASS_EXPORT_KEY(tesseract_common::JointLimits)`
+  - Abstract Class
+    - `BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::JointLimits)`
+  - Non-Abstract Class
+    - `BOOST_CLASS_EXPORT_KEY(tesseract_common::JointLimits)`
 - Cpp
   - `BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointLimits)`
 

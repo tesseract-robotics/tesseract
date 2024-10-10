@@ -113,7 +113,7 @@ struct Serialization
   {
     fs::path fp(file_path);
     if (!fp.has_extension())
-      fp = fs::path(file_path + "." + serialization::xml::extension<SerializableType>::value);
+      fp = fs::path(file_path + serialization::xml::extension<SerializableType>::value);
 
     std::ofstream os(fp.string());
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
@@ -138,7 +138,7 @@ struct Serialization
   {
     fs::path fp(file_path);
     if (!fp.has_extension())
-      fp = fs::path(file_path + "." + serialization::binary::extension<SerializableType>::value);
+      fp = fs::path(file_path + serialization::binary::extension<SerializableType>::value);
 
     std::ofstream os(fp.string(), std::ios_base::binary);
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
@@ -220,6 +220,16 @@ struct Serialization
     }
 
     return archive_type;
+  }
+
+  template <typename SerializableType>
+  static SerializableType fromArchiveFile(const std::string& file_path)
+  {
+    fs::path fp(file_path);
+    if (fp.extension() == serialization::binary::extension<SerializableType>::value)
+      return fromArchiveFileBinary<SerializableType>(file_path);
+
+    return fromArchiveFileXML<SerializableType>(file_path);
   }
 
   template <typename SerializableType>
