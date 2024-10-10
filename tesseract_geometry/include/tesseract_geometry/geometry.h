@@ -97,6 +97,5 @@ using GeometrysConst = std::vector<Geometry::ConstPtr>;
 }  // namespace tesseract_geometry
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_geometry::Geometry)
-BOOST_CLASS_EXPORT_KEY(tesseract_geometry::Geometry)
 
 #endif  // TESSERACT_GEOMETRY_GEOMETRY_H

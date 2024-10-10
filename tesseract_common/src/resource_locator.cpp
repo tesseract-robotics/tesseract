@@ -334,8 +334,6 @@ void BytesResource::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ResourceLocator)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::Resource)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::GeneralResourceLocator)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::SimpleLocatedResource)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::BytesResource)
