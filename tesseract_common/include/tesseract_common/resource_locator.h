@@ -241,8 +241,8 @@ private:
 
 }  // namespace tesseract_common
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::ResourceLocator)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::ResourceLocator)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::Resource)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::Resource)
+
 BOOST_CLASS_EXPORT_KEY(tesseract_common::GeneralResourceLocator)
 BOOST_CLASS_EXPORT_KEY(tesseract_common::SimpleLocatedResource)
 BOOST_CLASS_EXPORT_KEY(tesseract_common::BytesResource)
