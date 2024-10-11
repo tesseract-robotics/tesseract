@@ -69,5 +69,5 @@ void CalibrationInfo::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CalibrationInfo)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CalibrationInfo)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CalibrationInfo)

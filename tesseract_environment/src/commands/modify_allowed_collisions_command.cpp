@@ -70,5 +70,5 @@ void ModifyAllowedCollisionsCommand::serialize(Archive& ar, const unsigned int /
 }  // namespace tesseract_environment
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ModifyAllowedCollisionsCommand)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::ModifyAllowedCollisionsCommand)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ModifyAllowedCollisionsCommand)

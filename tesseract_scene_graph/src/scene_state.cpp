@@ -79,5 +79,5 @@ void SceneState::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_scene_graph
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::SceneState)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::SceneState)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::SceneState)

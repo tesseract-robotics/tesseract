@@ -97,5 +97,5 @@ template void enforceLimits<double>(Eigen::Ref<Eigen::Matrix<double, Eigen::Dyna
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::KinematicLimits)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::KinematicLimits)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::KinematicLimits)

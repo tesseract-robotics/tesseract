@@ -75,5 +75,5 @@ void ChangeLinkCollisionEnabledCommand::serialize(Archive& ar, const unsigned in
 }  // namespace tesseract_environment
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ChangeLinkCollisionEnabledCommand)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::ChangeLinkCollisionEnabledCommand)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ChangeLinkCollisionEnabledCommand)

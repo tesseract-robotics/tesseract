@@ -56,14 +56,14 @@ SceneGraph::UPtr getSceneGraph()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  tesseract_common::TesseractSupportResourceLocator locator;
+  tesseract_common::GeneralResourceLocator locator;
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
 SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-  tesseract_common::TesseractSupportResourceLocator locator;
+  tesseract_common::GeneralResourceLocator locator;
 
   auto srdf = std::make_shared<SRDFModel>();
   srdf->initFile(scene_graph, path, locator);
@@ -76,7 +76,7 @@ Environment::Ptr getEnvironment()
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   auto srdf = getSRDFModel(*scene_graph);
   env->init(*scene_graph, srdf);
-  env->setResourceLocator(std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
+  env->setResourceLocator(std::make_shared<tesseract_common::GeneralResourceLocator>());
   return env;
 }
 
@@ -84,6 +84,13 @@ TEST(EnvironmentSerializeUnit, Environment)  // NOLINT
 {
   Environment::Ptr env = getEnvironment();
   testSerializationPtr<Environment>(env, "Environment");
+}
+
+TEST(EnvironmentSerializeUnit, EnvironmentAnyPoly)  // NOLINT
+{
+  Environment::Ptr env = getEnvironment();
+  tesseract_common::AnyPoly env_any(env);
+  testSerializationAnyPolyStoredSharedPtr<Environment::Ptr>(env_any, "EnvironmentAnyPoly");
 }
 
 TEST(EnvironmentCommandsSerializeUnit, ModifyAllowedCollisionsCommand)  // NOLINT

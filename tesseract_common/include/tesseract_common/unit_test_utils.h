@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/serialization.h>
+#include <tesseract_common/any_poly.h>
 #include <tesseract_common/utils.h>
 
 namespace tesseract_common
@@ -194,6 +195,64 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
 
     auto object_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(object);
     EXPECT_FALSE(*object_derived != *nobject_derived);  // Using != because it call == for code coverage
+  }
+}
+
+/**
+ * @brief Tests Boost serialization for a serializable any poly type
+ * @details Serializes the type to XML file, binary file, and XML string using the base type. It then deserializes it,
+ * casts it to the derived type, and calls the equality operator on the results
+ * @param object Base class pointer to the object to be serialized
+ * @param typename_string Prefix used for filepaths. Serialized files are put in /tmp/<typename_string>.<extension>
+ */
+template <typename SerializableTypeStored>
+void testSerializationAnyPolyStoredSharedPtr(const tesseract_common::AnyPoly& object,
+                                             const std::string& typename_string)
+{
+  {  // Archive program to XML file
+    std::string file_path = tesseract_common::getTempPath() + typename_string + ".xml";
+    EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileXML<tesseract_common::AnyPoly>(object, file_path));
+
+    auto nobject = tesseract_common::Serialization::fromArchiveFileXML<tesseract_common::AnyPoly>(file_path);
+    const auto& nobject_stored = nobject.as<SerializableTypeStored>();
+
+    auto object_stored = object.as<SerializableTypeStored>();
+    EXPECT_FALSE(*object_stored != *nobject_stored);  // Using != because it call == for code coverage
+  }
+
+  {  // Archive program to binary file
+    std::string file_path = tesseract_common::getTempPath() + typename_string + ".binary";
+    EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileBinary<tesseract_common::AnyPoly>(object, file_path));
+
+    auto nobject = tesseract_common::Serialization::fromArchiveFileBinary<tesseract_common::AnyPoly>(file_path);
+    auto nobject_stored = nobject.as<SerializableTypeStored>();
+
+    auto object_stored = object.as<SerializableTypeStored>();
+    EXPECT_FALSE(*object_stored != *nobject_stored);  // Using != because it call == for code coverage
+  }
+
+  {  // Archive program to string
+    std::string object_string =
+        tesseract_common::Serialization::toArchiveStringXML<tesseract_common::AnyPoly>(object, typename_string);
+    EXPECT_FALSE(object_string.empty());
+
+    auto nobject = tesseract_common::Serialization::fromArchiveStringXML<tesseract_common::AnyPoly>(object_string);
+    auto nobject_stored = nobject.as<SerializableTypeStored>();
+
+    auto object_stored = object.as<SerializableTypeStored>();
+    EXPECT_FALSE(*object_stored != *nobject_stored);  // Using != because it call == for code coverage
+  }
+
+  {  // Archive program to binary data
+    std::vector<std::uint8_t> object_data =
+        tesseract_common::Serialization::toArchiveBinaryData<tesseract_common::AnyPoly>(object, typename_string);
+    EXPECT_FALSE(object_data.empty());
+
+    auto nobject = tesseract_common::Serialization::fromArchiveBinaryData<tesseract_common::AnyPoly>(object_data);
+    auto nobject_stored = nobject.as<SerializableTypeStored>();
+
+    auto object_stored = object.as<SerializableTypeStored>();
+    EXPECT_FALSE(*object_stored != *nobject_stored);  // Using != because it call == for code coverage
   }
 }
 }  // namespace tesseract_common
