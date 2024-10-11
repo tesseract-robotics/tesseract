@@ -175,8 +175,9 @@ bool Resource::operator==(const Resource& /*rhs*/) const { return true; }
 bool Resource::operator!=(const Resource& /*rhs*/) const { return false; }
 
 template <class Archive>
-void Resource::serialize(Archive& /*ar*/, const unsigned int /*version*/)
+void Resource::serialize(Archive& ar, const unsigned int /*version*/)
 {
+  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ResourceLocator);
 }
 
 SimpleLocatedResource::SimpleLocatedResource(std::string url, std::string filename, ResourceLocator::ConstPtr parent)
@@ -334,12 +335,12 @@ void BytesResource::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::GeneralResourceLocator)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::SimpleLocatedResource)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::BytesResource)
-
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ResourceLocator)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::Resource)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::GeneralResourceLocator)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::SimpleLocatedResource)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::BytesResource)
+
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::GeneralResourceLocator)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::SimpleLocatedResource)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::BytesResource)

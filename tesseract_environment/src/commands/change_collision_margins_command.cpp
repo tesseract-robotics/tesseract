@@ -92,5 +92,5 @@ void ChangeCollisionMarginsCommand::serialize(Archive& ar, const unsigned int /*
 }  // namespace tesseract_environment
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ChangeCollisionMarginsCommand)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::ChangeCollisionMarginsCommand)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ChangeCollisionMarginsCommand)

@@ -249,14 +249,14 @@ void Link::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_scene_graph
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Material)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Inertial)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Visual)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Collision)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Link)
-
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Material)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Inertial)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Visual)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Collision)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Link)
+
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Material)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Inertial)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Visual)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Collision)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Link)

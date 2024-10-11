@@ -108,6 +108,6 @@ void ManipulatorInfo::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ManipulatorInfo)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ManipulatorInfo)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ManipulatorInfo)
 TESSERACT_ANY_EXPORT_IMPLEMENT(TesseractCommonManipulatorInfo)
