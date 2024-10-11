@@ -45,36 +45,33 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_srdf/srdf_model.h>
 
-#include <tesseract_support/tesseract_support_resource_locator.h>
-
 using namespace tesseract_common;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_srdf;
 
-SceneGraph::UPtr getSceneGraph()
+SceneGraph::Ptr getSceneGraph(const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
-
-  tesseract_common::GeneralResourceLocator locator;
-  return tesseract_urdf::parseURDFFile(path, locator);
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf";
+  return tesseract_urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
 }
 
-SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-  tesseract_common::GeneralResourceLocator locator;
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf";
 
   auto srdf = std::make_shared<SRDFModel>();
-  srdf->initFile(scene_graph, path, locator);
+  srdf->initFile(scene_graph, locator.locateResource(path)->getFilePath(), locator);
 
   return srdf;
 }
+
 Environment::Ptr getEnvironment()
 {
+  tesseract_common::GeneralResourceLocator locator;
   auto env = std::make_shared<Environment>();
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
-  auto srdf = getSRDFModel(*scene_graph);
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph(locator);
+  auto srdf = getSRDFModel(*scene_graph, locator);
   env->init(*scene_graph, srdf);
   env->setResourceLocator(std::make_shared<tesseract_common::GeneralResourceLocator>());
   return env;
@@ -165,13 +162,14 @@ TEST(EnvironmentCommandsSerializeUnit, AddTrajectoryLinkCommand)  // NOLINT
 
 TEST(EnvironmentCommandsSerializeUnit, AddSceneGraphCommand)  // NOLINT
 {
+  tesseract_common::GeneralResourceLocator locator;
   tesseract_scene_graph::Joint joint;
   Joint joint_1("joint_1");
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_1.parent_link_name = "world";
   joint_1.child_link_name = "joint_a1";
   joint_1.type = JointType::FIXED;
-  auto object = std::make_shared<AddSceneGraphCommand>(*getSceneGraph(), joint, "prefix");
+  auto object = std::make_shared<AddSceneGraphCommand>(*getSceneGraph(locator), joint, "prefix");
   testSerialization<AddSceneGraphCommand>(*object, "AddSceneGraphCommand");
   testSerializationDerivedClass<Command, AddSceneGraphCommand>(object, "AddSceneGraphCommand");
 }

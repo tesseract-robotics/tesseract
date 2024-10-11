@@ -16,15 +16,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
-#include <tesseract_support/tesseract_support_resource_locator.h>
 
 namespace tesseract_scene_graph::test_suite
 {
-inline SceneGraph::UPtr getSceneGraph()
+inline SceneGraph::UPtr getSceneGraph(const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
-
-  tesseract_common::TesseractSupportResourceLocator locator;
+  std::string path = locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath();
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
@@ -360,7 +357,8 @@ template <typename S>
 inline void runJacobianTest()
 {
   // Get the scene graph
-  auto scene_graph = getSceneGraph();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraph(locator);
   auto state_solver = S(*scene_graph);
   StateSolver::UPtr state_solver_clone = state_solver.clone();
 
@@ -740,7 +738,8 @@ template <typename S>
 void runAddandRemoveLinkTest()
 {
   // Get the scene graph
-  auto scene_graph = getSceneGraph();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraph(locator);
   auto state_solver = S(*scene_graph);
 
   auto visual = std::make_shared<Visual>();
@@ -1010,7 +1009,8 @@ template <typename S>
 void runAddSceneGraphTest()
 {
   // Get the scene graph
-  auto scene_graph = getSceneGraph();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraph(locator);
   auto state_solver = S(*scene_graph);
 
   auto subgraph = std::make_unique<SceneGraph>();
@@ -1151,7 +1151,8 @@ template <typename S>
 void runChangeJointOriginTest()
 {
   // Get the scene graph
-  auto scene_graph = getSceneGraph();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraph(locator);
   auto state_solver = S(*scene_graph);
 
   const std::string link_name1 = "link_n1";
@@ -1221,7 +1222,8 @@ template <typename S>
 void runMoveJointTest()
 {
   // Get the scene graph
-  auto scene_graph = getSceneGraph();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraph(locator);
   auto state_solver = S(*scene_graph);
 
   const std::string link_name1 = "link_n1";
@@ -1337,7 +1339,8 @@ template <typename S>
 void runMoveLinkTest()
 {
   // Get the scene graph
-  auto scene_graph = getSceneGraph();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraph(locator);
   auto state_solver = S(*scene_graph);
 
   const std::string link_name1 = "link_n1";
@@ -1461,7 +1464,8 @@ template <typename S>
 void runChangeJointLimitsTest()
 {
   // Get the scene graph
-  auto scene_graph = getSceneGraph();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraph(locator);
   auto state_solver = S(*scene_graph);
 
   double new_lower = 1.0;
@@ -1557,9 +1561,10 @@ void runChangeJointLimitsTest()
 template <typename S>
 void runReplaceJointTest()
 {
+  tesseract_common::GeneralResourceLocator locator;
   {  // Replace joint with same type
     // Get the scene graph
-    auto scene_graph = getSceneGraph();
+    auto scene_graph = getSceneGraph(locator);
     auto state_solver = S(*scene_graph);
 
     Joint joint_1("joint_a1");
@@ -1584,7 +1589,7 @@ void runReplaceJointTest()
 
   {  // Replace joint which exist but the link does not which should fail
     // Get the scene graph
-    auto scene_graph = getSceneGraph();
+    auto scene_graph = getSceneGraph(locator);
     auto state_solver = S(*scene_graph);
 
     Joint joint_1("joint_a1");
@@ -1607,7 +1612,7 @@ void runReplaceJointTest()
 
   {  // Replace joint with same type but change transform
     // Get the scene graph
-    auto scene_graph = getSceneGraph();
+    auto scene_graph = getSceneGraph(locator);
     auto state_solver = S(*scene_graph);
 
     Joint new_joint_a1 = scene_graph->getJoint("joint_a1")->clone();
@@ -1629,7 +1634,7 @@ void runReplaceJointTest()
 
   {  // Replace joint with different type (Fixed)
     // Get the scene graph
-    auto scene_graph = getSceneGraph();
+    auto scene_graph = getSceneGraph(locator);
     auto state_solver = S(*scene_graph);
 
     Joint new_joint_a1 = scene_graph->getJoint("joint_a1")->clone();
@@ -1652,7 +1657,7 @@ void runReplaceJointTest()
 
   {  // Replace joint with different type (Continuous)
     // Get the scene graph
-    auto scene_graph = getSceneGraph();
+    auto scene_graph = getSceneGraph(locator);
     auto state_solver = S(*scene_graph);
 
     Joint new_joint_a1 = scene_graph->getJoint("joint_a1")->clone();
@@ -1675,7 +1680,7 @@ void runReplaceJointTest()
 
   {  // Replace joint with different type (Prismatic)
     // Get the scene graph
-    auto scene_graph = getSceneGraph();
+    auto scene_graph = getSceneGraph(locator);
     auto state_solver = S(*scene_graph);
 
     Joint new_joint_a1 = scene_graph->getJoint("joint_a1")->clone();
@@ -1698,7 +1703,7 @@ void runReplaceJointTest()
 
   {  // Replace joint with different parent which is a replace and move
     // Get the scene graph
-    auto scene_graph = getSceneGraph();
+    auto scene_graph = getSceneGraph(locator);
     auto state_solver = S(*scene_graph);
 
     Joint new_joint_a3 = scene_graph->getJoint("joint_a3")->clone();
@@ -1720,7 +1725,7 @@ void runReplaceJointTest()
   }
 
   {  // Replace joint which does not exist which should fail
-    auto scene_graph = getSceneGraph();
+    auto scene_graph = getSceneGraph(locator);
     auto state_solver = S(*scene_graph);
 
     Joint new_joint_a3 = scene_graph->getJoint("joint_a3")->clone("joint_does_not_exist");
@@ -1738,7 +1743,7 @@ void runReplaceJointTest()
   }
 
   {  // Replace joint where parent link does not exist
-    auto scene_graph = getSceneGraph();
+    auto scene_graph = getSceneGraph(locator);
     auto state_solver = S(*scene_graph);
 
     Joint new_joint_a3 = scene_graph->getJoint("joint_a3")->clone();

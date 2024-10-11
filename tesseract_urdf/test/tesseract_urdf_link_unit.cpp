@@ -7,12 +7,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/box.h>
 #include <tesseract_urdf/box.h>
 #include <tesseract_urdf/link.h>
-#include <tesseract_support/tesseract_support_resource_locator.h>
+#include <tesseract_common/resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
 
 TEST(TesseractURDFUnit, parse_link)  // NOLINT
 {
-  tesseract_common::TesseractSupportResourceLocator resource_locator;
+  tesseract_common::GeneralResourceLocator resource_locator;
 
   {
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;

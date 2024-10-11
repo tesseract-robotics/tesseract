@@ -21,38 +21,35 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 
-#include <tesseract_support/tesseract_support_resource_locator.h>
-
 using namespace tesseract_scene_graph;
 using namespace tesseract_srdf;
 using namespace tesseract_collision;
 using namespace tesseract_environment;
 
-SceneGraph::UPtr getSceneGraph()
+SceneGraph::Ptr getSceneGraph(const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
-
-  tesseract_common::TesseractSupportResourceLocator locator;
-  return tesseract_urdf::parseURDFFile(path, locator);
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf";
+  return tesseract_urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
 }
 
-SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-  tesseract_common::TesseractSupportResourceLocator locator;
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf";
 
-  auto srdf = std::make_unique<SRDFModel>();
-  srdf->initFile(scene_graph, path, locator);
+  auto srdf = std::make_shared<SRDFModel>();
+  srdf->initFile(scene_graph, locator.locateResource(path)->getFilePath(), locator);
 
   return srdf;
 }
 
 tesseract_environment::Environment::UPtr getEnvironment()
 {
-  auto scene_graph = getSceneGraph();
+  tesseract_common::GeneralResourceLocator locator;
+
+  auto scene_graph = getSceneGraph(locator);
   EXPECT_TRUE(scene_graph != nullptr);
 
-  auto srdf = getSRDFModel(*scene_graph);
+  auto srdf = getSRDFModel(*scene_graph, locator);
   EXPECT_TRUE(srdf != nullptr);
 
   auto env = std::make_unique<Environment>();

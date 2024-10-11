@@ -9,6 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_geometry/geometries.h>
+#include <tesseract_common/resource_locator.h>
 
 namespace tesseract_collision::test_suite
 {
@@ -20,7 +21,8 @@ inline void addCollisionObjects(T& checker)
   /////////////////////////////////////////////////////////////////
   // Add Octomap
   /////////////////////////////////////////////////////////////////
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.bt";
+  tesseract_common::GeneralResourceLocator locator;
+  std::string path = locator.locateResource("package://tesseract_support/meshes/box_2m.bt")->getFilePath();
   auto ot = std::make_shared<octomap::OcTree>(path);
   CollisionShapePtr dense_octomap =
       std::make_shared<tesseract_geometry::Octree>(ot, tesseract_geometry::OctreeSubType::BOX);

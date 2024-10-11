@@ -6,6 +6,7 @@
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
+#include <tesseract_common/resource_locator.h>
 
 namespace tesseract_collision::test_suite
 {
@@ -54,8 +55,11 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
     auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
     auto mesh_faces = std::make_shared<Eigen::VectorXi>();
     // TODO: Need to figure out why this test not pass of bullet when using the box_2m.ply mesh
-    EXPECT_GT(loadSimplePlyFile(
-                  std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box2_2m.ply", *mesh_vertices, *mesh_faces, true),
+    tesseract_common::GeneralResourceLocator locator;
+    EXPECT_GT(loadSimplePlyFile(locator.locateResource("package://tesseract_support/meshes/box2_2m.ply")->getFilePath(),
+                                *mesh_vertices,
+                                *mesh_faces,
+                                true),
               0);
 
     auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);

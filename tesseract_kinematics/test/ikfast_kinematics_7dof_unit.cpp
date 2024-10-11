@@ -48,7 +48,8 @@ TEST(TesseractKinematicsUnit, IKFastInvKin7DOF)  // NOLINT
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(7);
 
   // Setup test
-  auto scene_graph = getSceneGraphIIWA7();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphIIWA7(locator);
   std::string base_link_name = "link_0";
   std::string tip_link_name = "ikfast_tcp_link";
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "joint_7" };

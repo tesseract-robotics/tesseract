@@ -1,5 +1,4 @@
 find_gtest()
-find_package(tesseract_support REQUIRED)
 
 add_executable(
   ${PROJECT_NAME}_unit
@@ -36,7 +35,6 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}
-          tesseract::tesseract_support
           tesseract::tesseract_geometry)
 target_include_directories(${PROJECT_NAME}_unit PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
 target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}

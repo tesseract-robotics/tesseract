@@ -16,7 +16,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_urdf/urdf_parser.h>
-#include <tesseract_support/tesseract_support_resource_locator.h>
 
 template <typename ElementType>
 bool runTest(ElementType& type,

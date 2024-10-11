@@ -40,8 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/commands.h>
 #include <tesseract_environment/utils.h>
 
-#include <tesseract_support/tesseract_support_resource_locator.h>
-
 using namespace tesseract_scene_graph;
 using namespace tesseract_srdf;
 using namespace tesseract_collision;
@@ -56,40 +54,37 @@ Eigen::Isometry3d tcpCallback(const tesseract_common::ManipulatorInfo& mi)
   throw std::runtime_error("TCPCallback failed to find tcp!");
 }
 
-SceneGraph::UPtr getSceneGraph()
+SceneGraph::Ptr getSceneGraph(const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
-
-  tesseract_common::TesseractSupportResourceLocator locator;
-  return tesseract_urdf::parseURDFFile(path, locator);
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf";
+  return tesseract_urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
 }
 
-SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-  tesseract_common::TesseractSupportResourceLocator locator;
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf";
 
   auto srdf = std::make_shared<SRDFModel>();
-  srdf->initFile(scene_graph, path, locator);
+  srdf->initFile(scene_graph, locator.locateResource(path)->getFilePath(), locator);
 
   return srdf;
 }
 
-std::string getSceneGraphString()
+std::string getSceneGraphString(const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf";
 
-  std::ifstream f(path);
+  std::ifstream f(locator.locateResource(path)->getFilePath());
   std::ostringstream ss;
   ss << f.rdbuf();
   return ss.str();
 }
 
-std::string getSRDFModelString()
+std::string getSRDFModelString(const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf";
 
-  std::ifstream f(path);
+  std::ifstream f(locator.locateResource(path)->getFilePath());
   std::ostringstream ss;
   ss << f.rdbuf();
   return ss.str();
@@ -169,6 +164,8 @@ enum class EnvironmentInitType
 
 Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitType::OBJECT)
 {
+  tesseract_common::GeneralResourceLocator locator;
+
   auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
   EXPECT_EQ(0, env->getRevision());
@@ -184,7 +181,7 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
   {
     case EnvironmentInitType::OBJECT:
     {
-      tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
+      tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph(locator);
       EXPECT_TRUE(scene_graph != nullptr);
 
       // Check to make sure all links are enabled
@@ -194,30 +191,31 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
         EXPECT_TRUE(scene_graph->getLinkVisibility(link->getName()));
       }
 
-      auto srdf = getSRDFModel(*scene_graph);
+      auto srdf = getSRDFModel(*scene_graph, locator);
       EXPECT_TRUE(srdf != nullptr);
 
       success = env->init(*scene_graph, srdf);
       EXPECT_TRUE(env->getResourceLocator() == nullptr);
-      env->setResourceLocator(std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
+      env->setResourceLocator(std::make_shared<tesseract_common::GeneralResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
     case EnvironmentInitType::STRING:
     {
-      std::string urdf_string = getSceneGraphString();
-      std::string srdf_string = getSRDFModelString();
-      success =
-          env->init(urdf_string, srdf_string, std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
+      std::string urdf_string = getSceneGraphString(locator);
+      std::string srdf_string = getSRDFModelString(locator);
+      success = env->init(urdf_string, srdf_string, std::make_shared<tesseract_common::GeneralResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
     case EnvironmentInitType::FILEPATH:
     {
-      tesseract_common::fs::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
-      tesseract_common::fs::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
+      tesseract_common::fs::path urdf_path(
+          locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath());
+      tesseract_common::fs::path srdf_path(
+          locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf")->getFilePath());
 
-      success = env->init(urdf_path, srdf_path, std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
+      success = env->init(urdf_path, srdf_path, std::make_shared<tesseract_common::GeneralResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
@@ -353,6 +351,8 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
 
 Environment::Ptr getEnvironmentURDFOnly(EnvironmentInitType init_type)
 {
+  tesseract_common::GeneralResourceLocator locator;
+
   auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
   EXPECT_EQ(0, env->getRevision());
@@ -367,7 +367,7 @@ Environment::Ptr getEnvironmentURDFOnly(EnvironmentInitType init_type)
   {
     case EnvironmentInitType::OBJECT:
     {
-      tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
+      tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph(locator);
       EXPECT_TRUE(scene_graph != nullptr);
 
       // Check to make sure all links are enabled
@@ -379,21 +379,22 @@ Environment::Ptr getEnvironmentURDFOnly(EnvironmentInitType init_type)
 
       success = env->init(*scene_graph);
       EXPECT_TRUE(env->getResourceLocator() == nullptr);
-      env->setResourceLocator(std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
+      env->setResourceLocator(std::make_shared<tesseract_common::GeneralResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
     case EnvironmentInitType::STRING:
     {
-      std::string urdf_string = getSceneGraphString();
-      success = env->init(urdf_string, std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
+      std::string urdf_string = getSceneGraphString(locator);
+      success = env->init(urdf_string, std::make_shared<tesseract_common::GeneralResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
     case EnvironmentInitType::FILEPATH:
     {
-      tesseract_common::fs::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
-      success = env->init(urdf_path, std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
+      tesseract_common::fs::path urdf_path(
+          locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath());
+      success = env->init(urdf_path, std::make_shared<tesseract_common::GeneralResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
@@ -427,7 +428,7 @@ TEST(TesseractEnvironmentUnit, EnvInitURDFOnlyUnit)  // NOLINT
 
 TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
 {
-  auto rl = std::make_shared<tesseract_common::TesseractSupportResourceLocator>();
+  auto rl = std::make_shared<tesseract_common::GeneralResourceLocator>();
   {
     auto env = std::make_shared<Environment>();
     EXPECT_TRUE(env != nullptr);
@@ -472,7 +473,7 @@ TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
   {  // Test Empty URDF String with srdf
     auto env = std::make_shared<Environment>();
     std::string urdf_string;
-    std::string srdf_string = getSRDFModelString();
+    std::string srdf_string = getSRDFModelString(*rl);
     EXPECT_FALSE(env->init(urdf_string, srdf_string, rl));
     EXPECT_FALSE(env->isInitialized());
   }
@@ -480,14 +481,15 @@ TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
   {  // Test bad URDF file path with srdf
     auto env = std::make_shared<Environment>();
     tesseract_common::fs::path urdf_path("/usr/tmp/doesnotexist.urdf");
-    tesseract_common::fs::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
+    tesseract_common::fs::path srdf_path(
+        rl->locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf")->getFilePath());
     EXPECT_FALSE(env->init(urdf_path, srdf_path, rl));
     EXPECT_FALSE(env->isInitialized());
   }
 
   {  // Test URDF String with empty srdf
     auto env = std::make_shared<Environment>();
-    std::string urdf_string = getSceneGraphString();
+    std::string urdf_string = getSceneGraphString(*rl);
     std::string srdf_string;
     EXPECT_FALSE(env->init(urdf_string, srdf_string, rl));
     EXPECT_FALSE(env->isInitialized());
@@ -495,7 +497,8 @@ TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
 
   {  // Test URDF file path with bad srdf path
     auto env = std::make_shared<Environment>();
-    tesseract_common::fs::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
+    tesseract_common::fs::path urdf_path(
+        rl->locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath());
     tesseract_common::fs::path srdf_path("/usr/tmp/doesnotexist.srdf");
     EXPECT_FALSE(env->init(urdf_path, srdf_path, rl));
     EXPECT_FALSE(env->isInitialized());
@@ -1966,7 +1969,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
 {
   // This is testing commands that modify the connectivity of scene graph
   // It checks that the state solver are updated correctly
-
+  tesseract_common::GeneralResourceLocator locator;
   {  // Add new link no joint
     // Get the environment
     auto compare_env = getEnvironment();
@@ -2293,7 +2296,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
   {  // Add SceneGraph case 2
     auto compare_env = getEnvironment();
 
-    auto subgraph = getSceneGraph();
+    auto subgraph = getSceneGraph(locator);
     Commands commands{ std::make_shared<AddSceneGraphCommand>(*subgraph, "prefix_") };
     EXPECT_TRUE(compare_env->applyCommands(commands));
 
@@ -2306,7 +2309,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
   {  // Add SceneGraph case 3
     auto compare_env = getEnvironment();
 
-    auto subgraph = getSceneGraph();
+    auto subgraph = getSceneGraph(locator);
     Joint attach_joint("prefix_base_link_joint");
     attach_joint.parent_link_name = "tool0";
     attach_joint.child_link_name = "prefix_base_link";

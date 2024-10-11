@@ -7,12 +7,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/mesh.h>
 #include <tesseract_geometry/impl/mesh.h>
 #include <tesseract_geometry/impl/mesh_material.h>
-#include <tesseract_support/tesseract_support_resource_locator.h>
+#include <tesseract_common/resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
 
 TEST(TesseractURDFUnit, parse_mesh_material_dae)  // NOLINT
 {
-  tesseract_common::TesseractSupportResourceLocator resource_locator;
+  tesseract_common::GeneralResourceLocator resource_locator;
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/tesseract_material_mesh.dae"/>)";
     std::vector<tesseract_geometry::Mesh::Ptr> meshes;
@@ -86,7 +86,7 @@ TEST(TesseractURDFUnit, parse_mesh_material_dae)  // NOLINT
 #ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
 TEST(TesseractURDFUnit, parse_mesh_material_gltf2)  // NOLINT
 {
-  tesseract_common::TesseractSupportResourceLocator resource_locator;
+  tesseract_common::GeneralResourceLocator resource_locator;
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/tesseract_material_mesh.glb"/>)";
     std::vector<tesseract_geometry::Mesh::Ptr> meshes;

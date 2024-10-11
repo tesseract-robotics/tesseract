@@ -1,6 +1,7 @@
 #include <console_bridge/console.h>
 #include <tesseract_geometry/impl/mesh.h>
 #include <tesseract_geometry/mesh_parser.h>
+#include <tesseract_common/resource_locator.h>
 #include <iostream>
 
 using namespace tesseract_geometry;
@@ -8,8 +9,9 @@ using namespace tesseract_geometry;
 int main(int /*argc*/, char** /*argv*/)
 {
   // documentation:start:1: Create meshes
-  std::string mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
-  std::vector<Mesh::Ptr> meshes = createMeshFromPath<Mesh>(mesh_file);
+  tesseract_common::GeneralResourceLocator locator;
+  std::string mesh_file = "package://tesseract_support/meshes/sphere_p25m.dae";
+  std::vector<Mesh::Ptr> meshes = createMeshFromPath<Mesh>(locator.locateResource(mesh_file)->getFilePath());
   // documentation:end:1: Create meshes
 
   // documentation:start:2: Print mesh information

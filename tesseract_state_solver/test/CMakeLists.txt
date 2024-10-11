@@ -1,5 +1,4 @@
 find_gtest()
-find_package(tesseract_support REQUIRED)
 find_package(tesseract_urdf REQUIRED)
 
 add_executable(${PROJECT_NAME}_unit tesseract_state_solver_ofkt_unit.cpp)
@@ -9,8 +8,7 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_ofkt
-          tesseract::tesseract_urdf
-          tesseract::tesseract_support)
+          tesseract::tesseract_urdf)
 target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                     ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})

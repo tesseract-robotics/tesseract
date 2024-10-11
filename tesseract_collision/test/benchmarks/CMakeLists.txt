@@ -1,5 +1,4 @@
 find_package(benchmark REQUIRED)
-find_package(tesseract_support REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 
 macro(add_benchmark benchmark_name benchmark_file)
@@ -43,7 +42,6 @@ target_link_libraries(
   PRIVATE ${PROJECT_NAME}_bullet
           ${PROJECT_NAME}_fcl
           tesseract::tesseract_geometry
-          tesseract::tesseract_support
           ${Boost_LIBRARIES}
           ${OCTOMAP_LIBRARIES}
           ${LIBFCL_LIBRARIES})

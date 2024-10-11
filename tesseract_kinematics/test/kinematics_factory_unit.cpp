@@ -38,11 +38,12 @@ using namespace tesseract_kinematics;
 
 void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
 {
-  tesseract_scene_graph::SceneGraph::UPtr iiwa_scene_graph = getSceneGraphIIWA();
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::UPtr iiwa_scene_graph = getSceneGraphIIWA(locator);
   tesseract_scene_graph::KDLStateSolver iiwa_state_solver(*iiwa_scene_graph);
   tesseract_scene_graph::SceneState iiwa_scene_state = iiwa_state_solver.getState();
 
-  tesseract_scene_graph::SceneGraph::UPtr abb_scene_graph = getSceneGraphABB();
+  tesseract_scene_graph::SceneGraph::UPtr abb_scene_graph = getSceneGraphABB(locator);
   tesseract_scene_graph::KDLStateSolver abb_state_solver(*abb_scene_graph);
   tesseract_scene_graph::SceneState abb_scene_state = abb_state_solver.getState();
 
@@ -50,11 +51,11 @@ void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
   tesseract_scene_graph::KDLStateSolver ur_state_solver(*ur_scene_graph);
   tesseract_scene_graph::SceneState ur_scene_state = ur_state_solver.getState();
 
-  tesseract_scene_graph::SceneGraph::UPtr rop_scene_graph = getSceneGraphABBOnPositioner();
+  tesseract_scene_graph::SceneGraph::UPtr rop_scene_graph = getSceneGraphABBOnPositioner(locator);
   tesseract_scene_graph::KDLStateSolver rop_state_solver(*rop_scene_graph);
   tesseract_scene_graph::SceneState rop_scene_state = rop_state_solver.getState();
 
-  tesseract_scene_graph::SceneGraph::UPtr rep_scene_graph = getSceneGraphABBExternalPositioner();
+  tesseract_scene_graph::SceneGraph::UPtr rep_scene_graph = getSceneGraphABBExternalPositioner(locator);
   tesseract_scene_graph::KDLStateSolver rep_state_solver(*rep_scene_graph);
   tesseract_scene_graph::SceneState rep_scene_state = rep_state_solver.getState();
 
@@ -260,7 +261,8 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
 
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB();
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
   tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract_scene_graph::SceneState scene_state = state_solver.getState();
 
@@ -317,7 +319,8 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
 
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB();
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
   tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract_scene_graph::SceneState scene_state = state_solver.getState();
 
@@ -840,7 +843,9 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
 TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABBExternalPositioner();
+
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABBExternalPositioner(locator);
   tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract_scene_graph::SceneState scene_state = state_solver.getState();
 
@@ -973,7 +978,9 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
 TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABBOnPositioner();
+
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABBOnPositioner(locator);
   tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract_scene_graph::SceneState scene_state = state_solver.getState();
 
@@ -1105,7 +1112,8 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
 
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB();
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
   tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract_scene_graph::SceneState scene_state = state_solver.getState();
 

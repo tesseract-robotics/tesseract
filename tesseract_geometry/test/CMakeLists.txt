@@ -1,13 +1,7 @@
 find_gtest()
-find_package(tesseract_support REQUIRED)
 
 add_executable(${PROJECT_NAME}_serialization_unit tesseract_geometry_serialization_unit.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_serialization_unit
-  PRIVATE GTest::GTest
-          GTest::Main
-          ${PROJECT_NAME}
-          tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_serialization_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME}_serialization_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                   ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_serialization_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
@@ -24,12 +18,7 @@ add_dependencies(${PROJECT_NAME}_serialization_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_serialization_unit)
 
 add_executable(${PROJECT_NAME}_unit tesseract_geometry_unit.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_unit
-  PRIVATE GTest::GTest
-          GTest::Main
-          ${PROJECT_NAME}
-          tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                     ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})

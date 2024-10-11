@@ -101,7 +101,8 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
 
 TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
 {
-  auto scene_graph = getSceneGraphABBOnPositioner();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBOnPositioner(locator);
 
   tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract_scene_graph::SceneState scene_state = state_solver.getState();

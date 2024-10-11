@@ -1,5 +1,5 @@
 find_gtest()
-find_package(tesseract_support REQUIRED)
+
 find_package(tesseract_urdf REQUIRED)
 find_package(LAPACK REQUIRED) # Required for ikfast
 
@@ -10,7 +10,6 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}_core
           ${PROJECT_NAME}_kdl
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph
           tesseract::tesseract_common)
@@ -35,7 +34,6 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}_kdl
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph
           tesseract::tesseract_common)
@@ -61,7 +59,6 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_opw
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_opw_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
@@ -86,7 +83,6 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_ikfast
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_ikfast_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
@@ -110,7 +106,6 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_ikfast
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_ikfast_7dof_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
@@ -134,7 +129,6 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_opw
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_rop_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
@@ -159,7 +153,6 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_opw
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_rep_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
@@ -184,7 +177,6 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_ur
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_ur_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
@@ -208,7 +200,6 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}_core
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_factory_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
