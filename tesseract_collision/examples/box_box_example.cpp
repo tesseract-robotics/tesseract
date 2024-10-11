@@ -6,6 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/bullet/convex_hull_utils.h>
 #include <tesseract_geometry/impl/box.h>
+#include <tesseract_common/resource_locator.h>
 
 using namespace tesseract_collision;
 using namespace tesseract_geometry;
@@ -57,11 +58,15 @@ int main(int /*argc*/, char** /*argv*/)
 
   // documentation:start:4: Add convex hull
   // Add second box to checker, but convert to convex hull mesh
+  tesseract_common::GeneralResourceLocator locator;
   CollisionShapePtr second_box;
 
   auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
   auto mesh_faces = std::make_shared<Eigen::VectorXi>();
-  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply", *mesh_vertices, *mesh_faces, true);
+  loadSimplePlyFile(locator.locateResource("package://tesseract_support/meshes/box_2m.ply")->getFilePath(),
+                    *mesh_vertices,
+                    *mesh_faces,
+                    true);
 
   auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
   second_box = makeConvexMesh(*mesh);

@@ -66,7 +66,8 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(6);
 
   // Setup test
-  auto scene_graph = getSceneGraphABB();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABB(locator);
   std::string manip_name = "manip";
   std::string base_link_name = "base_link";
   std::string tip_link_name = "tool0";
@@ -114,7 +115,8 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(6);
 
   // Setup test
-  auto scene_graph = getSceneGraphABB();
+  tesseract_common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABB(locator);
   std::string manip_name = "manip";
   std::string base_link_name = "base_link";
   std::string tip_link_name = "tool0";

@@ -505,19 +505,20 @@ TEST(TesseractGeometryUnit, LoadMeshUnit)  // NOLINT
 {
   using namespace tesseract_geometry;
 
-  std::string mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
+  tesseract_common::GeneralResourceLocator locator;
+  std::string mesh_file = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.stl")->getFilePath();
   std::vector<Mesh::Ptr> meshes = createMeshFromPath<Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getFaceCount() == 80);
   EXPECT_TRUE(meshes[0]->getVertexCount() == 42);
 
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply";
+  mesh_file = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath();
   meshes = createMeshFromPath<Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getFaceCount() == 80);
   EXPECT_TRUE(meshes[0]->getVertexCount() == 42);
 
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
+  mesh_file = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.dae")->getFilePath();
   meshes = createMeshFromPath<Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 2);
   EXPECT_TRUE(meshes[0]->getFaceCount() == 80);
@@ -525,25 +526,25 @@ TEST(TesseractGeometryUnit, LoadMeshUnit)  // NOLINT
   EXPECT_TRUE(meshes[1]->getFaceCount() == 80);
   EXPECT_TRUE(meshes[1]->getVertexCount() == 42);
 
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
+  mesh_file = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.dae")->getFilePath();
   meshes = createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, true);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getFaceCount() == 2 * 80);
   EXPECT_TRUE(meshes[0]->getVertexCount() == 2 * 42);
 
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
+  mesh_file = locator.locateResource("package://tesseract_support/meshes/box_2m.ply")->getFilePath();
   meshes = createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getFaceCount() == 12);
   EXPECT_TRUE(meshes[0]->getVertexCount() == 8);
 
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
+  mesh_file = locator.locateResource("package://tesseract_support/meshes/box_2m.ply")->getFilePath();
   meshes = createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getFaceCount() == 12);
   EXPECT_TRUE(meshes[0]->getVertexCount() == 8);
 
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
+  mesh_file = locator.locateResource("package://tesseract_support/meshes/box_2m.ply")->getFilePath();
   std::vector<ConvexMesh::Ptr> convex_meshes =
       createMeshFromPath<ConvexMesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, false);
   EXPECT_TRUE(convex_meshes.size() == 1);
@@ -557,7 +558,9 @@ TEST(TesseractGeometryUnit, LoadMeshWithMaterialGltf2Unit)  // NOLINT
 {
   using namespace tesseract_geometry;
 
-  std::string mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/tesseract_material_mesh.glb";
+  tesseract_common::GeneralResourceLocator locator;
+  std::string mesh_file =
+      locator.locateResource("package://tesseract_support/meshes/tesseract_material_mesh.glb")->getFilePath();
   std::vector<Mesh::Ptr> meshes =
       createMeshFromPath<Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true, true, true, true);
   ASSERT_TRUE(meshes.size() == 4);

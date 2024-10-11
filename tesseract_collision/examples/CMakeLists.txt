@@ -1,10 +1,8 @@
-find_package(tesseract_support REQUIRED)
 add_executable(${PROJECT_NAME}_box_box_example box_box_example.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_box_box_example
   ${PROJECT_NAME}_bullet
   ${PROJECT_NAME}_fcl
-  tesseract::tesseract_support
   tesseract::tesseract_geometry
   console_bridge::console_bridge
   ${Boost_LIBRARIES}

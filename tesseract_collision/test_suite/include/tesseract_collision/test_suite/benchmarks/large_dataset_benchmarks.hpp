@@ -10,6 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
+#include <tesseract_common/resource_locator.h>
 
 namespace tesseract_collision
 {
@@ -27,7 +28,12 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
 
   auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
   auto mesh_faces = std::make_shared<Eigen::VectorXi>();
-  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", *mesh_vertices, *mesh_faces, true);
+
+  tesseract_common::GeneralResourceLocator locator;
+  loadSimplePlyFile(locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
+                    *mesh_vertices,
+                    *mesh_faces,
+                    true);
 
   switch (type)
   {
@@ -111,7 +117,12 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
 
   auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
   auto mesh_faces = std::make_shared<Eigen::VectorXi>();
-  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", *mesh_vertices, *mesh_faces, true);
+
+  tesseract_common::GeneralResourceLocator locator;
+  loadSimplePlyFile(locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
+                    *mesh_vertices,
+                    *mesh_faces,
+                    true);
 
   switch (type)
   {

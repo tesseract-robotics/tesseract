@@ -7,12 +7,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/collision.h>
 #include <tesseract_geometry/impl/box.h>
 #include <tesseract_geometry/impl/compound_mesh.h>
-#include <tesseract_support/tesseract_support_resource_locator.h>
+#include <tesseract_common/resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
 
 TEST(TesseractURDFUnit, parse_collision)  // NOLINT
 {
-  tesseract_common::TesseractSupportResourceLocator resource_locator;
+  tesseract_common::GeneralResourceLocator resource_locator;
 
   {
     std::string str = R"(<collision extra="0 0 0">

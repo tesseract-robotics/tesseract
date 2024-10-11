@@ -254,7 +254,8 @@ TEST(TesseractKinematicsUnit, RedundantSolutionsUnit)  // NOLINT
 
 TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
 {
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB();
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract_kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
 
@@ -279,7 +280,8 @@ TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
 
 TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
 {
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB();
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract_kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
 

@@ -1,5 +1,4 @@
 find_gtest()
-find_package(tesseract_support REQUIRED)
 find_package(tesseract_collision REQUIRED COMPONENTS core bullet fcl)
 find_package(OpenMP REQUIRED)
 if(NOT TARGET OpenMP::OpenMP_CXX)
@@ -17,7 +16,6 @@ target_link_libraries(
           GTest::Main
           ${PROJECT_NAME}
           OpenMP::OpenMP_CXX
-          tesseract::tesseract_support
           tesseract::tesseract_urdf
           tesseract::tesseract_collision_bullet
           tesseract::tesseract_collision_fcl
@@ -38,12 +36,7 @@ add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_unit)
 
 add_executable(${PROJECT_NAME}_collision tesseract_environment_collision.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_collision
-  PRIVATE GTest::GTest
-          GTest::Main
-          ${PROJECT_NAME}
-          tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_collision PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME}_collision PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                          ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_collision PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
@@ -60,12 +53,7 @@ add_dependencies(${PROJECT_NAME}_collision ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_collision)
 
 add_executable(${PROJECT_NAME}_utils tesseract_environment_utils.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_utils
-  PRIVATE GTest::GTest
-          GTest::Main
-          ${PROJECT_NAME}
-          tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_utils PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME}_utils PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                      ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_utils PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
@@ -90,7 +78,6 @@ target_link_libraries(
           ${PROJECT_NAME}
           ${PROJECT_NAME}_commands
           tesseract::tesseract_common
-          tesseract::tesseract_support
           tesseract::tesseract_urdf)
 target_compile_options(${PROJECT_NAME}_serialization_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                   ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -107,12 +94,7 @@ add_dependencies(${PROJECT_NAME}_serialization_unit ${PROJECT_NAME}_commands)
 add_dependencies(run_tests ${PROJECT_NAME}_serialization_unit)
 
 add_executable(${PROJECT_NAME}_cache_unit tesseract_environment_cache_unit.cpp)
-target_link_libraries(
-  ${PROJECT_NAME}_cache_unit
-  PRIVATE GTest::GTest
-          GTest::Main
-          ${PROJECT_NAME}
-          tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_cache_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME}_cache_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                           ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_cache_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})

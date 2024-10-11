@@ -12,28 +12,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_state_solver/state_solver.h>
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/utils.h>
-#include <tesseract_support/tesseract_support_resource_locator.h>
 #include <tesseract_geometry/impl/sphere.h>
 
 using namespace tesseract_scene_graph;
 using namespace tesseract_srdf;
 using namespace tesseract_environment;
 
-SceneGraph::Ptr getSceneGraph()
+SceneGraph::Ptr getSceneGraph(const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
-
-  tesseract_common::TesseractSupportResourceLocator locator;
-  return tesseract_urdf::parseURDFFile(path, locator);
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf";
+  return tesseract_urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
 }
 
-SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_common::ResourceLocator& locator)
 {
-  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-  tesseract_common::TesseractSupportResourceLocator locator;
+  std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf";
 
   auto srdf = std::make_shared<SRDFModel>();
-  srdf->initFile(scene_graph, path, locator);
+  srdf->initFile(scene_graph, locator.locateResource(path)->getFilePath(), locator);
 
   return srdf;
 }
@@ -113,11 +109,12 @@ static void BM_GET_JACOBIAN_MANIP(benchmark::State& state,
 
 int main(int argc, char** argv)
 {
+  tesseract_common::GeneralResourceLocator locator;
   auto env = std::make_shared<Environment>();
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
-  auto srdf = getSRDFModel(*scene_graph);
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph(locator);
+  auto srdf = getSRDFModel(*scene_graph, locator);
   env->init(*scene_graph, srdf);
-  env->setResourceLocator(std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
+  env->setResourceLocator(std::make_shared<tesseract_common::GeneralResourceLocator>());
 
   // Set the robot initial state
   std::vector<std::string> joint_names;

@@ -1,5 +1,4 @@
 find_gtest()
-find_package(tesseract_support REQUIRED)
 
 add_executable(${PROJECT_NAME}_unit tesseract_scene_graph_unit.cpp)
 target_link_libraries(
@@ -7,7 +6,6 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}
-          tesseract::tesseract_support
           tesseract::tesseract_geometry)
 target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                     ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -30,7 +28,6 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}
-          tesseract::tesseract_support
           tesseract::tesseract_geometry)
 target_compile_options(${PROJECT_NAME}_joint_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                           ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -52,7 +49,6 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}
-          tesseract::tesseract_support
           tesseract::tesseract_geometry)
 target_compile_options(${PROJECT_NAME}_link_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                          ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -74,7 +70,6 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}
-          tesseract::tesseract_support
           tesseract::tesseract_geometry)
 target_compile_options(${PROJECT_NAME}_serialization_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                   ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
