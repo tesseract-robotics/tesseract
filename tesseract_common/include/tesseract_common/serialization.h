@@ -157,6 +157,18 @@ struct Serialization
   }
 
   template <typename SerializableType>
+  static bool toArchiveFile(const SerializableType& archive_type,
+                            const std::string& file_path,
+                            const std::string& name = "")
+  {
+    fs::path fp(file_path);
+    if (fp.extension() == serialization::binary::extension<SerializableType>::value)
+      return toArchiveFileBinary<SerializableType>(archive_type, file_path, name);
+
+    return toArchiveFileXML<SerializableType>(archive_type, file_path, name);
+  }
+
+  template <typename SerializableType>
   static std::vector<std::uint8_t> toArchiveBinaryData(const SerializableType& archive_type,
                                                        const std::string& name = "")
   {
