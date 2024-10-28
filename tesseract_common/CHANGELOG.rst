@@ -2,6 +2,15 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add utility toArchiveFile method
+* Fix serialization
+* Fix abstract class serialization
+* Fix serialization extension marco so they must include . char
+* Fix to archive file with no extension
+* Contributors: Levi Armstrong
+
 0.25.0 (2024-09-28)
 -------------------
 * Add missing package libraries cmake variable

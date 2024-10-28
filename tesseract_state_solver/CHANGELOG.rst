@@ -2,6 +2,11 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove TesseractSupportResourceLocator
+* Contributors: Levi Armstrong
+
 0.25.0 (2024-09-28)
 -------------------
 

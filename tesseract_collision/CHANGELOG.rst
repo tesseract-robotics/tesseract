@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove TesseractSupportResourceLocator
+* Contributors: Levi Armstrong
+
 0.25.0 (2024-09-28)
 -------------------
 * Add geometry type CompoundMesh

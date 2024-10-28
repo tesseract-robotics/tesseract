@@ -2,6 +2,12 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove TesseractSupportResourceLocator
+* Fix serialization
+* Contributors: Levi Armstrong
+
 0.25.0 (2024-09-28)
 -------------------
 * Only run kinematic check when testing is enabled and debug is enabled

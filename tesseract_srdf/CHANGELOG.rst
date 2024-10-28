@@ -2,6 +2,12 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove TesseractSupportResourceLocator
+* Fix serialization
+* Contributors: Levi Armstrong
+
 0.25.0 (2024-09-28)
 -------------------
 

@@ -2,6 +2,13 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove TesseractSupportResourceLocator
+* Fix serialization
+* Fix abstract class serialization
+* Contributors: Levi Armstrong
+
 0.25.0 (2024-09-28)
 -------------------
 * Add missing package libraries cmake variable
