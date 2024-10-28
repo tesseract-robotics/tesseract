@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.26.0 (2024-10-27)
+-------------------
 * Remove TesseractSupportResourceLocator
 * Contributors: Levi Armstrong
 

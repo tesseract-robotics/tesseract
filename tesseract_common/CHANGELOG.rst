@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.26.0 (2024-10-27)
+-------------------
 * Add utility toArchiveFile method
 * Fix serialization
 * Fix abstract class serialization
