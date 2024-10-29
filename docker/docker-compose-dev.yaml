@@ -1,0 +1,37 @@
+# Must create the following directories on the host machine
+#  - ~/.config/QtProjectDocker/focal
+#  - ~/.config/QtProjectDocker/noetic
+#  - ~/.config/QtProjectDocker/jammy
+# Below is the example docker composer command
+#  - USER_ID=$(id -u) GROUP_ID=$(id -g) UBUNTU_TAG=focal docker compose -f docker-compose-dev.yaml up --build --remove-orphans
+services:
+  qtcreator:
+    build:
+        context: .
+        dockerfile: DockerfileDev
+        args:
+          UBUNTU_TAG: "${UBUNTU_TAG}"
+          USERNAME: "${USER}"    # Passes the host user's username
+          USER_ID: "${USER_ID}"      # Passes the host user's UID
+          GROUP_ID: "${GROUP_ID}"     # Passes the host user's GID
+    volumes:
+      - ~/catkin_ws/:/home/${USERNAME}/catkin_ws # Mount the project directory
+      - ~/.config/QtProjectDocker/${UBUNTU_TAG}:/home/${USERNAME}/.config/QtProject # Mount the QtCreator config location so changes persist
+      - /tmp/.X11-unix:/tmp/.X11-unix # Enable X11 forwarding
+      - /etc/hosts:/etc/hosts
+      - /dev/shm:/dev/shm
+    environment:
+      - DISPLAY=${DISPLAY} # Pass the DISPLAY variable from the host
+      - XAUTHORITY=${XAUTHORITY}
+      - SSH_AUTH_SOCK=${SSH_AUTH_SOCK}
+      - USERNAME=${USER}    # Passes the host user name
+      - USER_ID=${USER_ID}      # Passes the host user's UID
+      - GROUP_ID=${GROUP_ID}     # Passes the host user's GID
+      - SHELL=/bin/bash
+    user: "${USERNAME}"
+    ipc: host
+    network_mode: "host" # Allow access to host network for DISPLAY
+    privileged: true
+    stdin_open: true # Keeps STDIN open, useful for interactive mode
+    tty: true        # Allocates a pseudo-TTY
+    command: /opt/qt-creator/bin/qtcreator
