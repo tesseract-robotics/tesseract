@@ -86,6 +86,26 @@ How to create:
 * Create Video: `gource -1280x720 -seconds-per-day 0.2 --auto-skip-seconds 0.2 --disable-bloom -background d0d3d4 --hide filenames,mouse,progress -o - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 gource.mp4`
 * Create Gif: `ffmpeg -i gource.mp4 -r 10 -vf "scale=800:-1,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" tesseract_evolution.gif`
 
+## Docker Development Container
+
+It common to leverage docker to develop for different distributions of Ubuntu, so a docker compose file has been provided to simplify this process for Tesseract development.
+
+Initial setup, you must create directories for the different distributions to save Qt Creator configs so they persist.
+
+``` bash
+mkdir ~/.config/QtProjectDocker
+mkdir ~/.config/QtProjectDocker/focal
+mkdir ~/.config/QtProjectDocker/noetic
+mkdir ~/.config/QtProjectDocker/jammy
+```
+
+Now you can start the development docker. Replace focal with what ubuntu distro you want to develope with.
+
+``` bash
+cd <path to tesseract repo>/docker
+USER_ID=$(id -u) GROUP_ID=$(id -g) UBUNTU_TAG=focal docker compose -f docker-compose-dev.yaml up --build --remove-orphans
+```
+
 ## TODO's
 
 Warning: These packages are under heavy development and are subject to change.
