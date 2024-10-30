@@ -8,8 +8,8 @@ on:
   pull_request:
     paths:
       - 'tesseract**'
-      - '.github/workflows/clang_format.yml'
-      - '**clang-format'
+      - '.github/workflows/cmake_format.yml'
+      - '**cmake-format'
   schedule:
     - cron: '0 5 * * *'
 
