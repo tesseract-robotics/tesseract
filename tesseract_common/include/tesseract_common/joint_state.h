@@ -29,6 +29,8 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <Eigen/Core>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -81,6 +83,7 @@ public:
   JointTrajectory(std::string description = "");
   JointTrajectory(std::vector<JointState> states, std::string description = "");
 
+  boost::uuids::uuid uuid{};
   std::vector<JointState> states;
   std::string description;
 
