@@ -34,6 +34,8 @@ RUN add-apt-repository ppa:levi-armstrong/tesseract-robotics
 RUN apt update \
   && apt install -y \
   python3-colcon-common-extensions \
+  libbenchmark-dev \
+  google-perftools \
   libeigen3-dev \
   libboost-all-dev \
   coinor-libipopt-dev \
