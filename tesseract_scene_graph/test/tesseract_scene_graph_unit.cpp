@@ -1238,7 +1238,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 
   {
     KDLTreeData full_data = parseSceneGraph(g);
-    KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values);
+    KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values, tesseract_common::TransformMap());
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
@@ -1269,7 +1269,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 
   {
     KDLTreeData full_data = parseSceneGraph(g);
-    KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values);
+    KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values, tesseract_common::TransformMap());
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));

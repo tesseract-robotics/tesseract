@@ -77,30 +77,43 @@ public:
 
   int getRevision() const override final;
 
-  void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) override final;
-  void setState(const std::unordered_map<std::string, double>& joint_values) override final;
+  void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract_common::TransformMap& floating_joint_values = {}) override final;
+  void setState(const std::unordered_map<std::string, double>& joint_values,
+                const tesseract_common::TransformMap& floating_joint_values = {}) override final;
   void setState(const std::vector<std::string>& joint_names,
-                const Eigen::Ref<const Eigen::VectorXd>& joint_values) override final;
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract_common::TransformMap& floating_joint_values = {}) override final;
+  void setState(const tesseract_common::TransformMap& floating_joint_values) override final;
 
-  SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
-  SceneState getState(const std::unordered_map<std::string, double>& joint_values) const override final;
+  SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                      const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
+  SceneState getState(const std::unordered_map<std::string, double>& joint_values,
+                      const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
   SceneState getState(const std::vector<std::string>& joint_names,
-                      const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                      const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
+  SceneState getState(const tesseract_common::TransformMap& floating_joint_values) const override final;
 
   SceneState getState() const override final;
 
   SceneState getRandomState() const override final;
 
   Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name) const override final;
+                              const std::string& link_name,
+                              const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
 
   Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints_values,
-                              const std::string& link_name) const override final;
+                              const std::string& link_name,
+                              const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
   Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name) const override final;
+                              const std::string& link_name,
+                              const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
 
   std::vector<std::string> getJointNames() const override final;
+
+  std::vector<std::string> getFloatingJointNames() const override final;
 
   std::vector<std::string> getActiveJointNames() const override final;
 
@@ -157,6 +170,7 @@ private:
   SceneState current_state_;                                         /**< Current state of the scene */
   std::vector<std::string> joint_names_;                             /**< The link names */
   std::vector<std::string> active_joint_names_;                      /**< The active joint names */
+  std::vector<std::string> floating_joint_names_;                    /**< The floating joint names */
   std::vector<std::string> link_names_;                              /**< The link names */
   std::unordered_map<std::string, std::unique_ptr<OFKTNode>> nodes_; /**< The joint name map to node */
   std::unordered_map<std::string, OFKTNode*> link_map_;              /**< The link name map to node */
@@ -199,10 +213,12 @@ private:
    * @brief Given a set of joint values calculate the jacobian for the provided link_name
    * @param joints The joint values to calculate the jacobian for
    * @param link_name The link name to calculate the jacobian for
+   * @param floating_joint_values The floating joint values
    * @return The calculated geometric jacobian
    */
   Eigen::MatrixXd calcJacobianHelper(const std::unordered_map<std::string, double>& joints,
-                                     const std::string& link_name) const;
+                                     const std::string& link_name,
+                                     const tesseract_common::TransformMap& floating_joint_values = {}) const;
 
   /**
    * @brief A helper function used for cloning the OFKTStateSolver

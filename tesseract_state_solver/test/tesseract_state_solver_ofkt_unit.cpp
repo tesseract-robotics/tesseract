@@ -53,6 +53,25 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
     EXPECT_TRUE(node.getStaticTransformation().isApprox(static_tf, 1e-6));
   }
 
+  {  // OFKTFloatingNode
+    OFKTRootNode root_node("base_link");
+    OFKTFloatingNode node(&root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
+    const OFKTFloatingNode& const_node = node;
+    EXPECT_TRUE(const_node.getParent() == &root_node);
+    EXPECT_ANY_THROW(node.storeJointValue(M_PI_2));  // NOLINT
+    EXPECT_ANY_THROW(node.getJointValue());          // NOLINT
+    EXPECT_FALSE(node.updateWorldTransformationRequired());
+    EXPECT_TRUE(Eigen::Isometry3d::Identity().isApprox(node.computeLocalTransformation(0), 1e-6));
+    EXPECT_TRUE(node.getStaticTransformation().isApprox(Eigen::Isometry3d::Identity(), 1e-6));
+    node.computeAndStoreLocalTransformation();
+    EXPECT_TRUE(Eigen::Isometry3d::Identity().isApprox(node.getLocalTransformation(), 1e-6));
+
+    Eigen::Isometry3d static_tf = Eigen::Isometry3d::Identity();
+    static_tf.translation() = Eigen::Vector3d(1, 2, 3);
+    node.setStaticTransformation(static_tf);
+    EXPECT_TRUE(node.getStaticTransformation().isApprox(static_tf, 1e-6));
+  }
+
   {  // OFKTRevoluteNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d(0, 0, 1));
     OFKTRootNode root_node("base_link");
@@ -151,6 +170,11 @@ TEST(TesseractStateSolverUnit, KDLGetJacobianUnit)  // NOLINT
 TEST(TesseractStateSolverUnit, OFKTGetJacobianUnit)  // NOLINT
 {
   test_suite::runJacobianTest<OFKTStateSolver>();
+}
+
+TEST(TesseractStateSolverUnit, OFKTSetFloatingJointStateUnit)  // NOLINT
+{
+  test_suite::runSetFloatingJointStateTest<OFKTStateSolver>();
 }
 
 TEST(TesseractStateSolverUnit, OFKTUnit)  // NOLINT

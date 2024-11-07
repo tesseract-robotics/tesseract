@@ -52,6 +52,15 @@ Eigen::VectorXd SceneState::getJointValues(const std::vector<std::string>& joint
   return jv;
 }
 
+tesseract_common::TransformMap SceneState::getFloatingJointValues(const std::vector<std::string>& joint_names) const
+{
+  tesseract_common::TransformMap fjv;
+  for (const auto& joint_name : joint_names)
+    fjv[joint_name] = floating_joints.at(joint_name);
+
+  return fjv;
+}
+
 bool SceneState::operator==(const SceneState& rhs) const
 {
   auto isometry_equal = [](const Eigen::Isometry3d& iso_1, const Eigen::Isometry3d& iso_2) {
@@ -61,6 +70,7 @@ bool SceneState::operator==(const SceneState& rhs) const
   using namespace tesseract_common;
   bool equal = true;
   equal &= isIdenticalMap<std::unordered_map<std::string, double>, double>(joints, rhs.joints);
+  equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(floating_joints, rhs.floating_joints, isometry_equal);
   equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(link_transforms, rhs.link_transforms, isometry_equal);
   equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(joint_transforms, rhs.joint_transforms, isometry_equal);
 
@@ -72,6 +82,7 @@ template <class Archive>
 void SceneState::serialize(Archive& ar, const unsigned int /*version*/)
 {
   ar& BOOST_SERIALIZATION_NVP(joints);
+  ar& BOOST_SERIALIZATION_NVP(floating_joints);
   ar& BOOST_SERIALIZATION_NVP(link_transforms);
   ar& BOOST_SERIALIZATION_NVP(joint_transforms);
 }

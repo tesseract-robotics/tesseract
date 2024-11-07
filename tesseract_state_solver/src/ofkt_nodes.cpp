@@ -189,6 +189,43 @@ void OFKTFixedNode::computeAndStoreLocalTransformation() {}
 
 Eigen::Isometry3d OFKTFixedNode::computeLocalTransformation(double /*joint_value*/) const { return local_tf_; }
 
+/**********************************************************************/
+/************************* FLOATING NODE ******************************/
+/**********************************************************************/
+OFKTFloatingNode::OFKTFloatingNode(OFKTNode* parent,
+                                   std::string link_name,
+                                   std::string joint_name,
+                                   const Eigen::Isometry3d& static_tf)
+  : OFKTBaseNode(tesseract_scene_graph::JointType::FLOATING,
+                 parent,
+                 std::move(link_name),
+                 std::move(joint_name),
+                 static_tf)
+{
+  OFKTBaseNode::computeAndStoreWorldTransformation();
+}
+
+void OFKTFloatingNode::storeJointValue(double /*joint_value*/)
+{
+  throw std::runtime_error("OFKTFloatingNode: does not have a joint value!");
+}
+
+double OFKTFloatingNode::getJointValue() const
+{
+  throw std::runtime_error("OFKTFloatingNode: does not have a joint value!");
+}
+
+void OFKTFloatingNode::setStaticTransformation(const Eigen::Isometry3d& static_tf)
+{
+  static_tf_ = static_tf;
+  local_tf_ = static_tf;
+  update_world_required_ = true;
+}
+
+void OFKTFloatingNode::computeAndStoreLocalTransformation() {}
+
+Eigen::Isometry3d OFKTFloatingNode::computeLocalTransformation(double /*joint_value*/) const { return local_tf_; }
+
 /*********************************************************************/
 /************************* REVOLUTE NODE *****************************/
 /*********************************************************************/
