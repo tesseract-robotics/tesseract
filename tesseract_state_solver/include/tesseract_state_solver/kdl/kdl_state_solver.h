@@ -59,30 +59,43 @@ public:
 
   StateSolver::UPtr clone() const override;
 
-  void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) override final;
-  void setState(const std::unordered_map<std::string, double>& joint_values) override final;
+  void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract_common::TransformMap& floating_joint_values = {}) override final;
+  void setState(const std::unordered_map<std::string, double>& joint_values,
+                const tesseract_common::TransformMap& floating_joint_values = {}) override final;
   void setState(const std::vector<std::string>& joint_names,
-                const Eigen::Ref<const Eigen::VectorXd>& joint_values) override final;
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract_common::TransformMap& floating_joint_values = {}) override final;
+  void setState(const tesseract_common::TransformMap& floating_joint_values) override final;
 
-  SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
-  SceneState getState(const std::unordered_map<std::string, double>& joint_values) const override final;
+  SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                      const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
+  SceneState getState(const std::unordered_map<std::string, double>& joint_values,
+                      const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
   SceneState getState(const std::vector<std::string>& joint_names,
-                      const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                      const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
+  SceneState getState(const tesseract_common::TransformMap& floating_joint_values) const override final;
 
   SceneState getState() const override final;
 
   SceneState getRandomState() const override final;
 
   Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name) const override final;
+                              const std::string& link_name,
+                              const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
 
   Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joint_values,
-                              const std::string& link_name) const override final;
+                              const std::string& link_name,
+                              const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
   Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name) const override final;
+                              const std::string& link_name,
+                              const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
 
   std::vector<std::string> getJointNames() const override final;
+
+  std::vector<std::string> getFloatingJointNames() const override final;
 
   std::vector<std::string> getActiveJointNames() const override final;
 

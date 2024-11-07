@@ -43,6 +43,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/link.h>
+#include <tesseract_common/eigen_types.h>
+#include <tesseract_common/utils.h>
 
 namespace tesseract_scene_graph
 {
@@ -136,6 +138,7 @@ KDL::Joint convert(const std::shared_ptr<const Joint>& joint)
   switch (joint->type)
   {
     case JointType::FIXED:
+    case JointType::FLOATING:
     {
       return KDL::Joint(name, KDL::Joint::None);
     }
@@ -190,6 +193,28 @@ KDL::RigidBodyInertia convert(const std::shared_ptr<const Inertial>& inertial)
   return KDL::RigidBodyInertia(kdl_mass, kdl_com, kdl_inertia_wrt_com);
 }
 
+bool KDLTreeData::operator==(const KDLTreeData& rhs) const
+{
+  bool equal = true;
+  equal &= (base_link_name == rhs.base_link_name);
+  equal &= (joint_names == rhs.joint_names);
+  equal &= (active_joint_names == rhs.active_joint_names);
+  equal &= (floating_joint_names == rhs.floating_joint_names);
+  equal &= (link_names == rhs.link_names);
+  equal &= (active_link_names == rhs.active_link_names);
+  equal &= (static_link_names == rhs.static_link_names);
+
+  auto isometry_equal = [](const Eigen::Isometry3d& iso_1, const Eigen::Isometry3d& iso_2) {
+    return iso_1.isApprox(iso_2, 1e-5);
+  };
+  equal &= tesseract_common::isIdenticalMap<tesseract_common::TransformMap, Eigen::Isometry3d>(
+      floating_joint_values, rhs.floating_joint_values, isometry_equal);
+
+  return equal;
+}
+
+bool KDLTreeData::operator!=(const KDLTreeData& rhs) const { return !operator==(rhs); }
+
 /**
  * @brief Every time a vertex is visited for the first time add a new
  *        segment to the KDL Tree;
@@ -219,6 +244,7 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
       data_.static_link_names.reserve(num_v);
       data_.joint_names.reserve(num_e);
       data_.active_joint_names.reserve(num_e);
+      data_.floating_joint_names.reserve(num_e);
 
       data_.link_names.push_back(link->getName());
       data_.static_link_names.push_back(link->getName());
@@ -233,6 +259,12 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
     SceneGraph::Edge e = *ei;
     const Joint::ConstPtr& parent_joint = boost::get(boost::edge_joint, graph)[e];
     data_.joint_names.push_back(parent_joint->getName());
+
+    if (parent_joint->type == JointType::FLOATING)
+    {
+      data_.floating_joint_names.push_back(parent_joint->getName());
+      data_.floating_joint_values[parent_joint->getName()] = parent_joint->parent_to_joint_origin_transform;
+    }
 
     KDL::Joint kdl_jnt = convert(parent_joint);
     if (kdl_jnt.getType() != KDL::Joint::None)
@@ -269,9 +301,12 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
 {
   kdl_sub_tree_builder(KDLTreeData& data,
                        const std::vector<std::string>& joint_names,
-                       const std::unordered_map<std::string, double>& joint_values)
-    : data_(data), joint_names_(joint_names), joint_values_(joint_values)
+                       const std::unordered_map<std::string, double>& joint_values,
+                       const tesseract_common::TransformMap& floating_joint_values)
+    : data_(data), joint_names_(joint_names), joint_values_(joint_values), floating_joint_values_(floating_joint_values)
   {
+    for (const auto& floating_joint_value : floating_joint_values)
+      data_.floating_joint_values.at(floating_joint_value.first) = floating_joint_value.second;
   }
 
   template <class u, class g>
@@ -310,15 +345,18 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     const Joint::ConstPtr& parent_joint = boost::get(boost::edge_joint, graph)[e];
     bool found = (std::find(joint_names_.begin(), joint_names_.end(), parent_joint->getName()) != joint_names_.end());
     KDL::Joint kdl_jnt = convert(parent_joint);
-    KDL::Frame parent_to_joint = convert(parent_joint->parent_to_joint_origin_transform);
+    KDL::Frame parent_to_joint = (parent_joint->type == JointType::FLOATING) ?
+                                     convert(data_.floating_joint_values.at(parent_joint->getName())) :
+                                     convert(parent_joint->parent_to_joint_origin_transform);
+
     KDL::Segment kdl_sgm(link->getName(), kdl_jnt, parent_to_joint, inert);
     std::string parent_link_name = parent_joint->parent_link_name;
 
-    if (parent_joint->type != JointType::FIXED)
+    if (parent_joint->type == JointType::FIXED || parent_joint->type == JointType::FLOATING)
+      segment_transforms_[parent_joint->child_link_name] = segment_transforms_[parent_link_name] * kdl_sgm.pose(0.0);
+    else
       segment_transforms_[parent_joint->child_link_name] =
           segment_transforms_[parent_link_name] * kdl_sgm.pose(joint_values_.at(parent_joint->getName()));
-    else
-      segment_transforms_[parent_joint->child_link_name] = segment_transforms_[parent_link_name] * kdl_sgm.pose(0.0);
 
     if (!started_ && found)
     {
@@ -376,10 +414,10 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
       }
       else if (it != link_names_.end() && !found)
       {
-        if (parent_joint->type != JointType::FIXED)
-          parent_to_joint = kdl_sgm.pose(joint_values_.at(parent_joint->getName()));
-        else
+        if (parent_joint->type == JointType::FIXED || parent_joint->type == JointType::FLOATING)
           parent_to_joint = kdl_sgm.pose(0.0);
+        else
+          parent_to_joint = kdl_sgm.pose(joint_values_.at(parent_joint->getName()));
 
         kdl_jnt = KDL::Joint(parent_joint->getName(), KDL::Joint::None);
       }
@@ -413,6 +451,7 @@ protected:
 
   const std::vector<std::string>& joint_names_;
   const std::unordered_map<std::string, double>& joint_values_;
+  const tesseract_common::TransformMap& floating_joint_values_;
 };
 
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
@@ -457,7 +496,8 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
 
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
                             const std::vector<std::string>& joint_names,
-                            const std::unordered_map<std::string, double>& joint_values)
+                            const std::unordered_map<std::string, double>& joint_values,
+                            const tesseract_common::TransformMap& floating_joint_values)
 {
   if (!scene_graph.isTree())
     throw std::runtime_error("parseSubSceneGraph: currently only works if the scene graph is a tree.");
@@ -465,7 +505,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
   KDLTreeData data;
   data.tree = KDL::Tree(scene_graph.getRoot());
 
-  kdl_sub_tree_builder builder(data, joint_names, joint_values);
+  kdl_sub_tree_builder builder(data, joint_names, joint_values, floating_joint_values);
 
   std::map<SceneGraph::Vertex, size_t> index_map;
   boost::associative_property_map<std::map<SceneGraph::Vertex, size_t>> prop_index_map(index_map);

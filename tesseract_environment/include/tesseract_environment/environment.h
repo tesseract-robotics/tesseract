@@ -296,8 +296,11 @@ public:
    * will update the contact managers transforms
    *
    */
-  void setState(const std::unordered_map<std::string, double>& joints);
-  void setState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values);
+  void setState(const std::unordered_map<std::string, double>& joints,
+                const tesseract_common::TransformMap& floating_joints = {});
+  void setState(const std::vector<std::string>& joint_names,
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract_common::TransformMap& floating_joints = {});
 
   /**
    * @brief Get the state of the environment for a given set or subset of joint values.
@@ -307,9 +310,11 @@ public:
    * @param joints A map of joint names to joint values to change.
    * @return A the state of the environment
    */
-  tesseract_scene_graph::SceneState getState(const std::unordered_map<std::string, double>& joints) const;
+  tesseract_scene_graph::SceneState getState(const std::unordered_map<std::string, double>& joints,
+                                             const tesseract_common::TransformMap& floating_joints = {}) const;
   tesseract_scene_graph::SceneState getState(const std::vector<std::string>& joint_names,
-                                             const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
+                                             const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                             const tesseract_common::TransformMap& floating_joints = {}) const;
 
   /** @brief Get the current state of the environment */
   tesseract_scene_graph::SceneState getState() const;
@@ -388,6 +393,18 @@ public:
    * @return A vector of joint values
    */
   Eigen::VectorXd getCurrentJointValues(const std::vector<std::string>& joint_names) const;
+
+  /**
+   * @brief Get the current floating joint values
+   * @return The joint origin transform for the floating joint
+   */
+  tesseract_common::TransformMap getCurrentFloatingJointValues() const;
+
+  /**
+   * @brief Get the current floating joint values
+   * @return The joint origin transform for the floating joint
+   */
+  tesseract_common::TransformMap getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
 
   /**
    * @brief Get the root link name
