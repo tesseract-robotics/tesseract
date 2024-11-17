@@ -612,8 +612,6 @@ void Environment::Implementation::clear()
   collision_margin_data = tesseract_collision::CollisionMarginData();
   kinematics_information.clear();
   contact_managers_plugin_info.clear();
-  kinematics_factory = tesseract_kinematics::KinematicsPluginFactory();
-  contact_managers_factory = tesseract_collision::ContactManagersPluginFactory();
 
   {
     std::unique_lock<std::shared_mutex> lock(discrete_manager_mutex);
@@ -639,6 +637,10 @@ void Environment::Implementation::clear()
     std::unique_lock<std::shared_mutex> lock(kinematic_group_cache_mutex);
     kinematic_group_cache.clear();
   }
+
+  // Must clear cache before deleting plugin factories
+  kinematics_factory = tesseract_kinematics::KinematicsPluginFactory();
+  contact_managers_factory = tesseract_collision::ContactManagersPluginFactory();
 }
 
 bool Environment::Implementation::reset()
