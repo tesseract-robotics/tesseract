@@ -20,7 +20,7 @@
   <depend>yaml-cpp</depend>
   <depend>bullet</depend>
   <depend>bullet-extras</depend>
-  <depend>fcl</depend>
+  <depend>libfcl-dev</depend>
   <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_support</depend>
 
