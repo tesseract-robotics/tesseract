@@ -28,10 +28,12 @@ services:
       - USER_ID=${USER_ID}      # Passes the host user's UID
       - GROUP_ID=${GROUP_ID}     # Passes the host user's GID
       - SHELL=/bin/bash
+    cap_add:
+      - SYS_PTRACE # Allow gdb to attach to running process
     user: "${USERNAME}"
     ipc: host
     network_mode: "host" # Allow access to host network for DISPLAY
     privileged: true
     stdin_open: true # Keeps STDIN open, useful for interactive mode
     tty: true        # Allocates a pseudo-TTY
-    command: /opt/qt-creator/bin/qtcreator
+    command: bash -c "sudo sysctl -w kernel.yama.ptrace_scope=0 && /opt/qt-creator/bin/qtcreator"
