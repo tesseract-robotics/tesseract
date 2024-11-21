@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # Install
 RUN apt update \
   && apt upgrade -y \
-  && apt install -y sudo cmake curl git python3 wget gnupg2 g++ gcc software-properties-common locales \
+  && apt install -y sudo cmake curl git python3 wget gnupg2 g++ gcc software-properties-common locales gdb \
   && locale-gen en_US.UTF-8
 
 # Set environment variables to use UTF-8
