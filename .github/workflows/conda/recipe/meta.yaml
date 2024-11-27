@@ -21,7 +21,7 @@ requirements:
       - {{ cdt('mesa-libgl-devel') }}    # [linux]
       - {{ cdt('mesa-dri-drivers') }}    # [linux]
     host:
-      - boost-cpp 
+      - libboost-devel
       - eigen 
       - tinyxml2
       - console_bridge
