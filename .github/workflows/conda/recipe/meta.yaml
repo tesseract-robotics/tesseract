@@ -43,7 +43,7 @@ requirements:
       - xorg-libx11    # [unix]
       - xorg-libxext   # [unix]
     run:
-      - boost-cpp
+      - libboost-devel
       - eigen 
       - tinyxml2
       - console_bridge
