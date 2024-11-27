@@ -336,7 +336,7 @@ std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
  */
 template <class T>
 std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
-                                                   Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+                                                   const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
                                                    bool triangulate = false,
                                                    bool flatten = false,
                                                    bool normals = false,
@@ -418,7 +418,7 @@ std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
  */
 template <class T>
 std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resource::Ptr resource,
-                                                       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+                                                       const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
                                                        bool triangulate = false,
                                                        bool flatten = false,
                                                        bool normals = false,
@@ -537,7 +537,7 @@ template <typename T>
 static std::vector<std::shared_ptr<T>> createMeshFromBytes(const std::string& url,
                                                            const uint8_t* bytes,
                                                            size_t bytes_len,
-                                                           Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+                                                           const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
                                                            bool triangulate = false,
                                                            bool flatten = false,
                                                            bool normals = false,
