@@ -46,20 +46,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
   {                                                                                                                    \
   using K##AnyInstanceBase = tesseract_common::TypeErasureInstance<C, tesseract_common::TypeErasureInterface>;         \
   using K##AnyInstance = tesseract_common::detail_any::AnyInstance<C>;                                                 \
-  using K##AnyInstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<K##AnyInstance>;                          \
   }                                                                                                                    \
   BOOST_CLASS_EXPORT_KEY(tesseract_serialization::any_poly::K##AnyInstanceBase)                                        \
   BOOST_CLASS_EXPORT_KEY(tesseract_serialization::any_poly::K##AnyInstance)                                            \
-  BOOST_CLASS_EXPORT_KEY(tesseract_serialization::any_poly::K##AnyInstanceWrapper)                                     \
   BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstanceBase, boost::serialization::track_never)       \
-  BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstance, boost::serialization::track_never)           \
-  BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstanceWrapper, boost::serialization::track_never)
+  BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstance, boost::serialization::track_never)
 
 /** @brief If shared library, this must go in the cpp after the implicit instantiation of the serialize function */
 #define TESSERACT_ANY_EXPORT_IMPLEMENT(K)                                                                              \
   BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstanceBase)                                  \
-  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstance)                                      \
-  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstanceWrapper)
+  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstance)
 
 /**
  * @brief This should not be used within shared libraries use the two above.
@@ -101,6 +97,11 @@ struct AnyInstance : tesseract_common::TypeErasureInstance<T, tesseract_common::
   AnyInstance(AnyInstance&& x) noexcept : BaseType(std::move(x)) {}
 
   BOOST_CONCEPT_ASSERT((AnyConcept<T>));
+
+  std::unique_ptr<tesseract_common::TypeErasureInterface> clone() const final
+  {
+    return std::make_unique<AnyInstance<T>>(this->get());
+  }
 
 private:
   friend class boost::serialization::access;
