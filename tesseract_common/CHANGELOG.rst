@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.27.0 (2024-12-01)
+-------------------
 * Simplify type erasure
 * Add uuid to tesseract_common::JointTrajectory
 * Contributors: Levi Armstrong
