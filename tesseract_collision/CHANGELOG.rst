@@ -2,6 +2,12 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update package.xml
+* Update fcl rosdep key in package.xml
+* Contributors: Levi Armstrong
+
 0.26.0 (2024-10-27)
 -------------------
 * Remove TesseractSupportResourceLocator

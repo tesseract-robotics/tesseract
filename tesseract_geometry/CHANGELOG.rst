@@ -2,6 +2,11 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix mesh parser passing eigen types by value
+* Contributors: Levi Armstrong
+
 0.26.0 (2024-10-27)
 -------------------
 * Remove TesseractSupportResourceLocator

@@ -2,6 +2,11 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix environment clear such that cache is cleared before plugin factories are destroyed
+* Contributors: Levi Armstrong
+
 0.26.0 (2024-10-27)
 -------------------
 * Remove TesseractSupportResourceLocator
