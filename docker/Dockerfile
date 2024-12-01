@@ -10,7 +10,7 @@ USER root
 # Install
 RUN apt update \
   && apt upgrade -y \
-  && apt install -y cmake curl git python3 liboctomap-dev
+  && apt install -y cmake curl git python3 liboctomap-dev libfcl-dev
 
 # Add ROS2 sources to install ROS infrastructure tools
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
