@@ -28,6 +28,7 @@
 
 #include <memory>
 #include <typeindex>
+#include <stdexcept>
 #include <boost/stacktrace.hpp>
 #include <boost/core/demangle.hpp>
 #include <boost/serialization/base_object.hpp>
