@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.27.1 (2024-12-03)
+-------------------
 * Include stdexcept in type_erasure.h
 * Contributors: John Wason
 
