@@ -51,17 +51,76 @@ int main(int argc, char** argv)
 
   namespace po = boost::program_options;
   po::options_description desc("Options");
-  desc.add_options()("help,h", "Print help messages")(
-      "input,i", po::value<std::string>(&input)->required(), "File path to mesh used to create a convex hull.")(
-      "output,o", po::value<std::string>(&output)->required(), "File path to save the generated convex hull as a ply.")(
-      "shrink,s",
-      po::value<double>(&shrink),
-      "If positive, the convex hull is shrunken by that amount (each face is moved by 'shrink' length units towards "
-      "the center along its normal).")("clamp,c",
-                                       po::value<double>(&clamp),
-                                       "If positive, 'shrink' is clamped to not exceed 'clamp * innerRadius', where "
-                                       "'innerRadius' is the minimum distance of a face to the center of the convex "
-                                       "hull.");
+  desc.add_options()(
+      "help,h", "Print help messages")("input,i",
+                                       po::value<std::string>(&input)->required(),
+                                       "File path to mesh used to create a convex hull.")("output,o",
+                                                                                          po::value<std::string>(
+                                                                                              &output)
+                                                                                              ->required(),
+                                                                                          "File path to save the "
+                                                                                          "generated convex hull as a "
+                                                                                          "ply.")("shrink,s",
+                                                                                                  po::value<double>(
+                                                                                                      &shrink),
+                                                                                                  "If positive, the "
+                                                                                                  "convex hull is "
+                                                                                                  "shrunken by that "
+                                                                                                  "amount (each face "
+                                                                                                  "is moved by "
+                                                                                                  "'shrink' length "
+                                                                                                  "units towards "
+                                                                                                  "the center along "
+                                                                                                  "its normal).")("clam"
+                                                                                                                  "p,c",
+                                                                                                                  po::value<
+                                                                                                                      double>(
+                                                                                                                      &clamp),
+                                                                                                                  "If "
+                                                                                                                  "posi"
+                                                                                                                  "tive"
+                                                                                                                  ", "
+                                                                                                                  "'shr"
+                                                                                                                  "ink'"
+                                                                                                                  " is "
+                                                                                                                  "clam"
+                                                                                                                  "ped "
+                                                                                                                  "to "
+                                                                                                                  "not "
+                                                                                                                  "exce"
+                                                                                                                  "ed "
+                                                                                                                  "'cla"
+                                                                                                                  "mp "
+                                                                                                                  "* "
+                                                                                                                  "inne"
+                                                                                                                  "rRad"
+                                                                                                                  "ius'"
+                                                                                                                  ", "
+                                                                                                                  "wher"
+                                                                                                                  "e "
+                                                                                                                  "'inn"
+                                                                                                                  "erRa"
+                                                                                                                  "dius"
+                                                                                                                  "' "
+                                                                                                                  "is "
+                                                                                                                  "the "
+                                                                                                                  "mini"
+                                                                                                                  "mum "
+                                                                                                                  "dist"
+                                                                                                                  "ance"
+                                                                                                                  " of "
+                                                                                                                  "a "
+                                                                                                                  "face"
+                                                                                                                  " to "
+                                                                                                                  "the "
+                                                                                                                  "cent"
+                                                                                                                  "er "
+                                                                                                                  "of "
+                                                                                                                  "the "
+                                                                                                                  "conv"
+                                                                                                                  "ex "
+                                                                                                                  "hull"
+                                                                                                                  ".");
 
   po::variables_map vm;
   try
