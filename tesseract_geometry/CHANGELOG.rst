@@ -2,6 +2,9 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.27.0 (2024-12-01)
 -------------------
 * Fix mesh parser passing eigen types by value
