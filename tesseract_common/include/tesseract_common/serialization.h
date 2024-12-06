@@ -52,6 +52,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
   template void Type::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);                      \
   template void Type::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
 
+#define TESSERACT_SERIALIZE_FREE_ARCHIVES_INSTANTIATE(Type)                                                            \
+  template void boost::serialization::serialize(                                                                       \
+      boost::archive::xml_oarchive& ar, Type& g, const unsigned int version); /* NOLINT */                             \
+  template void boost::serialization::serialize(                                                                       \
+      boost::archive::xml_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */                             \
+  template void boost::serialization::serialize(                                                                       \
+      boost::archive::binary_oarchive& ar, Type& g, const unsigned int version); /* NOLINT */                          \
+  template void boost::serialization::serialize(                                                                       \
+      boost::archive::binary_iarchive& ar, Type& g, const unsigned int version); /* NOLINT */
+
 // Use this macro for serialization defined using the invasive method inside the class with custom load/save functions
 #define TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(Type)                                                       \
   template void Type::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);                         \
