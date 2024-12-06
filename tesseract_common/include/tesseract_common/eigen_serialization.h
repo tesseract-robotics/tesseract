@@ -129,14 +129,21 @@ void load(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, const un
 template <class Archive>
 void serialize(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
 
+/****************************************/
+/****** Eigen::Matrix<double, 6, 1> *****/
+/****************************************/
+
+template <class Archive>
+void serialize(Archive& ar, Eigen::Matrix<double, 6, 1>& g, const unsigned int version);  // NOLINT
+
 }  // namespace boost::serialization
 
 // Set the tracking to track_never for all Eigen types.
-BOOST_CLASS_TRACKING(Eigen::VectorXd, boost::serialization::track_never);
-BOOST_CLASS_TRACKING(Eigen::Vector3d, boost::serialization::track_never);
-BOOST_CLASS_TRACKING(Eigen::Vector4d, boost::serialization::track_never);
-BOOST_CLASS_TRACKING(Eigen::VectorXi, boost::serialization::track_never);
-BOOST_CLASS_TRACKING(Eigen::Isometry3d, boost::serialization::track_never);
-BOOST_CLASS_TRACKING(Eigen::MatrixX2d, boost::serialization::track_never);
+BOOST_CLASS_TRACKING(Eigen::VectorXd, boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Eigen::Vector3d, boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Eigen::Vector4d, boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Eigen::VectorXi, boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Eigen::Isometry3d, boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Eigen::MatrixX2d, boost::serialization::track_never)
 
 #endif  // TESSERACT_COMMON_SERIALIZATION_H
