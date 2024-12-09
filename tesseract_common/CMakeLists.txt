@@ -154,7 +154,7 @@ if(TESSERACT_PACKAGE)
       "libyaml-cpp-dev"
     WINDOWS_DEPENDS
       "boost_system"
-      "boost_filesystem;"
+      "boost_filesystem"
       "boost_serialization"
       "console-bridge"
       "tinyxml2"
