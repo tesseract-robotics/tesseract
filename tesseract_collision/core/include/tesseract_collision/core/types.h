@@ -290,6 +290,47 @@ public:
   bool operator==(const ContactResultMap& rhs) const;
   bool operator!=(const ContactResultMap& rhs) const;
 
+  /** @brief Get a brief summary of the most frequently colliding link pair
+   * @return A string stream containing the collision summary
+   */
+  std::stringstream getCollisionSummary() const
+  {
+    std::stringstream ss;
+    std::map<KeyType, int> collision_counts;
+    std::map<KeyType, double> closest_distances;
+
+    // Initialize distances map with max values
+    for (const auto& pair : data_)
+    {
+      if (!pair.second.empty())
+      {
+        collision_counts[pair.first] = pair.second.size();
+        closest_distances[pair.first] = std::numeric_limits<double>::max();
+
+        // Find closest distance for this pair
+        for (const auto& result : pair.second)
+        {
+          closest_distances[pair.first] = std::min(closest_distances[pair.first], result.distance);
+        }
+      }
+    }
+
+    if (collision_counts.empty())
+    {
+      ss << "No collisions detected";
+      return ss;
+    }
+
+    auto max_element = std::max_element(collision_counts.begin(),
+                                        collision_counts.end(),
+                                        [](const auto& p1, const auto& p2) { return p1.second < p2.second; });
+
+    ss << max_element->first.first << " - " << max_element->first.second << ": " << max_element->second
+       << " collisions, min dist: " << closest_distances[max_element->first];
+
+    return ss;
+  }
+
 private:
   ContainerType data_;
   long count_{ 0 };
