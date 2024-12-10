@@ -296,7 +296,7 @@ public:
   std::stringstream getCollisionSummary() const
   {
     std::stringstream ss;
-    std::map<KeyType, int> collision_counts;
+    std::map<KeyType, std::size_t> collision_counts;
     std::map<KeyType, double> closest_distances;
 
     // Initialize distances map with max values
