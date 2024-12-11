@@ -116,7 +116,7 @@ public:
     for (unsigned i = 0; i < collision_objects_.size(); ++i)
     {
       CollisionObjectPtr& co = collision_objects_[i];
-      co->setTransform(pose * shape_poses_[i]);
+      co->setTransform(pose * collision_poses_[i]);
       co->updateAABB();  // This a tesseract function that updates abb to take into account contact distance
     }
   }
@@ -141,6 +141,7 @@ public:
     clone_cow->type_id_ = type_id_;
     clone_cow->shapes_ = shapes_;
     clone_cow->shape_poses_ = shape_poses_;
+    clone_cow->collision_poses_ = collision_poses_;
     clone_cow->collision_geometries_ = collision_geometries_;
 
     clone_cow->collision_objects_.reserve(collision_objects_.size());
@@ -176,6 +177,7 @@ protected:
   Eigen::Isometry3d world_pose_{ Eigen::Isometry3d::Identity() }; /**< @brief Collision Object World Transformation */
   CollisionShapesConst shapes_;
   tesseract_common::VectorIsometry3d shape_poses_;
+  tesseract_common::VectorIsometry3d collision_poses_;
   std::vector<CollisionGeometryPtr> collision_geometries_;
   std::vector<CollisionObjectPtr> collision_objects_;
   /**

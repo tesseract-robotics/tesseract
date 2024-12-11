@@ -349,6 +349,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;
   m_collisionFilterMask = CollisionFilterGroups::StaticFilter | CollisionFilterGroups::KinematicFilter;
 
+  collision_poses_.reserve(shapes_.size());
   collision_geometries_.reserve(shapes_.size());
   collision_objects_.reserve(shapes_.size());
   collision_objects_raw_.reserve(shapes_.size());
@@ -362,6 +363,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
         CollisionGeometryPtr subshape = createShapePrimitive(mesh);
         if (subshape != nullptr)
         {
+          collision_poses_.push_back(shape_poses_[i]);
           collision_geometries_.push_back(subshape);
           auto co = std::make_shared<FCLCollisionObjectWrapper>(subshape);
           co->setUserData(this);
@@ -377,6 +379,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
       CollisionGeometryPtr subshape = createShapePrimitive(shapes_[i]);
       if (subshape != nullptr)
       {
+        collision_poses_.push_back(shape_poses_[i]);
         collision_geometries_.push_back(subshape);
         auto co = std::make_shared<FCLCollisionObjectWrapper>(subshape);
         co->setUserData(this);
