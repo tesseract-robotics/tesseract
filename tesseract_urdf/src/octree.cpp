@@ -40,11 +40,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/octree.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctree(const tinyxml2::XMLElement* xml_element,
-                                                            const tesseract_common::ResourceLocator& locator,
-                                                            tesseract_geometry::OctreeSubType shape_type,
-                                                            bool prune,
-                                                            int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_geometry::Octree::Ptr parseOctree(const tinyxml2::XMLElement* xml_element,
+                                            const tesseract_common::ResourceLocator& locator,
+                                            tesseract_geometry::OctreeSubType shape_type,
+                                            bool prune)
 {
   std::string filename;
   if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
@@ -69,14 +70,14 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctree(const tinyxml2::XMLE
   return geom;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeOctree(const tesseract_geometry::Octree::ConstPtr& octree,
-                                                  tinyxml2::XMLDocument& doc,
-                                                  const std::string& package_path,
-                                                  const std::string& filename)
+tinyxml2::XMLElement* writeOctree(const tesseract_geometry::Octree::ConstPtr& octree,
+                                  tinyxml2::XMLDocument& doc,
+                                  const std::string& package_path,
+                                  const std::string& filename)
 {
   if (octree == nullptr)
     std::throw_with_nested(std::runtime_error("Octree is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("octree");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(OCTREE_ELEMENT_NAME);
 
   std::string filepath = trailingSlash(package_path) + noLeadingSlash(filename);
 
@@ -91,3 +92,5 @@ tinyxml2::XMLElement* tesseract_urdf::writeOctree(const tesseract_geometry::Octr
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

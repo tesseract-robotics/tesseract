@@ -43,6 +43,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* MESH_ELEMENT_NAME = "mesh";
+
 /**
  * @brief Parse xml element mesh
  * @param xml_element The xml element
@@ -53,8 +55,7 @@ namespace tesseract_urdf
  */
 std::vector<std::shared_ptr<tesseract_geometry::Mesh>> parseMesh(const tinyxml2::XMLElement* xml_element,
                                                                  const tesseract_common::ResourceLocator& locator,
-                                                                 bool visual,
-                                                                 int version);
+                                                                 bool visual);
 
 /**
  * @brief writeMesh Write a mesh to URDF XML and PLY file

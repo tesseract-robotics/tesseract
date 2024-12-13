@@ -36,8 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/limits.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_scene_graph::JointLimits::Ptr tesseract_urdf::parseLimits(const tinyxml2::XMLElement* xml_element,
-                                                                    int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_scene_graph::JointLimits::Ptr parseLimits(const tinyxml2::XMLElement* xml_element)
 {
   auto limits = std::make_shared<tesseract_scene_graph::JointLimits>();
 
@@ -70,13 +71,12 @@ tesseract_scene_graph::JointLimits::Ptr tesseract_urdf::parseLimits(const tinyxm
   return limits;
 }
 
-tinyxml2::XMLElement*
-tesseract_urdf::writeLimits(const std::shared_ptr<const tesseract_scene_graph::JointLimits>& limits,
-                            tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract_scene_graph::JointLimits>& limits,
+                                  tinyxml2::XMLDocument& doc)
 {
   if (limits == nullptr)
     std::throw_with_nested(std::runtime_error("Limits are nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("limit");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(LIMITS_ELEMENT_NAME);
 
   // if upper and lower are both zero, don't write it.  This should only happen for continuous joints.
   if (!tesseract_common::almostEqualRelativeAndAbs(limits->lower, 0.0) ||
@@ -102,3 +102,5 @@ tesseract_urdf::writeLimits(const std::shared_ptr<const tesseract_scene_graph::J
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

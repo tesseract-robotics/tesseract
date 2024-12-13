@@ -43,7 +43,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/safety_controller.h>
 
-tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XMLElement* xml_element, int version)
+namespace tesseract_urdf
+{
+tesseract_scene_graph::Joint::Ptr parseJoint(const tinyxml2::XMLElement* xml_element)
 {
   // get joint name
   std::string joint_name;
@@ -59,7 +61,7 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
   {
     try
     {
-      j->parent_to_joint_origin_transform = parseOrigin(origin, version);
+      j->parent_to_joint_origin_transform = parseOrigin(origin);
     }
     catch (...)
     {
@@ -155,7 +157,7 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
     {
       try
       {
-        j->limits = parseLimits(limits, version);
+        j->limits = parseLimits(limits);
       }
       catch (...)
       {
@@ -171,7 +173,7 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
   {
     try
     {
-      j->safety = parseSafetyController(safety, version);
+      j->safety = parseSafetyController(safety);
     }
     catch (...)
     {
@@ -186,7 +188,7 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
   {
     try
     {
-      j->calibration = parseCalibration(calibration, version);
+      j->calibration = parseCalibration(calibration);
     }
     catch (...)
     {
@@ -201,7 +203,7 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
   {
     try
     {
-      j->mimic = parseMimic(mimic, version);
+      j->mimic = parseMimic(mimic);
     }
     catch (...)
     {
@@ -216,7 +218,7 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
   {
     try
     {
-      j->dynamics = parseDynamics(dynamics, version);
+      j->dynamics = parseDynamics(dynamics);
     }
     catch (...)
     {
@@ -228,12 +230,12 @@ tesseract_scene_graph::Joint::Ptr tesseract_urdf::parseJoint(const tinyxml2::XML
   return j;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tesseract_scene_graph::Joint>& joint,
-                                                 tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeJoint(const std::shared_ptr<const tesseract_scene_graph::Joint>& joint,
+                                 tinyxml2::XMLDocument& doc)
 {
   if (joint == nullptr)
     std::throw_with_nested(std::runtime_error("Joint is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("joint");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(JOINT_ELEMENT_NAME);
 
   // Set the joint name
   xml_element->SetAttribute("name", joint->getName().c_str());
@@ -340,3 +342,5 @@ tinyxml2::XMLElement* tesseract_urdf::writeJoint(const std::shared_ptr<const tes
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

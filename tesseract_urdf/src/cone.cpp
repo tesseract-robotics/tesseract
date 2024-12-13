@@ -35,7 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/cone.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_geometry::Cone::Ptr tesseract_urdf::parseCone(const tinyxml2::XMLElement* xml_element, int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_geometry::Cone::Ptr parseCone(const tinyxml2::XMLElement* xml_element)
 {
   double r{ 0 }, l{ 0 };
   if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS || !(l > 0))
@@ -47,13 +49,14 @@ tesseract_geometry::Cone::Ptr tesseract_urdf::parseCone(const tinyxml2::XMLEleme
   return std::make_shared<tesseract_geometry::Cone>(r, l);
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeCone(const std::shared_ptr<const tesseract_geometry::Cone>& cone,
-                                                tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeCone(const std::shared_ptr<const tesseract_geometry::Cone>& cone, tinyxml2::XMLDocument& doc)
 {
   if (cone == nullptr)
     std::throw_with_nested(std::runtime_error("Cone is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("cone");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(CONE_ELEMENT_NAME);
   xml_element->SetAttribute("length", toString(cone->getLength()).c_str());
   xml_element->SetAttribute("radius", toString(cone->getRadius()).c_str());
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

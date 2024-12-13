@@ -41,13 +41,15 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* MIMIC_ELEMENT_NAME = "mimic";
+
 /**
  * @brief Parse xml element mimic
  * @param xml_element The xml element
  * @param version The version number
  * @return A Tesseract JointMimic
  */
-std::shared_ptr<tesseract_scene_graph::JointMimic> parseMimic(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_scene_graph::JointMimic> parseMimic(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract_scene_graph::JointMimic>& mimic,
                                  tinyxml2::XMLDocument& doc);

@@ -41,12 +41,14 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* CYLINDER_ELEMENT_NAME = "cylinder";
+
 /**
  * @brief Parse a xml cylinder element
  * @param xml_element The xml element
  * @return Tesseract Geometry Cylinder
  */
-std::shared_ptr<tesseract_geometry::Cylinder> parseCylinder(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_geometry::Cylinder> parseCylinder(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeCylinder(const std::shared_ptr<const tesseract_geometry::Cylinder>& cylinder,
                                     tinyxml2::XMLDocument& doc);

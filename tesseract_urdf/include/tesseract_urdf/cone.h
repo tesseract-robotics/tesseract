@@ -41,12 +41,14 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* CONE_ELEMENT_NAME = "tesseract:cone";
+
 /**
  * @brief Parse a xml cone element
  * @param xml_element The xml element
  * @return Tesseract Geometry Cone
  */
-std::shared_ptr<tesseract_geometry::Cone> parseCone(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_geometry::Cone> parseCone(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeCone(const std::shared_ptr<const tesseract_geometry::Cone>& cone,
                                 tinyxml2::XMLDocument& doc);

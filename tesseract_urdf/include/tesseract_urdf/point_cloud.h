@@ -42,6 +42,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* POINT_CLOUD_ELEMENT_NAME = "tesseract:point_cloud";
+
 /**
  * @brief Parse xml element point_cloud
  * @param xml_element The xml element
@@ -54,8 +56,7 @@ namespace tesseract_urdf
 std::shared_ptr<tesseract_geometry::Octree> parsePointCloud(const tinyxml2::XMLElement* xml_element,
                                                             const tesseract_common::ResourceLocator& locator,
                                                             tesseract_geometry::OctreeSubType shape_type,
-                                                            bool prune,
-                                                            int version);
+                                                            bool prune);
 }  // namespace tesseract_urdf
 
 #endif  // TESSERACT_URDF_POINT_CLOUD_H

@@ -39,13 +39,15 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* ORIGIN_ELEMENT_NAME = "origin";
+
 /**
  * @brief Parse xml element origin
  * @param xml_element The xml element
  * @param version The version number
  * @return A Eigen::Isometry3d
  */
-Eigen::Isometry3d parseOrigin(const tinyxml2::XMLElement* xml_element, int version);
+Eigen::Isometry3d parseOrigin(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeOrigin(const Eigen::Isometry3d& origin, tinyxml2::XMLDocument& doc);
 

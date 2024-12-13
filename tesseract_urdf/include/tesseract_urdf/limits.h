@@ -41,13 +41,15 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* LIMITS_ELEMENT_NAME = "limit";
+
 /**
  * @brief Parse xml element limits
  * @param xml_element The xml element
  * @param version The version number
  * @return A Tesseract JointLimits
  */
-std::shared_ptr<tesseract_scene_graph::JointLimits> parseLimits(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_scene_graph::JointLimits> parseLimits(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract_scene_graph::JointLimits>& limits,
                                   tinyxml2::XMLDocument& doc);

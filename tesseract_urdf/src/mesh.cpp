@@ -41,10 +41,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/utils.h>
 
-std::vector<tesseract_geometry::Mesh::Ptr> tesseract_urdf::parseMesh(const tinyxml2::XMLElement* xml_element,
-                                                                     const tesseract_common::ResourceLocator& locator,
-                                                                     bool visual,
-                                                                     int /*version*/)
+namespace tesseract_urdf
+{
+std::vector<tesseract_geometry::Mesh::Ptr> parseMesh(const tinyxml2::XMLElement* xml_element,
+                                                     const tesseract_common::ResourceLocator& locator,
+                                                     bool visual)
 {
   std::vector<tesseract_geometry::Mesh::Ptr> meshes;
 
@@ -92,14 +93,14 @@ std::vector<tesseract_geometry::Mesh::Ptr> tesseract_urdf::parseMesh(const tinyx
   return meshes;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
-                                                tinyxml2::XMLDocument& doc,
-                                                const std::string& package_path,
-                                                const std::string& filename)
+tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
+                                tinyxml2::XMLDocument& doc,
+                                const std::string& package_path,
+                                const std::string& filename)
 {
   if (mesh == nullptr)
     std::throw_with_nested(std::runtime_error("Mesh is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("mesh");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(MESH_ELEMENT_NAME);
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   try
@@ -121,3 +122,5 @@ tinyxml2::XMLElement* tesseract_urdf::writeMesh(const std::shared_ptr<const tess
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

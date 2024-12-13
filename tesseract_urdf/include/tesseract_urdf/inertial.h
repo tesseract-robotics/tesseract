@@ -41,13 +41,15 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* INERTIAL_ELEMENT_NAME = "inertial";
+
 /**
  * @brief Parse xml element inertial
  * @param xml_element The xml element
  * @param version The version number
  * @return A Tesseract Inertial
  */
-std::shared_ptr<tesseract_scene_graph::Inertial> parseInertial(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_scene_graph::Inertial> parseInertial(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeInertial(const std::shared_ptr<const tesseract_scene_graph::Inertial>& inertial,
                                     tinyxml2::XMLDocument& doc);

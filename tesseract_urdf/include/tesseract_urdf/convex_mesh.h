@@ -43,6 +43,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* CONVEX_MESH_ELEMENT_NAME = "tesseract:convex_mesh";
+
 /**
  * @brief Parse xml element convex_mesh
  * @param xml_element The xml element
@@ -52,10 +54,7 @@ namespace tesseract_urdf
  * @return A Tesseract Geometry ConvexMesh
  */
 std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>>
-parseConvexMesh(const tinyxml2::XMLElement* xml_element,
-                const tesseract_common::ResourceLocator& locator,
-                bool visual,
-                int version);
+parseConvexMesh(const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, bool visual);
 
 /**
  * @brief writeConvexMesh Write convex mesh to URDF XML.  This is non-standard URDF / tesseract-exclusive
