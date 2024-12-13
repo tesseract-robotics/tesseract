@@ -41,14 +41,15 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* SAFETY_CONTROLLER_ELEMENT_NAME = "safety_controller";
+
 /**
  * @brief Parse xml element safety_controller
  * @param xml_element The xml element
  * @param version The version number
  * @return A Tesseract JointSafety
  */
-std::shared_ptr<tesseract_scene_graph::JointSafety> parseSafetyController(const tinyxml2::XMLElement* xml_element,
-                                                                          int version);
+std::shared_ptr<tesseract_scene_graph::JointSafety> parseSafetyController(const tinyxml2::XMLElement* xml_element);
 tinyxml2::XMLElement* writeSafetyController(const std::shared_ptr<const tesseract_scene_graph::JointSafety>& safety,
                                             tinyxml2::XMLDocument& doc);
 

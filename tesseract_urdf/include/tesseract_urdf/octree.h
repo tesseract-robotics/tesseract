@@ -42,6 +42,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* OCTREE_ELEMENT_NAME = "tesseract:octree";
+
 /**
  * @brief Parse xml element octree
  * @param xml_element The xml element
@@ -53,8 +55,7 @@ namespace tesseract_urdf
 std::shared_ptr<tesseract_geometry::Octree> parseOctree(const tinyxml2::XMLElement* xml_element,
                                                         const tesseract_common::ResourceLocator& locator,
                                                         tesseract_geometry::OctreeSubType shape_type,
-                                                        bool prune,
-                                                        int version);
+                                                        bool prune);
 
 /**
  * @brief writeOctree Write octree out to file, and generate appropriate xml

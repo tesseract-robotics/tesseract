@@ -41,12 +41,14 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* CAPSULE_ELEMENT_NAME = "tesseract:capsule";
+
 /**
  * @brief Parse a xml capsule element
  * @param xml_element The xml element
  * @return Tesseract Geometry Capsule
  */
-std::shared_ptr<tesseract_geometry::Capsule> parseCapsule(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_geometry::Capsule> parseCapsule(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeCapsule(const std::shared_ptr<const tesseract_geometry::Capsule>& capsule,
                                    tinyxml2::XMLDocument& doc);

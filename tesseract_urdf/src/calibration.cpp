@@ -36,8 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/calibration.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_scene_graph::JointCalibration::Ptr tesseract_urdf::parseCalibration(const tinyxml2::XMLElement* xml_element,
-                                                                              int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_scene_graph::JointCalibration::Ptr parseCalibration(const tinyxml2::XMLElement* xml_element)
 {
   if (xml_element->Attribute("rising") == nullptr && xml_element->Attribute("falling") == nullptr)
     std::throw_with_nested(std::runtime_error("Calibration: Missing both attribute 'rising' and 'falling', either "
@@ -62,13 +63,15 @@ tesseract_scene_graph::JointCalibration::Ptr tesseract_urdf::parseCalibration(co
 }
 
 tinyxml2::XMLElement*
-tesseract_urdf::writeCalibration(const std::shared_ptr<const tesseract_scene_graph::JointCalibration>& calibration,
-                                 tinyxml2::XMLDocument& doc)
+writeCalibration(const std::shared_ptr<const tesseract_scene_graph::JointCalibration>& calibration,
+                 tinyxml2::XMLDocument& doc)
 {
   if (calibration == nullptr)
     std::throw_with_nested(std::runtime_error("Calibration is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("calibration");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(CALIBRATION_ELEMENT_NAME);
   xml_element->SetAttribute("rising", toString(calibration->rising).c_str());
   xml_element->SetAttribute("falling", toString(calibration->falling).c_str());
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

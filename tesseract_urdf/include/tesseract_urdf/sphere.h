@@ -41,12 +41,14 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* SPHERE_ELEMENT_NAME = "sphere";
+
 /**
  * @brief Parse a xml sphere element
  * @param xml_element The xml element
  * @return Tesseract Geometry Sphere
  */
-std::shared_ptr<tesseract_geometry::Sphere> parseSphere(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_geometry::Sphere> parseSphere(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract_geometry::Sphere>& sphere,
                                   tinyxml2::XMLDocument& doc);

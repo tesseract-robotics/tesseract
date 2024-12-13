@@ -43,6 +43,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* LINK_ELEMENT_NAME = "link";
+
 /**
  * @brief Parse xml element link
  * @param xml_element The xml element
@@ -54,8 +56,7 @@ namespace tesseract_urdf
 std::shared_ptr<tesseract_scene_graph::Link>
 parseLink(const tinyxml2::XMLElement* xml_element,
           const tesseract_common::ResourceLocator& locator,
-          std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
-          int version);
+          std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials);
 
 /**
  * @brief writeLink Write a link to URDF XML

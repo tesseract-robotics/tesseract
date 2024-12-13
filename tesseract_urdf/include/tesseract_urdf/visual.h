@@ -44,6 +44,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* VISUAL_ELEMENT_NAME = "visual";
+
 /**
  * @brief Parse xml element visual
  * @param xml_element The xml element
@@ -54,8 +56,7 @@ namespace tesseract_urdf
 std::shared_ptr<tesseract_scene_graph::Visual>
 parseVisual(const tinyxml2::XMLElement* xml_element,
             const tesseract_common::ResourceLocator& locator,
-            std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
-            int version);
+            std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials);
 
 /**
  * @brief writeVisual Write one visual geometry object to URDF XML

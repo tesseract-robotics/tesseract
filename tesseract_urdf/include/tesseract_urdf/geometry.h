@@ -43,6 +43,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* GEOMETRY_ELEMENT_NAME = "geometry";
+
 /**
  * @brief Parse xml element geometry
  * @param xml_element The xml element
@@ -53,8 +55,7 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_geometry::Geometry> parseGeometry(const tinyxml2::XMLElement* xml_element,
                                                             const tesseract_common::ResourceLocator& locator,
-                                                            bool visual,
-                                                            int version);
+                                                            bool visual);
 
 /**
  * @brief writeGeometry Write geometry to URDF XML

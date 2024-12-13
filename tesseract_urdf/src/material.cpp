@@ -39,11 +39,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_urdf/material.h>
 
-tesseract_scene_graph::Material::Ptr tesseract_urdf::parseMaterial(
-    const tinyxml2::XMLElement* xml_element,
-    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-    bool allow_anonymous,
-    int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_scene_graph::Material::Ptr
+parseMaterial(const tinyxml2::XMLElement* xml_element,
+              std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
+              bool allow_anonymous)
 {
   std::string material_name;
   if (tesseract_common::QueryStringAttribute(xml_element, "name", material_name) != tinyxml2::XML_SUCCESS)
@@ -120,13 +121,12 @@ tesseract_scene_graph::Material::Ptr tesseract_urdf::parseMaterial(
   return m;
 }
 
-tinyxml2::XMLElement*
-tesseract_urdf::writeMaterial(const std::shared_ptr<const tesseract_scene_graph::Material>& material,
-                              tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeMaterial(const std::shared_ptr<const tesseract_scene_graph::Material>& material,
+                                    tinyxml2::XMLDocument& doc)
 {
   if (material == nullptr)
     std::throw_with_nested(std::runtime_error("Material is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("material");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(MATERIAL_ELEMENT_NAME);
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   xml_element->SetAttribute("name", material->getName().c_str());
@@ -146,3 +146,5 @@ tesseract_urdf::writeMaterial(const std::shared_ptr<const tesseract_scene_graph:
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

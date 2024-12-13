@@ -43,6 +43,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static const char* COLLISION_ELEMENT_NAME = "collision";
+
 /**
  * @brief Parse xml element collision
  * @param xml_element The xml element
@@ -51,8 +53,7 @@ namespace tesseract_urdf
  * @return A Collision object
  */
 std::shared_ptr<tesseract_scene_graph::Collision> parseCollision(const tinyxml2::XMLElement* xml_element,
-                                                                 const tesseract_common::ResourceLocator& locator,
-                                                                 int version);
+                                                                 const tesseract_common::ResourceLocator& locator);
 
 /**
  * @brief writeCollision Write collision object to URDF XML
