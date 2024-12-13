@@ -11,70 +11,79 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TEST(TesseractURDFUnit, parse_capsule)  // NOLINT
 {
   {
-    std::string str = R"(<capsule radius="1" length="2" extra="0 0 0"/>)";
+    std::string str = R"(<tesseract:capsule radius="1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Capsule::Ptr geom;
-    EXPECT_TRUE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
+    EXPECT_TRUE(runTest<tesseract_geometry::Capsule::Ptr>(
+        geom, &tesseract_urdf::parseCapsule, str, tesseract_urdf::CAPSULE_ELEMENT_NAME));
     EXPECT_NEAR(geom->getRadius(), 1, 1e-8);
     EXPECT_NEAR(geom->getLength(), 2, 1e-8);
   }
 
   {  // https://github.com/ros-industrial-consortium/tesseract_ros/issues/67
-    std::string str = R"(<capsule radius="0.25" length="0.5" extra="0 0 0"/>)";
+    std::string str = R"(<tesseract:capsule radius="0.25" length="0.5" extra="0 0 0"/>)";
     tesseract_geometry::Capsule::Ptr geom;
-    EXPECT_TRUE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
+    EXPECT_TRUE(runTest<tesseract_geometry::Capsule::Ptr>(
+        geom, &tesseract_urdf::parseCapsule, str, tesseract_urdf::CAPSULE_ELEMENT_NAME));
     EXPECT_NEAR(geom->getRadius(), 0.25, 1e-8);
     EXPECT_NEAR(geom->getLength(), 0.5, 1e-8);
   }
 
   {
-    std::string str = R"(<capsule radius="-1" length="2" extra="0 0 0"/>)";
+    std::string str = R"(<tesseract:capsule radius="-1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Capsule::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
+    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(
+        geom, &tesseract_urdf::parseCapsule, str, tesseract_urdf::CAPSULE_ELEMENT_NAME));
   }
 
   {
-    std::string str = R"(<capsule radius="1" length="-2" extra="0 0 0"/>)";
+    std::string str = R"(<tesseract:capsule radius="1" length="-2" extra="0 0 0"/>)";
     tesseract_geometry::Capsule::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
+    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(
+        geom, &tesseract_urdf::parseCapsule, str, tesseract_urdf::CAPSULE_ELEMENT_NAME));
   }
 
   {
-    std::string str = R"(<capsule radius="a" length="2"/>)";
+    std::string str = R"(<tesseract:capsule radius="a" length="2"/>)";
     tesseract_geometry::Capsule::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
+    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(
+        geom, &tesseract_urdf::parseCapsule, str, tesseract_urdf::CAPSULE_ELEMENT_NAME));
   }
 
   {
-    std::string str = R"(<capsule radius="1" length="a"/>)";
+    std::string str = R"(<tesseract:capsule radius="1" length="a"/>)";
     tesseract_geometry::Capsule::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
+    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(
+        geom, &tesseract_urdf::parseCapsule, str, tesseract_urdf::CAPSULE_ELEMENT_NAME));
   }
 
   // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
   //  {
-  //    std::string str = R"(<capsule radius="1 2" length="2 3"/>)";
+  //    std::string str = R"(<tesseract:capsule radius="1 2" length="2 3"/>)";
   //    tesseract_geometry::Capsule::Ptr geom;
-  //    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+  //    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, tesseract_urdf::CAPSULE_ELEMENT_NAME);
   //    EXPECT_FALSE(*status);
   //    EXPECT_FALSE(status->message().empty());
   //  }
 
   {
-    std::string str = R"(<capsule radius="1"/>)";
+    std::string str = R"(<tesseract:capsule radius="1"/>)";
     tesseract_geometry::Capsule::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
+    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(
+        geom, &tesseract_urdf::parseCapsule, str, tesseract_urdf::CAPSULE_ELEMENT_NAME));
   }
 
   {
-    std::string str = R"(<capsule length="2"/>)";
+    std::string str = R"(<tesseract:capsule length="2"/>)";
     tesseract_geometry::Capsule::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
+    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(
+        geom, &tesseract_urdf::parseCapsule, str, tesseract_urdf::CAPSULE_ELEMENT_NAME));
   }
 
   {
-    std::string str = "<capsule />";
+    std::string str = "<tesseract:capsule />";
     tesseract_geometry::Capsule::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(geom, &tesseract_urdf::parseCapsule, str, "capsule", 2));
+    EXPECT_FALSE(runTest<tesseract_geometry::Capsule::Ptr>(
+        geom, &tesseract_urdf::parseCapsule, str, tesseract_urdf::CAPSULE_ELEMENT_NAME));
   }
 }
 
