@@ -113,10 +113,9 @@ public:
   void setCollisionObjectsTransform(const Eigen::Isometry3d& pose)
   {
     world_pose_ = pose;
-    for (unsigned i = 0; i < collision_objects_.size(); ++i)
+    for (auto& co : collision_objects_)
     {
-      CollisionObjectPtr& co = collision_objects_[i];
-      co->setTransform(pose * shape_poses_[i]);
+      co->setTransform(pose * shape_poses_[static_cast<std::size_t>(co->getShapeIndex())]);
       co->updateAABB();  // This a tesseract function that updates abb to take into account contact distance
     }
   }
@@ -168,7 +167,7 @@ public:
    * @param co fcl collision shape
    * @return links collision shape index
    */
-  int getShapeIndex(const fcl::CollisionObjectd* co) const;
+  static int getShapeIndex(const fcl::CollisionObjectd* co);
 
 protected:
   std::string name_;                                              // name of the collision object

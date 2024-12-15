@@ -246,8 +246,8 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
       ContactResult contact;
       contact.link_names[0] = cd1->getName();
       contact.link_names[1] = cd2->getName();
-      contact.shape_id[0] = static_cast<int>(cd1->getShapeIndex(o1));
-      contact.shape_id[1] = static_cast<int>(cd2->getShapeIndex(o2));
+      contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
+      contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
       contact.subshape_id[0] = static_cast<int>(fcl_contact.b1);
       contact.subshape_id[1] = static_cast<int>(fcl_contact.b2);
       contact.nearest_points[0] = fcl_contact.pos;
@@ -307,8 +307,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     ContactResult contact;
     contact.link_names[0] = cd1->getName();
     contact.link_names[1] = cd2->getName();
-    contact.shape_id[0] = cd1->getShapeIndex(o1);
-    contact.shape_id[1] = cd2->getShapeIndex(o2);
+    contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
+    contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
     contact.subshape_id[0] = static_cast<int>(fcl_result.b1);
     contact.subshape_id[1] = static_cast<int>(fcl_result.b2);
     contact.nearest_points[0] = fcl_result.nearest_points[0];
@@ -365,6 +365,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
           collision_geometries_.push_back(subshape);
           auto co = std::make_shared<FCLCollisionObjectWrapper>(subshape);
           co->setUserData(this);
+          co->setShapeIndex(static_cast<int>(i));
           co->setTransform(shape_poses_[i]);
           co->updateAABB();
           collision_objects_.push_back(co);
@@ -380,6 +381,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
         collision_geometries_.push_back(subshape);
         auto co = std::make_shared<FCLCollisionObjectWrapper>(subshape);
         co->setUserData(this);
+        co->setShapeIndex(static_cast<int>(i));
         co->setTransform(shape_poses_[i]);
         co->updateAABB();
         collision_objects_.push_back(co);
@@ -389,16 +391,9 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   }
 }
 
-int CollisionObjectWrapper::getShapeIndex(const fcl::CollisionObjectd* co) const
+int CollisionObjectWrapper::getShapeIndex(const fcl::CollisionObjectd* co)
 {
-  auto it = std::find_if(collision_objects_.begin(), collision_objects_.end(), [&co](const CollisionObjectPtr& c) {
-    return c.get() == co;
-  });
-
-  if (it != collision_objects_.end())
-    return static_cast<int>(std::distance(collision_objects_.begin(), it));
-
-  return -1;
+  return static_cast<const FCLCollisionObjectWrapper*>(co)->getShapeIndex();
 }
 
 }  // namespace tesseract_collision::tesseract_collision_fcl

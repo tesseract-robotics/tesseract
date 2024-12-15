@@ -472,10 +472,11 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
     {
       if (m_shapes[j]->getType() == tesseract_geometry::GeometryType::COMPOUND_MESH)
       {
+        int shape_index = shape_id++;
         const auto& meshes = std::static_pointer_cast<const tesseract_geometry::CompoundMesh>(m_shapes[j])->getMeshes();
         for (const auto& mesh : meshes)
         {
-          std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(mesh, this, shape_id++);
+          std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(mesh, this, shape_index);
           if (subshape != nullptr)
           {
             manage(subshape);
