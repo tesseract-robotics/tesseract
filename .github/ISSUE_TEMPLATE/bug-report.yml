@@ -1,4 +1,4 @@
-name: Bug report
+name: Bug Report
 description: Create a report to help us improve
 body:
   - type: input
@@ -38,16 +38,20 @@ body:
       label: To Reproduce
       placeholder: |
         Describe the steps to reproduce the behavior
+    validations:
+      required: True
 
   - type: textarea
     attributes:
       label: Expected behavior
       placeholder: |
         A clear and concise description of what you expected to happen.
+    validations:
+      required: True
 
   - type: textarea
     attributes:
       label: Relevant log output
       placeholder: |
-        Paste log output here
-      render: bash
+        Paste any relevant log output here (will be rendered as shell text)
+      render: shell
