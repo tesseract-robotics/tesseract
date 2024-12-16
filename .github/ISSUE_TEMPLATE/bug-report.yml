@@ -1,9 +1,5 @@
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
+name: Bug Report
+description: Create a report to help us improve
 body:
   - type: input
     attributes:
@@ -26,8 +22,8 @@ body:
         - Windows (MSVC 2019)
         - Windows (MSVC 2022)
         - Other (please specify in the bug description)
-      validations:
-        required: True
+    validations:
+      required: True
 
   - type: textarea
     attributes:
@@ -40,18 +36,22 @@ body:
   - type: textarea
     attributes:
       label: To Reproduce
-      placeholder: | 
+      placeholder: |
         Describe the steps to reproduce the behavior
+    validations:
+      required: True
 
   - type: textarea
     attributes:
       label: Expected behavior
-      value: | 
+      placeholder: |
         A clear and concise description of what you expected to happen.
+    validations:
+      required: True
 
   - type: textarea
     attributes:
       label: Relevant log output
       placeholder: |
-        Paste log output here
-      render: bash
+        Paste any relevant log output here (will be rendered as shell text)
+      render: shell
