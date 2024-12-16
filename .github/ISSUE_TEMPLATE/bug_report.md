@@ -24,8 +24,8 @@ body:
         - Ubuntu 24.04
         - MacOS 12
         - MacOS 14
-        - Windows 10
-        - Windows 11
+        - Windows (MSVC 2019)
+        - Windows (MSVC 2022)
         - Other (please specify in the bug description)
       validations:
         required: True
