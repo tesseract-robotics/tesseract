@@ -17,7 +17,7 @@ TEST(TesseractURDFUnit, parse_mesh_material_dae)  // NOLINT
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/tesseract_material_mesh.dae"/>)";
     std::vector<tesseract_geometry::Mesh::Ptr> meshes;
     EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        meshes, &tesseract_urdf::parseMesh, str, "mesh", resource_locator, 2, true));
+        meshes, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(meshes.size() == 4);
     auto& mesh0 = meshes[1];
     auto& mesh1 = meshes[2];
@@ -91,7 +91,7 @@ TEST(TesseractURDFUnit, parse_mesh_material_gltf2)  // NOLINT
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/tesseract_material_mesh.glb"/>)";
     std::vector<tesseract_geometry::Mesh::Ptr> meshes;
     EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        meshes, &tesseract_urdf::parseMesh, str, "mesh", resource_locator, 2, true));
+        meshes, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(meshes.size() == 4);
     auto& mesh0 = meshes[0];
     auto& mesh1 = meshes[1];

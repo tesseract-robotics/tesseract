@@ -41,11 +41,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/utils.h>
 #include <tesseract_urdf/visual.h>
 
+namespace tesseract_urdf
+{
 tesseract_scene_graph::Link::Ptr
-tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
-                          const tesseract_common::ResourceLocator& locator,
-                          std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-                          int version)
+parseLink(const tinyxml2::XMLElement* xml_element,
+          const tesseract_common::ResourceLocator& locator,
+          std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   std::string link_name;
   if (tesseract_common::QueryStringAttribute(xml_element, "name", link_name) != tinyxml2::XML_SUCCESS)
@@ -59,7 +60,7 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
   {
     try
     {
-      l->inertial = parseInertial(inertial, version);
+      l->inertial = parseInertial(inertial);
     }
     catch (...)
     {
@@ -75,7 +76,7 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
     tesseract_scene_graph::Visual::Ptr temp_visual;
     try
     {
-      temp_visual = parseVisual(visual, locator, available_materials, version);
+      temp_visual = parseVisual(visual, locator, available_materials);
     }
     catch (...)
     {
@@ -92,7 +93,7 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
     tesseract_scene_graph::Collision::Ptr temp_collision;
     try
     {
-      temp_collision = parseCollision(collision, locator, version);
+      temp_collision = parseCollision(collision, locator);
     }
     catch (...)
     {
@@ -106,13 +107,13 @@ tesseract_urdf::parseLink(const tinyxml2::XMLElement* xml_element,
   return l;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeLink(const std::shared_ptr<const tesseract_scene_graph::Link>& link,
-                                                tinyxml2::XMLDocument& doc,
-                                                const std::string& package_path)
+tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_graph::Link>& link,
+                                tinyxml2::XMLDocument& doc,
+                                const std::string& package_path)
 {
   if (link == nullptr)
     std::throw_with_nested(std::runtime_error("Link is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("link");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(LINK_ELEMENT_NAME);
 
   // Set name
   xml_element->SetAttribute("name", link->getName().c_str());
@@ -163,3 +164,5 @@ tinyxml2::XMLElement* tesseract_urdf::writeLink(const std::shared_ptr<const tess
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf
