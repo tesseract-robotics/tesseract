@@ -293,7 +293,7 @@ public:
   /** @brief Get a brief summary of the most frequently colliding link pair
    * @return A string containing the collision summary
    */
-  std::string getCollisionSummary() const
+  std::string getSummary() const
   {
     std::stringstream ss;
     std::map<KeyType, std::size_t> collision_counts;
