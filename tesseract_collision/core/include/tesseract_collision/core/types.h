@@ -291,7 +291,7 @@ public:
   bool operator!=(const ContactResultMap& rhs) const;
 
   /** @brief Get a brief summary of the most frequently colliding link pair
-   * @return A string stream containing the collision summary
+   * @return A string containing the collision summary
    */
   std::string getCollisionSummary() const
   {
