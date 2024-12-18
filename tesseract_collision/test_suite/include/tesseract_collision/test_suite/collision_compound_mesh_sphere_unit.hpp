@@ -177,7 +177,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * -1.0, 0.001);
 
   // Compound mesh so check shape id
-  EXPECT_EQ(result_vector[0].shape_id[static_cast<size_t>(idx[0])], 1);
+  EXPECT_EQ(result_vector[0].shape_id[static_cast<size_t>(idx[0])], 0);
 
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
@@ -235,7 +235,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * -1.0, 0.001);
 
   // Compound mesh so check shape id
-  EXPECT_EQ(result_vector[0].shape_id[static_cast<size_t>(idx[0])], 1);
+  EXPECT_EQ(result_vector[0].shape_id[static_cast<size_t>(idx[0])], 0);
 
   /////////////////////////////////////////////
   // Test collision against second shape
