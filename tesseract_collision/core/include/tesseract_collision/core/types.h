@@ -293,7 +293,7 @@ public:
   /** @brief Get a brief summary of the most frequently colliding link pair
    * @return A string stream containing the collision summary
    */
-  std::stringstream getCollisionSummary() const
+  std::string getCollisionSummary() const
   {
     std::stringstream ss;
     std::map<KeyType, std::size_t> collision_counts;
@@ -317,8 +317,7 @@ public:
 
     if (collision_counts.empty())
     {
-      ss << "No collisions detected";
-      return ss;
+      return "No collisions detected";
     }
 
     auto max_element = std::max_element(collision_counts.begin(),
@@ -328,7 +327,7 @@ public:
     ss << max_element->first.first << " - " << max_element->first.second << ": " << max_element->second
        << " collisions, min dist: " << closest_distances[max_element->first];
 
-    return ss;
+    return ss.str();
   }
 
 private:
