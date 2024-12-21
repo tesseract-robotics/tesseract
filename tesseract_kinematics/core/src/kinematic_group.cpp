@@ -204,4 +204,7 @@ std::vector<std::string> KinematicGroup::getAllPossibleTipLinkNames() const
 
   return ik_tip_links;
 }
+
+const InverseKinematics& KinematicGroup::getInverseKinematics() const { return *inv_kin_; }
+
 }  // namespace tesseract_kinematics
