@@ -308,6 +308,43 @@ bool ContactResultMap::operator==(const ContactResultMap& rhs) const
 }
 bool ContactResultMap::operator!=(const ContactResultMap& rhs) const { return !operator==(rhs); }
 
+std::string ContactResultMap::getSummary() const
+{
+  std::stringstream ss;
+  std::map<KeyType, std::size_t> collision_counts;
+  std::map<KeyType, double> closest_distances;
+
+  // Initialize distances map with max values
+  for (const auto& pair : data_)
+  {
+    if (!pair.second.empty())
+    {
+      collision_counts[pair.first] = pair.second.size();
+      closest_distances[pair.first] = std::numeric_limits<double>::max();
+
+      // Find closest distance for this pair
+      for (const auto& result : pair.second)
+      {
+        closest_distances[pair.first] = std::min(closest_distances[pair.first], result.distance);
+      }
+    }
+  }
+
+  if (collision_counts.empty())
+  {
+    return "No collisions detected";
+  }
+
+  auto max_element = std::max_element(collision_counts.begin(),
+                                      collision_counts.end(),
+                                      [](const auto& p1, const auto& p2) { return p1.second < p2.second; });
+
+  ss << max_element->first.first << " - " << max_element->first.second << ": " << max_element->second
+     << " collisions, min dist: " << closest_distances[max_element->first];
+
+  return ss.str();
+}
+
 ContactTestData::ContactTestData(const std::vector<std::string>& active,
                                  CollisionMarginData collision_margin_data,
                                  IsContactAllowedFn fn,
