@@ -9,6 +9,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_common/unit_test_utils.h>
 
+std::size_t findSeparator(const std::string& str)
+{
+  const size_t pos_slash = str.find('/');
+  const size_t pos_backslash = str.find('\\');
+
+  if (pos_slash != std::string::npos && pos_backslash != std::string::npos)
+    return std::min(pos_slash, pos_backslash);
+
+  if (pos_slash != std::string::npos)
+    return pos_slash;
+
+  if (pos_backslash != std::string::npos)
+    return pos_backslash;
+
+  return std::string::npos;
+}
+
 /** @brief Resource locator implementation using a provided function to locate file resources */
 class TestResourceLocator : public tesseract_common::ResourceLocator
 {
@@ -24,11 +41,10 @@ public:
     if (url.find("package://tesseract_common") == 0)
     {
       mod_url.erase(0, strlen("package://tesseract_common"));
-      size_t pos = mod_url.find('/');
+      const size_t pos = findSeparator(mod_url);
       if (pos == std::string::npos)
         return nullptr;
 
-      std::string package = mod_url.substr(0, pos);
       mod_url.erase(0, pos);
 
       tesseract_common::fs::path file_path(__FILE__);
@@ -64,10 +80,11 @@ TEST(ResourceLocatorUnit, SimpleResourceLocatorUnit)  // NOLINT
   EXPECT_FALSE(resource->getResourceContents().empty());
   EXPECT_TRUE(resource->getResourceContentStream() != nullptr);
 
+  const std::string separator(1, fs::path::preferred_separator);
   Resource::Ptr sub_resource = resource->locateResource("colcon.pkg");
   EXPECT_TRUE(sub_resource != nullptr);
   EXPECT_TRUE(sub_resource->isFile());
-  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common/colcon.pkg");
+  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common" + separator + "colcon.pkg");
   EXPECT_EQ(tesseract_common::fs::path(sub_resource->getFilePath()), (package_path / "colcon.pkg"));
   EXPECT_FALSE(sub_resource->getResourceContents().empty());
   EXPECT_TRUE(sub_resource->getResourceContentStream() != nullptr);
@@ -108,10 +125,11 @@ TEST(ResourceLocatorUnit, GeneralResourceLocatorUnit1)  // NOLINT
   EXPECT_FALSE(resource->getResourceContents().empty());
   EXPECT_TRUE(resource->getResourceContentStream() != nullptr);
 
+  const std::string separator(1, fs::path::preferred_separator);
   Resource::Ptr sub_resource = resource->locateResource("colcon.pkg");
   EXPECT_TRUE(sub_resource != nullptr);
   EXPECT_TRUE(sub_resource->isFile());
-  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common/colcon.pkg");
+  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common" + separator + "colcon.pkg");
   EXPECT_EQ(tesseract_common::fs::path(sub_resource->getFilePath()), (package_path / "colcon.pkg"));
   EXPECT_FALSE(sub_resource->getResourceContents().empty());
   EXPECT_TRUE(sub_resource->getResourceContentStream() != nullptr);
@@ -152,10 +170,11 @@ TEST(ResourceLocatorUnit, GeneralResourceLocatorUnit2)  // NOLINT
   EXPECT_FALSE(resource->getResourceContents().empty());
   EXPECT_TRUE(resource->getResourceContentStream() != nullptr);
 
+  const std::string separator(1, fs::path::preferred_separator);
   Resource::Ptr sub_resource = resource->locateResource("colcon.pkg");
   EXPECT_TRUE(sub_resource != nullptr);
   EXPECT_TRUE(sub_resource->isFile());
-  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common/colcon.pkg");
+  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common" + separator + "colcon.pkg");
   EXPECT_EQ(tesseract_common::fs::path(sub_resource->getFilePath()), (package_path / "colcon.pkg"));
   EXPECT_FALSE(sub_resource->getResourceContents().empty());
   EXPECT_TRUE(sub_resource->getResourceContentStream() != nullptr);
@@ -191,10 +210,11 @@ TEST(ResourceLocatorUnit, ByteResourceUnit)  // NOLINT
   EXPECT_FALSE(byte_resource->getResourceContents().empty());
   EXPECT_TRUE(byte_resource->getResourceContentStream() != nullptr);
 
+  const std::string separator(1, fs::path::preferred_separator);
   Resource::Ptr sub_resource = byte_resource->locateResource("colcon.pkg");
   EXPECT_TRUE(sub_resource != nullptr);
   EXPECT_TRUE(sub_resource->isFile());
-  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common/colcon.pkg");
+  EXPECT_EQ(sub_resource->getUrl(), "package://tesseract_common" + separator + "colcon.pkg");
   EXPECT_EQ(tesseract_common::fs::path(sub_resource->getFilePath()), (package_path / "colcon.pkg"));
   EXPECT_FALSE(sub_resource->getResourceContents().empty());
   EXPECT_TRUE(sub_resource->getResourceContentStream() != nullptr);
