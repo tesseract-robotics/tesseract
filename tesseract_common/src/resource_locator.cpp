@@ -227,21 +227,19 @@ tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std:
   if (parent_ == nullptr || url.empty())
     return nullptr;
 
-  tesseract_common::Resource::Ptr resource = parent_->locateResource(url);
-  if (resource != nullptr)
-    return resource;
-
   tesseract_common::fs::path path(url);
-  if (!path.is_relative())
-    return nullptr;
+  if (path.is_relative())
+  {
+    auto last_slash = url_.find_last_of('/');
+    if (last_slash == std::string::npos)
+      return nullptr;
 
-  auto last_slash = url_.find_last_of('/');
-  if (last_slash == std::string::npos)
-    return nullptr;
+    std::string url_base_path = url_.substr(0, last_slash);
+    std::string new_url = url_base_path + "/" + path.filename().string();
+    return parent_->locateResource(new_url);
+  }
 
-  std::string url_base_path = url_.substr(0, last_slash);
-  std::string new_url = url_base_path + "/" + path.filename().string();
-  return parent_->locateResource(new_url);
+  return parent_->locateResource(url);
 }
 
 bool SimpleLocatedResource::operator==(const SimpleLocatedResource& rhs) const
