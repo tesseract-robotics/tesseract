@@ -121,20 +121,37 @@ void GeneralResourceLocator::processToken(const std::string& token)
   }
 }
 
+std::size_t findSeparator(const std::string& str)
+{
+  const size_t pos_slash = str.find('/');
+  const size_t pos_backslash = str.find('\\');
+
+  if (pos_slash != std::string::npos && pos_backslash != std::string::npos)
+    return std::min(pos_slash, pos_backslash);
+
+  if (pos_slash != std::string::npos)
+    return pos_slash;
+
+  if (pos_backslash != std::string::npos)
+    return pos_backslash;
+
+  return std::string::npos;
+}
+
 std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::string& url) const
 {
   std::string mod_url = url;
   if (url.find("file:///") == 0)
   {
     mod_url.erase(0, strlen("file://"));
-    size_t pos = mod_url.find('/');
+    const size_t pos = findSeparator(mod_url);
     if (pos == std::string::npos)
       return nullptr;
   }
   else if (url.find("package://") == 0)
   {
     mod_url.erase(0, strlen("package://"));
-    size_t pos = mod_url.find('/');
+    const size_t pos = findSeparator(mod_url);
     if (pos == std::string::npos)
       return nullptr;
 
@@ -230,12 +247,22 @@ tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std:
   tesseract_common::fs::path path(url);
   if (path.is_relative())
   {
-    auto last_slash = url_.find_last_of('/');
-    if (last_slash == std::string::npos)
+    // Find the last occurrences of both separators
+    std::size_t last_slash = url_.find_last_of('/');
+    std::size_t last_backslash = url_.find_last_of('\\');
+    std::size_t last_separator{ 0 };
+    if (last_slash != std::string::npos && last_backslash != std::string::npos)
+      last_separator = std::max(last_slash, last_backslash);
+    else if (last_slash != std::string::npos)
+      last_separator = last_slash;
+    else if (last_backslash != std::string::npos)
+      last_separator = last_backslash;
+    else
       return nullptr;
 
-    std::string url_base_path = url_.substr(0, last_slash);
-    std::string new_url = url_base_path + "/" + path.filename().string();
+    std::string url_base_path = url_.substr(0, last_separator);
+    std::string new_url = url_base_path + std::string(1, fs::path::preferred_separator) + path.filename().string();
+    CONSOLE_BRIDGE_logError("new_url: %s", new_url.c_str());
     return parent_->locateResource(new_url);
   }
 
