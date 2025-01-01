@@ -17,6 +17,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/kinematic_limits.h>
 #include <tesseract_common/yaml_utils.h>
+#include <tesseract_common/yaml_extenstions.h>
 #include <tesseract_common/collision_margin_data.h>
 
 /** @brief Resource locator implementation using a provided function to locate file resources */
@@ -2628,6 +2629,205 @@ TEST(TesseractCommonUnit, CollisionMarginDataCompare)  // NOLINT
 
     EXPECT_FALSE(margin_data1 == margin_data2);
   }
+}
+
+// Helper function to create temporary test files
+void createTestYamlWithIncludeDirectivesFile(const std::string& filePath, const std::string& content)
+{
+  std::ofstream file(filePath);
+  ASSERT_TRUE(file.is_open());
+  file << content;
+  file.close();
+}
+
+TEST(TesseractCommonUnit, YamlBasicIncludeTest)  // NOLINT
+{
+  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_1";
+
+  // Create a temporary test directory
+  tesseract_common::fs::create_directory(test_dir);
+
+  // Resource locator
+  tesseract_common::GeneralResourceLocator locator;
+
+  // Create test files
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/main.yaml", R"(
+key1: value1
+key2: !include ./included.yaml
+)");
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/included.yaml", R"(
+included_key1: included_value1
+included_key2: included_value2
+)");
+
+  // Load the main file
+  YAML::Node root = loadYamlFile(test_dir + "/main.yaml", locator);
+  tesseract_common::writeYamlToFile(root, test_dir + "/processed.yaml");
+
+  // Validate the structure
+  ASSERT_TRUE(root["key1"].IsScalar());
+  ASSERT_EQ(root["key1"].as<std::string>(), "value1");
+
+  ASSERT_TRUE(root["key2"].IsMap());
+  ASSERT_EQ(root["key2"]["included_key1"].as<std::string>(), "included_value1");
+  ASSERT_EQ(root["key2"]["included_key2"].as<std::string>(), "included_value2");
+
+  // Clean up the test directory
+  tesseract_common::fs::remove_all(test_dir);
+}
+
+TEST(TesseractCommonUnit, YamlIncludeNestedIncludesTest)  // NOLINT
+{
+  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_2";
+
+  // Create a temporary test directory
+  tesseract_common::fs::create_directory(test_dir);
+
+  // Resource locator
+  tesseract_common::GeneralResourceLocator locator;
+
+  // Create test files
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/main.yaml", R"(
+key1: value1
+key2: !include ./included.yaml
+)");
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/included.yaml", R"(
+nested_key1: !include ./nested.yaml
+)");
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/nested.yaml", R"(
+deep_key1: deep_value1
+)");
+
+  // Load the main file
+  YAML::Node root = loadYamlFile(test_dir + "/main.yaml", locator);
+  tesseract_common::writeYamlToFile(root, test_dir + "/processed.yaml");
+
+  // Validate the structure
+  ASSERT_TRUE(root["key2"].IsMap());
+  ASSERT_TRUE(root["key2"]["nested_key1"].IsMap());
+  ASSERT_EQ(root["key2"]["nested_key1"]["deep_key1"].as<std::string>(), "deep_value1");
+
+  // Clean up the test directory
+  tesseract_common::fs::remove_all(test_dir);
+}
+
+TEST(TesseractCommonUnit, YamlIncludeSequenceIncludesTest)  // NOLINT
+{
+  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_3";
+
+  // Create a temporary test directory
+  tesseract_common::fs::create_directory(test_dir);
+
+  // Resource locator
+  tesseract_common::GeneralResourceLocator locator;
+
+  // Create test files
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/main.yaml", R"(
+key1:
+  - item1
+  - !include ./included.yaml
+)");
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/included.yaml", R"(
+- included_item1
+- included_item2
+)");
+
+  // Load the main file
+  YAML::Node root = loadYamlFile(test_dir + "/main.yaml", locator);
+  tesseract_common::writeYamlToFile(root, test_dir + "/processed.yaml");
+
+  // Validate the structure
+  ASSERT_TRUE(root["key1"].IsSequence());
+  ASSERT_EQ(root["key1"].size(), 2);
+  ASSERT_EQ(root["key1"][0].as<std::string>(), "item1");
+  ASSERT_EQ(root["key1"][1][0].as<std::string>(), "included_item1");
+  ASSERT_EQ(root["key1"][1][1].as<std::string>(), "included_item2");
+
+  // Clean up the test directory
+  tesseract_common::fs::remove_all(test_dir);
+}
+
+TEST(TesseractCommonUnit, YamlIncludeSequenceIncludesMapTest)  // NOLINT
+{
+  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_4";
+
+  // Create a temporary test directory
+  tesseract_common::fs::create_directory(test_dir);
+
+  // Resource locator
+  tesseract_common::GeneralResourceLocator locator;
+
+  // Create test files
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/main.yaml", R"(
+key1:
+  - item1
+  - !include ./included.yaml
+)");
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/included.yaml", R"(
+keyA: valueA
+keyB: valueB
+)");
+
+  // Load the main file
+  YAML::Node root = loadYamlFile(test_dir + "/main.yaml", locator);
+  tesseract_common::writeYamlToFile(root, test_dir + "/processed.yaml");
+
+  // Validate the structure
+  ASSERT_TRUE(root["key1"].IsSequence());
+  ASSERT_EQ(root["key1"].size(), 2);
+  ASSERT_EQ(root["key1"][0].as<std::string>(), "item1");
+
+  // Check the included map
+  ASSERT_TRUE(root["key1"][1].IsMap());
+  ASSERT_EQ(root["key1"][1]["keyA"].as<std::string>(), "valueA");
+  ASSERT_EQ(root["key1"][1]["keyB"].as<std::string>(), "valueB");
+
+  // Clean up the test directory
+  tesseract_common::fs::remove_all(test_dir);
+}
+
+TEST(TesseractCommonUnit, YamlIncludeMissingIncludeFileTest)  // NOLINT
+{
+  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_5";
+
+  // Create a temporary test directory
+  tesseract_common::fs::create_directory(test_dir);
+
+  // Resource locator
+  tesseract_common::GeneralResourceLocator locator;
+
+  // Create a test file
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/main.yaml", R"(
+key1: !include ./missing.yaml
+)");
+
+  // Attempt to load the main file and expect an exception
+  EXPECT_THROW(loadYamlFile(test_dir + "/main.yaml", locator), std::runtime_error);  // NOLINT
+
+  // Clean up the test directory
+  tesseract_common::fs::remove_all(test_dir);
+}
+
+TEST(TesseractCommonUnit, YamlIncludeInvalidIncludeTagTest)  // NOLINT
+{
+  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_6";
+
+  // Create a temporary test directory
+  tesseract_common::fs::create_directory(test_dir);
+
+  // Resource locator
+  tesseract_common::GeneralResourceLocator locator;
+
+  // Create a test file with an invalid !include tag
+  createTestYamlWithIncludeDirectivesFile(test_dir + "/main.yaml", R"(
+key1: !include
+)");
+
+  // Attempt to load the main file and expect an exception
+  EXPECT_THROW(loadYamlFile(test_dir + "/main.yaml", locator), std::runtime_error);  // NOLINT
+
+  // Clean up the test directory
+  tesseract_common::fs::remove_all(test_dir);
 }
 
 int main(int argc, char** argv)
