@@ -192,7 +192,7 @@ public:
    * @param group_name The group name
    * @return A joint group
    */
-  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
+  std::shared_ptr<const tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
 
   /**
    * @brief Get a joint group given a vector of joint names
@@ -200,8 +200,8 @@ public:
    * @param joint_names The joint names that make up the group
    * @return A joint group
    */
-  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& name,
-                                                                  const std::vector<std::string>& joint_names) const;
+  std::shared_ptr<const tesseract_kinematics::JointGroup>
+  getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const;
 
   /**
    * @brief Get a kinematic group given group name and solver name
@@ -210,8 +210,8 @@ public:
    * @param ik_solver_name The IK solver name
    * @return A kinematics group
    */
-  std::unique_ptr<tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
-                                                                          const std::string& ik_solver_name = "") const;
+  std::shared_ptr<const tesseract_kinematics::KinematicGroup>
+  getKinematicGroup(const std::string& group_name, const std::string& ik_solver_name = "") const;
 
   /**
    * @brief Find tool center point provided in the manipulator info
