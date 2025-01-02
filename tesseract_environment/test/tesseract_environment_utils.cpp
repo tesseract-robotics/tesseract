@@ -49,8 +49,8 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.contact_manager_config.acm.addAllowedCollision("allowed_link_1a", "allowed_link_2a", "Unit test");
     config.contact_manager_config.acm_override_type = ACMOverrideType::ASSIGN;
     manager->applyContactManagerConfig(config.contact_manager_config);
-    auto fn = manager->getIsContactAllowedFn();
-    EXPECT_TRUE(fn("allowed_link_1a", "allowed_link_2a"));
+    auto fn = manager->getContactAllowedValidator();
+    EXPECT_TRUE((*fn)("allowed_link_1a", "allowed_link_2a"));
   }
 
   // NONE
@@ -59,8 +59,8 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.contact_manager_config.acm.addAllowedCollision("allowed_link_1b", "allowed_link_2b", "Unit test");
     config.contact_manager_config.acm_override_type = ACMOverrideType::NONE;
     manager->applyContactManagerConfig(config.contact_manager_config);
-    auto fn = manager->getIsContactAllowedFn();
-    EXPECT_FALSE(fn("allowed_link_1b", "allowed_link_2b"));
+    auto fn = manager->getContactAllowedValidator();
+    EXPECT_FALSE((*fn)("allowed_link_1b", "allowed_link_2b"));
   }
 
   // OR
@@ -69,9 +69,9 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.contact_manager_config.acm.addAllowedCollision("allowed_link_1c", "allowed_link_2c", "Unit test");
     config.contact_manager_config.acm_override_type = ACMOverrideType::OR;
     manager->applyContactManagerConfig(config.contact_manager_config);
-    auto fn = manager->getIsContactAllowedFn();
-    EXPECT_TRUE(fn("allowed_link_1a", "allowed_link_2a"));
-    EXPECT_TRUE(fn("allowed_link_1c", "allowed_link_2c"));
+    auto fn = manager->getContactAllowedValidator();
+    EXPECT_TRUE((*fn)("allowed_link_1a", "allowed_link_2a"));
+    EXPECT_TRUE((*fn)("allowed_link_1c", "allowed_link_2c"));
   }
 
   // AND
@@ -80,9 +80,9 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.contact_manager_config.acm.removeAllowedCollision("allowed_link_1a", "allowed_link_2a");
     config.contact_manager_config.acm_override_type = ACMOverrideType::AND;
     manager->applyContactManagerConfig(config.contact_manager_config);
-    auto fn = manager->getIsContactAllowedFn();
-    EXPECT_FALSE(fn("allowed_link_1a", "allowed_link_2a"));
-    EXPECT_TRUE(fn("allowed_link_1c", "allowed_link_2c"));
+    auto fn = manager->getContactAllowedValidator();
+    EXPECT_FALSE((*fn)("allowed_link_1a", "allowed_link_2a"));
+    EXPECT_TRUE((*fn)("allowed_link_1c", "allowed_link_2c"));
   }
 }
 

@@ -43,6 +43,7 @@ struct CollisionCheckConfig;
 struct ContactTrajectorySubstepResults;
 struct ContactTrajectoryStepResults;
 struct ContactTrajectoryResults;
+class ContactResultValidator;
 
 // contact_managers_plugin_factory.h
 class DiscreteContactManagerFactory;
