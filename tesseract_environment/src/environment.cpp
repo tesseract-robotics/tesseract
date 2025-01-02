@@ -248,7 +248,7 @@ struct Environment::Implementation
    * @details This will cleared when environment changes
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable std::unordered_map<std::string, std::unique_ptr<tesseract_kinematics::JointGroup>> joint_group_cache{};
+  mutable std::unordered_map<std::string, std::shared_ptr<const tesseract_kinematics::JointGroup>> joint_group_cache{};
   mutable std::shared_mutex joint_group_cache_mutex;
 
   /**
@@ -256,7 +256,7 @@ struct Environment::Implementation
    * @details This will cleared when environment changes
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable std::map<std::pair<std::string, std::string>, std::unique_ptr<tesseract_kinematics::KinematicGroup>>
+  mutable std::map<std::pair<std::string, std::string>, std::shared_ptr<const tesseract_kinematics::KinematicGroup>>
       kinematic_group_cache{};
   mutable std::shared_mutex kinematic_group_cache_mutex;
 
@@ -295,13 +295,13 @@ struct Environment::Implementation
 
   std::vector<std::string> getGroupJointNames(const std::string& group_name) const;
 
-  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
+  std::shared_ptr<const tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
 
-  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& name,
-                                                                  const std::vector<std::string>& joint_names) const;
+  std::shared_ptr<const tesseract_kinematics::JointGroup>
+  getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const;
 
-  std::unique_ptr<tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
-                                                                          std::string ik_solver_name) const;
+  std::shared_ptr<const tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
+                                                                                std::string ik_solver_name) const;
 
   Eigen::Isometry3d findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const;
 
@@ -478,13 +478,8 @@ std::unique_ptr<Environment::Implementation> Environment::Implementation::clone(
   cloned_env->collision_margin_data = collision_margin_data;
 
   // Copy cache
-  cloned_env->joint_group_cache.reserve(joint_group_cache.size());
-  for (const auto& c : joint_group_cache)
-    cloned_env->joint_group_cache[c.first] = (std::make_unique<tesseract_kinematics::JointGroup>(*c.second));
-
-  for (const auto& c : kinematic_group_cache)
-    cloned_env->kinematic_group_cache[c.first] = (std::make_unique<tesseract_kinematics::KinematicGroup>(*c.second));
-
+  cloned_env->joint_group_cache = joint_group_cache;
+  cloned_env->kinematic_group_cache = kinematic_group_cache;
   cloned_env->group_joint_names_cache = group_joint_names_cache;
 
   // NOLINTNEXTLINE
@@ -781,7 +776,7 @@ std::vector<std::string> Environment::Implementation::getGroupJointNames(const s
   throw std::runtime_error("Environment, failed to get group '" + group_name + "' joint names!");
 }
 
-std::unique_ptr<tesseract_kinematics::JointGroup>
+std::shared_ptr<const tesseract_kinematics::JointGroup>
 Environment::Implementation::getJointGroup(const std::string& group_name) const
 {
   std::unique_lock<std::shared_mutex> cache_lock(joint_group_cache_mutex);
@@ -789,25 +784,25 @@ Environment::Implementation::getJointGroup(const std::string& group_name) const
   if (it != joint_group_cache.end())
   {
     CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache hit!", group_name.c_str());
-    return std::make_unique<tesseract_kinematics::JointGroup>(*it->second);
+    return it->second;
   }
 
   CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache miss!", group_name.c_str());
   // Store copy in cache and return
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
-  tesseract_kinematics::JointGroup::UPtr jg = getJointGroup(group_name, joint_names);
-  joint_group_cache[group_name] = std::make_unique<tesseract_kinematics::JointGroup>(*jg);
+  tesseract_kinematics::JointGroup::ConstPtr jg = getJointGroup(group_name, joint_names);
+  joint_group_cache[group_name] = jg;
 
   return jg;
 }
 
-std::unique_ptr<tesseract_kinematics::JointGroup>
+std::shared_ptr<const tesseract_kinematics::JointGroup>
 Environment::Implementation::getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const
 {
-  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph, current_state);
+  return std::make_shared<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph, current_state);
 }
 
-std::unique_ptr<tesseract_kinematics::KinematicGroup>
+std::shared_ptr<const tesseract_kinematics::KinematicGroup>
 Environment::Implementation::getKinematicGroup(const std::string& group_name, std::string ik_solver_name) const
 {
   std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex);
@@ -817,7 +812,7 @@ Environment::Implementation::getKinematicGroup(const std::string& group_name, st
   {
     CONSOLE_BRIDGE_logDebug(
         "Environment, getKinematicGroup(%s, %s) cache hit!", group_name.c_str(), ik_solver_name.c_str());
-    return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
+    return it->second;
   }
 
   CONSOLE_BRIDGE_logDebug(
@@ -835,10 +830,10 @@ Environment::Implementation::getKinematicGroup(const std::string& group_name, st
     return nullptr;
 
   // Store copy in cache and return
-  auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
+  auto kg = std::make_shared<tesseract_kinematics::KinematicGroup>(
       group_name, joint_names, std::move(inv_kin), *scene_graph, current_state);
 
-  kinematic_group_cache[key] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+  kinematic_group_cache[key] = kg;
 
 #if !defined(NDEBUG) && TESSERACT_ENABLE_TESTING
   if (!tesseract_kinematics::checkKinematics(*kg))
@@ -2318,20 +2313,20 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
   return std::as_const<Implementation>(*impl_).getGroupJointNames(group_name);
 }
 
-std::unique_ptr<tesseract_kinematics::JointGroup> Environment::getJointGroup(const std::string& group_name) const
+std::shared_ptr<const tesseract_kinematics::JointGroup> Environment::getJointGroup(const std::string& group_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).getJointGroup(group_name);
 }
 
-std::unique_ptr<tesseract_kinematics::JointGroup>
+std::shared_ptr<const tesseract_kinematics::JointGroup>
 Environment::getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).getJointGroup(name, joint_names);
 }
 
-std::unique_ptr<tesseract_kinematics::KinematicGroup>
+std::shared_ptr<const tesseract_kinematics::KinematicGroup>
 Environment::getKinematicGroup(const std::string& group_name, const std::string& ik_solver_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
