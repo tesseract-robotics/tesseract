@@ -1,13 +1,13 @@
 /**
- * @file discrete_contact_manager.h
- * @brief This is the discrete contact manager base class
- *
- * It should be used to perform discrete contact checking.
+ * @file contact_result_validator.h
+ * @brief Contact result validator
  *
  * @author Levi Armstrong
- * @date Dec 1, 2021
+ * @date Jan 2, 2025
  * @version TODO
  * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2025, Levi Armstrong
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -24,15 +24,17 @@
  * limitations under the License.
  */
 
-#include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract_collision/core/utils.h>
+#include <tesseract_collision/core/contact_result_validator.h>
 
 namespace tesseract_collision
 {
-void DiscreteContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
+template <class Archive>
+void ContactResultValidator::serialize(Archive& /*ar*/, const unsigned int /*version*/)
 {
-  setCollisionMarginData(config.margin_data, config.margin_data_override_type);
-  applyContactAllowedValidatorOverride(*this, config.acm, config.acm_override_type);
-  applyModifyObjectEnabled(*this, config.modify_object_enabled);
 }
+
 }  // namespace tesseract_collision
+
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactResultValidator)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_collision::ContactResultValidator)

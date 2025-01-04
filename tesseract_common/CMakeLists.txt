@@ -74,6 +74,7 @@ add_library(
   src/any_poly.cpp
   src/calibration_info.cpp
   src/collision_margin_data.cpp
+  src/contact_allowed_validator.cpp
   src/joint_state.cpp
   src/manipulator_info.cpp
   src/kinematic_limits.cpp

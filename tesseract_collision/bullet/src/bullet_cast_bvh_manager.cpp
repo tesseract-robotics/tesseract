@@ -39,7 +39,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_collision/bullet/bullet_cast_bvh_manager.h"
+#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
+#include <tesseract_common/contact_allowed_validator.h>
 
 extern btScalar gDbvtMargin;  // NOLINT
 
@@ -104,7 +105,7 @@ ContinuousContactManager::UPtr BulletCastBVHManager::clone() const
 
   manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
-  manager->setIsContactAllowedFn(contact_test_data_.fn);
+  manager->setContactAllowedValidator(contact_test_data_.validator);
 
   return manager;
 }
@@ -451,8 +452,16 @@ const CollisionMarginData& BulletCastBVHManager::getCollisionMarginData() const
 {
   return contact_test_data_.collision_margin_data;
 }
-void BulletCastBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
-IsContactAllowedFn BulletCastBVHManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
+void BulletCastBVHManager::setContactAllowedValidator(
+    std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
+{
+  contact_test_data_.validator = std::move(validator);
+}
+std::shared_ptr<const tesseract_common::ContactAllowedValidator>
+BulletCastBVHManager::getContactAllowedValidator() const
+{
+  return contact_test_data_.validator;
+}
 void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   contact_test_data_.res = &collisions;

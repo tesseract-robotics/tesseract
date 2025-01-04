@@ -40,11 +40,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <tesseract_common/eigen_serialization.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/serialization.h>
 #include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/contact_result_validator.h>
 
 namespace boost::serialization
 {
@@ -102,7 +104,7 @@ void serialize(Archive& ar, tesseract_collision::ContactRequest& g, const unsign
   ar& boost::serialization::make_nvp("calculate_penetration", g.calculate_penetration);
   ar& boost::serialization::make_nvp("calculate_distance", g.calculate_distance);
   ar& boost::serialization::make_nvp("contact_limit", g.contact_limit);
-  // ar& boost::serialization::make_nvp("is_valid", g.is_valid); /** @todo FIX */
+  ar& boost::serialization::make_nvp("is_valid", g.is_valid);
 }
 
 template <class Archive>

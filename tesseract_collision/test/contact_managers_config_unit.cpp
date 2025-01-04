@@ -38,6 +38,42 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_collision;
 
+class AlwaysTrueContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+{
+public:
+  bool operator()(const std::string&, const std::string&) const override { return true; }
+};
+
+class AlwaysFalseContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+{
+public:
+  bool operator()(const std::string&, const std::string&) const override { return false; }
+};
+
+class TestOrigContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+{
+public:
+  bool operator()(const std::string& s1, const std::string& s2) const override
+  {
+    if (s1 == "link_1" && s2 == "link_2")
+      return true;
+
+    if (s1 == "link_1" && s2 == "link_3")
+      return true;
+
+    return false;
+  }
+};
+
+class TestOvrdContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+{
+public:
+  bool operator()(const std::string& s1, const std::string& s2) const override
+  {
+    return (s1 == "link_1" && s2 == "link_2");
+  }
+};
+
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleContactManagerConfigUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
@@ -71,79 +107,47 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHContactManagerConfigUnit)  // NOLINT
 TEST(TesseractCollisionUnit, CombineContactAllowedFnUnit)  // NOLINT
 {
   {  // tesseract_collision::ACMOverrideType::NONE
-    tesseract_collision::IsContactAllowedFn orig = [](const std::string& /*link_name1*/,
-                                                      const std::string& /*link_name2*/) { return true; };
+    auto orig = std::make_shared<AlwaysTrueContactAllowedValidator>();
+    auto ovrd = std::make_shared<AlwaysFalseContactAllowedValidator>();
 
-    tesseract_collision::IsContactAllowedFn ovrd = [](const std::string& /*link_name1*/,
-                                                      const std::string& /*link_name2*/) { return false; };
-
-    tesseract_collision::IsContactAllowedFn comb =
-        tesseract_collision::combineContactAllowedFn(orig, ovrd, tesseract_collision::ACMOverrideType::NONE);
-    EXPECT_TRUE(comb("", ""));
+    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract_collision::ACMOverrideType::NONE);
+    EXPECT_TRUE((*comb)("", ""));
   }
 
   {  // tesseract_collision::ACMOverrideType::ASSIGN
-    tesseract_collision::IsContactAllowedFn orig = [](const std::string& /*link_name1*/,
-                                                      const std::string& /*link_name2*/) { return true; };
+    auto orig = std::make_shared<AlwaysTrueContactAllowedValidator>();
+    auto ovrd = std::make_shared<AlwaysFalseContactAllowedValidator>();
 
-    tesseract_collision::IsContactAllowedFn ovrd = [](const std::string& /*link_name1*/,
-                                                      const std::string& /*link_name2*/) { return false; };
-
-    tesseract_collision::IsContactAllowedFn comb =
-        tesseract_collision::combineContactAllowedFn(orig, ovrd, tesseract_collision::ACMOverrideType::ASSIGN);
-    EXPECT_FALSE(comb("", ""));
+    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract_collision::ACMOverrideType::ASSIGN);
+    EXPECT_FALSE((*comb)("", ""));
   }
 
   {  // tesseract_collision::ACMOverrideType::AND
-    auto orig = [](const std::string& link_name1, const std::string& link_name2) {
-      if (link_name1 == "link_1" && link_name2 == "link_2")
-        return true;
+    auto orig = std::make_shared<TestOrigContactAllowedValidator>();
+    auto ovrd = std::make_shared<TestOvrdContactAllowedValidator>();
 
-      if (link_name1 == "link_1" && link_name2 == "link_3")
-        return true;
+    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract_collision::ACMOverrideType::AND);
+    EXPECT_TRUE((*comb)("link_1", "link_2"));
+    EXPECT_FALSE((*comb)("link_1", "link_3"));
+    EXPECT_FALSE((*comb)("abc", "def"));
 
-      return false;
-    };
-
-    auto ovrd = [](const std::string& link_name1, const std::string& link_name2) {
-      return (link_name1 == "link_1" && link_name2 == "link_2");
-    };
-
-    auto comb = tesseract_collision::combineContactAllowedFn(orig, ovrd, tesseract_collision::ACMOverrideType::AND);
-    EXPECT_TRUE(comb("link_1", "link_2"));
-    EXPECT_FALSE(comb("link_1", "link_3"));
-    EXPECT_FALSE(comb("abc", "def"));
-
-    auto comb1 = tesseract_collision::combineContactAllowedFn(nullptr, ovrd, tesseract_collision::ACMOverrideType::AND);
-    EXPECT_FALSE(comb1("link_1", "link_2"));
-    EXPECT_FALSE(comb1("link_1", "link_3"));
-    EXPECT_FALSE(comb1("abc", "def"));
+    auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract_collision::ACMOverrideType::AND);
+    EXPECT_TRUE(comb1 == nullptr);
   }
 
   {  // tesseract_collision::ACMOverrideType::AND
-    auto orig = [](const std::string& link_name1, const std::string& link_name2) {
-      if (link_name1 == "link_1" && link_name2 == "link_2")
-        return true;
+    auto orig = std::make_shared<TestOrigContactAllowedValidator>();
+    auto ovrd = std::make_shared<TestOvrdContactAllowedValidator>();
 
-      if (link_name1 == "link_1" && link_name2 == "link_3")
-        return true;
+    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract_collision::ACMOverrideType::OR);
+    EXPECT_TRUE((*comb)("link_1", "link_2"));
+    EXPECT_TRUE((*comb)("link_1", "link_3"));
+    EXPECT_FALSE((*comb)("abc", "def"));
 
-      return false;
-    };
-
-    auto ovrd = [](const std::string& link_name1, const std::string& link_name2) {
-      return (link_name1 == "link_1" && link_name2 == "link_2");
-    };
-
-    auto comb = tesseract_collision::combineContactAllowedFn(orig, ovrd, tesseract_collision::ACMOverrideType::OR);
-    EXPECT_TRUE(comb("link_1", "link_2"));
-    EXPECT_TRUE(comb("link_1", "link_3"));
-    EXPECT_FALSE(comb("abc", "def"));
-
-    auto comb1 = tesseract_collision::combineContactAllowedFn(nullptr, ovrd, tesseract_collision::ACMOverrideType::OR);
-    EXPECT_TRUE(comb1("link_1", "link_2"));
-    EXPECT_FALSE(comb1("link_1", "link_3"));
-    EXPECT_FALSE(comb1("abc", "def"));
+    auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract_collision::ACMOverrideType::OR);
+    EXPECT_TRUE((*comb1)("link_1", "link_2"));
+    EXPECT_FALSE((*comb1)("link_1", "link_3"));
+    EXPECT_FALSE((*comb1)("abc", "def"));
   }
 }
 

@@ -118,7 +118,7 @@ inline void runTest(DiscreteContactManager& checker)
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
   EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
 
-  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+  EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
   checker.setCollisionMarginData(CollisionMarginData(0.5));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);

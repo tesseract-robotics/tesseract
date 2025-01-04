@@ -53,12 +53,7 @@ using CollisionMarginOverrideType = tesseract_common::CollisionMarginOverrideTyp
 using PairsCollisionMarginData =
     std::unordered_map<std::pair<std::string, std::string>, double, tesseract_common::PairHash>;
 
-/**
- * @brief Should return true if contact allowed, otherwise false.
- *
- * Also the order of strings should not matter, the function should handled by the function.
- */
-using IsContactAllowedFn = std::function<bool(const std::string&, const std::string&)>;
+class ContactResultValidator;
 
 enum class ContinuousCollisionType
 {
@@ -301,13 +296,6 @@ private:
   long count_{ 0 };
 };
 
-/**
- * @brief Should return true if contact results are valid, otherwise false.
- *
- * This is used so users may provide a callback to reject/approve collision results in various algorithms.
- */
-using IsContactResultValidFn = std::function<bool(const ContactResult&)>;
-
 /** @brief The ContactRequest struct */
 struct ContactRequest
 {
@@ -325,7 +313,7 @@ struct ContactRequest
   long contact_limit = 0;
 
   /** @brief This provides a user defined function approve/reject contact results */
-  IsContactResultValidFn is_valid = nullptr;
+  std::shared_ptr<const ContactResultValidator> is_valid;
 
   ContactRequest(ContactTestType type = ContactTestType::ALL);
 };
@@ -341,7 +329,7 @@ struct ContactTestData
   ContactTestData() = default;
   ContactTestData(const std::vector<std::string>& active,
                   CollisionMarginData collision_margin_data,
-                  IsContactAllowedFn fn,
+                  std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator,
                   ContactRequest req,
                   ContactResultMap& res);
 
@@ -352,7 +340,7 @@ struct ContactTestData
   CollisionMarginData collision_margin_data{ 0 };
 
   /** @brief The allowed collision function used to check if two links should be excluded from collision checking */
-  IsContactAllowedFn fn = nullptr;
+  std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator;
 
   /** @brief The type of contact request data */
   ContactRequest req;
@@ -409,11 +397,11 @@ enum class ACMOverrideType
 {
   /** @brief Do not apply AllowedCollisionMatrix */
   NONE,
-  /** @brief Replace the current IsContactAllowedFn with one generated from the ACM provided */
+  /** @brief Replace the current ContactAllowedValidator with one generated from the ACM provided */
   ASSIGN,
-  /** @brief New IsContactAllowedFn combines the contact manager fn and the ACM generated fn with and AND */
+  /** @brief New ContactAllowedValidator combines the contact manager fn and the ACM generated fn with and AND */
   AND,
-  /** @brief New IsContactAllowedFn combines the contact manager fn and the ACM generated fn with and OR */
+  /** @brief New ContactAllowedValidator combines the contact manager fn and the ACM generated fn with and OR */
   OR,
 };
 
@@ -438,7 +426,7 @@ struct ContactManagerConfig
 
   /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
   tesseract_common::AllowedCollisionMatrix acm;
-  /** @brief Specifies how to combine the IsContactAllowedFn from acm with the one preset in the contact manager */
+  /** @brief Specifies how to combine the ContactAllowedValidator from acm with the one preset in the contact manager */
   ACMOverrideType acm_override_type{ ACMOverrideType::OR };
 
   /** @brief Each key is an object name. Objects will be enabled/disabled based on the value. Objects that aren't in the

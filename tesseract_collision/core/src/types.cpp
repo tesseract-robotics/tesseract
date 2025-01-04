@@ -29,6 +29,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iomanip>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_collision/core/contact_result_validator.h>
+
 namespace tesseract_collision
 {
 void ContactResult::clear()
@@ -347,12 +349,12 @@ std::string ContactResultMap::getSummary() const
 
 ContactTestData::ContactTestData(const std::vector<std::string>& active,
                                  CollisionMarginData collision_margin_data,
-                                 IsContactAllowedFn fn,
+                                 std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator,
                                  ContactRequest req,
                                  ContactResultMap& res)
   : active(&active)
   , collision_margin_data(std::move(collision_margin_data))
-  , fn(std::move(fn))
+  , validator(std::move(validator))
   , req(std::move(req))
   , res(&res)
 {

@@ -47,6 +47,11 @@ struct ClassLoader;
 // allowed_collision_matrix
 class AllowedCollisionMatrix;
 
+// contact_allowed_validator
+class ContactAllowedValidator;
+class ACMContactAllowedValidator;
+class CombinedContactAllowedValidator;
+
 // collision_margin_data.h
 enum class CollisionMarginOverrideType;
 class CollisionMarginData;
