@@ -39,6 +39,7 @@ target_include_directories(${PROJECT_NAME}_core PUBLIC "$<BUILD_INTERFACE:${CMAK
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT core
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
