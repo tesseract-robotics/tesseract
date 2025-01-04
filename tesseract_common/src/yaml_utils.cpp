@@ -49,7 +49,7 @@ namespace tesseract_common
  * @throws std::runtime_error if an `!include` tag is used improperly (e.g., not scalar),
  *         or if a file specified in an `!include` directive cannot be loaded.
  */
-YAML::Node handleIncludeDirective(const YAML::Node& node, const ResourceLocator& locator)
+YAML::Node processYamlIncludeDirective(const YAML::Node& node, const ResourceLocator& locator)
 {
   if (node.Tag() == "!include")
   {
@@ -63,7 +63,7 @@ YAML::Node handleIncludeDirective(const YAML::Node& node, const ResourceLocator&
     if (resource == nullptr)
       throw std::runtime_error("Unable to locate resource: " + included_file);
 
-    return handleIncludeDirective(YAML::LoadFile(resource->getFilePath()), *resource);
+    return processYamlIncludeDirective(YAML::LoadFile(resource->getFilePath()), *resource);
   }
 
   if (node.IsMap())
@@ -71,7 +71,7 @@ YAML::Node handleIncludeDirective(const YAML::Node& node, const ResourceLocator&
     // Create a new map and process each key-value pair
     YAML::Node processed_map = YAML::Node(YAML::NodeType::Map);
     for (auto it = node.begin(); it != node.end(); ++it)
-      processed_map[it->first] = handleIncludeDirective(it->second, locator);
+      processed_map[it->first] = processYamlIncludeDirective(it->second, locator);
 
     return processed_map;
   }
@@ -81,7 +81,7 @@ YAML::Node handleIncludeDirective(const YAML::Node& node, const ResourceLocator&
     // Create a new sequence and process each element
     YAML::Node processed_sequence = YAML::Node(YAML::NodeType::Sequence);
     for (const auto& child : node)
-      processed_sequence.push_back(handleIncludeDirective(child, locator));
+      processed_sequence.push_back(processYamlIncludeDirective(child, locator));
 
     return processed_sequence;
   }
@@ -92,17 +92,15 @@ YAML::Node handleIncludeDirective(const YAML::Node& node, const ResourceLocator&
 
 YAML::Node loadYamlFile(const std::string& file_path, const ResourceLocator& locator)
 {
-  // Load the base YAML file
   auto resource = locator.locateResource(file_path);
   YAML::Node root = YAML::LoadFile(resource->getFilePath());
-  return handleIncludeDirective(root, *resource);
+  return processYamlIncludeDirective(root, *resource);
 }
 
 YAML::Node loadYamlString(const std::string& yaml_string, const ResourceLocator& locator)
 {
-  // Load the base YAML file
   YAML::Node root = YAML::Load(yaml_string);
-  return handleIncludeDirective(root, locator);
+  return processYamlIncludeDirective(root, locator);
 }
 
 void writeYamlToFile(const YAML::Node& node, const std::string& file_path)

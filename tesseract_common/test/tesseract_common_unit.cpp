@@ -1223,7 +1223,8 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                            tip_link: tool0)";
 
   {  // Success
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
     auto cmpi = config.as<tesseract_common::KinematicsPluginInfo>();
 
@@ -1292,7 +1293,8 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                              base_link: base_link
                                              tip_link: tool0)";
 
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
   }
@@ -1327,7 +1329,8 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                              base_link: base_link
                                              tip_link: tool0)";
 
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
   }
@@ -1356,7 +1359,8 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                              base_link: base_link
                                              tip_link: tool0)";
 
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
   }
@@ -1387,7 +1391,8 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                              base_link: base_link
                                              tip_link: tool0)";
 
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
   }
@@ -1411,7 +1416,8 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                      iiwa_manipulator:
                                        default: KDLInvKinChainLMA)";
 
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
   }
@@ -1436,7 +1442,8 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                        - tesseract_collision_bullet_factories
                                        - tesseract_collision_fcl_factories)";
 
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
   }
@@ -1468,7 +1475,8 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                        class: BulletCastSimpleManagerFactory)";
 
   {  // Success
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     auto cmpi = config.as<tesseract_common::ContactManagersPluginInfo>();
 
@@ -1530,7 +1538,8 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: BulletCastBVHManagerFactory
                                        BulletCastSimpleManager:
                                          class: BulletCastSimpleManagerFactory)";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
   }
@@ -1557,7 +1566,8 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: BulletCastBVHManagerFactory
                                        BulletCastSimpleManager:
                                          class: BulletCastSimpleManagerFactory)";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
   }
@@ -1578,7 +1588,8 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: BulletCastBVHManagerFactory
                                        BulletCastSimpleManager:
                                          class: BulletCastSimpleManagerFactory)";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
   }
@@ -1600,7 +1611,8 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: BulletCastBVHManagerFactory
                                        BulletCastSimpleManager:
                                          class: BulletCastSimpleManagerFactory)";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
   }
@@ -1623,7 +1635,8 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: FCLDiscreteBVHManagerFactory
                                    continuous_plugins:
                                      default: BulletCastBVHManager)";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
   }
@@ -1647,7 +1660,8 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                    continuous_plugins:
                                      - tesseract_collision_bullet_factories
                                      - tesseract_collision_fcl_factories)";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
   }
@@ -1691,7 +1705,8 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          output_key: "output")";
 
   {  // Success
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
     auto tcpi = config.as<tesseract_common::TaskComposerPluginInfo>();
 
@@ -1765,7 +1780,8 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
   }
@@ -1804,7 +1820,8 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
   }
@@ -1831,7 +1848,8 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
   }
@@ -1869,7 +1887,8 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
   }
@@ -1898,7 +1917,8 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                            threads: 15
                                    tasks:
                                      default: CartesianMotionPipeline)";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
   }
@@ -1936,7 +1956,8 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    YAML::Node plugin_config = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
   }
@@ -1968,7 +1989,8 @@ TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
                w: 1)";
 
   {  // valid string
-    YAML::Node node = YAML::Load(yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node node = tesseract_common::loadYamlString(yaml_string, locator);
     auto trans_map = node["joints"].as<tesseract_common::TransformMap>();
     EXPECT_EQ(trans_map.size(), 2);
     EXPECT_FALSE(trans_map.empty());
@@ -1999,7 +2021,8 @@ TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
                  z: 0
                  w: 1)";
   {  // invalid string
-    YAML::Node node = YAML::Load(bad_yaml_string);
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node node = tesseract_common::loadYamlString(bad_yaml_string, locator);
     EXPECT_ANY_THROW(node["joints"].as<tesseract_common::TransformMap>());  // NOLINT
   }
 }
@@ -2030,7 +2053,8 @@ TEST(TesseractCommonUnit, CalibrationInfoYamlUnit)  // NOLINT
                  z: 0
                  w: 1)";
 
-  YAML::Node node = YAML::Load(yaml_string);
+  tesseract_common::GeneralResourceLocator locator;
+  YAML::Node node = tesseract_common::loadYamlString(yaml_string, locator);
   auto cal_info = node[tesseract_common::CalibrationInfo::CONFIG_KEY].as<tesseract_common::CalibrationInfo>();
   EXPECT_FALSE(cal_info.empty());
   EXPECT_TRUE(cal_info.joints.find("joint_1") != cal_info.joints.end());

@@ -32,6 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/bullet/bullet_factories.h>
+#include <tesseract_common/yaml_utils.h>
+#include <tesseract_common/resource_locator.h>
 
 using namespace tesseract_collision;
 
@@ -63,10 +65,11 @@ TEST(TesseractContactManagersFactoryUnit, StaticLoadPlugin)  // NOLINT
                                 BulletCastSimpleManager:
                                   class: BulletCastSimpleManagerFactory)";
 
-  ContactManagersPluginFactory factory(config);
+  tesseract_common::GeneralResourceLocator locator;
+  ContactManagersPluginFactory factory(config, locator);
   factory.clearSearchLibraries();
   factory.clearSearchPaths();
-  YAML::Node plugin_config = YAML::Load(config);
+  YAML::Node plugin_config = tesseract_common::loadYamlString(config, locator);
 
   DiscreteContactManager::UPtr cm = factory.createDiscreteContactManager("BulletDiscreteBVHManager");
   EXPECT_TRUE(cm != nullptr);

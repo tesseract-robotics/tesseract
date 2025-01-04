@@ -697,15 +697,15 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   SRDFModel srdf_save;
   srdf_save.initString(*g, xml_string, locator);
 
-  YAML::Node kinematics_plugin_config = YAML::Load(yaml_kin_plugins_string);
+  YAML::Node kinematics_plugin_config = tesseract_common::loadYamlString(yaml_kin_plugins_string, locator);
   srdf_save.kinematics_information.kinematics_plugin_info =
       kinematics_plugin_config[KinematicsPluginInfo::CONFIG_KEY].as<KinematicsPluginInfo>();
 
-  YAML::Node contact_managers_plugin_config = YAML::Load(yaml_cm_plugins_string);
+  YAML::Node contact_managers_plugin_config = tesseract_common::loadYamlString(yaml_cm_plugins_string, locator);
   srdf_save.contact_managers_plugin_info =
       contact_managers_plugin_config[ContactManagersPluginInfo::CONFIG_KEY].as<ContactManagersPluginInfo>();
 
-  YAML::Node calibration_config = YAML::Load(yaml_calibration_string);
+  YAML::Node calibration_config = tesseract_common::loadYamlString(yaml_calibration_string, locator);
   srdf_save.calibration_info = calibration_config[CalibrationInfo::CONFIG_KEY].as<CalibrationInfo>();
 
   std::string save_path = tesseract_common::getTempPath() + "unit_test_save_srdf.srdf";
@@ -791,7 +791,7 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
                  y: 0
                  z: 0
                  w: 1)";
-  YAML::Node bad_calibration_config = YAML::Load(yaml_calibration_string);
+  YAML::Node bad_calibration_config = tesseract_common::loadYamlString(yaml_calibration_string, locator);
   srdf_save.calibration_info = bad_calibration_config[CalibrationInfo::CONFIG_KEY].as<CalibrationInfo>();
 
   save_path = tesseract_common::getTempPath() + "unit_test_save_bad_srdf.srdf";

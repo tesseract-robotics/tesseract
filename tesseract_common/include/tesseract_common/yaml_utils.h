@@ -41,14 +41,29 @@ namespace tesseract_common
 class ResourceLocator;
 
 /**
+ * @brief Recursively processes a YAML node to resolve `!include` directives.
+ *
+ * This function replaces any node tagged with `!include` with the content of the
+ * specified file. It also recursively processes maps and sequences to handle nested
+ * `!include` directives.
+ *
+ * @param node The YAML node to process.
+ * @param locator The locator used to resolve urls and relative file paths.
+ * @return A YAML::Node with all `!include` directives resolved.
+ *
+ * @throws std::runtime_error if an `!include` tag is used improperly (e.g., not scalar),
+ *         or if a file specified in an `!include` directive cannot be loaded.
+ */
+YAML::Node processYamlIncludeDirective(const YAML::Node& node, const ResourceLocator& locator);
+
+/**
  * @brief Loads a YAML file and processes `!include` directives recursively.
  *
  * This function loads a YAML file and replaces any node tagged with `!include`
  * with the content of the specified file. It handles nested `!include` directives
  * and works with both maps and sequences.
  *
- * @param file_path The path to the YAML file to be loaded. Relative paths should be
- *                 resolved based on the caller's context.
+ * @param file_path The path to the YAML file/url to be loaded.
  * @param locator The locator used to resolve urls and relative file paths.
  * @return A YAML::Node object containing the fully processed YAML structure.
  *

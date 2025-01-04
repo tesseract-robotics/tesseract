@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_common/plugin_loader.hpp>
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_common/yaml_extenstions.h>
@@ -58,7 +59,7 @@ ContactManagersPluginFactory::ContactManagersPluginFactory()
                boost::token_compress_on);
 }
 
-ContactManagersPluginFactory::ContactManagersPluginFactory(YAML::Node config) : ContactManagersPluginFactory()
+void ContactManagersPluginFactory::loadConfig(const YAML::Node& config)
 {
   if (const YAML::Node& plugin_info = config[ContactManagersPluginInfo::CONFIG_KEY])
   {
@@ -71,14 +72,26 @@ ContactManagersPluginFactory::ContactManagersPluginFactory(YAML::Node config) : 
   }
 }
 
-ContactManagersPluginFactory::ContactManagersPluginFactory(const tesseract_common::fs::path& config)
-  : ContactManagersPluginFactory(YAML::LoadFile(config.string()))
+ContactManagersPluginFactory::ContactManagersPluginFactory(YAML::Node config,
+                                                           const tesseract_common::ResourceLocator& locator)
+  : ContactManagersPluginFactory()
 {
+  config = tesseract_common::processYamlIncludeDirective(config, locator);
+  loadConfig(config);
 }
 
-ContactManagersPluginFactory::ContactManagersPluginFactory(const std::string& config)
-  : ContactManagersPluginFactory(YAML::Load(config))
+ContactManagersPluginFactory::ContactManagersPluginFactory(const tesseract_common::fs::path& config,
+                                                           const tesseract_common::ResourceLocator& locator)
+  : ContactManagersPluginFactory()
 {
+  loadConfig(tesseract_common::loadYamlFile(config.string(), locator));
+}
+
+ContactManagersPluginFactory::ContactManagersPluginFactory(const std::string& config,
+                                                           const tesseract_common::ResourceLocator& locator)
+  : ContactManagersPluginFactory()
+{
+  loadConfig(tesseract_common::loadYamlString(config, locator));
 }
 
 // This prevents it from being defined inline.
