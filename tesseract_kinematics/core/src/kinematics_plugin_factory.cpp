@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/scene_state.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_common/plugin_loader.hpp>
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_common/yaml_extenstions.h>
@@ -56,7 +57,7 @@ KinematicsPluginFactory::KinematicsPluginFactory()
       plugin_loader_.search_libraries, TESSERACT_KINEMATICS_PLUGINS, boost::is_any_of(":"), boost::token_compress_on);
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : KinematicsPluginFactory()
+void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
 {
   if (const YAML::Node& plugin_info = config[KinematicsPluginInfo::CONFIG_KEY])
   {
@@ -69,14 +70,25 @@ KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : Kinematics
   }
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(const tesseract_common::fs::path& config)
-  : KinematicsPluginFactory(YAML::LoadFile(config.string()))
+KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config, const tesseract_common::ResourceLocator& locator)
+  : KinematicsPluginFactory()
 {
+  config = tesseract_common::processYamlIncludeDirective(config, locator);
+  loadConfig(config);
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(const std::string& config)
-  : KinematicsPluginFactory(YAML::Load(config))
+KinematicsPluginFactory::KinematicsPluginFactory(const tesseract_common::fs::path& config,
+                                                 const tesseract_common::ResourceLocator& locator)
+  : KinematicsPluginFactory()
 {
+  loadConfig(tesseract_common::loadYamlFile(config.string(), locator));
+}
+
+KinematicsPluginFactory::KinematicsPluginFactory(const std::string& config,
+                                                 const tesseract_common::ResourceLocator& locator)
+  : KinematicsPluginFactory()
+{
+  loadConfig(tesseract_common::loadYamlString(config, locator));
 }
 
 // This prevents it from being defined inline.

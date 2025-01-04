@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
 #include <tesseract_state_solver/fwd.h>
+#include <tesseract_common/fwd.h>
 #include <tesseract_common/plugin_loader.h>
 #include <tesseract_common/filesystem.h>
 #include <tesseract_common/plugin_info.h>
@@ -125,19 +126,19 @@ public:
    * @brief Load plugins from yaml node
    * @param config The config node
    */
-  KinematicsPluginFactory(YAML::Node config);
+  KinematicsPluginFactory(YAML::Node config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  KinematicsPluginFactory(const tesseract_common::fs::path& config);
+  KinematicsPluginFactory(const tesseract_common::fs::path& config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from string
    * @param config The config string
    */
-  KinematicsPluginFactory(const std::string& config);
+  KinematicsPluginFactory(const std::string& config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Add location for the plugin loader to search
@@ -305,6 +306,8 @@ private:
   std::map<std::string, tesseract_common::PluginInfoContainer> fwd_plugin_info_;
   std::map<std::string, tesseract_common::PluginInfoContainer> inv_plugin_info_;
   tesseract_common::PluginLoader plugin_loader_;
+
+  void loadConfig(const YAML::Node& config);
 };
 
 }  // namespace tesseract_kinematics
