@@ -203,7 +203,8 @@ void OFKTStateSolver::clear()
   root_ = nullptr;
 }
 
-void OFKTStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+void OFKTStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                               const tesseract_common::TransformMap& floating_joint_values)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   assert(active_joint_names_.size() == static_cast<std::size_t>(joint_values.size()));
@@ -217,7 +218,8 @@ void OFKTStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_va
   update(root_.get(), false);
 }
 
-void OFKTStateSolver::setState(const std::unordered_map<std::string, double>& joint_values)
+void OFKTStateSolver::setState(const std::unordered_map<std::string, double>& joint_values,
+                               const tesseract_common::TransformMap& floating_joint_values)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
 
@@ -231,7 +233,8 @@ void OFKTStateSolver::setState(const std::unordered_map<std::string, double>& jo
 }
 
 void OFKTStateSolver::setState(const std::vector<std::string>& joint_names,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                               const tesseract_common::TransformMap& floating_joint_values)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   assert(joint_names.size() == static_cast<std::size_t>(joint_values.size()));
@@ -245,7 +248,8 @@ void OFKTStateSolver::setState(const std::vector<std::string>& joint_names,
   update(root_.get(), false);
 }
 
-SceneState OFKTStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+SceneState OFKTStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                     const tesseract_common::TransformMap& floating_joint_values) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   assert(static_cast<Eigen::Index>(active_joint_names_.size()) == joint_values.size());
@@ -257,7 +261,8 @@ SceneState OFKTStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& jo
   return state;
 }
 
-SceneState OFKTStateSolver::getState(const std::unordered_map<std::string, double>& joint_values) const
+SceneState OFKTStateSolver::getState(const std::unordered_map<std::string, double>& joint_values,
+                                     const tesseract_common::TransformMap& floating_joint_values) const
 {
   auto state = SceneState(current_state_);
   for (const auto& joint : joint_values)
@@ -268,7 +273,8 @@ SceneState OFKTStateSolver::getState(const std::unordered_map<std::string, doubl
 }
 
 SceneState OFKTStateSolver::getState(const std::vector<std::string>& joint_names,
-                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                     const tesseract_common::TransformMap& floating_joint_values) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   assert(static_cast<Eigen::Index>(joint_names.size()) == joint_values.size());
@@ -293,41 +299,57 @@ SceneState OFKTStateSolver::getRandomState() const
 }
 
 Eigen::MatrixXd OFKTStateSolver::getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                             const std::string& link_name) const
+                                             const std::string& link_name,
+                                             const tesseract_common::TransformMap& floating_joint_values) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   std::unordered_map<std::string, double> joints = current_state_.joints;
   for (Eigen::Index i = 0; i < joint_values.rows(); ++i)
     joints[active_joint_names_[static_cast<std::size_t>(i)]] = joint_values[i];
 
-  return calcJacobianHelper(joints, link_name);
+  tesseract_common::TransformMap floating_joints{ current_state_.floating_joints };
+  for (const auto& floating_joint : floating_joint_values)
+    floating_joints[floating_joint.first] = floating_joint.second;
+
+  return calcJacobianHelper(joints, link_name, floating_joints);
 }
 
 Eigen::MatrixXd OFKTStateSolver::getJacobian(const std::unordered_map<std::string, double>& joints_values,
-                                             const std::string& link_name) const
+                                             const std::string& link_name,
+                                             const tesseract_common::TransformMap& floating_joint_values) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   std::unordered_map<std::string, double> joints = current_state_.joints;
   for (const auto& joint : joints_values)
     joints[joint.first] = joint.second;
 
-  return calcJacobianHelper(joints, link_name);
+  tesseract_common::TransformMap floating_joints{ current_state_.floating_joints };
+  for (const auto& floating_joint : floating_joint_values)
+    floating_joints[floating_joint.first] = floating_joint.second;
+
+  return calcJacobianHelper(joints, link_name, floating_joints);
 }
 
 Eigen::MatrixXd OFKTStateSolver::getJacobian(const std::vector<std::string>& joint_names,
                                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                             const std::string& link_name) const
+                                             const std::string& link_name,
+                                             const tesseract_common::TransformMap& floating_joint_values) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   std::unordered_map<std::string, double> joints = current_state_.joints;
   for (Eigen::Index i = 0; i < joint_values.rows(); ++i)
     joints[joint_names[static_cast<std::size_t>(i)]] = joint_values[i];
 
-  return calcJacobianHelper(joints, link_name);
+  tesseract_common::TransformMap floating_joints{ current_state_.floating_joints };
+  for (const auto& floating_joint : floating_joint_values)
+    floating_joints[floating_joint.first] = floating_joint.second;
+
+  return calcJacobianHelper(joints, link_name, floating_joints);
 }
 
 Eigen::MatrixXd OFKTStateSolver::calcJacobianHelper(const std::unordered_map<std::string, double>& joints,
-                                                    const std::string& link_name) const
+                                                    const std::string& link_name,
+                                                    const tesseract_common::TransformMap& floating_joint_values) const
 {
   OFKTNode* node = link_map_.at(link_name);
   Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(6, static_cast<Eigen::Index>(active_joint_names_.size()));
@@ -335,9 +357,13 @@ Eigen::MatrixXd OFKTStateSolver::calcJacobianHelper(const std::unordered_map<std
   Eigen::Isometry3d total_tf{ Eigen::Isometry3d::Identity() };
   while (node != root_.get())
   {
-    if (node->getType() == JointType::FIXED || node->getType() == JointType::FLOATING)
+    if (node->getType() == JointType::FIXED)
     {
       total_tf = node->getLocalTransformation() * total_tf;
+    }
+    else if (node->getType() == JointType::FLOATING)
+    {
+      total_tf = floating_joint_values.at(node->getJointName()) * total_tf;
     }
     else
     {
