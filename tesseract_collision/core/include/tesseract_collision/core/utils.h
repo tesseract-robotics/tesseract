@@ -25,40 +25,38 @@
 #ifndef TESSERACT_COLLISION_CORE_UTILS_H
 #define TESSERACT_COLLISION_CORE_UTILS_H
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_collision/core/types.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_collision/core/contact_result_validator.h>
+#include <tesseract_common/contact_allowed_validator.h>
 
 namespace tesseract_collision
 {
 /**
- * @brief Combines two IsContactAllowedFns using the override type
- * @param original Original IsContactAllowedFns. This will be returned if ACMOverrideType is None
- * @param override Overriding IsContactAllowedFns. This will be returned if ACMOverrideType is ASSIGN
- * @param type Override type used to combine the IsContactAllowedFns
- * @return One IsContactAllowedFn that combines the two
+ * @brief Combines two ContactAllowedValidator using the override type
+ * @param original Original ContactAllowedValidator. This will be returned if ACMOverrideType is None
+ * @param override Overriding ContactAllowedValidator. This will be returned if ACMOverrideType is ASSIGN
+ * @param type Override type used to combine the ContactAllowedValidator
+ * @return One ContactAllowedValidator that combines the two
  */
-IsContactAllowedFn combineContactAllowedFn(const IsContactAllowedFn& original,
-                                           const IsContactAllowedFn& override,
-                                           ACMOverrideType type = ACMOverrideType::OR);
+tesseract_common::ContactAllowedValidator::ConstPtr
+combineContactAllowedValidators(tesseract_common::ContactAllowedValidator::ConstPtr original,
+                                tesseract_common::ContactAllowedValidator::ConstPtr override,
+                                ACMOverrideType type = ACMOverrideType::OR);
 
 /**
  * @brief Applies ACM to contact manager using override type
- * @param manager Manager whose IsContactAllowedFn will be overwritten
- * @param acm ACM used to create IsContactAllowedFn
- * @param type Determines how the two IsContactAllowedFns are combined
+ * @param manager Manager whose ContactAllowedValidator will be overwritten
+ * @param acm ACM used to create ContactAllowedValidator
+ * @param type Determines how the two ContactAllowedValidator are combined
  */
 template <typename ManagerType>
-inline void applyIsContactAllowedFnOverride(ManagerType& manager,
-                                            const tesseract_common::AllowedCollisionMatrix& acm,
-                                            ACMOverrideType type)
+inline void applyContactAllowedValidatorOverride(ManagerType& manager,
+                                                 const tesseract_common::AllowedCollisionMatrix& acm,
+                                                 ACMOverrideType type)
 {
-  IsContactAllowedFn original = manager.getIsContactAllowedFn();
-  IsContactAllowedFn override = [acm](const std::string& str1, const std::string& str2) {
-    return acm.isCollisionAllowed(str1, str2);
-  };
-  manager.setIsContactAllowedFn(combineContactAllowedFn(original, override, type));
+  tesseract_common::ContactAllowedValidator::ConstPtr original = manager.getContactAllowedValidator();
+  auto override = std::make_shared<tesseract_common::ACMContactAllowedValidator>(acm);
+  manager.setContactAllowedValidator(combineContactAllowedValidators(original, override, type));
 }
 
 /**

@@ -113,9 +113,10 @@ public:
 
   const CollisionMarginData& getCollisionMarginData() const override final;
 
-  void setIsContactAllowedFn(IsContactAllowedFn fn) override final;
+  void
+  setContactAllowedValidator(std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator) override final;
 
-  IsContactAllowedFn getIsContactAllowedFn() const override final;
+  std::shared_ptr<const tesseract_common::ContactAllowedValidator> getContactAllowedValidator() const override final;
 
   void contactTest(ContactResultMap& collisions, const ContactRequest& request) override final;
 
@@ -138,8 +139,9 @@ private:
   std::vector<std::string> active_; /**< @brief A list of the active collision objects */
   std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
   CollisionMarginData collision_margin_data_;  /**< @brief The contact distance threshold */
-  IsContactAllowedFn fn_;                      /**< @brief The is allowed collision function */
-  std::size_t fcl_co_count_{ 0 };              /**< @brief The number fcl collision objects */
+  std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator_; /**< @brief The is allowed collision
+                                                                                  function */
+  std::size_t fcl_co_count_{ 0 }; /**< @brief The number fcl collision objects */
 
   /** @brief This is used to store static collision objects to update */
   std::vector<CollisionObjectRawPtr> static_update_;

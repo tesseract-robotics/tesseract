@@ -37,12 +37,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_common/types.h>
 #include <tesseract_collision/core/common.h>
+#include <tesseract_collision/core/contact_result_validator.h>
 
 namespace tesseract_collision
 {
-std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string>& active_links,
-                                                   const std::vector<std::string>& static_links,
-                                                   const IsContactAllowedFn& acm)
+std::vector<ObjectPairKey>
+getCollisionObjectPairs(const std::vector<std::string>& active_links,
+                        const std::vector<std::string>& static_links,
+                        const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator)
 {
   std::size_t num_pairs = active_links.size() * (active_links.size() - 1) / 2;
   num_pairs += (active_links.size() * static_links.size());
@@ -57,7 +59,7 @@ std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string
     for (std::size_t j = i + 1; j < active_links.size(); ++j)
     {
       const std::string& l2 = active_links[j];
-      if (acm == nullptr || (acm != nullptr && !acm(l1, l2)))
+      if (validator == nullptr || (validator != nullptr && !(*validator)(l1, l2)))
         clp.push_back(tesseract_common::makeOrderedLinkPair(l1, l2));
     }
   }
@@ -67,7 +69,7 @@ std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string
   {
     for (const auto& l2 : static_links)
     {
-      if (acm == nullptr || (acm != nullptr && !acm(l1, l2)))
+      if (validator == nullptr || (validator != nullptr && !(*validator)(l1, l2)))
         clp.push_back(tesseract_common::makeOrderedLinkPair(l1, l2));
     }
   }
@@ -80,13 +82,16 @@ bool isLinkActive(const std::vector<std::string>& active, const std::string& nam
   return active.empty() || (std::find(active.begin(), active.end(), name) != active.end());
 }
 
-bool isContactAllowed(const std::string& name1, const std::string& name2, const IsContactAllowedFn& acm, bool verbose)
+bool isContactAllowed(const std::string& name1,
+                      const std::string& name2,
+                      const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                      bool verbose)
 {
   // do not distance check geoms part of the same object / link / attached body
   if (name1 == name2)
     return true;
 
-  if (acm != nullptr && acm(name1, name2))
+  if (validator != nullptr && (*validator)(name1, name2))
   {
     if (verbose)
     {
@@ -109,7 +114,7 @@ ContactResult* processResult(ContactTestData& cdata,
                              const std::pair<std::string, std::string>& key,
                              bool found)
 {
-  if (cdata.req.is_valid && !cdata.req.is_valid(contact))
+  if (cdata.req.is_valid && !(*cdata.req.is_valid)(contact))
     return nullptr;
 
   if ((cdata.req.calculate_distance || cdata.req.calculate_penetration) &&

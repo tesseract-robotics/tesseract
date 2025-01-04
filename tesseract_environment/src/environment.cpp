@@ -74,6 +74,32 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+class EnvironmentContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+{
+public:
+  EnvironmentContactAllowedValidator() = default;  // Required for serialization
+  EnvironmentContactAllowedValidator(std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph)
+    : scene_graph_(std::move(scene_graph))
+  {
+  }
+
+  bool operator()(const std::string& link_name1, const std::string& link_name2) const override
+  {
+    return scene_graph_->isCollisionAllowed(link_name1, link_name2);
+  }
+
+protected:
+  std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
+  {
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ContactAllowedValidator);
+    ar& BOOST_SERIALIZATION_NVP(scene_graph_);
+  }
+};
+
 void getCollisionObject(std::vector<std::shared_ptr<const tesseract_geometry::Geometry>>& shapes,
                         tesseract_common::VectorIsometry3d& shape_poses,
                         const tesseract_scene_graph::Link& link)
@@ -171,10 +197,9 @@ struct Environment::Implementation
   std::unique_ptr<tesseract_scene_graph::MutableStateSolver> state_solver{ nullptr };
 
   /**
-   * @brief The function used to determine if two objects are allowed in collision
-   * @todo This needs to be switched to class so it may be serialized
+   * @brief The validator used to determine if two objects are allowed in collision
    */
-  std::function<bool(const std::string&, const std::string&)> is_contact_allowed_fn;
+  tesseract_common::ContactAllowedValidator::ConstPtr contact_allowed_validator;
 
   /**
    * @brief A vector of user defined callbacks for locating tool center point
@@ -378,6 +403,8 @@ struct Environment::Implementation
     ar& BOOST_SERIALIZATION_NVP(commands);
     ar& BOOST_SERIALIZATION_NVP(init_revision);
     ar& BOOST_SERIALIZATION_NVP(current_state);
+    // No need to serialize the contact allowed validator because it cannot be modified and is constructed internally
+    // from the scene graph
     ar& boost::serialization::make_nvp("timestamp",
                                        boost::serialization::make_binary_object(&timestamp, sizeof(timestamp)));
     ar& boost::serialization::make_nvp(
@@ -399,6 +426,9 @@ struct Environment::Implementation
     tesseract_scene_graph::SceneState current_state;
     ar& boost::serialization::make_nvp("current_state", current_state);
     setState(current_state.joints);
+
+    // No need to serialize the contact allowed validator because it cannot be modified and is constructed internally
+    // from the scene graph
 
     ar& boost::serialization::make_nvp("timestamp",
                                        boost::serialization::make_binary_object(&timestamp, sizeof(timestamp)));
@@ -436,8 +466,10 @@ bool Environment::Implementation::operator==(const Environment::Implementation& 
   equal &= timestamp == rhs.timestamp;
   equal &= current_state_timestamp == rhs.current_state_timestamp;
 
+  // No need to check contact_allowed validator because it is constructed internally from the scene graph and cannot be
+  // changed
+
   /** @todo uncomment after serialized */
-  //  equal &= is_contact_allowed_fn == rhs.is_contact_allowed_fn;
   //  equal &= find_tcp_cb == rhs.find_tcp_cb;
 
   return equal;
@@ -483,20 +515,17 @@ std::unique_ptr<Environment::Implementation> Environment::Implementation::clone(
   cloned_env->group_joint_names_cache = group_joint_names_cache;
 
   // NOLINTNEXTLINE
-  cloned_env->is_contact_allowed_fn = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
-                                                cloned_env->scene_graph,
-                                                std::placeholders::_1,
-                                                std::placeholders::_2);
+  cloned_env->contact_allowed_validator = std::make_shared<EnvironmentContactAllowedValidator>(cloned_env->scene_graph);
 
   if (discrete_manager)
   {
     cloned_env->discrete_manager = discrete_manager->clone();
-    cloned_env->discrete_manager->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn);
+    cloned_env->discrete_manager->setContactAllowedValidator(cloned_env->contact_allowed_validator);
   }
   if (continuous_manager)
   {
     cloned_env->continuous_manager = continuous_manager->clone();
-    cloned_env->continuous_manager->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn);
+    cloned_env->continuous_manager->setContactAllowedValidator(cloned_env->contact_allowed_validator);
   }
 
   cloned_env->contact_managers_plugin_info = contact_managers_plugin_info;
@@ -522,9 +551,7 @@ bool Environment::Implementation::initHelper(const std::vector<std::shared_ptr<c
   scene_graph = std::make_shared<tesseract_scene_graph::SceneGraph>(
       std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0))->getSceneGraph()->getName());
 
-  is_contact_allowed_fn = [this](const std::string& l1, const std::string& l2) {
-    return scene_graph->isCollisionAllowed(l1, l2);
-  };
+  contact_allowed_validator = std::make_shared<EnvironmentContactAllowedValidator>(scene_graph);
 
   if (!applyCommandsHelper(commands))
   {
@@ -603,7 +630,7 @@ void Environment::Implementation::clear()
   state_solver = nullptr;
   current_state = tesseract_scene_graph::SceneState();
   commands.clear();
-  is_contact_allowed_fn = nullptr;
+  contact_allowed_validator = nullptr;
   collision_margin_data = tesseract_collision::CollisionMarginData();
   kinematics_information.clear();
   contact_managers_plugin_info.clear();
@@ -990,7 +1017,7 @@ Environment::Implementation::getDiscreteContactManagerHelper(const std::string& 
   if (manager == nullptr)
     return nullptr;
 
-  manager->setIsContactAllowedFn(is_contact_allowed_fn);
+  manager->setContactAllowedValidator(contact_allowed_validator);
   if (scene_graph != nullptr)
   {
     for (const auto& link : scene_graph->getLinks())
@@ -1023,7 +1050,7 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
   if (manager == nullptr)
     return nullptr;
 
-  manager->setIsContactAllowedFn(is_contact_allowed_fn);
+  manager->setContactAllowedValidator(contact_allowed_validator);
   if (scene_graph != nullptr)
   {
     for (const auto& link : scene_graph->getLinks())
@@ -2693,6 +2720,9 @@ void Environment::serialize(Archive& ar, const unsigned int version)
 }  // namespace tesseract_environment
 
 #include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::EnvironmentContactAllowedValidator)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::EnvironmentContactAllowedValidator)
+
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::Environment)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::Environment)
 

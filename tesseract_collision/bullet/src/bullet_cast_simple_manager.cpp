@@ -39,7 +39,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_collision/bullet/bullet_cast_simple_manager.h"
+#include <tesseract_collision/bullet/bullet_cast_simple_manager.h>
+#include <tesseract_common/contact_allowed_validator.h>
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
@@ -84,7 +85,7 @@ ContinuousContactManager::UPtr BulletCastSimpleManager::clone() const
 
   manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
-  manager->setIsContactAllowedFn(contact_test_data_.fn);
+  manager->setContactAllowedValidator(contact_test_data_.validator);
 
   return manager;
 }
@@ -364,8 +365,16 @@ const CollisionMarginData& BulletCastSimpleManager::getCollisionMarginData() con
 {
   return contact_test_data_.collision_margin_data;
 }
-void BulletCastSimpleManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
-IsContactAllowedFn BulletCastSimpleManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
+void BulletCastSimpleManager::setContactAllowedValidator(
+    std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
+{
+  contact_test_data_.validator = std::move(validator);
+}
+std::shared_ptr<const tesseract_common::ContactAllowedValidator>
+BulletCastSimpleManager::getContactAllowedValidator() const
+{
+  return contact_test_data_.validator;
+}
 void BulletCastSimpleManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   contact_test_data_.res = &collisions;
@@ -401,7 +410,7 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions, const Co
 
       if (aabb_check)
       {
-        bool needs_collision = needsCollisionCheck(*cow1, *cow2, contact_test_data_.fn, false);
+        bool needs_collision = needsCollisionCheck(*cow1, *cow2, contact_test_data_.validator, false);
 
         if (needs_collision)
         {

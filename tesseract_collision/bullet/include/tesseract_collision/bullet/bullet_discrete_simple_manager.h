@@ -114,9 +114,10 @@ public:
 
   const CollisionMarginData& getCollisionMarginData() const override final;
 
-  void setIsContactAllowedFn(IsContactAllowedFn fn) override final;
+  void
+  setContactAllowedValidator(std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator) override final;
 
-  IsContactAllowedFn getIsContactAllowedFn() const override final;
+  std::shared_ptr<const tesseract_common::ContactAllowedValidator> getContactAllowedValidator() const override final;
 
   void contactTest(ContactResultMap& collisions, const ContactRequest& request) override final;
 

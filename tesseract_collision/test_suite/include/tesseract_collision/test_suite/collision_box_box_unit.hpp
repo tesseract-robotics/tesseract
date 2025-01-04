@@ -136,7 +136,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
   EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
 
-  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+  EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getPairCollisionMargin("box_link", "second_box_link"), 0.1, 1e-5);

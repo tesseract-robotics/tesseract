@@ -217,7 +217,7 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
                          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
                          (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
-                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false);
+                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->validator, false);
 
   assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
          std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());
@@ -285,7 +285,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
                          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
                          (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
-                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false);
+                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->validator, false);
 
   assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
          std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());

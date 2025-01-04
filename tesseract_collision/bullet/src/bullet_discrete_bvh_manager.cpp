@@ -40,6 +40,7 @@
  */
 
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
+#include <tesseract_common/contact_allowed_validator.h>
 
 extern btScalar gDbvtMargin;  // NOLINT
 
@@ -100,7 +101,7 @@ DiscreteContactManager::UPtr BulletDiscreteBVHManager::clone() const
 
   manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
-  manager->setIsContactAllowedFn(contact_test_data_.fn);
+  manager->setContactAllowedValidator(contact_test_data_.validator);
 
   return manager;
 }
@@ -272,8 +273,16 @@ const CollisionMarginData& BulletDiscreteBVHManager::getCollisionMarginData() co
 {
   return contact_test_data_.collision_margin_data;
 }
-void BulletDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
-IsContactAllowedFn BulletDiscreteBVHManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
+void BulletDiscreteBVHManager::setContactAllowedValidator(
+    std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
+{
+  contact_test_data_.validator = std::move(validator);
+}
+std::shared_ptr<const tesseract_common::ContactAllowedValidator>
+BulletDiscreteBVHManager::getContactAllowedValidator() const
+{
+  return contact_test_data_.validator;
+}
 void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   contact_test_data_.res = &collisions;

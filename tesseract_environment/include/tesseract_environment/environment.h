@@ -50,6 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/filesystem.h>
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_common/any_poly.h>
+#include <tesseract_common/contact_allowed_validator.h>
 
 namespace boost::serialization
 {
@@ -556,6 +557,7 @@ public:
   /** @brief This should only be used by the clone method */
   explicit Environment(std::unique_ptr<Implementation> impl);
 };
+
 }  // namespace tesseract_environment
 BOOST_CLASS_EXPORT_KEY(tesseract_environment::Environment)
 TESSERACT_ANY_EXPORT_KEY(std::shared_ptr<const tesseract_environment::Environment>,

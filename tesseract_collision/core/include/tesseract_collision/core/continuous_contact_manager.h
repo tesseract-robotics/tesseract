@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
+#include <tesseract_common/fwd.h>
 
 namespace tesseract_collision
 {
@@ -254,10 +255,11 @@ public:
   virtual const CollisionMarginData& getCollisionMarginData() const = 0;
 
   /** @brief Set the active function for determining if two links are allowed to be in collision */
-  virtual void setIsContactAllowedFn(IsContactAllowedFn fn) = 0;
+  virtual void
+  setContactAllowedValidator(std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator) = 0;
 
   /** @brief Get the active function for determining if two links are allowed to be in collision */
-  virtual IsContactAllowedFn getIsContactAllowedFn() const = 0;
+  virtual std::shared_ptr<const tesseract_common::ContactAllowedValidator> getContactAllowedValidator() const = 0;
 
   /**
    * @brief Perform a contact test for all objects based

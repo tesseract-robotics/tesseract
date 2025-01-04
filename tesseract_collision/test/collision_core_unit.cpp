@@ -6,7 +6,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
+#include <tesseract_common/contact_allowed_validator.h>
 #include <tesseract_common/utils.h>
+
+class TestContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+{
+public:
+  bool operator()(const std::string& s1, const std::string& s2) const override
+  {
+    return (tesseract_common::makeOrderedLinkPair("base_link", "link_1") ==
+            tesseract_common::makeOrderedLinkPair(s1, s2));
+  }
+};
 
 TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
 {
@@ -30,10 +41,7 @@ TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
   EXPECT_TRUE(tesseract_common::isIdentical<tesseract_collision::ObjectPairKey>(pairs, check_pairs, false));
 
   // Now check provided a is contact allowed function
-  auto acm = [](const std::string& s1, const std::string& s2) {
-    return (tesseract_common::makeOrderedLinkPair("base_link", "link_1") ==
-            tesseract_common::makeOrderedLinkPair(s1, s2));
-  };
+  auto validator = std::make_shared<TestContactAllowedValidator>();
 
   check_pairs.clear();
   check_pairs.push_back(tesseract_common::makeOrderedLinkPair("link_1", "link_2"));
@@ -45,21 +53,18 @@ TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
   check_pairs.push_back(tesseract_common::makeOrderedLinkPair("part_link", "link_2"));
   check_pairs.push_back(tesseract_common::makeOrderedLinkPair("part_link", "link_3"));
 
-  pairs = tesseract_collision::getCollisionObjectPairs(active_links, static_links, acm);
+  pairs = tesseract_collision::getCollisionObjectPairs(active_links, static_links, validator);
 
   EXPECT_TRUE(tesseract_common::isIdentical<tesseract_collision::ObjectPairKey>(pairs, check_pairs, false));
 }
 
 TEST(TesseractCoreUnit, isContactAllowedUnit)  // NOLINT
 {
-  auto acm = [](const std::string& s1, const std::string& s2) {
-    return (tesseract_common::makeOrderedLinkPair("base_link", "link_1") ==
-            tesseract_common::makeOrderedLinkPair(s1, s2));
-  };
+  auto validator = std::make_shared<TestContactAllowedValidator>();
 
-  EXPECT_TRUE(tesseract_collision::isContactAllowed("base_link", "base_link", acm, false));
-  EXPECT_FALSE(tesseract_collision::isContactAllowed("base_link", "link_2", acm, false));
-  EXPECT_TRUE(tesseract_collision::isContactAllowed("base_link", "link_1", acm, true));
+  EXPECT_TRUE(tesseract_collision::isContactAllowed("base_link", "base_link", validator, false));
+  EXPECT_FALSE(tesseract_collision::isContactAllowed("base_link", "link_2", validator, false));
+  EXPECT_TRUE(tesseract_collision::isContactAllowed("base_link", "link_1", validator, true));
 }
 
 TEST(TesseractCoreUnit, scaleVerticesUnit)  // NOLINT

@@ -694,11 +694,14 @@ btTransform getLinkTransformFromCOW(const btCollisionObjectWrapper* cow)
   return cow->getWorldTransform();
 }
 
-bool needsCollisionCheck(const COW& cow1, const COW& cow2, const IsContactAllowedFn& acm, bool verbose)
+bool needsCollisionCheck(const COW& cow1,
+                         const COW& cow2,
+                         const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                         bool verbose)
 {
   return cow1.m_enabled && cow2.m_enabled && (cow2.m_collisionFilterGroup & cow1.m_collisionFilterMask) &&  // NOLINT
          (cow1.m_collisionFilterGroup & cow2.m_collisionFilterMask) &&                                      // NOLINT
-         !isContactAllowed(cow1.getName(), cow2.getName(), acm, verbose);
+         !isContactAllowed(cow1.getName(), cow2.getName(), validator, verbose);
 }
 
 btScalar addDiscreteSingleResult(btManifoldPoint& cp,
@@ -979,7 +982,7 @@ BroadphaseContactResultCallback::BroadphaseContactResultCallback(ContactTestData
 bool BroadphaseContactResultCallback::needsCollision(const CollisionObjectWrapper* cow0,
                                                      const CollisionObjectWrapper* cow1) const
 {
-  return !collisions_.done && needsCollisionCheck(*cow0, *cow1, collisions_.fn, verbose_);
+  return !collisions_.done && needsCollisionCheck(*cow0, *cow1, collisions_.validator, verbose_);
 }
 
 DiscreteBroadphaseContactResultCallback::DiscreteBroadphaseContactResultCallback(ContactTestData& collisions,
@@ -1182,7 +1185,7 @@ bool DiscreteCollisionCollector::needsCollision(btBroadphaseProxy* proxy0) const
 {
   return !collisions_.done &&
          needsCollisionCheck(
-             *cow_, *(static_cast<CollisionObjectWrapper*>(proxy0->m_clientObject)), collisions_.fn, verbose_);
+             *cow_, *(static_cast<CollisionObjectWrapper*>(proxy0->m_clientObject)), collisions_.validator, verbose_);
 }
 
 CastCollisionCollector::CastCollisionCollector(ContactTestData& collisions,
@@ -1215,7 +1218,7 @@ bool CastCollisionCollector::needsCollision(btBroadphaseProxy* proxy0) const
 {
   return !collisions_.done &&
          needsCollisionCheck(
-             *cow_, *(static_cast<CollisionObjectWrapper*>(proxy0->m_clientObject)), collisions_.fn, verbose_);
+             *cow_, *(static_cast<CollisionObjectWrapper*>(proxy0->m_clientObject)), collisions_.validator, verbose_);
 }
 
 COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)

@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
+#include <tesseract_common/contact_allowed_validator.h>
 
 namespace tesseract_collision
 {
@@ -43,12 +44,13 @@ using ObjectPairKey = std::pair<std::string, std::string>;
  * @todo Should this also filter out links without geometry?
  * @param active_links The active link names
  * @param static_links The static link names
- * @param acm The is contact allowed function
+ * @param validator The is contact allowed validator
  * @return A vector of collision object pairs
  */
-std::vector<ObjectPairKey> getCollisionObjectPairs(const std::vector<std::string>& active_links,
-                                                   const std::vector<std::string>& static_links,
-                                                   const IsContactAllowedFn& acm = nullptr);
+std::vector<ObjectPairKey>
+getCollisionObjectPairs(const std::vector<std::string>& active_links,
+                        const std::vector<std::string>& static_links,
+                        const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator = nullptr);
 
 /**
  * @brief This will check if a link is active provided a list. If the list is empty the link is considered active.
@@ -61,13 +63,13 @@ bool isLinkActive(const std::vector<std::string>& active, const std::string& nam
  * @brief Determine if contact is allowed between two objects.
  * @param name1 The name of the first object
  * @param name2 The name of the second object
- * @param acm The contact allowed function
+ * @param validator The contact allowed validator
  * @param verbose If true print debug information
  * @return True if contact is allowed between the two object, otherwise false.
  */
 bool isContactAllowed(const std::string& name1,
                       const std::string& name2,
-                      const IsContactAllowedFn& acm,
+                      const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
                       bool verbose = false);
 
 /**

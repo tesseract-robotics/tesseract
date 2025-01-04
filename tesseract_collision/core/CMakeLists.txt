@@ -7,7 +7,8 @@ add_library(
   src/discrete_contact_manager.cpp
   src/serialization.cpp
   src/types.cpp
-  src/utils.cpp)
+  src/utils.cpp
+  src/contact_result_validator.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen
