@@ -67,7 +67,7 @@ static void BM_SCENE_GRAPH_CLONE(benchmark::State& state, SceneGraph::Ptr sg)
 }
 
 /** @brief Benchmark that checks the Tesseract clone method*/
-static void BM_JOINT_GROUP_COPY(benchmark::State& state, JointGroup::Ptr jg)
+static void BM_JOINT_GROUP_COPY(benchmark::State& state, JointGroup::ConstPtr jg)
 {
   JointGroup::Ptr clone;
   for (auto _ : state)
@@ -76,7 +76,7 @@ static void BM_JOINT_GROUP_COPY(benchmark::State& state, JointGroup::Ptr jg)
   }
 }
 
-static void BM_KINEMATIC_GROUP_COPY(benchmark::State& state, KinematicGroup::Ptr kg)
+static void BM_KINEMATIC_GROUP_COPY(benchmark::State& state, KinematicGroup::ConstPtr kg)
 {
   KinematicGroup::Ptr clone;
   for (auto _ : state)
@@ -93,8 +93,8 @@ int main(int argc, char** argv)
   Environment::Ptr env = std::make_shared<Environment>();
   env->init(*scene_graph, srdf);
   StateSolver::Ptr state_solver = env->getStateSolver();
-  JointGroup::Ptr joint_group = env->getJointGroup("manipulator");
-  KinematicGroup::Ptr kinematic_group = env->getKinematicGroup("manipulator");
+  JointGroup::ConstPtr joint_group = env->getJointGroup("manipulator");
+  KinematicGroup::ConstPtr kinematic_group = env->getKinematicGroup("manipulator");
   //////////////////////////////////////
   // Clone
   //////////////////////////////////////
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
   }
 
   {
-    std::function<void(benchmark::State&, JointGroup::Ptr)> BM_CLONE_FUNC = BM_JOINT_GROUP_COPY;
+    std::function<void(benchmark::State&, JointGroup::ConstPtr)> BM_CLONE_FUNC = BM_JOINT_GROUP_COPY;
     std::string name = "BM_JOINT_GROUP_COPY";
     benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, joint_group)
         ->UseRealTime()
@@ -132,7 +132,7 @@ int main(int argc, char** argv)
   }
 
   {
-    std::function<void(benchmark::State&, KinematicGroup::Ptr)> BM_CLONE_FUNC = BM_KINEMATIC_GROUP_COPY;
+    std::function<void(benchmark::State&, KinematicGroup::ConstPtr)> BM_CLONE_FUNC = BM_KINEMATIC_GROUP_COPY;
     std::string name = "BM_KINEMATIC_GROUP_COPY";
     benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, kinematic_group)
         ->UseRealTime()
