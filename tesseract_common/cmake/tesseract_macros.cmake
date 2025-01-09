@@ -185,10 +185,12 @@ macro(find_bullet)
   endforeach()
 
   if(TARGET Bullet3Common)
-    add_library(Bullet3::Bullet INTERFACE IMPORTED)
-    set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_LINK_LIBRARIES
-                                                     "BulletCollision;Bullet3Geometry;Bullet3Common;LinearMath")
-    set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${BULLET_DEFINITIONS_STRIPED}")
+    if(NOT TARGET Bullet3::Bullet)
+      add_library(Bullet3::Bullet INTERFACE IMPORTED)
+      set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_LINK_LIBRARIES
+                                                       "BulletCollision;Bullet3Geometry;Bullet3Common;LinearMath")
+      set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${BULLET_DEFINITIONS_STRIPED}")
+    endif()
   else()
 
     # Some Bullet installations (vcpkg) use absolute paths instead of relative to BULLET_ROOT_DIR in the CMake vars
