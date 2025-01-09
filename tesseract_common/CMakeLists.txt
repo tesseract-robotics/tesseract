@@ -17,8 +17,7 @@ find_package(
   COMPONENTS system
              filesystem
              serialization
-             stacktrace_noop
-  OPTIONAL_COMPONENTS stacktrace_backtrace stacktrace_basic)
+             stacktrace_noop)
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
