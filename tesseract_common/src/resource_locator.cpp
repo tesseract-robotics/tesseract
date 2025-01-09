@@ -51,24 +51,31 @@ void ResourceLocator::serialize(Archive& /*ar*/, const unsigned int /*version*/)
 {
 }
 
-GeneralResourceLocator::GeneralResourceLocator()
+GeneralResourceLocator::GeneralResourceLocator(const std::vector<std::string>& environment_variables)
 {
-  // This was added to allow user defined resource path
-  // When using this within a snap you can map host ros package paths to this environment variable
-  char* tesseract_resource_paths = std::getenv("TESSERACT_RESOURCE_PATH");
-  if (tesseract_resource_paths != nullptr)
+  for (const auto& env_variable : environment_variables)
   {
-    std::vector<std::string> tokens;
-#ifndef _WIN32
-    boost::split(tokens, tesseract_resource_paths, boost::is_any_of(":"), boost::token_compress_on);
-#else
-    boost::split(tokens, tesseract_resource_paths, boost::is_any_of(";"), boost::token_compress_on);
-#endif
-    for (const auto& token : tokens)
-      processToken(token);
+    loadEnvironmentVariable(env_variable);
+  }
+}
+
+GeneralResourceLocator::GeneralResourceLocator(const std::vector<tesseract_common::fs::path>& paths,
+                                               const std::vector<std::string>& environment_variables)
+{
+  for (const auto& path : paths)
+  {
+    addPath(path);
   }
 
-  char* ros_package_paths = std::getenv("ROS_PACKAGE_PATH");
+  for (const auto& env_variable : environment_variables)
+  {
+    loadEnvironmentVariable(env_variable);
+  }
+}
+
+bool GeneralResourceLocator::loadEnvironmentVariable(const std::string& environment_variable)
+{
+  char* ros_package_paths = std::getenv(environment_variable.c_str());
   if (ros_package_paths != nullptr)
   {
     std::vector<std::string> tokens;
@@ -79,7 +86,22 @@ GeneralResourceLocator::GeneralResourceLocator()
 #endif
     for (const auto& token : tokens)
       processToken(token);
+
+    return true;
   }
+  return false;
+}
+
+bool GeneralResourceLocator::addPath(const tesseract_common::fs::path& path)
+{
+  if (tesseract_common::fs::is_directory(path) && tesseract_common::fs::exists(path))
+  {
+    processToken(path.string());
+    return true;
+  }
+
+  CONSOLE_BRIDGE_logError("Package Path does not exist: %s", path.string().c_str());
+  return false;
 }
 
 void GeneralResourceLocator::processToken(const std::string& token)
