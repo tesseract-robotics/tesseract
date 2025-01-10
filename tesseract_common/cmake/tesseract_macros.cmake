@@ -188,14 +188,13 @@ macro(find_bullet)
     if(NOT TARGET Bullet3::Bullet)
       add_library(Bullet3::Bullet INTERFACE IMPORTED)
       if(NOT WIN32)
-      set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_LINK_LIBRARIES
-                                                       "BulletCollision;Bullet3Geometry;Bullet3Common;LinearMath")
+        set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_LINK_LIBRARIES
+                                                         "BulletCollision;Bullet3Geometry;Bullet3Common;LinearMath")
       else()
-      set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_LINK_LIBRARIES
-                                                       "BulletCollision;Bullet3Common;LinearMath")
+        set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_LINK_LIBRARIES
+                                                         "BulletCollision;Bullet3Common;LinearMath")
       endif()
-      
-      
+
       set_target_properties(Bullet3::Bullet PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${BULLET_DEFINITIONS_STRIPED}")
     endif()
   else()
