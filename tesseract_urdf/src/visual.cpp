@@ -89,7 +89,9 @@ parseVisual(const tinyxml2::XMLElement* xml_element,
   tesseract_geometry::Geometry::Ptr geom;
   try
   {
-    geom = parseGeometry(geometry, locator, true);
+    // Set `make_convex_meshes` argument to false for visual geometry
+    // Note: mesh elements can still override
+    geom = parseGeometry(geometry, locator, true, false);
   }
   catch (...)
   {

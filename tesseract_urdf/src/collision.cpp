@@ -43,7 +43,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_urdf
 {
 tesseract_scene_graph::Collision::Ptr parseCollision(const tinyxml2::XMLElement* xml_element,
-                                                     const tesseract_common::ResourceLocator& locator)
+                                                     const tesseract_common::ResourceLocator& locator,
+                                                     bool make_convex_meshes)
 {
   // get name
   std::string collision_name = tesseract_common::StringAttribute(xml_element, "name", "");
@@ -71,7 +72,7 @@ tesseract_scene_graph::Collision::Ptr parseCollision(const tinyxml2::XMLElement*
   tesseract_geometry::Geometry::Ptr geom;
   try
   {
-    geom = parseGeometry(geometry, locator, false);
+    geom = parseGeometry(geometry, locator, false, make_convex_meshes);
   }
   catch (...)
   {

@@ -50,7 +50,6 @@ add_library(
   src/capsule.cpp
   src/collision.cpp
   src/cone.cpp
-  src/convex_mesh.cpp
   src/cylinder.cpp
   src/dynamics.cpp
   src/geometry.cpp

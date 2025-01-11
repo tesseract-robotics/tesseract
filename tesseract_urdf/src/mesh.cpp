@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_collision/bullet/convex_hull_utils.h>
 #include <tesseract_geometry/impl/mesh.h>
 #include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_urdf/mesh.h>
@@ -43,12 +44,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-std::vector<tesseract_geometry::Mesh::Ptr> parseMesh(const tinyxml2::XMLElement* xml_element,
-                                                     const tesseract_common::ResourceLocator& locator,
-                                                     bool visual)
+std::vector<tesseract_geometry::PolygonMesh::Ptr> parseMesh(const tinyxml2::XMLElement* xml_element,
+                                                            const tesseract_common::ResourceLocator& locator,
+                                                            bool visual,
+                                                            bool make_convex)
 {
-  std::vector<tesseract_geometry::Mesh::Ptr> meshes;
-
   std::string filename;
   if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Mesh: Missing or failed parsing attribute 'filename'!"));
@@ -80,6 +80,8 @@ std::vector<tesseract_geometry::Mesh::Ptr> parseMesh(const tinyxml2::XMLElement*
     scale = Eigen::Vector3d(sx, sy, sz);
   }
 
+  std::vector<tesseract_geometry::Mesh::Ptr> meshes;
+
   if (visual)
     meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
         locator.locateResource(filename), scale, true, true, true, true, true);
@@ -90,7 +92,40 @@ std::vector<tesseract_geometry::Mesh::Ptr> parseMesh(const tinyxml2::XMLElement*
   if (meshes.empty())
     std::throw_with_nested(std::runtime_error("Mesh: Error importing meshes from filename: '" + filename + "'!"));
 
-  return meshes;
+  bool make_convex_override = false;
+  auto make_convex_override_status = xml_element->QueryBoolAttribute("tesseract:make_convex", &make_convex_override);
+  if (make_convex_override_status != tinyxml2::XML_NO_ATTRIBUTE)
+  {
+    // Make convex override attribute is specified
+    // Check that it was loaded successfully
+    if (make_convex_override_status != tinyxml2::XML_SUCCESS)
+      std::throw_with_nested("Mesh: Failed to parse attribute 'tesseract:make_convex'");
+
+    // Override the global make_convex flag with the value from the attribute
+    make_convex = make_convex_override;
+  }
+
+  if (make_convex)
+  {
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> convex_meshes;
+    convex_meshes.reserve(meshes.size());
+
+    for (const auto& mesh : meshes)
+    {
+      tesseract_geometry::ConvexMesh::Ptr convex_mesh = tesseract_collision::makeConvexMesh(*mesh);
+      convex_mesh->setCreationMethod(tesseract_geometry::ConvexMesh::CONVERTED);
+      convex_meshes.push_back(convex_mesh);
+    }
+
+    return convex_meshes;
+  }
+
+  // Convert to base class for output
+  std::vector<tesseract_geometry::PolygonMesh::Ptr> output;
+  output.reserve(meshes.size());
+  std::copy(meshes.begin(), meshes.end(), std::back_inserter(output));
+
+  return output;
 }
 
 tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,

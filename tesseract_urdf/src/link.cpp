@@ -46,6 +46,7 @@ namespace tesseract_urdf
 tesseract_scene_graph::Link::Ptr
 parseLink(const tinyxml2::XMLElement* xml_element,
           const tesseract_common::ResourceLocator& locator,
+          bool make_convex_meshes,
           std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   std::string link_name;
@@ -93,7 +94,7 @@ parseLink(const tinyxml2::XMLElement* xml_element,
     tesseract_scene_graph::Collision::Ptr temp_collision;
     try
     {
-      temp_collision = parseCollision(collision, locator);
+      temp_collision = parseCollision(collision, locator, make_convex_meshes);
     }
     catch (...)
     {

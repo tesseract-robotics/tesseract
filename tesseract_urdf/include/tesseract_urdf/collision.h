@@ -49,11 +49,12 @@ static const char* COLLISION_ELEMENT_NAME = "collision";
  * @brief Parse xml element collision
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
- * @param version The version number
+ * @param make_convex_meshes Flag to indicate if the meshes should be converted to convex hulls
  * @return A Collision object
  */
 std::shared_ptr<tesseract_scene_graph::Collision> parseCollision(const tinyxml2::XMLElement* xml_element,
-                                                                 const tesseract_common::ResourceLocator& locator);
+                                                                 const tesseract_common::ResourceLocator& locator,
+                                                                 bool make_convex_meshes);
 
 /**
  * @brief writeCollision Write collision object to URDF XML
