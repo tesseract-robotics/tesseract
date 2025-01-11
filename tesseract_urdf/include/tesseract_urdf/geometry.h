@@ -50,12 +50,13 @@ static const char* GEOMETRY_ELEMENT_NAME = "geometry";
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
  * @param visual Indicate if visual
- * @param version The version number
+ * @param make_convex_meshes Flag to indicate if the meshes should be converted to convex hulls
  * @return A Tesseract Geometry
  */
 std::shared_ptr<tesseract_geometry::Geometry> parseGeometry(const tinyxml2::XMLElement* xml_element,
                                                             const tesseract_common::ResourceLocator& locator,
-                                                            bool visual);
+                                                            bool visual,
+                                                            bool make_convex_meshes);
 
 /**
  * @brief writeGeometry Write geometry to URDF XML

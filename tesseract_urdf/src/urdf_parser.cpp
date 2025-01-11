@@ -75,6 +75,12 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
                                               std::to_string(urdf_version) +
                                               "', this is not supported, please set it to 1.0."));
 
+  // Check for global attribute for converting meshes to convex hulls
+  bool make_convex = false;
+  auto make_convex_status = robot->QueryBoolAttribute("tesseract:make_convex", &make_convex);
+  if (make_convex_status != tinyxml2::XML_NO_ATTRIBUTE && make_convex_status != tinyxml2::XML_SUCCESS)
+    std::throw_with_nested("URDF: Failed to parse attribute 'tesseract:make_convex' for robot '" + robot_name + "'");
+
   auto sg = std::make_unique<tesseract_scene_graph::SceneGraph>();
   sg->setName(robot_name);
 
@@ -103,7 +109,7 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
     tesseract_scene_graph::Link::Ptr l = nullptr;
     try
     {
-      l = parseLink(link, locator, available_materials);
+      l = parseLink(link, locator, make_convex, available_materials);
     }
     catch (...)
     {

@@ -50,12 +50,13 @@ static const char* LINK_ELEMENT_NAME = "link";
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
  * @param available_materials The current available materials
- * @param version The version number
+ * @param make_convex_meshes Flag to indicate if the meshes should be converted to convex hulls
  * @return A Tesseract Link
  */
 std::shared_ptr<tesseract_scene_graph::Link>
 parseLink(const tinyxml2::XMLElement* xml_element,
           const tesseract_common::ResourceLocator& locator,
+          bool make_convex_meshes,
           std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials);
 
 /**

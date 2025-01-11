@@ -39,7 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/box.h>
 #include <tesseract_urdf/cylinder.h>
 #include <tesseract_urdf/cone.h>
-#include <tesseract_urdf/convex_mesh.h>
 #include <tesseract_urdf/capsule.h>
 #include <tesseract_urdf/geometry.h>
 #include <tesseract_urdf/mesh.h>
@@ -51,7 +50,8 @@ namespace tesseract_urdf
 {
 tesseract_geometry::Geometry::Ptr parseGeometry(const tinyxml2::XMLElement* xml_element,
                                                 const tesseract_common::ResourceLocator& locator,
-                                                bool visual)
+                                                bool visual,
+                                                bool make_convex_meshes)
 {
   const tinyxml2::XMLElement* geometry = xml_element->FirstChildElement();
   if (geometry == nullptr)
@@ -110,10 +110,10 @@ tesseract_geometry::Geometry::Ptr parseGeometry(const tinyxml2::XMLElement* xml_
 
   if (geometry_type == MESH_ELEMENT_NAME)
   {
-    std::vector<tesseract_geometry::Mesh::Ptr> meshes;
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> meshes;
     try
     {
-      meshes = parseMesh(geometry, locator, visual);
+      meshes = parseMesh(geometry, locator, visual, make_convex_meshes);
     }
     catch (...)
     {
@@ -170,24 +170,6 @@ tesseract_geometry::Geometry::Ptr parseGeometry(const tinyxml2::XMLElement* xml_
     }
 
     return octree;
-  }
-
-  if (geometry_type == CONVEX_MESH_ELEMENT_NAME)
-  {
-    std::vector<tesseract_geometry::ConvexMesh::Ptr> meshes;
-    try
-    {
-      meshes = parseConvexMesh(geometry, locator, visual);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'convex_mesh'!"));
-    }
-
-    if (meshes.size() > 1)
-      return std::make_shared<tesseract_geometry::CompoundMesh>(meshes);
-
-    return meshes.front();
   }
 
   if (geometry_type == SDF_MESH_ELEMENT_NAME)
@@ -301,22 +283,6 @@ tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract_geomet
     catch (...)
     {
       std::throw_with_nested(std::runtime_error("Could not write geometry marked as mesh!"));
-    }
-  }
-  else if (type == tesseract_geometry::GeometryType::CONVEX_MESH)
-  {
-    try
-    {
-      tinyxml2::XMLElement* xml_convex_mesh =
-          writeConvexMesh(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geometry),
-                          doc,
-                          package_path,
-                          filename + ".ply");
-      xml_element->InsertEndChild(xml_convex_mesh);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Could not write geometry marked as convex mesh!"));
     }
   }
   else if (type == tesseract_geometry::GeometryType::SDF_MESH)

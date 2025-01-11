@@ -50,7 +50,6 @@ static const char* VISUAL_ELEMENT_NAME = "visual";
  * @brief Parse xml element visual
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
- * @param version The version number
  * @return A Visual object
  */
 std::shared_ptr<tesseract_scene_graph::Visual>
