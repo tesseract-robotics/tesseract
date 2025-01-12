@@ -99,7 +99,7 @@ std::vector<tesseract_geometry::PolygonMesh::Ptr> parseMesh(const tinyxml2::XMLE
     // Make convex override attribute is specified
     // Check that it was loaded successfully
     if (make_convex_override_status != tinyxml2::XML_SUCCESS)
-      std::throw_with_nested("Mesh: Failed to parse attribute 'tesseract:make_convex'");
+      std::throw_with_nested(std::runtime_error("Mesh: Failed to parse attribute 'tesseract:make_convex'"));
 
     // Override the global make_convex flag with the value from the attribute
     make_convex = make_convex_override;
