@@ -23,12 +23,19 @@ static std::string getTempPkgPath()
 TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
 {
   tesseract_common::GeneralResourceLocator resource_locator;
+  const bool global_make_convex = false;
+  const auto parse_mesh_fn = std::bind(&tesseract_urdf::parseMesh,
+                                       std::placeholders::_1,
+                                       std::placeholders::_2,
+                                       std::placeholders::_3,
+                                       global_make_convex);
+
   {
     std::string str =
         R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 2 1" extra="0 0 0"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> geom;
-    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        geom, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 80);
     EXPECT_TRUE(geom[0]->getVertexCount() == 240);
@@ -39,9 +46,9 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
 
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> geom;
-    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        geom, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 80);
     EXPECT_TRUE(geom[0]->getVertexCount() == 240);
@@ -50,59 +57,99 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
     EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);
   }
 
+  // Make convex override false (correct)
+  {
+    std::string str =
+        R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" tesseract:make_convex="false"/>)";
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    EXPECT_TRUE(geom.size() == 1);
+    EXPECT_TRUE(geom[0]->getFaceCount() == 80);
+    EXPECT_TRUE(geom[0]->getVertexCount() == 240);
+    EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
+    EXPECT_NEAR(geom[0]->getScale()[1], 1, 1e-5);
+    EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);
+  }
+
+  // Make convex override true (correct)
+  {
+    std::string str =
+        R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" tesseract:make_convex="true"/>)";
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    EXPECT_TRUE(geom.size() == 1);
+    // EXPECT_TRUE(geom[0]->getFaceCount() == 80);
+    // EXPECT_TRUE(geom[0]->getVertexCount() == 240);
+    EXPECT_NEAR(geom[0]->getScale()[0], 1, 1e-5);
+    EXPECT_NEAR(geom[0]->getScale()[1], 1, 1e-5);
+    EXPECT_NEAR(geom[0]->getScale()[2], 1, 1e-5);
+  }
+
+  // Make convex (incorrect)
+  {
+    std::string str =
+        R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" tesseract:make_convex="foo"/>)";
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    EXPECT_TRUE(geom.empty());
+  }
+
   {
     std::string str = R"(<mesh filename="abc" scale="1 2 1"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        geom, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 a 1"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        geom, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="a 1 1"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        geom, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 1 a"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        geom, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 2 1 3"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        geom, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = R"(<mesh scale="1 2 1"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        geom, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(geom.empty());
   }
 
   {
     std::string str = "<mesh />";
-    std::vector<tesseract_geometry::Mesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        geom, &tesseract_urdf::parseMesh, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> geom;
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        geom, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME, resource_locator, true));
     EXPECT_TRUE(geom.empty());
   }
 }
