@@ -1,8 +1,8 @@
 - git:
     local-name: ros_industrial_cmake_boilerplate
     uri: https://github.com/ros-industrial/ros_industrial_cmake_boilerplate.git
-    version: 0.6.2
+    version: 0.7.1
 - git:
     local-name: opw_kinematics
     uri: https://github.com/Jmeyer1292/opw_kinematics.git
-    version: 0.5.0
+    version: 0.5.2
