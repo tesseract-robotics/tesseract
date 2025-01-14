@@ -22,6 +22,7 @@ target_include_directories(
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT test_suite
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"

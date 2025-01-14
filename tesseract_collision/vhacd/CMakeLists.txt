@@ -51,6 +51,7 @@ endif()
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT vhacd
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
