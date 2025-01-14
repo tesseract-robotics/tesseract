@@ -126,6 +126,8 @@ endif()
 
 # Examples
 if((TESSERACT_ENABLE_EXAMPLES OR TESSERACT_COLLISION_ENABLE_EXAMPLES) AND TESSERACT_BUILD_FCL)
+  message("Building examples components")
+  list(APPEND SUPPORTED_COMPONENTS examples)
   add_subdirectory(examples)
 endif()
 
