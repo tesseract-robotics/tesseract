@@ -49,8 +49,9 @@ jobs:
           mkdir $GITHUB_WORKSPACE/artifacts
 
       - name: Package
+        working-directory: target_ws/src/${{ github.event.repository.name }}
         shell: bash
-        run: ./$GITHUB_WORKSPACE/.run-cpack
+        run: ./.run-cpack
 
       - uses: actions/upload-artifact@v4
         with:
