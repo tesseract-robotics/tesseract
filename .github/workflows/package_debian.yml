@@ -30,6 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          echo $GITHUB_WORKSPACE
           apt update -q
           apt install -q -y liboctomap-dev
 
