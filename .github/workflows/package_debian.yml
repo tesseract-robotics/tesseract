@@ -16,8 +16,8 @@ jobs:
       image: ubuntu:${{ matrix.distro }}
       env:
         DEBIAN_FRONTEND: noninteractive
-        CPACK_ARTIFACTS_DIR: $GITHUB_WORKSPACE/artifacts
-        CPACK_WORKING_DIR: $GITHUB_WORKSPACE/target_ws/build
+        CPACK_ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
+        CPACK_WORKING_DIR: ${{ github.workspace }}/target_ws/build
     strategy:
       fail-fast: false
       matrix:
@@ -47,10 +47,19 @@ jobs:
         run: |
           mkdir $GITHUB_WORKSPACE/artifacts
 
+
       - name: Package
-        working-directory: target_ws/src
+        working-directory: target_ws/build/tesseract_common
         shell: bash
-        run: ./.run-cpack
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      # - name: Package
+      #   working-directory: target_ws/src
+      #   shell: bash
+      #   run: ./.run-cpack
 
       - uses: actions/upload-artifact@v4
         with:
