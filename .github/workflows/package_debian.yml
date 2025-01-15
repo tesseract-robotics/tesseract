@@ -49,9 +49,8 @@ jobs:
           mkdir $GITHUB_WORKSPACE/artifacts
 
       - name: Package
-        working-directory: target_ws/src/tesseract
         shell: bash
-        run: ./.run-cpack
+        run: ./$GITHUB_WORKSPACE/.run-cpack
 
       - uses: actions/upload-artifact@v4
         with:
