@@ -26,7 +26,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          path: target_ws/src/tesseract
+          path: target_ws/src
 
       - name: Install dependencies
         run: |
@@ -39,7 +39,7 @@ jobs:
           ccache-enabled: false
           vcs-file: dependencies.repos
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
-          target-path: target_ws/src/tesseract
+          target-path: target_ws/src
           target-args: --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_PACKAGE=ON
           run-tests: false
 
@@ -48,7 +48,7 @@ jobs:
           mkdir $GITHUB_WORKSPACE/artifacts
 
       - name: Package
-        working-directory: target_ws/src/tesseract
+        working-directory: target_ws/src
         shell: bash
         run: ./.run-cpack
 
