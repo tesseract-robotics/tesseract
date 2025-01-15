@@ -1,0 +1,144 @@
+name: Package-Debian-Build
+
+on:
+  push:
+    tags:
+      - '*'
+
+  # allow manually starting this workflow
+  workflow_dispatch:
+
+jobs:
+  Debian:
+    name: ${{ matrix.distro }}
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:${{ matrix.distro }}
+      env:
+        DEBIAN_FRONTEND: noninteractive
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [focal, jammy, noble]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: target_ws/src
+
+      - name: Install dependencies
+        run: |
+          apt update -q
+          apt install -q -y liboctomap-dev
+
+      - name: Build and test
+        uses: tesseract-robotics/colcon-action@v9
+        with:
+          ccache-enabled: false
+          vcs-file: dependencies.repos
+          upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
+          target-path: target_ws/src
+          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_PACKAGE=ON
+          run-tests: false
+
+      - name: Create artifacts directory
+        run: |
+          mkdir $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_collision
+        working-directory: target_ws/build/tesseract_collision
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_common
+        working-directory: target_ws/build/tesseract_common
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_environment
+        working-directory: target_ws/build/tesseract_environment
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_geometry
+        working-directory: target_ws/build/tesseract_geometry
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_kinematics
+        working-directory: target_ws/build/tesseract_kinematics
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_scene_graph
+        working-directory: target_ws/build/tesseract_scene_graph
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_support
+        working-directory: target_ws/build/tesseract_support
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_urdf
+        working-directory: target_ws/build/tesseract_urdf
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_srdf
+        working-directory: target_ws/build/tesseract_srdf
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_visualization
+        working-directory: target_ws/build/tesseract_visualization
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - name: Package tesseract_state_solver
+        working-directory: target_ws/build/tesseract_state_solver
+        shell: bash
+        run: |
+          cpack --config CPackConfig.cmake
+          cp ./*.deb $GITHUB_WORKSPACE/artifacts
+          cp ./*.tar.xz $GITHUB_WORKSPACE/artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debian_package_${{ matrix.distro }}
+          path: ${{ github.workspace }}/artifacts/*.deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: archive_package_${{ matrix.distro }}
+          path: ${{ github.workspace }}/artifacts/*.tar.xz
