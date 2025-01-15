@@ -26,21 +26,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          path: target_ws/src
-
-      # Run a command in the custom checkout directory
-      - name: List files in the custom directory
-        run: ls
-        working-directory: target_ws/src
-
-      # Run a command in the repository root (if needed)
-      - name: List files in the repository root
-        run: ls
-        working-directory: .
+          path: target_ws/src/tesseract
 
       - name: Install dependencies
         run: |
-          echo $GITHUB_WORKSPACE
           apt update -q
           apt install -q -y liboctomap-dev
 
@@ -59,7 +48,7 @@ jobs:
           mkdir $GITHUB_WORKSPACE/artifacts
 
       - name: Package
-        working-directory: target_ws/src/${{ github.event.repository.name }}
+        working-directory: target_ws/src/tesseract
         shell: bash
         run: ./.run-cpack
 
