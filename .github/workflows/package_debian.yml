@@ -17,7 +17,6 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
         CPACK_ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
-        CPACK_WORKING_DIR: ${{ github.workspace }}/target_ws/build
     strategy:
       fail-fast: false
       matrix:
