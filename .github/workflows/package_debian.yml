@@ -2,8 +2,8 @@ name: Package-Debian-Build
 
 on:
   push:
-    # tags:
-    #   - '*'
+    tags:
+      - '*'
 
   # allow manually starting this workflow
   workflow_dispatch:
