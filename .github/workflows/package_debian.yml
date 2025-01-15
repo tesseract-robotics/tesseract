@@ -16,7 +16,8 @@ jobs:
       image: ubuntu:${{ matrix.distro }}
       env:
         DEBIAN_FRONTEND: noninteractive
-        CPACK_ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
+        CPACK_ARTIFACTS_DIR: $GITHUB_WORKSPACE/artifacts
+        CPACK_WORKING_DIR: $GITHUB_WORKSPACE/target_ws/build
     strategy:
       fail-fast: false
       matrix:
