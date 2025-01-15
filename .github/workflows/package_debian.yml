@@ -28,6 +28,16 @@ jobs:
         with:
           path: target_ws/src
 
+      # Run a command in the custom checkout directory
+      - name: List files in the custom directory
+        run: ls
+        working-directory: target_ws/src
+
+      # Run a command in the repository root (if needed)
+      - name: List files in the repository root
+        run: ls
+        working-directory: .
+
       - name: Install dependencies
         run: |
           echo $GITHUB_WORKSPACE
