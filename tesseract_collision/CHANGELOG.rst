@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.28.0 (2025-01-16)
+-------------------
 * Fix cpack build
 * Leverage tesseract_common loadYamlFile and loadYamlString
 * Add ContactAllowedValidator and ContactResultValidator (`#1095 <https://github.com/tesseract-robotics/tesseract/issues/1095>`_)

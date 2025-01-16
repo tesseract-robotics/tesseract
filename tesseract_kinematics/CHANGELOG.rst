@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.28.0 (2025-01-16)
+-------------------
 * Add floating joint support
 * Leverage tesseract_common loadYamlFile and loadYamlString
 * Add yaml include directive support
