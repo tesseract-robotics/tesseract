@@ -2,6 +2,21 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix cpack build
+* Leverage tesseract_common loadYamlFile and loadYamlString
+* Add ContactAllowedValidator and ContactResultValidator (`#1095 <https://github.com/tesseract-robotics/tesseract/issues/1095>`_)
+* Add installed headers to core component
+* Add yaml include directive support
+* Move getSummary implementation to cpp
+* Get a brief string summary of a contact map (`#1079 <https://github.com/tesseract-robotics/tesseract/issues/1079>`_)
+* Simplify shape_id counter
+* Fix use of compound mesh in FCL
+* Add more serialization for eigen types and collision types
+* Fix typo in unit tests
+* Contributors: Levi Armstrong, Max DeSantis, Roelof Oomen, Tyler Marr
+
 0.27.1 (2024-12-03)
 -------------------
 

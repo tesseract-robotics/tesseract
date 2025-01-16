@@ -2,6 +2,11 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add floating joint support
+* Contributors: Levi Armstrong
+
 0.27.1 (2024-12-03)
 -------------------
 

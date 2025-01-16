@@ -2,6 +2,14 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add floating joint support
+* Leverage tesseract_common loadYamlFile and loadYamlString
+* Add yaml include directive support
+* Expose Inverse Kinematics in Kinematics Group
+* Contributors: Levi Armstrong
+
 0.27.1 (2024-12-03)
 -------------------
 

@@ -2,6 +2,22 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix Bullet linking on MacOS (`#1101 <https://github.com/tesseract-robotics/tesseract/issues/1101>`_)
+  * Use Bullet cmake targets when available
+  * Guard creation of Bullet3::Bullet target
+  * Windows does not have Bullet3Geometry.lib
+  * Restore boost-stacktrace changes
+* Add GeneralResourceLocator API functions
+* Leverage tesseract_common loadYamlFile and loadYamlString
+* Add ContactAllowedValidator and ContactResultValidator (`#1095 <https://github.com/tesseract-robotics/tesseract/issues/1095>`_)
+* Leverage fs::path::preferred_separator in locateResource
+* Add yaml include directive support
+* Fix typo in tesseract_common CMakeLists.txt
+* Add more serialization for eigen types and collision types
+* Contributors: John Wason, Levi Armstrong
+
 0.27.1 (2024-12-03)
 -------------------
 * Include stdexcept in type_erasure.h

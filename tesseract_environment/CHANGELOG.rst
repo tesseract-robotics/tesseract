@@ -2,6 +2,14 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update tesseract_environment benchmarks
+* Add floating joint support
+* Add ContactAllowedValidator and ContactResultValidator (`#1095 <https://github.com/tesseract-robotics/tesseract/issues/1095>`_)
+* Change environment getJointGroup and getKinematicGroup to return shared pointers
+* Contributors: Levi Armstrong
+
 0.27.1 (2024-12-03)
 -------------------
 

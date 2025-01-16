@@ -2,6 +2,12 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Leverage tesseract_common loadYamlFile and loadYamlString
+* Add yaml include directive support
+* Contributors: Levi Armstrong
+
 0.27.1 (2024-12-03)
 -------------------
 
