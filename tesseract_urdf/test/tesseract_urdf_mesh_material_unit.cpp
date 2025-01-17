@@ -15,7 +15,7 @@ TEST(TesseractURDFUnit, parse_mesh_material_dae)  // NOLINT
   tesseract_common::GeneralResourceLocator resource_locator;
   const bool global_make_convex = false;
   const auto parse_mesh_fn =
-      [](const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, bool visual) {
+      [&](const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, bool visual) {
         return tesseract_urdf::parseMesh(xml_element, locator, visual, global_make_convex);
       };
 
@@ -95,7 +95,7 @@ TEST(TesseractURDFUnit, parse_mesh_material_gltf2)  // NOLINT
   tesseract_common::GeneralResourceLocator resource_locator;
   const bool global_make_convex = false;
   const auto parse_mesh_fn =
-      [](const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, bool visual) {
+      [&](const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, bool visual) {
         return tesseract_urdf::parseMesh(xml_element, locator, visual, global_make_convex);
       };
 

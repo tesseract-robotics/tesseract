@@ -13,10 +13,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
 {
   const bool global_make_convex = false;
-  const auto parse_geometry_fn =
-      [](const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, const bool visual) {
-        return tesseract_urdf::parseGeometry(xml_element, locator, visual, global_make_convex);
-      };
+  const auto parse_geometry_fn = [&](const tinyxml2::XMLElement* xml_element,
+                                     const tesseract_common::ResourceLocator& locator,
+                                     const bool visual) {
+    return tesseract_urdf::parseGeometry(xml_element, locator, visual, global_make_convex);
+  };
 
   tesseract_common::GeneralResourceLocator resource_locator;
   {
