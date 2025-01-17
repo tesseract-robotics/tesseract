@@ -276,8 +276,11 @@ tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract_geomet
   {
     try
     {
-      tinyxml2::XMLElement* xml_mesh = writeMesh(
-          std::static_pointer_cast<const tesseract_geometry::Mesh>(geometry), doc, package_path, filename + ".ply");
+      tinyxml2::XMLElement* xml_mesh =
+          writeMesh(std::static_pointer_cast<const tesseract_geometry::PolygonMesh>(geometry),
+                    doc,
+                    package_path,
+                    filename + ".ply");
       xml_element->InsertEndChild(xml_mesh);
     }
     catch (...)
