@@ -14,8 +14,8 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
 {
   tesseract_common::GeneralResourceLocator resource_locator;
   const bool global_make_convex = false;
-  const auto parse_collision_fn = [](const tinyxml2::XMLElement* xml_element,
-                                     const tesseract_common::ResourceLocator& locator) {
+  const auto parse_collision_fn = [&](const tinyxml2::XMLElement* xml_element,
+                                      const tesseract_common::ResourceLocator& locator) {
     return tesseract_urdf::parseCollision(xml_element, locator, global_make_convex);
   };
 

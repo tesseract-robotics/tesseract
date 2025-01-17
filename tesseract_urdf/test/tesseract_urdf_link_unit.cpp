@@ -15,9 +15,9 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
   tesseract_common::GeneralResourceLocator resource_locator;
   const bool global_make_convex = false;
   const auto parse_link_fn =
-      [](const tinyxml2::XMLElement* xml_element,
-         const tesseract_common::ResourceLocator& locator,
-         std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials) {
+      [&](const tinyxml2::XMLElement* xml_element,
+          const tesseract_common::ResourceLocator& locator,
+          std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials) {
         return tesseract_urdf::parseLink(xml_element, locator, global_make_convex, available_materials);
       };
 
