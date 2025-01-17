@@ -33,7 +33,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     std::string str = R"(<origin xyz="0 0 0" rpy="0 0 0"/>)";
     Eigen::Isometry3d origin;
     EXPECT_TRUE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
     EXPECT_TRUE(origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
@@ -41,7 +41,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     std::string str = R"(<origin xyz="0 0 0" wxyz="1 0 0 0"/>)";
     Eigen::Isometry3d origin;
     EXPECT_TRUE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
     EXPECT_TRUE(origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
@@ -52,7 +52,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     check.linear() << 0.6435823, -0.5794841, 0.5000000, 0.7558624, 0.5838996, -0.2961981, -0.1203077, 0.5685591,
         0.8137977;
     EXPECT_TRUE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
     EXPECT_TRUE(origin.isApprox(check, 1e-6));
   }
 
@@ -62,7 +62,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     Eigen::Isometry3d check = Eigen::Isometry3d::Identity();
     check.linear() = fromRPY(0.3490659, 0.5235988, 0.7330383).toRotationMatrix();
     EXPECT_TRUE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
     EXPECT_TRUE(origin.isApprox(check, 1e-6));
   }
 
@@ -70,7 +70,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     std::string str = R"(<origin xyz="0 2.5 0" rpy="3.14159265359 0 0"/>)";
     Eigen::Isometry3d origin;
     EXPECT_TRUE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
     EXPECT_TRUE(origin.translation().isApprox(Eigen::Vector3d(0, 2.5, 0), 1e-8));
     EXPECT_TRUE(origin.matrix().col(0).head(3).isApprox(Eigen::Vector3d(1, 0, 0), 1e-8));
     EXPECT_TRUE(origin.matrix().col(1).head(3).isApprox(Eigen::Vector3d(0, -1, 0), 1e-8));
@@ -86,7 +86,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     std::string str = R"(<origin xyz="0 2.5 0" rpy="3.14 0 0" wxyz="1 0 0 0"/>)";
     Eigen::Isometry3d origin;
     EXPECT_TRUE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
     EXPECT_TRUE(origin.translation().isApprox(Eigen::Vector3d(0, 2.5, 0), 1e-8));
     EXPECT_TRUE(origin.rotation().isApprox(Eigen::Matrix3d::Identity(), 1e-8));
   }
@@ -95,7 +95,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     std::string str = R"(<origin xyz="0 0 0"/>)";
     Eigen::Isometry3d origin;
     EXPECT_TRUE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
     EXPECT_TRUE(origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
@@ -103,7 +103,7 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     std::string str = R"(<origin rpy="0 0 0"/>)";
     Eigen::Isometry3d origin;
     EXPECT_TRUE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
     EXPECT_TRUE(origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
@@ -111,28 +111,28 @@ TEST(TesseractURDFUnit, parse_origin)  // NOLINT
     std::string str = R"(<origin xyz="0 0 a"/>)";
     Eigen::Isometry3d origin;
     EXPECT_FALSE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<origin rpy="0 0 a"/>)";
     Eigen::Isometry3d origin;
     EXPECT_FALSE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<origin wxyz="1 0 0 a"/>)";
     Eigen::Isometry3d origin;
     EXPECT_FALSE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<origin />)";
     Eigen::Isometry3d origin;
     EXPECT_FALSE(
-        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME));
+        runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, tesseract_urdf::ORIGIN_ELEMENT_NAME.data()));
   }
 }
 

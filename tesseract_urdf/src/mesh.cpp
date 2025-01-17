@@ -135,7 +135,7 @@ tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::
 {
   if (mesh == nullptr)
     std::throw_with_nested(std::runtime_error("Mesh is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(MESH_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(MESH_ELEMENT_NAME.data());
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   try

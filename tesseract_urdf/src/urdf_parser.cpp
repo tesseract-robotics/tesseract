@@ -85,8 +85,8 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   sg->setName(robot_name);
 
   std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
-  for (tinyxml2::XMLElement* material = robot->FirstChildElement(MATERIAL_ELEMENT_NAME); material != nullptr;
-       material = material->NextSiblingElement(MATERIAL_ELEMENT_NAME))
+  for (tinyxml2::XMLElement* material = robot->FirstChildElement(MATERIAL_ELEMENT_NAME.data()); material != nullptr;
+       material = material->NextSiblingElement(MATERIAL_ELEMENT_NAME.data()))
   {
     tesseract_scene_graph::Material::Ptr m = nullptr;
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_material;
@@ -103,8 +103,8 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
     available_materials[m->getName()] = m;
   }
 
-  for (tinyxml2::XMLElement* link = robot->FirstChildElement(LINK_ELEMENT_NAME); link != nullptr;
-       link = link->NextSiblingElement(LINK_ELEMENT_NAME))
+  for (tinyxml2::XMLElement* link = robot->FirstChildElement(LINK_ELEMENT_NAME.data()); link != nullptr;
+       link = link->NextSiblingElement(LINK_ELEMENT_NAME.data()))
   {
     tesseract_scene_graph::Link::Ptr l = nullptr;
     try
@@ -130,8 +130,8 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   if (sg->getLinks().empty())
     std::throw_with_nested(std::runtime_error("URDF: Error no links were found for robot '" + robot_name + "'!"));
 
-  for (tinyxml2::XMLElement* joint = robot->FirstChildElement(JOINT_ELEMENT_NAME); joint != nullptr;
-       joint = joint->NextSiblingElement(JOINT_ELEMENT_NAME))
+  for (tinyxml2::XMLElement* joint = robot->FirstChildElement(JOINT_ELEMENT_NAME.data()); joint != nullptr;
+       joint = joint->NextSiblingElement(JOINT_ELEMENT_NAME.data()))
   {
     tesseract_scene_graph::Joint::Ptr j = nullptr;
     try

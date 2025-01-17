@@ -114,7 +114,7 @@ tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_grap
 {
   if (link == nullptr)
     std::throw_with_nested(std::runtime_error("Link is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(LINK_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(LINK_ELEMENT_NAME.data());
 
   // Set name
   xml_element->SetAttribute("name", link->getName().c_str());

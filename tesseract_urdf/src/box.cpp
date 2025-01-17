@@ -71,7 +71,7 @@ tinyxml2::XMLElement* writeBox(const std::shared_ptr<const tesseract_geometry::B
 {
   if (box == nullptr)
     std::throw_with_nested(std::runtime_error("Box is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(BOX_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(BOX_ELEMENT_NAME.data());
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
   std::stringstream size_string;
   size_string << Eigen::Vector3d(box->getX(), box->getY(), box->getZ()).format(eigen_format);

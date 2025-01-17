@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <vector>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
@@ -42,7 +43,7 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
-static const char* SDF_MESH_ELEMENT_NAME = "tesseract:sdf_mesh";
+static constexpr std::string_view SDF_MESH_ELEMENT_NAME = "tesseract:sdf_mesh";
 
 /**
  * @brief Parse xml element sdf_mesh

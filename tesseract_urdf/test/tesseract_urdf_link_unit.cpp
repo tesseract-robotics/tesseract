@@ -46,7 +46,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial != nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
@@ -95,7 +95,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial != nullptr);
     EXPECT_TRUE(elem->visual.size() == 2);
@@ -124,7 +124,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
@@ -166,7 +166,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 2);
@@ -189,7 +189,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
@@ -219,7 +219,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 2);
@@ -239,7 +239,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.empty());
@@ -265,7 +265,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.empty());
@@ -278,7 +278,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     std::string str = R"(<link name="my_link"/>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.empty());
@@ -300,7 +300,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
   }
 
   {
@@ -318,7 +318,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
   }
 
   {
@@ -337,7 +337,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
   }
 
   {
@@ -352,7 +352,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
                          </link>)";
     tesseract_scene_graph::Link::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Link::Ptr>(
-        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME, resource_locator, empty_available_materials));
+        elem, parse_link_fn, str, tesseract_urdf::LINK_ELEMENT_NAME.data(), resource_locator, empty_available_materials));
   }
 }
 
@@ -360,7 +360,7 @@ TEST(TesseractURDFUnit, write_link)  // NOLINT
 {
   {  // Trigger id adjustments and inertial
     tesseract_scene_graph::Link::Ptr link =
-        std::make_shared<tesseract_scene_graph::Link>(tesseract_urdf::LINK_ELEMENT_NAME);
+        std::make_shared<tesseract_scene_graph::Link>(tesseract_urdf::LINK_ELEMENT_NAME.data());
     link->inertial = std::make_shared<tesseract_scene_graph::Inertial>();
 
     tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
@@ -386,7 +386,7 @@ TEST(TesseractURDFUnit, write_link)  // NOLINT
 
   {  // Trigger nullptr collision
     tesseract_scene_graph::Link::Ptr link =
-        std::make_shared<tesseract_scene_graph::Link>(tesseract_urdf::LINK_ELEMENT_NAME);
+        std::make_shared<tesseract_scene_graph::Link>(tesseract_urdf::LINK_ELEMENT_NAME.data());
     link->inertial = std::make_shared<tesseract_scene_graph::Inertial>();
 
     link->collision.push_back(nullptr);
@@ -406,7 +406,7 @@ TEST(TesseractURDFUnit, write_link)  // NOLINT
 
   {  // Trigger nullptr visual
     tesseract_scene_graph::Link::Ptr link =
-        std::make_shared<tesseract_scene_graph::Link>(tesseract_urdf::LINK_ELEMENT_NAME);
+        std::make_shared<tesseract_scene_graph::Link>(tesseract_urdf::LINK_ELEMENT_NAME.data());
     link->inertial = std::make_shared<tesseract_scene_graph::Inertial>();
 
     tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();

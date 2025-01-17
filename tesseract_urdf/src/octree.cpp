@@ -77,7 +77,7 @@ tinyxml2::XMLElement* writeOctree(const tesseract_geometry::Octree::ConstPtr& oc
 {
   if (octree == nullptr)
     std::throw_with_nested(std::runtime_error("Octree is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(OCTREE_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(OCTREE_ELEMENT_NAME.data());
 
   std::string filepath = trailingSlash(package_path) + noLeadingSlash(filename);
 

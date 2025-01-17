@@ -54,7 +54,7 @@ tinyxml2::XMLElement* writeCylinder(const std::shared_ptr<const tesseract_geomet
 {
   if (cylinder == nullptr)
     std::throw_with_nested(std::runtime_error("Cylinder is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(CYLINDER_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(CYLINDER_ELEMENT_NAME.data());
   xml_element->SetAttribute("length", toString(cylinder->getLength()).c_str());
   xml_element->SetAttribute("radius", toString(cylinder->getRadius()).c_str());
   return xml_element;

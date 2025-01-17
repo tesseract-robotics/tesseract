@@ -53,7 +53,7 @@ tinyxml2::XMLElement* writeCone(const std::shared_ptr<const tesseract_geometry::
 {
   if (cone == nullptr)
     std::throw_with_nested(std::runtime_error("Cone is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(CONE_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(CONE_ELEMENT_NAME.data());
   xml_element->SetAttribute("length", toString(cone->getLength()).c_str());
   xml_element->SetAttribute("radius", toString(cone->getRadius()).c_str());
   return xml_element;

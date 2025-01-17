@@ -100,7 +100,7 @@ tinyxml2::XMLElement* writeSDFMesh(const std::shared_ptr<const tesseract_geometr
 {
   if (sdf_mesh == nullptr)
     std::throw_with_nested(std::runtime_error("SDF Mesh is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(SDF_MESH_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(SDF_MESH_ELEMENT_NAME.data());
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   try

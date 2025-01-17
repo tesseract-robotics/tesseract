@@ -91,7 +91,7 @@ tinyxml2::XMLElement* writeInertial(const std::shared_ptr<const tesseract_scene_
 {
   if (inertial == nullptr)
     std::throw_with_nested(std::runtime_error("Inertial is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(INERTIAL_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(INERTIAL_ELEMENT_NAME.data());
 
   if (!inertial->origin.matrix().isIdentity(std::numeric_limits<double>::epsilon()))
   {

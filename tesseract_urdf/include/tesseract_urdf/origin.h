@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tinyxml2
@@ -39,7 +40,7 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
-static const char* ORIGIN_ELEMENT_NAME = "origin";
+static constexpr std::string_view ORIGIN_ELEMENT_NAME = "origin";
 
 /**
  * @brief Parse xml element origin

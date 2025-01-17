@@ -116,7 +116,7 @@ tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract_scene_gr
   if (visual == nullptr)
     std::throw_with_nested(std::runtime_error("Visual is nullptr and cannot be converted to XML"));
 
-  tinyxml2::XMLElement* xml_element = doc.NewElement(VISUAL_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(VISUAL_ELEMENT_NAME.data());
 
   if (!visual->name.empty())
     xml_element->SetAttribute("name", visual->name.c_str());

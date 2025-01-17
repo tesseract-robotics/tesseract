@@ -76,7 +76,7 @@ tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract_scene_gr
 {
   if (limits == nullptr)
     std::throw_with_nested(std::runtime_error("Limits are nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(LIMITS_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(LIMITS_ELEMENT_NAME.data());
 
   // if upper and lower are both zero, don't write it.  This should only happen for continuous joints.
   if (!tesseract_common::almostEqualRelativeAndAbs(limits->lower, 0.0) ||

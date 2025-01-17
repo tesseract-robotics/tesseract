@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
@@ -41,7 +42,7 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
-static const char* SAFETY_CONTROLLER_ELEMENT_NAME = "safety_controller";
+static constexpr std::string_view SAFETY_CONTROLLER_ELEMENT_NAME = "safety_controller";
 
 /**
  * @brief Parse xml element safety_controller

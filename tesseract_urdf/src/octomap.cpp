@@ -66,7 +66,7 @@ tesseract_geometry::Octree::Ptr parseOctomap(const tinyxml2::XMLElement* xml_ele
   bool prune = false;
   xml_element->QueryBoolAttribute("prune", &prune);
 
-  const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement(OCTREE_ELEMENT_NAME);
+  const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement(OCTREE_ELEMENT_NAME.data());
   if (octree_element != nullptr)
   {
     try
@@ -80,7 +80,7 @@ tesseract_geometry::Octree::Ptr parseOctomap(const tinyxml2::XMLElement* xml_ele
   }
 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
-  const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement(POINT_CLOUD_ELEMENT_NAME);
+  const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement(POINT_CLOUD_ELEMENT_NAME.data());
   if (pcd_element != nullptr)
   {
     try
@@ -105,7 +105,7 @@ tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract_geometr
 {
   if (octree == nullptr)
     std::throw_with_nested(std::runtime_error("Octree is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(OCTOMAP_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(OCTOMAP_ELEMENT_NAME.data());
 
   std::string type_string;
   if (octree->getSubType() == tesseract_geometry::OctreeSubType::BOX)
