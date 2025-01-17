@@ -242,6 +242,7 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
   // Assign Robot Name
   tinyxml2::XMLElement* xml_robot = doc.NewElement(ROBOT_ELEMENT_NAME.data());
   xml_robot->SetAttribute("name", sg->getName().c_str());
+  xml_robot->SetAttribute("tesseract:make_convex", false);
   // version?
   doc.InsertEndChild(xml_robot);
 
