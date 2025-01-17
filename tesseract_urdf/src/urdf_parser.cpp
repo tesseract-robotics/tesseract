@@ -79,8 +79,27 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   // Check for global attribute for converting meshes to convex hulls
   bool make_convex = false;
   auto make_convex_status = robot->QueryBoolAttribute("tesseract:make_convex", &make_convex);
-  if (make_convex_status != tinyxml2::XML_NO_ATTRIBUTE && make_convex_status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested("URDF: Failed to parse attribute 'tesseract:make_convex' for robot '" + robot_name + "'");
+  switch (make_convex_status)
+  {
+    case tinyxml2::XML_SUCCESS:
+      break;
+    case tinyxml2::XML_NO_ATTRIBUTE:
+    {
+      const std::string message = "URDF: missing boolean attribute 'tesseract:make_convex'. This attribute indicates "
+                                  "whether Tesseract should globally convert all collision mesh geometries into convex "
+                                  "hulls. Previous versions of Tesseract performed this conversion automatically "
+                                  "(i.e., 'tesseract:make_convex=\"true\"'. If you want to perform collision checking "
+                                  "with detailed meshes instead of convex hulls, set "
+                                  "'tesseract:make_convex=\"false\"'. This global attribute can be overriden on a "
+                                  "per-mesh basis by specifying the 'tesseract:make_convex' attribute in the 'mesh' "
+                                  "element (e.g., <mesh filename=\"...\" tesseract:make_convex=\"true/false\"> .";
+      std::throw_with_nested(std::runtime_error(message));
+    }
+    default:
+      std::throw_with_nested(std::runtime_error("URDF: Failed to parse boolean attribute 'tesseract:make_convex' for "
+                                                "robot '" +
+                                                robot_name + "'"));
+  }
 
   auto sg = std::make_unique<tesseract_scene_graph::SceneGraph>();
   sg->setName(robot_name);
