@@ -51,7 +51,7 @@ jobs:
         uses: tesseract-robotics/colcon-action@v1
         with:
           ccache-prefix: ${{ matrix.distro }}
-          vcs-file: dependencies.repos
+          vcs-file: dependencies_focal.repos
           run-tests: false
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src

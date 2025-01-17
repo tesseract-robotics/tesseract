@@ -75,8 +75,6 @@ if(TESSERACT_PACKAGE)
     VERSION ${pkg_extracted_version}
     DESCRIPTION "Tesseract Collision FCL components"
     COMPONENT_DEPENDS core
-    LINUX_DEPENDS "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
-                  "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
-    WINDOWS_DEPENDS "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
-                    "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
+    LINUX_DEPENDS "libfcl-dev (>= 0.6.0) | fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
+    WINDOWS_DEPENDS "libfcl-dev (>= 0.6.0) | fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
 endif()
