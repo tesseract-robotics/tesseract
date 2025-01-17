@@ -60,9 +60,8 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
   //  {
   //    std::string str = R"(<cylinder radius="1 2" length="2 3"/>)";
   //    tesseract_geometry::Cylinder::Ptr geom;
-  //    auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data());
-  //    EXPECT_FALSE(*status);
-  //    EXPECT_FALSE(status->message().empty());
+  //    auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str,
+  //    tesseract_urdf::CYLINDER_ELEMENT_NAME.data()); EXPECT_FALSE(*status); EXPECT_FALSE(status->message().empty());
   //  }
 
   {

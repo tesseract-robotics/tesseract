@@ -64,8 +64,12 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 
     std::string str = R"(<material name="test_material"/>)";
     tesseract_scene_graph::Material::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::Material::Ptr>(
-        elem, &tesseract_urdf::parseMaterial, str, tesseract_urdf::MATERIAL_ELEMENT_NAME.data(), available_materials, true));
+    EXPECT_TRUE(runTest<tesseract_scene_graph::Material::Ptr>(elem,
+                                                              &tesseract_urdf::parseMaterial,
+                                                              str,
+                                                              tesseract_urdf::MATERIAL_ELEMENT_NAME.data(),
+                                                              available_materials,
+                                                              true));
     EXPECT_TRUE(elem->getName() == "test_material");
     EXPECT_TRUE(elem->color.isApprox(Eigen::Vector4d(1, .5, .5, 1), 1e-8));
     EXPECT_TRUE(elem->texture_filename == tesseract_common::getTempPath() + "texture.txt");
@@ -113,8 +117,12 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 
     std::string str = R"(<material />)";
     tesseract_scene_graph::Material::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::Material::Ptr>(
-        elem, &tesseract_urdf::parseMaterial, str, tesseract_urdf::MATERIAL_ELEMENT_NAME.data(), available_materials, true));
+    EXPECT_FALSE(runTest<tesseract_scene_graph::Material::Ptr>(elem,
+                                                               &tesseract_urdf::parseMaterial,
+                                                               str,
+                                                               tesseract_urdf::MATERIAL_ELEMENT_NAME.data(),
+                                                               available_materials,
+                                                               true));
   }
 
   {
