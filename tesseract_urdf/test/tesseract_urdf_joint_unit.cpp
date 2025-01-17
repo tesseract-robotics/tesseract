@@ -23,7 +23,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::FLOATING);
     EXPECT_FALSE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -50,7 +50,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::REVOLUTE);
     EXPECT_FALSE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -73,7 +73,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::REVOLUTE);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -96,7 +96,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::CONTINUOUS);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -118,7 +118,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::CONTINUOUS);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -141,7 +141,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::FIXED);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -164,7 +164,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::PRISMATIC);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -187,7 +187,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::REVOLUTE);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -210,7 +210,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::PLANAR);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
@@ -231,7 +231,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -241,7 +241,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -250,7 +250,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -259,7 +259,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -271,7 +271,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -283,7 +283,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -295,7 +295,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -307,7 +307,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -319,7 +319,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -335,7 +335,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -351,7 +351,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -367,7 +367,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -383,7 +383,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -399,7 +399,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -415,7 +415,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -432,7 +432,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -448,7 +448,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
            </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -461,7 +461,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 
   {
@@ -472,7 +472,7 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
                          </joint>)";
     tesseract_scene_graph::Joint::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Joint::Ptr>(
-        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseJoint, str, tesseract_urdf::JOINT_ELEMENT_NAME.data()));
   }
 }
 

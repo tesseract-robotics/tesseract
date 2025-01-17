@@ -128,7 +128,7 @@ Eigen::Isometry3d parseOrigin(const tinyxml2::XMLElement* xml_element)
 
 tinyxml2::XMLElement* writeOrigin(const Eigen::Isometry3d& origin, tinyxml2::XMLDocument& doc)
 {
-  tinyxml2::XMLElement* xml_element = doc.NewElement(ORIGIN_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(ORIGIN_ELEMENT_NAME.data());
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   // Format and write the translation

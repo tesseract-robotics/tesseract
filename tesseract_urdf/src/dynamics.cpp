@@ -68,7 +68,7 @@ tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract_scene_
 {
   if (dynamics == nullptr)
     std::throw_with_nested(std::runtime_error("Dynamics is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(DYNAMICS_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(DYNAMICS_ELEMENT_NAME.data());
 
   xml_element->SetAttribute("damping", toString(dynamics->damping).c_str());
   xml_element->SetAttribute("friction", toString(dynamics->damping).c_str());

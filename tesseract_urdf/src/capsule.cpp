@@ -54,7 +54,7 @@ tinyxml2::XMLElement* writeCapsule(const std::shared_ptr<const tesseract_geometr
 {
   if (capsule == nullptr)
     std::throw_with_nested(std::runtime_error("Capsule is nullptr and cannot be written to XML file"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(CAPSULE_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(CAPSULE_ELEMENT_NAME.data());
   xml_element->SetAttribute("length", toString(capsule->getLength()).c_str());
   xml_element->SetAttribute("radius", toString(capsule->getRadius()).c_str());
   return xml_element;

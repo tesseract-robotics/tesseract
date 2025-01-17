@@ -126,7 +126,7 @@ tinyxml2::XMLElement* writeMaterial(const std::shared_ptr<const tesseract_scene_
 {
   if (material == nullptr)
     std::throw_with_nested(std::runtime_error("Material is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(MATERIAL_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(MATERIAL_ELEMENT_NAME.data());
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   xml_element->SetAttribute("name", material->getName().c_str());

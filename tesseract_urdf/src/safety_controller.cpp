@@ -78,7 +78,7 @@ tinyxml2::XMLElement* writeSafetyController(const std::shared_ptr<const tesserac
 {
   if (safety == nullptr)
     std::throw_with_nested(std::runtime_error("Safety Controller is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(SAFETY_CONTROLLER_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(SAFETY_CONTROLLER_ELEMENT_NAME.data());
 
   xml_element->SetAttribute("k_velocity", toString(safety->k_velocity).c_str());
 

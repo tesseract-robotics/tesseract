@@ -96,7 +96,7 @@ tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract_scene
   if (collision == nullptr)
     std::throw_with_nested(std::runtime_error("Collision is nullptr and cannot be converted to XML"));
 
-  tinyxml2::XMLElement* xml_element = doc.NewElement(COLLISION_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(COLLISION_ELEMENT_NAME.data());
 
   if (!collision->name.empty())
     xml_element->SetAttribute("name", collision->name.c_str());

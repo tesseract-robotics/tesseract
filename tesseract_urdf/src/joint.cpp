@@ -235,7 +235,7 @@ tinyxml2::XMLElement* writeJoint(const std::shared_ptr<const tesseract_scene_gra
 {
   if (joint == nullptr)
     std::throw_with_nested(std::runtime_error("Joint is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(JOINT_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(JOINT_ELEMENT_NAME.data());
 
   // Set the joint name
   xml_element->SetAttribute("name", joint->getName().c_str());

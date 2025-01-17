@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
@@ -41,7 +42,7 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
-static const char* JOINT_ELEMENT_NAME = "joint";
+static constexpr std::string_view JOINT_ELEMENT_NAME = "joint";
 
 /**
  * @brief Parse xml element joint

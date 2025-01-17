@@ -17,7 +17,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
     EXPECT_NEAR(elem->mass, 1, 1e-8);
     EXPECT_NEAR(elem->ixx, 1, 1e-8);
     EXPECT_NEAR(elem->ixy, 2, 1e-8);
@@ -34,7 +34,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
     EXPECT_NEAR(elem->mass, 1, 1e-8);
     EXPECT_NEAR(elem->ixx, 1, 1e-8);
     EXPECT_NEAR(elem->ixy, 2, 1e-8);
@@ -52,7 +52,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -61,7 +61,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -70,7 +70,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -80,7 +80,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -90,7 +90,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -100,7 +100,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -110,7 +110,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -120,7 +120,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -130,7 +130,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -140,7 +140,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -150,7 +150,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -160,7 +160,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -170,7 +170,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -180,7 +180,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -190,7 +190,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -200,7 +200,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -210,7 +210,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 
   {
@@ -220,7 +220,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Inertial::Ptr>(
-        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME));
+        elem, &tesseract_urdf::parseInertial, str, tesseract_urdf::INERTIAL_ELEMENT_NAME.data()));
   }
 }
 

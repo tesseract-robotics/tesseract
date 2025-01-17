@@ -51,7 +51,7 @@ tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract_geometry
 {
   if (sphere == nullptr)
     std::throw_with_nested(std::runtime_error("Sphere is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(SPHERE_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(SPHERE_ELEMENT_NAME.data());
 
   xml_element->SetAttribute("radius", toString(sphere->getRadius()).c_str());
 

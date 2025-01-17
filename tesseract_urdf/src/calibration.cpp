@@ -68,7 +68,7 @@ writeCalibration(const std::shared_ptr<const tesseract_scene_graph::JointCalibra
 {
   if (calibration == nullptr)
     std::throw_with_nested(std::runtime_error("Calibration is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(CALIBRATION_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(CALIBRATION_ELEMENT_NAME.data());
   xml_element->SetAttribute("rising", toString(calibration->rising).c_str());
   xml_element->SetAttribute("falling", toString(calibration->falling).c_str());
   return xml_element;

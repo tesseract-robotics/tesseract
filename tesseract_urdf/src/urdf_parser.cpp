@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 
 #include <boost/filesystem.hpp>
+#include <string_view>
 #include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -45,7 +46,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_urdf/utils.h>
 
-static const char* ROBOT_ELEMENT_NAME = "robot";
+static constexpr std::string_view ROBOT_ELEMENT_NAME = "robot";
 
 namespace tesseract_urdf
 {
@@ -56,7 +57,7 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   if (xml_doc.Parse(urdf_xml_string.c_str()) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("URDF: Failed to parse urdf string!"));
 
-  tinyxml2::XMLElement* robot = xml_doc.FirstChildElement(ROBOT_ELEMENT_NAME);
+  tinyxml2::XMLElement* robot = xml_doc.FirstChildElement(ROBOT_ELEMENT_NAME.data());
   if (robot == nullptr)
     std::throw_with_nested(std::runtime_error("URDF: Missing element 'robot'!"));
 
@@ -85,8 +86,8 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   sg->setName(robot_name);
 
   std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
-  for (tinyxml2::XMLElement* material = robot->FirstChildElement(MATERIAL_ELEMENT_NAME); material != nullptr;
-       material = material->NextSiblingElement(MATERIAL_ELEMENT_NAME))
+  for (tinyxml2::XMLElement* material = robot->FirstChildElement(MATERIAL_ELEMENT_NAME.data()); material != nullptr;
+       material = material->NextSiblingElement(MATERIAL_ELEMENT_NAME.data()))
   {
     tesseract_scene_graph::Material::Ptr m = nullptr;
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_material;
@@ -103,8 +104,8 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
     available_materials[m->getName()] = m;
   }
 
-  for (tinyxml2::XMLElement* link = robot->FirstChildElement(LINK_ELEMENT_NAME); link != nullptr;
-       link = link->NextSiblingElement(LINK_ELEMENT_NAME))
+  for (tinyxml2::XMLElement* link = robot->FirstChildElement(LINK_ELEMENT_NAME.data()); link != nullptr;
+       link = link->NextSiblingElement(LINK_ELEMENT_NAME.data()))
   {
     tesseract_scene_graph::Link::Ptr l = nullptr;
     try
@@ -130,8 +131,8 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   if (sg->getLinks().empty())
     std::throw_with_nested(std::runtime_error("URDF: Error no links were found for robot '" + robot_name + "'!"));
 
-  for (tinyxml2::XMLElement* joint = robot->FirstChildElement(JOINT_ELEMENT_NAME); joint != nullptr;
-       joint = joint->NextSiblingElement(JOINT_ELEMENT_NAME))
+  for (tinyxml2::XMLElement* joint = robot->FirstChildElement(JOINT_ELEMENT_NAME.data()); joint != nullptr;
+       joint = joint->NextSiblingElement(JOINT_ELEMENT_NAME.data()))
   {
     tesseract_scene_graph::Joint::Ptr j = nullptr;
     try
@@ -220,7 +221,7 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
   doc.InsertFirstChild(xml_declaration);
 
   // Assign Robot Name
-  tinyxml2::XMLElement* xml_robot = doc.NewElement(ROBOT_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_robot = doc.NewElement(ROBOT_ELEMENT_NAME.data());
   xml_robot->SetAttribute("name", sg->getName().c_str());
   // version?
   doc.InsertEndChild(xml_robot);

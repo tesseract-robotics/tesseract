@@ -30,7 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <unordered_map>
-#include <vector>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
@@ -44,7 +44,7 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
-static const char* VISUAL_ELEMENT_NAME = "visual";
+static constexpr std::string_view VISUAL_ELEMENT_NAME = "visual";
 
 /**
  * @brief Parse xml element visual

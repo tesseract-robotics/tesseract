@@ -29,7 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <vector>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
@@ -43,7 +43,7 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
-static const char* GEOMETRY_ELEMENT_NAME = "geometry";
+static constexpr std::string_view GEOMETRY_ELEMENT_NAME = "geometry";
 
 /**
  * @brief Parse xml element geometry

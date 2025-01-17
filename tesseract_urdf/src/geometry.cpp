@@ -200,7 +200,7 @@ tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract_geomet
 {
   if (geometry == nullptr)
     std::throw_with_nested(std::runtime_error("Geometry is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(GEOMETRY_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(GEOMETRY_ELEMENT_NAME.data());
 
   tesseract_geometry::GeometryType type = geometry->getType();
 

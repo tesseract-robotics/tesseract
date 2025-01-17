@@ -68,7 +68,7 @@ tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract_scene_gra
 {
   if (mimic == nullptr)
     std::throw_with_nested(std::runtime_error("Mimic Joint is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement(MIMIC_ELEMENT_NAME);
+  tinyxml2::XMLElement* xml_element = doc.NewElement(MIMIC_ELEMENT_NAME.data());
 
   xml_element->SetAttribute("joint", mimic->joint_name.c_str());
   xml_element->SetAttribute("offset", toString(mimic->offset).c_str());

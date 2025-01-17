@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/fwd.h>
@@ -41,7 +42,7 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
-static const char* CAPSULE_ELEMENT_NAME = "tesseract:capsule";
+static constexpr std::string_view CAPSULE_ELEMENT_NAME = "tesseract:capsule";
 
 /**
  * @brief Parse a xml capsule element

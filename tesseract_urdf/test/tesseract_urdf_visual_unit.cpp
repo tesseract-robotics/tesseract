@@ -29,7 +29,7 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
     EXPECT_TRUE(runTest<tesseract_scene_graph::Visual::Ptr>(elem,
                                                             &tesseract_urdf::parseVisual,
                                                             str,
-                                                            tesseract_urdf::VISUAL_ELEMENT_NAME,
+                                                            tesseract_urdf::VISUAL_ELEMENT_NAME.data(),
                                                             resource_locator,
                                                             empty_available_materials));
     EXPECT_TRUE(elem->geometry != nullptr);
@@ -51,7 +51,7 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
     EXPECT_TRUE(runTest<tesseract_scene_graph::Visual::Ptr>(elem,
                                                             &tesseract_urdf::parseVisual,
                                                             str,
-                                                            tesseract_urdf::VISUAL_ELEMENT_NAME,
+                                                            tesseract_urdf::VISUAL_ELEMENT_NAME.data(),
                                                             resource_locator,
                                                             empty_available_materials));
     EXPECT_TRUE(elem->geometry != nullptr);
@@ -70,7 +70,7 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
     EXPECT_TRUE(runTest<tesseract_scene_graph::Visual::Ptr>(elem,
                                                             &tesseract_urdf::parseVisual,
                                                             str,
-                                                            tesseract_urdf::VISUAL_ELEMENT_NAME,
+                                                            tesseract_urdf::VISUAL_ELEMENT_NAME.data(),
                                                             resource_locator,
                                                             empty_available_materials));
     EXPECT_TRUE(elem->geometry != nullptr);
@@ -89,7 +89,7 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_scene_graph::Visual::Ptr>(elem,
                                                              &tesseract_urdf::parseVisual,
                                                              str,
-                                                             tesseract_urdf::VISUAL_ELEMENT_NAME,
+                                                             tesseract_urdf::VISUAL_ELEMENT_NAME.data(),
                                                              resource_locator,
                                                              empty_available_materials));
   }
@@ -105,7 +105,7 @@ TEST(TesseractURDFUnit, parse_visual)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_scene_graph::Visual::Ptr>(elem,
                                                              &tesseract_urdf::parseVisual,
                                                              str,
-                                                             tesseract_urdf::VISUAL_ELEMENT_NAME,
+                                                             tesseract_urdf::VISUAL_ELEMENT_NAME.data(),
                                                              resource_locator,
                                                              empty_available_materials));
   }

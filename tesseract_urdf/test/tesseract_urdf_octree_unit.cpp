@@ -37,7 +37,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(geom->getSubType() == tesseract_geometry::OctreeSubType::BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -49,7 +49,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(geom->getSubType() == tesseract_geometry::OctreeSubType::BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -61,7 +61,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(geom->getSubType() == tesseract_geometry::OctreeSubType::SPHERE_INSIDE);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -74,7 +74,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(geom->getSubType() == tesseract_geometry::OctreeSubType::BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 1000);
@@ -87,7 +87,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(geom->getSubType() == tesseract_geometry::OctreeSubType::BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 496);
@@ -100,7 +100,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
   }
 #endif
 
@@ -110,7 +110,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_TRUE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(geom->getSubType() == tesseract_geometry::OctreeSubType::SPHERE_OUTSIDE);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -122,7 +122,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
   }
 
   {
@@ -131,7 +131,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
   }
 
   {
@@ -140,7 +140,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
   }
 
   {
@@ -149,7 +149,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
   }
 
   {
@@ -158,14 +158,14 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
                          </tesseract:octomap>)";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
   }
 
   {
     std::string str = "<tesseract:octomap />";
     tesseract_geometry::Octree::Ptr geom;
     EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
-        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME, resource_locator, true));
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
   }
 }
 
