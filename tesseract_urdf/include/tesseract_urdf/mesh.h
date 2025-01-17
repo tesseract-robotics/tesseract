@@ -70,7 +70,7 @@ parseMesh(const tinyxml2::XMLElement* xml_element,
  * should be an absolute path
  * @return XML element representing the mesh object in URDF format.
  */
-tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
+tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh,
                                 tinyxml2::XMLDocument& doc,
                                 const std::string& package_path,
                                 const std::string& filename);

@@ -128,7 +128,7 @@ std::vector<tesseract_geometry::PolygonMesh::Ptr> parseMesh(const tinyxml2::XMLE
   return output;
 }
 
-tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
+tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh,
                                 tinyxml2::XMLDocument& doc,
                                 const std::string& package_path,
                                 const std::string& filename)
