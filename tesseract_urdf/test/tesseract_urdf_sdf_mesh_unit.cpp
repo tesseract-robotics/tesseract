@@ -27,8 +27,12 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
     std::string str =
         R"(<tesseract:sdf_mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 2 1" extra="0 0 0"/>)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                       &tesseract_urdf::parseSDFMesh,
+                                                                       str,
+                                                                       tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                       resource_locator,
+                                                                       true));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 80);
     EXPECT_TRUE(geom[0]->getVertexCount() == 240);
@@ -40,8 +44,12 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
   {
     std::string str = R"(<tesseract:sdf_mesh filename="package://tesseract_support/meshes/sphere_p25m.stl"/>)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                       &tesseract_urdf::parseSDFMesh,
+                                                                       str,
+                                                                       tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                       resource_locator,
+                                                                       true));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 80);
     EXPECT_TRUE(geom[0]->getVertexCount() == 240);
@@ -53,8 +61,12 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
   {
     std::string str = R"(<tesseract:sdf_mesh filename="package://tesseract_support/meshes/sphere_p25m.stl"/>)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, false));
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                       &tesseract_urdf::parseSDFMesh,
+                                                                       str,
+                                                                       tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                       resource_locator,
+                                                                       false));
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 80);
     EXPECT_TRUE(geom[0]->getVertexCount() == 42);
@@ -66,54 +78,82 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
   {
     std::string str = R"(<tesseract:sdf_mesh filename="abc" scale="1 2 1"/>)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                        &tesseract_urdf::parseSDFMesh,
+                                                                        str,
+                                                                        tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                        resource_locator,
+                                                                        true));
   }
 
   {
     std::string str =
         R"(<tesseract:sdf_mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 a 1"/>)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                        &tesseract_urdf::parseSDFMesh,
+                                                                        str,
+                                                                        tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                        resource_locator,
+                                                                        true));
   }
 
   {
     std::string str =
         R"(<tesseract:sdf_mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="a 1 1"/>)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                        &tesseract_urdf::parseSDFMesh,
+                                                                        str,
+                                                                        tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                        resource_locator,
+                                                                        true));
   }
 
   {
     std::string str =
         R"(<tesseract:sdf_mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 1 a"/>)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                        &tesseract_urdf::parseSDFMesh,
+                                                                        str,
+                                                                        tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                        resource_locator,
+                                                                        true));
   }
 
   {
     std::string str =
         R"(<tesseract:sdf_mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 2 1 3"/>)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                        &tesseract_urdf::parseSDFMesh,
+                                                                        str,
+                                                                        tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                        resource_locator,
+                                                                        true));
   }
 
   {
     std::string str = R"(<tesseract:sdf_mesh scale="1 2 1"/>)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                        &tesseract_urdf::parseSDFMesh,
+                                                                        str,
+                                                                        tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                        resource_locator,
+                                                                        true));
   }
 
   {
     std::string str = R"(<tesseract:sdf_mesh />)";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(
-        geom, &tesseract_urdf::parseSDFMesh, str, tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_FALSE(runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom,
+                                                                        &tesseract_urdf::parseSDFMesh,
+                                                                        str,
+                                                                        tesseract_urdf::SDF_MESH_ELEMENT_NAME.data(),
+                                                                        resource_locator,
+                                                                        true));
   }
 }
 
