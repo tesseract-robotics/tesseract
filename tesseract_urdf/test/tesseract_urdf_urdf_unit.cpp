@@ -231,6 +231,12 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
     EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
+  // Missing tesseract:make_convex attribute
+  {
+    std::string str = R"(<robot name="test"></robot>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
   {
     const std::string path =
         resource_locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath();
