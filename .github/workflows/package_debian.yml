@@ -26,16 +26,18 @@ jobs:
         with:
           path: target_ws/src
 
-      - name: Install dependencies
-        run: |
-          apt update -q
-          apt install -q -y liboctomap-dev
+      - name: Install Depends
+              shell: bash
+              run: |
+                apt update
+                apt upgrade -y
+                apt install -y liboctomap-dev
 
       - name: Build and test
         uses: tesseract-robotics/colcon-action@v9
         with:
           ccache-enabled: false
-          vcs-file: dependencies.repos
+          vcs-file: ${{ matrix.distro == 'focal' && 'dependencies_focal.repos' || 'dependencies.repos' }}
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src
           target-args: --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_PACKAGE=ON
