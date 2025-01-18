@@ -1,5 +1,6 @@
 ARG TAG
 FROM ubuntu:${TAG}
+ARG TAG # Redeclare to use in this stage
 
 SHELL ["/bin/bash", "-c"]
 
@@ -28,9 +29,11 @@ ARG WORKSPACE_DIR=/opt/tesseract
 RUN echo "$TAG"
 RUN --mount=type=bind,target=${WORKSPACE_DIR}/src/tesseract \
   cd ${WORKSPACE_DIR} \
-  && REPOS_FILE=$(if [ "${TAG}" = "focal" ]; then echo "dependencies_focal.repos"; else echo "dependencies.repos"; fi) \
-  && $(if [ "${TAG}" = "focal" ]; then echo "dependencies_focal.repos"; else echo "dependencies.repos"; fi) \
-  && vcs import src < src/tesseract/${REPOS_FILE} --shallow \
+  && if [ "$TAG" = "focal" ]; then \
+       vcs import src < src/tesseract/dependencies_focal.repos --shallow; \
+     else \
+       vcs import src < src/tesseract/dependencies.repos --shallow; \
+     fi \
   && rosdep install \
     --from-paths ${WORKSPACE_DIR}/src \
     -iry
