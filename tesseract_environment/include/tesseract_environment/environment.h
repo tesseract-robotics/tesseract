@@ -303,6 +303,12 @@ public:
                 const tesseract_common::TransformMap& floating_joints = {});
 
   /**
+   * @brief Set the current state of the floating joint values
+   * @param floating_joint_values The floating joint values to set
+   */
+  void setState(const tesseract_common::TransformMap& floating_joints);
+
+  /**
    * @brief Get the state of the environment for a given set or subset of joint values.
    *
    * This does not change the internal state of the environment.
@@ -315,6 +321,13 @@ public:
   tesseract_scene_graph::SceneState getState(const std::vector<std::string>& joint_names,
                                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                              const tesseract_common::TransformMap& floating_joints = {}) const;
+
+  /**
+   * @brief Get the state given floating joint values
+   * @param floating_joint_values The floating joint values to leverage
+   * @return A the state of the environment
+   */
+  tesseract_scene_graph::SceneState getState(const tesseract_common::TransformMap& floating_joints) const;
 
   /** @brief Get the current state of the environment */
   tesseract_scene_graph::SceneState getState() const;
