@@ -28,6 +28,7 @@ ARG WORKSPACE_DIR=/opt/tesseract
 RUN --mount=type=bind,target=${WORKSPACE_DIR}/src/tesseract \
   cd ${WORKSPACE_DIR} \
   && REPOS_FILE=$(if [ "${TAG}" = "focal" ]; then echo "dependencies_focal.repos"; else echo "dependencies.repos"; fi) \
+  && $(if [ "${TAG}" = "focal" ]; then echo "dependencies_focal.repos"; else echo "dependencies.repos"; fi) \
   && vcs import src < src/tesseract/${REPOS_FILE} --shallow \
   && rosdep install \
     --from-paths ${WORKSPACE_DIR}/src \
