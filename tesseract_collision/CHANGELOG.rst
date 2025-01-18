@@ -2,6 +2,9 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.28.1 (2025-01-17)
 -------------------
 * Fix rosinstall so focal has its own so newer versions leverage system depends
