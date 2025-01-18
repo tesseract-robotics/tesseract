@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.28.4 (2025-01-18)
+-------------------
 * Add missing floating joint methods to environment monitor interface
 * Add missing floating joint methods to environment
 * Contributors: Levi Armstrong
