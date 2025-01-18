@@ -296,6 +296,8 @@ struct Environment::Implementation
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract_common::TransformMap& floating_joints = {});
 
+  void setState(const tesseract_common::TransformMap& floating_joints);
+
   Eigen::VectorXd getCurrentJointValues() const;
 
   Eigen::VectorXd getCurrentJointValues(const std::vector<std::string>& joint_names) const;
@@ -586,6 +588,12 @@ void Environment::Implementation::setState(const std::vector<std::string>& joint
                                            const tesseract_common::TransformMap& floating_joints)
 {
   state_solver->setState(joint_names, joint_values, floating_joints);
+  currentStateChanged();
+}
+
+void Environment::Implementation::setState(const tesseract_common::TransformMap& floating_joints)
+{
+  state_solver->setState(floating_joints);
   currentStateChanged();
 }
 
@@ -2476,6 +2484,17 @@ void Environment::setState(const std::vector<std::string>& joint_names,
   impl_->triggerCurrentStateChangedCallbacks();
 }
 
+void Environment::setState(const tesseract_common::TransformMap& floating_joints)
+{
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    impl_->setState(floating_joints);
+  }
+
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  impl_->triggerCurrentStateChangedCallbacks();
+}
+
 tesseract_scene_graph::SceneState Environment::getState(const std::unordered_map<std::string, double>& joints,
                                                         const tesseract_common::TransformMap& floating_joints) const
 {
@@ -2489,6 +2508,12 @@ tesseract_scene_graph::SceneState Environment::getState(const std::vector<std::s
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).state_solver->getState(joint_names, joint_values, floating_joints);
+}
+
+tesseract_scene_graph::SceneState Environment::getState(const tesseract_common::TransformMap& floating_joints) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getState(floating_joints);
 }
 
 tesseract_scene_graph::SceneState Environment::getState() const
