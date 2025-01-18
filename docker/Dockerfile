@@ -1,5 +1,6 @@
 ARG TAG
 FROM ubuntu:${TAG}
+ARG TAG # Redeclare to use in this stage
 
 SHELL ["/bin/bash", "-c"]
 
@@ -27,7 +28,11 @@ RUN apt update \
 ARG WORKSPACE_DIR=/opt/tesseract
 RUN --mount=type=bind,target=${WORKSPACE_DIR}/src/tesseract \
   cd ${WORKSPACE_DIR} \
-  && vcs import src < src/tesseract/dependencies.repos --shallow \
+  && if [ "$TAG" = "focal" ]; then \
+       vcs import src < src/tesseract/dependencies_focal.repos --shallow; \
+     else \
+       vcs import src < src/tesseract/dependencies.repos --shallow; \
+     fi \
   && rosdep install \
     --from-paths ${WORKSPACE_DIR}/src \
     -iry
