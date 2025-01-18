@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
+#include <tesseract_common/eigen_types.h>
 
 namespace tesseract_environment
 {
@@ -117,23 +118,36 @@ public:
    * @return True if successful, otherwise false
    */
   virtual bool setEnvironmentState(const std::string& monitor_namespace,
-                                   const std::unordered_map<std::string, double>& joints) const = 0;
+                                   const std::unordered_map<std::string, double>& joints,
+                                   const tesseract_common::TransformMap& floating_joints = {}) const = 0;
   virtual bool setEnvironmentState(const std::string& monitor_namespace,
                                    const std::vector<std::string>& joint_names,
-                                   const std::vector<double>& joint_values) const = 0;
+                                   const std::vector<double>& joint_values,
+                                   const tesseract_common::TransformMap& floating_joints = {}) const = 0;
   virtual bool setEnvironmentState(const std::string& monitor_namespace,
                                    const std::vector<std::string>& joint_names,
-                                   const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
+                                   const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                   const tesseract_common::TransformMap& floating_joints = {}) const = 0;
+  virtual bool setEnvironmentState(const std::string& monitor_namespace,
+                                   const tesseract_common::TransformMap& floating_joints) const = 0;
 
   /**
    * @brief Set environment state for all monitor namespaces
    * @return A vector of failed namespace, if empty all namespace were updated successfully.
    */
-  virtual std::vector<std::string> setEnvironmentState(const std::unordered_map<std::string, double>& joints) const = 0;
-  virtual std::vector<std::string> setEnvironmentState(const std::vector<std::string>& joint_names,
-                                                       const std::vector<double>& joint_values) const = 0;
-  virtual std::vector<std::string> setEnvironmentState(const std::vector<std::string>& joint_names,
-                                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
+  virtual std::vector<std::string>
+  setEnvironmentState(const std::unordered_map<std::string, double>& joints,
+                      const tesseract_common::TransformMap& floating_joints = {}) const = 0;
+  virtual std::vector<std::string>
+  setEnvironmentState(const std::vector<std::string>& joint_names,
+                      const std::vector<double>& joint_values,
+                      const tesseract_common::TransformMap& floating_joints = {}) const = 0;
+  virtual std::vector<std::string>
+  setEnvironmentState(const std::vector<std::string>& joint_names,
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                      const tesseract_common::TransformMap& floating_joints = {}) const = 0;
+  virtual std::vector<std::string>
+  setEnvironmentState(const tesseract_common::TransformMap& floating_joints = {}) const = 0;
 
   /**
    * @brief Pull information from the environment in the provided namespace and create a Environment Object
