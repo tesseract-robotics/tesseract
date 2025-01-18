@@ -2,6 +2,9 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.28.0 (2025-01-16)
 -------------------
 * Update tesseract_environment benchmarks

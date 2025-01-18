@@ -2,6 +2,11 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix rosinstall so focal has its own so newer versions leverage system depends
+* Contributors: Levi Armstrong
+
 0.28.0 (2025-01-16)
 -------------------
 

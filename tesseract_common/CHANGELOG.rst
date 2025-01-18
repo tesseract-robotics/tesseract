@@ -2,6 +2,9 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.28.0 (2025-01-16)
 -------------------
 * Fix Bullet linking on MacOS (`#1101 <https://github.com/tesseract-robotics/tesseract/issues/1101>`_)
