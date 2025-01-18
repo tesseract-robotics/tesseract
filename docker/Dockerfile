@@ -26,7 +26,6 @@ RUN apt update \
 # Install the dependency repositories
 # Bind mount the source directory so as not to unnecessarily copy source code into the docker image
 ARG WORKSPACE_DIR=/opt/tesseract
-RUN echo "$TAG"
 RUN --mount=type=bind,target=${WORKSPACE_DIR}/src/tesseract \
   cd ${WORKSPACE_DIR} \
   && if [ "$TAG" = "focal" ]; then \
