@@ -41,11 +41,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/utils.h>
 
-std::vector<tesseract_geometry::SDFMesh::Ptr>
-tesseract_urdf::parseSDFMesh(const tinyxml2::XMLElement* xml_element,
-                             const tesseract_common::ResourceLocator& locator,
-                             bool visual,
-                             int /*version*/)
+namespace tesseract_urdf
+{
+std::vector<tesseract_geometry::SDFMesh::Ptr> parseSDFMesh(const tinyxml2::XMLElement* xml_element,
+                                                           const tesseract_common::ResourceLocator& locator,
+                                                           bool visual)
 {
   std::vector<tesseract_geometry::SDFMesh::Ptr> meshes;
 
@@ -93,14 +93,14 @@ tesseract_urdf::parseSDFMesh(const tinyxml2::XMLElement* xml_element,
   return meshes;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeSDFMesh(const std::shared_ptr<const tesseract_geometry::SDFMesh>& sdf_mesh,
-                                                   tinyxml2::XMLDocument& doc,
-                                                   const std::string& package_path,
-                                                   const std::string& filename)
+tinyxml2::XMLElement* writeSDFMesh(const std::shared_ptr<const tesseract_geometry::SDFMesh>& sdf_mesh,
+                                   tinyxml2::XMLDocument& doc,
+                                   const std::string& package_path,
+                                   const std::string& filename)
 {
   if (sdf_mesh == nullptr)
     std::throw_with_nested(std::runtime_error("SDF Mesh is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("sdf_mesh");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(SDF_MESH_ELEMENT_NAME.data());
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   try
@@ -121,3 +121,5 @@ tinyxml2::XMLElement* tesseract_urdf::writeSDFMesh(const std::shared_ptr<const t
   }
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

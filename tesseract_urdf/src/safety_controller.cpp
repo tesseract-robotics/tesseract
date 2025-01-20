@@ -36,8 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/safety_controller.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_scene_graph::JointSafety::Ptr tesseract_urdf::parseSafetyController(const tinyxml2::XMLElement* xml_element,
-                                                                              int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_scene_graph::JointSafety::Ptr parseSafetyController(const tinyxml2::XMLElement* xml_element)
 {
   auto s = std::make_shared<tesseract_scene_graph::JointSafety>();
   if (xml_element->QueryDoubleAttribute("k_velocity", &(s->k_velocity)) != tinyxml2::XML_SUCCESS)
@@ -72,13 +73,12 @@ tesseract_scene_graph::JointSafety::Ptr tesseract_urdf::parseSafetyController(co
   return s;
 }
 
-tinyxml2::XMLElement*
-tesseract_urdf::writeSafetyController(const std::shared_ptr<const tesseract_scene_graph::JointSafety>& safety,
-                                      tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeSafetyController(const std::shared_ptr<const tesseract_scene_graph::JointSafety>& safety,
+                                            tinyxml2::XMLDocument& doc)
 {
   if (safety == nullptr)
     std::throw_with_nested(std::runtime_error("Safety Controller is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("safety");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(SAFETY_CONTROLLER_ELEMENT_NAME.data());
 
   xml_element->SetAttribute("k_velocity", toString(safety->k_velocity).c_str());
 
@@ -89,3 +89,5 @@ tesseract_urdf::writeSafetyController(const std::shared_ptr<const tesseract_scen
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

@@ -42,10 +42,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/point_cloud.h>
 #endif
 
-tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctomap(const tinyxml2::XMLElement* xml_element,
-                                                             const tesseract_common::ResourceLocator& locator,
-                                                             const bool /*visual*/,
-                                                             int version)
+namespace tesseract_urdf
+{
+tesseract_geometry::Octree::Ptr parseOctomap(const tinyxml2::XMLElement* xml_element,
+                                             const tesseract_common::ResourceLocator& locator,
+                                             const bool /*visual*/)
 {
   std::string shape_type;
   if (tesseract_common::QueryStringAttribute(xml_element, "shape_type", shape_type) != tinyxml2::XML_SUCCESS)
@@ -65,45 +66,46 @@ tesseract_geometry::Octree::Ptr tesseract_urdf::parseOctomap(const tinyxml2::XML
   bool prune = false;
   xml_element->QueryBoolAttribute("prune", &prune);
 
-  const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement("octree");
+  const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement(OCTREE_ELEMENT_NAME.data());
   if (octree_element != nullptr)
   {
     try
     {
-      return parseOctree(octree_element, locator, sub_type, prune, version);
+      return parseOctree(octree_element, locator, sub_type, prune);
     }
     catch (...)
     {
-      std::throw_with_nested(std::runtime_error("Octomap: Failed parsing element 'octree'"));
+      std::throw_with_nested(std::runtime_error("Octomap:"));
     }
   }
 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
-  const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement("point_cloud");
+  const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement(POINT_CLOUD_ELEMENT_NAME.data());
   if (pcd_element != nullptr)
   {
     try
     {
-      return parsePointCloud(pcd_element, locator, sub_type, prune, version);
+      return parsePointCloud(pcd_element, locator, sub_type, prune);
     }
     catch (...)
     {
-      std::throw_with_nested(std::runtime_error("Octomap: Failed parsing element 'pointcloud'"));
+      std::throw_with_nested(std::runtime_error("Octomap:"));
     }
   }
 #endif
 
-  std::throw_with_nested(std::runtime_error("Octomap: Missing element 'octree' or 'point_cloud', must define one!"));
+  std::throw_with_nested(std::runtime_error("Octomap: Missing element '" + std::string(OCTREE_ELEMENT_NAME) + "' or '" +
+                                            std::string(POINT_CLOUD_ELEMENT_NAME) + "'; must define one!"));
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeOctomap(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
-                                                   tinyxml2::XMLDocument& doc,
-                                                   const std::string& package_path,
-                                                   const std::string& filename)
+tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
+                                   tinyxml2::XMLDocument& doc,
+                                   const std::string& package_path,
+                                   const std::string& filename)
 {
   if (octree == nullptr)
     std::throw_with_nested(std::runtime_error("Octree is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("octree");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(OCTOMAP_ELEMENT_NAME.data());
 
   std::string type_string;
   if (octree->getSubType() == tesseract_geometry::OctreeSubType::BOX)
@@ -130,3 +132,5 @@ tinyxml2::XMLElement* tesseract_urdf::writeOctomap(const std::shared_ptr<const t
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

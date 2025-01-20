@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <unordered_map>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
@@ -42,6 +43,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view MATERIAL_ELEMENT_NAME = "material";
+
 /**
  * @brief Parse xml element material
  * @param xml_element The xml element
@@ -53,8 +56,7 @@ namespace tesseract_urdf
 std::shared_ptr<tesseract_scene_graph::Material>
 parseMaterial(const tinyxml2::XMLElement* xml_element,
               std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
-              bool allow_anonymous,
-              int version);
+              bool allow_anonymous);
 
 tinyxml2::XMLElement* writeMaterial(const std::shared_ptr<const tesseract_scene_graph::Material>& material,
                                     tinyxml2::XMLDocument& doc);

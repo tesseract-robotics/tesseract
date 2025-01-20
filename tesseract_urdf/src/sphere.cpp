@@ -35,7 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/sphere.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_geometry::Sphere::Ptr tesseract_urdf::parseSphere(const tinyxml2::XMLElement* xml_element, int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_geometry::Sphere::Ptr parseSphere(const tinyxml2::XMLElement* xml_element)
 {
   double radius{ 0 };
   if (xml_element->QueryDoubleAttribute("radius", &(radius)) != tinyxml2::XML_SUCCESS || !(radius > 0))
@@ -44,14 +46,16 @@ tesseract_geometry::Sphere::Ptr tesseract_urdf::parseSphere(const tinyxml2::XMLE
   return std::make_shared<tesseract_geometry::Sphere>(radius);
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeSphere(const std::shared_ptr<const tesseract_geometry::Sphere>& sphere,
-                                                  tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract_geometry::Sphere>& sphere,
+                                  tinyxml2::XMLDocument& doc)
 {
   if (sphere == nullptr)
     std::throw_with_nested(std::runtime_error("Sphere is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("sphere");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(SPHERE_ELEMENT_NAME.data());
 
   xml_element->SetAttribute("radius", toString(sphere->getRadius()).c_str());
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

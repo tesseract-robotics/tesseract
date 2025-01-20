@@ -36,7 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_scene_graph::Inertial::Ptr tesseract_urdf::parseInertial(const tinyxml2::XMLElement* xml_element, int version)
+namespace tesseract_urdf
+{
+tesseract_scene_graph::Inertial::Ptr parseInertial(const tinyxml2::XMLElement* xml_element)
 {
   auto inertial = std::make_shared<tesseract_scene_graph::Inertial>();
   const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
@@ -44,7 +46,7 @@ tesseract_scene_graph::Inertial::Ptr tesseract_urdf::parseInertial(const tinyxml
   {
     try
     {
-      inertial->origin = parseOrigin(origin, version);
+      inertial->origin = parseOrigin(origin);
     }
     catch (...)
     {
@@ -84,13 +86,12 @@ tesseract_scene_graph::Inertial::Ptr tesseract_urdf::parseInertial(const tinyxml
   return inertial;
 }
 
-tinyxml2::XMLElement*
-tesseract_urdf::writeInertial(const std::shared_ptr<const tesseract_scene_graph::Inertial>& inertial,
-                              tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeInertial(const std::shared_ptr<const tesseract_scene_graph::Inertial>& inertial,
+                                    tinyxml2::XMLDocument& doc)
 {
   if (inertial == nullptr)
     std::throw_with_nested(std::runtime_error("Inertial is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("inertial");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(INERTIAL_ELEMENT_NAME.data());
 
   if (!inertial->origin.matrix().isIdentity(std::numeric_limits<double>::epsilon()))
   {
@@ -113,3 +114,5 @@ tesseract_urdf::writeInertial(const std::shared_ptr<const tesseract_scene_graph:
   xml_element->InsertEndChild(xml_inertia);
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

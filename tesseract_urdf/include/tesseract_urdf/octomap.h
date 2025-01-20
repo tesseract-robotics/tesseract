@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
@@ -42,6 +43,8 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view OCTOMAP_ELEMENT_NAME = "tesseract:octomap";
+
 /**
  * @brief Parse xml element octomap
  * @param xml_element The xml element
@@ -52,8 +55,7 @@ namespace tesseract_urdf
  */
 std::shared_ptr<tesseract_geometry::Octree> parseOctomap(const tinyxml2::XMLElement* xml_element,
                                                          const tesseract_common::ResourceLocator& locator,
-                                                         bool visual,
-                                                         int version);
+                                                         bool visual);
 
 /**
  * @brief writeOctomap Write octomap to URDF XML. This is non-standard URDF / tesseract-exclusive

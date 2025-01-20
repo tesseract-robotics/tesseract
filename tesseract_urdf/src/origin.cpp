@@ -37,7 +37,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/origin.h>
 
-Eigen::Isometry3d tesseract_urdf::parseOrigin(const tinyxml2::XMLElement* xml_element, int /*version*/)
+namespace tesseract_urdf
+{
+Eigen::Isometry3d parseOrigin(const tinyxml2::XMLElement* xml_element)
 {
   Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
 
@@ -124,9 +126,9 @@ Eigen::Isometry3d tesseract_urdf::parseOrigin(const tinyxml2::XMLElement* xml_el
   return origin;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeOrigin(const Eigen::Isometry3d& origin, tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeOrigin(const Eigen::Isometry3d& origin, tinyxml2::XMLDocument& doc)
 {
-  tinyxml2::XMLElement* xml_element = doc.NewElement("origin");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(ORIGIN_ELEMENT_NAME.data());
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   // Format and write the translation
@@ -157,3 +159,5 @@ tinyxml2::XMLElement* tesseract_urdf::writeOrigin(const Eigen::Isometry3d& origi
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

@@ -36,8 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/dynamics.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_scene_graph::JointDynamics::Ptr tesseract_urdf::parseDynamics(const tinyxml2::XMLElement* xml_element,
-                                                                        int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_scene_graph::JointDynamics::Ptr parseDynamics(const tinyxml2::XMLElement* xml_element)
 {
   if (xml_element->Attribute("damping") == nullptr && xml_element->Attribute("friction") == nullptr)
     std::throw_with_nested(std::runtime_error("Dynamics: Missing both attributes 'damping' and 'friction', remove tag "
@@ -62,16 +63,17 @@ tesseract_scene_graph::JointDynamics::Ptr tesseract_urdf::parseDynamics(const ti
   return dynamics;
 }
 
-tinyxml2::XMLElement*
-tesseract_urdf::writeDynamics(const std::shared_ptr<const tesseract_scene_graph::JointDynamics>& dynamics,
-                              tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract_scene_graph::JointDynamics>& dynamics,
+                                    tinyxml2::XMLDocument& doc)
 {
   if (dynamics == nullptr)
     std::throw_with_nested(std::runtime_error("Dynamics is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("dynamics");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(DYNAMICS_ELEMENT_NAME.data());
 
   xml_element->SetAttribute("damping", toString(dynamics->damping).c_str());
   xml_element->SetAttribute("friction", toString(dynamics->damping).c_str());
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf
