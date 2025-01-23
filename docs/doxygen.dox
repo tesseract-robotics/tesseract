@@ -1,0 +1,11 @@
+// Main page
+/**
+@mainpage
+
+Welcome to the Tesseract documentation
+
+<ul>
+  <li> @subpage getting_started </li>
+</ul>
+
+*/
