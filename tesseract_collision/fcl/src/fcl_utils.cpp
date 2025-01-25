@@ -54,6 +54,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/fcl/fcl_utils.h>
+#include <tesseract_collision/fcl/fcl_collision_geometry_cache.h>
 #include <tesseract_geometry/geometries.h>
 
 namespace tesseract_collision::tesseract_collision_fcl
@@ -151,7 +152,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Octree::Cons
   }
 }
 
-CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitiveHelper(const CollisionShapeConstPtr& geom)
 {
   switch (geom->getType())
   {
@@ -202,6 +203,17 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
       return nullptr;
     }
   }
+}
+
+CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
+{
+  CollisionGeometryPtr shape = FCLCollisionGeometryCache::get(geom);
+  if (shape != nullptr)
+    return shape;
+
+  shape = createShapePrimitiveHelper(geom);
+  FCLCollisionGeometryCache::insert(geom, shape);
+  return shape;
 }
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)

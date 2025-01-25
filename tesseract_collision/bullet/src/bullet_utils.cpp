@@ -41,7 +41,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_collision/bullet/bullet_utils.h"
+#include <tesseract_collision/bullet/bullet_utils.h>
+#include <tesseract_collision/bullet/bullet_collision_shape_cache.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <LinearMath/btConvexHullComputer.h>
@@ -145,8 +146,7 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
 }
 
 std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom,
-                                                       CollisionObjectWrapper* cow,
-                                                       int shape_index)
+                                                       CollisionObjectWrapper* cow)
 {
   int vertice_count = geom->getVertexCount();
   int triangle_count = geom->getFaceCount();
@@ -176,7 +176,6 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
       std::shared_ptr<btCollisionShape> subshape = std::make_shared<btTriangleShapeEx>(v[0], v[1], v[2]);
       if (subshape != nullptr)
       {
-        subshape->setUserIndex(shape_index);
         cow->manage(subshape);
         subshape->setMargin(BULLET_MARGIN);
         btTransform geomTrans;
@@ -211,8 +210,7 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
 }
 
 std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom,
-                                                       CollisionObjectWrapper* cow,
-                                                       int shape_index)
+                                                       CollisionObjectWrapper* cow)
 {
   const octomap::OcTree& octree = *(geom->getOctree());
   auto subshape = std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
@@ -240,7 +238,6 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
           if (childshape == nullptr)
           {
             childshape = std::make_shared<btBoxShape>(btVector3(l, l, l));
-            childshape->setUserIndex(shape_index);
             childshape->setMargin(BULLET_MARGIN);
             managed_shapes.at(it.getDepth()) = childshape;
           }
@@ -275,7 +272,6 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
           if (childshape == nullptr)
           {
             childshape = std::make_shared<btSphereShape>(static_cast<btScalar>((size / 2)));
-            childshape->setUserIndex(shape_index);
             // Sphere is a special case where you do not modify the margin which is internally set to the radius
             managed_shapes.at(it.getDepth()) = childshape;
           }
@@ -311,7 +307,6 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
           {
             childshape =
                 std::make_shared<btSphereShape>(static_cast<btScalar>(std::sqrt(2 * ((size / 2) * (size / 2)))));
-            childshape->setUserIndex(shape_index);
             // Sphere is a special case where you do not modify the margin which is internally set to the radius
             managed_shapes.at(it.getDepth()) = childshape;
           }
@@ -336,67 +331,59 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
   return nullptr;
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom,
-                                                       CollisionObjectWrapper* cow,
-                                                       int shape_index)
+std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow)
 {
-  std::shared_ptr<btCollisionShape> shape = nullptr;
+  std::shared_ptr<btCollisionShape> shape = BulletCollisionShapeCache::get(geom);
+  if (shape != nullptr)
+    return shape;
 
   switch (geom->getType())
   {
     case tesseract_geometry::GeometryType::BOX:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Box>(geom));
-      shape->setUserIndex(shape_index);
       shape->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::SPHERE:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Sphere>(geom));
-      shape->setUserIndex(shape_index);
       // Sphere is a special case where you do not modify the margin which is internally set to the radius
       break;
     }
     case tesseract_geometry::GeometryType::CYLINDER:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geom));
-      shape->setUserIndex(shape_index);
       shape->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::CONE:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cone>(geom));
-      shape->setUserIndex(shape_index);
       shape->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::CAPSULE:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Capsule>(geom));
-      shape->setUserIndex(shape_index);
       shape->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::MESH:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Mesh>(geom), cow, shape_index);
-      shape->setUserIndex(shape_index);
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Mesh>(geom), cow);
       shape->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::CONVEX_MESH:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geom));
-      shape->setUserIndex(shape_index);
       shape->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::OCTREE:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom), cow, shape_index);
-      shape->setUserIndex(shape_index);
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom), cow);
       shape->setMargin(BULLET_MARGIN);
       break;
     }
@@ -414,6 +401,7 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConst
       // LCOV_EXCL_STOP
   }
 
+  BulletCollisionShapeCache::insert(geom, shape);
   return shape;
 }
 
@@ -453,7 +441,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   if (m_shapes.size() == 1 && m_shape_poses[0].matrix().isIdentity() &&
       m_shapes[0]->getType() != tesseract_geometry::GeometryType::COMPOUND_MESH)
   {
-    std::shared_ptr<btCollisionShape> shape = createShapePrimitive(m_shapes[0], this, 0);
+    std::shared_ptr<btCollisionShape> shape = createShapePrimitive(m_shapes[0], this);
     manage(shape);
     setCollisionShape(shape.get());
   }
@@ -474,7 +462,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
         const auto& meshes = std::static_pointer_cast<const tesseract_geometry::CompoundMesh>(m_shapes[j])->getMeshes();
         for (const auto& mesh : meshes)
         {
-          std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(mesh, this, static_cast<int>(j));
+          std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(mesh, this);
           if (subshape != nullptr)
           {
             manage(subshape);
@@ -485,7 +473,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
       }
       else
       {
-        std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(m_shapes[j], this, static_cast<int>(j));
+        std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(m_shapes[j], this);
         if (subshape != nullptr)
         {
           manage(subshape);
@@ -556,7 +544,6 @@ void CollisionObjectWrapper::manageReserve(std::size_t s) { m_data.reserve(s); }
 CastHullShape::CastHullShape(btConvexShape* shape, const btTransform& t01) : m_shape(shape), m_t01(t01)
 {
   m_shapeType = CUSTOM_CONVEX_SHAPE_TYPE;
-  setUserIndex(m_shape->getUserIndex());
 }
 
 void CastHullShape::updateCastTransform(const btTransform& t01) { m_t01 = t01; }
@@ -706,13 +693,15 @@ bool needsCollisionCheck(const COW& cow1,
 
 btScalar addDiscreteSingleResult(btManifoldPoint& cp,
                                  const btCollisionObjectWrapper* colObj0Wrap,
+                                 int index0,
                                  const btCollisionObjectWrapper* colObj1Wrap,
+                                 int index1,
                                  ContactTestData& collisions)
 {
-  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject()) != nullptr);
-  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);
-  const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());  // NOLINT
-  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());  // NOLINT
+  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject()) != nullptr);  // NOLINT
+  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);  // NOLINT
+  const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
+  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
   ObjectPairKey pc = tesseract_common::makeOrderedLinkPair(cd0->getName(), cd1->getName());
 
@@ -736,8 +725,17 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   ContactResult contact;
   contact.link_names[0] = cd0->getName();
   contact.link_names[1] = cd1->getName();
-  contact.shape_id[0] = colObj0Wrap->getCollisionShape()->getUserIndex();
-  contact.shape_id[1] = colObj1Wrap->getCollisionShape()->getUserIndex();
+
+  if (cd0->getCollisionGeometries().size() == 1)
+    contact.shape_id[0] = 0;
+  else
+    contact.shape_id[0] = (index0 < 0) ? 0 : index0;
+
+  if (cd1->getCollisionGeometries().size() == 1)
+    contact.shape_id[1] = 0;
+  else
+    contact.shape_id[1] = (index1 < 0) ? 0 : index1;
+
   contact.subshape_id[0] = colObj0Wrap->m_index;
   contact.subshape_id[1] = colObj1Wrap->m_index;
   contact.nearest_points[0] = convertBtToEigen(cp.m_positionWorldOnA);
@@ -835,15 +833,15 @@ void calculateContinuousData(ContactResult* col,
 
 btScalar addCastSingleResult(btManifoldPoint& cp,
                              const btCollisionObjectWrapper* colObj0Wrap,
-                             int /*index0*/,
+                             int index0,
                              const btCollisionObjectWrapper* colObj1Wrap,
-                             int /*index1*/,
+                             int index1,
                              ContactTestData& collisions)
 {
-  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject()) != nullptr);
-  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);
-  const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());  // NOLINT
-  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());  // NOLINT
+  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject()) != nullptr);  // NOLINT
+  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);  // NOLINT
+  const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
+  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
   const std::pair<std::string, std::string>& pc = cd0->getName() < cd1->getName() ?
                                                       std::make_pair(cd0->getName(), cd1->getName()) :
@@ -868,8 +866,17 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   ContactResult contact;
   contact.link_names[0] = cd0->getName();
   contact.link_names[1] = cd1->getName();
-  contact.shape_id[0] = colObj0Wrap->getCollisionShape()->getUserIndex();
-  contact.shape_id[1] = colObj1Wrap->getCollisionShape()->getUserIndex();
+
+  if (cd0->getCollisionGeometries().size() == 1)
+    contact.shape_id[0] = 0;
+  else
+    contact.shape_id[0] = (index0 < 0) ? 0 : index0;
+
+  if (cd1->getCollisionGeometries().size() == 1)
+    contact.shape_id[1] = 0;
+  else
+    contact.shape_id[1] = (index1 < 0) ? 0 : index1;
+
   contact.subshape_id[0] = colObj0Wrap->m_index;
   contact.subshape_id[1] = colObj1Wrap->m_index;
   contact.nearest_points[0] = convertBtToEigen(cp.m_positionWorldOnA);
@@ -995,15 +1002,15 @@ DiscreteBroadphaseContactResultCallback::DiscreteBroadphaseContactResultCallback
 btScalar DiscreteBroadphaseContactResultCallback::addSingleResult(btManifoldPoint& cp,
                                                                   const btCollisionObjectWrapper* colObj0Wrap,
                                                                   int /*partId0*/,
-                                                                  int /*index0*/,
+                                                                  int index0,
                                                                   const btCollisionObjectWrapper* colObj1Wrap,
                                                                   int /*partId1*/,
-                                                                  int /*index1*/)
+                                                                  int index1)
 {
   if (cp.m_distance1 > static_cast<btScalar>(contact_distance_))
     return 0;
 
-  return addDiscreteSingleResult(cp, colObj0Wrap, colObj1Wrap, collisions_);
+  return addDiscreteSingleResult(cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_);
 }
 
 CastBroadphaseContactResultCallback::CastBroadphaseContactResultCallback(ContactTestData& collisions,
@@ -1021,6 +1028,7 @@ btScalar CastBroadphaseContactResultCallback::addSingleResult(btManifoldPoint& c
                                                               int /*partId1*/,
                                                               int index1)
 {
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
   if (cp.m_distance1 > static_cast<btScalar>(contact_distance_))
     return 0;
 
@@ -1170,15 +1178,16 @@ DiscreteCollisionCollector::DiscreteCollisionCollector(ContactTestData& collisio
 btScalar DiscreteCollisionCollector::addSingleResult(btManifoldPoint& cp,
                                                      const btCollisionObjectWrapper* colObj0Wrap,
                                                      int /*partId0*/,
-                                                     int /*index0*/,
+                                                     int index0,
                                                      const btCollisionObjectWrapper* colObj1Wrap,
                                                      int /*partId1*/,
-                                                     int /*index1*/)
+                                                     int index1)
 {
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
   if (cp.m_distance1 > static_cast<btScalar>(contact_distance_))
     return 0;
 
-  return addDiscreteSingleResult(cp, colObj0Wrap, colObj1Wrap, collisions_);
+  return addDiscreteSingleResult(cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_);
 }
 
 bool DiscreteCollisionCollector::needsCollision(btBroadphaseProxy* proxy0) const

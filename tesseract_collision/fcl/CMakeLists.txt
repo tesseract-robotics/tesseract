@@ -1,7 +1,12 @@
 find_package(fcl 0.6 REQUIRED)
 
 # Create target for FCL implementation
-add_library(${PROJECT_NAME}_fcl src/fcl_discrete_managers.cpp src/fcl_utils.cpp src/fcl_collision_object_wrapper.cpp)
+add_library(
+  ${PROJECT_NAME}_fcl
+  src/fcl_collision_geometry_cache.cpp
+  src/fcl_discrete_managers.cpp
+  src/fcl_utils.cpp
+  src/fcl_collision_object_wrapper.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_fcl
   PUBLIC ${PROJECT_NAME}_core
