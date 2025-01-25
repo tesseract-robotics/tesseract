@@ -6,6 +6,7 @@ Welcome to the Tesseract documentation
 
 <ul>
   <li> @subpage getting_started </li>
+  <li> @subpage urdf </li>
 </ul>
 
 */
