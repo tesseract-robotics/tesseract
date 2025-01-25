@@ -5,6 +5,7 @@ add_library(
   ${PROJECT_NAME}_bullet
   src/bullet_cast_bvh_manager.cpp
   src/bullet_cast_simple_manager.cpp
+  src/bullet_collision_shape_cache.cpp
   src/bullet_discrete_bvh_manager.cpp
   src/bullet_discrete_simple_manager.cpp
   src/bullet_utils.cpp

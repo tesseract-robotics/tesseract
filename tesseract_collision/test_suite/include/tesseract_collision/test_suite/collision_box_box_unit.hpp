@@ -83,13 +83,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   /////////////////////////////////////////////
   // Add box and remove
   /////////////////////////////////////////////
-  CollisionShapePtr remove_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
   Eigen::Isometry3d remove_box_pose;
   remove_box_pose.setIdentity();
 
   CollisionShapesConst obj4_shapes;
   tesseract_common::VectorIsometry3d obj4_poses;
-  obj4_shapes.push_back(remove_box);
+  obj4_shapes.push_back(thin_box);
   obj4_poses.push_back(remove_box_pose);
 
   checker.addCollisionObject("remove_box_link", 0, obj4_shapes, obj4_poses);
