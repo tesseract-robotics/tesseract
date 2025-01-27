@@ -363,13 +363,9 @@ private:
  * @brief Create a bullet collision shape from tesseract collision shape
  * @param geom Tesseract collision shape
  * @param cow The collision object wrapper the collision shape is associated with
- * @param shape_index The collision shapes index within the collision shape wrapper. This can be accessed from the
- * bullet collision shape by calling getUserIndex function.
  * @return Bullet collision shape.
  */
-std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom,
-                                                       CollisionObjectWrapper* cow,
-                                                       int shape_index);
+std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow);
 
 /**
  * @brief Update a collision objects filters

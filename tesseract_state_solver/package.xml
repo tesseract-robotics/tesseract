@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>tesseract_state_solver</name>
-  <version>0.28.5</version>
+  <version>0.28.6</version>
   <description>The state solver for tesseract_scene_graph</description>
   <maintainer email="levi.armstrong@gmail.com">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>

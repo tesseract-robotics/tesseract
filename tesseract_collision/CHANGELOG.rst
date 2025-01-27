@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.28.6 (2025-01-26)
+-------------------
+* Add collision shape caching based on tesseract_geometry::Geometry object
+* Contributors: Levi Armstrong
+
 0.28.5 (2025-01-21)
 -------------------
 
