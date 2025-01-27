@@ -17,7 +17,7 @@ import argparse
 
 # List of GitHub API URLs for the upstream repositories
 UPSTREAM_DEPENDS_URLS = [
-  "https://api.github.com/repos/ros-industrial/ros_industrial_cmake_boilerplate/releases/tags/0.7.1",
+  "https://api.github.com/repos/ros-industrial/ros_industrial_cmake_boilerplate/releases/tags/0.7.2",
   "https://api.github.com/repos/ethz-adrl/ifopt/releases/tags/2.1.4",
   "https://api.github.com/repos/Jmeyer1292/opw_kinematics/releases/tags/0.5.2",
   "https://api.github.com/repos/swri-robotics/descartes_light/releases/tags/0.4.6",
