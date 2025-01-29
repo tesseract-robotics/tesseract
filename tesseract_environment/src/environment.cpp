@@ -2109,7 +2109,7 @@ bool Environment::Implementation::applyAddContactManagersPluginInfoCommand(
 bool Environment::Implementation::applySetActiveContinuousContactManagerCommand(
     const std::shared_ptr<const SetActiveContinuousContactManagerCommand>& cmd)
 {
-  setActiveContinuousContactManagerHelper(cmd->getName());
+  setActiveContinuousContactManager(cmd->getName());
 
   ++revision;
   commands.push_back(cmd);
@@ -2120,7 +2120,7 @@ bool Environment::Implementation::applySetActiveContinuousContactManagerCommand(
 bool Environment::Implementation::applySetActiveDiscreteContactManagerCommand(
     const std::shared_ptr<const SetActiveDiscreteContactManagerCommand>& cmd)
 {
-  setActiveDiscreteContactManagerHelper(cmd->getName());
+  setActiveDiscreteContactManager(cmd->getName());
 
   ++revision;
   commands.push_back(cmd);
@@ -2691,7 +2691,7 @@ tesseract_common::ContactManagersPluginInfo Environment::getContactManagersPlugi
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  return impl_->setActiveDiscreteContactManagerHelper(name);
+  return impl_->setActiveDiscreteContactManager(name);
 }
 
 std::unique_ptr<tesseract_collision::DiscreteContactManager>
@@ -2704,7 +2704,7 @@ Environment::getDiscreteContactManager(const std::string& name) const
 bool Environment::setActiveContinuousContactManager(const std::string& name)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  return impl_->setActiveContinuousContactManagerHelper(name);
+  return impl_->setActiveContinuousContactManager(name);
 }
 
 std::unique_ptr<tesseract_collision::ContinuousContactManager>
