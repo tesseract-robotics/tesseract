@@ -2,6 +2,11 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix thread safety issue with set active contact manager
+* Contributors: Levi Armstrong
+
 0.28.6 (2025-01-26)
 -------------------
 
