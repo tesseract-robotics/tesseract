@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.28.7 (2025-01-29)
+-------------------
 * Disable collision shape caching in bullet and fcl (`#1116 <https://github.com/tesseract-robotics/tesseract/issues/1116>`_)
 * Contributors: Levi Armstrong
 
