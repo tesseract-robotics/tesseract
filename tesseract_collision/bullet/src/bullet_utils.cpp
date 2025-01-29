@@ -333,10 +333,14 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
 
 std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow)
 {
-  std::shared_ptr<btCollisionShape> shape = BulletCollisionShapeCache::get(geom);
-  if (shape != nullptr)
-    return shape;
+  // std::shared_ptr<btCollisionShape> shape = BulletCollisionShapeCache::get(geom);
+  // if (shape != nullptr)
+  // {
+  //   // sleep(1000);
+  //   return shape;
+  // }
 
+  std::shared_ptr<btCollisionShape> shape;
   switch (geom->getType())
   {
     case tesseract_geometry::GeometryType::BOX:
@@ -401,7 +405,7 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConst
       // LCOV_EXCL_STOP
   }
 
-  BulletCollisionShapeCache::insert(geom, shape);
+  // BulletCollisionShapeCache::insert(geom, shape);
   return shape;
 }
 
