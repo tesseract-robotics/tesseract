@@ -29,7 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <vector>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
@@ -43,18 +43,20 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view GEOMETRY_ELEMENT_NAME = "geometry";
+
 /**
  * @brief Parse xml element geometry
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
  * @param visual Indicate if visual
- * @param version The version number
+ * @param make_convex_meshes Flag to indicate if the meshes should be converted to convex hulls
  * @return A Tesseract Geometry
  */
 std::shared_ptr<tesseract_geometry::Geometry> parseGeometry(const tinyxml2::XMLElement* xml_element,
                                                             const tesseract_common::ResourceLocator& locator,
                                                             bool visual,
-                                                            int version);
+                                                            bool make_convex_meshes);
 
 /**
  * @brief writeGeometry Write geometry to URDF XML

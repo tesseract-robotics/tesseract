@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
@@ -41,13 +42,14 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view CALIBRATION_ELEMENT_NAME = "calibration";
+
 /**
  * @brief Parse a xml calibration element
  * @param xml_element The xml element
  * @return Tesseract JointCalibration
  */
-std::shared_ptr<tesseract_scene_graph::JointCalibration> parseCalibration(const tinyxml2::XMLElement* xml_element,
-                                                                          int version);
+std::shared_ptr<tesseract_scene_graph::JointCalibration> parseCalibration(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement*
 writeCalibration(const std::shared_ptr<const tesseract_scene_graph::JointCalibration>& calibration,

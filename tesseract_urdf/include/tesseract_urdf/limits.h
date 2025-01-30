@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
@@ -41,13 +42,15 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view LIMITS_ELEMENT_NAME = "limit";
+
 /**
  * @brief Parse xml element limits
  * @param xml_element The xml element
  * @param version The version number
  * @return A Tesseract JointLimits
  */
-std::shared_ptr<tesseract_scene_graph::JointLimits> parseLimits(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_scene_graph::JointLimits> parseLimits(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract_scene_graph::JointLimits>& limits,
                                   tinyxml2::XMLDocument& doc);

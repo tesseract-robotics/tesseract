@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
@@ -41,13 +42,14 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view DYNAMICS_ELEMENT_NAME = "dynamics";
+
 /**
  * @brief Parse a xml dynamics element
  * @param xml_element The xml element
  * @return Tesseract JointDynamics
  */
-std::shared_ptr<tesseract_scene_graph::JointDynamics> parseDynamics(const tinyxml2::XMLElement* xml_element,
-                                                                    int version);
+std::shared_ptr<tesseract_scene_graph::JointDynamics> parseDynamics(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract_scene_graph::JointDynamics>& dynamics,
                                     tinyxml2::XMLDocument& doc);

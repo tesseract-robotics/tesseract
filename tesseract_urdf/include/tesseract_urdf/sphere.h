@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/fwd.h>
@@ -41,12 +42,14 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view SPHERE_ELEMENT_NAME = "sphere";
+
 /**
  * @brief Parse a xml sphere element
  * @param xml_element The xml element
  * @return Tesseract Geometry Sphere
  */
-std::shared_ptr<tesseract_geometry::Sphere> parseSphere(const tinyxml2::XMLElement* xml_element, int version);
+std::shared_ptr<tesseract_geometry::Sphere> parseSphere(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract_geometry::Sphere>& sphere,
                                   tinyxml2::XMLDocument& doc);
