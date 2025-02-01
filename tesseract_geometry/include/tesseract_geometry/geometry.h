@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/export.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -75,17 +76,24 @@ public:
   Geometry(Geometry&&) = default;
   Geometry& operator=(Geometry&&) = default;
 
-  /** \brief Create a copy of this shape */
+  /** @brief Create a copy of this shape */
   virtual Geometry::Ptr clone() const = 0;
 
-  GeometryType getType() const { return type_; }
+  /** @brief Get the geometry type */
+  GeometryType getType() const;
+
+  /** @brief Get the geometry UUID */
+  const boost::uuids::uuid& getUUID() const;
 
   bool operator==(const Geometry& rhs) const;
   bool operator!=(const Geometry& rhs) const;
 
 private:
-  /** \brief The type of the shape */
+  /** @brief The type of the shape */
   GeometryType type_;
+
+  /** @brief The uuid of the shape */
+  boost::uuids::uuid uuid_{};
 
   friend class boost::serialization::access;
   template <class Archive>
