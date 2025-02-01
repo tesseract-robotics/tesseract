@@ -110,49 +110,50 @@ Eigen::Isometry3d convertBtToEigen(const btTransform& t)
   return i;
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::Box::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Box::ConstPtr& geom)
 {
   auto a = static_cast<btScalar>(geom->getX() / 2);
   auto b = static_cast<btScalar>(geom->getY() / 2);
   auto c = static_cast<btScalar>(geom->getZ() / 2);
 
-  return std::make_shared<btBoxShape>(btVector3(a, b, c));
+  return std::make_shared<BulletCollisionShape>(std::make_shared<btBoxShape>(btVector3(a, b, c)));
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::Sphere::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Sphere::ConstPtr& geom)
 {
-  return std::make_shared<btSphereShape>(static_cast<btScalar>(geom->getRadius()));
+  return std::make_shared<BulletCollisionShape>(
+      std::make_shared<btSphereShape>(static_cast<btScalar>(geom->getRadius())));
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::Cylinder::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Cylinder::ConstPtr& geom)
 {
   auto r = static_cast<btScalar>(geom->getRadius());
   auto l = static_cast<btScalar>(geom->getLength() / 2);
-  return std::make_shared<btCylinderShapeZ>(btVector3(r, r, l));
+  return std::make_shared<BulletCollisionShape>(std::make_shared<btCylinderShapeZ>(btVector3(r, r, l)));
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
 {
   auto r = static_cast<btScalar>(geom->getRadius());
   auto l = static_cast<btScalar>(geom->getLength());
-  return std::make_shared<btConeShapeZ>(r, l);
+  return std::make_shared<BulletCollisionShape>(std::make_shared<btConeShapeZ>(r, l));
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::Capsule::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Capsule::ConstPtr& geom)
 {
   auto r = static_cast<btScalar>(geom->getRadius());
   auto l = static_cast<btScalar>(geom->getLength());
-  return std::make_shared<btCapsuleShapeZ>(r, l);
+  return std::make_shared<BulletCollisionShape>(std::make_shared<btCapsuleShapeZ>(r, l));
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom,
-                                                       CollisionObjectWrapper* cow)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom)
 {
   int vertice_count = geom->getVertexCount();
   int triangle_count = geom->getFaceCount();
   const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
   const Eigen::VectorXi& triangles = *(geom->getFaces());
 
+  auto collision_shape = std::make_shared<BulletCollisionShape>();
   if (vertice_count > 0 && triangle_count > 0)
   {
     auto compound =
@@ -161,6 +162,7 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
                                          // effect when positive but has an
                                          // effect when negative
 
+    collision_shape->children.reserve(static_cast<std::size_t>(triangle_count));
     for (int i = 0; i < triangle_count; ++i)
     {
       btVector3 v[3];  // NOLINT
@@ -176,21 +178,21 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
       std::shared_ptr<btCollisionShape> subshape = std::make_shared<btTriangleShapeEx>(v[0], v[1], v[2]);
       if (subshape != nullptr)
       {
-        cow->manage(subshape);
+        collision_shape->children.push_back(subshape);
         subshape->setMargin(BULLET_MARGIN);
         btTransform geomTrans;
         geomTrans.setIdentity();
         compound->addChildShape(geomTrans, subshape.get());
       }
     }
-
-    return compound;
+    collision_shape->top_level = compound;
+    return collision_shape;
   }
   CONSOLE_BRIDGE_logError("The mesh is empty!");
   return nullptr;
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::ConvexMesh::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::ConvexMesh::ConstPtr& geom)
 {
   int vertice_count = geom->getVertexCount();
   int triangle_count = geom->getFaceCount();
@@ -198,23 +200,22 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
 
   if (vertice_count > 0 && triangle_count > 0)
   {
-    auto subshape = std::make_shared<btConvexHullShape>();
+    auto convex_hull_shape = std::make_shared<btConvexHullShape>();
     for (const auto& v : vertices)
-      subshape->addPoint(
+      convex_hull_shape->addPoint(
           btVector3(static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2])));
 
-    return subshape;
+    return std::make_shared<BulletCollisionShape>(convex_hull_shape);
   }
   CONSOLE_BRIDGE_logError("The mesh is empty!");
   return nullptr;
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom,
-                                                       CollisionObjectWrapper* cow)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom)
 {
   const octomap::OcTree& octree = *(geom->getOctree());
-  auto subshape = std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
   double occupancy_threshold = octree.getOccupancyThres();
+  auto subshape = std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
 
   std::vector<std::shared_ptr<btCollisionShape>> managed_shapes;
   managed_shapes.resize(octree.getTreeDepth() + 1);
@@ -246,14 +247,16 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
         }
       }
 
-      cow->manageReserve(managed_shapes.size());
+      auto collision_shape = std::make_shared<BulletCollisionShape>();
+      collision_shape->top_level = subshape;
+      collision_shape->children.reserve(managed_shapes.size());
       for (const auto& managed_shape : managed_shapes)
       {
         if (managed_shape != nullptr)
-          cow->manage(managed_shape);
+          collision_shape->children.push_back(managed_shape);
       }
 
-      return subshape;
+      return collision_shape;
     }
     case tesseract_geometry::OctreeSubType::SPHERE_INSIDE:
     {
@@ -280,14 +283,16 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
         }
       }
 
-      cow->manageReserve(managed_shapes.size());
+      auto collision_shape = std::make_shared<BulletCollisionShape>();
+      collision_shape->top_level = subshape;
+      collision_shape->children.reserve(managed_shapes.size());
       for (const auto& managed_shape : managed_shapes)
       {
         if (managed_shape != nullptr)
-          cow->manage(managed_shape);
+          collision_shape->children.push_back(managed_shape);
       }
 
-      return subshape;
+      return collision_shape;
     }
     case tesseract_geometry::OctreeSubType::SPHERE_OUTSIDE:
     {
@@ -315,14 +320,16 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
         }
       }
 
-      cow->manageReserve(managed_shapes.size());
+      auto collision_shape = std::make_shared<BulletCollisionShape>();
+      collision_shape->top_level = subshape;
+      collision_shape->children.reserve(managed_shapes.size());
       for (const auto& managed_shape : managed_shapes)
       {
         if (managed_shape != nullptr)
-          cow->manage(managed_shape);
+          collision_shape->children.push_back(managed_shape);
       }
 
-      return subshape;
+      return collision_shape;
     }
   }
 
@@ -331,22 +338,44 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const tesseract_geometry:
   return nullptr;
 }
 
-std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::CompoundMesh::ConstPtr& geom)
 {
-  // std::shared_ptr<btCollisionShape> shape = BulletCollisionShapeCache::get(geom);
-  // if (shape != nullptr)
-  // {
-  //   // sleep(1000);
-  //   return shape;
-  // }
+  const auto& meshes = geom->getMeshes();
+  auto compound_mesh =
+      std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(meshes.size()));
+  compound_mesh->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
+                                            // effect when positive but has an
+                                            // effect when negative
 
-  std::shared_ptr<btCollisionShape> shape;
+  auto shape = std::make_shared<BulletCollisionShape>(compound_mesh);
+  btTransform trans;
+  trans.setIdentity();
+  for (const auto& mesh : meshes)
+  {
+    std::shared_ptr<BulletCollisionShape> subshape = createShapePrimitive(mesh);
+    if (subshape != nullptr)
+    {
+      shape->children.push_back(subshape->top_level);
+      shape->children.insert(shape->children.end(), subshape->children.begin(), subshape->children.end());
+      compound_mesh->addChildShape(trans, subshape->top_level.get());
+    }
+  }
+
+  return shape;
+}
+
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom)
+{
+  std::shared_ptr<BulletCollisionShape> shape = BulletCollisionShapeCache::get(geom);
+  if (shape != nullptr)
+    return shape;
+
   switch (geom->getType())
   {
     case tesseract_geometry::GeometryType::BOX:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Box>(geom));
-      shape->setMargin(BULLET_MARGIN);
+      shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::SPHERE:
@@ -358,42 +387,44 @@ std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConst
     case tesseract_geometry::GeometryType::CYLINDER:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geom));
-      shape->setMargin(BULLET_MARGIN);
+      shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::CONE:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cone>(geom));
-      shape->setMargin(BULLET_MARGIN);
+      shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::CAPSULE:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Capsule>(geom));
-      shape->setMargin(BULLET_MARGIN);
+      shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::MESH:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Mesh>(geom), cow);
-      shape->setMargin(BULLET_MARGIN);
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Mesh>(geom));
+      shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::CONVEX_MESH:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geom));
-      shape->setMargin(BULLET_MARGIN);
+      shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::OCTREE:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom), cow);
-      shape->setMargin(BULLET_MARGIN);
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom));
+      shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
     case tesseract_geometry::GeometryType::COMPOUND_MESH:
     {
-      throw std::runtime_error("CompundMesh type should not be passed to this function!");
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::CompoundMesh>(geom));
+      shape->top_level->setMargin(BULLET_MARGIN);
+      break;
     }
     // LCOV_EXCL_START
     default:
@@ -442,18 +473,17 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
   m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter;
 
-  if (m_shapes.size() == 1 && m_shape_poses[0].matrix().isIdentity() &&
-      m_shapes[0]->getType() != tesseract_geometry::GeometryType::COMPOUND_MESH)
+  if (m_shapes.size() == 1 && m_shape_poses[0].matrix().isIdentity())
   {
-    std::shared_ptr<btCollisionShape> shape = createShapePrimitive(m_shapes[0], this);
+    std::shared_ptr<BulletCollisionShape> shape = createShapePrimitive(m_shapes[0]);
     manage(shape);
-    setCollisionShape(shape.get());
+    setCollisionShape(shape->top_level.get());
   }
   else
   {
     auto compound =
         std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(m_shapes.size()));
-    manage(compound);
+    manage(std::make_shared<BulletCollisionShape>(compound));
     compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                          // effect when positive but has an
                                          // effect when negative
@@ -461,29 +491,12 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
 
     for (std::size_t j = 0; j < m_shapes.size(); ++j)
     {
-      if (m_shapes[j]->getType() == tesseract_geometry::GeometryType::COMPOUND_MESH)
+      std::shared_ptr<BulletCollisionShape> subshape = createShapePrimitive(m_shapes[j]);
+      if (subshape != nullptr)
       {
-        const auto& meshes = std::static_pointer_cast<const tesseract_geometry::CompoundMesh>(m_shapes[j])->getMeshes();
-        for (const auto& mesh : meshes)
-        {
-          std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(mesh, this);
-          if (subshape != nullptr)
-          {
-            manage(subshape);
-            btTransform geomTrans = convertEigenToBt(m_shape_poses[j]);
-            compound->addChildShape(geomTrans, subshape.get());
-          }
-        }
-      }
-      else
-      {
-        std::shared_ptr<btCollisionShape> subshape = createShapePrimitive(m_shapes[j], this);
-        if (subshape != nullptr)
-        {
-          manage(subshape);
-          btTransform geomTrans = convertEigenToBt(m_shape_poses[j]);
-          compound->addChildShape(geomTrans, subshape.get());
-        }
+        manage(subshape);
+        btTransform geomTrans = convertEigenToBt(m_shape_poses[j]);
+        compound->addChildShape(geomTrans, subshape->top_level.get());
       }
     }
   }
@@ -541,7 +554,7 @@ std::shared_ptr<CollisionObjectWrapper> CollisionObjectWrapper::clone()
   return clone_cow;
 }
 
-void CollisionObjectWrapper::manage(const std::shared_ptr<btCollisionShape>& t) { m_data.push_back(t); }
+void CollisionObjectWrapper::manage(const std::shared_ptr<BulletCollisionShape>& t) { m_data.push_back(t); }
 
 void CollisionObjectWrapper::manageReserve(std::size_t s) { m_data.reserve(s); }
 
@@ -1251,7 +1264,7 @@ COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
     auto shape = std::make_shared<CastHullShape>(convex, tf);
     assert(shape != nullptr);
 
-    new_cow->manage(shape);
+    new_cow->manage(std::make_shared<BulletCollisionShape>(shape));
     new_cow->setCollisionShape(shape.get());
   }
   else if (btBroadphaseProxy::isCompound(new_cow->getCollisionShape()->getShapeType()))
@@ -1261,6 +1274,9 @@ COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
     auto new_compound =
         std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
+    auto collision_shape = std::make_shared<BulletCollisionShape>();
+    collision_shape->top_level = new_compound;
+    collision_shape->children.reserve(static_cast<std::size_t>(compound->getNumChildShapes()));
     for (int i = 0; i < compound->getNumChildShapes(); ++i)
     {
       if (btBroadphaseProxy::isConvex(compound->getChildShape(i)->getShapeType()))
@@ -1273,7 +1289,7 @@ COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
         auto subshape = std::make_shared<CastHullShape>(convex, tf);
         assert(subshape != nullptr);
 
-        new_cow->manage(subshape);
+        collision_shape->children.push_back(subshape);
         subshape->setMargin(BULLET_MARGIN);
         new_compound->addChildShape(geomTrans, subshape.get());
       }
@@ -1282,6 +1298,7 @@ COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
         auto* second_compound = static_cast<btCompoundShape*>(compound->getChildShape(i));  // NOLINT
         auto new_second_compound =
             std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, second_compound->getNumChildShapes());
+
         for (int j = 0; j < second_compound->getNumChildShapes(); ++j)
         {
           assert(!btBroadphaseProxy::isCompound(second_compound->getChildShape(j)->getShapeType()));
@@ -1295,14 +1312,14 @@ COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
           auto subshape = std::make_shared<CastHullShape>(convex, tf);
           assert(subshape != nullptr);
 
-          new_cow->manage(subshape);
+          collision_shape->children.push_back(subshape);
           subshape->setMargin(BULLET_MARGIN);
           new_second_compound->addChildShape(geomTrans, subshape.get());
         }
 
         btTransform geomTrans = compound->getChildTransform(i);
 
-        new_cow->manage(new_second_compound);
+        collision_shape->children.push_back(new_second_compound);
         new_second_compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to
                                                         // have no effect when positive
                                                         // but has an effect when
@@ -1322,8 +1339,8 @@ COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
                                              // have no effect when positive
                                              // but has an effect when
                                              // negative
-    new_cow->manage(new_compound);
-    new_cow->setCollisionShape(new_compound.get());
+    new_cow->manage(collision_shape);
+    new_cow->setCollisionShape(collision_shape->top_level.get());
     new_cow->setWorldTransform(cow->getWorldTransform());
   }
   else

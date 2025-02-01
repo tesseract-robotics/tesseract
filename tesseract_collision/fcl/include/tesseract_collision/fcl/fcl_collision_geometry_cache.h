@@ -29,7 +29,7 @@
 
 #include <map>
 #include <memory>
-#include <shared_mutex>
+#include <mutex>
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -58,11 +58,14 @@ public:
    */
   static std::shared_ptr<fcl::CollisionGeometryd> get(const std::shared_ptr<const tesseract_geometry::Geometry>& key);
 
+  /** @brief Remove any entries which are no longer valid */
+  static void prune();
+
 private:
   /** @brief The static cache */
-  static std::map<std::shared_ptr<const tesseract_geometry::Geometry>, std::shared_ptr<fcl::CollisionGeometryd>> cache_;
+  static std::map<std::shared_ptr<const tesseract_geometry::Geometry>, std::weak_ptr<fcl::CollisionGeometryd>> cache_;
   /** @brief The shared mutex for thread safety */
-  static std::shared_mutex mutex_;
+  static std::mutex mutex_;
 };
 }  // namespace tesseract_collision::tesseract_collision_fcl
 
