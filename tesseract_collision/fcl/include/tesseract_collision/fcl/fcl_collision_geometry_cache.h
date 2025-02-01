@@ -34,6 +34,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fcl/geometry/collision_geometry.h>
+#include <boost/uuid/uuid.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/fwd.h>
@@ -63,7 +64,7 @@ public:
 
 private:
   /** @brief The static cache */
-  static std::map<std::shared_ptr<const tesseract_geometry::Geometry>, std::weak_ptr<fcl::CollisionGeometryd>> cache_;
+  static std::map<boost::uuids::uuid, std::weak_ptr<fcl::CollisionGeometryd>> cache_;
   /** @brief The shared mutex for thread safety */
   static std::mutex mutex_;
 };
