@@ -53,6 +53,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
+#include <tesseract_collision/bullet/bullet_collision_shape_cache.h>
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
@@ -129,7 +130,7 @@ public:
    */
   std::shared_ptr<CollisionObjectWrapper> clone();
 
-  void manage(const std::shared_ptr<btCollisionShape>& t);
+  void manage(const std::shared_ptr<BulletCollisionShape>& t);
 
   void manageReserve(std::size_t s);
 
@@ -143,7 +144,7 @@ protected:
   /**< @brief The shapes poses information */
   tesseract_common::VectorIsometry3d m_shape_poses{};
   /** @brief This manages the collision shape pointer so they get destroyed */
-  std::vector<std::shared_ptr<btCollisionShape>> m_data{};
+  std::vector<std::shared_ptr<BulletCollisionShape>> m_data{};
 };
 
 using COW = CollisionObjectWrapper;
@@ -362,10 +363,9 @@ private:
 /**
  * @brief Create a bullet collision shape from tesseract collision shape
  * @param geom Tesseract collision shape
- * @param cow The collision object wrapper the collision shape is associated with
  * @return Bullet collision shape.
  */
-std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow);
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom);
 
 /**
  * @brief Update a collision objects filters

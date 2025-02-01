@@ -32,23 +32,43 @@
 namespace tesseract_collision::tesseract_collision_fcl
 {
 // Static member definitions
-std::map<std::shared_ptr<const tesseract_geometry::Geometry>, std::shared_ptr<fcl::CollisionGeometryd>>
+std::map<std::shared_ptr<const tesseract_geometry::Geometry>, std::weak_ptr<fcl::CollisionGeometryd>>
     FCLCollisionGeometryCache::cache_;
-std::shared_mutex FCLCollisionGeometryCache::mutex_;
+std::mutex FCLCollisionGeometryCache::mutex_;
 
 void FCLCollisionGeometryCache::insert(const std::shared_ptr<const tesseract_geometry::Geometry>& key,
                                        const std::shared_ptr<fcl::CollisionGeometryd>& value)
 {
-  std::unique_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   cache_[key] = value;
 }
 
 std::shared_ptr<fcl::CollisionGeometryd>
 FCLCollisionGeometryCache::get(const std::shared_ptr<const tesseract_geometry::Geometry>& key)
 {
-  std::shared_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   auto it = cache_.find(key);
-  return ((it != cache_.end()) ? it->second : nullptr);
+  if (it != cache_.end())
+  {
+    std::shared_ptr<fcl::CollisionGeometryd> collision_shape = it->second.lock();
+    if (collision_shape != nullptr)
+      return collision_shape;
+
+    cache_.erase(key);
+  }
+  return nullptr;
+}
+
+void FCLCollisionGeometryCache::prune()
+{
+  std::scoped_lock lock(mutex_);
+  for (auto it = cache_.begin(); it != cache_.end();)
+  {
+    if (it->second.expired())
+      it = cache_.erase(it);
+    else
+      ++it;
+  }
 }
 
 }  // namespace tesseract_collision::tesseract_collision_fcl

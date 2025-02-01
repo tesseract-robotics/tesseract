@@ -29,7 +29,8 @@
 
 #include <map>
 #include <memory>
-#include <shared_mutex>
+#include <vector>
+#include <mutex>
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -40,6 +41,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
+struct BulletCollisionShape
+{
+  BulletCollisionShape() = default;
+  BulletCollisionShape(std::shared_ptr<btCollisionShape> top_level_);
+
+  std::shared_ptr<btCollisionShape> top_level;
+  std::vector<std::shared_ptr<btCollisionShape>> children;
+};
+
 class BulletCollisionShapeCache
 {
 public:
@@ -49,20 +59,23 @@ public:
    * @param value The value to store
    */
   static void insert(const std::shared_ptr<const tesseract_geometry::Geometry>& key,
-                     const std::shared_ptr<btCollisionShape>& value);
+                     const std::shared_ptr<BulletCollisionShape>& value);
 
   /**
    * @brief Retrieve the cache entry by key
    * @param key The cache key
    * @return If key exists the entry is returned, otherwise a nullptr is returned
    */
-  static std::shared_ptr<btCollisionShape> get(const std::shared_ptr<const tesseract_geometry::Geometry>& key);
+  static std::shared_ptr<BulletCollisionShape> get(const std::shared_ptr<const tesseract_geometry::Geometry>& key);
+
+  /** @brief Remove any entries which are no longer valid */
+  static void prune();
 
 private:
   /** @brief The static cache */
-  static std::map<std::shared_ptr<const tesseract_geometry::Geometry>, std::shared_ptr<btCollisionShape>> cache_;
+  static std::map<std::shared_ptr<const tesseract_geometry::Geometry>, std::weak_ptr<BulletCollisionShape>> cache_;
   /** @brief The shared mutex for thread safety */
-  static std::shared_mutex mutex_;
+  static std::mutex mutex_;
 };
 }  // namespace tesseract_collision::tesseract_collision_bullet
 
