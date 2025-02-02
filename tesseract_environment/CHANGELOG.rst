@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.28.8 (2025-02-01)
+-------------------
 * Fix collision shape caching
 * Contributors: Levi Armstrong
 

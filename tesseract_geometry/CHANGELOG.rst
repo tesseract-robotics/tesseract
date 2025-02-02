@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.28.8 (2025-02-01)
+-------------------
 * Add UUID to tesseract_geometry::Geometry and update collision shape cache
 * Contributors: Levi Armstrong
 
