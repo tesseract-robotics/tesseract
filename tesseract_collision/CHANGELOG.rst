@@ -2,6 +2,12 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add UUID to tesseract_geometry::Geometry and update collision shape cache
+* Fix collision shape caching
+* Contributors: Levi Armstrong
+
 0.28.7 (2025-01-29)
 -------------------
 * Disable collision shape caching in bullet and fcl (`#1116 <https://github.com/tesseract-robotics/tesseract/issues/1116>`_)
