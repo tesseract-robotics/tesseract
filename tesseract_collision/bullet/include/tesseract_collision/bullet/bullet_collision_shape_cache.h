@@ -74,9 +74,9 @@ public:
 
 private:
   /** @brief The static cache */
-  static std::map<boost::uuids::uuid, std::weak_ptr<BulletCollisionShape>> cache_;
+  static std::map<boost::uuids::uuid, std::weak_ptr<BulletCollisionShape>> cache_;  // NOLINT
   /** @brief The shared mutex for thread safety */
-  static std::mutex mutex_;
+  static std::mutex mutex_;  // NOLINT
 };
 }  // namespace tesseract_collision::tesseract_collision_bullet
 

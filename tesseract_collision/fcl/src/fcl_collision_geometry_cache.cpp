@@ -32,7 +32,9 @@
 namespace tesseract_collision::tesseract_collision_fcl
 {
 // Static member definitions
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::map<boost::uuids::uuid, std::weak_ptr<fcl::CollisionGeometryd>> FCLCollisionGeometryCache::cache_;
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::mutex FCLCollisionGeometryCache::mutex_;
 
 void FCLCollisionGeometryCache::insert(const std::shared_ptr<const tesseract_geometry::Geometry>& key,

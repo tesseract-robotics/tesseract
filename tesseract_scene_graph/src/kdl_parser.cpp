@@ -290,7 +290,7 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
   }
 
 protected:
-  KDLTreeData& data_;
+  KDLTreeData& data_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 /**
@@ -443,14 +443,16 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
   }
 
 protected:
-  KDLTreeData& data_;
+  KDLTreeData& data_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   int search_cnt_{ -1 };
   bool started_{ false };
   std::map<std::string, KDL::Frame> segment_transforms_;
   std::vector<std::string> link_names_;
 
-  const std::vector<std::string>& joint_names_;
+  const std::vector<std::string>& joint_names_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   const std::unordered_map<std::string, double>& joint_values_;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   const tesseract_common::TransformMap& floating_joint_values_;
 };
 

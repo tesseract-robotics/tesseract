@@ -12,7 +12,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/collision_margin_data.h>
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_common/yaml_extenstions.h>
-#include <tesseract_scene_graph/graph.h>
 #include <tesseract_srdf/collision_margins.h>
 #include <tesseract_srdf/configs.h>
 #include <tesseract_srdf/disabled_collisions.h>

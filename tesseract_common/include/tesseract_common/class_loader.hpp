@@ -37,8 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/class_loader.h>
-
 namespace tesseract_common
 {
 template <class ClassBase>

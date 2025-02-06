@@ -66,7 +66,7 @@ struct cycle_detector : public boost::dfs_visitor<>
   }
 
 protected:
-  bool& ascyclic_;
+  bool& ascyclic_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 struct tree_detector : public boost::dfs_visitor<>
@@ -109,7 +109,7 @@ struct tree_detector : public boost::dfs_visitor<>
   }
 
 protected:
-  bool& tree_;
+  bool& tree_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   bool found_root_{ false };
 };
 
@@ -124,7 +124,7 @@ struct children_detector : public boost::default_bfs_visitor
   }
 
 protected:
-  std::vector<std::string>& children_;
+  std::vector<std::string>& children_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 struct adjacency_detector : public boost::default_bfs_visitor
@@ -159,10 +159,12 @@ struct adjacency_detector : public boost::default_bfs_visitor
   }
 
 protected:
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   std::unordered_map<std::string, std::string>& adjacency_map_;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   std::map<SceneGraph::Vertex, boost::default_color_type>& color_map_;
-  const std::string& base_link_name_;
-  const std::vector<std::string>& terminate_on_links_;
+  const std::string& base_link_name_;                   // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const std::vector<std::string>& terminate_on_links_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 using UGraph =
@@ -190,7 +192,7 @@ SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<tesserac
 }
 
 SceneGraph::SceneGraph(SceneGraph&& other) noexcept
-  : Graph(std::forward<Graph>(other))
+  : Graph(std::move(static_cast<Graph>(other)))
   , link_map_(std::move(other.link_map_))
   , joint_map_(std::move(other.joint_map_))
   , acm_(std::move(other.acm_))
@@ -1342,17 +1344,20 @@ void SceneGraph::serialize(Archive& ar, const unsigned int version)
 
 std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 {
-  os << "Links:" << std::endl;
+  os << "Links:"
+     << "\n";
   for (const auto& l : path.links)
-    os << "  " << l << std::endl;
+    os << "  " << l << "\n";
 
-  os << "Joints:" << std::endl;
+  os << "Joints:"
+     << "\n";
   for (const auto& j : path.joints)
-    os << "  " << j << std::endl;
+    os << "  " << j << "\n";
 
-  os << "Active Joints:" << std::endl;
+  os << "Active Joints:"
+     << "\n";
   for (const auto& j : path.active_joints)
-    os << "  " << j << std::endl;
+    os << "  " << j << "\n";
   return os;
 }
 

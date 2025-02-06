@@ -47,7 +47,7 @@ public:
   using Ptr = std::shared_ptr<Capsule>;
   using ConstPtr = std::shared_ptr<const Capsule>;
 
-  Capsule(double r, double l);
+  Capsule(double radius, double length);
   Capsule() = default;
   ~Capsule() override = default;
 

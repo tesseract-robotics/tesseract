@@ -21,9 +21,13 @@ Checks: >
     misc-*,
     -misc-non-private-member-variables-in-classes,
     -misc-no-recursion,
+    -misc-const-correctness,
+    -misc-include-cleaner,
+    -misc-use-internal-linkage,
     modernize-*,
     -modernize-use-trailing-return-type,
     -modernize-use-nodiscard,
+    -modernize-type-traits,
     performance-*,
     readability-*,
     -readability-braces-around-statements,
@@ -56,9 +60,13 @@ WarningsAsErrors: >
     misc-*,
     -misc-non-private-member-variables-in-classes,
     -misc-no-recursion,
+    -misc-const-correctness,
+    -misc-include-cleaner,
+    -misc-use-internal-linkage,
     modernize-*,
     -modernize-use-trailing-return-type,
     -modernize-use-nodiscard,
+    -modernize-type-traits,
     performance-*,
     readability-*,
     -readability-braces-around-statements,
@@ -80,4 +88,6 @@ CheckOptions:
     value:           '1'
   - key:             cppcoreguidelines-pro-type-member-init.IgnoreArrays
     value:           '1'
+ExtraArgs:
+  - '-std=c++17'
 ...

@@ -127,23 +127,23 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
 
 std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Cylinder::ConstPtr& geom)
 {
-  auto r = static_cast<btScalar>(geom->getRadius());
-  auto l = static_cast<btScalar>(geom->getLength() / 2);
-  return std::make_shared<BulletCollisionShape>(std::make_shared<btCylinderShapeZ>(btVector3(r, r, l)));
+  auto radius = static_cast<btScalar>(geom->getRadius());
+  auto length = static_cast<btScalar>(geom->getLength() / 2);
+  return std::make_shared<BulletCollisionShape>(std::make_shared<btCylinderShapeZ>(btVector3(radius, radius, length)));
 }
 
 std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
 {
-  auto r = static_cast<btScalar>(geom->getRadius());
-  auto l = static_cast<btScalar>(geom->getLength());
-  return std::make_shared<BulletCollisionShape>(std::make_shared<btConeShapeZ>(r, l));
+  auto radius = static_cast<btScalar>(geom->getRadius());
+  auto length = static_cast<btScalar>(geom->getLength());
+  return std::make_shared<BulletCollisionShape>(std::make_shared<btConeShapeZ>(radius, length));
 }
 
 std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Capsule::ConstPtr& geom)
 {
-  auto r = static_cast<btScalar>(geom->getRadius());
-  auto l = static_cast<btScalar>(geom->getLength());
-  return std::make_shared<BulletCollisionShape>(std::make_shared<btCapsuleShapeZ>(r, l));
+  auto radius = static_cast<btScalar>(geom->getRadius());
+  auto length = static_cast<btScalar>(geom->getLength());
+  return std::make_shared<BulletCollisionShape>(std::make_shared<btCapsuleShapeZ>(radius, length));
 }
 
 std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom)
@@ -233,12 +233,12 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
           geomTrans.setIdentity();
           geomTrans.setOrigin(btVector3(
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
-          auto l = static_cast<btScalar>(size / 2.0);
+          auto length = static_cast<btScalar>(size / 2.0);
 
           std::shared_ptr<btCollisionShape> childshape = managed_shapes.at(it.getDepth());
           if (childshape == nullptr)
           {
-            childshape = std::make_shared<btBoxShape>(btVector3(l, l, l));
+            childshape = std::make_shared<btBoxShape>(btVector3(length, length, length));
             childshape->setMargin(BULLET_MARGIN);
             managed_shapes.at(it.getDepth()) = childshape;
           }

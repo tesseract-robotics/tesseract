@@ -32,7 +32,9 @@
 namespace tesseract_collision::tesseract_collision_bullet
 {
 // Static member definitions
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::map<boost::uuids::uuid, std::weak_ptr<BulletCollisionShape>> BulletCollisionShapeCache::cache_;
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::mutex BulletCollisionShapeCache::mutex_;
 
 BulletCollisionShape::BulletCollisionShape(std::shared_ptr<btCollisionShape> top_level_)

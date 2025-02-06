@@ -197,7 +197,7 @@ struct Serialization
     }
 
     std::string data = ss.str();
-    return std::vector<std::uint8_t>(data.begin(), data.end());
+    return { data.begin(), data.end() };
   }
 
   template <typename SerializableType>

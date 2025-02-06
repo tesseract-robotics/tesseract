@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-Capsule::Capsule(double r, double l) : Geometry(GeometryType::CAPSULE), r_(r), l_(l) {}
+Capsule::Capsule(double radius, double length) : Geometry(GeometryType::CAPSULE), r_(radius), l_(length) {}
 
 double Capsule::getRadius() const { return r_; }
 double Capsule::getLength() const { return l_; }

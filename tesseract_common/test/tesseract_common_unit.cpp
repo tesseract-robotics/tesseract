@@ -39,7 +39,6 @@ public:
       if (pos == std::string::npos)
         return nullptr;
 
-      std::string package = mod_url.substr(0, pos);
       mod_url.erase(0, pos);
 
       tesseract_common::fs::path file_path(__FILE__);
@@ -263,10 +262,9 @@ TEST(TesseractCommonUnit, sfinaeHasMemberFunctionSignature)  // NOLINT
 TEST(TesseractCommonUnit, bytesResource)  // NOLINT
 {
   std::vector<uint8_t> data;
+  data.reserve(8);
   for (uint8_t i = 0; i < 8; i++)
-  {
     data.push_back(i);
-  }
 
   std::shared_ptr<tesseract_common::BytesResource> bytes_resource =
       std::make_shared<tesseract_common::BytesResource>("package://test_package/data.bin", data);
@@ -466,7 +464,7 @@ template <typename T>
 void runAnyPolyUnorderedMapIntegralTest(T value, const std::string& type_str)
 {
   std::unordered_map<std::string, T> data;
-  data["test"] = value;
+  data["test"] = std::move(value);
   tesseract_common::AnyPoly any_type{ data };
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(std::unordered_map<std::string, T>)));
   bool check = any_type.as<std::unordered_map<std::string, T>>() == data;

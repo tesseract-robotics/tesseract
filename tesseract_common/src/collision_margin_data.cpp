@@ -157,10 +157,7 @@ void CollisionMarginData::updateMaxCollisionMargin()
 {
   max_collision_margin_ = default_collision_margin_;
   for (const auto& p : lookup_table_)
-  {
-    if (p.second > max_collision_margin_)
-      max_collision_margin_ = p.second;
-  }
+    max_collision_margin_ = std::max(p.second, max_collision_margin_);
 }
 
 bool CollisionMarginData::operator==(const CollisionMarginData& rhs) const
