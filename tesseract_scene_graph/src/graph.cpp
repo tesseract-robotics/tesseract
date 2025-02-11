@@ -192,7 +192,7 @@ SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<tesserac
 }
 
 SceneGraph::SceneGraph(SceneGraph&& other) noexcept
-  : Graph(std::move(static_cast<Graph>(other)))
+  : Graph(other)  // Graph does not have a move constructor
   , link_map_(std::move(other.link_map_))
   , joint_map_(std::move(other.joint_map_))
   , acm_(std::move(other.acm_))
@@ -202,7 +202,7 @@ SceneGraph::SceneGraph(SceneGraph&& other) noexcept
 
 SceneGraph& SceneGraph::operator=(SceneGraph&& other) noexcept
 {
-  Graph::operator=(std::forward<Graph>(other));
+  Graph::operator=(other);  // Graph does not have move assignment operator
 
   link_map_ = std::move(other.link_map_);
   joint_map_ = std::move(other.joint_map_);

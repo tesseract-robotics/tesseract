@@ -550,7 +550,7 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
 
   if (numContacts() == 0)
   {
-    ss << "No contacts detected" << std::endl;
+    ss << "No contacts detected\n";
     return ss;
   }
 
@@ -563,9 +563,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
   int longest_steps_width = 2 + static_cast<int>(step_title.size());
   int number_steps_digits = static_cast<int>(std::log10(steps.back().step)) + 1;
   // *2 for either side, plus 1 for '/', plus 2 for spaces
-  int width_steps_display = number_steps_digits * 2 + 3;
-  if (width_steps_display > longest_steps_width)
-    longest_steps_width = width_steps_display;
+  int width_steps_display = (number_steps_digits * 2) + 3;
+  longest_steps_width = std::max(width_steps_display, longest_steps_width);
 
   step_details_width += longest_steps_width;
 
@@ -573,10 +572,7 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
   std::string joint_name_title = "JOINT NAMES";
   int longest_joint_name_width = static_cast<int>(joint_name_title.size()) + 2;
   for (const auto& name : joint_names)
-  {
-    if (static_cast<int>(name.size()) + 2 > longest_joint_name_width)
-      longest_joint_name_width = static_cast<int>(name.size()) + 2;
-  }
+    longest_joint_name_width = std::max(static_cast<int>(name.size()) + 2, longest_joint_name_width);
 
   step_details_width += longest_joint_name_width;
 
@@ -596,9 +592,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
         state0_value *= -1;
       }
       int state0_number_digits_left_decimal = static_cast<int>(std::log10(state0_value)) + 1;
-      if (state0_number_digits_left_decimal + 7 > longest_state0_width)
-        longest_state0_width =
-            state0_number_digits_left_decimal + 7;  // + 4 after decimal + 2 for spaces either side + 1 for decimal
+      // + 4 after decimal + 2 for spaces either side + 1 for decimal
+      longest_state0_width = std::max(state0_number_digits_left_decimal + 7, longest_state0_width);
 
       double state1_value = step.state1(i);
       if (state1_value < 0)
@@ -606,9 +601,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
         state1_value *= -1;
       }
       int state1_number_digits_left_decimal = static_cast<int>(std::log10(state1_value)) + 1;
-      if (state1_number_digits_left_decimal + 7 > longest_state1_width)
-        longest_state1_width =
-            state1_number_digits_left_decimal + 7;  // + 4 after decimal + 2 for spaces either side + 1 for decimal
+      // + 4 after decimal + 2 for spaces either side + 1 for decimal
+      longest_state1_width = std::max(state1_number_digits_left_decimal + 7, longest_state1_width);
     }
   }
 
@@ -627,9 +621,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
     // Substep is displayed as (substep)/(total number of substeps), example: 5/7
     // so length will be 2*(max substep width) + 1
     int number_digits = static_cast<int>(std::log10(step.substeps.size())) + 1;
-    int width = 2 * number_digits + 3;
-    if (width > longest_substep_width)
-      longest_substep_width = width;
+    int width = (2 * number_digits) + 3;
+    longest_substep_width = std::max(width, longest_substep_width);
   }
 
   substep_details_width += longest_substep_width;
@@ -650,12 +643,10 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
           if (collision.second.empty())
             continue;
           std::string link1_name = collision.second.front().link_names[0];
-          if (static_cast<int>(link1_name.size()) + 2 > longest_link1_width)
-            longest_link1_width = static_cast<int>(link1_name.size()) + 2;
+          longest_link1_width = std::max(static_cast<int>(link1_name.size()) + 2, longest_link1_width);
 
           std::string link2_name = collision.second.front().link_names[1];
-          if (static_cast<int>(link2_name.size()) + 2 > longest_link2_width)
-            longest_link2_width = static_cast<int>(link2_name.size()) + 2;
+          longest_link2_width = std::max(static_cast<int>(link2_name.size()) + 2, longest_link2_width);
         }
       }
     }
@@ -680,15 +671,14 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
 
   // Start making the table
   // Start on new line to avoid offset by anythnig on previous line
-  ss << std::endl;
+  ss << "\n";
   // Make the header
   ss << std::setw(longest_steps_width) << step_title << std::setw(longest_joint_name_width) << joint_name_title
      << std::setw(longest_state0_width) << state0_title << std::setw(longest_state1_width) << state1_title << "|"
      << std::setw(longest_substep_width) << substep_title << std::setw(longest_link1_width) << link1_title
-     << std::setw(longest_link2_width) << link2_title << std::setw(longest_distance_width) << distance_title
-     << std::endl;
+     << std::setw(longest_link2_width) << link2_title << std::setw(longest_distance_width) << distance_title << "\n";
 
-  ss << new_step_string << std::endl;
+  ss << new_step_string << "\n";
 
   for (const auto& step : steps)
   {
@@ -741,7 +731,7 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
         ss << std::setw(longest_link1_width) << collision.second.front().link_names[0];
         ss << std::setw(longest_link2_width) << collision.second.front().link_names[1];
         ss << std::setw(longest_distance_width) << collision.second.front().distance;
-        ss << std::endl;
+        ss << "\n";
         line_number++;
       }
 
@@ -760,7 +750,7 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
       }
       ss << "|";
       ss << new_substep_string;
-      ss << std::endl;
+      ss << "\n";
       line_number++;
     }
 
@@ -771,10 +761,10 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
       ss << std::setw(longest_joint_name_width) << joint_names[static_cast<std::size_t>(line_number)];
       ss << std::setw(longest_state0_width) << step.state0(line_number);
       ss << std::setw(longest_state1_width) << step.state1(line_number);
-      ss << "|" << std::endl;
+      ss << "|\n";
       line_number++;
     }
-    ss << new_step_string << std::endl;
+    ss << new_step_string << "\n";
   }
   return ss;
 }
@@ -828,17 +818,14 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
 
   if (link_index_map.empty())
   {
-    ss << "No contacts detected" << std::endl;
+    ss << "No contacts detected\n";
     return ss;
   }
 
   // Determine the maximum width for the link name column
   std::size_t max_link_name_length = 0;
   for (const auto& entry : link_index_map)
-  {
-    if (entry.first.size() > max_link_name_length)
-      max_link_name_length = entry.first.size();
-  }
+    max_link_name_length = std::max(entry.first.size(), max_link_name_length);
 
   // Adjust the width to have some extra space after the longest link name
   const int column_width = static_cast<int>(max_link_name_length) + 2;
@@ -850,7 +837,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   {
     ss << std::setw(5) << i << "|";
   }
-  ss << std::endl;
+  ss << "\n";
 
   // Prepare the separator row
   ss << std::setw(column_width + 5) << " "
@@ -860,7 +847,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
     ss << std::setw(5) << "-----"
        << "|";
   }
-  ss << std::endl;
+  ss << "\n";
 
   // Prepare the data rows
   std::vector<std::string> link_names(link_index_map.size());
@@ -879,7 +866,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
 
       ss << std::setw(5) << collision_matrix[i][j] << "|";
     }
-    ss << std::endl;
+    ss << "\n";
   }
 
   return ss;

@@ -42,7 +42,7 @@ class access;
 
 namespace tesseract_geometry
 {
-enum class GeometryType
+enum class GeometryType : std::uint8_t
 {
   UNINITIALIZED,
   SPHERE,

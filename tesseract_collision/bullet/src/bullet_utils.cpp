@@ -156,8 +156,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
   auto collision_shape = std::make_shared<BulletCollisionShape>();
   if (vertice_count > 0 && triangle_count > 0)
   {
-    auto compound =
-        std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(triangle_count));
+    auto compound = std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, triangle_count);
     compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                          // effect when positive but has an
                                          // effect when negative
@@ -784,7 +783,7 @@ void calculateContinuousData(ContactResult* col,
   assert(shape != nullptr);
 
   // Get the start and final location of the shape
-  btTransform shape_tfWorld0 = cow->getWorldTransform();
+  const btTransform& shape_tfWorld0 = cow->getWorldTransform();
   btTransform shape_tfWorld1 = cow->getWorldTransform() * shape->m_t01;
 
   // Given the shapes final location calculate the links transform at the final location

@@ -110,7 +110,7 @@ public:
   const btCollisionObjectWrapper* m_compoundColObjWrap;
   const btCollisionObjectWrapper* m_otherObjWrap;
   btDispatcher* m_dispatcher;
-  const btDispatcherInfo& m_dispatchInfo;
+  const btDispatcherInfo& m_dispatchInfo;  // NOLINT
   btManifoldResult* m_resultOut;
   btCollisionAlgorithm** m_childCollisionAlgorithms;
   btPersistentManifold* m_sharedManifold;
@@ -223,7 +223,7 @@ public:
 
       algo->processCollision(&compoundWrap, m_otherObjWrap, m_dispatchInfo, m_resultOut);
 
-#if 0
+#if 0  // NOLINT
                         if (m_dispatchInfo.m_debugDraw && (m_dispatchInfo.m_debugDraw->getDebugMode() & btIDebugDraw::DBG_DrawAabb))
                         {
                                 btVector3 worldAabbMin,worldAabbMax;
@@ -254,7 +254,7 @@ public:
     const auto* compoundShape = static_cast<const btCompoundShape*>(m_compoundColObjWrap->getCollisionShape());
     const btCollisionShape* childShape = compoundShape->getChildShape(index);
 
-#if 0
+#if 0  // NOLINT
                 if (m_dispatchInfo.m_debugDraw && (m_dispatchInfo.m_debugDraw->getDebugMode() & btIDebugDraw::DBG_DrawAabb))
                 {
                         btVector3 worldAabbMin,worldAabbMax;
@@ -429,10 +429,8 @@ btScalar TesseractCompoundCollisionAlgorithm::calculateTimeOfImpact(btCollisionO
     // btCollisionShape* tmpShape = colObj->getCollisionShape();
     // colObj->internalSetTemporaryCollisionShape( childShape );
     btScalar frac = m_childCollisionAlgorithms[i]->calculateTimeOfImpact(colObj, otherObj, dispatchInfo, resultOut);
-    if (frac < hitFraction)
-    {
-      hitFraction = frac;
-    }
+    hitFraction = std::min(frac, hitFraction);
+
     // revert back
     // colObj->internalSetTemporaryCollisionShape( tmpShape);
     colObj->setWorldTransform(orgTrans);

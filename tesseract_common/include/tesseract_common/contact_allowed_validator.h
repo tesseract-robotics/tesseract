@@ -76,7 +76,7 @@ protected:
 };
 
 /** @brief Identify how the two should be combined */
-enum class CombinedContactAllowedValidatorType
+enum class CombinedContactAllowedValidatorType : std::uint8_t
 {
   /** @brief Combines the two ContactAllowedValidator with AND operator */
   AND,

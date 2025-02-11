@@ -47,7 +47,7 @@ class access;
 namespace tesseract_common
 {
 /** @brief Identifies how the provided contact margin data should be applied */
-enum class CollisionMarginOverrideType
+enum class CollisionMarginOverrideType : std::uint8_t
 {
   /** @brief Do not apply contact margin data */
   NONE,

@@ -332,7 +332,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
     }
     default:
     {
-      ignwarn << "plotMarkers: Unsupported marker type: " << std::to_string(marker.getType()) << std::endl;
+      ignwarn << "plotMarkers: Unsupported marker type: " << std::to_string(marker.getType()) << "\n";
     }
   }
 }
@@ -340,7 +340,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
 void TesseractIgnitionVisualization::plotMarkers(const std::vector<std::shared_ptr<Marker> >& /*markers*/,
                                                  std::string /*ns*/)
 {
-  ignerr << "plotMarkers is currently not implemented!" << std::endl;
+  ignerr << "plotMarkers is currently not implemented!\n";
 }
 
 void TesseractIgnitionVisualization::clear(std::string /*ns*/)
@@ -363,7 +363,7 @@ void TesseractIgnitionVisualization::clear(std::string /*ns*/)
 
 void TesseractIgnitionVisualization::waitForInput(std::string message)
 {
-  std::cout << message << std::endl;
+  std::cout << message << "\n";
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
@@ -380,7 +380,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 
   if (!pose_pub_.Publish(pose_v))
   {
-    ignerr << "Failed to publish pose vector!" << std::endl;
+    ignerr << "Failed to publish pose vector!\n";
   }
 }
 
@@ -402,7 +402,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //  }
 //  else
 //  {
-//    ignerr << "plotTrajectoy: Unsupported Instruction Type!" << std::endl;
+//    ignerr << "plotTrajectoy: Unsupported Instruction Type!\n";
 //    return;
 //  }
 
@@ -427,7 +427,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //    }
 //    else
 //    {
-//      ignerr << "plotTrajectoy: Unsupported Waypoint Type!" << std::endl;
+//      ignerr << "plotTrajectoy: Unsupported Waypoint Type!\n";
 //    }
 //  }
 //}
@@ -455,7 +455,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //    auto composite_mi_fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
 //    if (composite_mi_fwd_kin == nullptr)
 //    {
-//      ignerr << "plotToolPath: Manipulator: " << composite_mi.manipulator << " does not exist!" << std::endl;
+//      ignerr << "plotToolPath: Manipulator: " << composite_mi.manipulator << " does not exist!\n";
 //      return;
 //    }
 //    const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
@@ -526,7 +526,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //      }
 //      else
 //      {
-//        ignerr << "plotTrajectoy: Unsupported Waypoint Type!" << std::endl;
+//        ignerr << "plotTrajectoy: Unsupported Waypoint Type!\n";
 //      }
 //    }
 //  }
@@ -549,7 +549,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //    auto composite_mi_fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 //    if (composite_mi_fwd_kin == nullptr)
 //    {
-//      ignerr << "plotToolPath: Manipulator: " << manip_info.manipulator << " does not exist!" << std::endl;
+//      ignerr << "plotToolPath: Manipulator: " << manip_info.manipulator << " does not exist!\n";
 //      return;
 //    }
 //    const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
@@ -591,12 +591,12 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //    }
 //    else
 //    {
-//      ignerr << "plotTrajectoy: Unsupported Waypoint Type!" << std::endl;
+//      ignerr << "plotTrajectoy: Unsupported Waypoint Type!\n";
 //    }
 //  }
 //  else
 //  {
-//    ignerr << "plotTrajectoy: Unsupported Instruction Type!" << std::endl;
+//    ignerr << "plotTrajectoy: Unsupported Instruction Type!\n" l;
 //  }
 
 //  scene_pub_.Publish(scene_msg);

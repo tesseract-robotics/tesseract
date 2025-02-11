@@ -71,7 +71,7 @@ int main(int argc, char** argv)
     /** --help option */
     if (vm.count("help") != 0U)
     {
-      std::cout << "Basic Command Line Parameter App" << std::endl << desc << std::endl;
+      std::cout << "Basic Command Line Parameter App\n" << desc << "\n";
       return SUCCESS;
     }
 
@@ -80,8 +80,8 @@ int main(int argc, char** argv)
   }
   catch (po::error& e)
   {
-    std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-    std::cerr << desc << std::endl;
+    std::cerr << "ERROR: " << e.what() << "\n\n";
+    std::cerr << desc << "\n";
     return ERROR_IN_COMMAND_LINE;
   }
 

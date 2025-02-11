@@ -70,14 +70,14 @@ TEST(TesseractCoreUnit, isContactAllowedUnit)  // NOLINT
 TEST(TesseractCoreUnit, scaleVerticesUnit)  // NOLINT
 {
   tesseract_common::VectorVector3d base_vertices{};
-  base_vertices.push_back(Eigen::Vector3d(0, 0, 0));
-  base_vertices.push_back(Eigen::Vector3d(0, 0, 1));
-  base_vertices.push_back(Eigen::Vector3d(0, 1, 1));
-  base_vertices.push_back(Eigen::Vector3d(0, 1, 0));
-  base_vertices.push_back(Eigen::Vector3d(1, 0, 0));
-  base_vertices.push_back(Eigen::Vector3d(1, 0, 1));
-  base_vertices.push_back(Eigen::Vector3d(1, 1, 1));
-  base_vertices.push_back(Eigen::Vector3d(1, 1, 0));
+  base_vertices.emplace_back(0, 0, 0);
+  base_vertices.emplace_back(0, 0, 1);
+  base_vertices.emplace_back(0, 1, 1);
+  base_vertices.emplace_back(0, 1, 0);
+  base_vertices.emplace_back(1, 0, 0);
+  base_vertices.emplace_back(1, 0, 1);
+  base_vertices.emplace_back(1, 1, 1);
+  base_vertices.emplace_back(1, 1, 0);
 
   // Test identity scale
   // NOLINTNEXTLINE(cppcoreguidelines-init-variables)

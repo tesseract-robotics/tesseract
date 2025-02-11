@@ -171,7 +171,7 @@ void JointTrajectory::emplace_back(Args&&... args)
 #endif
 
 void JointTrajectory::pop_back() { states.pop_back(); }
-void JointTrajectory::swap(std::vector<value_type>& other) { states.swap(other); }
+void JointTrajectory::swap(std::vector<value_type>& other) noexcept { states.swap(other); }
 
 // LCOV_EXCL_STOP
 

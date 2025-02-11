@@ -278,7 +278,7 @@ IKSolutions URInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_
     harmonizeTowardZero<double>(eigen_sol, REDUNDANT_CAPABLE_JOINTS);  // Modifies 'sol' in place
 
     // Add solution
-    solution_set.push_back(eigen_sol);
+    solution_set.emplace_back(eigen_sol);
   }
 
   return solution_set;

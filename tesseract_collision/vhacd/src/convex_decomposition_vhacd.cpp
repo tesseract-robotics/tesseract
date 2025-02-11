@@ -27,7 +27,7 @@ public:
   {
     std::cout << std::setfill(' ') << std::setw(3) << ceil(overallProgress) << "% "
               << "[ " << stage << " " << std::setfill(' ') << std::setw(3) << ceil(stageProgress) << "% ] " << operation
-              << std::endl;
+              << "\n";
   }
 };
 
@@ -120,12 +120,12 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
 void VHACDParameters::print() const
 {
   std::stringstream msg;
-  msg << "+ Parameters" << std::endl;
-  msg << "\t Max number of convex hulls                      " << max_convex_hulls << std::endl;
-  msg << "\t Voxel resolution                                " << resolution << std::endl;
-  msg << "\t Volume error allowed as a percentage            " << minimum_volume_percent_error_allowed << std::endl;
-  msg << "\t Maximum recursion depth                         " << max_recursion_depth << std::endl;
-  msg << "\t Shrinkwrap output to source mesh                " << shrinkwrap << std::endl;
+  msg << "+ Parameters\n";
+  msg << "\t Max number of convex hulls                      " << max_convex_hulls << "\n";
+  msg << "\t Voxel resolution                                " << resolution << "\n";
+  msg << "\t Volume error allowed as a percentage            " << minimum_volume_percent_error_allowed << "\n";
+  msg << "\t Maximum recursion depth                         " << max_recursion_depth << "\n";
+  msg << "\t Shrinkwrap output to source mesh                " << shrinkwrap << "\n";
   msg << "\t Fill mode                                       ";
   switch (fill_mode)
   {
@@ -139,11 +139,11 @@ void VHACDParameters::print() const
       msg << "RAYCAST_FILL";
       break;
   }
-  msg << std::endl;
-  msg << "\t Maximum number of vertices                      " << max_num_vertices_per_ch << std::endl;
-  msg << "\t Run asynchronously                              " << async_ACD << std::endl;
-  msg << "\t Minimum size of a voxel edge                    " << min_edge_length << std::endl;
-  msg << "\t Attempt to split planes along the best location " << find_best_plane << std::endl;
+  msg << "\n";
+  msg << "\t Maximum number of vertices                      " << max_num_vertices_per_ch << "\n";
+  msg << "\t Run asynchronously                              " << async_ACD << "\n";
+  msg << "\t Minimum size of a voxel edge                    " << min_edge_length << "\n";
+  msg << "\t Attempt to split planes along the best location " << find_best_plane << "\n";
 
   std::cout << msg.str();
 }

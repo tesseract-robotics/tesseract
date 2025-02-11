@@ -99,9 +99,9 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     for (unsigned int i = 0; i < a->mNumVertices; ++i)
     {
       aiVector3D v = transform * a->mVertices[i];
-      vertices->push_back(Eigen::Vector3d(static_cast<double>(v.x) * scale(0),
-                                          static_cast<double>(v.y) * scale(1),
-                                          static_cast<double>(v.z) * scale(2)));
+      vertices->emplace_back(static_cast<double>(v.x) * scale(0),
+                             static_cast<double>(v.y) * scale(1),
+                             static_cast<double>(v.z) * scale(2));
     }
 
     long triangle_count = 0;
@@ -133,9 +133,9 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
       {
         aiVector3D v = transform * a->mNormals[i];
-        vertex_normals->push_back(Eigen::Vector3d(static_cast<double>(v.x) * scale(0),
-                                                  static_cast<double>(v.y) * scale(1),
-                                                  static_cast<double>(v.z) * scale(2)));
+        vertex_normals->emplace_back(static_cast<double>(v.x) * scale(0),
+                                     static_cast<double>(v.y) * scale(1),
+                                     static_cast<double>(v.z) * scale(2));
       }
     }
 
@@ -146,8 +146,8 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
       {
         aiColor4D v = a->mColors[0][i];
-        vertex_colors->push_back(Eigen::Vector4d(
-            static_cast<double>(v.r), static_cast<double>(v.g), static_cast<double>(v.b), static_cast<double>(v.a)));
+        vertex_colors->emplace_back(
+            static_cast<double>(v.r), static_cast<double>(v.g), static_cast<double>(v.b), static_cast<double>(v.a));
       }
     }
 
@@ -252,7 +252,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
               for (unsigned int j = 0; j < a->mNumVertices; ++j)
               {
                 aiVector3D v = tex_coords[j];
-                uvs.push_back(Eigen::Vector2d(static_cast<double>(v.x), static_cast<double>(v.y)));
+                uvs.emplace_back(static_cast<double>(v.x), static_cast<double>(v.y));
               }
               auto tex = std::make_shared<MeshTexture>(
                   texture_image, std::make_shared<tesseract_common::VectorVector2d>(std::move(uvs)));

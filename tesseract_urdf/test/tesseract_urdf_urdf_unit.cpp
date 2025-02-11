@@ -422,7 +422,7 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
   // Get Shortest Path
   auto path = g->getShortestPath("link_1", "link_4");
 
-  std::cout << path << std::endl;
+  std::cout << path << "\n";
   EXPECT_TRUE(path.links.size() == 4);
   EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
   EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_2") != path.links.end());

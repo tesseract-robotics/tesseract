@@ -54,7 +54,7 @@ struct Event
   Event(Event&&) = default;
   Event& operator=(Event&&) = delete;
 
-  const Events type;
+  const Events type;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 /**
@@ -65,7 +65,8 @@ struct CommandAppliedEvent : public Event
 {
   CommandAppliedEvent(const std::vector<std::shared_ptr<const Command>>& commands, int revision);
 
-  const std::vector<std::shared_ptr<const Command>>& commands;
+  const std::vector<std::shared_ptr<const Command>>&
+      commands;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   int revision;
 };
 
@@ -77,7 +78,7 @@ struct SceneStateChangedEvent : public Event
 {
   SceneStateChangedEvent(const tesseract_scene_graph::SceneState& state);
 
-  const tesseract_scene_graph::SceneState& state;
+  const tesseract_scene_graph::SceneState& state;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 }  // namespace tesseract_environment

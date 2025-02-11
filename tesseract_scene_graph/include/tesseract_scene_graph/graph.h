@@ -48,23 +48,23 @@ class access;
 /* definition of basic boost::graph properties */
 namespace boost
 {
-enum vertex_link_t
+enum vertex_link_t : std::uint8_t
 {
   vertex_link
 };
-enum vertex_link_visible_t
+enum vertex_link_visible_t : std::uint8_t
 {
   vertex_link_visible
 };
-enum vertex_link_collision_enabled_t
+enum vertex_link_collision_enabled_t : std::uint8_t
 {
   vertex_link_collision_enabled
 };
-enum edge_joint_t
+enum edge_joint_t : std::uint8_t
 {
   edge_joint
 };
-enum graph_root_t
+enum graph_root_t : std::uint8_t
 {
   graph_root
 };

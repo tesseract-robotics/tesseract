@@ -1359,7 +1359,7 @@ bool Environment::Implementation::applyCommandsHelper(const std::vector<std::sha
 bool Environment::Implementation::applyAddCommand(const AddLinkCommand::ConstPtr& cmd)
 {
   // The command should not allow this to occur but adding an assert to catch if something changes
-  assert(!(!cmd->getLink() && !cmd->getJoint()));
+  assert(!(!cmd->getLink() && !cmd->getJoint()));  // NOLINT
   assert(!((cmd->getLink() != nullptr) && (cmd->getJoint() != nullptr) &&
            (cmd->getJoint()->child_link_name != cmd->getLink()->getName())));
 

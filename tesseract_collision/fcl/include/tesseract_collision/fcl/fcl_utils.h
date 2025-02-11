@@ -62,7 +62,7 @@ using CollisionObjectPtr = std::shared_ptr<FCLCollisionObjectWrapper>;
 using CollisionObjectRawPtr = fcl::CollisionObjectd*;
 using CollisionObjectConstPtr = std::shared_ptr<const fcl::CollisionObjectd>;
 
-enum CollisionFilterGroups
+enum CollisionFilterGroups : std::int8_t
 {
   DefaultFilter = 1,
   StaticFilter = 2,
