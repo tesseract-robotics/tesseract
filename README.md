@@ -25,8 +25,8 @@ Lint  (CodeCov)      | [![Build Status](https://github.com/tesseract-robotics/te
 The planning framework (Tesseract) was designed to be light weight, limiting the number of dependencies, mainly only using standard libraries like, eigen, boost, orocos and to the packages below. The core packages are ROS agnostic and have full python support.
 
 ## Dependencies
-[![ros_industrial_cmake_boilerplate](https://img.shields.io/badge/ros_industrial_cmake_boilerplate-0.6.0-brightgreen)](https://github.com/ros-industrial/ros_industrial_cmake_boilerplate/tree/0.5.3)  
-[![opw_kinematics](https://img.shields.io/badge/opw_kinematics-0.5.0-brightgreen)](https://github.com/Jmeyer1292/opw_kinematics/tree/0.5.0)
+[![ros_industrial_cmake_boilerplate](https://img.shields.io/badge/ros_industrial_cmake_boilerplate-0.7.3-brightgreen)](https://github.com/ros-industrial/ros_industrial_cmake_boilerplate/tree/0.7.3)  
+[![opw_kinematics](https://img.shields.io/badge/opw_kinematics-0.5.2-brightgreen)](https://github.com/Jmeyer1292/opw_kinematics/tree/0.5.2)
 
 ## Tesseract Setup Wizard and Visualization Tools
 
@@ -128,6 +128,10 @@ NOTE: Install TaskFlow from [ROS-Industrial PPA](https://launchpad.net/~ros-indu
 
 Must pass the -DTESSERACT_ENABLE_CLANG_TIDY=ON to cmake when building. This is automatically enabled if cmake argument -DTESSERACT_ENABLE_TESTING_ALL=ON is passed.
 
+Clang-Tidy Versions Tested:
+- clang-tidy-12
+- clang-tidy-17 with libomp-17-dev
+
 ### Building Tesseract Tests
 
 Must pass the -DTESSERACT_ENABLE_TESTING=ON to cmake when wanting to build tests. This is automatically enabled if cmake argument -DTESSERACT_ENABLE_TESTING_ALL=ON is passed.
@@ -193,35 +197,7 @@ Tesseract currently leverages Compiler Warnigs, Clang Tidy and Code Coverage. Al
   - Wno-sign-compare
   - Wnon-virtual-dtor
 - Clang Tidy
-  - clang-analyzer-*
-  - bugprone-*
-  - cppcoreguidelines-avoid-goto
-  - cppcoreguidelines-c-copy-assignment-signature
-  - cppcoreguidelines-interfaces-global-init
-  - cppcoreguidelines-narrowing-conversions
-  - cppcoreguidelines-no-malloc
-  - cppcoreguidelines-slicing
-  - cppcoreguidelines-special-member-functions
-  - misc-*,-misc-non-private-member-variables-in-classes
-  - modernize-*,-modernize-use-trailing-return-type,-modernize-use-nodiscard
-  - performance-*
-  - readability-avoid-const-params-in-decls
-  - readability-container-size-empty
-  - readability-delete-null-pointer
-  - readability-deleted-default
-  - readability-else-after-return
-  - readability-function-size
-  - readability-identifier-naming
-  - readability-inconsistent-declaration-parameter-name
-  - readability-misleading-indentation
-  - readability-misplaced-array-index
-  - readability-non-const-parameter
-  - readability-redundant-*
-  - readability-simplify-*
-  - readability-static-*
-  - readability-string-compare
-  - readability-uniqueptr-delete-release
-  - readability-rary-objects
+  - see internal .clang-tidy file for enabled checks
 
 ## Documentation and Tutorials
 Documentation and tutorials for Tesseract are located at https://github.com/tesseract-robotics/tesseract_docs.git
