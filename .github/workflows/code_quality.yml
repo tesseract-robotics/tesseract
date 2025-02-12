@@ -45,7 +45,11 @@ jobs:
         run: |
           apt update
           apt upgrade -y
-          apt install -y clang-tidy-17 libomp-17-dev liboctomap-dev
+          apt install wget liboctomap-dev
+          echo "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" | tee /etc/apt/sources.list.d/llvm-toolchain.list
+          echo "deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" | tee -a /etc/apt/sources.list.d/llvm-toolchain.list
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/llvm.asc
+          apt install -y clang-tidy-17 libomp-17-dev
           pip3 install cmake
 
       - name: Build and Tests
