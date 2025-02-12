@@ -51,7 +51,6 @@ jobs:
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/llvm.asc
           apt update -y
           apt install -y clang-tidy-17 libomp-17-dev
-          pip3 install cmake
 
       - name: Build and Tests
         uses: tesseract-robotics/colcon-action@v1
