@@ -44,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tinyxml2
 {
-class XMLElement;
+class XMLElement;  // NOLINT
 class XMLAttribute;
 }  // namespace tinyxml2
 

@@ -48,7 +48,7 @@ class OcTreeNode;
 
 namespace tesseract_geometry
 {
-enum class OctreeSubType
+enum class OctreeSubType : std::uint8_t
 {
   BOX,
   SPHERE_INSIDE,

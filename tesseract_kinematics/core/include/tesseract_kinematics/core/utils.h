@@ -190,8 +190,7 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
     if (std::isinf(limits(*current_index, 0)))
     {
       std::stringstream ss;
-      ss << "Lower limit of joint " << *current_index << " is infinite; no redundant solutions will be generated"
-         << std::endl;
+      ss << "Lower limit of joint " << *current_index << " is infinite; no redundant solutions will be generated\n";
       CONSOLE_BRIDGE_logWarn(ss.str().c_str());
     }
     else
@@ -221,8 +220,7 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
     if (std::isinf(limits(*current_index, 1)))
     {
       std::stringstream ss;
-      ss << "Upper limit of joint " << *current_index << " is infinite; no redundant solutions will be generated"
-         << std::endl;
+      ss << "Upper limit of joint " << *current_index << " is infinite; no redundant solutions will be generated\n";
       CONSOLE_BRIDGE_logWarn(ss.str().c_str());
     }
     else

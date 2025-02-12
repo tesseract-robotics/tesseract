@@ -189,7 +189,7 @@ public:
     }
   }
 
-  const bool supports_update;
+  const bool supports_update;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 protected:
   void createClone()

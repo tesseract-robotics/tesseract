@@ -27,6 +27,8 @@
 #ifndef TESSERACT_COMMON_TESSERACT_COMMON_FWD_H
 #define TESSERACT_COMMON_TESSERACT_COMMON_FWD_H
 
+#include <cstdint>
+
 namespace tesseract_common
 {
 // types.h
@@ -53,7 +55,7 @@ class ACMContactAllowedValidator;
 class CombinedContactAllowedValidator;
 
 // collision_margin_data.h
-enum class CollisionMarginOverrideType;
+enum class CollisionMarginOverrideType : std::uint8_t;
 class CollisionMarginData;
 
 // joint_state.h

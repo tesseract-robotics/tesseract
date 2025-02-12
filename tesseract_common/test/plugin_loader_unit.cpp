@@ -58,7 +58,7 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
   const std::string symbol_name = "plugin";
 
   {
-    std::vector<std::string> sections = ClassLoader::getAvailableSections(lib_name, lib_dir);
+    std::vector<std::string> sections = ClassLoader::getAvailableSections(lib_name, lib_dir);  // NOLINT
     EXPECT_EQ(sections.size(), 1);
     EXPECT_EQ(sections.at(0), "TestBase");
 

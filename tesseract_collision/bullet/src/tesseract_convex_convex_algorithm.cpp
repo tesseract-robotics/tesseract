@@ -79,7 +79,7 @@ static SIMD_FORCE_INLINE void segmentsClosestPoints(btVector3& ptsVector,
   btScalar dirA_dot_trans = btDot(dirA, translation);
   btScalar dirB_dot_trans = btDot(dirB, translation);
 
-  btScalar denom = btScalar(1.0) - dirA_dot_dirB * dirA_dot_dirB;
+  btScalar denom = btScalar(1.0) - (dirA_dot_dirB * dirA_dot_dirB);
 
   if (denom == btScalar(0.0))
   {
@@ -611,7 +611,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
 
           if (useSatSepNormal)
           {
-#if 0
+#if 0  // NOLINT
           if (0)
           {
             //initializePolyhedralFeatures performs a convex hull computation, not needed for a single triangle
@@ -643,10 +643,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
                 for (int v = 0; v < combinedFaceA.m_indices.size(); v++)
                 {
                   btScalar eq = tri->m_vertices1[combinedFaceA.m_indices[v]].dot(faceNormal);
-                  if (planeEq > eq)
-                  {
-                    planeEq = eq;
-                  }
+                  planeEq = std::min(planeEq, eq);
                 }
                 combinedFaceA.m_plane[0] = faceNormal[0];
                 combinedFaceA.m_plane[1] = faceNormal[1];
@@ -665,10 +662,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
                 for (int v = 0; v < combinedFaceB.m_indices.size(); v++)
                 {
                   btScalar eq = tri->m_vertices1[combinedFaceB.m_indices[v]].dot(faceNormal);
-                  if (planeEq > eq)
-                  {
-                    planeEq = eq;
-                  }
+                  planeEq = std::min(planeEq, eq);
                 }
 
                 combinedFaceB.m_plane[0] = faceNormal[0];
@@ -720,7 +714,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
               // minDist = dummy.m_depth;
               foundSepAxis = true;
             }
-#if 0
+#if 0  // NOLINT
           btScalar l2 = gjkPairDetector.getCachedSeparatingAxis().length2();
           if (l2>SIMD_EPSILON)
           {
@@ -789,8 +783,7 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
           perturbeAngle = gContactBreakingThreshold / radiusB;
           perturbeA = false;
         }
-        if (perturbeAngle > angleLimit)
-          perturbeAngle = angleLimit;
+        perturbeAngle = std::min(perturbeAngle, angleLimit);
 
         btTransform unPerturbedTransform;
         if (perturbeA)
@@ -914,8 +907,7 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
       if (body1->getHitFraction() > result.m_fraction)
         body1->setHitFraction(result.m_fraction);
 
-      if (resultFraction > result.m_fraction)
-        resultFraction = result.m_fraction;
+      resultFraction = std::min(resultFraction, result.m_fraction);
     }
   }
 
@@ -945,8 +937,7 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
       if (body1->getHitFraction() > result.m_fraction)
         body1->setHitFraction(result.m_fraction);
 
-      if (resultFraction > result.m_fraction)
-        resultFraction = result.m_fraction;
+      resultFraction = std::min(resultFraction, result.m_fraction);
     }
   }
 

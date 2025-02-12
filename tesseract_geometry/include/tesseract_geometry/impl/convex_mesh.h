@@ -52,7 +52,7 @@ public:
   using Ptr = std::shared_ptr<ConvexMesh>;
   using ConstPtr = std::shared_ptr<const ConvexMesh>;
 
-  enum CreationMethod
+  enum CreationMethod : std::uint8_t
   {
     DEFAULT,
     MESH,

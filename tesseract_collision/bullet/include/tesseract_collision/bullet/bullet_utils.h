@@ -140,11 +140,11 @@ protected:
   /** @brief A user defined type id */
   int m_type_id{ -1 };
   /* @brief The shapes that define the collision object */
-  CollisionShapesConst m_shapes{};
+  CollisionShapesConst m_shapes;
   /**< @brief The shapes poses information */
-  tesseract_common::VectorIsometry3d m_shape_poses{};
+  tesseract_common::VectorIsometry3d m_shape_poses;
   /** @brief This manages the collision shape pointer so they get destroyed */
-  std::vector<std::shared_ptr<BulletCollisionShape>> m_data{};
+  std::vector<std::shared_ptr<BulletCollisionShape>> m_data;
 };
 
 using COW = CollisionObjectWrapper;
@@ -250,7 +250,8 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
 /** @brief This is copied directly out of BulletWorld */
 struct TesseractBridgedManifoldResult : public btManifoldResult
 {
-  btCollisionWorld::ContactResultCallback& m_resultCallback;
+  btCollisionWorld::ContactResultCallback&
+      m_resultCallback;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
   TesseractBridgedManifoldResult(const btCollisionObjectWrapper* obj0Wrap,
                                  const btCollisionObjectWrapper* obj1Wrap,
@@ -262,7 +263,7 @@ struct TesseractBridgedManifoldResult : public btManifoldResult
 /** @brief The BroadphaseContactResultCallback is used to report contact points */
 struct BroadphaseContactResultCallback
 {
-  ContactTestData& collisions_;
+  ContactTestData& collisions_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   double contact_distance_;
   bool verbose_;
 
@@ -313,7 +314,7 @@ struct CastBroadphaseContactResultCallback : public BroadphaseContactResultCallb
 
 struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
 {
-  BroadphaseContactResultCallback& result_callback_;
+  BroadphaseContactResultCallback& result_callback_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
   TesseractBroadphaseBridgedManifoldResult(const btCollisionObjectWrapper* obj0Wrap,
                                            const btCollisionObjectWrapper* obj1Wrap,
@@ -330,9 +331,9 @@ struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
  */
 class TesseractCollisionPairCallback : public btOverlapCallback
 {
-  const btDispatcherInfo& dispatch_info_;
+  const btDispatcherInfo& dispatch_info_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   btCollisionDispatcher* dispatcher_;
-  BroadphaseContactResultCallback& results_callback_;
+  BroadphaseContactResultCallback& results_callback_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 public:
   TesseractCollisionPairCallback(const btDispatcherInfo& dispatchInfo,
@@ -382,8 +383,8 @@ COW::Ptr createCollisionObject(const std::string& name,
 
 struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallback
 {
-  ContactTestData& collisions_;
-  const COW::Ptr cow_;
+  ContactTestData& collisions_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const COW::Ptr cow_;           // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   double contact_distance_;
   bool verbose_;
 
@@ -405,8 +406,8 @@ struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallba
 
 struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
 {
-  ContactTestData& collisions_;
-  const COW::Ptr cow_;
+  ContactTestData& collisions_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const COW::Ptr cow_;           // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   double contact_distance_;
   bool verbose_;
 

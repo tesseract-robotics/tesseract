@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-Cone::Cone(double r, double l) : Geometry(GeometryType::CONE), r_(r), l_(l) {}
+Cone::Cone(double radius, double length) : Geometry(GeometryType::CONE), r_(radius), l_(length) {}
 
 double Cone::getRadius() const { return r_; }
 double Cone::getLength() const { return l_; }

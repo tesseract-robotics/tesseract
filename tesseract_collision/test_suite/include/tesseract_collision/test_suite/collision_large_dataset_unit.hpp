@@ -94,7 +94,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
     if (result_vector.size() != 300)
       for (const auto& result : result_vector)
-        std::cout << result.link_names[0] << "," << result.link_names[1] << "," << result.distance << std::endl;
+        std::cout << result.link_names[0] << "," << result.link_names[1] << "," << result.distance << "\n";
 
     EXPECT_EQ(result_vector.size(), 300);
   }

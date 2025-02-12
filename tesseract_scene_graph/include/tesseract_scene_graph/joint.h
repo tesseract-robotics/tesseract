@@ -251,7 +251,7 @@ private:
 
 std::ostream& operator<<(std::ostream& os, const JointMimic& mimic);
 
-enum class JointType
+enum class JointType : std::uint8_t
 {
   UNKNOWN,
   REVOLUTE,

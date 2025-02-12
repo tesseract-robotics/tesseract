@@ -44,7 +44,7 @@ namespace tesseract_collision::tesseract_collision_bullet
 TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
 {
   if (config.IsNull())
-    return TesseractCollisionConfigurationInfo();
+    return {};
 
   bool share_pool_allocators{ false };
   if (YAML::Node n = config["share_pool_allocators"])

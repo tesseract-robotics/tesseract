@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-Cylinder::Cylinder(double r, double l) : Geometry(GeometryType::CYLINDER), r_(r), l_(l) {}
+Cylinder::Cylinder(double radius, double length) : Geometry(GeometryType::CYLINDER), r_(radius), l_(length) {}
 
 double Cylinder::getRadius() const { return r_; }
 double Cylinder::getLength() const { return l_; }

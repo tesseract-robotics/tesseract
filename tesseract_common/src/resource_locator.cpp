@@ -332,7 +332,7 @@ std::shared_ptr<std::istream> BytesResource::getResourceContentStream() const
 {
   std::shared_ptr<std::stringstream> o = std::make_shared<std::stringstream>();
   o->write((const char*)&bytes_.at(0), static_cast<std::streamsize>(bytes_.size()));  // NOLINT
-  o->seekg(0, o->beg);
+  o->seekg(0, std::stringstream::beg);
   return o;
 }
 

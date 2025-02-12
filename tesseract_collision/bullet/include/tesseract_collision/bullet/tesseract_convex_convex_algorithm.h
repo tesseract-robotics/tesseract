@@ -132,6 +132,7 @@ public:
                                                    const btCollisionObjectWrapper* body1Wrap) override
     {
       void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(TesseractConvexConvexAlgorithm));
+      // NOLINTNEXTLINE
       return new (mem) TesseractConvexConvexAlgorithm(ci.m_manifold,
                                                       ci,
                                                       body0Wrap,

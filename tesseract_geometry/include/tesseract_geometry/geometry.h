@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <string>
 #include <vector>
+#include <cstdint>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace boost::serialization
@@ -42,7 +43,7 @@ class access;
 
 namespace tesseract_geometry
 {
-enum class GeometryType
+enum class GeometryType : std::uint8_t
 {
   UNINITIALIZED,
   SPHERE,

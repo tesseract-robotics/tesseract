@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+// NOLINTNEXTLINE(modernize-pass-by-value)
 KinGroupIKInput::KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std::string tl)
   : pose(p), working_frame(std::move(wf)), tip_link_name(std::move(tl))
 {

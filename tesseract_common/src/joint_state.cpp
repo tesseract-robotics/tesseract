@@ -134,7 +134,10 @@ JointTrajectory::const_reference JointTrajectory::operator[](size_type pos) cons
 ///////////////
 void JointTrajectory::clear() { states.clear(); }
 JointTrajectory::iterator JointTrajectory::insert(const_iterator p, const value_type& x) { return states.insert(p, x); }
-JointTrajectory::iterator JointTrajectory::insert(const_iterator p, value_type&& x) { return states.insert(p, x); }
+JointTrajectory::iterator JointTrajectory::insert(const_iterator p, value_type&& x)
+{
+  return states.insert(p, std::move(x));
+}
 JointTrajectory::iterator JointTrajectory::insert(const_iterator p, std::initializer_list<value_type> l)
 {
   return states.insert(p, l);
@@ -168,7 +171,7 @@ void JointTrajectory::emplace_back(Args&&... args)
 #endif
 
 void JointTrajectory::pop_back() { states.pop_back(); }
-void JointTrajectory::swap(std::vector<value_type>& other) { states.swap(other); }
+void JointTrajectory::swap(std::vector<value_type>& other) noexcept { states.swap(other); }
 
 // LCOV_EXCL_STOP
 

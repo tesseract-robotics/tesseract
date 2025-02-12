@@ -27,6 +27,8 @@
 #ifndef TESSERACT_SCENE_GRAPH_FWD_H
 #define TESSERACT_SCENE_GRAPH_FWD_H
 
+#include <cstdint>
+
 namespace tesseract_scene_graph
 {
 // joint.h
@@ -35,7 +37,7 @@ class JointLimits;
 class JointSafety;
 class JointCalibration;
 class JointMimic;
-enum class JointType;
+enum class JointType : std::uint8_t;
 class Joint;
 
 // link.h

@@ -26,9 +26,11 @@
 #ifndef TESSERACT_GEOMETRY_TESSERACT_GEOMETRY_FWD_H
 #define TESSERACT_GEOMETRY_TESSERACT_GEOMETRY_FWD_H
 
+#include <cstdint>
+
 namespace tesseract_geometry
 {
-enum class GeometryType;
+enum class GeometryType : std::uint8_t;
 class Geometry;
 class Box;
 class Capsule;
@@ -39,7 +41,7 @@ class MeshMaterial;
 class MeshTexture;
 class Mesh;
 class Octree;
-enum class OctreeSubType;
+enum class OctreeSubType : std::uint8_t;
 class Plane;
 class PolygonMesh;
 class SDFMesh;

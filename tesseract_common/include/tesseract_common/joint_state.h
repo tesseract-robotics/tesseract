@@ -228,7 +228,7 @@ public:
   /** @brief removes the last element */
   void pop_back();
   /** @brief swaps the contents  */
-  void swap(std::vector<value_type>& other);
+  void swap(std::vector<value_type>& other) noexcept;
 
 private:
   friend class boost::serialization::access;

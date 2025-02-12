@@ -900,8 +900,8 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
 
         btScalar previousSquaredDistance = squaredDistance;
         squaredDistance = newCachedSeparatingAxis.length2();
-#if 0
-        ///warning: this termination condition leads to some problems in 2d test case see Bullet/Demos/Box2dDemo
+#if 0   // NOLINT
+        /// warning: this termination condition leads to some problems in 2d test case see Bullet/Demos/Box2dDemo
         if (squaredDistance > previousSquaredDistance)
         {
           m_degenerateSimplex = 7;

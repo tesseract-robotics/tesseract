@@ -55,7 +55,7 @@ using PairsCollisionMarginData =
 
 class ContactResultValidator;
 
-enum class ContinuousCollisionType
+enum class ContinuousCollisionType : std::uint8_t
 {
   CCType_None,
   CCType_Time0,
@@ -63,7 +63,7 @@ enum class ContinuousCollisionType
   CCType_Between
 };
 
-enum class ContactTestType
+enum class ContactTestType : std::uint8_t
 {
   FIRST = 0,   /**< Return at first contact for any pair of objects */
   CLOSEST = 1, /**< Return the global minimum for a pair of objects */
@@ -360,7 +360,7 @@ struct ContactTestData
  * CONTINUOUS - Continuous contact manager using only steps specified
  * LVS_CONTINUOUS - Continuous contact manager interpolating using longest valid segment
  */
-enum class CollisionEvaluatorType
+enum class CollisionEvaluatorType : std::uint8_t
 {
   /** @brief None */
   NONE,
@@ -375,7 +375,7 @@ enum class CollisionEvaluatorType
 };
 
 /** @brief The mode used to check program */
-enum class CollisionCheckProgramType
+enum class CollisionCheckProgramType : std::uint8_t
 {
   /** @brief Check all states */
   ALL,
@@ -393,7 +393,7 @@ enum class CollisionCheckProgramType
 
 /** @brief Identifies how the provided AllowedCollisionMatrix should be applied relative to the isAllowedFn in the
  * contact manager */
-enum class ACMOverrideType
+enum class ACMOverrideType : std::uint8_t
 {
   /** @brief Do not apply AllowedCollisionMatrix */
   NONE,

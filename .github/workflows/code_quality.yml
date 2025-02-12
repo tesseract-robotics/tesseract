@@ -24,12 +24,12 @@ jobs:
         include:
           - job_type: clang-tidy
             env:
-              TARGET_CMAKE_ARGS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"
+              TARGET_CMAKE_ARGS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON -DCLANG_TIDY_NAMES=clang-tidy-17"
           - job_type: codecov
             env:
               TARGET_CMAKE_ARGS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CODE_COVERAGE=ON -DTESSERACT_WARNINGS_AS_ERRORS=OFF"
     container:
-      image: ubuntu:20.04
+      image: ubuntu:22.04
       env:
         CCACHE_DIR: "$GITHUB_WORKSPACE/${{ matrix.job_type }}/.ccache"
         DEBIAN_FRONTEND: noninteractive
@@ -45,14 +45,20 @@ jobs:
         run: |
           apt update
           apt upgrade -y
-          apt install -y clang-tidy liboctomap-dev
+          apt install -y wget liboctomap-dev
+          echo "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" | tee /etc/apt/sources.list.d/llvm-toolchain.list
+          echo "deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" | tee -a /etc/apt/sources.list.d/llvm-toolchain.list
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/llvm.asc
+          apt update -y
+          apt install -y clang-tidy-17 libomp-17-dev
 
       - name: Build and Tests
-        uses: tesseract-robotics/colcon-action@v1
+        uses: tesseract-robotics/colcon-action@v11
         with:
           ccache-prefix: ${{ matrix.distro }}
-          vcs-file: dependencies_focal.repos
+          vcs-file: dependencies.repos
           run-tests: false
+          rosdep-install-args: -iry --skip-keys=libomp-dev
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src
           target-args: --cmake-args ${{ matrix.env.TARGET_CMAKE_ARGS }}

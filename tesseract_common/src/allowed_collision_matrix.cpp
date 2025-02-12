@@ -122,7 +122,7 @@ void AllowedCollisionMatrix::serialize(Archive& ar, const unsigned int /*version
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
 {
   for (const auto& pair : acm.getAllAllowedCollisions())
-    os << "link=" << pair.first.first << " link=" << pair.first.second << " reason=" << pair.second << std::endl;
+    os << "link=" << pair.first.first << " link=" << pair.first.second << " reason=" << pair.second << "\n";
   return os;
 }
 }  // namespace tesseract_common

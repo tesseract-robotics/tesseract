@@ -73,8 +73,8 @@ struct ofkt_builder : public boost::dfs_visitor<>
   }
 
 protected:
-  OFKTStateSolver& tree_;
-  std::vector<JointLimits::ConstPtr>& new_joints_limits_;
+  OFKTStateSolver& tree_;                                  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  std::vector<JointLimits::ConstPtr>& new_joints_limits_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   std::string prefix_;
 };
 

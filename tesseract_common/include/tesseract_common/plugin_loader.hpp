@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ostream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/plugin_loader.h>
 #include <tesseract_common/class_loader.h>
 
 namespace tesseract_common
@@ -147,16 +146,16 @@ std::shared_ptr<PluginBase> PluginLoader::instantiate(const std::string& plugin_
 
   std::stringstream msg;
   if (search_system_folders)
-    msg << std::endl << "Search Paths (Search System Folders: True):" << std::endl;
+    msg << "\nSearch Paths (Search System Folders: True):\n";
   else
-    msg << std::endl << "Search Paths (Search System Folders: False):" << std::endl;
+    msg << "\nSearch Paths (Search System Folders: False):\n";
 
   for (const auto& path : search_paths_local)
-    msg << "    - " + path << std::endl;
+    msg << "    - " + path << "\n";
 
-  msg << "Search Libraries:" << std::endl;
+  msg << "Search Libraries:\n";
   for (const auto& library : search_libraries)
-    msg << "    - " + ClassLoader::decorate(library) << std::endl;
+    msg << "    - " + ClassLoader::decorate(library) << "\n";
 
   CONSOLE_BRIDGE_logError("Failed to instantiate plugin '%s', Details: %s", plugin_name.c_str(), msg.str().c_str());
 

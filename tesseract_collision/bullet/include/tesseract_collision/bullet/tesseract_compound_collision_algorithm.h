@@ -107,7 +107,7 @@ public:
                                                    const btCollisionObjectWrapper* body1Wrap) override
     {
       void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(TesseractCompoundCollisionAlgorithm));
-      return new (mem) TesseractCompoundCollisionAlgorithm(ci, body0Wrap, body1Wrap, false);
+      return new (mem) TesseractCompoundCollisionAlgorithm(ci, body0Wrap, body1Wrap, false);  // NOLINT
     }
   };
 
@@ -118,7 +118,7 @@ public:
                                                    const btCollisionObjectWrapper* body1Wrap) override
     {
       void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(TesseractCompoundCollisionAlgorithm));
-      return new (mem) TesseractCompoundCollisionAlgorithm(ci, body0Wrap, body1Wrap, true);
+      return new (mem) TesseractCompoundCollisionAlgorithm(ci, body0Wrap, body1Wrap, true);  // NOLINT
     }
   };
 };

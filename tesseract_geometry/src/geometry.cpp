@@ -55,4 +55,3 @@ void Geometry::serialize(Archive& ar, const unsigned int /*version*/)
 }  // namespace tesseract_geometry
 
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::Geometry)
-#include <tesseract_common/serialization.h>

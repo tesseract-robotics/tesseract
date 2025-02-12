@@ -374,7 +374,7 @@ int loadSimplePlyFile(const std::string& path,
       return 0;
     }
 
-    vertices.push_back(Eigen::Vector3d(std::stod(tokens[0]), std::stod(tokens[1]), std::stod(tokens[2])));
+    vertices.emplace_back(std::stod(tokens[0]), std::stod(tokens[1]), std::stod(tokens[2]));
   }
 
   std::vector<int> local_faces;

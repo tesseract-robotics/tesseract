@@ -12,7 +12,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/collision_margin_data.h>
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_common/yaml_extenstions.h>
-#include <tesseract_scene_graph/graph.h>
 #include <tesseract_srdf/collision_margins.h>
 #include <tesseract_srdf/configs.h>
 #include <tesseract_srdf/disabled_collisions.h>
@@ -25,7 +24,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
 
-enum class ABBConfig
+enum class ABBConfig : std::uint8_t
 {
   ROBOT_ONLY,
   ROBOT_ON_RAIL,
@@ -1772,7 +1771,7 @@ TEST(TesseractSRDFUnit, AddRemoveChainGroupUnit)  // NOLINT
 
   // ADD
   ChainGroup chain_group;
-  chain_group.push_back(std::make_pair("base_link", "tool0"));
+  chain_group.emplace_back("base_link", "tool0");
   info.addChainGroup("manipulator", chain_group);
   EXPECT_TRUE(info.hasChainGroup("manipulator"));
   EXPECT_TRUE(info.chain_groups.at("manipulator") == chain_group);
@@ -1786,7 +1785,7 @@ TEST(TesseractSRDFUnit, AddRemoveChainGroupUnit)  // NOLINT
 
   // Not equal
   chain_group = ChainGroup();
-  chain_group.push_back(std::make_pair("tool0", "base_link"));
+  chain_group.emplace_back("tool0", "base_link");
   info1_copy.addChainGroup("manipulator", chain_group);
   EXPECT_NE(info1_copy, info);
 
