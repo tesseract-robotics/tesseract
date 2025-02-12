@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <string>
 #include <vector>
+#include <cstdint>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace boost::serialization
