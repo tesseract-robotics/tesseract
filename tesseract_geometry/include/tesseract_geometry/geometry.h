@@ -83,6 +83,9 @@ public:
   /** @brief Get the geometry type */
   GeometryType getType() const;
 
+  /** @brief Set the geometry UUID */
+  void setUUID(const boost::uuids::uuid& uuid);
+
   /** @brief Get the geometry UUID */
   const boost::uuids::uuid& getUUID() const;
 

@@ -41,6 +41,8 @@ Geometry::Geometry(GeometryType type) : type_(type), uuid_(boost::uuids::random_
 
 GeometryType Geometry::getType() const { return type_; }
 
+void Geometry::setUUID(const boost::uuids::uuid& uuid) { uuid_ = uuid; }
+
 const boost::uuids::uuid& Geometry::getUUID() const { return uuid_; }
 
 bool Geometry::operator==(const Geometry& rhs) const { return (type_ == rhs.type_ && uuid_ == rhs.uuid_); }
