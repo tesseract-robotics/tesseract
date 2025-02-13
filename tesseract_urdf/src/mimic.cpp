@@ -37,8 +37,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/mimic.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_scene_graph::JointMimic::Ptr tesseract_urdf::parseMimic(const tinyxml2::XMLElement* xml_element,
-                                                                  int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_scene_graph::JointMimic::Ptr parseMimic(const tinyxml2::XMLElement* xml_element)
 {
   auto m = std::make_shared<tesseract_scene_graph::JointMimic>();
   if (tesseract_common::QueryStringAttribute(xml_element, "joint", m->joint_name) != tinyxml2::XML_SUCCESS)
@@ -62,12 +63,12 @@ tesseract_scene_graph::JointMimic::Ptr tesseract_urdf::parseMimic(const tinyxml2
   return m;
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeMimic(const std::shared_ptr<const tesseract_scene_graph::JointMimic>& mimic,
-                                                 tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract_scene_graph::JointMimic>& mimic,
+                                 tinyxml2::XMLDocument& doc)
 {
   if (mimic == nullptr)
     std::throw_with_nested(std::runtime_error("Mimic Joint is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("mimic");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(MIMIC_ELEMENT_NAME.data());
 
   xml_element->SetAttribute("joint", mimic->joint_name.c_str());
   xml_element->SetAttribute("offset", toString(mimic->offset).c_str());
@@ -75,3 +76,5 @@ tinyxml2::XMLElement* tesseract_urdf::writeMimic(const std::shared_ptr<const tes
 
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

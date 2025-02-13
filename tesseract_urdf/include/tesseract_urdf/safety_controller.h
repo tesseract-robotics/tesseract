@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
@@ -41,14 +42,15 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view SAFETY_CONTROLLER_ELEMENT_NAME = "safety_controller";
+
 /**
  * @brief Parse xml element safety_controller
  * @param xml_element The xml element
  * @param version The version number
  * @return A Tesseract JointSafety
  */
-std::shared_ptr<tesseract_scene_graph::JointSafety> parseSafetyController(const tinyxml2::XMLElement* xml_element,
-                                                                          int version);
+std::shared_ptr<tesseract_scene_graph::JointSafety> parseSafetyController(const tinyxml2::XMLElement* xml_element);
 tinyxml2::XMLElement* writeSafetyController(const std::shared_ptr<const tesseract_scene_graph::JointSafety>& safety,
                                             tinyxml2::XMLDocument& doc);
 

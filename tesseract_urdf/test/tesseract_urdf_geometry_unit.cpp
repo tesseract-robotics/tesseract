@@ -12,6 +12,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
 {
+  const bool global_make_convex = false;
+  const auto parse_geometry_fn = [&](const tinyxml2::XMLElement* xml_element,
+                                     const tesseract_common::ResourceLocator& locator,
+                                     const bool visual) {
+    return tesseract_urdf::parseGeometry(xml_element, locator, visual, global_make_convex);
+  };
+
   tesseract_common::GeneralResourceLocator resource_locator;
   {
     std::string str = R"(<geometry extra="0 0 0">
@@ -19,7 +26,7 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem->getType() == tesseract_geometry::GeometryType::BOX);
   }
 
@@ -29,7 +36,7 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem->getType() == tesseract_geometry::GeometryType::SPHERE);
   }
 
@@ -39,50 +46,40 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem->getType() == tesseract_geometry::GeometryType::CYLINDER);
   }
 
   {
     std::string str = R"(<geometry extra="0 0 0">
-                           <cone radius="1" length="1" />
+                           <tesseract:cone radius="1" length="1" />
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem->getType() == tesseract_geometry::GeometryType::CONE);
   }
 
   {
     std::string str = R"(<geometry extra="0 0 0">
-                           <capsule radius="1" length="1" />
+                           <tesseract:capsule radius="1" length="1" />
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem->getType() == tesseract_geometry::GeometryType::CAPSULE);
   }
 
   {
     std::string str = R"(<geometry extra="0 0 0">
-                           <octomap shape_type="box" extra="0 0 0">
-                             <octree filename="package://tesseract_support/meshes/box_2m.bt" extra="0 0 0"/>
-                           </octomap>
+                           <tesseract:octomap shape_type="box" extra="0 0 0">
+                             <tesseract:octree filename="package://tesseract_support/meshes/box_2m.bt" extra="0 0 0"/>
+                           </tesseract:octomap>
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem->getType() == tesseract_geometry::GeometryType::OCTREE);
-  }
-
-  {
-    std::string str = R"(<geometry extra="0 0 0">
-                           <convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>
-                         </geometry>)";
-    tesseract_geometry::Geometry::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
-    EXPECT_TRUE(elem->getType() == tesseract_geometry::GeometryType::CONVEX_MESH);
   }
 
   {
@@ -91,17 +88,17 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem->getType() == tesseract_geometry::GeometryType::MESH);
   }
 
   {
     std::string str = R"(<geometry extra="0 0 0">
-                           <sdf_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>
+                           <tesseract:sdf_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem->getType() == tesseract_geometry::GeometryType::SDF_MESH);
   }
 
@@ -111,7 +108,7 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 
@@ -120,7 +117,7 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 
@@ -130,7 +127,7 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 
@@ -140,7 +137,7 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 
@@ -150,49 +147,39 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 
   {
     std::string str = R"(<geometry extra="0 0 0">
-                           <cone />
+                           <tesseract:cone />
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 
   {
     std::string str = R"(<geometry extra="0 0 0">
-                           <capsule />
+                           <tesseract:capsule />
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 
   {
     std::string str = R"(<geometry extra="0 0 0">
-                           <octomap shape_type="box" extra="0 0 0">
-                             <octree />
-                           </octomap>
+                           <tesseract:octomap shape_type="box" extra="0 0 0">
+                             <tesseract:octree />
+                           </tesseract:octomap>
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
-    EXPECT_TRUE(elem == nullptr);
-  }
-
-  {
-    std::string str = R"(<geometry extra="0 0 0">
-                           <convex_mesh />
-                         </geometry>)";
-    tesseract_geometry::Geometry::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 
@@ -202,17 +189,17 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 
   {
     std::string str = R"(<geometry extra="0 0 0">
-                           <sdf_mesh />
+                           <tesseract:sdf_mesh />
                          </geometry>)";
     tesseract_geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_geometry::Geometry::Ptr>(
-        elem, &tesseract_urdf::parseGeometry, str, "geometry", resource_locator, 2, true));
+        elem, parse_geometry_fn, str, tesseract_urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(elem == nullptr);
   }
 }
@@ -300,23 +287,6 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
         0,
         writeTest<tesseract_geometry::Geometry::Ptr>(
             geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom0")));
-    EXPECT_NE(text, "");
-  }
-
-  {  // convex_mesh
-    tesseract_common::VectorVector3d vertices = { Eigen::Vector3d(0, 0, 0),
-                                                  Eigen::Vector3d(1, 0, 0),
-                                                  Eigen::Vector3d(0, 1, 0) };
-    Eigen::VectorXi indices(4);
-    indices << 3, 0, 1, 2;
-    tesseract_geometry::Geometry::Ptr geometry = std::make_shared<tesseract_geometry::ConvexMesh>(
-        std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
-
-    std::string text;
-    EXPECT_EQ(
-        0,
-        writeTest<tesseract_geometry::Geometry::Ptr>(
-            geometry, &tesseract_urdf::writeGeometry, text, tesseract_common::getTempPath(), std::string("geom1")));
     EXPECT_NE(text, "");
   }
 

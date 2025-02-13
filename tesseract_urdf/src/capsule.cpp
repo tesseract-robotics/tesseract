@@ -35,7 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/capsule.h>
 #include <tesseract_urdf/utils.h>
 
-tesseract_geometry::Capsule::Ptr tesseract_urdf::parseCapsule(const tinyxml2::XMLElement* xml_element, int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_geometry::Capsule::Ptr parseCapsule(const tinyxml2::XMLElement* xml_element)
 {
   double r{ 0 }, l{ 0 };
   if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS || !(l > 0))
@@ -47,13 +49,15 @@ tesseract_geometry::Capsule::Ptr tesseract_urdf::parseCapsule(const tinyxml2::XM
   return std::make_shared<tesseract_geometry::Capsule>(r, l);
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeCapsule(const std::shared_ptr<const tesseract_geometry::Capsule>& capsule,
-                                                   tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeCapsule(const std::shared_ptr<const tesseract_geometry::Capsule>& capsule,
+                                   tinyxml2::XMLDocument& doc)
 {
   if (capsule == nullptr)
     std::throw_with_nested(std::runtime_error("Capsule is nullptr and cannot be written to XML file"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("capsule");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(CAPSULE_ELEMENT_NAME.data());
   xml_element->SetAttribute("length", toString(capsule->getLength()).c_str());
   xml_element->SetAttribute("radius", toString(capsule->getRadius()).c_str());
   return xml_element;
 }
+
+}  // namespace tesseract_urdf
