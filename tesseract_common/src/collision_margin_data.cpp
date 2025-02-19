@@ -90,7 +90,7 @@ const PairsCollisionMarginData& CollisionMarginData::getPairCollisionMargins() c
 
 double CollisionMarginData::getMaxCollisionMargin() const { return max_collision_margin_; }
 
-void CollisionMarginData::incrementMargins(const double& increment)
+void CollisionMarginData::incrementMargins(double increment)
 {
   default_collision_margin_ += increment;
   max_collision_margin_ += increment;
@@ -98,7 +98,7 @@ void CollisionMarginData::incrementMargins(const double& increment)
     pair.second += increment;
 }
 
-void CollisionMarginData::scaleMargins(const double& scale)
+void CollisionMarginData::scaleMargins(double scale)
 {
   default_collision_margin_ *= scale;
   max_collision_margin_ *= scale;

@@ -141,13 +141,13 @@ public:
    * @brief Increment all margins by input amount. Useful for inflating or reducing margins
    * @param increment Amount to increment margins
    */
-  void incrementMargins(const double& increment);
+  void incrementMargins(double increment);
 
   /**
    * @brief Scale all margins by input value
    * @param scale Value by which all margins are multiplied
    */
-  void scaleMargins(const double& scale);
+  void scaleMargins(double scale);
 
   /**
    * @brief Apply the contents of the provide CollisionMarginData based on the override type
