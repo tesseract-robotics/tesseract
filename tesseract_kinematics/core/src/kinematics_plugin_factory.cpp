@@ -77,7 +77,7 @@ KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config, const tesser
   loadConfig(config);
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(const tesseract_common::fs::path& config,
+KinematicsPluginFactory::KinematicsPluginFactory(const std::filesystem::path& config,
                                                  const tesseract_common::ResourceLocator& locator)
   : KinematicsPluginFactory()
 {
@@ -340,7 +340,7 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
   }
 }
 
-void KinematicsPluginFactory::saveConfig(const tesseract_common::fs::path& file_path) const
+void KinematicsPluginFactory::saveConfig(const std::filesystem::path& file_path) const
 {
   YAML::Node config = getConfig();
   std::ofstream fout(file_path.string());

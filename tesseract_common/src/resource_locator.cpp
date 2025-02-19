@@ -45,7 +45,7 @@ namespace tesseract_common
 {
 bool isRelativePath(const std::string& url)
 {
-  tesseract_common::fs::path path(url);
+  std::filesystem::path path(url);
   return (url.find("file:///") != 0 && url.find("package://") != 0 && path.is_relative());
 }
 
@@ -65,7 +65,7 @@ GeneralResourceLocator::GeneralResourceLocator(const std::vector<std::string>& e
   }
 }
 
-GeneralResourceLocator::GeneralResourceLocator(const std::vector<tesseract_common::fs::path>& paths,
+GeneralResourceLocator::GeneralResourceLocator(const std::vector<std::filesystem::path>& paths,
                                                const std::vector<std::string>& environment_variables)
 {
   for (const auto& path : paths)
@@ -98,9 +98,9 @@ bool GeneralResourceLocator::loadEnvironmentVariable(const std::string& environm
   return false;
 }
 
-bool GeneralResourceLocator::addPath(const tesseract_common::fs::path& path)
+bool GeneralResourceLocator::addPath(const std::filesystem::path& path)
 {
-  if (tesseract_common::fs::is_directory(path) && tesseract_common::fs::exists(path))
+  if (std::filesystem::is_directory(path) && std::filesystem::exists(path))
   {
     processToken(path.string());
     return true;
@@ -112,13 +112,13 @@ bool GeneralResourceLocator::addPath(const tesseract_common::fs::path& path)
 
 void GeneralResourceLocator::processToken(const std::string& token)
 {
-  tesseract_common::fs::path d(token);
-  if (tesseract_common::fs::is_directory(d) && tesseract_common::fs::exists(d))
+  std::filesystem::path d(token);
+  if (std::filesystem::is_directory(d) && std::filesystem::exists(d))
   {
     // Check current directory
-    tesseract_common::fs::path check = d;
+    std::filesystem::path check = d;
     check.append("package.xml");
-    if (tesseract_common::fs::exists(check))
+    if (std::filesystem::exists(check))
     {
       std::string dir_name = d.filename().string();
       if (package_paths_.find(dir_name) == package_paths_.end())
@@ -126,12 +126,12 @@ void GeneralResourceLocator::processToken(const std::string& token)
     }
 
     // Check all subdirectories
-    tesseract_common::fs::recursive_directory_iterator dir(d), end;
+    std::filesystem::recursive_directory_iterator dir(d), end;
     while (dir != end)
     {
-      tesseract_common::fs::path check = dir->path();
+      std::filesystem::path check = dir->path();
       check.append("package.xml");
-      if (tesseract_common::fs::exists(check))
+      if (std::filesystem::exists(check))
       {
         std::string dir_name = dir->path().filename().string();
         if (package_paths_.find(dir_name) == package_paths_.end())
@@ -198,7 +198,7 @@ std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::stri
     }
   }
 
-  if (!tesseract_common::fs::path(mod_url).is_absolute())
+  if (!std::filesystem::path(mod_url).is_absolute())
   {
     CONSOLE_BRIDGE_logWarn("Resource not handled: %s", mod_url.c_str());
     return nullptr;
@@ -287,9 +287,10 @@ tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std:
     else
       return nullptr;
 
-    tesseract_common::fs::path path(url);
+    std::filesystem::path path(url);
     std::string url_base_path = url_.substr(0, last_separator);
-    std::string new_url = url_base_path + std::string(1, fs::path::preferred_separator) + path.filename().string();
+    std::string new_url =
+        url_base_path + std::string(1, std::filesystem::path::preferred_separator) + path.filename().string();
     CONSOLE_BRIDGE_logError("new_url: %s", new_url.c_str());
     return parent_->locateResource(new_url);
   }
@@ -358,7 +359,7 @@ Resource::Ptr BytesResource::locateResource(const std::string& url) const
   if (last_slash == std::string::npos)
     return nullptr;
 
-  tesseract_common::fs::path path(url);
+  std::filesystem::path path(url);
   std::string url_base_path = url_.substr(0, last_slash);
   std::string new_url = url_base_path + "/" + path.filename().string();
   return parent_->locateResource(new_url);

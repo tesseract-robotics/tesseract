@@ -210,9 +210,9 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
     }
     case EnvironmentInitType::FILEPATH:
     {
-      tesseract_common::fs::path urdf_path(
+      std::filesystem::path urdf_path(
           locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath());
-      tesseract_common::fs::path srdf_path(
+      std::filesystem::path srdf_path(
           locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf")->getFilePath());
 
       success = env->init(urdf_path, srdf_path, std::make_shared<tesseract_common::GeneralResourceLocator>());
@@ -392,7 +392,7 @@ Environment::Ptr getEnvironmentURDFOnly(EnvironmentInitType init_type)
     }
     case EnvironmentInitType::FILEPATH:
     {
-      tesseract_common::fs::path urdf_path(
+      std::filesystem::path urdf_path(
           locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath());
       success = env->init(urdf_path, std::make_shared<tesseract_common::GeneralResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
@@ -465,7 +465,7 @@ TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
 
   {  // Test bad URDF file path
     auto env = std::make_shared<Environment>();
-    tesseract_common::fs::path urdf_path("/usr/tmp/doesnotexist.urdf");
+    std::filesystem::path urdf_path("/usr/tmp/doesnotexist.urdf");
     EXPECT_FALSE(env->init(urdf_path, rl));
     EXPECT_FALSE(env->isInitialized());
   }
@@ -480,8 +480,8 @@ TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
 
   {  // Test bad URDF file path with srdf
     auto env = std::make_shared<Environment>();
-    tesseract_common::fs::path urdf_path("/usr/tmp/doesnotexist.urdf");
-    tesseract_common::fs::path srdf_path(
+    std::filesystem::path urdf_path("/usr/tmp/doesnotexist.urdf");
+    std::filesystem::path srdf_path(
         rl->locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf")->getFilePath());
     EXPECT_FALSE(env->init(urdf_path, srdf_path, rl));
     EXPECT_FALSE(env->isInitialized());
@@ -497,9 +497,9 @@ TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
 
   {  // Test URDF file path with bad srdf path
     auto env = std::make_shared<Environment>();
-    tesseract_common::fs::path urdf_path(
+    std::filesystem::path urdf_path(
         rl->locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath());
-    tesseract_common::fs::path srdf_path("/usr/tmp/doesnotexist.srdf");
+    std::filesystem::path srdf_path("/usr/tmp/doesnotexist.srdf");
     EXPECT_FALSE(env->init(urdf_path, srdf_path, rl));
     EXPECT_FALSE(env->isInitialized());
   }

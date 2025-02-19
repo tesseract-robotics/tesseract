@@ -80,7 +80,7 @@ ContactManagersPluginFactory::ContactManagersPluginFactory(YAML::Node config,
   loadConfig(config);
 }
 
-ContactManagersPluginFactory::ContactManagersPluginFactory(const tesseract_common::fs::path& config,
+ContactManagersPluginFactory::ContactManagersPluginFactory(const std::filesystem::path& config,
                                                            const tesseract_common::ResourceLocator& locator)
   : ContactManagersPluginFactory()
 {
@@ -304,7 +304,7 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
   // LCOV_EXCL_STOP
 }
 
-void ContactManagersPluginFactory::saveConfig(const tesseract_common::fs::path& file_path) const
+void ContactManagersPluginFactory::saveConfig(const std::filesystem::path& file_path) const
 {
   YAML::Node config = getConfig();
   std::ofstream fout(file_path.string());

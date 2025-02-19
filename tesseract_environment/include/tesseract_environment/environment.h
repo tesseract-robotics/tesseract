@@ -47,7 +47,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/fwd.h>
 #include <tesseract_environment/fwd.h>
 
-#include <tesseract_common/filesystem.h>
+#include <filesystem>
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/contact_allowed_validator.h>
@@ -115,11 +115,11 @@ public:
             const std::string& srdf_string,
             const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
-  bool init(const tesseract_common::fs::path& urdf_path,
+  bool init(const std::filesystem::path& urdf_path,
             const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
-  bool init(const tesseract_common::fs::path& urdf_path,
-            const tesseract_common::fs::path& srdf_path,
+  bool init(const std::filesystem::path& urdf_path,
+            const std::filesystem::path& srdf_path,
             const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
   /**

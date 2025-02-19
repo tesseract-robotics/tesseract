@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 using namespace tesseract_kinematics::test_suite;
 using namespace tesseract_kinematics;
 
-void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
+void runKinematicsFactoryTest(const std::filesystem::path& config_path)
 {
   tesseract_common::GeneralResourceLocator locator;
   tesseract_scene_graph::SceneGraph::UPtr iiwa_scene_graph = getSceneGraphIIWA(locator);
@@ -146,21 +146,21 @@ void runKinematicsFactoryTest(const tesseract_common::fs::path& config_path)
     }
   }
 
-  factory.saveConfig(tesseract_common::fs::path(tesseract_common::getTempPath()) / "kinematic_plugins_export.yaml");
+  factory.saveConfig(std::filesystem::path(tesseract_common::getTempPath()) / "kinematic_plugins_export.yaml");
 }
 
 TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_ROP_REP_PluginTest)  // NOLINT
 {
-  tesseract_common::fs::path file_path(__FILE__);
-  tesseract_common::fs::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
+  std::filesystem::path file_path(__FILE__);
+  std::filesystem::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
   runKinematicsFactoryTest(config_path);
 
-  tesseract_common::fs::path export_config_path = tesseract_common::fs::path(tesseract_common::getTempPath()) / "kinema"
-                                                                                                                "tic_"
-                                                                                                                "plugin"
-                                                                                                                "s_"
-                                                                                                                "export"
-                                                                                                                ".yaml";
+  std::filesystem::path export_config_path = std::filesystem::path(tesseract_common::getTempPath()) / "kinema"
+                                                                                                      "tic_"
+                                                                                                      "plugin"
+                                                                                                      "s_"
+                                                                                                      "export"
+                                                                                                      ".yaml";
   runKinematicsFactoryTest(export_config_path);
 }
 

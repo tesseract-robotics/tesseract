@@ -345,7 +345,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
 
   if (!kinematics_information.kinematics_plugin_info.empty())
   {
-    tesseract_common::fs::path p(file_path);
+    std::filesystem::path p(file_path);
     std::ofstream fout(p.parent_path().append("kinematics_plugin_config.yaml").string());
     YAML::Node config;
     config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY] = kinematics_information.kinematics_plugin_info;
@@ -357,7 +357,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
 
   if (!contact_managers_plugin_info.empty())
   {
-    tesseract_common::fs::path p(file_path);
+    std::filesystem::path p(file_path);
     std::ofstream fout(p.parent_path().append("contact_managers_plugin_config.yaml").string());
     YAML::Node config;
     config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY] = contact_managers_plugin_info;
@@ -369,7 +369,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
 
   if (!calibration_info.empty())
   {
-    tesseract_common::fs::path p(file_path);
+    std::filesystem::path p(file_path);
     std::ofstream fout(p.parent_path().append("calibration_config.yaml").string());
     YAML::Node config;
     config[tesseract_common::CalibrationInfo::CONFIG_KEY] = calibration_info;

@@ -206,11 +206,11 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
   // If the directory does not exist, make it
   if (package_path.empty())
     std::throw_with_nested(std::runtime_error("Package path cannot be empty"));
-  boost::filesystem::create_directory(boost::filesystem::path(package_path));
+  std::filesystem::create_directory(std::filesystem::path(package_path));
 
   // // If the collision and visual subdirectories do not exist, make them
-  // boost::filesystem::create_directory(boost::filesystem::path(directory + "collision"));
-  // boost::filesystem::create_directory(boost::filesystem::path(directory + "visual"));
+  // std::filesystem::create_directory(std::filesystem::path(directory + "collision"));
+  // std::filesystem::create_directory(std::filesystem::path(directory + "visual"));
 
   // Create XML Document
   tinyxml2::XMLDocument doc;
@@ -288,7 +288,7 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
   // Check for acyclic?
 
   // Prepare the urdf directory
-  boost::filesystem::create_directory(boost::filesystem::path(trailingSlash(package_path) + "urdf/"));
+  std::filesystem::create_directory(std::filesystem::path(trailingSlash(package_path) + "urdf/"));
 
   // Write the URDF XML to a file
   std::string full_filepath;

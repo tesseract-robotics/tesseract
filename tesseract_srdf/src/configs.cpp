@@ -38,9 +38,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_srdf
 {
-tesseract_common::fs::path parseConfigFilePath(const tesseract_common::ResourceLocator& locator,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const std::array<int, 3>& /*version*/)
+std::filesystem::path parseConfigFilePath(const tesseract_common::ResourceLocator& locator,
+                                          const tinyxml2::XMLElement* xml_element,
+                                          const std::array<int, 3>& /*version*/)
 {
   std::string filename;
   int status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
@@ -53,8 +53,8 @@ tesseract_common::fs::path parseConfigFilePath(const tesseract_common::ResourceL
     std::throw_with_nested(
         std::runtime_error(std::string(xml_element->Value()) + ": Failed to locate resource '" + filename + "'."));
 
-  tesseract_common::fs::path file_path(resource->getFilePath());
-  if (!tesseract_common::fs::exists(file_path))
+  std::filesystem::path file_path(resource->getFilePath());
+  if (!std::filesystem::exists(file_path))
     std::throw_with_nested(std::runtime_error(std::string(xml_element->Value()) +
                                               ": config file does not exist: "
                                               "'" +
@@ -67,7 +67,7 @@ tesseract_common::CalibrationInfo parseCalibrationConfig(const tesseract_scene_g
                                                          const tinyxml2::XMLElement* xml_element,
                                                          const std::array<int, 3>& version)
 {
-  tesseract_common::fs::path cal_config_file_path = parseConfigFilePath(locator, xml_element, version);
+  std::filesystem::path cal_config_file_path = parseConfigFilePath(locator, xml_element, version);
   YAML::Node config;
   try
   {
@@ -99,7 +99,7 @@ tesseract_common::KinematicsPluginInfo parseKinematicsPluginConfig(const tessera
                                                                    const tinyxml2::XMLElement* xml_element,
                                                                    const std::array<int, 3>& version)
 {
-  tesseract_common::fs::path kin_plugin_file_path = parseConfigFilePath(locator, xml_element, version);
+  std::filesystem::path kin_plugin_file_path = parseConfigFilePath(locator, xml_element, version);
   YAML::Node config;
   try
   {
@@ -124,7 +124,7 @@ parseContactManagersPluginConfig(const tesseract_common::ResourceLocator& locato
                                  const tinyxml2::XMLElement* xml_element,
                                  const std::array<int, 3>& version)
 {
-  tesseract_common::fs::path cm_plugin_file_path = parseConfigFilePath(locator, xml_element, version);
+  std::filesystem::path cm_plugin_file_path = parseConfigFilePath(locator, xml_element, version);
   YAML::Node config;
   try
   {
