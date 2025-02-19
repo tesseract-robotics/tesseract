@@ -471,21 +471,8 @@ TEST(TesseractGeometryUnit, SDFMesh)  // NOLINT
 TEST(TesseractGeometryUnit, Octree)  // NOLINT
 {
   using T = tesseract_geometry::Octree;
-  // Instead making this depend on pcl it expects the structure to have a member called points which is a vector
-  // of another object with has float members x, y and z.
-  struct TestPointCloud
-  {
-    struct point
-    {
-      double x;
-      double y;
-      double z;
-    };
 
-    std::vector<point> points;
-  };
-
-  TestPointCloud pc;
+  tesseract_geometry::PointCloud pc;
   auto octree = tesseract_geometry::createOctree(pc, 0.01, false);
   auto geom = std::make_shared<T>(std::move(octree), tesseract_geometry::OctreeSubType::BOX, false);
   EXPECT_TRUE(geom->getOctree() != nullptr);
