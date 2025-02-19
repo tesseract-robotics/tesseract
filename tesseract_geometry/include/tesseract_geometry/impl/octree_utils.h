@@ -36,6 +36,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
+/** @brief A basic point cloud structure to leverage instead of PCL */
+struct PointCloud
+{
+  struct Point
+  {
+    Point() = default;
+    Point(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
+
+    double x;
+    double y;
+    double z;
+  };
+
+  std::vector<Point> points;
+
+  void addPoint(double x, double y, double z) { points.emplace_back(x, y, z); }
+};
+
 template <typename PointT>
 std::unique_ptr<octomap::OcTree>
 createOctree(const PointT& point_cloud, const double resolution, const bool prune, const bool binary = true)
