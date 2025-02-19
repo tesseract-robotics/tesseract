@@ -43,6 +43,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+bool isRelativePath(const std::string& url)
+{
+  tesseract_common::fs::path path(url);
+  return (url.find("file:///") != 0 && url.find("package://") != 0 && path.is_relative());
+}
+
 bool ResourceLocator::operator==(const ResourceLocator& /*rhs*/) const { return true; }
 bool ResourceLocator::operator!=(const ResourceLocator& /*rhs*/) const { return false; }
 
@@ -266,8 +272,7 @@ tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std:
   if (parent_ == nullptr || url.empty())
     return nullptr;
 
-  tesseract_common::fs::path path(url);
-  if (path.is_relative())
+  if (isRelativePath(url))
   {
     // Find the last occurrences of both separators
     std::size_t last_slash = url_.find_last_of('/');
@@ -282,6 +287,7 @@ tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std:
     else
       return nullptr;
 
+    tesseract_common::fs::path path(url);
     std::string url_base_path = url_.substr(0, last_separator);
     std::string new_url = url_base_path + std::string(1, fs::path::preferred_separator) + path.filename().string();
     CONSOLE_BRIDGE_logError("new_url: %s", new_url.c_str());
@@ -345,14 +351,14 @@ Resource::Ptr BytesResource::locateResource(const std::string& url) const
   if (resource != nullptr)
     return resource;
 
-  tesseract_common::fs::path path(url);
-  if (!path.is_relative())
+  if (!isRelativePath(url))
     return nullptr;
 
   auto last_slash = url_.find_last_of('/');
   if (last_slash == std::string::npos)
     return nullptr;
 
+  tesseract_common::fs::path path(url);
   std::string url_base_path = url_.substr(0, last_slash);
   std::string new_url = url_base_path + "/" + path.filename().string();
   return parent_->locateResource(new_url);
