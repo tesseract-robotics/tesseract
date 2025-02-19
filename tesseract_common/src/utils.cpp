@@ -72,7 +72,7 @@ std::enable_if_t<std::is_polymorphic<E>::value> my_rethrow_if_nested(const E& e)
     p->rethrow_nested();
 }
 
-std::string fileToString(const tesseract_common::fs::path& filepath)
+std::string fileToString(const std::filesystem::path& filepath)
 {
   std::ifstream ifs(filepath.c_str());
   std::string contents;
@@ -259,7 +259,10 @@ void printNestedException(const std::exception& e, int level)  // NOLINT(misc-no
   }
 }
 
-std::string getTempPath() { return fs::temp_directory_path().string() + std::string(1, fs::path::preferred_separator); }
+std::string getTempPath()
+{
+  return std::filesystem::temp_directory_path().string() + std::string(1, std::filesystem::path::preferred_separator);
+}
 
 bool isNumeric(const std::string& s)
 {

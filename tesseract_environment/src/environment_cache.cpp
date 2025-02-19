@@ -29,6 +29,8 @@
 #include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_kinematics/core/kinematic_group.h>
 
+#include <mutex>
+
 namespace tesseract_environment
 {
 DefaultEnvironmentCache::DefaultEnvironmentCache(std::shared_ptr<const Environment> env, std::size_t cache_size)

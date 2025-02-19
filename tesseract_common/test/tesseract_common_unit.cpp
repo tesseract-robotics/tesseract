@@ -41,7 +41,7 @@ public:
 
       mod_url.erase(0, pos);
 
-      tesseract_common::fs::path file_path(__FILE__);
+      std::filesystem::path file_path(__FILE__);
       std::string package_path = file_path.parent_path().parent_path().string();
 
       if (package_path.empty())
@@ -50,7 +50,7 @@ public:
       mod_url = package_path + mod_url;
     }
 
-    if (!tesseract_common::fs::path(mod_url).is_absolute())
+    if (!std::filesystem::path(mod_url).is_absolute())
       return nullptr;
 
     return std::make_shared<tesseract_common::SimpleLocatedResource>(
@@ -296,7 +296,7 @@ TEST(TesseractCommonUnit, fileToString)  // NOLINT
 {
   tesseract_common::ResourceLocator::Ptr locator = std::make_shared<TestResourceLocator>();
   tesseract_common::Resource::Ptr resource = locator->locateResource("package://tesseract_common/package.xml");
-  std::string data = tesseract_common::fileToString(tesseract_common::fs::path(resource->getFilePath()));
+  std::string data = tesseract_common::fileToString(std::filesystem::path(resource->getFilePath()));
   EXPECT_FALSE(data.empty());
 }
 
@@ -801,7 +801,7 @@ TEST(TesseractCommonUnit, getTempPathUnit)  // NOLINT
 {
   std::string s1 = tesseract_common::getTempPath();
   EXPECT_FALSE(s1.empty());
-  EXPECT_TRUE(tesseract_common::fs::exists(s1));
+  EXPECT_TRUE(std::filesystem::exists(s1));
 }
 
 TEST(TesseractCommonUnit, QueryStringValueUnit)  // NOLINT
@@ -2664,11 +2664,11 @@ void createTestYamlWithIncludeDirectivesFile(const std::string& filePath, const 
 
 TEST(TesseractCommonUnit, YamlBasicIncludeTest)  // NOLINT
 {
-  std::string separator(1, tesseract_common::fs::path::preferred_separator);
+  std::string separator(1, std::filesystem::path::preferred_separator);
   std::string test_dir = tesseract_common::getTempPath() + "test_yaml_1" + separator;
 
   // Create a temporary test directory
-  tesseract_common::fs::create_directory(test_dir);
+  std::filesystem::create_directory(test_dir);
 
   // Resource locator
   tesseract_common::GeneralResourceLocator locator;
@@ -2696,16 +2696,16 @@ included_key2: included_value2
   ASSERT_EQ(root["key2"]["included_key2"].as<std::string>(), "included_value2");
 
   // Clean up the test directory
-  tesseract_common::fs::remove_all(test_dir);
+  std::filesystem::remove_all(test_dir);
 }
 
 TEST(TesseractCommonUnit, YamlIncludeNestedIncludesTest)  // NOLINT
 {
-  std::string separator(1, tesseract_common::fs::path::preferred_separator);
+  std::string separator(1, std::filesystem::path::preferred_separator);
   std::string test_dir = tesseract_common::getTempPath() + "test_yaml_2" + separator;
 
   // Create a temporary test directory
-  tesseract_common::fs::create_directory(test_dir);
+  std::filesystem::create_directory(test_dir);
 
   // Resource locator
   tesseract_common::GeneralResourceLocator locator;
@@ -2732,16 +2732,16 @@ deep_key1: deep_value1
   ASSERT_EQ(root["key2"]["nested_key1"]["deep_key1"].as<std::string>(), "deep_value1");
 
   // Clean up the test directory
-  tesseract_common::fs::remove_all(test_dir);
+  std::filesystem::remove_all(test_dir);
 }
 
 TEST(TesseractCommonUnit, YamlIncludeSequenceIncludesTest)  // NOLINT
 {
-  std::string separator(1, tesseract_common::fs::path::preferred_separator);
+  std::string separator(1, std::filesystem::path::preferred_separator);
   std::string test_dir = tesseract_common::getTempPath() + "test_yaml_3" + separator;
 
   // Create a temporary test directory
-  tesseract_common::fs::create_directory(test_dir);
+  std::filesystem::create_directory(test_dir);
 
   // Resource locator
   tesseract_common::GeneralResourceLocator locator;
@@ -2769,16 +2769,16 @@ key1:
   ASSERT_EQ(root["key1"][1][1].as<std::string>(), "included_item2");
 
   // Clean up the test directory
-  tesseract_common::fs::remove_all(test_dir);
+  std::filesystem::remove_all(test_dir);
 }
 
 TEST(TesseractCommonUnit, YamlIncludeSequenceIncludesMapTest)  // NOLINT
 {
-  std::string separator(1, tesseract_common::fs::path::preferred_separator);
+  std::string separator(1, std::filesystem::path::preferred_separator);
   std::string test_dir = tesseract_common::getTempPath() + "test_yaml_4" + separator;
 
   // Create a temporary test directory
-  tesseract_common::fs::create_directory(test_dir);
+  std::filesystem::create_directory(test_dir);
 
   // Resource locator
   tesseract_common::GeneralResourceLocator locator;
@@ -2809,16 +2809,16 @@ keyB: valueB
   ASSERT_EQ(root["key1"][1]["keyB"].as<std::string>(), "valueB");
 
   // Clean up the test directory
-  tesseract_common::fs::remove_all(test_dir);
+  std::filesystem::remove_all(test_dir);
 }
 
 TEST(TesseractCommonUnit, YamlIncludeMissingIncludeFileTest)  // NOLINT
 {
-  std::string separator(1, tesseract_common::fs::path::preferred_separator);
+  std::string separator(1, std::filesystem::path::preferred_separator);
   std::string test_dir = tesseract_common::getTempPath() + "test_yaml_5" + separator;
 
   // Create a temporary test directory
-  tesseract_common::fs::create_directory(test_dir);
+  std::filesystem::create_directory(test_dir);
 
   // Resource locator
   tesseract_common::GeneralResourceLocator locator;
@@ -2832,16 +2832,16 @@ key1: !include missing.yaml
   EXPECT_THROW(loadYamlFile(test_dir + "main.yaml", locator), std::runtime_error);  // NOLINT
 
   // Clean up the test directory
-  tesseract_common::fs::remove_all(test_dir);
+  std::filesystem::remove_all(test_dir);
 }
 
 TEST(TesseractCommonUnit, YamlIncludeInvalidIncludeTagTest)  // NOLINT
 {
-  std::string separator(1, tesseract_common::fs::path::preferred_separator);
+  std::string separator(1, std::filesystem::path::preferred_separator);
   std::string test_dir = tesseract_common::getTempPath() + "test_yaml_6" + separator;
 
   // Create a temporary test directory
-  tesseract_common::fs::create_directory(test_dir);
+  std::filesystem::create_directory(test_dir);
 
   // Resource locator
   tesseract_common::GeneralResourceLocator locator;
@@ -2855,7 +2855,7 @@ key1: !include
   EXPECT_THROW(loadYamlFile(test_dir + "main.yaml", locator), std::runtime_error);  // NOLINT
 
   // Clean up the test directory
-  tesseract_common::fs::remove_all(test_dir);
+  std::filesystem::remove_all(test_dir);
 }
 
 int main(int argc, char** argv)

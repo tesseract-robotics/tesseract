@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
-#include <tesseract_common/filesystem.h>
+#include <filesystem>
 #include <tesseract_common/plugin_loader.h>
 #include <tesseract_common/plugin_info.h>
 
@@ -116,8 +116,7 @@ public:
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  ContactManagersPluginFactory(const tesseract_common::fs::path& config,
-                               const tesseract_common::ResourceLocator& locator);
+  ContactManagersPluginFactory(const std::filesystem::path& config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from string
@@ -269,7 +268,7 @@ public:
    * @brief Save the plugin information to a yaml config file
    * @param file_path The file path
    */
-  void saveConfig(const boost::filesystem::path& file_path) const;
+  void saveConfig(const std::filesystem::path& file_path) const;
 
   /**
    * @brief Get the plugin information config as a yaml node

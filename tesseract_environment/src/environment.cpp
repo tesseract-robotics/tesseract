@@ -2237,7 +2237,7 @@ bool Environment::init(const std::string& urdf_string,
   return init(commands);
 }
 
-bool Environment::init(const tesseract_common::fs::path& urdf_path,
+bool Environment::init(const std::filesystem::path& urdf_path,
                        const std::shared_ptr<const tesseract_common::ResourceLocator>& locator)
 {
   {
@@ -2262,8 +2262,8 @@ bool Environment::init(const tesseract_common::fs::path& urdf_path,
   return init(commands);
 }
 
-bool Environment::init(const tesseract_common::fs::path& urdf_path,
-                       const tesseract_common::fs::path& srdf_path,
+bool Environment::init(const std::filesystem::path& urdf_path,
+                       const std::filesystem::path& srdf_path,
                        const std::shared_ptr<const tesseract_common::ResourceLocator>& locator)
 {
   {

@@ -549,10 +549,10 @@ class TempResourceLocator : public tesseract_common::ResourceLocator
 public:
   std::shared_ptr<tesseract_common::Resource> locateResource(const std::string& url) const override final
   {
-    tesseract_common::fs::path mod_url(url);
+    std::filesystem::path mod_url(url);
     if (!mod_url.is_absolute())
     {
-      mod_url = tesseract_common::fs::path(tesseract_common::getTempPath() + url);
+      mod_url = std::filesystem::path(tesseract_common::getTempPath() + url);
     }
 
     return std::make_shared<tesseract_common::SimpleLocatedResource>(
@@ -1994,8 +1994,8 @@ TEST(TesseractSRDFUnit, ParseConfigFilePathUnit)  // NOLINT
     tinyxml2::XMLElement* element = robot_element->FirstChildElement("contact_managers_plugin_config");
     EXPECT_TRUE(element != nullptr);
 
-    tesseract_common::fs::path path = tesseract_srdf::parseConfigFilePath(locator, element, version);
-    EXPECT_TRUE(tesseract_common::fs::exists(path));
+    std::filesystem::path path = tesseract_srdf::parseConfigFilePath(locator, element, version);
+    EXPECT_TRUE(std::filesystem::exists(path));
   }
 
   {  // failures (incorrect attribute)

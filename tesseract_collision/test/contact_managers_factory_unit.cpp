@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_collision;
 
-void runContactManagersFactoryTest(const tesseract_common::fs::path& config_path)
+void runContactManagersFactoryTest(const std::filesystem::path& config_path)
 {
   tesseract_common::GeneralResourceLocator locator;
   ContactManagersPluginFactory factory(config_path, locator);
@@ -88,8 +88,8 @@ void runContactManagersFactoryTest(const tesseract_common::fs::path& config_path
     EXPECT_TRUE(cm != nullptr);
   }
 
-  factory.saveConfig(tesseract_common::fs::path(tesseract_common::getTempPath()) / "contact_manager_plugins_export."
-                                                                                   "yaml");
+  factory.saveConfig(std::filesystem::path(tesseract_common::getTempPath()) / "contact_manager_plugins_export."
+                                                                              "yaml");
 
   // Failures
   {
@@ -116,18 +116,18 @@ void runContactManagersFactoryTest(const tesseract_common::fs::path& config_path
 
 TEST(TesseractContactManagersFactoryUnit, LoadAndExportPluginTest)  // NOLINT
 {
-  tesseract_common::fs::path file_path(__FILE__);
-  tesseract_common::fs::path config_path = file_path.parent_path() / "contact_manager_plugins.yaml";
+  std::filesystem::path file_path(__FILE__);
+  std::filesystem::path config_path = file_path.parent_path() / "contact_manager_plugins.yaml";
   runContactManagersFactoryTest(config_path);
 
-  tesseract_common::fs::path export_config_path = tesseract_common::fs::path(tesseract_common::getTempPath()) / "contac"
-                                                                                                                "t_"
-                                                                                                                "manage"
-                                                                                                                "r_"
-                                                                                                                "plugin"
-                                                                                                                "s_"
-                                                                                                                "export"
-                                                                                                                ".yaml";
+  std::filesystem::path export_config_path = std::filesystem::path(tesseract_common::getTempPath()) / "contac"
+                                                                                                      "t_"
+                                                                                                      "manage"
+                                                                                                      "r_"
+                                                                                                      "plugin"
+                                                                                                      "s_"
+                                                                                                      "export"
+                                                                                                      ".yaml";
   runContactManagersFactoryTest(export_config_path);
 }
 

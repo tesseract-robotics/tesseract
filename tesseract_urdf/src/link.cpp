@@ -132,7 +132,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeLink(const std::shared_ptr<const tess
   {
     try
     {
-      boost::filesystem::create_directory(boost::filesystem::path(trailingSlash(package_path) + "visual/"));
+      std::filesystem::create_directory(std::filesystem::path(trailingSlash(package_path) + "visual/"));
       tinyxml2::XMLElement* xml_visual = writeVisual(vis, doc, package_path, link->getName(), id++);
       xml_element->InsertEndChild(xml_visual);
     }
@@ -150,7 +150,7 @@ tinyxml2::XMLElement* tesseract_urdf::writeLink(const std::shared_ptr<const tess
   {
     try
     {
-      boost::filesystem::create_directory(boost::filesystem::path(trailingSlash(package_path) + "collision/"));
+      std::filesystem::create_directory(std::filesystem::path(trailingSlash(package_path) + "collision/"));
       tinyxml2::XMLElement* xml_collision = writeCollision(col, doc, package_path, link->getName(), id++);
       xml_element->InsertEndChild(xml_collision);
     }

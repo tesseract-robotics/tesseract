@@ -43,6 +43,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_common/utils.h>
 
+#include <mutex>
+
 namespace tesseract_scene_graph
 {
 /** @brief Every time a vertex is visited for the first time add a new node to the tree */

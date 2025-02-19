@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/filesystem.h>
+#include <filesystem>
 
 namespace boost::serialization
 {
@@ -98,7 +98,7 @@ public:
    * @param paths A vector of paths to search for resources
    * @param environment_variables A vector of environment variables to search for paths
    */
-  GeneralResourceLocator(const std::vector<tesseract_common::fs::path>& paths,
+  GeneralResourceLocator(const std::vector<std::filesystem::path>& paths,
                          const std::vector<std::string>& environment_variables = { "TESSERACT_RESOURCE_PATH",
                                                                                    "ROS_PACKAGE_PATH" });
   GeneralResourceLocator(const GeneralResourceLocator&) = default;
@@ -119,7 +119,7 @@ public:
    * @return true Success
    * @return false Directory does not exist
    */
-  bool addPath(const tesseract_common::fs::path& path);
+  bool addPath(const std::filesystem::path& path);
 
   /**
    * @brief Load paths from an environment variable
