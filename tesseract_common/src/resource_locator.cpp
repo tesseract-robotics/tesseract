@@ -291,7 +291,7 @@ tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std:
     std::string url_base_path = url_.substr(0, last_separator);
     std::string new_url =
         url_base_path + std::string(1, std::filesystem::path::preferred_separator) + path.filename().string();
-    CONSOLE_BRIDGE_logError("new_url: %s", new_url.c_str());
+    CONSOLE_BRIDGE_logDebug("new_url: %s", new_url.c_str());
     return parent_->locateResource(new_url);
   }
 
