@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_serialize.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -188,5 +189,9 @@ void JointTrajectory::serialize(Archive& ar, const unsigned int version)  // NOL
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointState)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointTrajectory)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointStateAnyPoly)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointStatePtrAnyPoly)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointState)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointTrajectory)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointStateAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointStatePtrAnyPoly)

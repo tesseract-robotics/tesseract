@@ -588,9 +588,11 @@ public:
   explicit Environment(std::unique_ptr<Implementation> impl);
 };
 
+using EnvironmentPtrAnyPoly = tesseract_common::AnyWrapper<std::shared_ptr<tesseract_environment::Environment>>;
+using EnvironmentConstPtrAnyPoly =
+    tesseract_common::AnyWrapper<std::shared_ptr<const tesseract_environment::Environment>>;
 }  // namespace tesseract_environment
 BOOST_CLASS_EXPORT_KEY(tesseract_environment::Environment)
-TESSERACT_ANY_EXPORT_KEY(std::shared_ptr<const tesseract_environment::Environment>,
-                         TesseractEnvironmentEnvironmentConstSharedPtr)
-TESSERACT_ANY_EXPORT_KEY(std::shared_ptr<tesseract_environment::Environment>, TesseractEnvironmentEnvironmentSharedPtr)
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::EnvironmentPtrAnyPoly)
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::EnvironmentConstPtrAnyPoly)
 #endif  // TESSERACT_ENVIRONMENT_ENVIRONMENT_H

@@ -41,7 +41,8 @@ struct CalibrationInfo;
 struct PairHash;
 
 // any_poly.h
-struct AnyPoly;
+class AnyInterface;
+class AnyPoly;
 
 // class_loader.h
 struct ClassLoader;
