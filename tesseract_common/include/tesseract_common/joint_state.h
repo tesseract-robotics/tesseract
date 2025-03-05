@@ -35,6 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/any_poly.h>
+
 namespace boost::serialization
 {
 class access;
@@ -236,8 +238,12 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
+using JointStateAnyPoly = AnyWrapper<JointState>;
+using JointStatePtrAnyPoly = AnyWrapper<std::shared_ptr<JointState>>;
 }  // namespace tesseract_common
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::JointState)
 BOOST_CLASS_EXPORT_KEY(tesseract_common::JointTrajectory)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::JointStateAnyPoly)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::JointStatePtrAnyPoly)
 #endif  // TESSERACT_COMMON_JOINT_STATE_H

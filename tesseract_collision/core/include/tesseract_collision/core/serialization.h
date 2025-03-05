@@ -68,8 +68,20 @@ void serialize(Archive& ar, tesseract_collision::ContactTrajectoryResults& g, co
 
 }  // namespace boost::serialization
 
-TESSERACT_ANY_EXPORT_KEY(tesseract_collision::ContactResult, TesseractCollisionContactResult)
-TESSERACT_ANY_EXPORT_KEY(tesseract_collision::ContactResultMap, TesseractCollisionContactResultMap)
-TESSERACT_ANY_EXPORT_KEY(std::vector<tesseract_collision::ContactResultMap>, TesseractCollisionContactResultMapVector)
+namespace tesseract_collision
+{
+using ContactResultAnyPoly = tesseract_common::AnyWrapper<ContactResult>;
+using ContactResultMapAnyPoly = tesseract_common::AnyWrapper<ContactResultMap>;
+using ContactResultMapVectorAnyPoly = tesseract_common::AnyWrapper<std::vector<tesseract_collision::ContactResultMap>>;
+}  // namespace tesseract_collision
+
+BOOST_CLASS_EXPORT_KEY(tesseract_collision::ContactResultAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_collision::ContactResultAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_collision::ContactResultMapAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_collision::ContactResultMapAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_collision::ContactResultMapVectorAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_collision::ContactResultMapVectorAnyPoly, boost::serialization::track_never)
 
 #endif  // TESSERACT_COLLISION_SERIALIZATION_H

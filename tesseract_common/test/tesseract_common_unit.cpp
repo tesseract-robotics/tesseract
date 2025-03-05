@@ -354,9 +354,6 @@ TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
   EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
-TESSERACT_ANY_EXPORT(tesseract_common::JointState, TesseractCommonJointState);  // NOLINT
-TESSERACT_ANY_EXPORT(std::shared_ptr<tesseract_common::JointState>, TesseractCommonJointStateSharedPtr)
-
 TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 {
   tesseract_common::AnyPoly any_type;
