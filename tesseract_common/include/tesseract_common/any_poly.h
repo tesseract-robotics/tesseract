@@ -97,7 +97,7 @@ public:
     return (value == derived_other->value);
   }
 
-  T value;
+  T value{};
 
 private:
   friend class boost::serialization::access;
@@ -113,7 +113,8 @@ private:
 class AnyPoly
 {
 public:
-  AnyPoly() = default;  // Default constructor
+  AnyPoly() = default;   // Default constructor
+  ~AnyPoly() = default;  // Default destructor
   AnyPoly(const AnyPoly& other);
   AnyPoly& operator=(const AnyPoly& other);
   AnyPoly(AnyPoly&& other) noexcept = default;
