@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
+#include <tesseract_common/any_poly.h>
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_common/collision_margin_data.h>
 #include <tesseract_geometry/fwd.h>
@@ -566,6 +567,10 @@ struct ContactTrajectoryResults
   std::vector<std::string> joint_names;
   int total_steps = 0;
 };
+
+using ContactResultAnyPoly = tesseract_common::AnyWrapper<ContactResult>;
+using ContactResultMapAnyPoly = tesseract_common::AnyWrapper<ContactResultMap>;
+using ContactResultMapVectorAnyPoly = tesseract_common::AnyWrapper<std::vector<tesseract_collision::ContactResultMap>>;
 
 }  // namespace tesseract_collision
 

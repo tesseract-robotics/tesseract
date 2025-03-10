@@ -68,13 +68,6 @@ void serialize(Archive& ar, tesseract_collision::ContactTrajectoryResults& g, co
 
 }  // namespace boost::serialization
 
-namespace tesseract_collision
-{
-using ContactResultAnyPoly = tesseract_common::AnyWrapper<ContactResult>;
-using ContactResultMapAnyPoly = tesseract_common::AnyWrapper<ContactResultMap>;
-using ContactResultMapVectorAnyPoly = tesseract_common::AnyWrapper<std::vector<tesseract_collision::ContactResultMap>>;
-}  // namespace tesseract_collision
-
 BOOST_CLASS_EXPORT_KEY(tesseract_collision::ContactResultAnyPoly)
 BOOST_CLASS_TRACKING(tesseract_collision::ContactResultAnyPoly, boost::serialization::track_never)
 
