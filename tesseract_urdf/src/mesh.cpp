@@ -155,6 +155,14 @@ tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::
     xml_element->SetAttribute("scale", scale_string.str().c_str());
   }
 
+  // If the mesh is actually a convex mesh, set the `tesseract:make_convex` attribute true.
+  // The geometry itself is already convex, so telling Tesseract to make it convex won't change the geometry.
+  // However, it will make sure it gets added to the environment as a `ConvexMesh` shape instead of a `Mesh` shape.
+  if (std::dynamic_pointer_cast<const tesseract_geometry::ConvexMesh>(mesh))
+  {
+    xml_element->SetAttribute("tesseract:make_convex", true);
+  }
+
   return xml_element;
 }
 
