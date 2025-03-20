@@ -79,7 +79,7 @@ WarningsAsErrors: >
     -readability-named-parameter,
     -readability-magic-numbers,
     -readability-isolate-declaration,
-    -readability-function-cognitive-complexity
+    -readability-function-cognitive-complexity,
     -readability-use-anyofallof,
     -readability-identifier-length,
     -readability-suspicious-call-argument
