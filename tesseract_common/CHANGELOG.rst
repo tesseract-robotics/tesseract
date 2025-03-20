@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.29.0 (2025-03-20)
+-------------------
 * Leverage inheritance for AnyPoly (`#1128 <https://github.com/tesseract-robotics/tesseract/issues/1128>`_)
 * Do not log an error when correctly parsing a yaml include.
 * Update to leverage std::filesystem

@@ -2,8 +2,8 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.29.0 (2025-03-20)
+-------------------
 * Update to leverage std::filesystem
 * Fix clang-tidy-17 errors (`#1122 <https://github.com/tesseract-robotics/tesseract/issues/1122>`_)
 * Contributors: Levi Armstrong

@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.29.0 (2025-03-20)
+-------------------
 * Fully enable collision shape caching
 * Move tesseract_collision any poly types to types.h
 * Leverage inheritance for AnyPoly (`#1128 <https://github.com/tesseract-robotics/tesseract/issues/1128>`_)

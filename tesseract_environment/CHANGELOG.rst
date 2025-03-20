@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.29.0 (2025-03-20)
+-------------------
 * Leverage inheritance for AnyPoly (`#1128 <https://github.com/tesseract-robotics/tesseract/issues/1128>`_)
 * Update to leverage std::filesystem
 * Fix clang-tidy-17 errors (`#1122 <https://github.com/tesseract-robotics/tesseract/issues/1122>`_)
