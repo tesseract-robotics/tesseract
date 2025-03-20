@@ -1,0 +1,13 @@
+// Main page
+/**
+@mainpage
+
+Welcome to the Tesseract documentation
+
+<ul>
+  <li> @subpage getting_started </li>
+  <li> @subpage urdf </li>
+  <li> @subpage srdf </li>
+</ul>
+
+*/
