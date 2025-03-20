@@ -2,6 +2,17 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Leverage inheritance for AnyPoly (`#1128 <https://github.com/tesseract-robotics/tesseract/issues/1128>`_)
+* Do not log an error when correctly parsing a yaml include.
+* Update to leverage std::filesystem
+* Remove unused header from Timer
+* Do not pass double by const ref in CollisionMarginData
+* Fix SimpleResource::locateResource
+* Fix clang-tidy-17 errors (`#1122 <https://github.com/tesseract-robotics/tesseract/issues/1122>`_)
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.28.8 (2025-02-01)
 -------------------
 

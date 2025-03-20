@@ -2,6 +2,11 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update URDF parser to use Tesseract XML namespace (`#1081 <https://github.com/tesseract-robotics/tesseract/issues/1081>`_)
+* Contributors: Michael Ripperger
+
 0.28.8 (2025-02-01)
 -------------------
 

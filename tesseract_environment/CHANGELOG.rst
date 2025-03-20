@@ -2,6 +2,14 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Leverage inheritance for AnyPoly (`#1128 <https://github.com/tesseract-robotics/tesseract/issues/1128>`_)
+* Update to leverage std::filesystem
+* Fix clang-tidy-17 errors (`#1122 <https://github.com/tesseract-robotics/tesseract/issues/1122>`_)
+* Fix missing includes causing clang warnings
+* Contributors: Levi Armstrong
+
 0.28.8 (2025-02-01)
 -------------------
 * Fix collision shape caching
