@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="kuka_liwa_7" xmlns:xacro="http://wiki.ros.org/xacro" tesseract:make_convex="true">
+<robot name="kuka_liwa_7" xmlns:xacro="http://wiki.ros.org/xacro" xmlns:tesseract="https://github.com/tesseract-robotics/tesseract" tesseract:make_convex="true">
     <!-- link list -->
     <link name="link_0">
       <visual>
