@@ -2,6 +2,9 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.29.0 (2025-03-20)
 -------------------
 * Update to leverage std::filesystem

@@ -2,6 +2,11 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing declared namespace for tesseract in xacro and urdf files
+* Contributors: Levi Armstrong
+
 0.29.0 (2025-03-20)
 -------------------
 * Update URDF parser to use Tesseract XML namespace (`#1081 <https://github.com/tesseract-robotics/tesseract/issues/1081>`_)

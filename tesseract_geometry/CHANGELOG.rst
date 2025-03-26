@@ -2,6 +2,11 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix polygon mesh not serializing its resource locator
+* Contributors: Levi Armstrong
+
 0.29.0 (2025-03-20)
 -------------------
 * Improve python support for octree_utils.h

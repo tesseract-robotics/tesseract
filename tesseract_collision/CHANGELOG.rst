@@ -2,6 +2,9 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.29.0 (2025-03-20)
 -------------------
 * Fully enable collision shape caching
