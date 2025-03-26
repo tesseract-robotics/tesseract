@@ -2,8 +2,8 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.29.1 (2025-03-26)
+-------------------
 * Add missing declared namespace for tesseract in xacro and urdf files
 * Contributors: Levi Armstrong
 

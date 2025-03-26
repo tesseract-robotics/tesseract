@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.29.1 (2025-03-26)
+-------------------
 * Fix polygon mesh not serializing its resource locator
 * Contributors: Levi Armstrong
 
