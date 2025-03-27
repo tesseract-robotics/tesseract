@@ -2,6 +2,16 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.29.1 (2025-03-26)
+-------------------
+
+0.29.0 (2025-03-20)
+-------------------
+* Update URDF parser to use Tesseract XML namespace (`#1081 <https://github.com/tesseract-robotics/tesseract/issues/1081>`_)
+* Update to leverage std::filesystem
+* Fix clang-tidy-17 errors (`#1122 <https://github.com/tesseract-robotics/tesseract/issues/1122>`_)
+* Contributors: Levi Armstrong, Michael Ripperger
+
 0.28.8 (2025-02-01)
 -------------------
 

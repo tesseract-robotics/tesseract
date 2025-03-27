@@ -435,7 +435,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
       // LCOV_EXCL_STOP
   }
 
-  // BulletCollisionShapeCache::insert(geom, shape);
+  BulletCollisionShapeCache::insert(geom, shape);
   return shape;
 }
 

@@ -30,7 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <unordered_map>
-#include <vector>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
@@ -44,18 +44,18 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view VISUAL_ELEMENT_NAME = "visual";
+
 /**
  * @brief Parse xml element visual
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
- * @param version The version number
  * @return A Visual object
  */
 std::shared_ptr<tesseract_scene_graph::Visual>
 parseVisual(const tinyxml2::XMLElement* xml_element,
             const tesseract_common::ResourceLocator& locator,
-            std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
-            int version);
+            std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials);
 
 /**
  * @brief writeVisual Write one visual geometry object to URDF XML

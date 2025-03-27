@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 
 #include <boost/filesystem.hpp>
+#include <string_view>
 #include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -45,6 +46,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_urdf/utils.h>
 
+static constexpr std::string_view ROBOT_ELEMENT_NAME = "robot";
+
 namespace tesseract_urdf
 {
 std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::string& urdf_xml_string,
@@ -54,7 +57,7 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   if (xml_doc.Parse(urdf_xml_string.c_str()) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("URDF: Failed to parse urdf string!"));
 
-  tinyxml2::XMLElement* robot = xml_doc.FirstChildElement("robot");
+  tinyxml2::XMLElement* robot = xml_doc.FirstChildElement(ROBOT_ELEMENT_NAME.data());
   if (robot == nullptr)
     std::throw_with_nested(std::runtime_error("URDF: Missing element 'robot'!"));
 
@@ -69,29 +72,47 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
         std::runtime_error("URDF: Failed parsing attribute 'version' for robot '" + robot_name + "'!"));
 
   if (urdf_version != 1)
-    std::throw_with_nested(
-        std::runtime_error("URDF: 'version' for robot '" + robot_name + "' is set to `" + std::to_string(urdf_version) +
-                           "', this is not supported, please set it to 1.0. If you want to use a different tesseract "
-                           "URDF parsing version use `tesseract_version=\"2\"`"));
+    std::throw_with_nested(std::runtime_error("URDF: 'version' for robot '" + robot_name + "' is set to `" +
+                                              std::to_string(urdf_version) +
+                                              "', this is not supported, please set it to 1.0."));
 
-  int tesseract_urdf_version = 1;
-  auto tesseract_version_status = robot->QueryIntAttribute("tesseract_version", &tesseract_urdf_version);
-  if (tesseract_version_status != tinyxml2::XML_NO_ATTRIBUTE && tesseract_version_status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(
-        std::runtime_error("URDF: Failed parsing attribute 'tesseract_version' for robot '" + robot_name + "'!"));
+  // Check for global attribute for converting meshes to convex hulls
+  bool make_convex = false;
+  auto make_convex_status = robot->QueryBoolAttribute("tesseract:make_convex", &make_convex);
+  switch (make_convex_status)
+  {
+    case tinyxml2::XML_SUCCESS:
+      break;
+    case tinyxml2::XML_NO_ATTRIBUTE:
+    {
+      const std::string message = "URDF: missing boolean attribute 'tesseract:make_convex'. This attribute indicates "
+                                  "whether Tesseract should globally convert all collision mesh geometries into convex "
+                                  "hulls. Previous versions of Tesseract performed this conversion automatically "
+                                  "(i.e., 'tesseract:make_convex=\"true\"'. If you want to perform collision checking "
+                                  "with detailed meshes instead of convex hulls, set "
+                                  "'tesseract:make_convex=\"false\"'. This global attribute can be overriden on a "
+                                  "per-mesh basis by specifying the 'tesseract:make_convex' attribute in the 'mesh' "
+                                  "element (e.g., <mesh filename=\"...\" tesseract:make_convex=\"true/false\"> .";
+      std::throw_with_nested(std::runtime_error(message));
+    }
+    default:
+      std::throw_with_nested(std::runtime_error("URDF: Failed to parse boolean attribute 'tesseract:make_convex' for "
+                                                "robot '" +
+                                                robot_name + "'"));
+  }
 
   auto sg = std::make_unique<tesseract_scene_graph::SceneGraph>();
   sg->setName(robot_name);
 
   std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
-  for (tinyxml2::XMLElement* material = robot->FirstChildElement("material"); material != nullptr;
-       material = material->NextSiblingElement("material"))
+  for (tinyxml2::XMLElement* material = robot->FirstChildElement(MATERIAL_ELEMENT_NAME.data()); material != nullptr;
+       material = material->NextSiblingElement(MATERIAL_ELEMENT_NAME.data()))
   {
     tesseract_scene_graph::Material::Ptr m = nullptr;
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_material;
     try
     {
-      m = parseMaterial(material, empty_material, true, tesseract_urdf_version);
+      m = parseMaterial(material, empty_material, true);
     }
     catch (...)
     {
@@ -102,13 +123,13 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
     available_materials[m->getName()] = m;
   }
 
-  for (tinyxml2::XMLElement* link = robot->FirstChildElement("link"); link != nullptr;
-       link = link->NextSiblingElement("link"))
+  for (tinyxml2::XMLElement* link = robot->FirstChildElement(LINK_ELEMENT_NAME.data()); link != nullptr;
+       link = link->NextSiblingElement(LINK_ELEMENT_NAME.data()))
   {
     tesseract_scene_graph::Link::Ptr l = nullptr;
     try
     {
-      l = parseLink(link, locator, available_materials, tesseract_urdf_version);
+      l = parseLink(link, locator, make_convex, available_materials);
     }
     catch (...)
     {
@@ -129,14 +150,13 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   if (sg->getLinks().empty())
     std::throw_with_nested(std::runtime_error("URDF: Error no links were found for robot '" + robot_name + "'!"));
 
-  for (tinyxml2::XMLElement* joint = robot->FirstChildElement("joint"); joint != nullptr;
-       joint = joint->NextSiblingElement("join"
-                                         "t"))
+  for (tinyxml2::XMLElement* joint = robot->FirstChildElement(JOINT_ELEMENT_NAME.data()); joint != nullptr;
+       joint = joint->NextSiblingElement(JOINT_ELEMENT_NAME.data()))
   {
     tesseract_scene_graph::Joint::Ptr j = nullptr;
     try
     {
-      j = parseJoint(joint, tesseract_urdf_version);
+      j = parseJoint(joint);
     }
     catch (...)
     {
@@ -220,8 +240,9 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
   doc.InsertFirstChild(xml_declaration);
 
   // Assign Robot Name
-  tinyxml2::XMLElement* xml_robot = doc.NewElement("robot");
+  tinyxml2::XMLElement* xml_robot = doc.NewElement(ROBOT_ELEMENT_NAME.data());
   xml_robot->SetAttribute("name", sg->getName().c_str());
+  xml_robot->SetAttribute("tesseract:make_convex", false);
   // version?
   doc.InsertEndChild(xml_robot);
 

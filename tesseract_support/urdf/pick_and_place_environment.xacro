@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<robot name="environment" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="environment" xmlns:xacro="http://www.ros.org/wiki/xacro" xmlns:tesseract="https://github.com/tesseract-robotics/tesseract" tesseract:make_convex="true">
 
 <xacro:macro name="workcell" params="parent_link *location">
 

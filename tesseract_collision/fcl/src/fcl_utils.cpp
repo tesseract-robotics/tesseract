@@ -207,13 +207,13 @@ CollisionGeometryPtr createShapePrimitiveHelper(const CollisionShapeConstPtr& ge
 
 CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
 {
-  // CollisionGeometryPtr shape = FCLCollisionGeometryCache::get(geom);
-  // if (shape != nullptr)
-  //   return shape;
+  CollisionGeometryPtr shape = FCLCollisionGeometryCache::get(geom);
+  if (shape != nullptr)
+    return shape;
 
-  // shape = createShapePrimitiveHelper(geom);
-  // FCLCollisionGeometryCache::insert(geom, shape);
-  return createShapePrimitiveHelper(geom);
+  shape = createShapePrimitiveHelper(geom);
+  FCLCollisionGeometryCache::insert(geom, shape);
+  return shape;
 }
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
