@@ -94,6 +94,9 @@ CheckOptions:
     value:           '1'
   - key:             cppcoreguidelines-pro-type-member-init.IgnoreArrays
     value:           '1'
+    # ignore Eigen, yaml-cpp, until added to IWYU and also ignore internal GCC headers (bits/)
+  - key:             misc-include-cleaner.IgnoreHeaders
+    value:           'Eigen/src/.*|yaml-cpp/.*|bits/.*|external/.*'
 ExtraArgs:
   - '-std=c++17'
 ...
