@@ -1,0 +1,144 @@
+/**
+@page urdf URDF
+
+Tesseract is compatible with <a href="http://www.ros.org/wiki/urdf">Universal Robot Description Format (URDF)</a>, the native format for describing robots in ROS.
+In this tutorial, you will find resources for the URDF and important tips.
+
+@section important_tips Important Tips
+
+This section contains a set of tips on making sure that the URDF that you generate can be used with Tesseract. Make sure you go through all these tips before starting to use Tesseract with your robot.
+
+@subsection special_characters_in_joint_names Special Characters in Joint Names
+
+Joint names should not contain any of the following special characters:
+
+<ul>
+  <li>`-`</li>
+  <li>`[`</li>
+  <li>`]`</li>
+  <li>`(`</li>
+  <li>`)`</li>
+</ul>
+
+@subsection safety_limits Safety Limits
+
+Some URDFs have safety limits set in addition to the joint limits of the robot.
+Here's an example of the safety controller specified for the Panda robot head pan joint:
+
+    <safety_controller k_position="100" k_velocity="1.5" soft_lower_limit="-2.857" soft_upper_limit="2.857"/>
+
+The "soft_lower_limit" field and the "soft_upper_limit" field specify the joint position limits for this joint.
+Tesseract will compare these limits to the hard limits for the joint specified in the URDF and choose the limits that are more conservative.
+
+@note
+If the "soft_lower_limit" and the "soft_upper_limit" in the safety_controller are set to 0.0, your joint will be unable to move.
+Tesseract relies on you to specify the correct robot model.
+
+@subsection collision_checking Collision Checking
+
+Tesseract uses the meshes specified in the URDF for collision checking.
+The URDF allows you to specify two sets of meshes separately for visualization and collision checking.
+In general, the visualization meshes can be detailed and pretty, but the collision meshes should be much less detailed.
+The number of triangles in a mesh affects the amount of time it takes to collision check a robot link.
+The number of triangles in the whole robot should be on the order of a few thousand.
+
+@subsection test_your_urdf Test your URDF
+
+It is very important to test your URDF out and make sure things are configured properly.
+Consider using the ROS <a href="http://wiki.ros.org/urdf#Verification">`check_urdf` tool</a> to validate your URDF.
+
+@section tesseract_urdf_extensions Tesseract URDF Extensions
+
+Tesseract provides several extensions to the URDF standard.
+
+<ul>
+  <li> @ref tesseract_capsule </li>
+  <li> @ref tesseract_cone </li>
+  <li> @ref tesseract_octomap </li>
+  <li> @ref tesseract_octree </li>
+  <li> @ref tesseract_point_cloud </li>
+  <li> @ref tesseract_sdf_mesh </li>
+  <li> @ref tesseract_make_convex </li>
+</ul>
+
+@subsection tesseract_capsule tesseract:capsule
+
+Capsule geometry
+
+URDF path: `/robot/link/<visual|collision>/geometry/tesseract:capsule`
+
+    <tesseract:capsule length="<float>" radius="<float>">
+
+@subsection tesseract_cone tesseract:cone
+
+Cone geometry
+
+URDF path: `/robot/link/<visual|collision>/geometry/tesseract:cone`
+
+    <tesseract:cone length="<float>" radius="<float>">
+
+@subsection tesseract_octomap tesseract:octomap
+
+<a href="https://octomap.github.io/">Octomap</a> geometry, populated by an octree or point cloud
+
+URDF path: `/robot/link/<visual|collision>/geometry/tesseract:octomap`
+
+    <tesseract:octomap shape_type="box | sphere_inside | sphere_outside">
+
+Nested elements:
+<ul>
+  <li> @ref tesseract_octree </li>
+  <li> @ref tesseract_point_cloud </li>
+</ul>
+
+@subsection tesseract_octree tesseract:octree
+
+Octree file source for octomap geometry
+
+URDF path: `/robot/link/<visual|collision>/geometry/tesseract:octomap/tesseract:octree`
+
+    <tesseract:octree filename="*.octree">
+
+@subsection tesseract_point_cloud tesseract:point_cloud
+
+Point cloud file source for octomap geometry
+
+URDF path: `/robot/link/<visual|collision>/geometry/tesseract:octomap/tesseract:point_cloud`
+
+    <tesseract:point_cloud filename="*.pcd" resolution="<float>">
+
+@subsection tesseract_sdf_mesh tesseract:sdf_mesh
+
+Signed distance field (SDF) mesh geometry
+
+URDF path: /robot/link/<visual|collision>/geometry/tesseract:sdf_mesh`
+
+    <tesseract:sdf_mesh filename="*.sdf">
+
+@subsection tesseract_make_convex tesseract:make_convex
+
+For convenience, Tesseract can automatically convert collision mesh geometries into <a href="https://en.wikipedia.org/wiki/Convex_hull">convex hulls</a> for more efficient collision checking and motion planning.
+Set the `tesseract:make_convex` attribute(s) to enable this behavior.
+
+@note
+It can be convenient to use this attribute to convert collision meshes into convex hulls, but convex hulls often overapproximate the original geometry.
+It is highly recommended to visualize the collision geometry of the Tesseract environment @a before motion planning to ensure it is not overly conservative.
+
+@subsubsection tesseract_make_convex_global Global (Required)
+URDF path: `/robot/@tesseract:make_convex="true | false"`
+
+@subsubsection tesseract_make_convex_override Mesh-level override (Optional)
+URDF path: `/robot/link/<visual|collision>/geometry/mesh/@tesseract:make_convex="true | false"`
+
+@note
+Setting this attribute at the mesh level overrides the global setting
+
+@section additional_resources Additional Resources
+
+<ul>
+  <li><a href="http://www.ros.org/wiki/urdf/Examples">URDF Examples</a> - A list of URDFs from the ROS community </li>
+  <li><a href="http://www.ros.org/wiki/urdf/Tutorials">URDF Tutorials</a> - tutorials for working with the URDF </li>
+  <li><a href="http://www.ros.org/wiki/sw_urdf_exporter">SolidWorks URDF Plugin</a> - a plugin that lets you generate a URDF directly from a SolidWorks model </li>
+</ul>
+
+*/
