@@ -1,0 +1,147 @@
+/**
+@page srdf SRDF
+
+The <a href="https://wiki.ros.org/srdf">Semantic Robot Description Format (SRDF)</a> complements the URDF and specifies joint groups, default robot configurations, additional collision checking information, and additional transforms that may be needed to completely specify the robot's pose.
+The recommended way to generate a SRDF is using the Tesseract Setup Assistant.
+
+@section tesseract_srdf_supported_features Tesseract SRDF Supported Features
+
+Tesseract supports the following elements defined in SRDF
+
+@subsection groups Groups
+
+Groups (also referred to as kinematics groups) define collections of links and joints that are used for planning.
+
+@snippet ../tesseract_support/urdf/lbr_iiwa_14_r820.srdf Groups
+
+Groups can be specified in several ways:
+
+@subsubsection collection_of_joints Collection of Joints
+
+A group can be specified as a collection of joints.
+All the child links of each joint are automatically included in the group.
+
+@subsubsection serial_chain Serial Chain
+
+A serial chain is specified using the base link and the tip link.
+The tip link in a chain is the child link of the last joint in the chain.
+The base link in a chain is the parent link for the first joint in the chain.
+
+@subsection group_states Group States
+
+The SRDF can also store fixed configurations of the robot.
+A typical example of the SRDF in this case is in defining a home position for a manipulator.
+The configuration is stored with a string id, which can be used to recover the configuration later.
+
+@subsection group_tcps Group Tool Center Points
+
+Store fixed tool center point (TCP) definitions by string id, which can be used to recover the TCP during operation like planning.
+
+@subsection allowed_collision_matrix Allowed Collision Matrix
+
+Define link pairs that are allowed to be in collision with each other.
+This is used during contact checking to avoid checking links that are allowed to be in collision and contact data should not be calculated.
+
+@section tesseract_srdf_extensions Tesseract SRDF Extensions
+
+Tesseract extends SRDF with the following additional elements.
+
+@subsection contact_manager_plugins Contact Manager Plugins File
+
+The contact manager plugins file is a YAML-formatted file that defines the plugins to use for collision checking.
+Minimally, this must include the following keys:
+
+    contact_manager_plugins:
+      search_paths: [<(optional) list of directories in which to look for contact manager plugins>]
+      search_libraries: [<(optional) list of libraries in which to search for contact manager plugins>]
+      discrete_plugins:
+        default: <key of the discrete contact manager plugin to use as default>
+        plugins:
+          <discrete contact manager key>:
+            class: <discrete contact manager plugin class name>
+      continuous_plugins:
+        default: <key of the continuous contact manager plugin to use as default>
+        plugins:
+          <continuous contact manager key>:
+            class: <continuous contact manager plugin class name>
+
+Here is an example contact manager plugins file:
+
+@include ../tesseract_support/urdf/contact_manager_plugins.yaml
+
+@subsection kinematics_plugins_file Kinematics Plugins File (Optional)
+
+The kinematics plugins file is a YAML-formatted file that defines the plugins to use for forward and inverse kinematics.
+Minimally, it must include the following keys:
+
+    kinematics_plugins:
+      search_paths: [<(optional) list of directories in which to look for kinematics plugins>]
+      search_libraries: [<(optional) list of libraries in which to search for kinematics plugins>]
+      forward_kinematics:
+        <name of srdf kinematic group>:
+          default: <key of the forward kinematics solver that should be used as default>
+          plugins:
+            <FK solver key>
+              class: <FK plugin class name>
+              config: <FK plugin configuration parameters>
+      inverse_kinematics:
+        <name_of_srdf_kinematics_group>:
+          default: <key of the inverse kinematics solver that should be used as default>
+          plugins:
+            <IK solver key>
+            - class: <IK plugin class name>
+              config: <IK plugin configuration parameters>
+
+Here is an example kinematics plugins file:
+
+@include ../tesseract_support/urdf/pick_and_place_plan_plugins.yaml
+
+@section fk_solvers Forward Kinematics Solvers
+
+Tesseract supports the following FK solvers
+
+<ul>
+  <li> @ref kdl_fk </li>
+</ul>
+
+@subsection kdl_fk KDL
+
+@snippet ../tesseract_support/urdf/abb_irb2400_plugins.yaml KDL FK config
+
+@section ik_solvers Inverse Kinematics Solvers
+
+Tesseract supports the following IK solvers.
+
+<ul>
+  <li> @ref opw_ik </li>
+  <li> @ref kdl_lma_ik </li>
+  <li> @ref kdl_nr_ik </li>
+  <li> @ref rop_ik </li>
+  <li> @ref rep_ik </li>
+</ul>
+
+@subsection opw_ik OPW
+
+@snippet ../tesseract_support/urdf/abb_irb2400_plugins.yaml OPW config
+
+@subsection kdl_lma_ik KDL Levenberg-Marquardt (LMA)
+
+@snippet ../tesseract_support/urdf/lbr_iiwa_14_r820_plugins.yaml KDL LMA config
+
+@subsection kdl_nr_ik KDL Newton-Raphson (NR)
+
+@snippet ../tesseract_support/urdf/lbr_iiwa_14_r820_plugins.yaml KDL NR config
+
+@subsection rop_ik Robot on Positioner (ROP)
+
+Add and assign a Robot on Positioner (ROP) inverse kinematics solver to a predefined group.
+This assumes a custom invserse kinematics solver already exists for the robot, and the positioner is to be sampled at some resolution to find a larger set of inverse kinematic solutions.
+
+@snippet ../tesseract_support/urdf/online_planning_example_plugins.yaml ROP config
+
+@subsection rep_ik Robot External Positioner (REP)
+
+Add and assign a Robot with External Positioner (REP) inverse kinematics solver to predefined group.
+This assumes a custom invserse kinematics solver already exists for the robot and the positioner is to be sample at some resolution to find a larger set of inverse kinematic solutions.
+
+*/
