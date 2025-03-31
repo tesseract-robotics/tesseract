@@ -7,7 +7,7 @@ kinematic_plugins:
     manipulator:
       default: ROPInvKin
       plugins:
-//! [ROP config]
+# //! [ROP config]
         ROPInvKin:
           class: ROPInvKinFactory
           config:
@@ -37,4 +37,4 @@ kinematic_plugins:
                   c4: 0.086
                   offsets: [0, 0, -1.57079632679, 0, 0, 0]
                   sign_corrections: [1, 1, 1, 1, 1, 1]
-//! [ROP config]
+# //! [ROP config]
