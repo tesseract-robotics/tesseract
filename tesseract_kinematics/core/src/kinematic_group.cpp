@@ -231,8 +231,8 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
     {
       std::stringstream ss;
       ss << "Failed to find specified tip link (" << tip_link_pose.tip_link_name << "). Available tip links are: [";
-      for (auto it = inv_tip_links_map_.begin(); it != inv_tip_links_map_.end(); ++it)
-        ss << it->first << ", ";
+      for (const auto& pair : inv_tip_links_map_)
+        ss << pair.first << ", ";
       ss << "].";
       throw std::runtime_error(ss.str());
     }
