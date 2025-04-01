@@ -48,8 +48,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
  * @param scene_graph
  * @return
  */
-std::vector<std::string> getFixedJointKinematicTreeLinkNames(const std::string& input_link,
-                                                             const tesseract_scene_graph::SceneGraph& scene_graph)
+std::vector<std::string> getLinksInFixedJointKinematicTree(const std::string& input_link,
+                                                           const tesseract_scene_graph::SceneGraph& scene_graph)
 {
   // Create a set to contain the names of the links of the fixed-joint kinematic tree
   std::set<std::string> fixed_joint_tree_links;
@@ -156,7 +156,7 @@ KinematicGroup::KinematicGroup(std::string name,
 
     // The working frame can be any link in the fixed-joint kinematic tree that contains the input working frame.
     const std::vector<std::string> working_frame_fixed_joint_kin_tree_links =
-        getFixedJointKinematicTreeLinkNames(working_frame, scene_graph);
+        getLinksInFixedJointKinematicTree(working_frame, scene_graph);
     for (const std::string& link : working_frame_fixed_joint_kin_tree_links)
     {
       // Check that the link exists in the scene state
@@ -172,7 +172,7 @@ KinematicGroup::KinematicGroup(std::string name,
   for (const auto& tip_link : tip_links)
   {
     const std::vector<std::string> tip_link_fixed_joint_kin_tree_links =
-        getFixedJointKinematicTreeLinkNames(tip_link, scene_graph);
+        getLinksInFixedJointKinematicTree(tip_link, scene_graph);
     for (const std::string& link : tip_link_fixed_joint_kin_tree_links)
     {
       // Check that the link exists in the scene state
