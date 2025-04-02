@@ -58,9 +58,7 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     // Manager currently allows: a
     config.contact_manager_config.acm.addAllowedCollision("allowed_link_1b", "allowed_link_2b", "Unit test");
     config.contact_manager_config.acm_override_type = ACMOverrideType::NONE;
-    manager->applyContactManagerConfig(config.contact_manager_config);
-    auto fn = manager->getContactAllowedValidator();
-    EXPECT_FALSE((*fn)("allowed_link_1b", "allowed_link_2b"));
+    EXPECT_ANY_THROW(manager->applyContactManagerConfig(config.contact_manager_config));  // NOLINT
   }
 
   // OR
