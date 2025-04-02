@@ -365,6 +365,23 @@ ContactManagerConfig::ContactManagerConfig(double default_margin)
 {
 }
 
+void ContactManagerConfig::validate() const
+{
+  if (margin_data_override_type == CollisionMarginOverrideType::NONE)
+  {
+    if (!margin_data.getPairCollisionMargins().empty())
+      throw std::runtime_error("ContactManagerConfig, margin data overide type is NONE but pair collision margins "
+                               "exist!");
+
+    if (!tesseract_common::almostEqualRelativeAndAbs(margin_data.getDefaultCollisionMargin(), 0.0))
+      throw std::runtime_error("ContactManagerConfig, margin data overide type is NONE but has non zero default "
+                               "margin!");
+  }
+
+  if (acm_override_type == ACMOverrideType::NONE && !acm.getAllAllowedCollisions().empty())
+    throw std::runtime_error("ContactManagerConfig, acm overide type is NONE but allowed collision entries exist!");
+}
+
 CollisionCheckConfig::CollisionCheckConfig(double default_margin,
                                            ContactRequest request,
                                            CollisionEvaluatorType type,

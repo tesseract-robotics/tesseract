@@ -428,11 +428,18 @@ struct ContactManagerConfig
   /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
   tesseract_common::AllowedCollisionMatrix acm;
   /** @brief Specifies how to combine the ContactAllowedValidator from acm with the one preset in the contact manager */
-  ACMOverrideType acm_override_type{ ACMOverrideType::OR };
+  ACMOverrideType acm_override_type{ ACMOverrideType::NONE };
 
   /** @brief Each key is an object name. Objects will be enabled/disabled based on the value. Objects that aren't in the
    * map are unmodified from the defaults*/
   std::unordered_map<std::string, bool> modify_object_enabled;
+
+  /**
+   * @brief Check for errors and throw exception if they exist
+   * If margin_data_override_type is set to NONE but margin pair data exist or non zero default margin
+   * If acm_override_type is set to NONE but allowed collision entries exist
+   */
+  void validate() const;
 };
 
 /**

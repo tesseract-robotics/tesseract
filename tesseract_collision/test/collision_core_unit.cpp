@@ -6,6 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
+#include <tesseract_collision/core/types.h>
 #include <tesseract_common/contact_allowed_validator.h>
 #include <tesseract_common/utils.h>
 
@@ -18,6 +19,58 @@ public:
             tesseract_common::makeOrderedLinkPair(s1, s2));
   }
 };
+
+TEST(TesseractCoreUnit, ContactManagerConfig_validateUnit)  // NOLINT
+{
+  {
+    tesseract_collision::ContactManagerConfig config;
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config(0.1);
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.margin_data.setDefaultCollisionMargin(0.1);
+    EXPECT_ANY_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.margin_data_override_type = tesseract_collision::CollisionMarginOverrideType::MODIFY;
+    config.margin_data.setDefaultCollisionMargin(0.1);
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.margin_data.setPairCollisionMargin("a", "b", 0.1);
+    EXPECT_ANY_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.margin_data_override_type = tesseract_collision::CollisionMarginOverrideType::MODIFY;
+    config.margin_data.setPairCollisionMargin("a", "b", 0.1);
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.acm.addAllowedCollision("a", "b", "never");
+    EXPECT_ANY_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.acm_override_type = tesseract_collision::ACMOverrideType::OR;
+    config.acm.addAllowedCollision("a", "b", "never");
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+}
 
 TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
 {
