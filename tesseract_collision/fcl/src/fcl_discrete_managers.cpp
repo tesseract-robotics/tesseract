@@ -308,6 +308,12 @@ void FCLDiscreteBVHManager::setPairCollisionMarginData(const std::string& name1,
   onCollisionMarginDataChanged();
 }
 
+void FCLDiscreteBVHManager::incrementCollisionMarginData(double increment)
+{
+  collision_margin_data_.incrementMargins(increment);
+  onCollisionMarginDataChanged();
+}
+
 const CollisionMarginData& FCLDiscreteBVHManager::getCollisionMarginData() const { return collision_margin_data_; }
 void FCLDiscreteBVHManager::setContactAllowedValidator(
     std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)

@@ -249,6 +249,12 @@ public:
                                           double collision_margin) = 0;
 
   /**
+   * @brief Increment the collision margin data by some value
+   * @param increment The value to increment the collision margin value
+   */
+  virtual void incrementCollisionMarginData(double increment) = 0;
+
+  /**
    * @brief Get the contact distance threshold
    * @return The contact distance
    */

@@ -269,6 +269,12 @@ void BulletDiscreteBVHManager::setPairCollisionMarginData(const std::string& nam
   onCollisionMarginDataChanged();
 }
 
+void BulletDiscreteBVHManager::incrementCollisionMarginData(double increment)
+{
+  contact_test_data_.collision_margin_data.incrementMargins(increment);
+  onCollisionMarginDataChanged();
+}
+
 const CollisionMarginData& BulletDiscreteBVHManager::getCollisionMarginData() const
 {
   return contact_test_data_.collision_margin_data;

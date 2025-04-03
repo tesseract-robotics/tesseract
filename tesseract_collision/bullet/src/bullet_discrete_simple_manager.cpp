@@ -247,6 +247,12 @@ void BulletDiscreteSimpleManager::setPairCollisionMarginData(const std::string& 
   onCollisionMarginDataChanged();
 }
 
+void BulletDiscreteSimpleManager::incrementCollisionMarginData(double increment)
+{
+  contact_test_data_.collision_margin_data.incrementMargins(increment);
+  onCollisionMarginDataChanged();
+}
+
 const CollisionMarginData& BulletDiscreteSimpleManager::getCollisionMarginData() const
 {
   return contact_test_data_.collision_margin_data;

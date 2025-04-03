@@ -440,6 +440,12 @@ void BulletCastBVHManager::setDefaultCollisionMarginData(double default_collisio
   onCollisionMarginDataChanged();
 }
 
+void BulletCastBVHManager::incrementCollisionMarginData(double increment)
+{
+  contact_test_data_.collision_margin_data.incrementMargins(increment);
+  onCollisionMarginDataChanged();
+}
+
 void BulletCastBVHManager::setPairCollisionMarginData(const std::string& name1,
                                                       const std::string& name2,
                                                       double collision_margin)

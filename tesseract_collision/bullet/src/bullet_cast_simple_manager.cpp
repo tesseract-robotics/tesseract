@@ -361,6 +361,12 @@ void BulletCastSimpleManager::setPairCollisionMarginData(const std::string& name
   onCollisionMarginDataChanged();
 }
 
+void BulletCastSimpleManager::incrementCollisionMarginData(double increment)
+{
+  contact_test_data_.collision_margin_data.incrementMargins(increment);
+  onCollisionMarginDataChanged();
+}
+
 const CollisionMarginData& BulletCastSimpleManager::getCollisionMarginData() const
 {
   return contact_test_data_.collision_margin_data;
