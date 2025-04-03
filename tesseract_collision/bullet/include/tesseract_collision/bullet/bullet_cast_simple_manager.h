@@ -125,6 +125,8 @@ public:
                                   const std::string& name2,
                                   double collision_margin) override final;
 
+  void incrementCollisionMarginData(double increment) override final;
+
   void
   setContactAllowedValidator(std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator) override final;
 

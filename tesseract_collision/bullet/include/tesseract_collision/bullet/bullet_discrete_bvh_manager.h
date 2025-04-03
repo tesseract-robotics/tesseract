@@ -112,6 +112,8 @@ public:
                                   const std::string& name2,
                                   double collision_margin) override final;
 
+  void incrementCollisionMarginData(double increment) override final;
+
   const CollisionMarginData& getCollisionMarginData() const override final;
 
   void

@@ -119,6 +119,8 @@ public:
 
   void setDefaultCollisionMarginData(double default_collision_margin) override final;
 
+  void incrementCollisionMarginData(double increment) override final;
+
   void setPairCollisionMarginData(const std::string& name1,
                                   const std::string& name2,
                                   double collision_margin) override final;
