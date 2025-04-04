@@ -427,30 +427,9 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
 
 const std::vector<std::string>& BulletCastBVHManager::getActiveCollisionObjects() const { return active_; }
 
-void BulletCastBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data,
-                                                  CollisionMarginOverrideType override_type)
+void BulletCastBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
-  contact_test_data_.collision_margin_data.apply(collision_margin_data, override_type);
-  onCollisionMarginDataChanged();
-}
-
-void BulletCastBVHManager::setDefaultCollisionMarginData(double default_collision_margin)
-{
-  contact_test_data_.collision_margin_data.setDefaultCollisionMargin(default_collision_margin);
-  onCollisionMarginDataChanged();
-}
-
-void BulletCastBVHManager::incrementCollisionMarginData(double increment)
-{
-  contact_test_data_.collision_margin_data.incrementMargins(increment);
-  onCollisionMarginDataChanged();
-}
-
-void BulletCastBVHManager::setPairCollisionMarginData(const std::string& name1,
-                                                      const std::string& name2,
-                                                      double collision_margin)
-{
-  contact_test_data_.collision_margin_data.setPairCollisionMargin(name1, name2, collision_margin);
+  contact_test_data_.collision_margin_data = std::move(collision_margin_data);
   onCollisionMarginDataChanged();
 }
 
@@ -458,6 +437,34 @@ const CollisionMarginData& BulletCastBVHManager::getCollisionMarginData() const
 {
   return contact_test_data_.collision_margin_data;
 }
+
+void BulletCastBVHManager::setCollisionMarginPairData(const CollisionMarginPairData& pair_margin_data,
+                                                      CollisionMarginPairOverrideType override_type)
+{
+  contact_test_data_.collision_margin_data.apply(pair_margin_data, override_type);
+  onCollisionMarginDataChanged();
+}
+
+void BulletCastBVHManager::setDefaultCollisionMargin(double default_collision_margin)
+{
+  contact_test_data_.collision_margin_data.setDefaultCollisionMargin(default_collision_margin);
+  onCollisionMarginDataChanged();
+}
+
+void BulletCastBVHManager::incrementCollisionMargin(double increment)
+{
+  contact_test_data_.collision_margin_data.incrementMargins(increment);
+  onCollisionMarginDataChanged();
+}
+
+void BulletCastBVHManager::setCollisionMarginPair(const std::string& name1,
+                                                  const std::string& name2,
+                                                  double collision_margin)
+{
+  contact_test_data_.collision_margin_data.setCollisionMargin(name1, name2, collision_margin);
+  onCollisionMarginDataChanged();
+}
+
 void BulletCastBVHManager::setContactAllowedValidator(
     std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
 {

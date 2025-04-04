@@ -144,7 +144,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   // documentation:start:12: Change contact distance threshold
   // Set higher contact distance threshold
-  checker.setDefaultCollisionMarginData(0.25);
+  checker.setDefaultCollisionMargin(0.25);
   // documentation:end:12: Change contact distance threshold
 
   // documentation:start:13: Perform collision check

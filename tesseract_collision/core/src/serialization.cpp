@@ -108,19 +108,49 @@ void serialize(Archive& ar, tesseract_collision::ContactRequest& g, const unsign
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract_collision::ContactManagerConfig& g, const unsigned int /*version*/)
+void save(Archive& ar, const tesseract_collision::ContactManagerConfig& g, const unsigned int /*version*/)
 {
-  ar& boost::serialization::make_nvp("margin_data_override_type", g.margin_data_override_type);
-  ar& boost::serialization::make_nvp("margin_data", g.margin_data);
+  bool has_default_margin{ g.default_margin.has_value() };
+  double default_margin{ 0 };
+  if (g.default_margin.has_value())
+    default_margin = g.default_margin.value();
+
+  ar& boost::serialization::make_nvp("has_default_margin", has_default_margin);
+  ar& boost::serialization::make_nvp("default_margin", default_margin);
+  ar& boost::serialization::make_nvp("pair_margin_override_type", g.pair_margin_override_type);
+  ar& boost::serialization::make_nvp("pair_margin_data", g.pair_margin_data);
   ar& boost::serialization::make_nvp("acm", g.acm);
   ar& boost::serialization::make_nvp("acm_override_type", g.acm_override_type);
   ar& boost::serialization::make_nvp("modify_object_enabled", g.modify_object_enabled);
 }
 
 template <class Archive>
+void load(Archive& ar, tesseract_collision::ContactManagerConfig& g, const unsigned int /*version*/)
+{
+  bool has_default_margin{ false };
+  ar& boost::serialization::make_nvp("has_default_margin", has_default_margin);
+  if (has_default_margin)
+  {
+    double default_margin{ 0 };
+    ar& boost::serialization::make_nvp("default_margin", default_margin);
+    g.default_margin = default_margin;
+  }
+  ar& boost::serialization::make_nvp("pair_margin_override_type", g.pair_margin_override_type);
+  ar& boost::serialization::make_nvp("pair_margin_data", g.pair_margin_data);
+  ar& boost::serialization::make_nvp("acm", g.acm);
+  ar& boost::serialization::make_nvp("acm_override_type", g.acm_override_type);
+  ar& boost::serialization::make_nvp("modify_object_enabled", g.modify_object_enabled);
+}
+
+template <class Archive>
+void serialize(Archive& ar, tesseract_collision::ContactManagerConfig& g, const unsigned int version)
+{
+  split_free(ar, g, version);
+}
+
+template <class Archive>
 void serialize(Archive& ar, tesseract_collision::CollisionCheckConfig& g, const unsigned int /*version*/)
 {
-  ar& boost::serialization::make_nvp("contact_manager_config", g.contact_manager_config);
   ar& boost::serialization::make_nvp("contact_request", g.contact_request);
   ar& boost::serialization::make_nvp("type", g.type);
   ar& boost::serialization::make_nvp("longest_valid_segment_length", g.longest_valid_segment_length);
@@ -159,7 +189,7 @@ void serialize(Archive& ar, tesseract_collision::ContactTrajectoryResults& g, co
 TESSERACT_SERIALIZE_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactResult)
 TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactResultMap)
 TESSERACT_SERIALIZE_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactRequest)
-TESSERACT_SERIALIZE_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactManagerConfig)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactManagerConfig)
 TESSERACT_SERIALIZE_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::CollisionCheckConfig)
 TESSERACT_SERIALIZE_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactTrajectorySubstepResults)
 TESSERACT_SERIALIZE_FREE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactTrajectoryStepResults)

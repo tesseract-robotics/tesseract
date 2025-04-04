@@ -137,7 +137,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
-  checker.setDefaultCollisionMarginData(0.1);
+  checker.setDefaultCollisionMargin(0.1);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
@@ -250,7 +250,7 @@ inline void runTestConvex(DiscreteContactManager& checker)
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
-  checker.setDefaultCollisionMarginData(0.1);
+  checker.setDefaultCollisionMargin(0.1);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms

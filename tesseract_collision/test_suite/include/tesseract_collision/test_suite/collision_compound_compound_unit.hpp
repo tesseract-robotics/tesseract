@@ -123,7 +123,7 @@ inline void runTestCompound(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
 
   // Set Pair
-  checker.setPairCollisionMarginData("octomap1_link", "octomap2_link", 0.25);
+  checker.setCollisionMarginPair("octomap1_link", "octomap2_link", 0.25);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;

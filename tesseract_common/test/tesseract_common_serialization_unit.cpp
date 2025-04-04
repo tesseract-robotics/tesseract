@@ -126,10 +126,10 @@ TEST(TesseractCommonSerializeUnit, CollisionMarginData)  // NOLINT
 {
   auto object = std::make_shared<CollisionMarginData>();
   tesseract_common::testSerialization<CollisionMarginData>(*object, "EmptyCollisionMarginData");
-  object->setPairCollisionMargin("link_1", "link2", 1.1);
-  object->setPairCollisionMargin("link_2", "link1", 2.2);
-  object->setPairCollisionMargin("link_4", "link3", 3.3);
-  object->setPairCollisionMargin("link_5", "link2", -4.4);
+  object->setCollisionMargin("link_1", "link2", 1.1);
+  object->setCollisionMargin("link_2", "link1", 2.2);
+  object->setCollisionMargin("link_4", "link3", 3.3);
+  object->setCollisionMargin("link_5", "link2", -4.4);
   tesseract_common::testSerialization<CollisionMarginData>(*object, "CollisionMarginData");
 }
 
