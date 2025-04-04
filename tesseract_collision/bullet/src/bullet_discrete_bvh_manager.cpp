@@ -248,30 +248,10 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::
 }
 
 const std::vector<std::string>& BulletDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
-void BulletDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data,
-                                                      CollisionMarginOverrideType override_type)
-{
-  contact_test_data_.collision_margin_data.apply(collision_margin_data, override_type);
-  onCollisionMarginDataChanged();
-}
 
-void BulletDiscreteBVHManager::setDefaultCollisionMarginData(double default_collision_margin)
+void BulletDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
-  contact_test_data_.collision_margin_data.setDefaultCollisionMargin(default_collision_margin);
-  onCollisionMarginDataChanged();
-}
-
-void BulletDiscreteBVHManager::setPairCollisionMarginData(const std::string& name1,
-                                                          const std::string& name2,
-                                                          double collision_margin)
-{
-  contact_test_data_.collision_margin_data.setPairCollisionMargin(name1, name2, collision_margin);
-  onCollisionMarginDataChanged();
-}
-
-void BulletDiscreteBVHManager::incrementCollisionMarginData(double increment)
-{
-  contact_test_data_.collision_margin_data.incrementMargins(increment);
+  contact_test_data_.collision_margin_data = std::move(collision_margin_data);
   onCollisionMarginDataChanged();
 }
 
@@ -279,6 +259,34 @@ const CollisionMarginData& BulletDiscreteBVHManager::getCollisionMarginData() co
 {
   return contact_test_data_.collision_margin_data;
 }
+
+void BulletDiscreteBVHManager::setCollisionMarginPairData(const CollisionMarginPairData& pair_margin_data,
+                                                          CollisionMarginPairOverrideType override_type)
+{
+  contact_test_data_.collision_margin_data.apply(pair_margin_data, override_type);
+  onCollisionMarginDataChanged();
+}
+
+void BulletDiscreteBVHManager::setDefaultCollisionMargin(double default_collision_margin)
+{
+  contact_test_data_.collision_margin_data.setDefaultCollisionMargin(default_collision_margin);
+  onCollisionMarginDataChanged();
+}
+
+void BulletDiscreteBVHManager::setCollisionMarginPair(const std::string& name1,
+                                                      const std::string& name2,
+                                                      double collision_margin)
+{
+  contact_test_data_.collision_margin_data.setCollisionMargin(name1, name2, collision_margin);
+  onCollisionMarginDataChanged();
+}
+
+void BulletDiscreteBVHManager::incrementCollisionMargin(double increment)
+{
+  contact_test_data_.collision_margin_data.incrementMargins(increment);
+  onCollisionMarginDataChanged();
+}
+
 void BulletDiscreteBVHManager::setContactAllowedValidator(
     std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
 {

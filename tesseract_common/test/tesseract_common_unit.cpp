@@ -2607,9 +2607,9 @@ TEST(TesseractCommonUnit, CollisionMarginDataCompare)  // NOLINT
 
   {  // EQUAL with pair data
     tesseract_common::CollisionMarginData margin_data1;
-    margin_data1.setPairCollisionMargin("link_1", "link_2", 1);
+    margin_data1.setCollisionMargin("link_1", "link_2", 1);
     tesseract_common::CollisionMarginData margin_data2;
-    margin_data2.setPairCollisionMargin("link_1", "link_2", 1);
+    margin_data2.setCollisionMargin("link_1", "link_2", 1);
 
     EXPECT_TRUE(margin_data1 == margin_data2);
   }
@@ -2623,28 +2623,28 @@ TEST(TesseractCommonUnit, CollisionMarginDataCompare)  // NOLINT
 
   {  // Not EQUAL with pair data
     tesseract_common::CollisionMarginData margin_data1;
-    margin_data1.setPairCollisionMargin("link_1", "link_2", 1);
+    margin_data1.setCollisionMargin("link_1", "link_2", 1);
     tesseract_common::CollisionMarginData margin_data2;
-    margin_data2.setPairCollisionMargin("link_1", "link_2", 1);
-    margin_data2.setPairCollisionMargin("link_1", "link_3", 1);
+    margin_data2.setCollisionMargin("link_1", "link_2", 1);
+    margin_data2.setCollisionMargin("link_1", "link_3", 1);
 
     EXPECT_FALSE(margin_data1 == margin_data2);
   }
 
   {  // Not EQUAL with pair data
     tesseract_common::CollisionMarginData margin_data1;
-    margin_data1.setPairCollisionMargin("link_1", "link_2", 1);
+    margin_data1.setCollisionMargin("link_1", "link_2", 1);
     tesseract_common::CollisionMarginData margin_data2;
-    margin_data2.setPairCollisionMargin("link_1", "link_2", 2);
+    margin_data2.setCollisionMargin("link_1", "link_2", 2);
 
     EXPECT_FALSE(margin_data1 == margin_data2);
   }
 
   {  // Not EQUAL with pair data
     tesseract_common::CollisionMarginData margin_data1;
-    margin_data1.setPairCollisionMargin("link_1", "link_2", 1);
+    margin_data1.setCollisionMargin("link_1", "link_2", 1);
     tesseract_common::CollisionMarginData margin_data2;
-    margin_data2.setPairCollisionMargin("link_1", "link_3", 1);
+    margin_data2.setCollisionMargin("link_1", "link_3", 1);
 
     EXPECT_FALSE(margin_data1 == margin_data2);
   }

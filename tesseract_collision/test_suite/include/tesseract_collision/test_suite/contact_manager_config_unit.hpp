@@ -129,7 +129,7 @@ inline void runTest(DiscreteContactManager& checker)
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
-  checker.setDefaultCollisionMarginData(0.5);
+  checker.setDefaultCollisionMargin(0.5);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
   EXPECT_TRUE(checker.isCollisionObjectEnabled("thin_box_link"));
 
@@ -140,8 +140,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
   EXPECT_FALSE(checker.isCollisionObjectEnabled("thin_box_link"));
 
-  config.margin_data.setDefaultCollisionMargin(0.1);
-  config.margin_data_override_type = CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN;
+  config.default_margin = 0.1;
   checker.applyContactManagerConfig(config);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
@@ -237,7 +236,7 @@ inline void runTest(ContinuousContactManager& checker)
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
-  checker.setDefaultCollisionMarginData(0.5);
+  checker.setDefaultCollisionMargin(0.5);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
   EXPECT_TRUE(checker.isCollisionObjectEnabled("thin_box_link"));
 
@@ -248,8 +247,7 @@ inline void runTest(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
   EXPECT_FALSE(checker.isCollisionObjectEnabled("thin_box_link"));
 
-  config.margin_data.setDefaultCollisionMargin(0.1);
-  config.margin_data_override_type = CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN;
+  config.default_margin = 0.1;
   checker.applyContactManagerConfig(config);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 

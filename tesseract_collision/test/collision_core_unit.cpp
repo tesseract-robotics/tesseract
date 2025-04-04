@@ -34,27 +34,20 @@ TEST(TesseractCoreUnit, ContactManagerConfig_validateUnit)  // NOLINT
 
   {
     tesseract_collision::ContactManagerConfig config;
-    config.margin_data.setDefaultCollisionMargin(0.1);
-    EXPECT_ANY_THROW(config.validate());  // NOLINT
-  }
-
-  {
-    tesseract_collision::ContactManagerConfig config;
-    config.margin_data_override_type = tesseract_collision::CollisionMarginOverrideType::MODIFY;
-    config.margin_data.setDefaultCollisionMargin(0.1);
+    config.default_margin = 0.1;
     EXPECT_NO_THROW(config.validate());  // NOLINT
   }
 
   {
     tesseract_collision::ContactManagerConfig config;
-    config.margin_data.setPairCollisionMargin("a", "b", 0.1);
+    config.pair_margin_data.setCollisionMargin("a", "b", 0.1);
     EXPECT_ANY_THROW(config.validate());  // NOLINT
   }
 
   {
     tesseract_collision::ContactManagerConfig config;
-    config.margin_data_override_type = tesseract_collision::CollisionMarginOverrideType::MODIFY;
-    config.margin_data.setPairCollisionMargin("a", "b", 0.1);
+    config.pair_margin_override_type = tesseract_collision::CollisionMarginPairOverrideType::MODIFY;
+    config.pair_margin_data.setCollisionMargin("a", "b", 0.1);
     EXPECT_NO_THROW(config.validate());  // NOLINT
   }
 
@@ -756,8 +749,7 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
 {
   tesseract_collision::ContactRequest request;
   tesseract_collision::CollisionCheckConfig config(
-      5, request, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE, 0.5);
-  EXPECT_NEAR(config.contact_manager_config.margin_data.getDefaultCollisionMargin(), 5, 1e-6);
+      request, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE, 0.5);
   EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE);
   EXPECT_NEAR(config.longest_valid_segment_length, 0.5, 1e-6);
 }

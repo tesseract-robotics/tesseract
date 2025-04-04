@@ -146,8 +146,12 @@ getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
 
     // Check srdf for collision margin data
     if (srdf_model->collision_margin_data)
+    {
       commands.push_back(std::make_shared<ChangeCollisionMarginsCommand>(
-          *srdf_model->collision_margin_data, tesseract_common::CollisionMarginOverrideType::REPLACE));
+          srdf_model->collision_margin_data->getDefaultCollisionMargin(),
+          srdf_model->collision_margin_data->getCollisionMarginPairData(),
+          tesseract_common::CollisionMarginPairOverrideType::REPLACE));
+    }
   }
 
   return commands;
@@ -2131,15 +2135,22 @@ bool Environment::Implementation::applySetActiveDiscreteContactManagerCommand(
 bool Environment::Implementation::applyChangeCollisionMarginsCommand(
     const std::shared_ptr<const ChangeCollisionMarginsCommand>& cmd)
 {
-  collision_margin_data.apply(cmd->getCollisionMarginData(), cmd->getCollisionMarginOverrideType());
+  std::optional<double> default_margin = cmd->getDefaultCollisionMargin();
+  const tesseract_common::CollisionMarginPairData& pair_margins = cmd->getCollisionMarginPairData();
+
+  if (default_margin.has_value())
+    collision_margin_data.setDefaultCollisionMargin(default_margin.value());
+
+  if (!pair_margins.empty())
+    collision_margin_data.apply(pair_margins, cmd->getCollisionMarginPairOverrideType());
 
   std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
   if (continuous_manager != nullptr)
-    continuous_manager->setCollisionMarginData(collision_margin_data, CollisionMarginOverrideType::REPLACE);
+    continuous_manager->setCollisionMarginData(collision_margin_data);
 
   std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
   if (discrete_manager != nullptr)
-    discrete_manager->setCollisionMarginData(collision_margin_data, CollisionMarginOverrideType::REPLACE);
+    discrete_manager->setCollisionMarginData(collision_margin_data);
 
   ++revision;
   commands.push_back(cmd);

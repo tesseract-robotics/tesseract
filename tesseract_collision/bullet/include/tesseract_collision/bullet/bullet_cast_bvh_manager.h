@@ -113,19 +113,21 @@ public:
 
   const std::vector<std::string>& getActiveCollisionObjects() const override final;
 
-  void setCollisionMarginData(
-      CollisionMarginData collision_margin_data,
-      CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE) override final;
-
-  void setDefaultCollisionMarginData(double default_collision_margin) override final;
-
-  void incrementCollisionMarginData(double increment) override final;
-
-  void setPairCollisionMarginData(const std::string& name1,
-                                  const std::string& name2,
-                                  double collision_margin) override final;
+  void setCollisionMarginData(CollisionMarginData collision_margin_data) override final;
 
   const CollisionMarginData& getCollisionMarginData() const override final;
+
+  void setCollisionMarginPairData(
+      const CollisionMarginPairData& pair_margin_data,
+      CollisionMarginPairOverrideType override_type = CollisionMarginPairOverrideType::REPLACE) override final;
+
+  void setDefaultCollisionMargin(double default_collision_margin) override final;
+
+  void incrementCollisionMargin(double increment) override final;
+
+  void setCollisionMarginPair(const std::string& name1,
+                              const std::string& name2,
+                              double collision_margin) override final;
 
   void
   setContactAllowedValidator(std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator) override final;

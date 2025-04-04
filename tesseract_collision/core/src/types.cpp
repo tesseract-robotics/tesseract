@@ -360,35 +360,24 @@ ContactTestData::ContactTestData(const std::vector<std::string>& active,
 {
 }
 
-ContactManagerConfig::ContactManagerConfig(double default_margin)
-  : margin_data_override_type(CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN), margin_data(default_margin)
-{
-}
+ContactManagerConfig::ContactManagerConfig(double default_margin) : default_margin(default_margin) {}
 
 void ContactManagerConfig::validate() const
 {
-  if (margin_data_override_type == CollisionMarginOverrideType::NONE)
-  {
-    if (!margin_data.getPairCollisionMargins().empty())
-      throw std::runtime_error("ContactManagerConfig, margin data overide type is NONE but pair collision margins "
-                               "exist!");
-
-    if (!tesseract_common::almostEqualRelativeAndAbs(margin_data.getDefaultCollisionMargin(), 0.0))
-      throw std::runtime_error("ContactManagerConfig, margin data overide type is NONE but has non zero default "
-                               "margin!");
-  }
+  if (pair_margin_override_type == CollisionMarginPairOverrideType::NONE &&
+      !pair_margin_data.getCollisionMargins().empty())
+    throw std::runtime_error("ContactManagerConfig, pair margin override type is NONE but pair collision margins "
+                             "exist!");
 
   if (acm_override_type == ACMOverrideType::NONE && !acm.getAllAllowedCollisions().empty())
-    throw std::runtime_error("ContactManagerConfig, acm overide type is NONE but allowed collision entries exist!");
+    throw std::runtime_error("ContactManagerConfig, acm override type is NONE but allowed collision entries exist!");
 }
 
-CollisionCheckConfig::CollisionCheckConfig(double default_margin,
-                                           ContactRequest request,
+CollisionCheckConfig::CollisionCheckConfig(ContactRequest request,
                                            CollisionEvaluatorType type,
                                            double longest_valid_segment_length,
                                            CollisionCheckProgramType check_program_mode)
-  : contact_manager_config(default_margin)
-  , contact_request(std::move(request))
+  : contact_request(std::move(request))
   , type(type)
   , longest_valid_segment_length(longest_valid_segment_length)
   , check_program_mode(check_program_mode)

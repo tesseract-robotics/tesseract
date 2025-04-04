@@ -176,9 +176,10 @@ TEST(EnvironmentCommandsSerializeUnit, AddSceneGraphCommand)  // NOLINT
 
 TEST(EnvironmentCommandsSerializeUnit, ChangeCollisionMarginsCommand)  // NOLINT
 {
-  CollisionMarginData collision_margin_data = getEnvironment()->getCollisionMarginData();
-  auto object = std::make_shared<ChangeCollisionMarginsCommand>(collision_margin_data,
-                                                                CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN);
+  CollisionMarginPairData pair_margin_data;
+  pair_margin_data.setCollisionMargin("a", "b", 0.2);
+  auto object =
+      std::make_shared<ChangeCollisionMarginsCommand>(0.1, pair_margin_data, CollisionMarginPairOverrideType::MODIFY);
   testSerialization<ChangeCollisionMarginsCommand>(*object, "ChangeCollisionMarginsCommand");
   testSerializationDerivedClass<Command, ChangeCollisionMarginsCommand>(object, "ChangeCollisionMarginsCommand");
 }
