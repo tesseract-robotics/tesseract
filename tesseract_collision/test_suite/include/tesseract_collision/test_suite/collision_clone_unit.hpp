@@ -133,7 +133,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
   EXPECT_FALSE(checker.isCollisionObjectEnabled("thin_box_link"));
 
-  checker.setPairCollisionMarginData("sphere_link", "sphere1_link", 0.1);
+  checker.setCollisionMarginPair("sphere_link", "sphere1_link", 0.1);
 
   // Test when object is inside another
   tesseract_common::TransformMap location;

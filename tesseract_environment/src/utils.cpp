@@ -78,31 +78,12 @@ void checkTrajectorySegment(tesseract_collision::ContactResultMap& contact_resul
                             tesseract_collision::ContinuousContactManager& manager,
                             const tesseract_common::TransformMap& state0,
                             const tesseract_common::TransformMap& state1,
-                            const tesseract_collision::CollisionCheckConfig& config)
-{
-  manager.applyContactManagerConfig(config.contact_manager_config);
-  checkTrajectorySegment(contact_results, manager, state0, state1, config.contact_request);
-}
-
-void checkTrajectorySegment(tesseract_collision::ContactResultMap& contact_results,
-                            tesseract_collision::ContinuousContactManager& manager,
-                            const tesseract_common::TransformMap& state0,
-                            const tesseract_common::TransformMap& state1,
                             const tesseract_collision::ContactRequest& contact_request)
 {
   for (const auto& link_name : manager.getActiveCollisionObjects())
     manager.setCollisionObjectsTransform(link_name, state0.at(link_name), state1.at(link_name));
 
   manager.contactTest(contact_results, contact_request);
-}
-
-void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results,
-                          tesseract_collision::DiscreteContactManager& manager,
-                          const tesseract_common::TransformMap& state,
-                          const tesseract_collision::CollisionCheckConfig& config)
-{
-  manager.applyContactManagerConfig(config.contact_manager_config);
-  checkTrajectoryState(contact_results, manager, state, config.contact_request);
 }
 
 void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results,
@@ -190,8 +171,6 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   if (traj.rows() < 2)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with a trajectory that only has one "
                              "state.");
-
-  manager.applyContactManagerConfig(config.contact_manager_config);
 
   bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
 
@@ -495,8 +474,6 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
   if (traj.rows() == 0)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
-
-  manager.applyContactManagerConfig(config.contact_manager_config);
 
   bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
 

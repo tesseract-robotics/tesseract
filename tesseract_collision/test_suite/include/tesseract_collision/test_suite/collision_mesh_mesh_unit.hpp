@@ -136,7 +136,7 @@ inline void runTest(DiscreteContactManager& checker)
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
-  checker.setDefaultCollisionMarginData(0);
+  checker.setDefaultCollisionMargin(0);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.0, 1e-5);
 
   // Test when object is inside another

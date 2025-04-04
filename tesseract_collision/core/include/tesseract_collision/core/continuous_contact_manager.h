@@ -220,19 +220,31 @@ public:
   virtual const std::vector<std::string>& getActiveCollisionObjects() const = 0;
 
   /**
-   * @brief Set the contact distance thresholds for which collision should be considered on a per pair basis
-   * @param collision_margin_data Contains the data that will replace the current settings
+   * @brief Set the contact distance threshold
+   * @param collision_margin_data The contact distance
+   */
+  virtual void setCollisionMarginData(CollisionMarginData collision_margin_data) = 0;
+
+  /**
+   * @brief Get the contact distance threshold
+   * @return The contact distance
+   */
+  virtual const CollisionMarginData& getCollisionMarginData() const = 0;
+
+  /**
+   * @brief Set the pair contact distance thresholds for which collision should be considered on a per pair basis
+   * @param pair_margin_data Contains the pair collision margins that will replace the current settings
    * @param override_type This determines how the provided CollisionMarginData is applied
    */
-  virtual void
-  setCollisionMarginData(CollisionMarginData collision_margin_data,
-                         CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE) = 0;
+  virtual void setCollisionMarginPairData(
+      const CollisionMarginPairData& pair_margin_data,
+      CollisionMarginPairOverrideType override_type = CollisionMarginPairOverrideType::REPLACE) = 0;
 
   /**
    * @brief Set the default collision margin
    * @param default_collision_margin New default collision margin
    */
-  virtual void setDefaultCollisionMarginData(double default_collision_margin) = 0;
+  virtual void setDefaultCollisionMargin(double default_collision_margin) = 0;
 
   /**
    * @brief Set the margin for a given contact pair
@@ -244,21 +256,13 @@ public:
    * @param obj2 The Second object name. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
-  virtual void setPairCollisionMarginData(const std::string& name1,
-                                          const std::string& name2,
-                                          double collision_margin) = 0;
+  virtual void setCollisionMarginPair(const std::string& name1, const std::string& name2, double collision_margin) = 0;
 
   /**
    * @brief Increment the collision margin data by some value
    * @param increment The value to increment the collision margin value
    */
-  virtual void incrementCollisionMarginData(double increment) = 0;
-
-  /**
-   * @brief Get the contact distance threshold
-   * @return The contact distance
-   */
-  virtual const CollisionMarginData& getCollisionMarginData() const = 0;
+  virtual void incrementCollisionMargin(double increment) = 0;
 
   /** @brief Set the active function for determining if two links are allowed to be in collision */
   virtual void

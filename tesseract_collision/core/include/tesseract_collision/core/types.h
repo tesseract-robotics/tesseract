@@ -50,9 +50,8 @@ using CollisionShapeConstPtr = std::shared_ptr<const tesseract_geometry::Geometr
 using CollisionShapePtr = std::shared_ptr<tesseract_geometry::Geometry>;
 using CollisionShapesConst = std::vector<CollisionShapeConstPtr>;
 using CollisionMarginData = tesseract_common::CollisionMarginData;
-using CollisionMarginOverrideType = tesseract_common::CollisionMarginOverrideType;
-using PairsCollisionMarginData =
-    std::unordered_map<std::pair<std::string, std::string>, double, tesseract_common::PairHash>;
+using CollisionMarginPairData = tesseract_common::CollisionMarginPairData;
+using CollisionMarginPairOverrideType = tesseract_common::CollisionMarginPairOverrideType;
 
 class ContactResultValidator;
 
@@ -420,10 +419,13 @@ struct ContactManagerConfig
   ContactManagerConfig() = default;
   ContactManagerConfig(double default_margin);
 
-  /** @brief Identify how the collision margin data should be applied to the contact manager */
-  CollisionMarginOverrideType margin_data_override_type{ CollisionMarginOverrideType::NONE };
-  /** @brief Stores information about how the margins allowed between collision objects*/
-  CollisionMarginData margin_data;
+  /** @brief override the default contact margin */
+  std::optional<double> default_margin;
+
+  /** @brief Identify how the collision margin pair data should be applied to the contact manager */
+  CollisionMarginPairOverrideType pair_margin_override_type{ CollisionMarginPairOverrideType::NONE };
+  /** @brief Stores collision margin pair data */
+  CollisionMarginPairData pair_margin_data;
 
   /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
   tesseract_common::AllowedCollisionMatrix acm;
@@ -436,8 +438,8 @@ struct ContactManagerConfig
 
   /**
    * @brief Check for errors and throw exception if they exist
-   * If margin_data_override_type is set to NONE but margin pair data exist or non zero default margin
-   * If acm_override_type is set to NONE but allowed collision entries exist
+   * @throws an exception if `margin_data_override_type` is set to `NONE`, but margin pair data exist; or if
+   * `acm_override_type` is set to `NONE` but allowed collision entries exist.
    */
   void validate() const;
 };
@@ -448,15 +450,10 @@ struct ContactManagerConfig
  */
 struct CollisionCheckConfig
 {
-  CollisionCheckConfig() = default;
-  CollisionCheckConfig(double default_margin,
-                       ContactRequest request = ContactRequest(),
+  CollisionCheckConfig(ContactRequest request = ContactRequest(),
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
                        double longest_valid_segment_length = 0.005,
                        CollisionCheckProgramType check_program_mode = CollisionCheckProgramType::ALL);
-
-  /** @brief Used to configure the contact manager prior to a series of checks */
-  ContactManagerConfig contact_manager_config;
 
   /** @brief ContactRequest that will be used for this check. Default test type: ALL*/
   ContactRequest contact_request;

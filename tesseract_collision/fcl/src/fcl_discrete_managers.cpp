@@ -287,34 +287,42 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::str
 }
 
 const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
-void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data,
-                                                   CollisionMarginOverrideType override_type)
+
+void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
-  collision_margin_data_.apply(collision_margin_data, override_type);
+  collision_margin_data_ = std::move(collision_margin_data);
   onCollisionMarginDataChanged();
 }
 
-void FCLDiscreteBVHManager::setDefaultCollisionMarginData(double default_collision_margin)
+const CollisionMarginData& FCLDiscreteBVHManager::getCollisionMarginData() const { return collision_margin_data_; }
+
+void FCLDiscreteBVHManager::setCollisionMarginPairData(const CollisionMarginPairData& pair_margin_data,
+                                                       CollisionMarginPairOverrideType override_type)
+{
+  collision_margin_data_.apply(pair_margin_data, override_type);
+  onCollisionMarginDataChanged();
+}
+
+void FCLDiscreteBVHManager::setDefaultCollisionMargin(double default_collision_margin)
 {
   collision_margin_data_.setDefaultCollisionMargin(default_collision_margin);
   onCollisionMarginDataChanged();
 }
 
-void FCLDiscreteBVHManager::setPairCollisionMarginData(const std::string& name1,
-                                                       const std::string& name2,
-                                                       double collision_margin)
+void FCLDiscreteBVHManager::setCollisionMarginPair(const std::string& name1,
+                                                   const std::string& name2,
+                                                   double collision_margin)
 {
-  collision_margin_data_.setPairCollisionMargin(name1, name2, collision_margin);
+  collision_margin_data_.setCollisionMargin(name1, name2, collision_margin);
   onCollisionMarginDataChanged();
 }
 
-void FCLDiscreteBVHManager::incrementCollisionMarginData(double increment)
+void FCLDiscreteBVHManager::incrementCollisionMargin(double increment)
 {
   collision_margin_data_.incrementMargins(increment);
   onCollisionMarginDataChanged();
 }
 
-const CollisionMarginData& FCLDiscreteBVHManager::getCollisionMarginData() const { return collision_margin_data_; }
 void FCLDiscreteBVHManager::setContactAllowedValidator(
     std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
 {

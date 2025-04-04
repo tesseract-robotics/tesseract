@@ -42,13 +42,13 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_commo
 template <typename ManagerType>
 void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
 {
-  CollisionCheckConfig config;
+  ContactManagerConfig config;
 
   // ASSIGN
   {
-    config.contact_manager_config.acm.addAllowedCollision("allowed_link_1a", "allowed_link_2a", "Unit test");
-    config.contact_manager_config.acm_override_type = ACMOverrideType::ASSIGN;
-    manager->applyContactManagerConfig(config.contact_manager_config);
+    config.acm.addAllowedCollision("allowed_link_1a", "allowed_link_2a", "Unit test");
+    config.acm_override_type = ACMOverrideType::ASSIGN;
+    manager->applyContactManagerConfig(config);
     auto fn = manager->getContactAllowedValidator();
     EXPECT_TRUE((*fn)("allowed_link_1a", "allowed_link_2a"));
   }
@@ -56,17 +56,17 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
   // NONE
   {
     // Manager currently allows: a
-    config.contact_manager_config.acm.addAllowedCollision("allowed_link_1b", "allowed_link_2b", "Unit test");
-    config.contact_manager_config.acm_override_type = ACMOverrideType::NONE;
-    EXPECT_ANY_THROW(manager->applyContactManagerConfig(config.contact_manager_config));  // NOLINT
+    config.acm.addAllowedCollision("allowed_link_1b", "allowed_link_2b", "Unit test");
+    config.acm_override_type = ACMOverrideType::NONE;
+    EXPECT_ANY_THROW(manager->applyContactManagerConfig(config));  // NOLINT
   }
 
   // OR
   {
     // Manager currently allows: a
-    config.contact_manager_config.acm.addAllowedCollision("allowed_link_1c", "allowed_link_2c", "Unit test");
-    config.contact_manager_config.acm_override_type = ACMOverrideType::OR;
-    manager->applyContactManagerConfig(config.contact_manager_config);
+    config.acm.addAllowedCollision("allowed_link_1c", "allowed_link_2c", "Unit test");
+    config.acm_override_type = ACMOverrideType::OR;
+    manager->applyContactManagerConfig(config);
     auto fn = manager->getContactAllowedValidator();
     EXPECT_TRUE((*fn)("allowed_link_1a", "allowed_link_2a"));
     EXPECT_TRUE((*fn)("allowed_link_1c", "allowed_link_2c"));
@@ -75,9 +75,9 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
   // AND
   {
     // Manager currently allows: a, c
-    config.contact_manager_config.acm.removeAllowedCollision("allowed_link_1a", "allowed_link_2a");
-    config.contact_manager_config.acm_override_type = ACMOverrideType::AND;
-    manager->applyContactManagerConfig(config.contact_manager_config);
+    config.acm.removeAllowedCollision("allowed_link_1a", "allowed_link_2a");
+    config.acm_override_type = ACMOverrideType::AND;
+    manager->applyContactManagerConfig(config);
     auto fn = manager->getContactAllowedValidator();
     EXPECT_FALSE((*fn)("allowed_link_1a", "allowed_link_2a"));
     EXPECT_TRUE((*fn)("allowed_link_1c", "allowed_link_2c"));
@@ -96,14 +96,6 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigIsAllowed)  // NOLINT
   auto env = std::make_shared<Environment>();
   bool success = env->init(*scene_graph, srdf);
   EXPECT_TRUE(success);
-
-  // Setup CollisionCheckConfig
-  CollisionCheckConfig mCollisionCheckConfig;
-  mCollisionCheckConfig.longest_valid_segment_length = 0.1;
-  mCollisionCheckConfig.contact_request.type = tesseract_collision::ContactTestType::FIRST;
-  mCollisionCheckConfig.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
-  tesseract_collision::CollisionMarginData margin_data(0.0);
-  mCollisionCheckConfig.contact_manager_config.margin_data = margin_data;
 
   checkIsAllowedFnOverride<DiscreteContactManager>(env->getDiscreteContactManager());
   checkIsAllowedFnOverride<ContinuousContactManager>(env->getContinuousContactManager());
@@ -124,19 +116,18 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
   EXPECT_TRUE(success);
 
   // Setup CollisionCheckConfig
-  CollisionCheckConfig default_config;
-  default_config.longest_valid_segment_length = 0.1;
-  default_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
-  default_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
-  tesseract_collision::CollisionMarginData margin_data(0.0);
-  default_config.contact_manager_config.margin_data = margin_data;
-  default_config.contact_manager_config.margin_data_override_type =
-      tesseract_common::CollisionMarginOverrideType::REPLACE;
+  CollisionCheckConfig default_collision_check_config;
+  default_collision_check_config.longest_valid_segment_length = 0.1;
+  default_collision_check_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+  default_collision_check_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+
+  ContactManagerConfig default_contact_manager_config;
+  default_contact_manager_config.default_margin = 0.0;
 
   tesseract_collision::ContactResultMap contacts;
   // Check Discrete
   {
-    auto config = default_config;
+    auto contact_manager_config = default_contact_manager_config;
     DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
     std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
@@ -149,42 +140,43 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
     // In collision by default
     {
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectoryState(contacts, *manager, tmap, config);
+      checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
 
     // Not in collision if link disabled
     {
-      config.contact_manager_config.modify_object_enabled["boxbot_link"] = false;
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      contact_manager_config.modify_object_enabled["boxbot_link"] = false;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectoryState(contacts, *manager, tmap, config);
+      checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
       EXPECT_TRUE(contacts.empty());
     }
 
     // Re-enable it. Now in collision again
     {
-      config.contact_manager_config.modify_object_enabled["boxbot_link"] = true;
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      contact_manager_config.modify_object_enabled["boxbot_link"] = true;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectoryState(contacts, *manager, tmap, config);
+      checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
 
     // Disable a link that doesn't exist. Still in collision
     {
-      config.contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectoryState(contacts, *manager, tmap, config);
+      checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
   }
 
   // Check Continuous
   {
-    auto config = default_config;
+    auto contact_manager_config = default_contact_manager_config;
     ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
     std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
@@ -202,35 +194,35 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
     {
       contacts.clear();
-      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request);
+      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
       // In collision by default
       EXPECT_FALSE(contacts.empty());
     }
 
     // Not in collision if link disabled
     {
-      config.contact_manager_config.modify_object_enabled["boxbot_link"] = false;
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      contact_manager_config.modify_object_enabled["boxbot_link"] = false;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request);
+      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
       EXPECT_TRUE(contacts.empty());
     }
 
     // Re-enable it. Now in collision again
     {
-      config.contact_manager_config.modify_object_enabled["boxbot_link"] = true;
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      contact_manager_config.modify_object_enabled["boxbot_link"] = true;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request);
+      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
 
     // Disable a link that doesn't exist. Still in collision
     {
-      config.contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request);
+      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
   }
@@ -251,19 +243,18 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
   EXPECT_TRUE(success);
 
   // Setup CollisionCheckConfig
-  CollisionCheckConfig default_config;
-  default_config.longest_valid_segment_length = 0.1;
-  default_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
-  default_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
-  tesseract_collision::CollisionMarginData margin_data(0.0);
-  default_config.contact_manager_config.margin_data = margin_data;
-  default_config.contact_manager_config.margin_data_override_type =
-      tesseract_common::CollisionMarginOverrideType::REPLACE;
+  CollisionCheckConfig default_collision_check_config;
+  default_collision_check_config.longest_valid_segment_length = 0.1;
+  default_collision_check_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+  default_collision_check_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+
+  ContactManagerConfig default_contact_manager_config;
+  default_contact_manager_config.default_margin = 0.0;
 
   tesseract_collision::ContactResultMap contacts;
   // Check Discrete
   {
-    auto config = default_config;
+    auto contact_manager_config = default_contact_manager_config;
     DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
     std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
@@ -276,38 +267,40 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
 
     // Not in collision
     {
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectoryState(contacts, *manager, tmap, config.contact_request);
+      checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if manager->applyContactManagerConfig works correctly
     {
-      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      contact_manager_config.default_margin = 0.1;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectoryState(contacts, *manager, tmap, config.contact_request);
+      checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
     // Not collision if checkTrajectoryState applies the config
     {
-      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.0);
+      contact_manager_config.default_margin = 0.0;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectoryState(contacts, *manager, tmap, config);
+      checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if checkTrajectoryState applies the config
     {
-      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
+      contact_manager_config.default_margin = 0.1;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectoryState(contacts, *manager, tmap, config);
+      checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
   }
 
   // Check Continuous
   {
-    auto config = default_config;
+    auto contact_manager_config = default_contact_manager_config;
     ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
     std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
@@ -325,31 +318,33 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
 
     // Not in collision
     {
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request);
+      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if manager->applyContactManagerConfig works correctly
     {
-      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
-      manager->applyContactManagerConfig(config.contact_manager_config);
+      contact_manager_config.default_margin = 0.1;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config.contact_request);
+      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
     // Not collision if checkTrajectoryState applies the config
     {
-      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.0);
+      contact_manager_config.default_margin = 0.0;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config);
+      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
       EXPECT_TRUE(contacts.empty());
     }
     // In collision if checkTrajectoryState applies the config
     {
-      config.contact_manager_config.margin_data.setDefaultCollisionMargin(0.1);
+      contact_manager_config.default_margin = 0.1;
+      manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
-      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, config);
+      checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
       EXPECT_FALSE(contacts.empty());
     }
   }

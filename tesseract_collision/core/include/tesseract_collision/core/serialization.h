@@ -48,6 +48,12 @@ template <class Archive>
 void serialize(Archive& ar, tesseract_collision::ContactRequest& g, const unsigned int version);  // NOLINT
 
 template <class Archive>
+void save(Archive& ar, const tesseract_collision::ContactManagerConfig& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar, tesseract_collision::ContactManagerConfig& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
 void serialize(Archive& ar, tesseract_collision::ContactManagerConfig& g, const unsigned int version);  // NOLINT
 
 template <class Archive>
