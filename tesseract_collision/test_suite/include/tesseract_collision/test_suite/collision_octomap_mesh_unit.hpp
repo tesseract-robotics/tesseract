@@ -89,7 +89,7 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   checker.setCollisionMarginData(CollisionMarginData(0.5));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
 
-  checker.setPairCollisionMarginData("octomap_link", "plane_link", 0.1);
+  checker.setCollisionMarginPair("octomap_link", "plane_link", 0.1);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;

@@ -6,6 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
+#include <tesseract_collision/core/types.h>
 #include <tesseract_common/contact_allowed_validator.h>
 #include <tesseract_common/utils.h>
 
@@ -18,6 +19,51 @@ public:
             tesseract_common::makeOrderedLinkPair(s1, s2));
   }
 };
+
+TEST(TesseractCoreUnit, ContactManagerConfig_validateUnit)  // NOLINT
+{
+  {
+    tesseract_collision::ContactManagerConfig config;
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config(0.1);
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.default_margin = 0.1;
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.pair_margin_data.setCollisionMargin("a", "b", 0.1);
+    EXPECT_ANY_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.pair_margin_override_type = tesseract_collision::CollisionMarginPairOverrideType::MODIFY;
+    config.pair_margin_data.setCollisionMargin("a", "b", 0.1);
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.acm.addAllowedCollision("a", "b", "never");
+    EXPECT_ANY_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.acm_override_type = tesseract_collision::ACMOverrideType::OR;
+    config.acm.addAllowedCollision("a", "b", "never");
+    EXPECT_NO_THROW(config.validate());  // NOLINT
+  }
+}
 
 TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
 {
@@ -703,8 +749,7 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
 {
   tesseract_collision::ContactRequest request;
   tesseract_collision::CollisionCheckConfig config(
-      5, request, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE, 0.5);
-  EXPECT_NEAR(config.contact_manager_config.margin_data.getDefaultCollisionMargin(), 5, 1e-6);
+      request, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE, 0.5);
   EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE);
   EXPECT_NEAR(config.longest_valid_segment_length, 0.5, 1e-6);
 }

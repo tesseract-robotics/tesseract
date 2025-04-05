@@ -360,18 +360,24 @@ ContactTestData::ContactTestData(const std::vector<std::string>& active,
 {
 }
 
-ContactManagerConfig::ContactManagerConfig(double default_margin)
-  : margin_data_override_type(CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN), margin_data(default_margin)
+ContactManagerConfig::ContactManagerConfig(double default_margin) : default_margin(default_margin) {}
+
+void ContactManagerConfig::validate() const
 {
+  if (pair_margin_override_type == CollisionMarginPairOverrideType::NONE &&
+      !pair_margin_data.getCollisionMargins().empty())
+    throw std::runtime_error("ContactManagerConfig, pair margin override type is NONE but pair collision margins "
+                             "exist!");
+
+  if (acm_override_type == ACMOverrideType::NONE && !acm.getAllAllowedCollisions().empty())
+    throw std::runtime_error("ContactManagerConfig, acm override type is NONE but allowed collision entries exist!");
 }
 
-CollisionCheckConfig::CollisionCheckConfig(double default_margin,
-                                           ContactRequest request,
+CollisionCheckConfig::CollisionCheckConfig(ContactRequest request,
                                            CollisionEvaluatorType type,
                                            double longest_valid_segment_length,
                                            CollisionCheckProgramType check_program_mode)
-  : contact_manager_config(default_margin)
-  , contact_request(std::move(request))
+  : contact_request(std::move(request))
   , type(type)
   , longest_valid_segment_length(longest_valid_segment_length)
   , check_program_mode(check_program_mode)

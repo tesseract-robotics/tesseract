@@ -762,9 +762,9 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_TRUE(srdf.collision_margin_data != nullptr);
   EXPECT_NEAR(srdf.collision_margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
   EXPECT_NEAR(srdf.collision_margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
-  EXPECT_EQ(srdf.collision_margin_data->getPairCollisionMargins().size(), 2);
-  EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
-  EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
+  EXPECT_EQ(srdf.collision_margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 2);
+  EXPECT_NEAR(srdf.collision_margin_data->getCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
+  EXPECT_NEAR(srdf.collision_margin_data->getCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
 
   // Calibration failure joint does not exist
   yaml_calibration_string =
@@ -1573,9 +1573,9 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(margin_data != nullptr);
     EXPECT_NEAR(margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
     EXPECT_NEAR(margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
-    EXPECT_EQ(margin_data->getPairCollisionMargins().size(), 2);
-    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
-    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
+    EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 2);
+    EXPECT_NEAR(margin_data->getCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
+    EXPECT_NEAR(margin_data->getCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
   }
 
   {  // Test only having default margin
@@ -1595,7 +1595,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(margin_data != nullptr);
     EXPECT_NEAR(margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
     EXPECT_NEAR(margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
-    EXPECT_EQ(margin_data->getPairCollisionMargins().size(), 0);
+    EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 0);
   }
 
   {  // Testing having negative default margin and pair margin
@@ -1618,9 +1618,9 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(margin_data != nullptr);
     EXPECT_NEAR(margin_data->getDefaultCollisionMargin(), -0.025, 1e-6);
     EXPECT_NEAR(margin_data->getMaxCollisionMargin(), -0.01, 1e-6);
-    EXPECT_EQ(margin_data->getPairCollisionMargins().size(), 2);
-    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_6"), -0.01, 1e-6);
-    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_4"), -0.015, 1e-6);
+    EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 2);
+    EXPECT_NEAR(margin_data->getCollisionMargin("link_5", "link_6"), -0.01, 1e-6);
+    EXPECT_NEAR(margin_data->getCollisionMargin("link_5", "link_4"), -0.015, 1e-6);
   }
 
   {  // Test not having collision margin data

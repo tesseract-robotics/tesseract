@@ -123,7 +123,7 @@ inline void runTest(DiscreteContactManager& checker)
   checker.setCollisionMarginData(CollisionMarginData(0.5));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
 
-  checker.setPairCollisionMarginData("box_link", "cone_link", 0.1);
+  checker.setCollisionMarginPair("box_link", "cone_link", 0.1);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;

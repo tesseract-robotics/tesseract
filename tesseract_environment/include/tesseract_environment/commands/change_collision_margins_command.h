@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <optional>
 #include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -42,9 +43,8 @@ class access;
 
 namespace tesseract_environment
 {
-using CollisionMarginData = tesseract_common::CollisionMarginData;
-using CollisionMarginOverrideType = tesseract_common::CollisionMarginOverrideType;
-using PairsCollisionMarginData = tesseract_common::PairsCollisionMarginData;
+using CollisionMarginPairData = tesseract_common::CollisionMarginPairData;
+using CollisionMarginPairOverrideType = tesseract_common::CollisionMarginPairOverrideType;
 
 class ChangeCollisionMarginsCommand : public Command
 {
@@ -54,28 +54,37 @@ public:
 
   ChangeCollisionMarginsCommand();
 
+  ChangeCollisionMarginsCommand(double default_margin);
+
+  ChangeCollisionMarginsCommand(
+      CollisionMarginPairData pair_margins,
+      CollisionMarginPairOverrideType pair_override_type = CollisionMarginPairOverrideType::MODIFY);
+
   ChangeCollisionMarginsCommand(
       double default_margin,
-      CollisionMarginOverrideType override_type = CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN);
+      CollisionMarginPairData pair_margins,
+      CollisionMarginPairOverrideType pair_override_type = CollisionMarginPairOverrideType::MODIFY);
 
-  ChangeCollisionMarginsCommand(
-      PairsCollisionMarginData pairs_margin,
-      CollisionMarginOverrideType override_type = CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN);
-
-  ChangeCollisionMarginsCommand(CollisionMarginData collision_margin_data,
-                                CollisionMarginOverrideType override_type = CollisionMarginOverrideType::REPLACE);
-
-  tesseract_common::CollisionMarginData getCollisionMarginData() const;
-  tesseract_common::CollisionMarginOverrideType getCollisionMarginOverrideType() const;
+  std::optional<double> getDefaultCollisionMargin() const;
+  CollisionMarginPairData getCollisionMarginPairData() const;
+  CollisionMarginPairOverrideType getCollisionMarginPairOverrideType() const;
 
   bool operator==(const ChangeCollisionMarginsCommand& rhs) const;
   bool operator!=(const ChangeCollisionMarginsCommand& rhs) const;
 
 private:
-  CollisionMarginData collision_margin_data_;
-  CollisionMarginOverrideType collision_margin_override_{ CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN };
+  std::optional<double> default_margin_;
+  CollisionMarginPairData pair_margins_;
+  CollisionMarginPairOverrideType pair_override_type_{ CollisionMarginPairOverrideType::NONE };
 
   friend class boost::serialization::access;
+
+  template <class Archive>
+  void load(Archive& ar, const unsigned int version);  // NOLINT
+
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const;  // NOLINT
+
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
