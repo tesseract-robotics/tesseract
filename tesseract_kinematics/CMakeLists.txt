@@ -38,6 +38,8 @@ set(COVERAGE_EXCLUDE
     /usr/*
     /opt/*
     ${CMAKE_CURRENT_LIST_DIR}/test/*
+    /*/install/*
+    /*/devel/*
     /*/gtest/*
     /*/bullet/LinearMath/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})

@@ -53,6 +53,8 @@ set(COVERAGE_EXCLUDE
     ${CMAKE_CURRENT_LIST_DIR}/test/*
     ${CMAKE_CURRENT_LIST_DIR}/include/tesseract_collision/test_suite/*
     ${CMAKE_CURRENT_LIST_DIR}/include/tesseract_collision/vhacd/*
+    /*/install/*
+    /*/devel/*
     /*/gtest/*
     /*/bullet/LinearMath/*
     /*/bullet/BulletCollision/*

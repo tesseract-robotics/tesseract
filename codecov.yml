@@ -1,5 +1,9 @@
 codecov:
   require_ci_to_pass: yes
+  disable_default_path_fixes: true
+
+fixes:
+  - "/__w/tesseract/tesseract/target_ws/src/::"
 
 coverage:
   precision: 2
