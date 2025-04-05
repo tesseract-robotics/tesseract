@@ -64,11 +64,18 @@ jobs:
           target-args: --cmake-args ${{ matrix.env.TARGET_CMAKE_ARGS }}
 
       - name: Upload CodeCov Results
+        if: matrix.job_type == 'codecov'
         shell: bash
         run: |
-          if [[ "${{ matrix.job_type }}" == "codecov" ]]; then
-            source $GITHUB_WORKSPACE/target_ws/install/setup.bash
-            cd $GITHUB_WORKSPACE/target_ws
-            colcon build --cmake-target ccov-all --packages-select tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_srdf tesseract_state_solver tesseract_scene_graph tesseract_urdf
-            bash <(curl -s https://codecov.io/bash) -t 758610a6-d851-4185-a01a-5b9465889b62 -s $GITHUB_WORKSPACE/target_ws/build -f *all-merged.info
-          fi
+          source $GITHUB_WORKSPACE/target_ws/install/setup.bash
+          cd $GITHUB_WORKSPACE/target_ws
+          colcon build --cmake-target ccov-all --packages-select tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_srdf tesseract_state_solver tesseract_scene_graph tesseract_urdf
+          bash <(curl -s https://codecov.io/bash) -t 758610a6-d851-4185-a01a-5b9465889b62 -s $GITHUB_WORKSPACE/target_ws/build -f *all-merged.info
+
+      - name: Upload coverage artifacts
+        if: matrix.job_type == 'codecov'
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecov-raw-info
+          path: ${{ github.workspace }}/target_ws/build/**/all-merged.info
+          retention-days: 7

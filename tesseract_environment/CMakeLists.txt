@@ -41,6 +41,8 @@ set(COVERAGE_EXCLUDE
     /usr/*
     /opt/*
     ${CMAKE_CURRENT_LIST_DIR}/test/*
+    /*/install/*
+    /*/devel/*
     /*/gtest/*
     /*/bullet/LinearMath/*
     /*/bullet/BulletCollision/*)
