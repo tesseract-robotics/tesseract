@@ -70,6 +70,10 @@ TEST(TesseractCommonSerializeUnit, ManipulatorInfo)  // NOLINT
 {
   ManipulatorInfo manip_info("manipulator", "world", "tool0");
   tesseract_common::testSerialization<ManipulatorInfo>(manip_info, "ManipulatorInfo");
+
+  ManipulatorInfo manip_info2("manipulator", "world", "tool0");
+  manip_info2.tcp_offset = "tool0";
+  tesseract_common::testSerialization<ManipulatorInfo>(manip_info2, "ManipulatorInfo2");
 }
 
 TEST(TesseractCommonSerializeUnit, JointState)  // NOLINT
