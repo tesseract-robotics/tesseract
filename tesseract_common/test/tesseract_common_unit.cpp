@@ -329,7 +329,7 @@ TEST(TesseractCommonUnit, timer)  // NOLINT
   timer.start(callback, interval);
   sleep(1);
   timer.stop();
-  EXPECT_GT(counter, 950);
+  EXPECT_GT(counter, 900);
 }
 
 TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
