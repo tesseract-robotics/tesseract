@@ -422,7 +422,7 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   tesseract_common::AnyInterface& interface = any_type.get();
   EXPECT_TRUE(interface.getType() == std::type_index(typeid(tesseract_common::JointState)));
 
-  const tesseract_common::AnyInterface& interface_const = any_type.get();
+  const tesseract_common::AnyInterface& interface_const = std::as_const(any_type).get();
   EXPECT_TRUE(interface_const.getType() == std::type_index(typeid(tesseract_common::JointState)));
 
   // Construct with interface
@@ -434,6 +434,10 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   // Check clone
   tesseract_common::AnyPoly any_copy = any_type;
   EXPECT_TRUE(any_copy == any_type);
+
+  tesseract_common::AnyPoly any_copy2;
+  any_copy2 = any_type;
+  EXPECT_TRUE(any_copy2 == any_type);
 
   // Check to make sure it is not making a copy during cast
   auto& any_type_ref1 = any_type.as<tesseract_common::JointState>();
@@ -2691,6 +2695,7 @@ TEST(TesseractCommonUnit, concat)  // NOLINT
 TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
 {
   tesseract_common::AllowedCollisionMatrix acm;
+  acm.reserveAllowedCollisionMatrix(2);
 
   acm.addAllowedCollision("link1", "link2", "test");
   // collision between link1 and link2 should be allowed
@@ -2732,6 +2737,14 @@ TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
   EXPECT_TRUE(acm.isCollisionAllowed("link1", "link3"));
   EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2);
+
+  acm.addAllowedCollision("link2", "link3", "test");
+  acm.removeAllowedCollision("link1");
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
+  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
+  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link3"));
+  EXPECT_TRUE(acm.isCollisionAllowed("link2", "link3"));
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
 
   // ostream
   std::stringstream ss;
