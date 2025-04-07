@@ -6,6 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <tinyxml2.h>
+#include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
@@ -2572,6 +2573,56 @@ TEST(TesseractCommonUnit, concat)  // NOLINT
   EXPECT_EQ(c.rows(), a.rows() + b.rows());
   EXPECT_TRUE(c.head(3).isApprox(a));
   EXPECT_TRUE(c.tail(3).isApprox(b));
+}
+
+TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
+{
+  tesseract_common::AllowedCollisionMatrix acm;
+
+  acm.addAllowedCollision("link1", "link2", "test");
+  // collision between link1 and link2 should be allowed
+  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
+  // but now between link2 and link3
+  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
+
+  tesseract_common::AllowedCollisionMatrix acm_copy(acm);
+  EXPECT_TRUE(acm_copy == acm);
+  // collision between link1 and link2 should be allowed
+  EXPECT_TRUE(acm_copy.isCollisionAllowed("link1", "link2"));
+  // but now between link2 and link3
+  EXPECT_FALSE(acm_copy.isCollisionAllowed("link2", "link3"));
+
+  tesseract_common::AllowedCollisionMatrix acm_move(std::move(acm_copy));
+  EXPECT_TRUE(acm_move == acm);
+  // collision between link1 and link2 should be allowed
+  EXPECT_TRUE(acm_move.isCollisionAllowed("link1", "link2"));
+  // but now between link2 and link3
+  EXPECT_FALSE(acm_move.isCollisionAllowed("link2", "link3"));
+
+  acm.removeAllowedCollision("link1", "link2");
+  // now collision link1 and link2 is not allowed anymore
+  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
+
+  acm.addAllowedCollision("link3", "link3", "test");
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
+  acm.clearAllowedCollisions();
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
+
+  tesseract_common::AllowedCollisionMatrix acm2;
+  acm.addAllowedCollision("link1", "link2", "test");
+  acm2.addAllowedCollision("link1", "link2", "test");
+  acm2.addAllowedCollision("link1", "link3", "test");
+  acm.insertAllowedCollisionMatrix(acm2);
+
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2);
+  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
+  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link3"));
+  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2);
+
+  // ostream
+  std::stringstream ss;
+  EXPECT_NO_THROW(ss << acm);  // NOLINT
 }
 
 TEST(TesseractCommonUnit, TestAllowedCollisionEntriesCompare)  // NOLINT

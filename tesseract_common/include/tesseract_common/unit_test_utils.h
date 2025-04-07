@@ -55,6 +55,15 @@ void testSerialization(const SerializableType& object, const std::string& typena
     EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
   }
 
+  {  // Archive program to XML file with name
+    std::string file_path = tesseract_common::getTempPath() + typename_string + ".xml";
+    EXPECT_TRUE(
+        tesseract_common::Serialization::toArchiveFileXML<SerializableType>(object, file_path, typename_string));
+
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileXML<SerializableType>(file_path) };
+    EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
+  }
+
   {  // Archive program to binary file
     std::string file_path = tesseract_common::getTempPath() + typename_string + ".binary";
     EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileBinary<SerializableType>(object, file_path));
@@ -72,7 +81,25 @@ void testSerialization(const SerializableType& object, const std::string& typena
     EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
   }
 
+  {  // Archive program to string with name
+    std::string object_string =
+        tesseract_common::Serialization::toArchiveStringXML<SerializableType>(object, typename_string);
+    EXPECT_FALSE(object_string.empty());
+
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringXML<SerializableType>(object_string) };
+    EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
+  }
+
   {  // Archive program to binary data
+    std::vector<std::uint8_t> object_data =
+        tesseract_common::Serialization::toArchiveBinaryData<SerializableType>(object);
+    EXPECT_FALSE(object_data.empty());
+
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveBinaryData<SerializableType>(object_data) };
+    EXPECT_FALSE(object != nobject);  // Using != because it call == for code coverage
+  }
+
+  {  // Archive program to binary data with name
     std::vector<std::uint8_t> object_data =
         tesseract_common::Serialization::toArchiveBinaryData<SerializableType>(object, typename_string);
     EXPECT_FALSE(object_data.empty());
