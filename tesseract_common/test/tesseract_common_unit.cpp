@@ -1106,6 +1106,27 @@ TEST(TesseractCommonUnit, printNestedExceptionUnit)  // NOLINT
   }
 }
 
+TEST(TesseractCommonUnit, checkForUnknownKeys)  // NOLINT
+{
+  std::set<std::string> expected_keys{ "search_paths", "search_libraries" };
+
+  std::string yaml_string = R"(kinematic_plugins:
+                                 search_paths:
+                                   - /usr/local/lib
+                                 search_libraries:
+                                   - tesseract_kinematics_kdl_factories)";
+
+  YAML::Node config = tesseract_common::fromYAMLString(yaml_string);
+  EXPECT_NO_THROW(tesseract_common::checkForUnknownKeys(config["kinematic_plugins"], expected_keys));  // NOLINT
+
+  // Not a map
+  EXPECT_ANY_THROW(
+      tesseract_common::checkForUnknownKeys(config["kinematic_plugins"]["search_paths"], expected_keys));  // NOLINT
+
+  expected_keys = { "search_paths" };
+  EXPECT_ANY_THROW(tesseract_common::checkForUnknownKeys(config["kinematic_plugins"], expected_keys));  // NOLINT
+}
+
 TEST(TesseractCommonUnit, almostEqualRelativeAndAbsUnit)  // NOLINT
 {
   double a = 1e-5;
