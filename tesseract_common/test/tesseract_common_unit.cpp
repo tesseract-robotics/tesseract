@@ -2832,6 +2832,30 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
     EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 0);
   }
 
+  {  // Test construction with default margin and pair margins
+    double default_margin = 0.0;
+    double pair_margin = 0.5;
+    tesseract_common::CollisionMarginPairData pair_margins;
+    pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
+    tesseract_common::CollisionMarginData data(pair_margins);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
+    EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
+    EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 1);
+  }
+
+  {  // Test construction with non default margin and pair margins
+    double default_margin = 0.0254;
+    double pair_margin = 0.5;
+    tesseract_common::CollisionMarginPairData pair_margins;
+    pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
+    tesseract_common::CollisionMarginData data(default_margin, pair_margins);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
+    EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
+    EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 1);
+  }
+
   {  // Test adding pair margin larger than default
     double default_margin = 0.0254;
     double pair_margin = 0.5;
@@ -3030,6 +3054,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_3"), pair_margin * 3, tol);
     EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 2);
 
+    // Test clearing the pair data
     auto pair_data_copy = data.getCollisionMarginPairData();
     EXPECT_EQ(pair_data_copy.getCollisionMargins().size(), 2);
     EXPECT_FALSE(pair_data_copy.empty());
