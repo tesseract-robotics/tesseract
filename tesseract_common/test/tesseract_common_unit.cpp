@@ -20,6 +20,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_common/yaml_extenstions.h>
 #include <tesseract_common/collision_margin_data.h>
+#include <tesseract_common/stopwatch.h>
+#include <tesseract_common/timer.h>
 
 /** @brief Resource locator implementation using a provided function to locate file resources */
 class TestResourceLocator : public tesseract_common::ResourceLocator
@@ -299,6 +301,35 @@ TEST(TesseractCommonUnit, fileToString)  // NOLINT
   tesseract_common::Resource::Ptr resource = locator->locateResource("package://tesseract_common/package.xml");
   std::string data = tesseract_common::fileToString(std::filesystem::path(resource->getFilePath()));
   EXPECT_FALSE(data.empty());
+}
+
+TEST(TesseractCommonUnit, stopwatch)  // NOLINT
+{
+  tesseract_common::Stopwatch stopwatch;
+  stopwatch.start();
+  sleep(1);
+  auto elapsed_ms = stopwatch.elapsedMilliseconds();
+  auto elapsed_s = stopwatch.elapsedSeconds();
+  EXPECT_GT(elapsed_ms, 999);
+  EXPECT_GT(elapsed_s, 0.999);
+  sleep(1);
+  stopwatch.stop();
+  elapsed_ms = stopwatch.elapsedMilliseconds();
+  elapsed_s = stopwatch.elapsedSeconds();
+  EXPECT_GT(elapsed_ms, 1999);
+  EXPECT_GT(elapsed_s, 1.999);
+}
+
+TEST(TesseractCommonUnit, timer)  // NOLINT
+{
+  int counter{ 0 };
+  auto callback = [&counter]() { ++counter; };
+  std::chrono::steady_clock::duration interval(std::chrono::milliseconds(1));
+  tesseract_common::Timer timer;
+  timer.start(callback, interval);
+  sleep(1);
+  timer.stop();
+  EXPECT_GT(counter, 950);
 }
 
 TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
