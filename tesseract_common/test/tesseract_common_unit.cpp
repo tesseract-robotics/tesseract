@@ -2783,11 +2783,39 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
     EXPECT_NEAR(data.getMaxCollisionMargin(), 0, tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), 0, tol);
     EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 0);
+
+    double increment = 0.01;
+    data.incrementMargins(increment);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), increment, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), increment, tol);
+    EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), increment, tol);
+    EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 0);
+
+    increment = -0.01;
+    data.incrementMargins(increment);
+    data.incrementMargins(increment);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), increment, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), increment, tol);
+    EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), increment, tol);
+    EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 0);
   }
 
   {  // Test construction with non zero default distance
     double default_margin = 0.0254;
     tesseract_common::CollisionMarginData data(default_margin);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), default_margin, tol);
+    EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), default_margin, tol);
+    EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 0);
+
+    double scale{ -1 };
+    data.scaleMargins(scale);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), scale * default_margin, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), scale * default_margin, tol);
+    EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), scale * default_margin, tol);
+    EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 0);
+
+    data.scaleMargins(scale);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), default_margin, tol);
@@ -3001,6 +3029,13 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_3"), pair_margin * 3, tol);
     EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 2);
+
+    auto pair_data_copy = data.getCollisionMarginPairData();
+    EXPECT_EQ(pair_data_copy.getCollisionMargins().size(), 2);
+    EXPECT_FALSE(pair_data_copy.empty());
+    pair_data_copy.clear();
+    EXPECT_EQ(pair_data_copy.getCollisionMargins().size(), 0);
+    EXPECT_TRUE(pair_data_copy.empty());
   }
 
   {  // Test Apply Override Modify with pair that already exists
