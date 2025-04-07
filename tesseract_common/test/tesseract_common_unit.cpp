@@ -2097,11 +2097,44 @@ TEST(TesseractCommonUnit, CalibrationInfoYamlUnit)  // NOLINT
 
 TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT
 {
-  tesseract_common::LinkNamesPair p1 = tesseract_common::makeOrderedLinkPair("link_1", "link_2");
-  tesseract_common::LinkNamesPair p2 = tesseract_common::makeOrderedLinkPair("link_2", "link_1");
+  {
+    tesseract_common::LinkNamesPair p1 = tesseract_common::makeOrderedLinkPair("link_1", "link_2");
+    tesseract_common::LinkNamesPair p2 = tesseract_common::makeOrderedLinkPair("link_2", "link_1");
 
-  tesseract_common::PairHash hash;
-  EXPECT_EQ(hash(p1), hash(p2));
+    EXPECT_EQ(p1.first, p2.first);
+    EXPECT_EQ(p1.second, p2.second);
+
+    tesseract_common::PairHash hash;
+    EXPECT_EQ(hash(p1), hash(p2));
+  }
+
+  {
+    tesseract_common::LinkNamesPair p1;
+    tesseract_common::makeOrderedLinkPair(p1, "link_1", "link_2");
+    tesseract_common::LinkNamesPair p2;
+    tesseract_common::makeOrderedLinkPair(p2, "link_2", "link_1");
+
+    EXPECT_EQ(p1.first, p2.first);
+    EXPECT_EQ(p1.second, p2.second);
+
+    tesseract_common::PairHash hash;
+    EXPECT_EQ(hash(p1), hash(p2));
+  }
+
+  {
+    tesseract_common::LinkNamesPair p1 = tesseract_common::makeOrderedLinkPair("link_1", "link_2");
+    tesseract_common::LinkNamesPair p2 = tesseract_common::makeOrderedLinkPair("link_2", "link_1");
+
+    tesseract_common::LinkNamesPair mp1;
+    tesseract_common::makeOrderedLinkPair(mp1, "link_1", "link_2");
+    tesseract_common::LinkNamesPair mp2;
+    tesseract_common::makeOrderedLinkPair(mp2, "link_2", "link_1");
+
+    EXPECT_EQ(p1.first, mp1.first);
+    EXPECT_EQ(p1.second, mp1.second);
+    EXPECT_EQ(p2.first, mp2.first);
+    EXPECT_EQ(p2.second, mp2.second);
+  }
 }
 
 /** @brief Tests calcRotationalError which return angle between [-PI, PI]*/
