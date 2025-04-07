@@ -357,8 +357,19 @@ TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
 
 TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 {
+  tesseract_common::AnyPoly any_null;
+  EXPECT_TRUE(any_null.getType() == std::type_index(typeid(nullptr)));
+  EXPECT_TRUE(any_null.isNull());
+
   tesseract_common::AnyPoly any_type;
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
+  EXPECT_TRUE(any_type.isNull());
+
+  tesseract_common::AnyPoly any_double(1.5);
+  EXPECT_TRUE(any_double.getType() == std::type_index(typeid(double)));
+  EXPECT_FALSE(any_double.isNull());
+
+  EXPECT_TRUE(any_null == any_type);
 
   tesseract_common::JointState joint_state;
   joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
@@ -370,7 +381,24 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 
   any_type = joint_state;
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
+  EXPECT_FALSE(any_type.isNull());
   EXPECT_TRUE(any_type.as<tesseract_common::JointState>() == joint_state);
+
+  // Expect False
+  EXPECT_FALSE(any_type == any_null);
+  EXPECT_FALSE(any_type == any_double);
+
+  tesseract_common::AnyInterface& interface = any_type.get();
+  EXPECT_TRUE(interface.getType() == std::type_index(typeid(tesseract_common::JointState)));
+
+  const tesseract_common::AnyInterface& interface_const = any_type.get();
+  EXPECT_TRUE(interface_const.getType() == std::type_index(typeid(tesseract_common::JointState)));
+
+  // Construct with interface
+  tesseract_common::AnyPoly any_interface_copy(interface_const);
+  EXPECT_TRUE(any_interface_copy.getType() == std::type_index(typeid(tesseract_common::JointState)));
+  EXPECT_FALSE(any_interface_copy.isNull());
+  EXPECT_TRUE(any_interface_copy.as<tesseract_common::JointState>() == joint_state);
 
   // Check clone
   tesseract_common::AnyPoly any_copy = any_type;
