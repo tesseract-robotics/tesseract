@@ -102,6 +102,33 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
         geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
   }
+
+  {  // Failure invalid resolution
+    std::string str = R"(<tesseract:octomap shape_type="box">
+                           <tesseract:point_cloud filename="package://tesseract_support/meshes/box_pcd.pcd" resolution="a"/>
+                         </tesseract:octomap>)";
+    tesseract_geometry::Octree::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
+  }
+
+  {  // Failure resource does not exist
+    std::string str = R"(<tesseract:octomap shape_type="box">
+                           <tesseract:point_cloud filename="package://tesseract_support/meshes/does_not_exist.pcd" resolution="0.1"/>
+                         </tesseract:octomap>)";
+    tesseract_geometry::Octree::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
+  }
+
+  {  // Failure resource is not a point cloud
+    std::string str = R"(<tesseract:octomap shape_type="box">
+                           <tesseract:point_cloud filename="package://tesseract_support/meshes/box_2m.bt" resolution="0.1"/>
+                         </tesseract:octomap>)";
+    tesseract_geometry::Octree::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract_geometry::Octree::Ptr>(
+        geom, &tesseract_urdf::parseOctomap, str, tesseract_urdf::OCTOMAP_ELEMENT_NAME.data(), resource_locator, true));
+  }
 #endif
 
   {

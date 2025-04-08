@@ -111,6 +111,31 @@ TEST(TesseractURDFUnit, write_collision)  // NOLINT
     EXPECT_NE(text, "");
   }
 
+  {  // trigger check for an unassigned name and check for specified ID
+    tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
+    collision->origin = Eigen::Isometry3d::Identity();
+    collision->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    std::string text;
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_scene_graph::Collision::Ptr>(
+            collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), 0));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger check for an orgin not identity and check for specified ID
+    tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
+    collision->origin = Eigen::Isometry3d::Identity();
+    collision->origin.translation() = Eigen::Vector3d(1.0, 2.0, 3.0);
+    collision->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    std::string text;
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_scene_graph::Collision::Ptr>(
+            collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), 0));
+    EXPECT_NE(text, "");
+  }
+
   {  // trigger check for nullptr input
     tesseract_scene_graph::Collision::Ptr collision = nullptr;
     std::string text;

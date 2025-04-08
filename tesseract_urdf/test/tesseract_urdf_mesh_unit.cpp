@@ -392,4 +392,29 @@ TEST(TesseractURDFUnit, write_convex_mesh)  // NOLINT
                   convex_mesh, &tesseract_urdf::writeMesh, text, getTempPkgPath(), std::string("convex0.ply")));
     EXPECT_EQ(text, R"(<mesh filename="package://tmppkg/convex0.ply" tesseract:make_convex="true"/>)");
   }
+
+  {  // With scale
+    // Create an arbitrary mesh denoted specifically as a convex mesh type
+    tesseract_common::VectorVector3d vertices = { Eigen::Vector3d(0, 0, 0),
+                                                  Eigen::Vector3d(1, 0, 0),
+                                                  Eigen::Vector3d(0, 1, 0) };
+    Eigen::VectorXi indices(4);
+    indices << 3, 0, 1, 2;
+    Eigen::Vector3d scale(0.5, 0.5, 0.5);
+    auto convex_mesh =
+        std::make_shared<tesseract_geometry::ConvexMesh>(std::make_shared<tesseract_common::VectorVector3d>(vertices),
+                                                         std::make_shared<Eigen::VectorXi>(indices),
+                                                         nullptr,
+                                                         scale);
+
+    // Write the convex mesh into a string
+    // Since the input type is specifically a ConvexMesh, the tesseract:make_convex` attribute should be present to
+    // indicate that mesh should be made convex and produce a `ConvexMesh`
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract_geometry::ConvexMesh::Ptr>(
+                  convex_mesh, &tesseract_urdf::writeMesh, text, getTempPkgPath(), std::string("convex1.ply")));
+    EXPECT_EQ(text,
+              R"(<mesh filename="package://tmppkg/convex1.ply" scale="0.5 0.5 0.5" tesseract:make_convex="true"/>)");
+  }
 }
