@@ -231,9 +231,39 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
     EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
+  // Not a urdf
+  {
+    std::string str = R"(this is not a urdf)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
+  // Missing robot element
+  {
+    std::string str = R"(<abcd name="test"></abcd>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
+  // Invalid version
+  {
+    std::string str = R"(<robot name="test" tesseract:make_convex="true" version="a"></robot>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
+  // Version not equal 1
+  {
+    std::string str = R"(<robot name="test" tesseract:make_convex="true" version="2"></robot>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
   // Missing tesseract:make_convex attribute
   {
     std::string str = R"(<robot name="test"></robot>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
+  // The tesseract:make_convex attribute is not a bool
+  {
+    std::string str = R"(<robot name="test" tesseract:make_convex="1.5"></robot>)";
     EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
