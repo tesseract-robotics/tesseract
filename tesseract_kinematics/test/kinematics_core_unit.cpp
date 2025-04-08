@@ -244,6 +244,38 @@ void runRedundantSolutionsTest()
     EXPECT_THROW(tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints),
                  std::runtime_error);
   }
+
+  {  // Not finit lower
+    Eigen::MatrixX2d limits(4, 2);
+    limits << -std::numeric_limits<double>::infinity(), 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI,
+        -2.0 * M_PI, 2.0 * M_PI;
+
+    tesseract_kinematics::VectorX<FloatType> q(4);
+    q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(0.0),
+        static_cast<FloatType>(4.0 * M_PI);
+
+    std::vector<Eigen::Index> redundancy_capable_joints = { 0 };
+    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+
+    EXPECT_EQ(solutions.size(), 0);
+  }
+
+  {  // Not finit upper
+    Eigen::MatrixX2d limits(4, 2);
+    limits << -2.0 * M_PI, std::numeric_limits<double>::infinity(), -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI,
+        -2.0 * M_PI, 2.0 * M_PI;
+
+    tesseract_kinematics::VectorX<FloatType> q(4);
+    q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(0.0),
+        static_cast<FloatType>(4.0 * M_PI);
+
+    std::vector<Eigen::Index> redundancy_capable_joints = { 0, 1, 3 };
+    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
+        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+
+    EXPECT_EQ(solutions.size(), 0);
+  }
 }
 
 TEST(TesseractKinematicsUnit, RedundantSolutionsUnit)  // NOLINT
