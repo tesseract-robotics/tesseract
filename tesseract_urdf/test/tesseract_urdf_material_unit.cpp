@@ -273,6 +273,22 @@ R"(<material name="unobtainium">
   }
 
   {
+    tesseract_scene_graph::Material::Ptr material = std::make_shared<tesseract_scene_graph::Material>("unobtainium");
+    material->color = Eigen::Vector4d(1.0, 0.5, 0.5, 1.0);
+    material->texture_filename = "/tmp/texture.txt";
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Material::Ptr>(material, &tesseract_urdf::writeMaterial, text));
+    // This string literal is not pretty, but has to match whitespace for comparison.
+    // clang-format off
+    std::string expected =
+R"(<material name="unobtainium">
+    <texture filename="/tmp/texture.txt"/>
+    <color rgba="1 0.5 0.5 1"/>
+</material>)";
+    // clang-format on
+    EXPECT_EQ(text, expected);
+  }
+  {
     tesseract_scene_graph::Material::Ptr material = nullptr;
     std::string text;
     EXPECT_EQ(1, writeTest<tesseract_scene_graph::Material::Ptr>(material, &tesseract_urdf::writeMaterial, text));

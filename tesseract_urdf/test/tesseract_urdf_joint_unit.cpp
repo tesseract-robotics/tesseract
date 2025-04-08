@@ -518,6 +518,24 @@ TEST(TesseractURDFUnit, write_joint)  // NOLINT
     EXPECT_NE(text, "");
   }
 
+  {  // trigger type revolute; set joint axis, joint limits, joint safety, joint cal, mimic joint, dynamics, origin not
+     // identity
+    tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint->parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1.0, 2.0, 3.0);
+    joint->type = tesseract_scene_graph::JointType::REVOLUTE;
+    joint->axis = Eigen::Vector3d::UnitY();
+    joint->limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    joint->limits->lower = 1.0;
+    joint->limits->upper = 2.0;
+    joint->safety = std::make_shared<tesseract_scene_graph::JointSafety>();
+    joint->calibration = std::make_shared<tesseract_scene_graph::JointCalibration>();
+    joint->mimic = std::make_shared<tesseract_scene_graph::JointMimic>();
+    joint->dynamics = std::make_shared<tesseract_scene_graph::JointDynamics>();
+    std::string text;
+    EXPECT_EQ(0, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
+    EXPECT_NE(text, "");
+  }
+
   {  // trigger type continuous
     tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
     joint->type = tesseract_scene_graph::JointType::CONTINUOUS;
@@ -557,5 +575,16 @@ TEST(TesseractURDFUnit, write_joint)  // NOLINT
     std::string text;
     EXPECT_EQ(1, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
     EXPECT_EQ(text, "");
+  }
+
+  {  // trigger no joint limits upper/lower equal zero error
+    tesseract_scene_graph::Joint::Ptr joint = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
+    joint->type = tesseract_scene_graph::JointType::PRISMATIC;
+    joint->limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+    joint->limits->lower = 0.0;
+    joint->limits->upper = 0.0;
+    joint->axis = Eigen::Vector3d::Ones();
+    std::string text;
+    EXPECT_EQ(1, writeTest<tesseract_scene_graph::Joint::Ptr>(joint, &tesseract_urdf::writeJoint, text));
   }
 }

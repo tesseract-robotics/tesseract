@@ -59,7 +59,7 @@ tesseract_geometry::Octree::Ptr parsePointCloud(const tinyxml2::XMLElement* xml_
   auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
   tesseract_common::Resource::Ptr located_resource = locator.locateResource(filename);
-  if (!located_resource || !located_resource->isFile())
+  if (!located_resource || !located_resource->isFile() || !std::filesystem::exists(located_resource->getFilePath()))
   {
     // TODO: Handle point clouds that are not files
     CONSOLE_BRIDGE_logError("Point clouds can only be loaded from file");
