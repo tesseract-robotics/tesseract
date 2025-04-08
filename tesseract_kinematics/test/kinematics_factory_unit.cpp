@@ -166,6 +166,11 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_ROP_REP_PluginTest)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
 {
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
+  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+
   KinematicsPluginFactory factory;
   EXPECT_FALSE(factory.getSearchPaths().empty());
   EXPECT_EQ(factory.getSearchPaths().size(), 1);
@@ -210,6 +215,16 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     factory.setDefaultFwdKinPlugin("manipulator", "default");
     EXPECT_EQ(factory.getDefaultFwdKinPlugin("manipulator"), "default");
 
+    EXPECT_ANY_THROW(factory.setDefaultFwdKinPlugin("group_does_not_exist", "default"));       // NOLINT
+    EXPECT_ANY_THROW(factory.setDefaultFwdKinPlugin("manipulator", "solver_does_not_exist"));  // NOLINT
+    EXPECT_ANY_THROW(factory.removeFwdKinPlugin(
+        "group_does_not_exist",
+        "default"));  // NOLINTEXPECT_ANY_THROW(factory.removeFwdKinPlugin("group_does_not_exist",
+                      // "default")); // NOLINT
+    EXPECT_ANY_THROW(factory.removeFwdKinPlugin("manipulator", "solver_does_not_exist"));  // NOLINT
+    EXPECT_TRUE(factory.createFwdKin("group_does_not_exist", "default", *scene_graph, scene_state) == nullptr);
+    EXPECT_TRUE(factory.createFwdKin("manipulator", "solver_does_not_exist", *scene_graph, scene_state) == nullptr);
+
     factory.removeFwdKinPlugin("manipulator", "default");
 
     map = factory.getFwdKinPlugins();
@@ -247,6 +262,13 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_EQ(factory.getDefaultInvKinPlugin("manipulator"), "KDLInvKin");
     factory.setDefaultInvKinPlugin("manipulator", "default");
     EXPECT_EQ(factory.getDefaultInvKinPlugin("manipulator"), "default");
+
+    EXPECT_ANY_THROW(factory.setDefaultInvKinPlugin("group_does_not_exist", "default"));       // NOLINT
+    EXPECT_ANY_THROW(factory.setDefaultInvKinPlugin("manipulator", "solver_does_not_exist"));  // NOLINT
+    EXPECT_ANY_THROW(factory.removeInvKinPlugin("group_does_not_exist", "default"));           // NOLINT
+    EXPECT_ANY_THROW(factory.removeInvKinPlugin("manipulator", "solver_does_not_exist"));      // NOLINT
+    EXPECT_TRUE(factory.createInvKin("group_does_not_exist", "default", *scene_graph, scene_state) == nullptr);
+    EXPECT_TRUE(factory.createInvKin("manipulator", "solver_does_not_exist", *scene_graph, scene_state) == nullptr);
 
     factory.removeInvKinPlugin("manipulator", "default");
 
@@ -895,6 +917,63 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
   EXPECT_TRUE(inv_kin != nullptr);
   EXPECT_EQ(inv_kin->getSolverName(), "REPInvKin");
 
+  {  // Invalid positioner sample resolution joint name
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["name"] = "joint_does_not_exist";
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid positioner sample resolution joint min
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["min"] = -10000;
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid positioner sample resolution joint max
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["max"] = 10000;
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid positioner sample resolution joint max is less than min
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["min"] = 0.6;
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["max"] = 0.3;
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid positioner class
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]["positioner"]["clas"
+                                                                                                                  "s"] =
+        "DoesNotExistFactory";
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid manipulator class
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]["manipulator"]
+          ["class"] = "DoesNotExistFactory";
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
   {  // missing config
     YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
@@ -1028,6 +1107,63 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
   EXPECT_TRUE(inv_kin != nullptr);
   EXPECT_EQ(inv_kin->getSolverName(), "ROPInvKin");
 
+  {  // Invalid positioner sample resolution joint name
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["name"] = "joint_does_not_exist";
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid positioner sample resolution joint min
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["min"] = -10000;
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid positioner sample resolution joint max
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["max"] = 10000;
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid positioner sample resolution joint max is less than min
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["min"] = 0.6;
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
+          ["positioner_sample_resolution"][0]["max"] = 0.3;
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid positioner class
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]["positioner"]["clas"
+                                                                                                                  "s"] =
+        "DoesNotExistFactory";
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // Invalid manipulator class
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]["manipulator"]
+          ["class"] = "DoesNotExistFactory";
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
   {  // missing config
     YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];

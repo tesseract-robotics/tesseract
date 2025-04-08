@@ -362,6 +362,133 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
   EXPECT_NEAR(m.f_angular.volume, 0.408248290463863, 1e-6);
 }
 
+TEST(TesseractKinematicsUnit, solvePInv_OverdeterminedSystem)
+{
+  Eigen::MatrixXd A(4, 2);
+  A << 1, 2, 3, 4, 5, 6, 7, 8;
+
+  Eigen::VectorXd b(4);
+  b << 1, 2, 3, 4;
+
+  Eigen::VectorXd x(A.cols());
+  bool success = tesseract_kinematics::solvePInv(A, b, x);
+
+  EXPECT_TRUE(success);
+  EXPECT_EQ(x.size(), 2);
+
+  // Check solution approximately satisfies Ax ≈ b
+  Eigen::VectorXd b_approx = A * x;
+  EXPECT_TRUE((b - b_approx).norm() < 1e-4);
+}
+
+TEST(TesseractKinematicsUnit, solvePInv_UnderdeterminedSystem)
+{
+  Eigen::MatrixXd A(2, 4);
+  A << 1, 2, 3, 4, 5, 6, 7, 8;
+
+  Eigen::VectorXd b(2);
+  b << 1, 2;
+
+  Eigen::VectorXd x(A.cols());
+  bool success = tesseract_kinematics::solvePInv(A, b, x);
+
+  EXPECT_TRUE(success);
+  EXPECT_EQ(x.size(), 4);
+
+  // Check solution approximately satisfies Ax ≈ b
+  Eigen::VectorXd b_approx = A * x;
+  EXPECT_TRUE((b - b_approx).norm() < 1e-4);
+}
+
+TEST(TesseractKinematicsUnit, solvePInv_SizeMismatch)
+{
+  Eigen::MatrixXd A(3, 3);
+  A << 1, 2, 3, 4, 5, 6, 7, 8, 9;
+
+  Eigen::VectorXd b(2);  // Wrong size
+
+  Eigen::VectorXd x(3);
+  bool success = tesseract_kinematics::solvePInv(A, b, x);
+  EXPECT_FALSE(success);
+}
+
+TEST(TesseractKinematicsUnit, solvePInv_EmptyMatrix)
+{
+  Eigen::MatrixXd A(0, 0);
+  Eigen::VectorXd b(0);
+  Eigen::VectorXd x;
+
+  bool success = tesseract_kinematics::solvePInv(A, b, x);
+  EXPECT_FALSE(success);
+}
+
+// Helper function to validate Ax ≈ A(PA)x
+bool isPseudoinverseValid(const Eigen::MatrixXd& A, const Eigen::MatrixXd& P, double tolerance = 1e-4)
+{
+  Eigen::MatrixXd approx = A * P * A;
+  return (A - approx).norm() < tolerance;
+}
+
+TEST(TesseractKinematicsUnit, dampedPInv_FullRankSquareMatrix)
+{
+  Eigen::MatrixXd A(3, 3);
+  A << 1, 2, 3, 4, 5, 6, 7, 8, 10;
+
+  Eigen::MatrixXd P(3, 3);
+  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(P.rows(), 3);
+  EXPECT_EQ(P.cols(), 3);
+  EXPECT_TRUE(isPseudoinverseValid(A, P));
+}
+
+TEST(TesseractKinematicsUnit, dampedPInv_RankDeficientMatrix)
+{
+  Eigen::MatrixXd A(3, 3);
+  A << 1, 2, 3, 2, 4, 6, 3, 6, 9;  // Rank deficient (linearly dependent rows)
+
+  Eigen::MatrixXd P(3, 3);
+  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(P.rows(), 3);
+  EXPECT_EQ(P.cols(), 3);
+  EXPECT_TRUE(isPseudoinverseValid(A, P, 1e-2));  // Allow more slack
+}
+
+TEST(TesseractKinematicsUnit, dampedPInv_OverdeterminedMatrix)
+{
+  Eigen::MatrixXd A(4, 2);
+  A << 1, 2, 3, 4, 5, 6, 7, 8;
+
+  Eigen::MatrixXd P(2, 4);
+  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(P.rows(), 2);
+  EXPECT_EQ(P.cols(), 4);
+  EXPECT_TRUE(isPseudoinverseValid(A, P));
+}
+
+TEST(TesseractKinematicsUnit, dampedPInv_UnderdeterminedMatrix)
+{
+  Eigen::MatrixXd A(2, 4);
+  A << 1, 2, 3, 4, 5, 6, 7, 8;
+
+  Eigen::MatrixXd P(4, 2);
+  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(P.rows(), 4);
+  EXPECT_EQ(P.cols(), 2);
+  EXPECT_TRUE(isPseudoinverseValid(A, P));
+}
+
+TEST(TesseractKinematicsUnit, dampedPInv_EmptyMatrix)
+{
+  Eigen::MatrixXd A;
+  Eigen::MatrixXd P;
+  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  EXPECT_FALSE(success);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
