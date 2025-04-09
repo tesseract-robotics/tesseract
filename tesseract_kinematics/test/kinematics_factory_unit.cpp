@@ -339,6 +339,91 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
   }
 }
 
+TEST(TesseractKinematicsFactoryUnit, LoadIKFastKinematicsUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+
+  tesseract_common::GeneralResourceLocator locator;
+  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
+  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+
+  std::string yaml_string =
+      R"(kinematic_plugins:
+           search_libraries:
+             - tesseract_kinematics_ikfast_abb_irb2400
+           inv_kin_plugins:
+             manipulator:
+               default: AbbIRB2400IKFast
+               plugins:
+                 AbbIRB2400IKFast:
+                   class: AbbIRB2400Kinematics
+                   config:
+                     base_link: base_link
+                     tip_link: tool0
+                     n_joints: 6)";
+
+  {
+    KinematicsPluginFactory factory(yaml_string, locator);
+    factory.addSearchPath(std::string(PLUGIN_DIR));
+    auto inv_kin = factory.createInvKin("manipulator", "AbbIRB2400IKFast", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin != nullptr);
+    EXPECT_EQ(inv_kin->getSolverName(), "AbbIRB2400IKFast");
+  }
+  {  // AbbIRB2400IKFast missing config
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["AbbIRB2400IKFast"];
+    plugin.remove("config");
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "AbbIRB2400IKFast", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // AbbIRB2400IKFast missing base_link
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["AbbIRB2400IKFast"];
+    plugin["config"].remove("base_link");
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "AbbIRB2400IKFast", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  {  // AbbIRB2400IKFast missing tip_link
+    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["AbbIRB2400IKFast"];
+    plugin["config"].remove("tip_link");
+
+    KinematicsPluginFactory factory(config, locator);
+    auto inv_kin = factory.createInvKin("manipulator", "AbbIRB2400IKFast", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+
+  yaml_string =
+      R"(kinematic_plugins:
+           search_libraries:
+             - tesseract_kinematics_ikfast_abb_irb2400
+           inv_kin_plugins:
+             manipulator:
+               default: AbbIRB2400IKFast
+               plugins:
+                 AbbIRB2400IKFast:
+                   class: AbbIRB2400Kinematics
+                   config:
+                     base_link: base_link
+                     tip_link: tool0
+                     n_joints: 6
+                     free_joint_states:
+                       - [])";
+
+  {
+    KinematicsPluginFactory factory(yaml_string, locator);
+    factory.addSearchPath(std::string(PLUGIN_DIR));
+    auto inv_kin = factory.createInvKin("manipulator", "AbbIRB2400IKFast", *scene_graph, scene_state);
+    EXPECT_TRUE(inv_kin == nullptr);
+  }
+  /** @todo Add test to test IKFast with free joints */
+}
+
 TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
