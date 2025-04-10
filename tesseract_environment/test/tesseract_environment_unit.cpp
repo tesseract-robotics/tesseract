@@ -4649,5 +4649,8 @@ int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
 
+  // Set to debug to also exercies debug code
+  console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+
   return RUN_ALL_TESTS();
 }
