@@ -39,6 +39,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+CollisionMarginPairData::CollisionMarginPairData(const PairsCollisionMarginData& pair_margins)
+{
+  for (const auto& pair : pair_margins)
+    setCollisionMargin(pair.first.first, pair.first.second, pair.second);
+}
+
 void CollisionMarginPairData::setCollisionMargin(const std::string& obj1, const std::string& obj2, double margin)
 {
   auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);

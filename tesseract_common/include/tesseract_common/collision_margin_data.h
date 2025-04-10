@@ -69,6 +69,10 @@ class CollisionMarginPairData
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  CollisionMarginPairData() = default;
+  CollisionMarginPairData(const PairsCollisionMarginData& pair_margins);
+
   /**
    * @brief Set the margin for a given contact pair
    *        * The order of the object names does not matter, that is handled internal to
