@@ -56,8 +56,9 @@ class ACMContactAllowedValidator;
 class CombinedContactAllowedValidator;
 
 // collision_margin_data.h
-enum class CollisionMarginOverrideType : std::uint8_t;
+enum class CollisionMarginPairOverrideType : std::uint8_t;
 class CollisionMarginData;
+class CollisionMarginPairData;
 
 // joint_state.h
 class JointState;
