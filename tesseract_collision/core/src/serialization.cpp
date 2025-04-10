@@ -111,12 +111,17 @@ template <class Archive>
 void save(Archive& ar, const tesseract_collision::ContactManagerConfig& g, const unsigned int /*version*/)
 {
   bool has_default_margin{ g.default_margin.has_value() };
-  double default_margin{ 0 };
-  if (g.default_margin.has_value())
-    default_margin = g.default_margin.value();
-
   ar& boost::serialization::make_nvp("has_default_margin", has_default_margin);
-  ar& boost::serialization::make_nvp("default_margin", default_margin);
+
+  if (g.default_margin.has_value())
+  {
+    double default_margin{ 0 };
+    if (g.default_margin.has_value())
+      default_margin = g.default_margin.value();
+
+    ar& boost::serialization::make_nvp("default_margin", default_margin);
+  }
+
   ar& boost::serialization::make_nvp("pair_margin_override_type", g.pair_margin_override_type);
   ar& boost::serialization::make_nvp("pair_margin_data", g.pair_margin_data);
   ar& boost::serialization::make_nvp("acm", g.acm);
