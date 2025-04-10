@@ -2856,6 +2856,33 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
     EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 1);
   }
 
+  {  // Test construction with non default margin and pair margins
+    double default_margin = 0.0254;
+    double pair_margin = 0.5;
+    tesseract_common::PairsCollisionMarginData temp;
+    temp[std::make_pair("link_1", "link_2")] = pair_margin;
+
+    tesseract_common::CollisionMarginPairData pair_margins(temp);
+    tesseract_common::CollisionMarginData data(default_margin, pair_margins);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
+    EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
+    EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 1);
+  }
+
+  {  // Test construction with default margin and pair margins
+    double default_margin = 0.0;
+    double pair_margin = 0.5;
+    tesseract_common::PairsCollisionMarginData temp;
+    temp[std::make_pair("link_1", "link_2")] = pair_margin;
+    tesseract_common::CollisionMarginPairData pair_margins(temp);
+    tesseract_common::CollisionMarginData data(pair_margins);
+    EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
+    EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
+    EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
+    EXPECT_EQ(data.getCollisionMarginPairData().getCollisionMargins().size(), 1);
+  }
+
   {  // Test adding pair margin larger than default
     double default_margin = 0.0254;
     double pair_margin = 0.5;
