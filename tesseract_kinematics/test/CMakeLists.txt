@@ -85,7 +85,7 @@ target_link_libraries(
           tesseract::tesseract_urdf
           tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_ikfast_abb_irb2400 PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                           ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+                                                                  ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ikfast_abb_irb2400 PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
 target_cxx_version(${PROJECT_NAME}_ikfast_abb_irb2400 PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
