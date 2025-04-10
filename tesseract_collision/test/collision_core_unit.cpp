@@ -7,7 +7,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/serialization.h>
 #include <tesseract_common/contact_allowed_validator.h>
+#include <tesseract_common/unit_test_utils.h>
 #include <tesseract_common/utils.h>
 
 class TestContactAllowedValidator : public tesseract_common::ContactAllowedValidator
@@ -20,8 +22,41 @@ public:
   }
 };
 
-TEST(TesseractCoreUnit, ContactManagerConfig_validateUnit)  // NOLINT
+TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
 {
+  {  // Default Construction
+    tesseract_collision::ContactManagerConfig config;
+    EXPECT_FALSE(config.default_margin.has_value());
+    EXPECT_EQ(config.pair_margin_override_type, tesseract_collision::CollisionMarginPairOverrideType::NONE);
+    EXPECT_TRUE(config.pair_margin_data.empty());
+    EXPECT_EQ(config.acm_override_type, tesseract_collision::ACMOverrideType::NONE);
+    EXPECT_TRUE(config.acm.getAllAllowedCollisions().empty());
+    EXPECT_TRUE(config.modify_object_enabled.empty());
+
+    tesseract_common::testSerialization<tesseract_collision::ContactManagerConfig>(config, "ContactManagerConfig");
+  }
+
+  {  // Construction
+    tesseract_collision::ContactManagerConfig config(0.025);
+    EXPECT_TRUE(config.default_margin.has_value());
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.default_margin.value(), 0.025));  // NOLINT
+    EXPECT_EQ(config.pair_margin_override_type, tesseract_collision::CollisionMarginPairOverrideType::NONE);
+    EXPECT_TRUE(config.pair_margin_data.empty());
+    EXPECT_EQ(config.acm_override_type, tesseract_collision::ACMOverrideType::NONE);
+    EXPECT_TRUE(config.acm.getAllAllowedCollisions().empty());
+    EXPECT_TRUE(config.modify_object_enabled.empty());
+
+    tesseract_common::testSerialization<tesseract_collision::ContactManagerConfig>(config, "ContactManagerConfig");
+  }
+
+  {  // Construction
+    tesseract_collision::ContactManagerConfig config(0.025);
+    config.pair_margin_data.setCollisionMargin("link1", "link2", 0.05);
+    config.pair_margin_override_type = tesseract_collision::CollisionMarginPairOverrideType::MODIFY;
+
+    tesseract_common::testSerialization<tesseract_collision::ContactManagerConfig>(config, "ContactManagerConfig");
+  }
+
   {
     tesseract_collision::ContactManagerConfig config;
     EXPECT_NO_THROW(config.validate());  // NOLINT
@@ -187,6 +222,8 @@ TEST(TesseractCoreUnit, ContactResultsUnit)  // NOLINT
   EXPECT_TRUE(results.cc_transform[1].isApprox(Eigen::Isometry3d::Identity()));
   EXPECT_EQ(results.single_contact_point, false);
 
+  tesseract_common::testSerialization<tesseract_collision::ContactResult>(results, "ContactResult");
+
   results.distance = 10;
   results.nearest_points[0] = Eigen::Vector3d(1, 2, 3);
   results.nearest_points[1] = Eigen::Vector3d(1, 2, 3);
@@ -211,8 +248,13 @@ TEST(TesseractCoreUnit, ContactResultsUnit)  // NOLINT
   results.cc_transform[1] = Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, 2, 3);
   results.single_contact_point = true;
 
-  results.clear();
+  tesseract_common::testSerialization<tesseract_collision::ContactResult>(results, "ContactResult");
 
+  tesseract_collision::ContactResult copy_results(results);
+  EXPECT_TRUE(copy_results == results);
+
+  results.clear();
+  EXPECT_TRUE(copy_results != results);
   EXPECT_EQ(results.distance, std::numeric_limits<double>::max());
   EXPECT_TRUE(results.nearest_points[0].isApprox(Eigen::Vector3d::Zero()));
   EXPECT_TRUE(results.nearest_points[1].isApprox(Eigen::Vector3d::Zero()));
@@ -236,6 +278,8 @@ TEST(TesseractCoreUnit, ContactResultsUnit)  // NOLINT
   EXPECT_TRUE(results.cc_transform[0].isApprox(Eigen::Isometry3d::Identity()));
   EXPECT_TRUE(results.cc_transform[1].isApprox(Eigen::Isometry3d::Identity()));
   EXPECT_EQ(results.single_contact_point, false);
+
+  tesseract_common::testSerialization<tesseract_collision::ContactResult>(results, "ContactResult");
 }
 
 TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
@@ -245,6 +289,9 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
     EXPECT_EQ(result_map.count(), 0);
     EXPECT_EQ(result_map.size(), 0);
     EXPECT_EQ(result_map.getContainer().size(), 0);
+    EXPECT_FALSE(result_map.getSummary().empty());
+
+    tesseract_common::testSerialization<tesseract_collision::ContactResultMap>(result_map, "ContactResultMap");
   }
 
   auto key1 = tesseract_common::makeOrderedLinkPair("link1", "link2");
@@ -253,6 +300,7 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
   {  // Test addContactResult single method
     tesseract_collision::ContactResultMap result_map;
     result_map.addContactResult(key1, tesseract_collision::ContactResult{});
+    EXPECT_FALSE(result_map.getSummary().empty());
     EXPECT_EQ(result_map.count(), 1);
     EXPECT_EQ(result_map.size(), 1);
     EXPECT_FALSE(result_map.empty());
@@ -265,7 +313,10 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
     EXPECT_TRUE(it != result_map.end());
     EXPECT_EQ(it->second.size(), 1);
 
+    tesseract_common::testSerialization<tesseract_collision::ContactResultMap>(result_map, "ContactResultMap");
+
     result_map.addContactResult(key1, tesseract_collision::ContactResult{});
+    EXPECT_FALSE(result_map.getSummary().empty());
     EXPECT_EQ(result_map.count(), 2);
     EXPECT_EQ(result_map.size(), 1);
     EXPECT_FALSE(result_map.empty());
@@ -278,7 +329,10 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
     EXPECT_TRUE(it != result_map.end());
     EXPECT_EQ(it->second.size(), 2);
 
+    tesseract_common::testSerialization<tesseract_collision::ContactResultMap>(result_map, "ContactResultMap");
+
     result_map.addContactResult(key2, tesseract_collision::ContactResult{});
+    EXPECT_FALSE(result_map.getSummary().empty());
     EXPECT_EQ(result_map.count(), 3);
     EXPECT_EQ(result_map.size(), 2);
     EXPECT_FALSE(result_map.empty());
@@ -295,8 +349,15 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
     EXPECT_TRUE(it != result_map.end());
     EXPECT_EQ(it->second.size(), 1);
 
+    tesseract_common::testSerialization<tesseract_collision::ContactResultMap>(result_map, "ContactResultMap");
+
+    tesseract_collision::ContactResultMap copy_result_map(result_map);
+    EXPECT_TRUE(copy_result_map == result_map);
+
     // test clear
     result_map.clear();
+    EXPECT_TRUE(copy_result_map != result_map);
+    EXPECT_FALSE(result_map.getSummary().empty());
     EXPECT_EQ(result_map.count(), 0);
     EXPECT_EQ(result_map.size(), 0);
     EXPECT_TRUE(result_map.empty());
@@ -325,6 +386,8 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
     EXPECT_TRUE(result_map.cbegin() == result_map.getContainer().cbegin());
     EXPECT_TRUE(result_map.cend() == result_map.getContainer().cend());
     EXPECT_TRUE(result_map.getContainer().empty());
+
+    tesseract_common::testSerialization<tesseract_collision::ContactResultMap>(result_map, "ContactResultMap");
   }
 
   {  // Test addContactResult vector method
@@ -382,6 +445,8 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
     EXPECT_TRUE(result_map.cbegin() == result_map.getContainer().cbegin());
     EXPECT_TRUE(result_map.cend() == result_map.getContainer().cend());
     EXPECT_TRUE(result_map.getContainer().empty());
+
+    tesseract_common::testSerialization<tesseract_collision::ContactResultMap>(result_map, "ContactResultMap");
   }
 
   {  // Test setContactResult single method
@@ -745,13 +810,56 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
   }
 }
 
+TEST(TesseractCoreUnit, ContactRequestUnit)  // NOLINT
+{
+  {
+    tesseract_collision::ContactRequest request;
+    EXPECT_EQ(request.type, tesseract_collision::ContactTestType::ALL);
+    EXPECT_TRUE(request.calculate_penetration);
+    EXPECT_TRUE(request.calculate_distance);
+    EXPECT_EQ(request.contact_limit, 0);
+    EXPECT_TRUE(request.is_valid == nullptr);
+
+    tesseract_common::testSerialization<tesseract_collision::ContactRequest>(request, "ContactRequest");
+  }
+
+  {
+    tesseract_collision::ContactRequest request(tesseract_collision::ContactTestType::FIRST);
+    EXPECT_EQ(request.type, tesseract_collision::ContactTestType::FIRST);
+    EXPECT_TRUE(request.calculate_penetration);
+    EXPECT_TRUE(request.calculate_distance);
+    EXPECT_EQ(request.contact_limit, 0);
+    EXPECT_TRUE(request.is_valid == nullptr);
+
+    tesseract_common::testSerialization<tesseract_collision::ContactRequest>(request, "ContactRequest");
+  }
+}
+
 TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
 {
-  tesseract_collision::ContactRequest request;
-  tesseract_collision::CollisionCheckConfig config(
-      request, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE, 0.5);
-  EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE);
-  EXPECT_NEAR(config.longest_valid_segment_length, 0.5, 1e-6);
+  {  // Default Constructor
+    tesseract_collision::CollisionCheckConfig config;
+    EXPECT_EQ(config.contact_request, tesseract_collision::ContactRequest());
+    EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::DISCRETE);
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.longest_valid_segment_length, 0.005));
+    EXPECT_EQ(config.check_program_mode, tesseract_collision::CollisionCheckProgramType::ALL);
+
+    tesseract_common::testSerialization<tesseract_collision::CollisionCheckConfig>(config, "CollisionCheckConfig");
+  }
+  {
+    tesseract_collision::ContactRequest request;
+    tesseract_collision::CollisionCheckConfig config(request,
+                                                     tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE,
+                                                     0.5,
+                                                     tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START);
+
+    EXPECT_EQ(config.contact_request, request);
+    EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE);
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.longest_valid_segment_length, 0.5));
+    EXPECT_EQ(config.check_program_mode, tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START);
+
+    tesseract_common::testSerialization<tesseract_collision::CollisionCheckConfig>(config, "CollisionCheckConfig");
+  }
 }
 
 int main(int argc, char** argv)
