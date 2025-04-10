@@ -88,6 +88,18 @@ bool ContactResult::operator!=(const ContactResult& rhs) const { return !operato
 
 ContactRequest::ContactRequest(ContactTestType type) : type(type) {}
 
+bool ContactRequest::operator==(const ContactRequest& rhs) const
+{
+  bool ret_val = true;
+  ret_val &= (type == rhs.type);
+  ret_val &= (calculate_penetration == rhs.calculate_penetration);
+  ret_val &= (calculate_distance == rhs.calculate_distance);
+  ret_val &= (contact_limit == rhs.contact_limit);
+  ret_val &= (is_valid == rhs.is_valid);
+  return ret_val;
+}
+bool ContactRequest::operator!=(const ContactRequest& rhs) const { return !operator==(rhs); }
+
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactResult result)
 {
   assert(tesseract_common::makeOrderedLinkPair(key.first, key.second) == key);
@@ -373,6 +385,19 @@ void ContactManagerConfig::validate() const
     throw std::runtime_error("ContactManagerConfig, acm override type is NONE but allowed collision entries exist!");
 }
 
+bool ContactManagerConfig::operator==(const ContactManagerConfig& rhs) const
+{
+  bool ret_val = true;
+  ret_val &= (default_margin == rhs.default_margin);
+  ret_val &= (pair_margin_override_type == rhs.pair_margin_override_type);
+  ret_val &= (pair_margin_data == rhs.pair_margin_data);
+  ret_val &= (acm == rhs.acm);
+  ret_val &= (acm_override_type == rhs.acm_override_type);
+  ret_val &= (modify_object_enabled == rhs.modify_object_enabled);
+  return ret_val;
+}
+bool ContactManagerConfig::operator!=(const ContactManagerConfig& rhs) const { return !operator==(rhs); }
+
 CollisionCheckConfig::CollisionCheckConfig(ContactRequest request,
                                            CollisionEvaluatorType type,
                                            double longest_valid_segment_length,
@@ -383,6 +408,18 @@ CollisionCheckConfig::CollisionCheckConfig(ContactRequest request,
   , check_program_mode(check_program_mode)
 {
 }
+
+bool CollisionCheckConfig::operator==(const CollisionCheckConfig& rhs) const
+{
+  bool ret_val = true;
+  ret_val &= (contact_request == rhs.contact_request);
+  ret_val &= (type == rhs.type);
+  ret_val &=
+      tesseract_common::almostEqualRelativeAndAbs(longest_valid_segment_length, rhs.longest_valid_segment_length);
+  ret_val &= (check_program_mode == rhs.check_program_mode);
+  return ret_val;
+}
+bool CollisionCheckConfig::operator!=(const CollisionCheckConfig& rhs) const { return !operator==(rhs); }
 
 ContactTrajectorySubstepResults::ContactTrajectorySubstepResults(int substep_number,
                                                                  const Eigen::VectorXd& start_state,  // NOLINT

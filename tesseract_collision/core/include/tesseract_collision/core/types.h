@@ -316,6 +316,9 @@ struct ContactRequest
   std::shared_ptr<const ContactResultValidator> is_valid;
 
   ContactRequest(ContactTestType type = ContactTestType::ALL);
+
+  bool operator==(const ContactRequest& rhs) const;
+  bool operator!=(const ContactRequest& rhs) const;
 };
 
 /**
@@ -442,6 +445,9 @@ struct ContactManagerConfig
    * `acm_override_type` is set to `NONE` but allowed collision entries exist.
    */
   void validate() const;
+
+  bool operator==(const ContactManagerConfig& rhs) const;
+  bool operator!=(const ContactManagerConfig& rhs) const;
 };
 
 /**
@@ -466,6 +472,9 @@ struct CollisionCheckConfig
 
   /** @brief Secifies the mode used when collision checking program/trajectory. Default: ALL */
   CollisionCheckProgramType check_program_mode{ CollisionCheckProgramType::ALL };
+
+  bool operator==(const CollisionCheckConfig& rhs) const;
+  bool operator!=(const CollisionCheckConfig& rhs) const;
 };
 
 /**
