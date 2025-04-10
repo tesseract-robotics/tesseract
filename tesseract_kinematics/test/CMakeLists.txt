@@ -76,10 +76,30 @@ add_gtest_discover_tests(${PROJECT_NAME}_opw_unit)
 add_dependencies(${PROJECT_NAME}_opw_unit ${PROJECT_NAME}_kdl ${PROJECT_NAME}_opw)
 add_dependencies(run_tests ${PROJECT_NAME}_opw_unit)
 
-add_executable(${PROJECT_NAME}_ikfast_unit ikfast_kinematics_unit.cpp abb_irb2400_ikfast_kinematics.cpp)
+add_library(${PROJECT_NAME}_ikfast_abb_irb2400 abb_irb2400_ikfast_kinematics.cpp)
+target_link_libraries(
+  ${PROJECT_NAME}_ikfast_abb_irb2400
+  PRIVATE GTest::GTest
+          GTest::Main
+          ${PROJECT_NAME}_ikfast
+          tesseract::tesseract_urdf
+          tesseract::tesseract_scene_graph)
+target_compile_options(${PROJECT_NAME}_ikfast_abb_irb2400 PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                                  ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(${PROJECT_NAME}_ikfast_abb_irb2400 PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_cxx_version(${PROJECT_NAME}_ikfast_abb_irb2400 PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(
+  ${PROJECT_NAME}_ikfast_abb_irb2400
+  PRIVATE
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+
+add_executable(${PROJECT_NAME}_ikfast_unit ikfast_kinematics_unit.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_ikfast_unit
-  PRIVATE GTest::GTest
+  PRIVATE ${PROJECT_NAME}_ikfast_abb_irb2400
+          GTest::GTest
           GTest::Main
           ${PROJECT_NAME}_kdl
           ${PROJECT_NAME}_ikfast
@@ -205,6 +225,8 @@ target_link_libraries(
 target_compile_options(${PROJECT_NAME}_factory_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                             ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_factory_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(${PROJECT_NAME}_factory_unit PRIVATE PLUGIN_DIR="${CMAKE_CURRENT_BINARY_DIR}")
+
 target_clang_tidy(${PROJECT_NAME}_factory_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_factory_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

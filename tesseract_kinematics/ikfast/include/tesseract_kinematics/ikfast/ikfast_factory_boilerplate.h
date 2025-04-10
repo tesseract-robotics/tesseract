@@ -71,6 +71,9 @@ public:
       // Get the free joint states
       if (YAML::Node free_joint_states_node = config["free_joint_states"])
       {
+        if (free_joints_required == 0)
+          throw std::runtime_error("IKFastInvKinFactory, entry 'free_joint_states' exists but no free joints exist");
+
         for (std::size_t idx = 0; idx < free_joint_states_node.size(); ++idx)
         {
           // Check the joints specification
