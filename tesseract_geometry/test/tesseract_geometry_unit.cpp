@@ -235,6 +235,9 @@ TEST(TesseractGeometryUnit, ConvexMesh)  // NOLINT
   EXPECT_TRUE(geom->getVertexCount() == 4);
   EXPECT_TRUE(geom->getFaceCount() == 1);
   EXPECT_EQ(geom->getType(), tesseract_geometry::GeometryType::CONVEX_MESH);
+  EXPECT_EQ(geom->getCreationMethod(), tesseract_geometry::ConvexMesh::CreationMethod::DEFAULT);
+  geom->setCreationMethod(tesseract_geometry::ConvexMesh::CreationMethod::CONVERTED);
+  EXPECT_EQ(geom->getCreationMethod(), tesseract_geometry::ConvexMesh::CreationMethod::CONVERTED);
 
   auto geom_clone = geom->clone();
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
@@ -242,6 +245,7 @@ TEST(TesseractGeometryUnit, ConvexMesh)  // NOLINT
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 1);
   EXPECT_EQ(geom_clone->getType(), tesseract_geometry::GeometryType::CONVEX_MESH);
+  EXPECT_EQ(geom->getCreationMethod(), tesseract_geometry::ConvexMesh::CreationMethod::CONVERTED);
 
   // Test isIdentical
   EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
@@ -296,6 +300,40 @@ TEST(TesseractGeometryUnit, CompoundConvexMesh)  // NOLINT
   // Test isIdentical
   EXPECT_TRUE(tesseract_geometry::isIdentical(*geom, *geom_clone));
   EXPECT_FALSE(tesseract_geometry::isIdentical(*geom, tesseract_geometry::CompoundMesh()));
+
+  {  // Test convex hull constructors
+    std::vector<tesseract_geometry::ConvexMesh::Ptr> convex_meshes;
+    convex_meshes.push_back(sub_geom);
+    convex_meshes.push_back(sub_geom);
+    convex_meshes.push_back(sub_geom);
+
+    auto geom = std::make_shared<tesseract_geometry::CompoundMesh>(convex_meshes);
+    EXPECT_EQ(geom->getMeshes().size(), 3);
+    EXPECT_EQ(geom->getResource(), geom->getMeshes().front()->getResource());
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(geom->getScale(), geom->getMeshes().front()->getScale()));
+    EXPECT_EQ(geom->getType(), tesseract_geometry::GeometryType::COMPOUND_MESH);
+  }
+
+  {  // Test convex hull constructors
+    using T = tesseract_geometry::SDFMesh;
+    auto sub_geom = std::make_shared<T>(vertices, faces);
+    EXPECT_TRUE(sub_geom->getVertices() != nullptr);
+    EXPECT_TRUE(sub_geom->getFaces() != nullptr);
+    EXPECT_TRUE(sub_geom->getVertexCount() == 4);
+    EXPECT_TRUE(sub_geom->getFaceCount() == 1);
+    EXPECT_EQ(sub_geom->getType(), tesseract_geometry::GeometryType::CONVEX_MESH);
+
+    std::vector<tesseract_geometry::SDFMesh::Ptr> sdf_meshes;
+    sdf_meshes.push_back(sub_geom);
+    sdf_meshes.push_back(sub_geom);
+    sdf_meshes.push_back(sub_geom);
+
+    auto geom = std::make_shared<tesseract_geometry::CompoundMesh>(sdf_meshes);
+    EXPECT_EQ(geom->getMeshes().size(), 3);
+    EXPECT_EQ(geom->getResource(), geom->getMeshes().front()->getResource());
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(geom->getScale(), geom->getMeshes().front()->getScale()));
+    EXPECT_EQ(geom->getType(), tesseract_geometry::GeometryType::COMPOUND_MESH);
+  }
 }
 
 TEST(TesseractGeometryUnit, Mesh)  // NOLINT
