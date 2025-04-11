@@ -36,6 +36,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/scene_state.h>
 
+#include <console_bridge/console.h>
+
 namespace tesseract_kinematics
 {
 std::unique_ptr<InverseKinematics> URInvKinFactory::create(const std::string& solver_name,
@@ -133,7 +135,7 @@ std::unique_ptr<InverseKinematics> URInvKinFactory::create(const std::string& so
   return std::make_unique<URInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
 }
 
-TESSERACT_PLUGIN_ANCHOR_IMPL(URFactoriesAnchor)
+PLUGIN_ANCHOR_IMPL(URFactoriesAnchor)
 
 }  // namespace tesseract_kinematics
 

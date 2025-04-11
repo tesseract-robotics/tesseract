@@ -16,6 +16,7 @@ find_package(octomap REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(boost_plugin_loader REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 # These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped

@@ -1,4 +1,5 @@
 find_gtest()
+find_package(boost_plugin_loader REQUIRED)
 
 add_executable(${PROJECT_NAME}_serialization_unit tesseract_common_serialization_unit.cpp)
 target_link_libraries(${PROJECT_NAME}_serialization_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
@@ -57,7 +58,7 @@ add_dependencies(${PROJECT_NAME}_clone_cache_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_clone_cache_unit)
 
 add_library(${PROJECT_NAME}_test_plugin_multiply test_plugin_multiply.cpp)
-target_link_libraries(${PROJECT_NAME}_test_plugin_multiply PUBLIC ${PROJECT_NAME} Boost::boost)
+target_link_libraries(${PROJECT_NAME}_test_plugin_multiply PUBLIC ${PROJECT_NAME} boost_plugin_loader::boost_plugin_loader)
 target_compile_options(${PROJECT_NAME}_test_plugin_multiply PUBLIC ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_test_plugin_multiply PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -70,7 +71,8 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           ${PROJECT_NAME}
-          console_bridge::console_bridge)
+          console_bridge::console_bridge
+          boost_plugin_loader::boost_plugin_loader)
 target_compile_options(${PROJECT_NAME}_plugin_loader_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                   ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_plugin_loader_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
