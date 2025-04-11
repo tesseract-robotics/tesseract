@@ -15,6 +15,7 @@ target_link_libraries(
          tesseract::tesseract_scene_graph
          tesseract::tesseract_state_solver_kdl
          console_bridge::console_bridge
+         boost_plugin_loader::boost_plugin_loader
          yaml-cpp)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -71,6 +72,7 @@ configure_component(
     tesseract_scene_graph
     tesseract_state_solver
     tesseract_common
+    boost_plugin_loader
     yaml-cpp
   CFG_EXTRAS cmake/core-extras.cmake)
 
@@ -83,6 +85,7 @@ if(TESSERACT_PACKAGE)
       "libconsole-bridge-dev"
       "libeigen3-dev"
       "libyaml-cpp-dev"
+      "boost-plugin-loader"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
@@ -90,6 +93,7 @@ if(TESSERACT_PACKAGE)
       "console_bridge"
       "Eigen3"
       "yaml-cpp"
+      "boost-plugin-loader"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver")

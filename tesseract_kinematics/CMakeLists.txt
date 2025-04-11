@@ -15,6 +15,7 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_state_solver REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(boost_plugin_loader REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 if(NOT TARGET console_bridge::console_bridge)

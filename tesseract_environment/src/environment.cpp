@@ -70,6 +70,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 #include <tesseract_common/collision_margin_data.h>
 
+#include <console_bridge/console.h>
+
 #include <utility>
 
 namespace tesseract_environment

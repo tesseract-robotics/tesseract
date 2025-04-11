@@ -32,6 +32,7 @@
   <test_depend>gtest</test_depend>
   <test_depend>lcov</test_depend>
   <test_depend>libclang-dev</test_depend>
+  <test_depend>boost_plugin_loader</test_depend>
 
   <export>
     <build_type>cmake</build_type>

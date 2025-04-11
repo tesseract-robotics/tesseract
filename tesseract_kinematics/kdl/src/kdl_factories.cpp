@@ -33,6 +33,8 @@
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/scene_state.h>
 
+#include <console_bridge/console.h>
+
 namespace tesseract_kinematics
 {
 std::unique_ptr<ForwardKinematics>
@@ -206,7 +208,7 @@ KDLInvKinChainNR_JLFactory::create(const std::string& solver_name,
   return std::make_unique<KDLInvKinChainNR_JL>(scene_graph, base_link, tip_link, kdl_config, solver_name);
 }
 
-TESSERACT_PLUGIN_ANCHOR_IMPL(KDLFactoriesAnchor)
+PLUGIN_ANCHOR_IMPL(KDLFactoriesAnchor)
 
 }  // namespace tesseract_kinematics
 

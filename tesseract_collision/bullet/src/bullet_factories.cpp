@@ -86,7 +86,7 @@ std::unique_ptr<ContinuousContactManager> BulletCastSimpleManagerFactory::create
   return std::make_unique<BulletCastSimpleManager>(name, getConfigInfo(config));
 }
 
-TESSERACT_PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
+PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
 
 }  // namespace tesseract_collision::tesseract_collision_bullet
 
