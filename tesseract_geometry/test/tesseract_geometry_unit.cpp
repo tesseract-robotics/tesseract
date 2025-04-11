@@ -279,12 +279,12 @@ TEST(TesseractGeometryUnit, CompoundConvexMesh)  // NOLINT
   EXPECT_TRUE(sub_geom->getFaceCount() == 1);
   EXPECT_EQ(sub_geom->getType(), tesseract_geometry::GeometryType::CONVEX_MESH);
 
-  std::vector<tesseract_geometry::PolygonMesh::Ptr> meshes;
-  meshes.push_back(sub_geom);
-  meshes.push_back(sub_geom);
-  meshes.push_back(sub_geom);
+  std::vector<tesseract_geometry::PolygonMesh::Ptr> poly_meshes;
+  poly_meshes.push_back(sub_geom);
+  poly_meshes.push_back(sub_geom);
+  poly_meshes.push_back(sub_geom);
 
-  auto geom = std::make_shared<tesseract_geometry::CompoundMesh>(meshes);
+  auto geom = std::make_shared<tesseract_geometry::CompoundMesh>(poly_meshes);
   EXPECT_EQ(geom->getMeshes().size(), 3);
   EXPECT_EQ(geom->getResource(), geom->getMeshes().front()->getResource());
   EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(geom->getScale(), geom->getMeshes().front()->getScale()));
@@ -315,13 +315,31 @@ TEST(TesseractGeometryUnit, CompoundConvexMesh)  // NOLINT
   }
 
   {  // Test convex hull constructors
+    auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    vertices->emplace_back(1, 1, 0);
+    vertices->emplace_back(1, -1, 0);
+    vertices->emplace_back(-1, -1, 0);
+    vertices->emplace_back(1, -1, 0);
+
+    auto faces = std::make_shared<Eigen::VectorXi>();
+    faces->resize(8);
+    (*faces)(0) = 3;
+    (*faces)(1) = 0;
+    (*faces)(2) = 1;
+    (*faces)(3) = 2;
+
+    (*faces)(4) = 3;
+    (*faces)(5) = 0;
+    (*faces)(6) = 2;
+    (*faces)(7) = 3;
+
     using T = tesseract_geometry::SDFMesh;
     auto sub_geom = std::make_shared<T>(vertices, faces);
     EXPECT_TRUE(sub_geom->getVertices() != nullptr);
     EXPECT_TRUE(sub_geom->getFaces() != nullptr);
     EXPECT_TRUE(sub_geom->getVertexCount() == 4);
-    EXPECT_TRUE(sub_geom->getFaceCount() == 1);
-    EXPECT_EQ(sub_geom->getType(), tesseract_geometry::GeometryType::CONVEX_MESH);
+    EXPECT_TRUE(sub_geom->getFaceCount() == 2);
+    EXPECT_EQ(sub_geom->getType(), tesseract_geometry::GeometryType::SDF_MESH);
 
     std::vector<tesseract_geometry::SDFMesh::Ptr> sdf_meshes;
     sdf_meshes.push_back(sub_geom);
@@ -329,6 +347,45 @@ TEST(TesseractGeometryUnit, CompoundConvexMesh)  // NOLINT
     sdf_meshes.push_back(sub_geom);
 
     auto geom = std::make_shared<tesseract_geometry::CompoundMesh>(sdf_meshes);
+    EXPECT_EQ(geom->getMeshes().size(), 3);
+    EXPECT_EQ(geom->getResource(), geom->getMeshes().front()->getResource());
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(geom->getScale(), geom->getMeshes().front()->getScale()));
+    EXPECT_EQ(geom->getType(), tesseract_geometry::GeometryType::COMPOUND_MESH);
+  }
+
+  {  // Test convex hull constructors
+    auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    vertices->emplace_back(1, 1, 0);
+    vertices->emplace_back(1, -1, 0);
+    vertices->emplace_back(-1, -1, 0);
+    vertices->emplace_back(1, -1, 0);
+
+    auto faces = std::make_shared<Eigen::VectorXi>();
+    faces->resize(8);
+    (*faces)(0) = 3;
+    (*faces)(1) = 0;
+    (*faces)(2) = 1;
+    (*faces)(3) = 2;
+
+    (*faces)(4) = 3;
+    (*faces)(5) = 0;
+    (*faces)(6) = 2;
+    (*faces)(7) = 3;
+
+    using T = tesseract_geometry::Mesh;
+    auto sub_geom = std::make_shared<T>(vertices, faces);
+    EXPECT_TRUE(sub_geom->getVertices() != nullptr);
+    EXPECT_TRUE(sub_geom->getFaces() != nullptr);
+    EXPECT_TRUE(sub_geom->getVertexCount() == 4);
+    EXPECT_TRUE(sub_geom->getFaceCount() == 2);
+    EXPECT_EQ(sub_geom->getType(), tesseract_geometry::GeometryType::MESH);
+
+    std::vector<tesseract_geometry::Mesh::Ptr> meshes;
+    meshes.push_back(sub_geom);
+    meshes.push_back(sub_geom);
+    meshes.push_back(sub_geom);
+
+    auto geom = std::make_shared<tesseract_geometry::CompoundMesh>(meshes);
     EXPECT_EQ(geom->getMeshes().size(), 3);
     EXPECT_EQ(geom->getResource(), geom->getMeshes().front()->getResource());
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(geom->getScale(), geom->getMeshes().front()->getScale()));
