@@ -862,6 +862,384 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
   }
 }
 
+TEST(TesseractCoreUnit, ContactTrajectorySubstepResultsUnit)  // NOLINT
+{
+  // Test constructor with start and end states
+  {
+    int substep_number = 5;
+    Eigen::VectorXd start_state(3);
+    Eigen::VectorXd end_state(3);
+    start_state << 1.0, 2.0, 3.0;
+    end_state << 4.0, 5.0, 6.0;
+
+    tesseract_collision::ContactTrajectorySubstepResults results(substep_number, start_state, end_state);
+
+    EXPECT_EQ(results.substep, substep_number);
+    EXPECT_TRUE(results.state0.isApprox(start_state));
+    EXPECT_TRUE(results.state1.isApprox(end_state));
+    EXPECT_EQ(results.numContacts(), 0);
+  }
+
+  // Test constructor with single state
+  {
+    int substep_number = 3;
+    Eigen::VectorXd state(2);
+    state << 1.5, 2.5;
+
+    tesseract_collision::ContactTrajectorySubstepResults results(substep_number, state);
+
+    EXPECT_EQ(results.substep, substep_number);
+    EXPECT_TRUE(results.state0.isApprox(state));
+    EXPECT_TRUE(results.state1.isApprox(state));
+    EXPECT_EQ(results.numContacts(), 0);
+  }
+
+  // Test with contacts
+  {
+    int substep_number = 2;
+    Eigen::VectorXd state(1);
+    state << 1.0;
+
+    tesseract_collision::ContactTrajectorySubstepResults results(substep_number, state);
+
+    // Create contact results
+    auto key1 = tesseract_common::makeOrderedLinkPair("link1", "link2");
+    auto key2 = tesseract_common::makeOrderedLinkPair("link3", "link4");
+
+    tesseract_collision::ContactResult cr1;
+    cr1.distance = -0.1;
+    cr1.link_names[0] = "link1";
+    cr1.link_names[1] = "link2";
+
+    tesseract_collision::ContactResult cr2;
+    cr2.distance = -0.2;
+    cr2.link_names[0] = "link3";
+    cr2.link_names[1] = "link4";
+
+    tesseract_collision::ContactResultVector crv1 = { cr1 };
+    tesseract_collision::ContactResultVector crv2 = { cr2 };
+
+    results.contacts.addContactResult(key1, crv1);
+    results.contacts.addContactResult(key2, crv2);
+
+    EXPECT_EQ(results.numContacts(), 2);
+
+    // Test worstCollision
+    tesseract_collision::ContactResultVector worst = results.worstCollision();
+    EXPECT_EQ(worst.size(), 1);
+    EXPECT_EQ(worst[0].distance, -0.2);
+    EXPECT_EQ(worst[0].link_names[0], "link3");
+    EXPECT_EQ(worst[0].link_names[1], "link4");
+  }
+
+  // Test with no contacts
+  {
+    tesseract_collision::ContactTrajectorySubstepResults results;
+    tesseract_collision::ContactResultVector worst = results.worstCollision();
+    EXPECT_EQ(worst.size(), 0);
+  }
+}
+
+TEST(TesseractCoreUnit, ContactTrajectoryStepResultsUnit)  // NOLINT
+{
+  // Test constructor with start and end states and num_substeps
+  {
+    int step_number = 3;
+    Eigen::VectorXd start_state(3);
+    Eigen::VectorXd end_state(3);
+    start_state << 1.0, 2.0, 3.0;
+    end_state << 4.0, 5.0, 6.0;
+    int num_substeps = 5;
+
+    tesseract_collision::ContactTrajectoryStepResults results(step_number, start_state, end_state, num_substeps);
+
+    EXPECT_EQ(results.step, step_number);
+    EXPECT_TRUE(results.state0.isApprox(start_state));
+    EXPECT_TRUE(results.state1.isApprox(end_state));
+    EXPECT_EQ(results.total_substeps, num_substeps);
+    EXPECT_EQ(results.substeps.size(), num_substeps);
+    EXPECT_EQ(results.numSubsteps(), num_substeps);
+    EXPECT_EQ(results.numContacts(), 0);
+  }
+
+  // Test constructor with single state
+  {
+    int step_number = 2;
+    Eigen::VectorXd state(2);
+    state << 1.5, 2.5;
+
+    tesseract_collision::ContactTrajectoryStepResults results(step_number, state);
+
+    EXPECT_EQ(results.step, step_number);
+    EXPECT_TRUE(results.state0.isApprox(state));
+    EXPECT_TRUE(results.state1.isApprox(state));
+    EXPECT_EQ(results.total_substeps, 2);
+    EXPECT_EQ(results.substeps.size(), 2);
+    EXPECT_EQ(results.numSubsteps(), 2);
+    EXPECT_EQ(results.numContacts(), 0);
+  }
+
+  // Test resize method
+  {
+    int step_number = 1;
+    Eigen::VectorXd state(1);
+    state << 1.0;
+
+    tesseract_collision::ContactTrajectoryStepResults results(step_number, state);
+    EXPECT_EQ(results.substeps.size(), 2);
+
+    results.resize(4);
+    EXPECT_EQ(results.total_substeps, 4);
+    EXPECT_EQ(results.substeps.size(), 4);
+    EXPECT_EQ(results.numSubsteps(), 4);
+  }
+
+  // Test with contacts in substeps
+  {
+    int step_number = 1;
+    Eigen::VectorXd start_state(2);
+    Eigen::VectorXd end_state(2);
+    start_state << 0.0, 0.0;
+    end_state << 1.0, 1.0;
+    int num_substeps = 3;
+
+    tesseract_collision::ContactTrajectoryStepResults results(step_number, start_state, end_state, num_substeps);
+
+    // Create contact results for first substep
+    auto key1 = tesseract_common::makeOrderedLinkPair("link1", "link2");
+    auto key2 = tesseract_common::makeOrderedLinkPair("link3", "link4");
+
+    tesseract_collision::ContactResult cr1;
+    cr1.distance = -0.1;
+    cr1.link_names[0] = "link1";
+    cr1.link_names[1] = "link2";
+
+    tesseract_collision::ContactResult cr2;
+    cr2.distance = -0.2;
+    cr2.link_names[0] = "link3";
+    cr2.link_names[1] = "link4";
+
+    tesseract_collision::ContactResultVector crv1 = { cr1 };
+    tesseract_collision::ContactResultVector crv2 = { cr2 };
+
+    results.substeps[0].substep = 0;
+    results.substeps[0].contacts.addContactResult(key1, crv1);
+
+    // Create contact results for second substep
+    tesseract_collision::ContactResult cr3;
+    cr3.distance = -0.3;
+    cr3.link_names[0] = "link1";
+    cr3.link_names[1] = "link2";
+
+    tesseract_collision::ContactResultVector crv3 = { cr3 };
+
+    results.substeps[1].substep = 1;
+    results.substeps[1].contacts.addContactResult(key1, crv3);
+    results.substeps[1].contacts.addContactResult(key2, crv2);
+
+    // Test numContacts
+    EXPECT_EQ(results.numContacts(), 3);
+
+    // Test worstSubstep
+    tesseract_collision::ContactTrajectorySubstepResults worst_substep = results.worstSubstep();
+    EXPECT_EQ(worst_substep.substep, 1);
+
+    // Test worstCollision
+    tesseract_collision::ContactResultVector worst_collision = results.worstCollision();
+    EXPECT_EQ(worst_collision.size(), 1);
+    EXPECT_EQ(worst_collision[0].distance, -0.3);
+
+    // Test mostCollisionsSubstep
+    tesseract_collision::ContactTrajectorySubstepResults most_collisions = results.mostCollisionsSubstep();
+    EXPECT_EQ(most_collisions.substep, 1);
+    EXPECT_EQ(most_collisions.numContacts(), 2);
+  }
+
+  // Test with no contacts
+  {
+    tesseract_collision::ContactTrajectoryStepResults results;
+    EXPECT_EQ(results.numContacts(), 0);
+
+    tesseract_collision::ContactTrajectorySubstepResults worst_substep = results.worstSubstep();
+    EXPECT_EQ(worst_substep.substep, 0);
+
+    tesseract_collision::ContactResultVector worst_collision = results.worstCollision();
+    EXPECT_EQ(worst_collision.size(), 0);
+
+    tesseract_collision::ContactTrajectorySubstepResults most_collisions = results.mostCollisionsSubstep();
+    EXPECT_EQ(most_collisions.substep, 0);
+  }
+}
+
+TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
+{
+  // Test constructor with joint names
+  {
+    std::vector<std::string> joint_names = { "joint1", "joint2", "joint3" };
+    tesseract_collision::ContactTrajectoryResults results(joint_names);
+
+    EXPECT_EQ(results.joint_names, joint_names);
+    EXPECT_EQ(results.total_steps, 0);
+    EXPECT_EQ(results.steps.size(), 0);
+    EXPECT_EQ(results.numSteps(), 0);
+    EXPECT_EQ(results.numContacts(), 0);
+  }
+
+  // Test constructor with joint names and num_steps
+  {
+    std::vector<std::string> joint_names = { "joint1", "joint2" };
+    int num_steps = 3;
+
+    tesseract_collision::ContactTrajectoryResults results(joint_names, num_steps);
+
+    EXPECT_EQ(results.joint_names, joint_names);
+    EXPECT_EQ(results.total_steps, num_steps);
+    EXPECT_EQ(results.steps.size(), num_steps);
+    EXPECT_EQ(results.numSteps(), num_steps);
+    EXPECT_EQ(results.numContacts(), 0);
+  }
+
+  // Test resize method
+  {
+    std::vector<std::string> joint_names = { "joint1" };
+
+    tesseract_collision::ContactTrajectoryResults results(joint_names);
+    EXPECT_EQ(results.steps.size(), 0);
+
+    results.resize(5);
+    EXPECT_EQ(results.total_steps, 5);
+    EXPECT_EQ(results.steps.size(), 5);
+    EXPECT_EQ(results.numSteps(), 5);
+  }
+
+  // Test with contacts in steps
+  {
+    std::vector<std::string> joint_names = { "joint1", "joint2" };
+    int num_steps = 2;
+
+    tesseract_collision::ContactTrajectoryResults results(joint_names, num_steps);
+
+    // Setup Step 1
+    Eigen::VectorXd step1_start(2);
+    Eigen::VectorXd step1_end(2);
+    step1_start << 0.0, 0.0;
+    step1_end << 1.0, 1.0;
+
+    results.steps[0].step = 0;
+    results.steps[0].state0 = step1_start;
+    results.steps[0].state1 = step1_end;
+    results.steps[0].resize(2);  // 2 substeps for first step
+
+    // Create contact results for step 1, substep 0
+    auto key1 = tesseract_common::makeOrderedLinkPair("link1", "link2");
+
+    tesseract_collision::ContactResult cr1;
+    cr1.distance = -0.1;
+    cr1.link_names[0] = "link1";
+    cr1.link_names[1] = "link2";
+
+    tesseract_collision::ContactResultVector crv1 = { cr1 };
+
+    results.steps[0].substeps[0].substep = 0;
+    results.steps[0].substeps[0].contacts.addContactResult(key1, crv1);
+
+    // Setup Step 2
+    Eigen::VectorXd step2_start(2);
+    Eigen::VectorXd step2_end(2);
+    step2_start << 1.0, 1.0;
+    step2_end << 2.0, 2.0;
+
+    results.steps[1].step = 1;
+    results.steps[1].state0 = step2_start;
+    results.steps[1].state1 = step2_end;
+    results.steps[1].resize(3);  // 3 substeps for second step
+
+    // Create contact results for step 2, substep 1
+    auto key2 = tesseract_common::makeOrderedLinkPair("link3", "link4");
+
+    tesseract_collision::ContactResult cr2;
+    cr2.distance = -0.3;
+    cr2.link_names[0] = "link3";
+    cr2.link_names[1] = "link4";
+
+    tesseract_collision::ContactResultVector crv2 = { cr2 };
+
+    results.steps[1].substeps[1].substep = 1;
+    results.steps[1].substeps[1].contacts.addContactResult(key2, crv2);
+
+    // Create another contact for step 2, substep 2
+    tesseract_collision::ContactResult cr3;
+    cr3.distance = -0.2;
+    cr3.link_names[0] = "link3";
+    cr3.link_names[1] = "link4";
+
+    tesseract_collision::ContactResultVector crv3 = { cr3 };
+
+    results.steps[1].substeps[2].substep = 2;
+    results.steps[1].substeps[2].contacts.addContactResult(key2, crv3);
+
+    // Test numContacts
+    EXPECT_EQ(results.numContacts(), 3);
+
+    // Test worstStep
+    tesseract_collision::ContactTrajectoryStepResults worst_step = results.worstStep();
+    EXPECT_EQ(worst_step.step, 1);
+
+    // Test worstCollision
+    tesseract_collision::ContactResultVector worst_collision = results.worstCollision();
+    EXPECT_EQ(worst_collision.size(), 1);
+    EXPECT_EQ(worst_collision[0].distance, -0.3);
+    EXPECT_EQ(worst_collision[0].link_names[0], "link3");
+    EXPECT_EQ(worst_collision[0].link_names[1], "link4");
+
+    // Test mostCollisionsStep
+    tesseract_collision::ContactTrajectoryStepResults most_collisions = results.mostCollisionsStep();
+    EXPECT_EQ(most_collisions.step, 1);
+    EXPECT_EQ(most_collisions.numContacts(), 2);
+
+    // Test table output methods - only checking that they don't crash
+    EXPECT_NO_THROW(results.trajectoryCollisionResultsTable());
+
+    std::stringstream ss = results.trajectoryCollisionResultsTable();
+    EXPECT_FALSE(ss.str().empty());
+
+    // Test frequency output method
+    EXPECT_NO_THROW(results.collisionFrequencyPerLink());
+
+    std::stringstream freq_ss = results.collisionFrequencyPerLink();
+    EXPECT_FALSE(freq_ss.str().empty());
+  }
+
+  // Test with no contacts
+  {
+    std::vector<std::string> joint_names = { "joint1" };
+    tesseract_collision::ContactTrajectoryResults results(joint_names);
+
+    EXPECT_EQ(results.numContacts(), 0);
+
+    tesseract_collision::ContactTrajectoryStepResults worst_step = results.worstStep();
+    EXPECT_EQ(worst_step.step, 0);
+
+    tesseract_collision::ContactResultVector worst_collision = results.worstCollision();
+    EXPECT_EQ(worst_collision.size(), 0);
+
+    tesseract_collision::ContactTrajectoryStepResults most_collisions = results.mostCollisionsStep();
+    EXPECT_EQ(most_collisions.step, 0);
+
+    // Empty results should still produce output without crashing
+    EXPECT_NO_THROW(results.trajectoryCollisionResultsTable());
+    EXPECT_NO_THROW(results.collisionFrequencyPerLink());
+
+    std::stringstream ss = results.trajectoryCollisionResultsTable();
+    EXPECT_FALSE(ss.str().empty());
+    EXPECT_TRUE(ss.str().find("No contacts detected") != std::string::npos);
+
+    std::stringstream freq_ss = results.collisionFrequencyPerLink();
+    EXPECT_FALSE(freq_ss.str().empty());
+    EXPECT_TRUE(freq_ss.str().find("No contacts detected") != std::string::npos);
+  }
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
