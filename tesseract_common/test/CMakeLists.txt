@@ -58,7 +58,8 @@ add_dependencies(${PROJECT_NAME}_clone_cache_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_clone_cache_unit)
 
 add_library(${PROJECT_NAME}_test_plugin_multiply test_plugin_multiply.cpp)
-target_link_libraries(${PROJECT_NAME}_test_plugin_multiply PUBLIC ${PROJECT_NAME} boost_plugin_loader::boost_plugin_loader)
+target_link_libraries(${PROJECT_NAME}_test_plugin_multiply PUBLIC ${PROJECT_NAME}
+                                                                  boost_plugin_loader::boost_plugin_loader)
 target_compile_options(${PROJECT_NAME}_test_plugin_multiply PUBLIC ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_test_plugin_multiply PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
