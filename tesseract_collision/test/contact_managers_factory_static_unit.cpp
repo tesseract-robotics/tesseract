@@ -34,12 +34,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_factories.h>
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_common/resource_locator.h>
+#include <boost_plugin_loader/utils.h>
 
 using namespace tesseract_collision;
 
 TEST(TesseractContactManagersFactoryUnit, StaticLoadPlugin)  // NOLINT
 {
-  tesseract_common::PluginLoader::addSymbolLibraryToSearchLibrariesEnv(
+  boost_plugin_loader::addSymbolLibraryToSearchLibrariesEnv(
       tesseract_collision::tesseract_collision_bullet::BulletFactoriesAnchor(), "TESSERACT_CONTACT_MANAGERS_PLUGINS");
 
   std::string config = R"(contact_manager_plugins:

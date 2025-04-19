@@ -3,6 +3,10 @@
     uri: https://github.com/ros-industrial/ros_industrial_cmake_boilerplate.git
     version: 0.7.3
 - git:
+    local-name: boost_plugin_loader
+    uri: https://github.com/tesseract-robotics/boost_plugin_loader.git
+    version: main
+- git:
     local-name: opw_kinematics
     uri: https://github.com/Jmeyer1292/opw_kinematics.git
     version: 0.5.2

@@ -27,6 +27,7 @@
 #define TESSERACT_KINEMATICS_KDL_FACTORIES_H
 
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
+#include <boost_plugin_loader/macros.h>
 
 namespace tesseract_kinematics
 {
@@ -66,7 +67,7 @@ class KDLInvKinChainNR_JLFactory : public InvKinFactory
                                             const YAML::Node& config) const override final;
 };
 
-TESSERACT_PLUGIN_ANCHOR_DECL(KDLFactoriesAnchor)
+PLUGIN_ANCHOR_DECL(KDLFactoriesAnchor)
 
 }  // namespace tesseract_kinematics
 

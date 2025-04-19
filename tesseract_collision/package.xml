@@ -10,9 +10,11 @@
   <!-- Following recommendations of REP 136 -->
   <buildtool_depend>cmake</buildtool_depend>
 
+  <build_depend>ros_industrial_cmake_boilerplate</build_depend>
+
   <depend>tesseract_geometry</depend>
   <depend>tesseract_common</depend>
-  <build_depend>ros_industrial_cmake_boilerplate</build_depend>
+  <depend>boost_plugin_loader</depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>

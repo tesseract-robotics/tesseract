@@ -36,7 +36,7 @@ FCLDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Node& 
   return std::make_unique<FCLDiscreteBVHManager>(name);
 }
 
-TESSERACT_PLUGIN_ANCHOR_IMPL(FCLFactoriesAnchor)  // LCOV_EXCL_LINE
+PLUGIN_ANCHOR_IMPL(FCLFactoriesAnchor)  // LCOV_EXCL_LINE
 
 }  // namespace tesseract_collision::tesseract_collision_fcl
 
