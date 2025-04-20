@@ -34,6 +34,22 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
     EXPECT_TRUE(config.modify_object_enabled.empty());
 
     tesseract_common::testSerialization<tesseract_collision::ContactManagerConfig>(config, "ContactManagerConfig");
+
+    config.incrementMargins(0.025);
+    EXPECT_FALSE(config.default_margin.has_value());
+    EXPECT_EQ(config.pair_margin_override_type, tesseract_collision::CollisionMarginPairOverrideType::NONE);
+    EXPECT_TRUE(config.pair_margin_data.empty());
+    EXPECT_EQ(config.acm_override_type, tesseract_collision::ACMOverrideType::NONE);
+    EXPECT_TRUE(config.acm.getAllAllowedCollisions().empty());
+    EXPECT_TRUE(config.modify_object_enabled.empty());
+
+    config.scaleMargins(2.0);
+    EXPECT_FALSE(config.default_margin.has_value());
+    EXPECT_EQ(config.pair_margin_override_type, tesseract_collision::CollisionMarginPairOverrideType::NONE);
+    EXPECT_TRUE(config.pair_margin_data.empty());
+    EXPECT_EQ(config.acm_override_type, tesseract_collision::ACMOverrideType::NONE);
+    EXPECT_TRUE(config.acm.getAllAllowedCollisions().empty());
+    EXPECT_TRUE(config.modify_object_enabled.empty());
   }
 
   {  // Construction
@@ -47,6 +63,24 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
     EXPECT_TRUE(config.modify_object_enabled.empty());
 
     tesseract_common::testSerialization<tesseract_collision::ContactManagerConfig>(config, "ContactManagerConfig");
+
+    config.incrementMargins(0.025);
+    EXPECT_TRUE(config.default_margin.has_value());
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.default_margin.value(), 0.05));  // NOLINT
+    EXPECT_EQ(config.pair_margin_override_type, tesseract_collision::CollisionMarginPairOverrideType::NONE);
+    EXPECT_TRUE(config.pair_margin_data.empty());
+    EXPECT_EQ(config.acm_override_type, tesseract_collision::ACMOverrideType::NONE);
+    EXPECT_TRUE(config.acm.getAllAllowedCollisions().empty());
+    EXPECT_TRUE(config.modify_object_enabled.empty());
+
+    config.scaleMargins(2.0);
+    EXPECT_TRUE(config.default_margin.has_value());
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.default_margin.value(), 2.0 * 0.05));  // NOLINT
+    EXPECT_EQ(config.pair_margin_override_type, tesseract_collision::CollisionMarginPairOverrideType::NONE);
+    EXPECT_TRUE(config.pair_margin_data.empty());
+    EXPECT_EQ(config.acm_override_type, tesseract_collision::ACMOverrideType::NONE);
+    EXPECT_TRUE(config.acm.getAllAllowedCollisions().empty());
+    EXPECT_TRUE(config.modify_object_enabled.empty());
   }
 
   {  // Construction
@@ -55,6 +89,18 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
     config.pair_margin_override_type = tesseract_collision::CollisionMarginPairOverrideType::MODIFY;
 
     tesseract_common::testSerialization<tesseract_collision::ContactManagerConfig>(config, "ContactManagerConfig");
+
+    config.incrementMargins(0.025);
+    EXPECT_TRUE(config.default_margin.has_value());
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.default_margin.value(), 0.05));  // NOLINT
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(
+        config.pair_margin_data.getCollisionMargin("link1", "link2").value(), 0.05 + 0.025));  // NOLINT
+
+    config.scaleMargins(2.0);
+    EXPECT_TRUE(config.default_margin.has_value());
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.default_margin.value(), 2.0 * 0.05));  // NOLINT
+    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(
+        config.pair_margin_data.getCollisionMargin("link1", "link2").value(), 2.0 * (0.05 + 0.025)));  // NOLINT
   }
 
   {

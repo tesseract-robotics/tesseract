@@ -440,6 +440,18 @@ struct ContactManagerConfig
   std::unordered_map<std::string, bool> modify_object_enabled;
 
   /**
+   * @brief Increment all margins by input amount. Useful for inflating or reducing margins
+   * @param increment Amount to increment margins
+   */
+  void incrementMargins(double increment);
+
+  /**
+   * @brief Scale all margins by input value
+   * @param scale Value by which all margins are multiplied
+   */
+  void scaleMargins(double scale);
+
+  /**
    * @brief Check for errors and throw exception if they exist
    * @throws an exception if `margin_data_override_type` is set to `NONE`, but margin pair data exist; or if
    * `acm_override_type` is set to `NONE` but allowed collision entries exist.
