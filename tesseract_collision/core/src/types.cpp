@@ -374,6 +374,24 @@ ContactTestData::ContactTestData(const std::vector<std::string>& active,
 
 ContactManagerConfig::ContactManagerConfig(double default_margin) : default_margin(default_margin) {}
 
+void ContactManagerConfig::incrementMargins(double increment)
+{
+  if (default_margin.has_value())
+    default_margin.value() += increment;
+
+  if (!pair_margin_data.empty())
+    pair_margin_data.incrementMargins(increment);
+}
+
+void ContactManagerConfig::scaleMargins(double scale)
+{
+  if (default_margin.has_value())
+    default_margin.value() *= scale;
+
+  if (!pair_margin_data.empty())
+    pair_margin_data.scaleMargins(scale);
+}
+
 void ContactManagerConfig::validate() const
 {
   if (pair_margin_override_type == CollisionMarginPairOverrideType::NONE &&
