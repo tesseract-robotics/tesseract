@@ -15,6 +15,7 @@
   <depend>tesseract_environment</depend>
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_state_solver</depend>
+  <depend>boost_plugin_loader</depend>
   <depend>libconsole-bridge-dev</depend>
 
   <build_depend>eigen</build_depend>

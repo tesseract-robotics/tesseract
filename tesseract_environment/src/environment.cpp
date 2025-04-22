@@ -70,6 +70,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 #include <tesseract_common/collision_margin_data.h>
 
+#include <console_bridge/console.h>
+
 #include <utility>
 
 namespace tesseract_environment
@@ -806,12 +808,8 @@ std::vector<std::string> Environment::Implementation::getGroupJointNames(const s
   std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex);
   auto cache_it = group_joint_names_cache.find(group_name);
   if (cache_it != group_joint_names_cache.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache hit!", group_name.c_str());
     return cache_it->second;
-  }
 
-  CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache miss!", group_name.c_str());
   auto chain_it = kinematics_information.chain_groups.find(group_name);
   if (chain_it != kinematics_information.chain_groups.end())
   {
@@ -845,12 +843,8 @@ Environment::Implementation::getJointGroup(const std::string& group_name) const
   std::unique_lock<std::shared_mutex> cache_lock(joint_group_cache_mutex);
   auto it = joint_group_cache.find(group_name);
   if (it != joint_group_cache.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache hit!", group_name.c_str());
     return it->second;
-  }
 
-  CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache miss!", group_name.c_str());
   // Store copy in cache and return
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
   tesseract_kinematics::JointGroup::ConstPtr jg = getJointGroup(group_name, joint_names);
@@ -872,14 +866,8 @@ Environment::Implementation::getKinematicGroup(const std::string& group_name, st
   std::pair<std::string, std::string> key = std::make_pair(group_name, ik_solver_name);
   auto it = kinematic_group_cache.find(key);
   if (it != kinematic_group_cache.end())
-  {
-    CONSOLE_BRIDGE_logDebug(
-        "Environment, getKinematicGroup(%s, %s) cache hit!", group_name.c_str(), ik_solver_name.c_str());
     return it->second;
-  }
 
-  CONSOLE_BRIDGE_logDebug(
-      "Environment, getKinematicGroup(%s, %s) cache miss!", group_name.c_str(), ik_solver_name.c_str());
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
 
   if (ik_solver_name.empty())

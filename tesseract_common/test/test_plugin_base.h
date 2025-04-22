@@ -41,8 +41,9 @@ public:
   TestPluginBase& operator=(TestPluginBase&&) = default;
   virtual double multiply(double x, double y) = 0;
 
+  static std::string getSection() { return "TestBase"; }
+
 protected:
-  static const std::string SECTION_NAME;
   friend class PluginLoader;
 };
 
