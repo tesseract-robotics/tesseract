@@ -459,7 +459,8 @@ tesseract_collision::ContactResultVector ContactTrajectorySubstepResults::worstC
   double worst_distance = std::numeric_limits<double>::max();
   for (const auto& collision : contacts)
   {
-    if (collision.second.front().distance < worst_distance)
+    // Check if the contact vector for this pair is empty before accessing front()
+    if (!collision.second.empty() && collision.second.front().distance < worst_distance)
     {
       worst_distance = collision.second.front().distance;
       worst_collision = collision.second;
@@ -506,7 +507,8 @@ ContactTrajectorySubstepResults ContactTrajectoryStepResults::worstSubstep() con
   for (const auto& substep : substeps)
   {
     tesseract_collision::ContactResultVector substep_worst_collision = substep.worstCollision();
-    if (substep_worst_collision.front().distance < worst_distance)
+    // Check if the returned worst collision vector is empty before accessing front()
+    if (!substep_worst_collision.empty() && substep_worst_collision.front().distance < worst_distance)
     {
       worst_distance = substep_worst_collision.front().distance;
       worst_substep = substep;
@@ -517,19 +519,23 @@ ContactTrajectorySubstepResults ContactTrajectoryStepResults::worstSubstep() con
 
 tesseract_collision::ContactResultVector ContactTrajectoryStepResults::worstCollision() const
 {
-  tesseract_collision::ContactResultVector worst_collision = worstSubstep().worstCollision();
-  return worst_collision;
+  // Get the worst substep first
+  ContactTrajectorySubstepResults worst_s = worstSubstep();
+  // Then return its worst collision, which might be empty if no collisions occurred
+  return worst_s.worstCollision();
 }
 
 ContactTrajectorySubstepResults ContactTrajectoryStepResults::mostCollisionsSubstep() const
 {
-  int most_contacts = 0;
-  ContactTrajectorySubstepResults most_collisions_substep;
+  int most_contacts = 0;  // Initialize to 0 to handle the case where all substeps have 0 contacts
+  ContactTrajectorySubstepResults most_collisions_substep;  // Default constructed, substep = -1
   for (const auto& substep : substeps)
   {
-    if (substep.numContacts() > most_contacts)
+    int current_contacts = substep.numContacts();
+    // Only update if current_contacts is strictly greater than most_contacts
+    if (current_contacts > most_contacts)
     {
-      most_contacts = substep.numContacts();
+      most_contacts = current_contacts;
       most_collisions_substep = substep;
     }
   }
@@ -569,7 +575,7 @@ ContactTrajectoryStepResults ContactTrajectoryResults::worstStep() const
   for (const auto& step : steps)
   {
     tesseract_collision::ContactResultVector step_worst_collision = step.worstCollision();
-    if (step_worst_collision.front().distance < worst_distance)
+    if (!step_worst_collision.empty() && step_worst_collision.front().distance < worst_distance)
     {
       worst_distance = step_worst_collision.front().distance;
       worst_step = step;
@@ -586,18 +592,21 @@ tesseract_collision::ContactResultVector ContactTrajectoryResults::worstCollisio
 
 ContactTrajectoryStepResults ContactTrajectoryResults::mostCollisionsStep() const
 {
-  int most_contacts = 0;
-  ContactTrajectoryStepResults most_collisions_step;
+  int most_contacts = 0;  // Initialize to 0 to handle the case where all steps have 0 contacts
+  ContactTrajectoryStepResults most_collisions_step;  // Default constructed, step = -1
   for (const auto& step : steps)
   {
-    if (step.numContacts() > most_contacts)
+    int current_contacts = step.numContacts();
+    // Only update if current_contacts is strictly greater than most_contacts
+    if (current_contacts > most_contacts)
     {
-      most_contacts = step.numContacts();
+      most_contacts = current_contacts;
       most_collisions_step = step;
     }
   }
   return most_collisions_step;
 }
+
 std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() const
 {
   // Possible multiple contacts for every substep
