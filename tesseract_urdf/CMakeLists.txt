@@ -39,6 +39,8 @@ set(COVERAGE_EXCLUDE
     /usr/*
     /opt/*
     ${CMAKE_CURRENT_LIST_DIR}/test/*
+    /*/install/*
+    /*/devel/*
     /*/gtest/*
     /*/bullet/LinearMath/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -50,7 +52,6 @@ add_library(
   src/capsule.cpp
   src/collision.cpp
   src/cone.cpp
-  src/convex_mesh.cpp
   src/cylinder.cpp
   src/dynamics.cpp
   src/geometry.cpp
@@ -84,14 +85,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost console_bridge::conso
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
-target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
-target_code_coverage(
-  ${PROJECT_NAME}
-  PRIVATE
-  ALL
-  EXCLUDE ${COVERAGE_EXCLUDE}
-  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 # PCL does not support c++11 on Xenial so cannot include point cloud parsing from urdf Boost version number is in XYYYZZ
 # format such that: (BOOST_VERSION % 100) is the sub-minor version ((BOOST_VERSION / 100) % 1000) is the minor version
@@ -103,6 +96,7 @@ else(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION_MACRO})
 endif()
 if(TESSERACT_Boost_VERSION_MACRO VERSION_GREATER "106000")
   target_link_libraries(${PROJECT_NAME} PUBLIC ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES})
+  target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PCL_INCLUDE_DIRS})
   target_compile_definitions(${PROJECT_NAME} PUBLIC TESSERACT_PARSE_POINT_CLOUDS="ON")
   foreach(DEF ${PCL_DEFINITIONS})
     string(STRIP ${DEF} DEF)
@@ -129,13 +123,19 @@ if(TESSERACT_Boost_VERSION_MACRO VERSION_GREATER "106000")
       endif()
     endif()
   endforeach()
-  if(NOT TARGET pcl_common)
-    target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PCL_INCLUDE_DIRS})
-  endif()
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
+
+target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(
+  ${PROJECT_NAME}
+  PRIVATE
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 configure_package(
   NAMESPACE tesseract

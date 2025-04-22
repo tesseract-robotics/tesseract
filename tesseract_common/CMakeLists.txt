@@ -12,13 +12,22 @@ endif()
 include(cmake/tesseract_macros.cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-find_package(
-  Boost REQUIRED
-  COMPONENTS system
-             filesystem
-             serialization
-             stacktrace_noop
-  OPTIONAL_COMPONENTS stacktrace_backtrace stacktrace_basic)
+if(NOT APPLE)
+  find_package(
+    Boost REQUIRED
+    COMPONENTS system
+               filesystem
+               serialization
+               stacktrace_noop
+    OPTIONAL_COMPONENTS stacktrace_backtrace stacktrace_basic)
+else()
+  find_package(
+    Boost REQUIRED
+    COMPONENTS system
+               filesystem
+               serialization
+               stacktrace_noop)
+endif()
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
@@ -65,6 +74,8 @@ set(COVERAGE_EXCLUDE
     /usr/*
     /opt/*
     ${CMAKE_CURRENT_LIST_DIR}/test/*
+    /*/install/*
+    /*/devel/*
     /*/gtest/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
@@ -74,6 +85,7 @@ add_library(
   src/any_poly.cpp
   src/calibration_info.cpp
   src/collision_margin_data.cpp
+  src/contact_allowed_validator.cpp
   src/joint_state.cpp
   src/manipulator_info.cpp
   src/kinematic_limits.cpp
@@ -83,7 +95,8 @@ add_library(
   src/resource_locator.cpp
   src/types.cpp
   src/stopwatch.cpp
-  src/timer.cpp)
+  src/timer.cpp
+  src/yaml_utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
@@ -154,7 +167,7 @@ if(TESSERACT_PACKAGE)
       "libyaml-cpp-dev"
     WINDOWS_DEPENDS
       "boost_system"
-      "boost_filesystem;"
+      "boost_filesystem"
       "boost_serialization"
       "console-bridge"
       "tinyxml2"

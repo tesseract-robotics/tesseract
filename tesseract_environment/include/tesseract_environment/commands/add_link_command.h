@@ -112,7 +112,6 @@ private:
 };
 }  // namespace tesseract_environment
 
-#include <boost/serialization/export.hpp>
 BOOST_CLASS_EXPORT_KEY(tesseract_environment::AddLinkCommand)
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_COMMAND_H

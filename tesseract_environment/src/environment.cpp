@@ -70,10 +70,38 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 #include <tesseract_common/collision_margin_data.h>
 
+#include <console_bridge/console.h>
+
 #include <utility>
 
 namespace tesseract_environment
 {
+class EnvironmentContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+{
+public:
+  EnvironmentContactAllowedValidator() = default;  // Required for serialization
+  EnvironmentContactAllowedValidator(std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph)
+    : scene_graph_(std::move(scene_graph))
+  {
+  }
+
+  bool operator()(const std::string& link_name1, const std::string& link_name2) const override
+  {
+    return scene_graph_->isCollisionAllowed(link_name1, link_name2);
+  }
+
+protected:
+  std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
+  {
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ContactAllowedValidator);
+    ar& BOOST_SERIALIZATION_NVP(scene_graph_);
+  }
+};
+
 void getCollisionObject(std::vector<std::shared_ptr<const tesseract_geometry::Geometry>>& shapes,
                         tesseract_common::VectorIsometry3d& shape_poses,
                         const tesseract_scene_graph::Link& link)
@@ -120,8 +148,12 @@ getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
 
     // Check srdf for collision margin data
     if (srdf_model->collision_margin_data)
+    {
       commands.push_back(std::make_shared<ChangeCollisionMarginsCommand>(
-          *srdf_model->collision_margin_data, tesseract_common::CollisionMarginOverrideType::REPLACE));
+          srdf_model->collision_margin_data->getDefaultCollisionMargin(),
+          srdf_model->collision_margin_data->getCollisionMarginPairData(),
+          tesseract_common::CollisionMarginPairOverrideType::REPLACE));
+    }
   }
 
   return commands;
@@ -171,10 +203,9 @@ struct Environment::Implementation
   std::unique_ptr<tesseract_scene_graph::MutableStateSolver> state_solver{ nullptr };
 
   /**
-   * @brief The function used to determine if two objects are allowed in collision
-   * @todo This needs to be switched to class so it may be serialized
+   * @brief The validator used to determine if two objects are allowed in collision
    */
-  std::function<bool(const std::string&, const std::string&)> is_contact_allowed_fn;
+  tesseract_common::ContactAllowedValidator::ConstPtr contact_allowed_validator;
 
   /**
    * @brief A vector of user defined callbacks for locating tool center point
@@ -248,7 +279,7 @@ struct Environment::Implementation
    * @details This will cleared when environment changes
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable std::unordered_map<std::string, std::unique_ptr<tesseract_kinematics::JointGroup>> joint_group_cache{};
+  mutable std::unordered_map<std::string, std::shared_ptr<const tesseract_kinematics::JointGroup>> joint_group_cache{};
   mutable std::shared_mutex joint_group_cache_mutex;
 
   /**
@@ -256,7 +287,7 @@ struct Environment::Implementation
    * @details This will cleared when environment changes
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable std::map<std::pair<std::string, std::string>, std::unique_ptr<tesseract_kinematics::KinematicGroup>>
+  mutable std::map<std::pair<std::string, std::string>, std::shared_ptr<const tesseract_kinematics::KinematicGroup>>
       kinematic_group_cache{};
   mutable std::shared_mutex kinematic_group_cache_mutex;
 
@@ -264,13 +295,22 @@ struct Environment::Implementation
 
   bool initHelper(const std::vector<std::shared_ptr<const Command>>& commands);
 
-  void setState(const std::unordered_map<std::string, double>& joints);
+  void setState(const std::unordered_map<std::string, double>& joints,
+                const tesseract_common::TransformMap& floating_joints = {});
 
-  void setState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values);
+  void setState(const std::vector<std::string>& joint_names,
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract_common::TransformMap& floating_joints = {});
+
+  void setState(const tesseract_common::TransformMap& floating_joints);
 
   Eigen::VectorXd getCurrentJointValues() const;
 
   Eigen::VectorXd getCurrentJointValues(const std::vector<std::string>& joint_names) const;
+
+  tesseract_common::TransformMap getCurrentFloatingJointValues() const;
+
+  tesseract_common::TransformMap getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
 
   std::vector<std::string> getStaticLinkNames(const std::vector<std::string>& joint_names) const;
 
@@ -295,13 +335,13 @@ struct Environment::Implementation
 
   std::vector<std::string> getGroupJointNames(const std::string& group_name) const;
 
-  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
+  std::shared_ptr<const tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
 
-  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& name,
-                                                                  const std::vector<std::string>& joint_names) const;
+  std::shared_ptr<const tesseract_kinematics::JointGroup>
+  getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const;
 
-  std::unique_ptr<tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
-                                                                          std::string ik_solver_name) const;
+  std::shared_ptr<const tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
+                                                                                std::string ik_solver_name) const;
 
   Eigen::Isometry3d findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const;
 
@@ -378,6 +418,8 @@ struct Environment::Implementation
     ar& BOOST_SERIALIZATION_NVP(commands);
     ar& BOOST_SERIALIZATION_NVP(init_revision);
     ar& BOOST_SERIALIZATION_NVP(current_state);
+    // No need to serialize the contact allowed validator because it cannot be modified and is constructed internally
+    // from the scene graph
     ar& boost::serialization::make_nvp("timestamp",
                                        boost::serialization::make_binary_object(&timestamp, sizeof(timestamp)));
     ar& boost::serialization::make_nvp(
@@ -398,7 +440,10 @@ struct Environment::Implementation
 
     tesseract_scene_graph::SceneState current_state;
     ar& boost::serialization::make_nvp("current_state", current_state);
-    setState(current_state.joints);
+    setState(current_state.joints, current_state.floating_joints);
+
+    // No need to serialize the contact allowed validator because it cannot be modified and is constructed internally
+    // from the scene graph
 
     ar& boost::serialization::make_nvp("timestamp",
                                        boost::serialization::make_binary_object(&timestamp, sizeof(timestamp)));
@@ -436,8 +481,10 @@ bool Environment::Implementation::operator==(const Environment::Implementation& 
   equal &= timestamp == rhs.timestamp;
   equal &= current_state_timestamp == rhs.current_state_timestamp;
 
+  // No need to check contact_allowed validator because it is constructed internally from the scene graph and cannot be
+  // changed
+
   /** @todo uncomment after serialized */
-  //  equal &= is_contact_allowed_fn == rhs.is_contact_allowed_fn;
   //  equal &= find_tcp_cb == rhs.find_tcp_cb;
 
   return equal;
@@ -478,30 +525,22 @@ std::unique_ptr<Environment::Implementation> Environment::Implementation::clone(
   cloned_env->collision_margin_data = collision_margin_data;
 
   // Copy cache
-  cloned_env->joint_group_cache.reserve(joint_group_cache.size());
-  for (const auto& c : joint_group_cache)
-    cloned_env->joint_group_cache[c.first] = (std::make_unique<tesseract_kinematics::JointGroup>(*c.second));
-
-  for (const auto& c : kinematic_group_cache)
-    cloned_env->kinematic_group_cache[c.first] = (std::make_unique<tesseract_kinematics::KinematicGroup>(*c.second));
-
+  cloned_env->joint_group_cache = joint_group_cache;
+  cloned_env->kinematic_group_cache = kinematic_group_cache;
   cloned_env->group_joint_names_cache = group_joint_names_cache;
 
   // NOLINTNEXTLINE
-  cloned_env->is_contact_allowed_fn = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
-                                                cloned_env->scene_graph,
-                                                std::placeholders::_1,
-                                                std::placeholders::_2);
+  cloned_env->contact_allowed_validator = std::make_shared<EnvironmentContactAllowedValidator>(cloned_env->scene_graph);
 
   if (discrete_manager)
   {
     cloned_env->discrete_manager = discrete_manager->clone();
-    cloned_env->discrete_manager->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn);
+    cloned_env->discrete_manager->setContactAllowedValidator(cloned_env->contact_allowed_validator);
   }
   if (continuous_manager)
   {
     cloned_env->continuous_manager = continuous_manager->clone();
-    cloned_env->continuous_manager->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn);
+    cloned_env->continuous_manager->setContactAllowedValidator(cloned_env->contact_allowed_validator);
   }
 
   cloned_env->contact_managers_plugin_info = contact_managers_plugin_info;
@@ -527,9 +566,7 @@ bool Environment::Implementation::initHelper(const std::vector<std::shared_ptr<c
   scene_graph = std::make_shared<tesseract_scene_graph::SceneGraph>(
       std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0))->getSceneGraph()->getName());
 
-  is_contact_allowed_fn = [this](const std::string& l1, const std::string& l2) {
-    return scene_graph->isCollisionAllowed(l1, l2);
-  };
+  contact_allowed_validator = std::make_shared<EnvironmentContactAllowedValidator>(scene_graph);
 
   if (!applyCommandsHelper(commands))
   {
@@ -545,16 +582,24 @@ bool Environment::Implementation::initHelper(const std::vector<std::shared_ptr<c
   return initialized;
 }
 
-void Environment::Implementation::setState(const std::unordered_map<std::string, double>& joints)
+void Environment::Implementation::setState(const std::unordered_map<std::string, double>& joints,
+                                           const tesseract_common::TransformMap& floating_joints)
 {
-  state_solver->setState(joints);
+  state_solver->setState(joints, floating_joints);
   currentStateChanged();
 }
 
 void Environment::Implementation::setState(const std::vector<std::string>& joint_names,
-                                           const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+                                           const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                           const tesseract_common::TransformMap& floating_joints)
 {
-  state_solver->setState(joint_names, joint_values);
+  state_solver->setState(joint_names, joint_values, floating_joints);
+  currentStateChanged();
+}
+
+void Environment::Implementation::setState(const tesseract_common::TransformMap& floating_joints)
+{
+  state_solver->setState(floating_joints);
   currentStateChanged();
 }
 
@@ -577,6 +622,21 @@ Eigen::VectorXd Environment::Implementation::getCurrentJointValues(const std::ve
     jv(j) = current_state.joints.at(joint_names[j]);
 
   return jv;
+}
+
+tesseract_common::TransformMap Environment::Implementation::getCurrentFloatingJointValues() const
+{
+  return current_state.floating_joints;
+}
+
+tesseract_common::TransformMap
+Environment::Implementation::getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const
+{
+  tesseract_common::TransformMap fjv;
+  for (const auto& joint_name : joint_names)
+    fjv[joint_name] = current_state.floating_joints.at(joint_name);
+
+  return fjv;
 }
 
 std::vector<std::string>
@@ -608,7 +668,7 @@ void Environment::Implementation::clear()
   state_solver = nullptr;
   current_state = tesseract_scene_graph::SceneState();
   commands.clear();
-  is_contact_allowed_fn = nullptr;
+  contact_allowed_validator = nullptr;
   collision_margin_data = tesseract_collision::CollisionMarginData();
   kinematics_information.clear();
   contact_managers_plugin_info.clear();
@@ -748,12 +808,8 @@ std::vector<std::string> Environment::Implementation::getGroupJointNames(const s
   std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex);
   auto cache_it = group_joint_names_cache.find(group_name);
   if (cache_it != group_joint_names_cache.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache hit!", group_name.c_str());
     return cache_it->second;
-  }
 
-  CONSOLE_BRIDGE_logDebug("Environment, getGroupJointNames(%s) cache miss!", group_name.c_str());
   auto chain_it = kinematics_information.chain_groups.find(group_name);
   if (chain_it != kinematics_information.chain_groups.end())
   {
@@ -781,47 +837,37 @@ std::vector<std::string> Environment::Implementation::getGroupJointNames(const s
   throw std::runtime_error("Environment, failed to get group '" + group_name + "' joint names!");
 }
 
-std::unique_ptr<tesseract_kinematics::JointGroup>
+std::shared_ptr<const tesseract_kinematics::JointGroup>
 Environment::Implementation::getJointGroup(const std::string& group_name) const
 {
   std::unique_lock<std::shared_mutex> cache_lock(joint_group_cache_mutex);
   auto it = joint_group_cache.find(group_name);
   if (it != joint_group_cache.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache hit!", group_name.c_str());
-    return std::make_unique<tesseract_kinematics::JointGroup>(*it->second);
-  }
+    return it->second;
 
-  CONSOLE_BRIDGE_logDebug("Environment, getJointGroup(%s) cache miss!", group_name.c_str());
   // Store copy in cache and return
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
-  tesseract_kinematics::JointGroup::UPtr jg = getJointGroup(group_name, joint_names);
-  joint_group_cache[group_name] = std::make_unique<tesseract_kinematics::JointGroup>(*jg);
+  tesseract_kinematics::JointGroup::ConstPtr jg = getJointGroup(group_name, joint_names);
+  joint_group_cache[group_name] = jg;
 
   return jg;
 }
 
-std::unique_ptr<tesseract_kinematics::JointGroup>
+std::shared_ptr<const tesseract_kinematics::JointGroup>
 Environment::Implementation::getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const
 {
-  return std::make_unique<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph, current_state);
+  return std::make_shared<tesseract_kinematics::JointGroup>(name, joint_names, *scene_graph, current_state);
 }
 
-std::unique_ptr<tesseract_kinematics::KinematicGroup>
+std::shared_ptr<const tesseract_kinematics::KinematicGroup>
 Environment::Implementation::getKinematicGroup(const std::string& group_name, std::string ik_solver_name) const
 {
   std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex);
   std::pair<std::string, std::string> key = std::make_pair(group_name, ik_solver_name);
   auto it = kinematic_group_cache.find(key);
   if (it != kinematic_group_cache.end())
-  {
-    CONSOLE_BRIDGE_logDebug(
-        "Environment, getKinematicGroup(%s, %s) cache hit!", group_name.c_str(), ik_solver_name.c_str());
-    return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
-  }
+    return it->second;
 
-  CONSOLE_BRIDGE_logDebug(
-      "Environment, getKinematicGroup(%s, %s) cache miss!", group_name.c_str(), ik_solver_name.c_str());
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
 
   if (ik_solver_name.empty())
@@ -835,10 +881,10 @@ Environment::Implementation::getKinematicGroup(const std::string& group_name, st
     return nullptr;
 
   // Store copy in cache and return
-  auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
+  auto kg = std::make_shared<tesseract_kinematics::KinematicGroup>(
       group_name, joint_names, std::move(inv_kin), *scene_graph, current_state);
 
-  kinematic_group_cache[key] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+  kinematic_group_cache[key] = kg;
 
 #if !defined(NDEBUG) && TESSERACT_ENABLE_TESTING
   if (!tesseract_kinematics::checkKinematics(*kg))
@@ -995,7 +1041,7 @@ Environment::Implementation::getDiscreteContactManagerHelper(const std::string& 
   if (manager == nullptr)
     return nullptr;
 
-  manager->setIsContactAllowedFn(is_contact_allowed_fn);
+  manager->setContactAllowedValidator(contact_allowed_validator);
   if (scene_graph != nullptr)
   {
     for (const auto& link : scene_graph->getLinks())
@@ -1028,7 +1074,7 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
   if (manager == nullptr)
     return nullptr;
 
-  manager->setIsContactAllowedFn(is_contact_allowed_fn);
+  manager->setContactAllowedValidator(contact_allowed_validator);
   if (scene_graph != nullptr)
   {
     for (const auto& link : scene_graph->getLinks())
@@ -1305,7 +1351,7 @@ bool Environment::Implementation::applyCommandsHelper(const std::vector<std::sha
 bool Environment::Implementation::applyAddCommand(const AddLinkCommand::ConstPtr& cmd)
 {
   // The command should not allow this to occur but adding an assert to catch if something changes
-  assert(!(!cmd->getLink() && !cmd->getJoint()));
+  assert(!(!cmd->getLink() && !cmd->getJoint()));  // NOLINT
   assert(!((cmd->getLink() != nullptr) && (cmd->getJoint() != nullptr) &&
            (cmd->getJoint()->child_link_name != cmd->getLink()->getName())));
 
@@ -2055,7 +2101,7 @@ bool Environment::Implementation::applyAddContactManagersPluginInfoCommand(
 bool Environment::Implementation::applySetActiveContinuousContactManagerCommand(
     const std::shared_ptr<const SetActiveContinuousContactManagerCommand>& cmd)
 {
-  setActiveContinuousContactManagerHelper(cmd->getName());
+  setActiveContinuousContactManager(cmd->getName());
 
   ++revision;
   commands.push_back(cmd);
@@ -2066,7 +2112,7 @@ bool Environment::Implementation::applySetActiveContinuousContactManagerCommand(
 bool Environment::Implementation::applySetActiveDiscreteContactManagerCommand(
     const std::shared_ptr<const SetActiveDiscreteContactManagerCommand>& cmd)
 {
-  setActiveDiscreteContactManagerHelper(cmd->getName());
+  setActiveDiscreteContactManager(cmd->getName());
 
   ++revision;
   commands.push_back(cmd);
@@ -2077,15 +2123,22 @@ bool Environment::Implementation::applySetActiveDiscreteContactManagerCommand(
 bool Environment::Implementation::applyChangeCollisionMarginsCommand(
     const std::shared_ptr<const ChangeCollisionMarginsCommand>& cmd)
 {
-  collision_margin_data.apply(cmd->getCollisionMarginData(), cmd->getCollisionMarginOverrideType());
+  std::optional<double> default_margin = cmd->getDefaultCollisionMargin();
+  const tesseract_common::CollisionMarginPairData& pair_margins = cmd->getCollisionMarginPairData();
+
+  if (default_margin.has_value())
+    collision_margin_data.setDefaultCollisionMargin(default_margin.value());
+
+  if (!pair_margins.empty())
+    collision_margin_data.apply(pair_margins, cmd->getCollisionMarginPairOverrideType());
 
   std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
   if (continuous_manager != nullptr)
-    continuous_manager->setCollisionMarginData(collision_margin_data, CollisionMarginOverrideType::REPLACE);
+    continuous_manager->setCollisionMarginData(collision_margin_data);
 
   std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
   if (discrete_manager != nullptr)
-    discrete_manager->setCollisionMarginData(collision_margin_data, CollisionMarginOverrideType::REPLACE);
+    discrete_manager->setCollisionMarginData(collision_margin_data);
 
   ++revision;
   commands.push_back(cmd);
@@ -2183,7 +2236,7 @@ bool Environment::init(const std::string& urdf_string,
   return init(commands);
 }
 
-bool Environment::init(const tesseract_common::fs::path& urdf_path,
+bool Environment::init(const std::filesystem::path& urdf_path,
                        const std::shared_ptr<const tesseract_common::ResourceLocator>& locator)
 {
   {
@@ -2208,8 +2261,8 @@ bool Environment::init(const tesseract_common::fs::path& urdf_path,
   return init(commands);
 }
 
-bool Environment::init(const tesseract_common::fs::path& urdf_path,
-                       const tesseract_common::fs::path& srdf_path,
+bool Environment::init(const std::filesystem::path& urdf_path,
+                       const std::filesystem::path& srdf_path,
                        const std::shared_ptr<const tesseract_common::ResourceLocator>& locator)
 {
   {
@@ -2318,20 +2371,20 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
   return std::as_const<Implementation>(*impl_).getGroupJointNames(group_name);
 }
 
-std::unique_ptr<tesseract_kinematics::JointGroup> Environment::getJointGroup(const std::string& group_name) const
+std::shared_ptr<const tesseract_kinematics::JointGroup> Environment::getJointGroup(const std::string& group_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).getJointGroup(group_name);
 }
 
-std::unique_ptr<tesseract_kinematics::JointGroup>
+std::shared_ptr<const tesseract_kinematics::JointGroup>
 Environment::getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).getJointGroup(name, joint_names);
 }
 
-std::unique_ptr<tesseract_kinematics::KinematicGroup>
+std::shared_ptr<const tesseract_kinematics::KinematicGroup>
 Environment::getKinematicGroup(const std::string& group_name, const std::string& ik_solver_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -2405,11 +2458,12 @@ const std::string& Environment::getName() const
   return std::as_const<Implementation>(*impl_).scene_graph->getName();
 }
 
-void Environment::setState(const std::unordered_map<std::string, double>& joints)
+void Environment::setState(const std::unordered_map<std::string, double>& joints,
+                           const tesseract_common::TransformMap& floating_joints)
 {
   {
     std::unique_lock<std::shared_mutex> lock(mutex_);
-    impl_->setState(joints);
+    impl_->setState(joints, floating_joints);
   }
 
   std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -2417,28 +2471,48 @@ void Environment::setState(const std::unordered_map<std::string, double>& joints
 }
 
 void Environment::setState(const std::vector<std::string>& joint_names,
-                           const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+                           const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                           const tesseract_common::TransformMap& floating_joints)
 {
   {
     std::unique_lock<std::shared_mutex> lock(mutex_);
-    impl_->setState(joint_names, joint_values);
+    impl_->setState(joint_names, joint_values, floating_joints);
   }
 
   std::shared_lock<std::shared_mutex> lock(mutex_);
   impl_->triggerCurrentStateChangedCallbacks();
 }
 
-tesseract_scene_graph::SceneState Environment::getState(const std::unordered_map<std::string, double>& joints) const
+void Environment::setState(const tesseract_common::TransformMap& floating_joints)
+{
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    impl_->setState(floating_joints);
+  }
+
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  impl_->triggerCurrentStateChangedCallbacks();
+}
+
+tesseract_scene_graph::SceneState Environment::getState(const std::unordered_map<std::string, double>& joints,
+                                                        const tesseract_common::TransformMap& floating_joints) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::as_const<Implementation>(*impl_).state_solver->getState(joints);
+  return std::as_const<Implementation>(*impl_).state_solver->getState(joints, floating_joints);
 }
 
 tesseract_scene_graph::SceneState Environment::getState(const std::vector<std::string>& joint_names,
-                                                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+                                                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                                        const tesseract_common::TransformMap& floating_joints) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::as_const<Implementation>(*impl_).state_solver->getState(joint_names, joint_values);
+  return std::as_const<Implementation>(*impl_).state_solver->getState(joint_names, joint_values, floating_joints);
+}
+
+tesseract_scene_graph::SceneState Environment::getState(const tesseract_common::TransformMap& floating_joints) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getState(floating_joints);
 }
 
 tesseract_scene_graph::SceneState Environment::getState() const
@@ -2519,6 +2593,19 @@ Eigen::VectorXd Environment::getCurrentJointValues(const std::vector<std::string
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).getCurrentJointValues(joint_names);
+}
+
+tesseract_common::TransformMap Environment::getCurrentFloatingJointValues() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getCurrentFloatingJointValues();
+}
+
+tesseract_common::TransformMap
+Environment::getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getCurrentFloatingJointValues(joint_names);
 }
 
 std::string Environment::getRootLinkName() const
@@ -2603,7 +2690,7 @@ tesseract_common::ContactManagersPluginInfo Environment::getContactManagersPlugi
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  return impl_->setActiveDiscreteContactManagerHelper(name);
+  return impl_->setActiveDiscreteContactManager(name);
 }
 
 std::unique_ptr<tesseract_collision::DiscreteContactManager>
@@ -2616,7 +2703,7 @@ Environment::getDiscreteContactManager(const std::string& name) const
 bool Environment::setActiveContinuousContactManager(const std::string& name)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  return impl_->setActiveContinuousContactManagerHelper(name);
+  return impl_->setActiveContinuousContactManager(name);
 }
 
 std::unique_ptr<tesseract_collision::ContinuousContactManager>
@@ -2698,8 +2785,14 @@ void Environment::serialize(Archive& ar, const unsigned int version)
 }  // namespace tesseract_environment
 
 #include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::EnvironmentContactAllowedValidator)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::EnvironmentContactAllowedValidator)
+
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::Environment)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::Environment)
 
-TESSERACT_ANY_EXPORT_IMPLEMENT(TesseractEnvironmentEnvironmentConstSharedPtr)
-TESSERACT_ANY_EXPORT_IMPLEMENT(TesseractEnvironmentEnvironmentSharedPtr)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::EnvironmentPtrAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::EnvironmentPtrAnyPoly)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::EnvironmentConstPtrAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::EnvironmentConstPtrAnyPoly)

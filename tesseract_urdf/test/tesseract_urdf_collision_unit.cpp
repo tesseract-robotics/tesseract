@@ -13,6 +13,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TEST(TesseractURDFUnit, parse_collision)  // NOLINT
 {
   tesseract_common::GeneralResourceLocator resource_locator;
+  const bool global_make_convex = false;
+  const auto parse_collision_fn = [&](const tinyxml2::XMLElement* xml_element,
+                                      const tesseract_common::ResourceLocator& locator) {
+    return tesseract_urdf::parseCollision(xml_element, locator, global_make_convex);
+  };
 
   {
     std::string str = R"(<collision extra="0 0 0">
@@ -23,7 +28,7 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                          </collision>)";
     tesseract_scene_graph::Collision::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Collision::Ptr>(
-        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
+        elem, parse_collision_fn, str, tesseract_urdf::COLLISION_ELEMENT_NAME.data(), resource_locator));
     EXPECT_TRUE(elem->geometry != nullptr);
     EXPECT_FALSE(elem->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
@@ -36,7 +41,7 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                          </collision>)";
     tesseract_scene_graph::Collision::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Collision::Ptr>(
-        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
+        elem, parse_collision_fn, str, tesseract_urdf::COLLISION_ELEMENT_NAME.data(), resource_locator));
     EXPECT_TRUE(elem->geometry != nullptr);
     EXPECT_TRUE(elem->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
@@ -49,7 +54,7 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                          </collision>)";
     tesseract_scene_graph::Collision::Ptr elem;
     EXPECT_TRUE(runTest<tesseract_scene_graph::Collision::Ptr>(
-        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
+        elem, parse_collision_fn, str, tesseract_urdf::COLLISION_ELEMENT_NAME.data(), resource_locator));
     EXPECT_TRUE(elem->geometry != nullptr);
     EXPECT_TRUE(elem->origin.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->geometry->getType() == tesseract_geometry::GeometryType::COMPOUND_MESH);
@@ -65,7 +70,7 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                          </collision>)";
     tesseract_scene_graph::Collision::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Collision::Ptr>(
-        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
+        elem, parse_collision_fn, str, tesseract_urdf::COLLISION_ELEMENT_NAME.data(), resource_locator));
     EXPECT_TRUE(elem == nullptr);
   }
 
@@ -77,7 +82,7 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                          </collision>)";
     tesseract_scene_graph::Collision::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Collision::Ptr>(
-        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
+        elem, parse_collision_fn, str, tesseract_urdf::COLLISION_ELEMENT_NAME.data(), resource_locator));
     EXPECT_TRUE(elem == nullptr);
   }
 
@@ -86,7 +91,7 @@ TEST(TesseractURDFUnit, parse_collision)  // NOLINT
                          </collision>)";
     tesseract_scene_graph::Collision::Ptr elem;
     EXPECT_FALSE(runTest<tesseract_scene_graph::Collision::Ptr>(
-        elem, &tesseract_urdf::parseCollision, str, "collision", resource_locator, 2));
+        elem, parse_collision_fn, str, tesseract_urdf::COLLISION_ELEMENT_NAME.data(), resource_locator));
     EXPECT_TRUE(elem == nullptr);
   }
 }
@@ -97,6 +102,31 @@ TEST(TesseractURDFUnit, write_collision)  // NOLINT
     tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
     collision->name = "test";
     collision->origin = Eigen::Isometry3d::Identity();
+    collision->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    std::string text;
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_scene_graph::Collision::Ptr>(
+            collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), 0));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger check for an unassigned name and check for specified ID
+    tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
+    collision->origin = Eigen::Isometry3d::Identity();
+    collision->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
+    std::string text;
+    EXPECT_EQ(
+        0,
+        writeTest<tesseract_scene_graph::Collision::Ptr>(
+            collision, &tesseract_urdf::writeCollision, text, tesseract_common::getTempPath(), std::string("test"), 0));
+    EXPECT_NE(text, "");
+  }
+
+  {  // trigger check for an orgin not identity and check for specified ID
+    tesseract_scene_graph::Collision::Ptr collision = std::make_shared<tesseract_scene_graph::Collision>();
+    collision->origin = Eigen::Isometry3d::Identity();
+    collision->origin.translation() = Eigen::Vector3d(1.0, 2.0, 3.0);
     collision->geometry = std::make_shared<tesseract_geometry::Box>(1.0, 1.0, 1.0);
     std::string text;
     EXPECT_EQ(

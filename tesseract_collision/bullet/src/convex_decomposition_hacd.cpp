@@ -102,14 +102,14 @@ ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertice
 void HACDParameters::print() const
 {
   std::stringstream msg;
-  msg << "+ Parameters" << std::endl;
-  msg << "\t compacity_weight           " << compacity_weight << std::endl;
-  msg << "\t volume_weight              " << volume_weight << std::endl;
-  msg << "\t max. concavity             " << concavity << std::endl;
-  msg << "\t min number of clusters     " << min_num_clusters << std::endl;
-  msg << "\t add extra dist points      " << ((add_extra_dist_points) ? "true" : "false") << std::endl;
-  msg << "\t add neighbours dist points " << ((add_neighbours_dist_points) ? "true" : "false") << std::endl;
-  msg << "\t add faces points           " << ((add_faces_points) ? "true" : "false") << std::endl;
+  msg << "+ Parameters\n";
+  msg << "\t compacity_weight           " << compacity_weight << "\n";
+  msg << "\t volume_weight              " << volume_weight << "\n";
+  msg << "\t max. concavity             " << concavity << "\n";
+  msg << "\t min number of clusters     " << min_num_clusters << "\n";
+  msg << "\t add extra dist points      " << ((add_extra_dist_points) ? "true" : "false") << "\n";
+  msg << "\t add neighbours dist points " << ((add_neighbours_dist_points) ? "true" : "false") << "\n";
+  msg << "\t add faces points           " << ((add_faces_points) ? "true" : "false") << "\n";
 
   std::cout << msg.str();
 }

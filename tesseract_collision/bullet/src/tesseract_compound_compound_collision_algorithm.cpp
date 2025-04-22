@@ -109,7 +109,7 @@ struct TesseractCompoundCompoundLeafCallback : btDbvt::ICollide
   const btCollisionObjectWrapper* m_compound0ColObjWrap;
   const btCollisionObjectWrapper* m_compound1ColObjWrap;
   btDispatcher* m_dispatcher;
-  const btDispatcherInfo& m_dispatchInfo;
+  const btDispatcherInfo& m_dispatchInfo;  // NOLINT
   btManifoldResult* m_resultOut;
 
   class btHashedSimplePairCache* m_childCollisionAlgorithmCache;
@@ -276,7 +276,7 @@ static inline void MycollideTT(const btDbvtNode* root0,
     stkStack.resize(btDbvt::DOUBLE_STACKSIZE);
 #endif
     stkStack[0] = btDbvt::sStkNN(root0, root1);
-    do
+    do  // NOLINT(cppcoreguidelines-avoid-do-while)
     {
       btDbvt::sStkNN p = stkStack[--depth];
       if (MyIntersect(p.a->volume, p.b->volume, xform, distanceThreshold))
@@ -335,7 +335,8 @@ void TesseractCompoundCompoundCollisionAlgorithm::processCollision(const btColli
   const btDbvt* tree1 = compoundShape1->getDynamicAabbTree();
   if (tree0 == nullptr || tree1 == nullptr)
   {
-    return TesseractCompoundCollisionAlgorithm::processCollision(body0Wrap, body1Wrap, dispatchInfo, resultOut);
+    TesseractCompoundCollisionAlgorithm::processCollision(body0Wrap, body1Wrap, dispatchInfo, resultOut);
+    return;
   }
   /// btCompoundShape might have changed:
   ////make sure the internal child collision algorithm caches are still valid

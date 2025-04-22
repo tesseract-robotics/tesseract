@@ -16,6 +16,7 @@ find_package(octomap REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(boost_plugin_loader REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 # These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
@@ -53,6 +54,8 @@ set(COVERAGE_EXCLUDE
     ${CMAKE_CURRENT_LIST_DIR}/test/*
     ${CMAKE_CURRENT_LIST_DIR}/include/tesseract_collision/test_suite/*
     ${CMAKE_CURRENT_LIST_DIR}/include/tesseract_collision/vhacd/*
+    /*/install/*
+    /*/devel/*
     /*/gtest/*
     /*/bullet/LinearMath/*
     /*/bullet/BulletCollision/*
@@ -126,6 +129,8 @@ endif()
 
 # Examples
 if((TESSERACT_ENABLE_EXAMPLES OR TESSERACT_COLLISION_ENABLE_EXAMPLES) AND TESSERACT_BUILD_FCL)
+  message("Building examples components")
+  list(APPEND SUPPORTED_COMPONENTS examples)
   add_subdirectory(examples)
 endif()
 

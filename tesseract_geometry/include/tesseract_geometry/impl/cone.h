@@ -47,7 +47,7 @@ public:
   using Ptr = std::shared_ptr<Cone>;
   using ConstPtr = std::shared_ptr<const Cone>;
 
-  Cone(double r, double l);
+  Cone(double radius, double length);
   Cone() = default;
   ~Cone() override = default;
 

@@ -2,6 +2,76 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.29.1 (2025-03-26)
+-------------------
+
+0.29.0 (2025-03-20)
+-------------------
+* Fully enable collision shape caching
+* Move tesseract_collision any poly types to types.h
+* Leverage inheritance for AnyPoly (`#1128 <https://github.com/tesseract-robotics/tesseract/issues/1128>`_)
+* Update to leverage std::filesystem
+* Fix clang-tidy-17 errors (`#1122 <https://github.com/tesseract-robotics/tesseract/issues/1122>`_)
+* Fix missing includes causing clang warnings
+* Contributors: Levi Armstrong
+
+0.28.8 (2025-02-01)
+-------------------
+* Add UUID to tesseract_geometry::Geometry and update collision shape cache
+* Fix collision shape caching
+* Contributors: Levi Armstrong
+
+0.28.7 (2025-01-29)
+-------------------
+* Disable collision shape caching in bullet and fcl (`#1116 <https://github.com/tesseract-robotics/tesseract/issues/1116>`_)
+* Contributors: Levi Armstrong
+
+0.28.6 (2025-01-26)
+-------------------
+* Add collision shape caching based on tesseract_geometry::Geometry object
+* Contributors: Levi Armstrong
+
+0.28.5 (2025-01-21)
+-------------------
+
+0.28.4 (2025-01-18)
+-------------------
+
+0.28.3 (2025-01-18)
+-------------------
+
+0.28.2 (2025-01-17)
+-------------------
+
+0.28.1 (2025-01-17)
+-------------------
+* Fix rosinstall so focal has its own so newer versions leverage system depends
+* Contributors: Levi Armstrong
+
+0.28.0 (2025-01-16)
+-------------------
+* Fix cpack build
+* Leverage tesseract_common loadYamlFile and loadYamlString
+* Add ContactAllowedValidator and ContactResultValidator (`#1095 <https://github.com/tesseract-robotics/tesseract/issues/1095>`_)
+* Add installed headers to core component
+* Add yaml include directive support
+* Move getSummary implementation to cpp
+* Get a brief string summary of a contact map (`#1079 <https://github.com/tesseract-robotics/tesseract/issues/1079>`_)
+* Simplify shape_id counter
+* Fix use of compound mesh in FCL
+* Add more serialization for eigen types and collision types
+* Fix typo in unit tests
+* Contributors: Levi Armstrong, Max DeSantis, Roelof Oomen, Tyler Marr
+
+0.27.1 (2024-12-03)
+-------------------
+
+0.27.0 (2024-12-01)
+-------------------
+* Update package.xml
+* Update fcl rosdep key in package.xml
+* Contributors: Levi Armstrong
+
 0.26.0 (2024-10-27)
 -------------------
 * Remove TesseractSupportResourceLocator

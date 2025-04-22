@@ -39,7 +39,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
+#include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
+#include <tesseract_common/contact_allowed_validator.h>
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
@@ -86,7 +87,7 @@ DiscreteContactManager::UPtr BulletDiscreteSimpleManager::clone() const
 
   manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
-  manager->setIsContactAllowedFn(contact_test_data_.fn);
+  manager->setContactAllowedValidator(contact_test_data_.validator);
 
   return manager;
 }
@@ -225,24 +226,9 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<st
 
 const std::vector<std::string>& BulletDiscreteSimpleManager::getActiveCollisionObjects() const { return active_; }
 
-void BulletDiscreteSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data,
-                                                         CollisionMarginOverrideType override_type)
+void BulletDiscreteSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
-  contact_test_data_.collision_margin_data.apply(collision_margin_data, override_type);
-  onCollisionMarginDataChanged();
-}
-
-void BulletDiscreteSimpleManager::setDefaultCollisionMarginData(double default_collision_margin)
-{
-  contact_test_data_.collision_margin_data.setDefaultCollisionMargin(default_collision_margin);
-  onCollisionMarginDataChanged();
-}
-
-void BulletDiscreteSimpleManager::setPairCollisionMarginData(const std::string& name1,
-                                                             const std::string& name2,
-                                                             double collision_margin)
-{
-  contact_test_data_.collision_margin_data.setPairCollisionMargin(name1, name2, collision_margin);
+  contact_test_data_.collision_margin_data = std::move(collision_margin_data);
   onCollisionMarginDataChanged();
 }
 
@@ -250,8 +236,44 @@ const CollisionMarginData& BulletDiscreteSimpleManager::getCollisionMarginData()
 {
   return contact_test_data_.collision_margin_data;
 }
-void BulletDiscreteSimpleManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
-IsContactAllowedFn BulletDiscreteSimpleManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
+
+void BulletDiscreteSimpleManager::setCollisionMarginPairData(const CollisionMarginPairData& pair_margin_data,
+                                                             CollisionMarginPairOverrideType override_type)
+{
+  contact_test_data_.collision_margin_data.apply(pair_margin_data, override_type);
+  onCollisionMarginDataChanged();
+}
+
+void BulletDiscreteSimpleManager::setDefaultCollisionMargin(double default_collision_margin)
+{
+  contact_test_data_.collision_margin_data.setDefaultCollisionMargin(default_collision_margin);
+  onCollisionMarginDataChanged();
+}
+
+void BulletDiscreteSimpleManager::setCollisionMarginPair(const std::string& name1,
+                                                         const std::string& name2,
+                                                         double collision_margin)
+{
+  contact_test_data_.collision_margin_data.setCollisionMargin(name1, name2, collision_margin);
+  onCollisionMarginDataChanged();
+}
+
+void BulletDiscreteSimpleManager::incrementCollisionMargin(double increment)
+{
+  contact_test_data_.collision_margin_data.incrementMargins(increment);
+  onCollisionMarginDataChanged();
+}
+
+void BulletDiscreteSimpleManager::setContactAllowedValidator(
+    std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
+{
+  contact_test_data_.validator = std::move(validator);
+}
+std::shared_ptr<const tesseract_common::ContactAllowedValidator>
+BulletDiscreteSimpleManager::getContactAllowedValidator() const
+{
+  return contact_test_data_.validator;
+}
 void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   contact_test_data_.res = &collisions;
@@ -287,7 +309,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
 
       if (aabb_check)
       {
-        bool needs_collision = needsCollisionCheck(*cow1, *cow2, contact_test_data_.fn, false);
+        bool needs_collision = needsCollisionCheck(*cow1, *cow2, contact_test_data_.validator, false);
 
         if (needs_collision)
         {

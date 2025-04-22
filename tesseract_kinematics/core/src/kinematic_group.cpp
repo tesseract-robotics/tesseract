@@ -34,10 +34,70 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/joint.h>
 #include <tesseract_state_solver/state_solver.h>
+
+/**
+ * @brief Returns the names of the links that comprise a fixed-joint kinematic tree with the input link
+ * @details This method first traverses from the input link "up" the scene graph hierarchy, following the link's
+ * in-bound joints, to find the input link's highest level parents that are connected to it by fixed joints. Next, it
+ * identifies all the fixed-joint children of these highest level parent links. Together, the highest level parent links
+ * and their fixed-joint children comprise a set of links (including the input link), between all of which exists a tree
+ * of fixed joints. If the link does not have any fixed-joint parents, the name of the link itself will be returned.
+ * @param links
+ * @param scene_graph
+ * @return
+ */
+std::vector<std::string> getLinksInFixedJointKinematicTree(const std::string& input_link,
+                                                           const tesseract_scene_graph::SceneGraph& scene_graph)
+{
+  // Create a set to contain the names of the links of the fixed-joint kinematic tree
+  std::set<std::string> fixed_joint_tree_links;
+
+  // Create a list of links to traverse, populated initially with only the name of the link in question
+  std::vector<std::string> links = { input_link };
+
+  while (!links.empty())
+  {
+    // Pop the back entry
+    const std::string link = links.back();
+    links.pop_back();
+
+    // Traverse through the inbound joints until we find a non-fixed joint
+    for (const std::shared_ptr<const tesseract_scene_graph::Joint>& joint : scene_graph.getInboundJoints(link))
+    {
+      switch (joint->type)
+      {
+        case tesseract_scene_graph::JointType::FIXED:
+          // Add this joint's parent link to the list of links to traverse
+          links.push_back(joint->parent_link_name);
+          break;
+        default:
+        {
+          // Since this link is connected to its parent by a non-fixed joint:
+          //   1. Add this link to the list of relatives
+          fixed_joint_tree_links.insert(link);
+
+          //   2. Add the fixed-joint children of this link to the list of relatives
+          const std::vector<std::string> children = scene_graph.getLinkChildrenNames(link);
+          fixed_joint_tree_links.insert(children.begin(), children.end());
+        }
+        break;
+      }
+    }
+  }
+
+  // Convert to vector
+  std::vector<std::string> output;
+  output.reserve(fixed_joint_tree_links.size());
+  std::copy(fixed_joint_tree_links.begin(), fixed_joint_tree_links.end(), std::back_inserter(output));
+
+  return output;
+}
 
 namespace tesseract_kinematics
 {
+// NOLINTNEXTLINE(modernize-pass-by-value)
 KinGroupIKInput::KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std::string tl)
   : pose(p), working_frame(std::move(wf)), tip_link_name(std::move(tl))
 {
@@ -71,8 +131,19 @@ KinematicGroup::KinematicGroup(std::string name,
   }
 
   std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
-  std::string working_frame = inv_kin_->getWorkingFrame();
 
+  // Get the IK solver working frame name, and check that it exists in the scene state
+  const std::string working_frame = inv_kin_->getWorkingFrame();
+  if (state_.link_transforms.find(working_frame) == state_.link_transforms.end())
+    throw std::runtime_error("Working frame '" + working_frame + "' is not a link in the scene state");
+
+  // Get the IK solver tip link names, and make sure they exist in the scene state
+  const std::vector<std::string> tip_links = inv_kin_->getTipLinkNames();
+  for (const std::string& link : tip_links)
+    if (state_.link_transforms.find(link) == state_.link_transforms.end())
+      throw std::runtime_error("Tip link '" + link + "' is not a link in the scene state");
+
+  // Configure working frames
   auto it = std::find(active_link_names.begin(), active_link_names.end(), working_frame);
   if (it == active_link_names.end())
   {
@@ -81,17 +152,35 @@ KinematicGroup::KinematicGroup(std::string name,
   }
   else
   {
-    std::vector<std::string> child_link_names = scene_graph.getLinkChildrenNames(working_frame);
-    working_frames_.reserve(child_link_names.size() + 1);
     working_frames_.push_back(working_frame);
-    std::copy(child_link_names.begin(), child_link_names.end(), std::back_inserter(working_frames_));
+
+    // The working frame can be any link in the fixed-joint kinematic tree that contains the input working frame.
+    const std::vector<std::string> working_frame_fixed_joint_kin_tree_links =
+        getLinksInFixedJointKinematicTree(working_frame, scene_graph);
+    for (const std::string& link : working_frame_fixed_joint_kin_tree_links)
+    {
+      // Check that the link exists in the scene state
+      if (state_.link_transforms.find(link) == state_.link_transforms.end())
+        throw std::runtime_error("Working frame '" + link + "' is not a link in the scene state");
+
+      working_frames_.push_back(link);
+    }
   }
 
-  for (const auto& tip_link : inv_kin_->getTipLinkNames())
+  // Configure the tip link frames
+  // The tip links can be any link in the fixed-joint kinematic tree that contains the input tip link
+  for (const auto& tip_link : tip_links)
   {
-    inv_tip_links_map_[tip_link] = tip_link;
-    for (const auto& child : scene_graph.getLinkChildrenNames(tip_link))
-      inv_tip_links_map_[child] = tip_link;
+    const std::vector<std::string> tip_link_fixed_joint_kin_tree_links =
+        getLinksInFixedJointKinematicTree(tip_link, scene_graph);
+    for (const std::string& link : tip_link_fixed_joint_kin_tree_links)
+    {
+      // Check that the link exists in the scene state
+      if (state_.link_transforms.find(link) == state_.link_transforms.end())
+        throw std::runtime_error("Tip link '" + link + "' is not a link in the scene state");
+
+      inv_tip_links_map_[link] = tip_link;
+    }
   }
 
   inv_to_fwd_base_ = state_.link_transforms.at(inv_kin_->getBaseLinkName()).inverse() *
@@ -125,8 +214,30 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   tesseract_common::TransformMap ik_inputs;
   for (const auto& tip_link_pose : tip_link_poses)
   {
-    assert(std::find(working_frames_.begin(), working_frames_.end(), tip_link_pose.working_frame) !=
-           working_frames_.end());
+    // Check that the specified pose working frame exists in the list of identified working frames
+    if (std::find(working_frames_.begin(), working_frames_.end(), tip_link_pose.working_frame) == working_frames_.end())
+    {
+      std::stringstream ss;
+      ss << "Specified working frame (" << tip_link_pose.working_frame
+         << ") is not in the list of identified working frames. Available working frames are: [";
+      for (const std::string& f : working_frames_)
+        ss << f << ", ";
+      ss << "].";
+      throw std::runtime_error(ss.str());
+    }
+
+    // Check that specified pose tip link exists in the map of known tip links
+    if (inv_tip_links_map_.find(tip_link_pose.tip_link_name) == inv_tip_links_map_.end())
+    {
+      std::stringstream ss;
+      ss << "Failed to find specified tip link (" << tip_link_pose.tip_link_name << "). Available tip links are: [";
+      for (const auto& pair : inv_tip_links_map_)
+        ss << pair.first << ", ";
+      ss << "].";
+      throw std::runtime_error(ss.str());
+    }
+
+    // Check that the orientation component of the specified pose is orthogonal
     assert(std::abs(1.0 - tip_link_pose.pose.matrix().determinant()) < 1e-6);  // NOLINT
 
     // The IK Solvers tip link and working frame
@@ -204,4 +315,7 @@ std::vector<std::string> KinematicGroup::getAllPossibleTipLinkNames() const
 
   return ik_tip_links;
 }
+
+const InverseKinematics& KinematicGroup::getInverseKinematics() const { return *inv_kin_; }
+
 }  // namespace tesseract_kinematics

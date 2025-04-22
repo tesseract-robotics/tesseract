@@ -30,6 +30,8 @@
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/scene_state.h>
 
+#include <console_bridge/console.h>
+
 namespace tesseract_kinematics
 {
 std::unique_ptr<InverseKinematics> OPWInvKinFactory::create(const std::string& solver_name,
@@ -134,7 +136,7 @@ std::unique_ptr<InverseKinematics> OPWInvKinFactory::create(const std::string& s
   return std::make_unique<OPWInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
 }
 
-TESSERACT_PLUGIN_ANCHOR_IMPL(OPWFactoriesAnchor)
+PLUGIN_ANCHOR_IMPL(OPWFactoriesAnchor)
 
 }  // namespace tesseract_kinematics
 

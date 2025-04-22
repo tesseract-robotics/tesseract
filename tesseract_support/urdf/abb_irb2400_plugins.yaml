@@ -5,15 +5,18 @@ kinematic_plugins:
     manipulator:
       default: KDLFwdKinChain
       plugins:
+# //! [KDL FK config]
         KDLFwdKinChain:
           class: KDLFwdKinChainFactory
           config:
             base_link: base_link
             tip_link: tool0
+# //! [KDL FK config]
   inv_kin_plugins:
     manipulator:
       default: OPWInvKin
       plugins:
+# //! [OPW config]
         OPWInvKin:
           class: OPWInvKinFactory
           config:
@@ -29,3 +32,4 @@ kinematic_plugins:
               c4: 0.085
               offsets: [0, 0, -1.57079632679, 0, 0, 0]
               sign_corrections: [1, 1, 1, 1, 1, 1]
+# //! [OPW config]

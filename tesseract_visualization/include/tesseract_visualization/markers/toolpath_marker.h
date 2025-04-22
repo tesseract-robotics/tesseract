@@ -2,7 +2,7 @@
 #define TESSERACT_VISUALIZATION_MARKERS_TOOLPATH_MARKER_H
 
 #include <tesseract_visualization/markers/marker.h>
-#include <tesseract_common/types.h>
+#include <tesseract_common/eigen_types.h>
 
 namespace tesseract_visualization
 {

@@ -16,7 +16,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
   tesseract_common::GeneralResourceLocator resource_locator;
   {
     std::string str =
-        R"(<robot name="test" extra="0 0 0">
+        R"(<robot name="test" extra="0 0 0" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -41,7 +41,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test" extra="0 0 0">
+        R"(<robot name="test" extra="0 0 0" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -66,7 +66,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test">
+        R"(<robot name="test" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -89,7 +89,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test">
+        R"(<robot name="test" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -112,7 +112,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test">
+        R"(<robot name="test" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -131,7 +131,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test">
+        R"(<robot name="test" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -151,7 +151,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test">
+        R"(<robot name="test" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l3"/>
@@ -170,7 +170,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test">
+        R"(<robot name="test" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -190,8 +190,8 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
   {
     std::string str =
-        R"(<robot>
-             <joint name="j1" type="fixed">
+        R"(<robot tesseract:make_convex="true">
+             <joint name="j1" type="fixed" >
                <parent link="l1"/>
                <child link="l2"/>
                <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -209,7 +209,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test">
+        R"(<robot name="test" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l2"/>
                <child link="l3"/>
@@ -231,6 +231,42 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
     EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
+  // Not a urdf
+  {
+    std::string str = R"(this is not a urdf)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
+  // Missing robot element
+  {
+    std::string str = R"(<abcd name="test"></abcd>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
+  // Invalid version
+  {
+    std::string str = R"(<robot name="test" tesseract:make_convex="true" version="a"></robot>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
+  // Version not equal 1
+  {
+    std::string str = R"(<robot name="test" tesseract:make_convex="true" version="2"></robot>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
+  // Missing tesseract:make_convex attribute
+  {
+    std::string str = R"(<robot name="test"></robot>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
+  // The tesseract:make_convex attribute is not a bool
+  {
+    std::string str = R"(<robot name="test" tesseract:make_convex="1.5"></robot>)";
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+  }
+
   {
     const std::string path =
         resource_locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath();
@@ -244,7 +280,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
   tesseract_common::GeneralResourceLocator resource_locator;
   {
     std::string str =
-        R"(<robot name="test" extra="0 0 0">
+        R"(<robot name="test" extra="0 0 0" tesseract:make_convex="true">
              <material name="test_material" extra="0 0 0">
                <color rgba="1 .5 .5 1" extra="0 0 0"/>
              </material>
@@ -281,7 +317,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test" extra="0 0 0">
+        R"(<robot name="test" extra="0 0 0" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -325,7 +361,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test" extra="0 0 0">
+        R"(<robot name="test" extra="0 0 0" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -362,7 +398,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
 
   {
     std::string str =
-        R"(<robot name="test" extra="0 0 0">
+        R"(<robot name="test" extra="0 0 0" tesseract:make_convex="true">
              <joint name="j1" type="fixed">
                <parent link="l1"/>
                <child link="l2"/>
@@ -422,7 +458,7 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
   // Get Shortest Path
   auto path = g->getShortestPath("link_1", "link_4");
 
-  std::cout << path << std::endl;
+  std::cout << path << "\n";
   EXPECT_TRUE(path.links.size() == 4);
   EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
   EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_2") != path.links.end());

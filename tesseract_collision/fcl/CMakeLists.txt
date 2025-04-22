@@ -1,7 +1,12 @@
 find_package(fcl 0.6 REQUIRED)
 
 # Create target for FCL implementation
-add_library(${PROJECT_NAME}_fcl src/fcl_discrete_managers.cpp src/fcl_utils.cpp src/fcl_collision_object_wrapper.cpp)
+add_library(
+  ${PROJECT_NAME}_fcl
+  src/fcl_collision_geometry_cache.cpp
+  src/fcl_discrete_managers.cpp
+  src/fcl_utils.cpp
+  src/fcl_collision_object_wrapper.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_fcl
   PUBLIC ${PROJECT_NAME}_core
@@ -75,8 +80,6 @@ if(TESSERACT_PACKAGE)
     VERSION ${pkg_extracted_version}
     DESCRIPTION "Tesseract Collision FCL components"
     COMPONENT_DEPENDS core
-    LINUX_DEPENDS "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
-                  "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
-    WINDOWS_DEPENDS "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
-                    "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
+    LINUX_DEPENDS "libfcl-dev (>= 0.6.0) | fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl"
+    WINDOWS_DEPENDS "libfcl-dev (>= 0.6.0) | fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
 endif()

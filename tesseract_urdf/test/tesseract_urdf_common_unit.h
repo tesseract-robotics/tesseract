@@ -19,10 +19,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 template <typename ElementType>
 bool runTest(ElementType& type,
-             std::function<ElementType(const tinyxml2::XMLElement*, const int)> func,
+             std::function<ElementType(const tinyxml2::XMLElement*)> func,
              const std::string& xml_string,
-             const std::string& element_name,
-             int version)
+             const std::string& element_name)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -32,7 +31,7 @@ bool runTest(ElementType& type,
 
   try
   {
-    type = func(element, version);
+    type = func(element);
   }
   catch (const std::exception& e)
   {
@@ -46,12 +45,10 @@ bool runTest(ElementType& type,
 template <typename ElementType>
 bool runTest(
     ElementType& type,
-    std::function<ElementType(const tinyxml2::XMLElement*, const tesseract_common::ResourceLocator&, bool, const int)>
-        func,
+    std::function<ElementType(const tinyxml2::XMLElement*, const tesseract_common::ResourceLocator&, bool)> func,
     const std::string& xml_string,
     const std::string& element_name,
     const tesseract_common::ResourceLocator& locator,
-    int version,
     bool visual)
 {
   tinyxml2::XMLDocument xml_doc;
@@ -62,7 +59,7 @@ bool runTest(
 
   try
   {
-    type = func(element, locator, visual, version);
+    type = func(element, locator, visual);
   }
   catch (const std::exception& e)
   {
@@ -74,13 +71,11 @@ bool runTest(
 }
 
 template <typename ElementType>
-bool runTest(
-    ElementType& type,
-    std::function<ElementType(const tinyxml2::XMLElement*, const tesseract_common::ResourceLocator&, const int)> func,
-    const std::string& xml_string,
-    const std::string& element_name,
-    const tesseract_common::ResourceLocator& locator,
-    int version)
+bool runTest(ElementType& type,
+             std::function<ElementType(const tinyxml2::XMLElement*, const tesseract_common::ResourceLocator&)> func,
+             const std::string& xml_string,
+             const std::string& element_name,
+             const tesseract_common::ResourceLocator& locator)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -90,7 +85,7 @@ bool runTest(
 
   try
   {
-    type = func(element, locator, version);
+    type = func(element, locator);
   }
   catch (const std::exception& e)
   {
@@ -105,13 +100,11 @@ template <typename ElementType>
 bool runTest(ElementType& type,
              std::function<ElementType(const tinyxml2::XMLElement*,
                                        const tesseract_common::ResourceLocator&,
-                                       std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>&,
-                                       const int)> func,
+                                       std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>&)> func,
              const std::string& xml_string,
              const std::string& element_name,
              const tesseract_common::ResourceLocator& locator,
-             std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-             int version)
+             std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -121,7 +114,7 @@ bool runTest(ElementType& type,
 
   try
   {
-    type = func(element, locator, available_materials, version);
+    type = func(element, locator, available_materials);
   }
   catch (const std::exception& e)
   {
@@ -136,12 +129,10 @@ template <typename ElementType>
 bool runTest(ElementType& type,
              std::function<ElementType(const tinyxml2::XMLElement*,
                                        std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>&,
-                                       bool,
-                                       const int)> func,
+                                       bool)> func,
              const std::string& xml_string,
              const std::string& element_name,
              std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-             int version,
              const bool visual)
 {
   tinyxml2::XMLDocument xml_doc;
@@ -152,7 +143,7 @@ bool runTest(ElementType& type,
 
   try
   {
-    type = func(element, available_materials, visual, version);
+    type = func(element, available_materials, visual);
   }
   catch (const std::exception& e)
   {

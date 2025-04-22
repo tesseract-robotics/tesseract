@@ -33,16 +33,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/filesystem.h>
-#include <tesseract_common/plugin_loader.h>
+#include <tesseract_common/fwd.h>
 #include <tesseract_common/plugin_info.h>
+#include <boost_plugin_loader/plugin_loader.h>
+#include <boost_plugin_loader/macros.h>
+#include <filesystem>
 
 // clang-format off
 #define TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                    \
-  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, DiscColl)
+  EXPORT_CLASS_SECTIONED(DERIVED_CLASS, ALIAS, DiscColl)
 
 #define TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                  \
-  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, ContColl)
+  EXPORT_CLASS_SECTIONED(DERIVED_CLASS, ALIAS, ContColl)
 // clang-format on
 
 namespace tesseract_collision
@@ -69,7 +71,7 @@ public:
   virtual std::unique_ptr<DiscreteContactManager> create(const std::string& name, const YAML::Node& config) const = 0;
 
 protected:
-  static const std::string SECTION_NAME;
+  static std::string getSection();
   friend class PluginLoader;
 };
 
@@ -91,7 +93,7 @@ public:
                                                            const YAML::Node& config) const = 0;
 
 protected:
-  static const std::string SECTION_NAME;
+  static std::string getSection();
   friend class PluginLoader;
 };
 
@@ -109,19 +111,19 @@ public:
    * @brief Load plugins from yaml node
    * @param config The config node
    */
-  ContactManagersPluginFactory(YAML::Node config);
+  ContactManagersPluginFactory(YAML::Node config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  ContactManagersPluginFactory(const tesseract_common::fs::path& config);
+  ContactManagersPluginFactory(const std::filesystem::path& config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from string
    * @param config The config string
    */
-  ContactManagersPluginFactory(const std::string& config);
+  ContactManagersPluginFactory(const std::string& config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Add location for the plugin loader to search
@@ -267,7 +269,7 @@ public:
    * @brief Save the plugin information to a yaml config file
    * @param file_path The file path
    */
-  void saveConfig(const boost::filesystem::path& file_path) const;
+  void saveConfig(const std::filesystem::path& file_path) const;
 
   /**
    * @brief Get the plugin information config as a yaml node
@@ -280,7 +282,9 @@ private:
   mutable std::map<std::string, ContinuousContactManagerFactory::Ptr> continuous_factories_;
   tesseract_common::PluginInfoContainer discrete_plugin_info_;
   tesseract_common::PluginInfoContainer continuous_plugin_info_;
-  tesseract_common::PluginLoader plugin_loader_;
+  boost_plugin_loader::PluginLoader plugin_loader_;
+
+  void loadConfig(const YAML::Node& config);
 };
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_CONTACT_MANAGERS_PLUGIN_FACTORY_H

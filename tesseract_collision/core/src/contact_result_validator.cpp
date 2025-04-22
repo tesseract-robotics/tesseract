@@ -1,13 +1,13 @@
 /**
- * @file filesystem.h
- * @brief Common Tesseract Filesystem
+ * @file contact_result_validator.h
+ * @brief Contact result validator
  *
  * @author Levi Armstrong
- * @date January 18, 2018
+ * @date Jan 2, 2025
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2025, Levi Armstrong
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -23,18 +23,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMON_FILESYSTEM_H
-#define TESSERACT_COMMON_FILESYSTEM_H
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/filesystem.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_collision/core/contact_result_validator.h>
 
-namespace tesseract_common
+namespace tesseract_collision
 {
-/** @brief Enable easy switching to std::filesystem when available */
-namespace fs = boost::filesystem;
-}  // namespace tesseract_common
+template <class Archive>
+void ContactResultValidator::serialize(Archive& /*ar*/, const unsigned int /*version*/)
+{
+}
 
-#endif  // TESSERACT_COMMON_FILESYSTEM_H
+}  // namespace tesseract_collision
+
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_collision::ContactResultValidator)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_collision::ContactResultValidator)

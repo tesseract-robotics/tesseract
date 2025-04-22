@@ -52,8 +52,8 @@ JointGroup::JointGroup(std::string name,
       throw std::runtime_error("Joint name '" + joint_name + "' does not exist in the provided scene graph!");
   }
 
-  tesseract_scene_graph::KDLTreeData data =
-      tesseract_scene_graph::parseSceneGraph(scene_graph, joint_names_, scene_state.joints);
+  tesseract_scene_graph::KDLTreeData data = tesseract_scene_graph::parseSceneGraph(
+      scene_graph, joint_names_, scene_state.joints, scene_state.floating_joints);
   state_solver_ = std::make_unique<tesseract_scene_graph::KDLStateSolver>(scene_graph, data);
   jacobian_map_.reserve(joint_names_.size());
   std::vector<std::string> solver_jn = state_solver_->getActiveJointNames();

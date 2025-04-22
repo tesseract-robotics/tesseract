@@ -40,6 +40,7 @@
  */
 
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
+#include <tesseract_common/contact_allowed_validator.h>
 
 namespace tesseract_collision::tesseract_collision_fcl
 {
@@ -64,7 +65,7 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
 
   manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(collision_margin_data_);
-  manager->setIsContactAllowedFn(fn_);
+  manager->setContactAllowedValidator(validator_);
 
   return manager;
 }
@@ -286,34 +287,56 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::str
 }
 
 const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
-void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data,
-                                                   CollisionMarginOverrideType override_type)
+
+void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
-  collision_margin_data_.apply(collision_margin_data, override_type);
+  collision_margin_data_ = std::move(collision_margin_data);
   onCollisionMarginDataChanged();
 }
 
-void FCLDiscreteBVHManager::setDefaultCollisionMarginData(double default_collision_margin)
+const CollisionMarginData& FCLDiscreteBVHManager::getCollisionMarginData() const { return collision_margin_data_; }
+
+void FCLDiscreteBVHManager::setCollisionMarginPairData(const CollisionMarginPairData& pair_margin_data,
+                                                       CollisionMarginPairOverrideType override_type)
+{
+  collision_margin_data_.apply(pair_margin_data, override_type);
+  onCollisionMarginDataChanged();
+}
+
+void FCLDiscreteBVHManager::setDefaultCollisionMargin(double default_collision_margin)
 {
   collision_margin_data_.setDefaultCollisionMargin(default_collision_margin);
   onCollisionMarginDataChanged();
 }
 
-void FCLDiscreteBVHManager::setPairCollisionMarginData(const std::string& name1,
-                                                       const std::string& name2,
-                                                       double collision_margin)
+void FCLDiscreteBVHManager::setCollisionMarginPair(const std::string& name1,
+                                                   const std::string& name2,
+                                                   double collision_margin)
 {
-  collision_margin_data_.setPairCollisionMargin(name1, name2, collision_margin);
+  collision_margin_data_.setCollisionMargin(name1, name2, collision_margin);
   onCollisionMarginDataChanged();
 }
 
-const CollisionMarginData& FCLDiscreteBVHManager::getCollisionMarginData() const { return collision_margin_data_; }
-void FCLDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
-IsContactAllowedFn FCLDiscreteBVHManager::getIsContactAllowedFn() const { return fn_; }
+void FCLDiscreteBVHManager::incrementCollisionMargin(double increment)
+{
+  collision_margin_data_.incrementMargins(increment);
+  onCollisionMarginDataChanged();
+}
+
+void FCLDiscreteBVHManager::setContactAllowedValidator(
+    std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
+{
+  validator_ = std::move(validator);
+}
+std::shared_ptr<const tesseract_common::ContactAllowedValidator>
+FCLDiscreteBVHManager::getContactAllowedValidator() const
+{
+  return validator_;
+}
 
 void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
-  ContactTestData cdata(active_, collision_margin_data_, fn_, request, collisions);
+  ContactTestData cdata(active_, collision_margin_data_, validator_, request, collisions);
   if (collision_margin_data_.getMaxCollisionMargin() > 0)
   {
     // TODO: Should the order be flipped?

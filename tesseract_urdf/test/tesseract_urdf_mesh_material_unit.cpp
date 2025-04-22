@@ -13,11 +13,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TEST(TesseractURDFUnit, parse_mesh_material_dae)  // NOLINT
 {
   tesseract_common::GeneralResourceLocator resource_locator;
+  const bool global_make_convex = false;
+  const auto parse_mesh_fn =
+      [&](const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, bool visual) {
+        return tesseract_urdf::parseMesh(xml_element, locator, visual, global_make_convex);
+      };
+
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/tesseract_material_mesh.dae"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> meshes;
-    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        meshes, &tesseract_urdf::parseMesh, str, "mesh", resource_locator, 2, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> meshes;
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        meshes, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(meshes.size() == 4);
     auto& mesh0 = meshes[1];
     auto& mesh1 = meshes[2];
@@ -87,11 +93,17 @@ TEST(TesseractURDFUnit, parse_mesh_material_dae)  // NOLINT
 TEST(TesseractURDFUnit, parse_mesh_material_gltf2)  // NOLINT
 {
   tesseract_common::GeneralResourceLocator resource_locator;
+  const bool global_make_convex = false;
+  const auto parse_mesh_fn =
+      [&](const tinyxml2::XMLElement* xml_element, const tesseract_common::ResourceLocator& locator, bool visual) {
+        return tesseract_urdf::parseMesh(xml_element, locator, visual, global_make_convex);
+      };
+
   {
     std::string str = R"(<mesh filename="package://tesseract_support/meshes/tesseract_material_mesh.glb"/>)";
-    std::vector<tesseract_geometry::Mesh::Ptr> meshes;
-    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(
-        meshes, &tesseract_urdf::parseMesh, str, "mesh", resource_locator, 2, true));
+    std::vector<tesseract_geometry::PolygonMesh::Ptr> meshes;
+    EXPECT_TRUE(runTest<std::vector<tesseract_geometry::PolygonMesh::Ptr>>(
+        meshes, parse_mesh_fn, str, tesseract_urdf::MESH_ELEMENT_NAME.data(), resource_locator, true));
     EXPECT_TRUE(meshes.size() == 4);
     auto& mesh0 = meshes[0];
     auto& mesh1 = meshes[1];

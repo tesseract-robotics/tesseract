@@ -39,42 +39,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-CollisionMarginData::CollisionMarginData(double default_collision_margin)
-  : default_collision_margin_(default_collision_margin), max_collision_margin_(default_collision_margin)
+CollisionMarginPairData::CollisionMarginPairData(const PairsCollisionMarginData& pair_margins)
 {
+  for (const auto& pair : pair_margins)
+    setCollisionMargin(pair.first.first, pair.first.second, pair.second);
 }
 
-CollisionMarginData::CollisionMarginData(double default_collision_margin,
-                                         PairsCollisionMarginData pair_collision_margins)
-  : default_collision_margin_(default_collision_margin), lookup_table_(std::move(pair_collision_margins))
-{
-  updateMaxCollisionMargin();
-}
-
-CollisionMarginData::CollisionMarginData(PairsCollisionMarginData pair_collision_margins)
-  : lookup_table_(std::move(pair_collision_margins))
-{
-  updateMaxCollisionMargin();
-}
-
-void CollisionMarginData::setDefaultCollisionMargin(double default_collision_margin)
-{
-  default_collision_margin_ = default_collision_margin;
-  updateMaxCollisionMargin();
-}
-
-double CollisionMarginData::getDefaultCollisionMargin() const { return default_collision_margin_; }
-
-void CollisionMarginData::setPairCollisionMargin(const std::string& obj1,
-                                                 const std::string& obj2,
-                                                 double collision_margin)
+void CollisionMarginPairData::setCollisionMargin(const std::string& obj1, const std::string& obj2, double margin)
 {
   auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
-  lookup_table_[key] = collision_margin;
-  updateMaxCollisionMargin();
+  lookup_table_[key] = margin;
+  updateCollisionMarginMax();
 }
 
-double CollisionMarginData::getPairCollisionMargin(const std::string& obj1, const std::string& obj2) const
+std::optional<double> CollisionMarginPairData::getCollisionMargin(const std::string& obj1,
+                                                                  const std::string& obj2) const
 {
   thread_local LinkNamesPair key;
   tesseract_common::makeOrderedLinkPair(key, obj1, obj2);
@@ -83,91 +62,76 @@ double CollisionMarginData::getPairCollisionMargin(const std::string& obj1, cons
   if (it != lookup_table_.end())
     return it->second;
 
-  return default_collision_margin_;
+  return {};
 }
 
-const PairsCollisionMarginData& CollisionMarginData::getPairCollisionMargins() const { return lookup_table_; }
+double CollisionMarginPairData::getMaxCollisionMargin() const { return max_collision_margin_; }
 
-double CollisionMarginData::getMaxCollisionMargin() const { return max_collision_margin_; }
+const PairsCollisionMarginData& CollisionMarginPairData::getCollisionMargins() const { return lookup_table_; }
 
-void CollisionMarginData::incrementMargins(const double& increment)
+void CollisionMarginPairData::incrementMargins(double increment)
 {
-  default_collision_margin_ += increment;
+  if (lookup_table_.empty())
+    return;
+
   max_collision_margin_ += increment;
   for (auto& pair : lookup_table_)
     pair.second += increment;
 }
 
-void CollisionMarginData::scaleMargins(const double& scale)
+void CollisionMarginPairData::scaleMargins(double scale)
 {
-  default_collision_margin_ *= scale;
+  if (lookup_table_.empty())
+    return;
+
   max_collision_margin_ *= scale;
   for (auto& pair : lookup_table_)
     pair.second *= scale;
 }
 
-void CollisionMarginData::apply(const CollisionMarginData& collision_margin_data,
-                                CollisionMarginOverrideType override_type)
+bool CollisionMarginPairData::empty() const { return lookup_table_.empty(); }
+
+void CollisionMarginPairData::clear()
+{
+  lookup_table_.clear();
+  max_collision_margin_ = std::numeric_limits<double>::lowest();
+}
+
+void CollisionMarginPairData::updateCollisionMarginMax()
+{
+  max_collision_margin_ = std::numeric_limits<double>::lowest();
+  for (const auto& pair : lookup_table_)
+    max_collision_margin_ = std::max(max_collision_margin_, pair.second);
+}
+
+void CollisionMarginPairData::apply(const CollisionMarginPairData& pair_margin_data,
+                                    CollisionMarginPairOverrideType override_type)
 {
   switch (override_type)
   {
-    case CollisionMarginOverrideType::REPLACE:
+    case CollisionMarginPairOverrideType::REPLACE:
     {
-      *this = collision_margin_data;
+      *this = pair_margin_data;
       break;
     }
-    case CollisionMarginOverrideType::MODIFY:
+    case CollisionMarginPairOverrideType::MODIFY:
     {
-      default_collision_margin_ = collision_margin_data.default_collision_margin_;
-
-      for (const auto& p : collision_margin_data.lookup_table_)
+      for (const auto& p : pair_margin_data.lookup_table_)
         lookup_table_[p.first] = p.second;
 
-      updateMaxCollisionMargin();
+      updateCollisionMarginMax();
       break;
     }
-    case CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN:
-    {
-      default_collision_margin_ = collision_margin_data.default_collision_margin_;
-      updateMaxCollisionMargin();
-      break;
-    }
-    case CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN:
-    {
-      lookup_table_ = collision_margin_data.lookup_table_;
-      updateMaxCollisionMargin();
-      break;
-    }
-    case CollisionMarginOverrideType::MODIFY_PAIR_MARGIN:
-    {
-      for (const auto& p : collision_margin_data.lookup_table_)
-        lookup_table_[p.first] = p.second;
-
-      updateMaxCollisionMargin();
-      break;
-    }
-    case CollisionMarginOverrideType::NONE:
+    case CollisionMarginPairOverrideType::NONE:
     {
       break;
     }
   }
 }
 
-void CollisionMarginData::updateMaxCollisionMargin()
-{
-  max_collision_margin_ = default_collision_margin_;
-  for (const auto& p : lookup_table_)
-  {
-    if (p.second > max_collision_margin_)
-      max_collision_margin_ = p.second;
-  }
-}
-
-bool CollisionMarginData::operator==(const CollisionMarginData& rhs) const
+bool CollisionMarginPairData::operator==(const CollisionMarginPairData& rhs) const
 {
   bool ret_val = true;
-  ret_val &=
-      (tesseract_common::almostEqualRelativeAndAbs(default_collision_margin_, rhs.default_collision_margin_, 1e-5));
   ret_val &= (tesseract_common::almostEqualRelativeAndAbs(max_collision_margin_, rhs.max_collision_margin_, 1e-5));
   ret_val &= (lookup_table_.size() == rhs.lookup_table_.size());
   if (ret_val)
@@ -187,17 +151,101 @@ bool CollisionMarginData::operator==(const CollisionMarginData& rhs) const
   return ret_val;
 }
 
+bool CollisionMarginPairData::operator!=(const CollisionMarginPairData& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void CollisionMarginPairData::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(lookup_table_);
+  ar& BOOST_SERIALIZATION_NVP(max_collision_margin_);
+}
+
+CollisionMarginData::CollisionMarginData(double default_collision_margin)
+  : default_collision_margin_(default_collision_margin)
+{
+}
+
+CollisionMarginData::CollisionMarginData(double default_collision_margin,
+                                         CollisionMarginPairData pair_collision_margins)
+  : default_collision_margin_(default_collision_margin), pair_margins_(std::move(pair_collision_margins))
+{
+}
+
+CollisionMarginData::CollisionMarginData(CollisionMarginPairData pair_collision_margins)
+  : pair_margins_(std::move(pair_collision_margins))
+{
+}
+
+void CollisionMarginData::setDefaultCollisionMargin(double default_collision_margin)
+{
+  default_collision_margin_ = default_collision_margin;
+}
+
+double CollisionMarginData::getDefaultCollisionMargin() const { return default_collision_margin_; }
+
+void CollisionMarginData::setCollisionMargin(const std::string& obj1, const std::string& obj2, double margin)
+{
+  pair_margins_.setCollisionMargin(obj1, obj2, margin);
+}
+
+double CollisionMarginData::getCollisionMargin(const std::string& obj1, const std::string& obj2) const
+{
+  std::optional<double> margin = pair_margins_.getCollisionMargin(obj1, obj2);
+  if (margin.has_value())
+    return margin.value();
+
+  return default_collision_margin_;
+}
+
+const CollisionMarginPairData& CollisionMarginData::getCollisionMarginPairData() const { return pair_margins_; }
+
+double CollisionMarginData::getMaxCollisionMargin() const
+{
+  if (pair_margins_.empty())
+    return default_collision_margin_;
+
+  return std::max(default_collision_margin_, pair_margins_.getMaxCollisionMargin());
+}
+
+void CollisionMarginData::incrementMargins(double increment)
+{
+  default_collision_margin_ += increment;
+  pair_margins_.incrementMargins(increment);
+}
+
+void CollisionMarginData::scaleMargins(double scale)
+{
+  default_collision_margin_ *= scale;
+  pair_margins_.scaleMargins(scale);
+}
+
+void CollisionMarginData::apply(const CollisionMarginPairData& pair_margin_data,
+                                CollisionMarginPairOverrideType override_type)
+{
+  pair_margins_.apply(pair_margin_data, override_type);
+}
+
+bool CollisionMarginData::operator==(const CollisionMarginData& rhs) const
+{
+  bool ret_val = true;
+  ret_val &=
+      (tesseract_common::almostEqualRelativeAndAbs(default_collision_margin_, rhs.default_collision_margin_, 1e-5));
+  ret_val &= (pair_margins_ == rhs.pair_margins_);
+  return ret_val;
+}
+
 bool CollisionMarginData::operator!=(const CollisionMarginData& rhs) const { return !operator==(rhs); }
 
 template <class Archive>
 void CollisionMarginData::serialize(Archive& ar, const unsigned int /*version*/)
 {
   ar& BOOST_SERIALIZATION_NVP(default_collision_margin_);
-  ar& BOOST_SERIALIZATION_NVP(max_collision_margin_);
-  ar& BOOST_SERIALIZATION_NVP(lookup_table_);
+  ar& BOOST_SERIALIZATION_NVP(pair_margins_);
 }
 }  // namespace tesseract_common
 
 #include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CollisionMarginPairData)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CollisionMarginPairData)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CollisionMarginData)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CollisionMarginData)

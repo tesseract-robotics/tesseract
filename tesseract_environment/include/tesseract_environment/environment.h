@@ -47,9 +47,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/fwd.h>
 #include <tesseract_environment/fwd.h>
 
-#include <tesseract_common/filesystem.h>
+#include <filesystem>
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_common/any_poly.h>
+#include <tesseract_common/contact_allowed_validator.h>
 
 namespace boost::serialization
 {
@@ -114,11 +115,11 @@ public:
             const std::string& srdf_string,
             const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
-  bool init(const tesseract_common::fs::path& urdf_path,
+  bool init(const std::filesystem::path& urdf_path,
             const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
-  bool init(const tesseract_common::fs::path& urdf_path,
-            const tesseract_common::fs::path& srdf_path,
+  bool init(const std::filesystem::path& urdf_path,
+            const std::filesystem::path& srdf_path,
             const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
 
   /**
@@ -192,7 +193,7 @@ public:
    * @param group_name The group name
    * @return A joint group
    */
-  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
+  std::shared_ptr<const tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
 
   /**
    * @brief Get a joint group given a vector of joint names
@@ -200,8 +201,8 @@ public:
    * @param joint_names The joint names that make up the group
    * @return A joint group
    */
-  std::unique_ptr<tesseract_kinematics::JointGroup> getJointGroup(const std::string& name,
-                                                                  const std::vector<std::string>& joint_names) const;
+  std::shared_ptr<const tesseract_kinematics::JointGroup>
+  getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const;
 
   /**
    * @brief Get a kinematic group given group name and solver name
@@ -210,8 +211,8 @@ public:
    * @param ik_solver_name The IK solver name
    * @return A kinematics group
    */
-  std::unique_ptr<tesseract_kinematics::KinematicGroup> getKinematicGroup(const std::string& group_name,
-                                                                          const std::string& ik_solver_name = "") const;
+  std::shared_ptr<const tesseract_kinematics::KinematicGroup>
+  getKinematicGroup(const std::string& group_name, const std::string& ik_solver_name = "") const;
 
   /**
    * @brief Find tool center point provided in the manipulator info
@@ -295,8 +296,17 @@ public:
    * will update the contact managers transforms
    *
    */
-  void setState(const std::unordered_map<std::string, double>& joints);
-  void setState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values);
+  void setState(const std::unordered_map<std::string, double>& joints,
+                const tesseract_common::TransformMap& floating_joints = {});
+  void setState(const std::vector<std::string>& joint_names,
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract_common::TransformMap& floating_joints = {});
+
+  /**
+   * @brief Set the current state of the floating joint values
+   * @param floating_joint_values The floating joint values to set
+   */
+  void setState(const tesseract_common::TransformMap& floating_joints);
 
   /**
    * @brief Get the state of the environment for a given set or subset of joint values.
@@ -306,9 +316,18 @@ public:
    * @param joints A map of joint names to joint values to change.
    * @return A the state of the environment
    */
-  tesseract_scene_graph::SceneState getState(const std::unordered_map<std::string, double>& joints) const;
+  tesseract_scene_graph::SceneState getState(const std::unordered_map<std::string, double>& joints,
+                                             const tesseract_common::TransformMap& floating_joints = {}) const;
   tesseract_scene_graph::SceneState getState(const std::vector<std::string>& joint_names,
-                                             const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
+                                             const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                             const tesseract_common::TransformMap& floating_joints = {}) const;
+
+  /**
+   * @brief Get the state given floating joint values
+   * @param floating_joint_values The floating joint values to leverage
+   * @return A the state of the environment
+   */
+  tesseract_scene_graph::SceneState getState(const tesseract_common::TransformMap& floating_joints) const;
 
   /** @brief Get the current state of the environment */
   tesseract_scene_graph::SceneState getState() const;
@@ -387,6 +406,18 @@ public:
    * @return A vector of joint values
    */
   Eigen::VectorXd getCurrentJointValues(const std::vector<std::string>& joint_names) const;
+
+  /**
+   * @brief Get the current floating joint values
+   * @return The joint origin transform for the floating joint
+   */
+  tesseract_common::TransformMap getCurrentFloatingJointValues() const;
+
+  /**
+   * @brief Get the current floating joint values
+   * @return The joint origin transform for the floating joint
+   */
+  tesseract_common::TransformMap getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
 
   /**
    * @brief Get the root link name
@@ -556,9 +587,12 @@ public:
   /** @brief This should only be used by the clone method */
   explicit Environment(std::unique_ptr<Implementation> impl);
 };
+
+using EnvironmentPtrAnyPoly = tesseract_common::AnyWrapper<std::shared_ptr<tesseract_environment::Environment>>;
+using EnvironmentConstPtrAnyPoly =
+    tesseract_common::AnyWrapper<std::shared_ptr<const tesseract_environment::Environment>>;
 }  // namespace tesseract_environment
 BOOST_CLASS_EXPORT_KEY(tesseract_environment::Environment)
-TESSERACT_ANY_EXPORT_KEY(std::shared_ptr<const tesseract_environment::Environment>,
-                         TesseractEnvironmentEnvironmentConstSharedPtr)
-TESSERACT_ANY_EXPORT_KEY(std::shared_ptr<tesseract_environment::Environment>, TesseractEnvironmentEnvironmentSharedPtr)
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::EnvironmentPtrAnyPoly)
+BOOST_CLASS_EXPORT_KEY(tesseract_environment::EnvironmentConstPtrAnyPoly)
 #endif  // TESSERACT_ENVIRONMENT_ENVIRONMENT_H

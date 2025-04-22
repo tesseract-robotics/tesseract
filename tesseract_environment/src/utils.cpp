@@ -78,31 +78,12 @@ void checkTrajectorySegment(tesseract_collision::ContactResultMap& contact_resul
                             tesseract_collision::ContinuousContactManager& manager,
                             const tesseract_common::TransformMap& state0,
                             const tesseract_common::TransformMap& state1,
-                            const tesseract_collision::CollisionCheckConfig& config)
-{
-  manager.applyContactManagerConfig(config.contact_manager_config);
-  checkTrajectorySegment(contact_results, manager, state0, state1, config.contact_request);
-}
-
-void checkTrajectorySegment(tesseract_collision::ContactResultMap& contact_results,
-                            tesseract_collision::ContinuousContactManager& manager,
-                            const tesseract_common::TransformMap& state0,
-                            const tesseract_common::TransformMap& state1,
                             const tesseract_collision::ContactRequest& contact_request)
 {
   for (const auto& link_name : manager.getActiveCollisionObjects())
     manager.setCollisionObjectsTransform(link_name, state0.at(link_name), state1.at(link_name));
 
   manager.contactTest(contact_results, contact_request);
-}
-
-void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results,
-                          tesseract_collision::DiscreteContactManager& manager,
-                          const tesseract_common::TransformMap& state,
-                          const tesseract_collision::CollisionCheckConfig& config)
-{
-  manager.applyContactManagerConfig(config.contact_manager_config);
-  checkTrajectoryState(contact_results, manager, state, config.contact_request);
 }
 
 void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results,
@@ -138,13 +119,15 @@ void printContinuousDebugInfo(const std::vector<std::string>& joint_names,
   ss << "Continuous collision detected at step: " << step_idx << " of " << step_size;
   if (sub_step_idx >= 0)
     ss << " substep: " << sub_step_idx;
-  ss << std::endl;
+  ss << "\n";
 
   ss << "     Names:";
   for (const auto& name : joint_names)
     ss << " " << name;
 
-  ss << std::endl << "    State0: " << swp0 << std::endl << "    State1: " << swp1 << std::endl;
+  ss << "\n"
+     << "    State0: " << swp0 << "\n"
+     << "    State1: " << swp1 << "\n";
 
   CONSOLE_BRIDGE_logDebug(ss.str().c_str());
 }
@@ -159,13 +142,14 @@ void printDiscreteDebugInfo(const std::vector<std::string>& joint_names,
   ss << "Discrete collision detected at step: " << step_idx << " of " << step_size;
   if (sub_step_idx >= 0)
     ss << " substep: " << sub_step_idx;
-  ss << std::endl;
+  ss << "\n";
 
   ss << "     Names:";
   for (const auto& name : joint_names)
     ss << " " << name;
 
-  ss << std::endl << "    State: " << swp << std::endl;
+  ss << "\n"
+     << "    State: " << swp << "\n";
 
   CONSOLE_BRIDGE_logDebug(ss.str().c_str());
 }
@@ -187,8 +171,6 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
   if (traj.rows() < 2)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with a trajectory that only has one "
                              "state.");
-
-  manager.applyContactManagerConfig(config.contact_manager_config);
 
   bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
 
@@ -341,7 +323,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
           if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START ||
               config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
           {
-            contacts.emplace_back(tesseract_collision::ContactResultMap{});
+            contacts.emplace_back();
             continue;
           }
         }
@@ -397,7 +379,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START ||
         config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
     {
-      contacts.emplace_back(tesseract_collision::ContactResultMap{});
+      contacts.emplace_back();
       ++start_idx;
     }
 
@@ -492,8 +474,6 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
 
   if (traj.rows() == 0)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
-
-  manager.applyContactManagerConfig(config.contact_manager_config);
 
   bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
 
@@ -750,7 +730,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
           if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START ||
               config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
           {
-            contacts.emplace_back(tesseract_collision::ContactResultMap{});
+            contacts.emplace_back();
             continue;
           }
         }
@@ -827,7 +807,7 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
     if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START ||
         config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
     {
-      contacts.emplace_back(tesseract_collision::ContactResultMap{});
+      contacts.emplace_back();
       ++start_idx;
     }
 

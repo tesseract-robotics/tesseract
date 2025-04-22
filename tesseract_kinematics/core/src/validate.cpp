@@ -132,29 +132,30 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
                             failed_data.size(),
                             angular_max);
     std::stringstream msg;
-    msg << std::endl;
-    msg << "*****************************" << std::endl;
-    msg << "******** Failed Data ********" << std::endl;
-    msg << "*****************************" << std::endl;
+    msg << "\n";
+    msg << "*****************************\n";
+    msg << "******** Failed Data ********\n";
+    msg << "*****************************\n";
 
     std::string header = "Trans. Dist. (m), tol, Angle Dist. (rad), tol";
     for (const auto& jn : manip.getJointNames())
       header += ", " + jn;
 
-    msg << header << std::endl;
+    msg << header << "\n";
     for (const auto& d : failed_data)
     {
       for (const auto& val : d)
         msg << val << ", ";
-      msg << std::endl;
+      msg << "\n";
     }
 
-    msg << "*****************************" << std::endl;
-    msg << "******** Passed Data ********" << std::endl;
-    msg << "*****************************" << std::endl;
+    msg << "*****************************\n";
+    msg << "******** Passed Data ********\n";
+    msg << "*****************************\n";
     if (passed_data.empty())
     {
-      msg << "No Data!" << std::endl;
+      msg << "No Data!"
+          << "\n";
     }
     else
     {
@@ -162,7 +163,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
       {
         for (const auto& val : d)
           msg << val << ", ";
-        msg << std::endl;
+        msg << "\n";
       }
     }
 

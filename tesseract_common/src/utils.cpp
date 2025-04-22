@@ -72,7 +72,7 @@ std::enable_if_t<std::is_polymorphic<E>::value> my_rethrow_if_nested(const E& e)
     p->rethrow_nested();
 }
 
-std::string fileToString(const tesseract_common::fs::path& filepath)
+std::string fileToString(const std::filesystem::path& filepath)
 {
   std::ifstream ifs(filepath.c_str());
   std::string contents;
@@ -183,10 +183,10 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
   Eigen::VectorXd perturbed_err;
   if (perturbed_pose_rotation_err.second > M_PI_2 && pose_rotation_err.second < -M_PI_2)
     perturbed_err = concat(perturbed_pose_err.translation(),
-                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second - 2 * M_PI));
+                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second - (2 * M_PI)));
   else if (perturbed_pose_rotation_err.second < -M_PI_2 && pose_rotation_err.second > M_PI_2)
     perturbed_err = concat(perturbed_pose_err.translation(),
-                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second + 2 * M_PI));
+                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second + (2 * M_PI)));
   else
     perturbed_err = concat(perturbed_pose_err.translation(),
                            perturbed_pose_rotation_err.first * perturbed_pose_rotation_err.second);
@@ -217,10 +217,10 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
   Eigen::VectorXd perturbed_err;
   if (perturbed_pose_rotation_err.second > M_PI_2 && pose_rotation_err.second < -M_PI_2)
     perturbed_err = concat(perturbed_pose_err.translation(),
-                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second - 2 * M_PI));
+                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second - (2 * M_PI)));
   else if (perturbed_pose_rotation_err.second < -M_PI_2 && pose_rotation_err.second > M_PI_2)
     perturbed_err = concat(perturbed_pose_err.translation(),
-                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second + 2 * M_PI));
+                           perturbed_pose_rotation_err.first * (perturbed_pose_rotation_err.second + (2 * M_PI)));
   else
     perturbed_err = concat(perturbed_pose_err.translation(),
                            perturbed_pose_rotation_err.first * perturbed_pose_rotation_err.second);
@@ -245,7 +245,7 @@ Eigen::Vector4d computeRandomColor()
 
 void printNestedException(const std::exception& e, int level)  // NOLINT(misc-no-recursion)
 {
-  std::cerr << std::string(static_cast<unsigned>(2 * level), ' ') << "exception: " << e.what() << std::endl;
+  std::cerr << std::string(static_cast<unsigned>(2 * level), ' ') << "exception: " << e.what() << "\n";
   try
   {
     my_rethrow_if_nested(e);
@@ -254,12 +254,15 @@ void printNestedException(const std::exception& e, int level)  // NOLINT(misc-no
   {
     printNestedException(e, level + 1);
   }
-  catch (...)
+  catch (...)  // NOLINT
   {
   }
 }
 
-std::string getTempPath() { return fs::temp_directory_path().string() + std::string(1, fs::path::preferred_separator); }
+std::string getTempPath()
+{
+  return std::filesystem::temp_directory_path().string() + std::string(1, std::filesystem::path::preferred_separator);
+}
 
 bool isNumeric(const std::string& s)
 {
@@ -274,7 +277,7 @@ bool isNumeric(const std::string& s)
   double out{ 0 };
   ss >> out;
 
-  return !(ss.fail() || !ss.eof());
+  return !ss.fail() && ss.eof();
 }
 
 bool isNumeric(const std::vector<std::string>& sv)

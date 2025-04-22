@@ -32,9 +32,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_common/plugin_loader.hpp>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_common/yaml_utils.h>
+#include <tesseract_common/yaml_extenstions.h>
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
+#include <boost_plugin_loader/plugin_loader.hpp>
+#include <console_bridge/console.h>
+#include <fstream>
 
 static const std::string TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES";
 static const std::string TESSERACT_KINEMATICS_PLUGINS_ENV = "TESSERACT_KINEMATICS_PLUGINS";
@@ -43,8 +47,9 @@ using tesseract_common::KinematicsPluginInfo;
 
 namespace tesseract_kinematics
 {
-const std::string InvKinFactory::SECTION_NAME = "InvKin";
-const std::string FwdKinFactory::SECTION_NAME = "FwdKin";
+std::string InvKinFactory::getSection() { return "InvKin"; }
+
+std::string FwdKinFactory::getSection() { return "FwdKin"; }
 
 KinematicsPluginFactory::KinematicsPluginFactory()
 {
@@ -55,7 +60,7 @@ KinematicsPluginFactory::KinematicsPluginFactory()
       plugin_loader_.search_libraries, TESSERACT_KINEMATICS_PLUGINS, boost::is_any_of(":"), boost::token_compress_on);
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : KinematicsPluginFactory()
+void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
 {
   if (const YAML::Node& plugin_info = config[KinematicsPluginInfo::CONFIG_KEY])
   {
@@ -68,14 +73,25 @@ KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config) : Kinematics
   }
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(const tesseract_common::fs::path& config)
-  : KinematicsPluginFactory(YAML::LoadFile(config.string()))
+KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config, const tesseract_common::ResourceLocator& locator)
+  : KinematicsPluginFactory()
 {
+  config = tesseract_common::processYamlIncludeDirective(config, locator);
+  loadConfig(config);
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(const std::string& config)
-  : KinematicsPluginFactory(YAML::Load(config))
+KinematicsPluginFactory::KinematicsPluginFactory(const std::filesystem::path& config,
+                                                 const tesseract_common::ResourceLocator& locator)
+  : KinematicsPluginFactory()
 {
+  loadConfig(tesseract_common::loadYamlFile(config.string(), locator));
+}
+
+KinematicsPluginFactory::KinematicsPluginFactory(const std::string& config,
+                                                 const tesseract_common::ResourceLocator& locator)
+  : KinematicsPluginFactory()
+{
+  loadConfig(tesseract_common::loadYamlString(config, locator));
 }
 
 // This prevents it from being defined inline.
@@ -254,7 +270,7 @@ KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
     if (it != fwd_kin_factories_.end())
       return it->second->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
-    auto plugin = plugin_loader_.instantiate<FwdKinFactory>(plugin_info.class_name);
+    auto plugin = plugin_loader_.createInstance<FwdKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
       CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
@@ -311,7 +327,7 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
     if (it != inv_kin_factories_.end())
       return it->second->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
-    auto plugin = plugin_loader_.instantiate<InvKinFactory>(plugin_info.class_name);
+    auto plugin = plugin_loader_.createInstance<InvKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
       CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
@@ -327,7 +343,7 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
   }
 }
 
-void KinematicsPluginFactory::saveConfig(const tesseract_common::fs::path& file_path) const
+void KinematicsPluginFactory::saveConfig(const std::filesystem::path& file_path) const
 {
   YAML::Node config = getConfig();
   std::ofstream fout(file_path.string());

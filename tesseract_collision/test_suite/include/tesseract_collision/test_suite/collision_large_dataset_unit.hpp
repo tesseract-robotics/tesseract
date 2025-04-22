@@ -74,7 +74,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
   EXPECT_TRUE(tesseract_common::isIdentical<std::string>(link_names, check_active_links, false));
 
-  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+  EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
@@ -94,7 +94,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
     if (result_vector.size() != 300)
       for (const auto& result : result_vector)
-        std::cout << result.link_names[0] << "," << result.link_names[1] << "," << result.distance << std::endl;
+        std::cout << result.link_names[0] << "," << result.link_names[1] << "," << result.distance << "\n";
 
     EXPECT_EQ(result_vector.size(), 300);
   }

@@ -158,6 +158,28 @@ private:
   friend class OFKTStateSolver;
 };
 
+/**********************************************************************/
+/************************* FLOATING NODE ******************************/
+/**********************************************************************/
+class OFKTFloatingNode : public OFKTBaseNode
+{
+public:
+  // LCOV_EXCL_START
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // LCOV_EXCL_STOP
+
+  OFKTFloatingNode(OFKTNode* parent, std::string link_name, std::string joint_name, const Eigen::Isometry3d& static_tf);
+
+  void storeJointValue(double joint_value) override;
+  double getJointValue() const override;
+  void setStaticTransformation(const Eigen::Isometry3d& static_tf) override;
+  void computeAndStoreLocalTransformation() override;
+  Eigen::Isometry3d computeLocalTransformation(double joint_value) const override;
+
+private:
+  friend class OFKTStateSolver;
+};
+
 /*********************************************************************/
 /************************* REVOLUTE NODE *****************************/
 /*********************************************************************/

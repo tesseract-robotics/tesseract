@@ -40,11 +40,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/allowed_collision_matrix.h>
-#include <tesseract_common/filesystem.h>
+#include <filesystem>
 
 namespace tinyxml2
 {
-class XMLElement;
+class XMLElement;  // NOLINT
 class XMLAttribute;
 }  // namespace tinyxml2
 
@@ -77,7 +77,7 @@ std::string strFormat(const std::string& format, Args... args)
  * @param filepath The file to read
  * @return The contents of the file
  */
-std::string fileToString(const tesseract_common::fs::path& filepath);
+std::string fileToString(const std::filesystem::path& filepath);
 
 /**
  * @brief Change the reference point of the provided Twist

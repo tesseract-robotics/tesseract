@@ -36,7 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/box.h>
 #include <tesseract_urdf/box.h>
 
-tesseract_geometry::Box::Ptr tesseract_urdf::parseBox(const tinyxml2::XMLElement* xml_element, int /*version*/)
+namespace tesseract_urdf
+{
+tesseract_geometry::Box::Ptr parseBox(const tinyxml2::XMLElement* xml_element)
 {
   std::string size_string;
   if (tesseract_common::QueryStringAttribute(xml_element, "size", size_string) != tinyxml2::XML_SUCCESS)
@@ -65,15 +67,16 @@ tesseract_geometry::Box::Ptr tesseract_urdf::parseBox(const tinyxml2::XMLElement
   return std::make_shared<tesseract_geometry::Box>(l, w, h);
 }
 
-tinyxml2::XMLElement* tesseract_urdf::writeBox(const std::shared_ptr<const tesseract_geometry::Box>& box,
-                                               tinyxml2::XMLDocument& doc)
+tinyxml2::XMLElement* writeBox(const std::shared_ptr<const tesseract_geometry::Box>& box, tinyxml2::XMLDocument& doc)
 {
   if (box == nullptr)
     std::throw_with_nested(std::runtime_error("Box is nullptr and cannot be converted to XML"));
-  tinyxml2::XMLElement* xml_element = doc.NewElement("box");
+  tinyxml2::XMLElement* xml_element = doc.NewElement(BOX_ELEMENT_NAME.data());
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
   std::stringstream size_string;
   size_string << Eigen::Vector3d(box->getX(), box->getY(), box->getZ()).format(eigen_format);
   xml_element->SetAttribute("size", size_string.str().c_str());
   return xml_element;
 }
+
+}  // namespace tesseract_urdf

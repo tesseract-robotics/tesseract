@@ -29,7 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <vector>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
@@ -43,16 +43,18 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view COLLISION_ELEMENT_NAME = "collision";
+
 /**
  * @brief Parse xml element collision
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
- * @param version The version number
+ * @param make_convex_meshes Flag to indicate if the meshes should be converted to convex hulls
  * @return A Collision object
  */
 std::shared_ptr<tesseract_scene_graph::Collision> parseCollision(const tinyxml2::XMLElement* xml_element,
                                                                  const tesseract_common::ResourceLocator& locator,
-                                                                 int version);
+                                                                 bool make_convex_meshes);
 
 /**
  * @brief writeCollision Write collision object to URDF XML

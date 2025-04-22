@@ -7,12 +7,14 @@ add_library(
   src/discrete_contact_manager.cpp
   src/serialization.cpp
   src/types.cpp
-  src/utils.cpp)
+  src/utils.cpp
+  src/contact_result_validator.cpp)
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen
          tesseract::tesseract_common
          tesseract::tesseract_geometry
+         boost_plugin_loader::boost_plugin_loader
          Boost::boost
          Boost::system
          Boost::serialization
@@ -38,6 +40,7 @@ target_include_directories(${PROJECT_NAME}_core PUBLIC "$<BUILD_INTERFACE:${CMAK
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
+  COMPONENT core
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
@@ -55,6 +58,7 @@ configure_component(
     tesseract_common
     yaml-cpp
     octomap
+    boost_plugin_loader
     "Boost COMPONENTS system program_options serialization"
   CFG_EXTRAS cmake/core-extras.cmake)
 
@@ -71,6 +75,7 @@ if(TESSERACT_PACKAGE)
       "libboost-system-dev"
       "libboost-program-options-dev"
       "libboost-serialization-dev"
+      "boost-plugin-loader"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
@@ -82,6 +87,7 @@ if(TESSERACT_PACKAGE)
       "libboost-system-dev"
       "libboost-program-options-dev"
       "libboost-serialization-dev"
+      "boost-plugin-loader"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver")

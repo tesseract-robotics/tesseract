@@ -3,8 +3,10 @@ Checks: >
     -*,
     clang-diagnostic-*,
     -clang-diagnostic-unknown-warning-option,
+    -clang-diagnostic-enum-constexpr-conversion,
     clang-analyzer-*,
     -clang-analyzer-cplusplus*,
+    -clang-analyzer-optin.core.EnumCastOutOfRange,
     bugprone-*,
     -bugprone-easily-swappable-parameters,
     -bugprone-exception-escape,
@@ -21,9 +23,14 @@ Checks: >
     misc-*,
     -misc-non-private-member-variables-in-classes,
     -misc-no-recursion,
+    -misc-const-correctness,
+    -misc-include-cleaner,
+    -misc-use-internal-linkage,
+    -misc-use-anonymous-namespace,
     modernize-*,
     -modernize-use-trailing-return-type,
     -modernize-use-nodiscard,
+    -modernize-type-traits,
     performance-*,
     readability-*,
     -readability-braces-around-statements,
@@ -38,8 +45,10 @@ WarningsAsErrors: >
     -*,
     clang-diagnostic-*,
     -clang-diagnostic-unknown-warning-option,
+    -clang-diagnostic-enum-constexpr-conversion,
     clang-analyzer-*,
     -clang-analyzer-cplusplus*,
+    -clang-analyzer-optin.core.EnumCastOutOfRange,
     bugprone-*,
     -bugprone-easily-swappable-parameters,
     -bugprone-exception-escape,
@@ -56,16 +65,21 @@ WarningsAsErrors: >
     misc-*,
     -misc-non-private-member-variables-in-classes,
     -misc-no-recursion,
+    -misc-const-correctness,
+    -misc-include-cleaner,
+    -misc-use-internal-linkage,
+    -misc-use-anonymous-namespace,
     modernize-*,
     -modernize-use-trailing-return-type,
     -modernize-use-nodiscard,
+    -modernize-type-traits,
     performance-*,
     readability-*,
     -readability-braces-around-statements,
     -readability-named-parameter,
     -readability-magic-numbers,
     -readability-isolate-declaration,
-    -readability-function-cognitive-complexity
+    -readability-function-cognitive-complexity,
     -readability-use-anyofallof,
     -readability-identifier-length,
     -readability-suspicious-call-argument
@@ -80,4 +94,9 @@ CheckOptions:
     value:           '1'
   - key:             cppcoreguidelines-pro-type-member-init.IgnoreArrays
     value:           '1'
+    # ignore Eigen, yaml-cpp, until added to IWYU and also ignore internal GCC headers (bits/)
+  - key:             misc-include-cleaner.IgnoreHeaders
+    value:           'Eigen/src/.*|yaml-cpp/.*|bits/.*|external/.*'
+ExtraArgs:
+  - '-std=c++17'
 ...

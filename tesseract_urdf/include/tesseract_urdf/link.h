@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <unordered_map>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
@@ -43,19 +44,21 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view LINK_ELEMENT_NAME = "link";
+
 /**
  * @brief Parse xml element link
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
  * @param available_materials The current available materials
- * @param version The version number
+ * @param make_convex_meshes Flag to indicate if the meshes should be converted to convex hulls
  * @return A Tesseract Link
  */
 std::shared_ptr<tesseract_scene_graph::Link>
 parseLink(const tinyxml2::XMLElement* xml_element,
           const tesseract_common::ResourceLocator& locator,
-          std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
-          int version);
+          bool make_convex_meshes,
+          std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials);
 
 /**
  * @brief writeLink Write a link to URDF XML

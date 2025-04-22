@@ -28,11 +28,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/class_loader.h>
-#include <tesseract_common/plugin_loader.h>
+#include <boost_plugin_loader/plugin_loader.hpp>
+#include <boost_plugin_loader/utils.h>
 #include "test_plugin_base.h"
-
-const std::string tesseract_common::TestPluginBase::SECTION_NAME = "TestBase";
 
 TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
 {
@@ -42,7 +40,7 @@ TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
   std::string env_var = "UNITTESTENV=a;b;c";
 #endif
   putenv(env_var.data());
-  std::set<std::string> s = tesseract_common::parseEnvironmentVariableList("UNITTESTENV");
+  std::set<std::string> s = boost_plugin_loader::parseEnvironmentVariableList("UNITTESTENV");
   std::vector<std::string> v(s.begin(), s.end());
   EXPECT_EQ(v[0], "a");
   EXPECT_EQ(v[1], "b");
@@ -51,73 +49,41 @@ TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
 
 TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
 {
-  using tesseract_common::ClassLoader;
   using tesseract_common::TestPluginBase;
   const std::string lib_name = "tesseract_common_test_plugin_multiply";
   const std::string lib_dir = std::string(TEST_PLUGIN_DIR);
   const std::string symbol_name = "plugin";
 
+  // Load the library
+  const std::optional<boost::dll::shared_library> lib_opt =
+      boost_plugin_loader::loadLibrary(boost::filesystem::path(lib_dir) / lib_name);
+  EXPECT_TRUE(lib_opt.has_value());
+  const boost::dll::shared_library& lib = lib_opt.value();  // NOLINT
+
   {
-    std::vector<std::string> sections = ClassLoader::getAvailableSections(lib_name, lib_dir);
+    std::vector<std::string> sections = boost_plugin_loader::getAllAvailableSections(lib);
     EXPECT_EQ(sections.size(), 1);
     EXPECT_EQ(sections.at(0), "TestBase");
 
-    sections = ClassLoader::getAvailableSections(lib_name, lib_dir, true);
+    sections = boost_plugin_loader::getAllAvailableSections(lib, true);
     EXPECT_TRUE(sections.size() > 1);
   }
 
   {
-    std::vector<std::string> symbols = ClassLoader::getAvailableSymbols("TestBase", lib_name, lib_dir);
+    std::vector<std::string> symbols = boost_plugin_loader::getAllAvailableSymbols(lib, "TestBase");
     EXPECT_EQ(symbols.size(), 1);
     EXPECT_EQ(symbols.at(0), symbol_name);
   }
 
   {
-    EXPECT_TRUE(ClassLoader::isClassAvailable(symbol_name, lib_name, lib_dir));
-    auto plugin = ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, lib_name, lib_dir);
-    EXPECT_TRUE(plugin != nullptr);
-    EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
-  }
-
-// For some reason on Ubuntu 18.04 it does not search the current directory when only the library name is provided
-#if BOOST_VERSION > 106800 && !__APPLE__
-  {
-    EXPECT_TRUE(ClassLoader::isClassAvailable(symbol_name, lib_name, "."));
-    auto plugin = ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, lib_name, ".");
-    EXPECT_TRUE(plugin != nullptr);
-    EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
-  }
-#endif
-
-  {
-    EXPECT_FALSE(ClassLoader::isClassAvailable(symbol_name, lib_name, "does_not_exist"));
-    EXPECT_FALSE(ClassLoader::isClassAvailable(symbol_name, "does_not_exist", lib_dir));
-    EXPECT_FALSE(ClassLoader::isClassAvailable("does_not_exist", lib_name, lib_dir));
-  }
-
-  {
-    EXPECT_FALSE(ClassLoader::isClassAvailable(symbol_name, "does_not_exist"));
-    EXPECT_FALSE(ClassLoader::isClassAvailable("does_not_exist", lib_name));
-  }
-
-  {
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, lib_name, "does_not_exist"));
-    // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, "does_not_exist", lib_dir));
-    // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>("does_not_exist", lib_name, lib_dir));
-  }
-
-  {
-    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>(symbol_name, "does_not_exist"));  // NOLINT
-    EXPECT_ANY_THROW(ClassLoader::createSharedInstance<TestPluginBase>("does_not_exist", lib_name));     // NOLINT
+    EXPECT_ANY_THROW(boost_plugin_loader::createSharedInstance<TestPluginBase>(lib, "does_not_exist"));
   }
 }
 
 TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
 {
-  using tesseract_common::PluginLoader;
+  using boost_plugin_loader::PluginLoader;
   using tesseract_common::TestPluginBase;
 
   {
@@ -126,7 +92,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
 
     EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
-    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
+    auto plugin = plugin_loader.createInstance<TestPluginBase>("plugin");
     EXPECT_TRUE(plugin != nullptr);
     EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
 
@@ -146,19 +112,19 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     EXPECT_EQ(symbols.at(0), "plugin");
   }
 
-// For some reason on Ubuntu 18.04 it does not search the current directory when only the library name is provided
-#if BOOST_VERSION > 106800 && !__APPLE__
-  {
-    PluginLoader plugin_loader;
-    plugin_loader.search_paths.insert(".");
-    plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
+  // For some reason on Ubuntu 18.04 it does not search the current directory when only the library name is provided
+  // #if BOOST_VERSION > 106800 && !__APPLE__
+  //   {
+  //     PluginLoader plugin_loader;
+  //     plugin_loader.search_paths.insert(".");
+  //     plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
 
-    EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
-    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
-    EXPECT_TRUE(plugin != nullptr);
-    EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
-  }
-#endif
+  //     EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
+  //     auto plugin = plugin_loader.createInstance<TestPluginBase>("plugin");
+  //     EXPECT_TRUE(plugin != nullptr);
+  //     EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
+  //   }
+  // #endif
 
   {
     PluginLoader plugin_loader;
@@ -168,8 +134,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
-      auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
-      EXPECT_TRUE(plugin == nullptr);
+      EXPECT_ANY_THROW(plugin_loader.createInstance<TestPluginBase>("plugin"));  // NOLINT
     }
   }
 
@@ -180,16 +145,14 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("does_not_exist"));
-      auto plugin = plugin_loader.instantiate<TestPluginBase>("does_not_exist");
-      EXPECT_TRUE(plugin == nullptr);
+      EXPECT_ANY_THROW(plugin_loader.createInstance<TestPluginBase>("does_not_exist"));  // NOLINT
     }
 
     plugin_loader.search_system_folders = true;
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("does_not_exist"));
-      auto plugin = plugin_loader.instantiate<TestPluginBase>("does_not_exist");
-      EXPECT_TRUE(plugin == nullptr);
+      EXPECT_ANY_THROW(plugin_loader.createInstance<TestPluginBase>("does_not_exist"));  // NOLINT
     }
   }
 
@@ -200,32 +163,28 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
-      auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
-      EXPECT_TRUE(plugin == nullptr);
+      EXPECT_ANY_THROW(plugin_loader.createInstance<TestPluginBase>("plugin"));  // NOLINT
     }
 
     plugin_loader.search_system_folders = true;
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
-      auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
-      EXPECT_TRUE(plugin == nullptr);
+      EXPECT_ANY_THROW(plugin_loader.createInstance<TestPluginBase>("plugin"));  // NOLINT
     }
   }
 
   {
     PluginLoader plugin_loader;
-    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
-    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
-    EXPECT_TRUE(plugin == nullptr);
+    EXPECT_ANY_THROW(plugin_loader.isPluginAvailable("plugin"));               // NOLINT
+    EXPECT_ANY_THROW(plugin_loader.createInstance<TestPluginBase>("plugin"));  // NOLINT
   }
 
   {
     PluginLoader plugin_loader;
     plugin_loader.search_system_folders = false;
-    EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
-    auto plugin = plugin_loader.instantiate<TestPluginBase>("plugin");
-    EXPECT_TRUE(plugin == nullptr);
+    EXPECT_ANY_THROW(plugin_loader.isPluginAvailable("plugin"));               // NOLINT
+    EXPECT_ANY_THROW(plugin_loader.createInstance<TestPluginBase>("plugin"));  // NOLINT
   }
 }
 

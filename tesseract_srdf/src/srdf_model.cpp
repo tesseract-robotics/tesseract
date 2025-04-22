@@ -51,6 +51,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/utils.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_common/yaml_utils.h>
+#include <tesseract_common/yaml_extenstions.h>
 #include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/collision_margin_data.h>
@@ -344,7 +345,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
 
   if (!kinematics_information.kinematics_plugin_info.empty())
   {
-    tesseract_common::fs::path p(file_path);
+    std::filesystem::path p(file_path);
     std::ofstream fout(p.parent_path().append("kinematics_plugin_config.yaml").string());
     YAML::Node config;
     config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY] = kinematics_information.kinematics_plugin_info;
@@ -356,7 +357,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
 
   if (!contact_managers_plugin_info.empty())
   {
-    tesseract_common::fs::path p(file_path);
+    std::filesystem::path p(file_path);
     std::ofstream fout(p.parent_path().append("contact_managers_plugin_config.yaml").string());
     YAML::Node config;
     config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY] = contact_managers_plugin_info;
@@ -368,7 +369,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
 
   if (!calibration_info.empty())
   {
-    tesseract_common::fs::path p(file_path);
+    std::filesystem::path p(file_path);
     std::ofstream fout(p.parent_path().append("calibration_config.yaml").string());
     YAML::Node config;
     config[tesseract_common::CalibrationInfo::CONFIG_KEY] = calibration_info;
@@ -394,7 +395,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   {
     tinyxml2::XMLElement* xml_cm_entry = doc.NewElement("collision_margins");
     xml_cm_entry->SetAttribute("default_margin", collision_margin_data->getDefaultCollisionMargin());
-    for (const auto& entry : collision_margin_data->getPairCollisionMargins())
+    for (const auto& entry : collision_margin_data->getCollisionMarginPairData().getCollisionMargins())
     {
       tinyxml2::XMLElement* xml_cm_pair_entry = doc.NewElement("pair_margin");
       xml_cm_pair_entry->SetAttribute("link1", entry.first.first.c_str());

@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
-#include <tesseract_common/filesystem.h>
+#include <filesystem>
 
 namespace tinyxml2
 {
@@ -49,9 +49,9 @@ namespace tesseract_srdf
  * @param version The SRDF version
  * @return The extracted file path
  */
-tesseract_common::fs::path parseConfigFilePath(const tesseract_common::ResourceLocator& locator,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const std::array<int, 3>& version);
+std::filesystem::path parseConfigFilePath(const tesseract_common::ResourceLocator& locator,
+                                          const tinyxml2::XMLElement* xml_element,
+                                          const std::array<int, 3>& version);
 
 /**
  * @brief Parse calibration config xml element

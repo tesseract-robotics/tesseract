@@ -93,7 +93,7 @@ static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state, CalcStateFn fn, const
 }
 
 static void BM_GET_JACOBIAN_MANIP(benchmark::State& state,
-                                  tesseract_kinematics::JointGroup::Ptr manip,
+                                  tesseract_kinematics::JointGroup::ConstPtr manip,
                                   const tesseract_common::TrajArray& traj,
                                   std::string link_name)
 {
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
     traj.col(i) = Eigen::VectorXd::LinSpaced(5, joint_start_pos(i), joint_end_pos(i));
 
   tesseract_scene_graph::StateSolver::Ptr state_solver = env->getStateSolver();
-  tesseract_kinematics::JointGroup::Ptr joint_group = env->getJointGroup("manipulator");
+  tesseract_kinematics::JointGroup::ConstPtr joint_group = env->getJointGroup("manipulator");
   std::string tip_link{ "tool0" };
 
   //////////////////////////////////////
@@ -220,7 +220,7 @@ int main(int argc, char** argv)
   }
   {
     std::function<void(
-        benchmark::State&, tesseract_kinematics::JointGroup::Ptr, const tesseract_common::TrajArray&, std::string)>
+        benchmark::State&, tesseract_kinematics::JointGroup::ConstPtr, const tesseract_common::TrajArray&, std::string)>
         BM_CJ_MANIP = BM_GET_JACOBIAN_MANIP;
     std::string name = "BM_GET_JACOBIAN_MANIP";
     benchmark::RegisterBenchmark(name.c_str(), BM_CJ_MANIP, joint_group, traj, tip_link)

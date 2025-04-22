@@ -69,7 +69,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   CollisionShapePtr remove_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
   Eigen::Isometry3d remove_box_pose;
-  thin_box_pose.setIdentity();
+  remove_box_pose.setIdentity();
 
   CollisionShapesConst obj4_shapes;
   tesseract_common::VectorIsometry3d obj4_poses;
@@ -128,9 +128,9 @@ inline void runTest(DiscreteContactManager& checker)
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
   EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
 
-  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+  EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
-  checker.setDefaultCollisionMarginData(0.1);
+  checker.setDefaultCollisionMargin(0.1);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
@@ -177,7 +177,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * -1.0, 0.001);
 
   // Compound mesh so check shape id
-  EXPECT_EQ(result_vector[0].shape_id[static_cast<size_t>(idx[0])], 1);
+  EXPECT_EQ(result_vector[0].shape_id[static_cast<size_t>(idx[0])], 0);
 
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
@@ -235,7 +235,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * -1.0, 0.001);
 
   // Compound mesh so check shape id
-  EXPECT_EQ(result_vector[0].shape_id[static_cast<size_t>(idx[0])], 1);
+  EXPECT_EQ(result_vector[0].shape_id[static_cast<size_t>(idx[0])], 0);
 
   /////////////////////////////////////////////
   // Test collision against second shape

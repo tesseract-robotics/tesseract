@@ -26,23 +26,26 @@
 #ifndef TESSERACT_COLLISION_CORE_TESSERACT_COLLISION_FWD_H
 #define TESSERACT_COLLISION_CORE_TESSERACT_COLLISION_FWD_H
 
+#include <cstdint>
+
 namespace tesseract_collision
 {
 // types.h
-enum class ContinuousCollisionType;
-enum class ContactTestType;
+enum class ContinuousCollisionType : std::uint8_t;
+enum class ContactTestType : std::uint8_t;
 struct ContactResult;
 class ContactResultMap;
 struct ContactRequest;
 struct ContactTestData;
-enum class CollisionEvaluatorType;
-enum class CollisionCheckProgramType;
-enum class ACMOverrideType;
+enum class CollisionEvaluatorType : std::uint8_t;
+enum class CollisionCheckProgramType : std::uint8_t;
+enum class ACMOverrideType : std::uint8_t;
 struct ContactManagerConfig;
 struct CollisionCheckConfig;
 struct ContactTrajectorySubstepResults;
 struct ContactTrajectoryStepResults;
 struct ContactTrajectoryResults;
+class ContactResultValidator;
 
 // contact_managers_plugin_factory.h
 class DiscreteContactManagerFactory;

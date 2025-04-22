@@ -36,16 +36,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
 #include <tesseract_state_solver/fwd.h>
-#include <tesseract_common/plugin_loader.h>
-#include <tesseract_common/filesystem.h>
+#include <tesseract_common/fwd.h>
 #include <tesseract_common/plugin_info.h>
+#include <boost_plugin_loader/plugin_loader.hpp>
+#include <boost_plugin_loader/macros.h>
+#include <filesystem>
 
 // clang-format off
 #define TESSERACT_ADD_FWD_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
-  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, FwdKin)
+  EXPORT_CLASS_SECTIONED(DERIVED_CLASS, ALIAS, FwdKin)
 
 #define TESSERACT_ADD_INV_KIN_PLUGIN(DERIVED_CLASS, ALIAS)                                                             \
-  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, InvKin)
+  EXPORT_CLASS_SECTIONED(DERIVED_CLASS, ALIAS, InvKin)
 // clang-format on
 
 namespace tesseract_kinematics
@@ -79,7 +81,7 @@ public:
                                                     const YAML::Node& config) const = 0;
 
 protected:
-  static const std::string SECTION_NAME;
+  static std::string getSection();
   friend class PluginLoader;
 };
 
@@ -107,7 +109,7 @@ public:
                                                     const YAML::Node& config) const = 0;
 
 protected:
-  static const std::string SECTION_NAME;
+  static std::string getSection();
   friend class PluginLoader;
 };
 
@@ -125,19 +127,19 @@ public:
    * @brief Load plugins from yaml node
    * @param config The config node
    */
-  KinematicsPluginFactory(YAML::Node config);
+  KinematicsPluginFactory(YAML::Node config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  KinematicsPluginFactory(const tesseract_common::fs::path& config);
+  KinematicsPluginFactory(const std::filesystem::path& config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from string
    * @param config The config string
    */
-  KinematicsPluginFactory(const std::string& config);
+  KinematicsPluginFactory(const std::string& config, const tesseract_common::ResourceLocator& locator);
 
   /**
    * @brief Add location for the plugin loader to search
@@ -291,7 +293,7 @@ public:
    * @brief Save the plugin information to a yaml config file
    * @param file_path The file path
    */
-  void saveConfig(const tesseract_common::fs::path& file_path) const;
+  void saveConfig(const std::filesystem::path& file_path) const;
 
   /**
    * @brief Get the plugin information config as a yaml node
@@ -304,7 +306,9 @@ private:
   mutable std::map<std::string, InvKinFactory::Ptr> inv_kin_factories_;
   std::map<std::string, tesseract_common::PluginInfoContainer> fwd_plugin_info_;
   std::map<std::string, tesseract_common::PluginInfoContainer> inv_plugin_info_;
-  tesseract_common::PluginLoader plugin_loader_;
+  boost_plugin_loader::PluginLoader plugin_loader_;
+
+  void loadConfig(const YAML::Node& config);
 };
 
 }  // namespace tesseract_kinematics

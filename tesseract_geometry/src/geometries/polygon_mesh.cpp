@@ -141,6 +141,7 @@ void PolygonMesh::serialize(Archive& ar, const unsigned int /*version*/)
   ar& BOOST_SERIALIZATION_NVP(faces_);
   ar& BOOST_SERIALIZATION_NVP(vertex_count_);
   ar& BOOST_SERIALIZATION_NVP(face_count_);
+  ar& BOOST_SERIALIZATION_NVP(resource_);
   ar& BOOST_SERIALIZATION_NVP(scale_);
   ar& BOOST_SERIALIZATION_NVP(normals_);
   ar& BOOST_SERIALIZATION_NVP(vertex_colors_);

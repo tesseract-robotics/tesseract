@@ -54,4 +54,12 @@ void FCLCollisionObjectWrapper::updateAABB()
   }
 }
 
+void FCLCollisionObjectWrapper::setShapeIndex(int index) { shape_index_ = index; }
+
+int FCLCollisionObjectWrapper::getShapeIndex() const
+{
+  assert(shape_index_ >= 0);
+  return shape_index_;
+}
+
 }  // namespace tesseract_collision::tesseract_collision_fcl

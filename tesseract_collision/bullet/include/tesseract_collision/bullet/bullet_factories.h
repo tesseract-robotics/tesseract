@@ -27,6 +27,7 @@
 #define TESSERACT_COLLISION_BULLET_BULLET_FACTORIES_H
 
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
+#include <boost_plugin_loader/macros.h>
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
@@ -77,7 +78,7 @@ public:
                                                    const YAML::Node& config) const override final;
 };
 
-TESSERACT_PLUGIN_ANCHOR_DECL(BulletFactoriesAnchor)
+PLUGIN_ANCHOR_DECL(BulletFactoriesAnchor)
 
 }  // namespace tesseract_collision::tesseract_collision_bullet
 #endif  // TESSERACT_COLLISION_BULLET_BULLET_FACTORIES_H

@@ -53,6 +53,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
+#include <tesseract_collision/bullet/bullet_collision_shape_cache.h>
 
 namespace tesseract_collision::tesseract_collision_bullet
 {
@@ -129,7 +130,7 @@ public:
    */
   std::shared_ptr<CollisionObjectWrapper> clone();
 
-  void manage(const std::shared_ptr<btCollisionShape>& t);
+  void manage(const std::shared_ptr<BulletCollisionShape>& t);
 
   void manageReserve(std::size_t s);
 
@@ -139,11 +140,11 @@ protected:
   /** @brief A user defined type id */
   int m_type_id{ -1 };
   /* @brief The shapes that define the collision object */
-  CollisionShapesConst m_shapes{};
+  CollisionShapesConst m_shapes;
   /**< @brief The shapes poses information */
-  tesseract_common::VectorIsometry3d m_shape_poses{};
+  tesseract_common::VectorIsometry3d m_shape_poses;
   /** @brief This manages the collision shape pointer so they get destroyed */
-  std::vector<std::shared_ptr<btCollisionShape>> m_data{};
+  std::vector<std::shared_ptr<BulletCollisionShape>> m_data;
 };
 
 using COW = CollisionObjectWrapper;
@@ -209,11 +210,14 @@ btTransform getLinkTransformFromCOW(const btCollisionObjectWrapper* cow);
  * @brief This is used to check if a collision check is required between the provided two collision objects
  * @param cow1 The first collision object
  * @param cow2 The second collision object
- * @param acm  The contact allowed function pointer
+ * @param validator  The contact allowed validator
  * @param verbose Indicate if verbose information should be printed to the terminal
  * @return True if the two collision objects should be checked for collision, otherwise false
  */
-bool needsCollisionCheck(const COW& cow1, const COW& cow2, const IsContactAllowedFn& acm, bool verbose = false);
+bool needsCollisionCheck(const COW& cow1,
+                         const COW& cow2,
+                         const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                         bool verbose = false);
 
 btScalar addDiscreteSingleResult(btManifoldPoint& cp,
                                  const btCollisionObjectWrapper* colObj0Wrap,
@@ -246,7 +250,8 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
 /** @brief This is copied directly out of BulletWorld */
 struct TesseractBridgedManifoldResult : public btManifoldResult
 {
-  btCollisionWorld::ContactResultCallback& m_resultCallback;
+  btCollisionWorld::ContactResultCallback&
+      m_resultCallback;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
   TesseractBridgedManifoldResult(const btCollisionObjectWrapper* obj0Wrap,
                                  const btCollisionObjectWrapper* obj1Wrap,
@@ -258,7 +263,7 @@ struct TesseractBridgedManifoldResult : public btManifoldResult
 /** @brief The BroadphaseContactResultCallback is used to report contact points */
 struct BroadphaseContactResultCallback
 {
-  ContactTestData& collisions_;
+  ContactTestData& collisions_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   double contact_distance_;
   bool verbose_;
 
@@ -309,7 +314,7 @@ struct CastBroadphaseContactResultCallback : public BroadphaseContactResultCallb
 
 struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
 {
-  BroadphaseContactResultCallback& result_callback_;
+  BroadphaseContactResultCallback& result_callback_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
   TesseractBroadphaseBridgedManifoldResult(const btCollisionObjectWrapper* obj0Wrap,
                                            const btCollisionObjectWrapper* obj1Wrap,
@@ -326,9 +331,9 @@ struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
  */
 class TesseractCollisionPairCallback : public btOverlapCallback
 {
-  const btDispatcherInfo& dispatch_info_;
+  const btDispatcherInfo& dispatch_info_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   btCollisionDispatcher* dispatcher_;
-  BroadphaseContactResultCallback& results_callback_;
+  BroadphaseContactResultCallback& results_callback_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 public:
   TesseractCollisionPairCallback(const btDispatcherInfo& dispatchInfo,
@@ -359,14 +364,9 @@ private:
 /**
  * @brief Create a bullet collision shape from tesseract collision shape
  * @param geom Tesseract collision shape
- * @param cow The collision object wrapper the collision shape is associated with
- * @param shape_index The collision shapes index within the collision shape wrapper. This can be accessed from the
- * bullet collision shape by calling getUserIndex function.
  * @return Bullet collision shape.
  */
-std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom,
-                                                       CollisionObjectWrapper* cow,
-                                                       int shape_index);
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom);
 
 /**
  * @brief Update a collision objects filters
@@ -383,8 +383,8 @@ COW::Ptr createCollisionObject(const std::string& name,
 
 struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallback
 {
-  ContactTestData& collisions_;
-  const COW::Ptr cow_;
+  ContactTestData& collisions_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const COW::Ptr cow_;           // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   double contact_distance_;
   bool verbose_;
 
@@ -406,8 +406,8 @@ struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallba
 
 struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
 {
-  ContactTestData& collisions_;
-  const COW::Ptr cow_;
+  ContactTestData& collisions_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const COW::Ptr cow_;           // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   double contact_distance_;
   bool verbose_;
 

@@ -27,6 +27,8 @@
 #ifndef TESSERACT_COMMON_TESSERACT_COMMON_FWD_H
 #define TESSERACT_COMMON_TESSERACT_COMMON_FWD_H
 
+#include <cstdint>
+
 namespace tesseract_common
 {
 // types.h
@@ -39,7 +41,8 @@ struct CalibrationInfo;
 struct PairHash;
 
 // any_poly.h
-struct AnyPoly;
+class AnyInterface;
+class AnyPoly;
 
 // class_loader.h
 struct ClassLoader;
@@ -47,9 +50,15 @@ struct ClassLoader;
 // allowed_collision_matrix
 class AllowedCollisionMatrix;
 
+// contact_allowed_validator
+class ContactAllowedValidator;
+class ACMContactAllowedValidator;
+class CombinedContactAllowedValidator;
+
 // collision_margin_data.h
-enum class CollisionMarginOverrideType;
+enum class CollisionMarginPairOverrideType : std::uint8_t;
 class CollisionMarginData;
+class CollisionMarginPairData;
 
 // joint_state.h
 class JointState;

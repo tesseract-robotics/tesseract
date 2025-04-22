@@ -1,0 +1,122 @@
+/**
+@page getting_started Getting Started
+
+@note
+Instructions are intended for installation on the Ubuntu 20.04 Focal operating system.
+
+@par
+Before installing Tesseract and it's dependencies, make sure you have the most up to date packages: ::
+
+    sudo apt-get update
+    sudo apt-get dist-upgrade
+
+@section installing_ros Installing ROS Noetic (Optional)
+
+@par
+The Robot Operating System (ROS) is an open source set of software libraries and tools that help you
+build robot applications. The `tesseract`, `tesseract_planning`, and `tesseract_python` repositories are
+all ROS-agnostic. The `tesseract_ros` and `tesseract_ros2` repositories contain tools that are specific
+to ROS and make integrating Tesseract and ROS extremely easy.
+
+@par
+To install the latest version of ROS (Noetic) follow the instructions from the ROS
+<a href="https://wiki.ros.org/noetic/Installation/Ubuntu">website</a>.
+
+@note
+It's easy to miss steps when going through the ROS installation tutorial.
+If you run into errors in the next few steps, a good place to start is to go back and make sure you have installed ROS correctly.
+
+@section installing_tools Installing Tools
+
+@subsection catkin Catkin
+
+Catkin is the official build system for ROS. Catkin can also be used to build ROS-agnostic packages containing CMakeLists.txt
+and package.xml files.
+
+@par
+You can install Catkin with the following command:
+
+    sudo apt-get install ros-noetic-catkin python3-catkin-tools
+
+@subsection rosdep ROSDep (Optional)
+
+ROSDep is the official ROS command line tool for installing system dependencies.
+
+@par
+You can install ROSDep with the following commands:
+
+    sudo apt-get install python3-rosdep
+    sudo rosdep init
+    rosdep update
+
+@subsection wstool WSTool
+
+WSTool is the official ROS workspace management tool.
+
+@par
+You can install WSTool with the following command:
+
+    sudo apt-get install python3-wstool
+
+@section creating_a_workspace Creating a Workspace
+
+Create a workspace (in this case we'll name it `tesseract_ws`):
+
+    mkdir -p ~/tesseract_ws/src
+
+@section cloning_tesseract_repos Cloning Tesseract Repositories
+
+Move to the source directory:
+
+    cd ~/tesseract_ws/src
+
+Clone Tesseract repository into your workspace:
+
+    git clone https://github.com/tesseract-robotics/tesseract
+
+Clone Tesseract Planning repository into your workspace:
+
+    git clone https://github.com/tesseract-robotics/tesseract_planning
+
+Clone Tesseract Qt repository into your workspace:
+
+    git clone https://github.com/tesseract-robotics/tesseract_qt
+
+If you are using the Robot Operating System (ROS), you can also clone the Tesseract ROS repository:
+
+    git clone https://github.com/tesseract-robotics/tesseract_ros
+
+@section installing_deps Installing Dependencies
+
+@subsection cloning_with_wstool Cloning Source Dependencies with WSTool
+
+Clone the repositories in the dependencies.rosinstall file using wstool:
+
+    wstool init ~/tesseract_ws/src/ ~/tesseract_ws/src/tesseract_planning/dependencies.rosinstall
+
+@subsection installing_debs_with_rosde Installing Debian Dependencies with ROSDep (Optional)
+
+Run the following command to automatically install all debian dependencies listed in each package.xml file:
+
+    rosdep install -y --from-paths ~/tesseract_ws/src --ignore-src --rosdistro noetic
+
+@note
+If you don't use the ROSDep tool you will need to manually install (via `apt-get`) each debian dependency.
+
+@section building Building Your Workspace
+
+Build your workspace using catkin tools:
+
+    cd ~/tesseract_ws/
+    source /opt/ros/noetic/setup.bash
+    catkin build
+
+Source the catkin workspace:
+
+    source ~/tesseract_ws/devel/setup.bash
+
+@note
+To build with Clang-Tidy enabled you must pass the `-DTESSERACT_ENABLE_CLANG_TIDY=ON` to cmake when building.
+This is automatically enabled if cmake argument `-DTESSERACT_ENABLE_TESTING_ALL=ON` is passed.
+
+*/

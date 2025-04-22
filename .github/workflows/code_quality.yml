@@ -24,12 +24,12 @@ jobs:
         include:
           - job_type: clang-tidy
             env:
-              TARGET_CMAKE_ARGS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"
+              TARGET_CMAKE_ARGS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON -DCLANG_TIDY_NAMES=clang-tidy-17"
           - job_type: codecov
             env:
               TARGET_CMAKE_ARGS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CODE_COVERAGE=ON -DTESSERACT_WARNINGS_AS_ERRORS=OFF"
     container:
-      image: ubuntu:20.04
+      image: ubuntu:22.04
       env:
         CCACHE_DIR: "$GITHUB_WORKSPACE/${{ matrix.job_type }}/.ccache"
         DEBIAN_FRONTEND: noninteractive
@@ -45,24 +45,37 @@ jobs:
         run: |
           apt update
           apt upgrade -y
-          apt install -y clang-tidy liboctomap-dev
+          apt install -y wget liboctomap-dev
+          echo "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" | tee /etc/apt/sources.list.d/llvm-toolchain.list
+          echo "deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" | tee -a /etc/apt/sources.list.d/llvm-toolchain.list
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/llvm.asc
+          apt update -y
+          apt install -y clang-tidy-17 libomp-17-dev
 
       - name: Build and Tests
-        uses: tesseract-robotics/colcon-action@v1
+        uses: tesseract-robotics/colcon-action@v11
         with:
           ccache-prefix: ${{ matrix.distro }}
           vcs-file: dependencies.repos
           run-tests: false
+          rosdep-install-args: -iry --skip-keys=libomp-dev
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src
           target-args: --cmake-args ${{ matrix.env.TARGET_CMAKE_ARGS }}
 
       - name: Upload CodeCov Results
+        if: matrix.job_type == 'codecov'
         shell: bash
         run: |
-          if [[ "${{ matrix.job_type }}" == "codecov" ]]; then
-            source $GITHUB_WORKSPACE/target_ws/install/setup.bash
-            cd $GITHUB_WORKSPACE/target_ws
-            colcon build --cmake-target ccov-all --packages-select tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_srdf tesseract_state_solver tesseract_scene_graph tesseract_urdf
-            bash <(curl -s https://codecov.io/bash) -t 758610a6-d851-4185-a01a-5b9465889b62 -s $GITHUB_WORKSPACE/target_ws/build -f *all-merged.info
-          fi
+          source $GITHUB_WORKSPACE/target_ws/install/setup.bash
+          cd $GITHUB_WORKSPACE/target_ws
+          colcon build --cmake-target ccov-all --packages-select tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_srdf tesseract_state_solver tesseract_scene_graph tesseract_urdf
+          bash <(curl -s https://codecov.io/bash) -t 758610a6-d851-4185-a01a-5b9465889b62 -s $GITHUB_WORKSPACE/target_ws/build -f *all-merged.info
+
+      - name: Upload coverage artifacts
+        if: matrix.job_type == 'codecov'
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecov-raw-info
+          path: ${{ github.workspace }}/target_ws/build/**/all-merged.info
+          retention-days: 7

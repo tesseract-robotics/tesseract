@@ -69,7 +69,8 @@ public:
    * @details This must be the same size and order as what is returned by getJointNames
    * @param joint_values The joint values
    */
-  virtual void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) = 0;
+  virtual void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                        const tesseract_common::TransformMap& floating_joint_values = {}) = 0;
 
   /**
    * @brief Set the current state of the solver
@@ -78,16 +79,26 @@ public:
    * will update the contact managers transforms
    *
    */
-  virtual void setState(const std::unordered_map<std::string, double>& joint_values) = 0;
+  virtual void setState(const std::unordered_map<std::string, double>& joint_values,
+                        const tesseract_common::TransformMap& floating_joint_values = {}) = 0;
   virtual void setState(const std::vector<std::string>& joint_names,
-                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) = 0;
+                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                        const tesseract_common::TransformMap& floating_joint_values = {}) = 0;
+
+  /**
+   * @brief Set the current state of the floating joint values
+   * @param floating_joint_values The floating joint values to set
+   */
+  virtual void setState(const tesseract_common::TransformMap& floating_joint_values) = 0;
 
   /**
    * @brief Get the state of the solver given the joint values
    * @details This must be the same size and order as what is returned by getJointNames
    * @param joint_values The joint values
+   * @param floating_joint_values The floating joint origin transform
    */
-  virtual SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
+  virtual SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                              const tesseract_common::TransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the state of the scene for a given set or subset of joint values.
@@ -95,11 +106,20 @@ public:
    * This does not change the internal state of the solver.
    *
    * @param joints A map of joint names to joint values to change.
+   * @param floating_joint_values The floating joint origin transform
    * @return A the state of the environment
    */
-  virtual SceneState getState(const std::unordered_map<std::string, double>& joint_values) const = 0;
+  virtual SceneState getState(const std::unordered_map<std::string, double>& joint_values,
+                              const tesseract_common::TransformMap& floating_joint_values = {}) const = 0;
   virtual SceneState getState(const std::vector<std::string>& joint_names,
-                              const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
+                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                              const tesseract_common::TransformMap& floating_joint_values = {}) const = 0;
+  /**
+   * @brief Get the state given floating joint values
+   * @param floating_joint_values The floating joint values to leverage
+   * @return A the state of the environment
+   */
+  virtual SceneState getState(const tesseract_common::TransformMap& floating_joint_values) const = 0;
 
   /**
    * @brief Get the current state of the scene
@@ -114,7 +134,8 @@ public:
    * @param link_name The link name to calculate the jacobian
    */
   virtual Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                      const std::string& link_name) const = 0;
+                                      const std::string& link_name,
+                                      const tesseract_common::TransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the jacobian of the scene for a given set or subset of joint values.
@@ -129,10 +150,12 @@ public:
    * @return A the state of the environment
    */
   virtual Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joint_values,
-                                      const std::string& link_name) const = 0;
+                                      const std::string& link_name,
+                                      const tesseract_common::TransformMap& floating_joint_values = {}) const = 0;
   virtual Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                      const std::string& link_name) const = 0;
+                                      const std::string& link_name,
+                                      const tesseract_common::TransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the random state of the environment
@@ -145,6 +168,12 @@ public:
    * @return A vector of joint names
    */
   virtual std::vector<std::string> getJointNames() const = 0;
+
+  /**
+   * @brief Get the vector of floating joint names
+   * @return A vector of joint names
+   */
+  virtual std::vector<std::string> getFloatingJointNames() const = 0;
 
   /**
    * @brief Get the vector of joint names which align with the limits

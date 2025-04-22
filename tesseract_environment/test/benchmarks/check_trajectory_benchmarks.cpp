@@ -67,7 +67,7 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
 static void BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP(benchmark::State& state,
                                                  std::vector<tesseract_collision::ContactResultMap> contacts,
                                                  tesseract_collision::ContinuousContactManager::Ptr manager,
-                                                 tesseract_kinematics::JointGroup::Ptr manip,
+                                                 tesseract_kinematics::JointGroup::ConstPtr manip,
                                                  tesseract_common::TrajArray traj,
                                                  tesseract_collision::CollisionCheckConfig config,
                                                  bool log_level_debug)
@@ -106,7 +106,7 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
 static void BM_CHECK_TRAJECTORY_DISCRETE_MANIP(benchmark::State& state,
                                                std::vector<tesseract_collision::ContactResultMap> contacts,
                                                tesseract_collision::DiscreteContactManager::Ptr manager,
-                                               tesseract_kinematics::JointGroup::Ptr manip,
+                                               tesseract_kinematics::JointGroup::ConstPtr manip,
                                                tesseract_common::TrajArray traj,
                                                tesseract_collision::CollisionCheckConfig config,
                                                bool log_level_debug)
@@ -223,7 +223,7 @@ int main(int argc, char** argv)
   tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
   tesseract_collision::ContinuousContactManager::Ptr continuous_manager = env->getContinuousContactManager();
   tesseract_scene_graph::StateSolver::Ptr state_solver = env->getStateSolver();
-  tesseract_kinematics::JointGroup::Ptr joint_group = env->getJointGroup("manipulator");
+  tesseract_kinematics::JointGroup::ConstPtr joint_group = env->getJointGroup("manipulator");
   std::vector<tesseract_collision::ContactResultMap> contacts;
   tesseract_collision::CollisionCheckConfig discrete_config;
   discrete_config.type = CollisionEvaluatorType::DISCRETE;
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
     std::function<void(benchmark::State&,
                        std::vector<tesseract_collision::ContactResultMap>,
                        tesseract_collision::ContinuousContactManager::Ptr,
-                       tesseract_kinematics::JointGroup::Ptr,
+                       tesseract_kinematics::JointGroup::ConstPtr,
                        tesseract_common::TrajArray,
                        tesseract_collision::CollisionCheckConfig,
                        bool)>
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
     std::function<void(benchmark::State&,
                        std::vector<tesseract_collision::ContactResultMap>,
                        tesseract_collision::DiscreteContactManager::Ptr,
-                       tesseract_kinematics::JointGroup::Ptr,
+                       tesseract_kinematics::JointGroup::ConstPtr,
                        tesseract_common::TrajArray,
                        tesseract_collision::CollisionCheckConfig,
                        bool)>

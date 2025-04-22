@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>tesseract_common</name>
-  <version>0.26.0</version>
+  <version>0.29.1</version>
   <description>Contains common macros, utils and types used throughout</description>
   <maintainer email="levi.armstrong@gmail.com">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
@@ -32,6 +32,7 @@
   <test_depend>gtest</test_depend>
   <test_depend>lcov</test_depend>
   <test_depend>libclang-dev</test_depend>
+  <test_depend>boost_plugin_loader</test_depend>
 
   <export>
     <build_type>cmake</build_type>

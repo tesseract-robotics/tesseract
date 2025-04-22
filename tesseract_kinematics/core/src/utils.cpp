@@ -197,7 +197,7 @@ Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacob
     data.eigen_values = sm.eigenvalues().real();
 
     // Set eigenvalues near zero to zero. This also implies zero volume
-    for (Eigen::Index i = 0; i < data.eigen_values.size(); ++i)
+    for (Eigen::Index i = 0; i < data.eigen_values.size(); ++i)  // NOLINT(modernize-loop-convert)
     {
       if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
         data.eigen_values[i] = +0;

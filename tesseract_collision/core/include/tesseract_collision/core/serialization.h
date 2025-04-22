@@ -32,16 +32,6 @@
 
 namespace boost::serialization
 {
-/************************************************/
-/****** tesseract_collision::ContactResult ******/
-/************************************************/
-
-template <class Archive>
-void save(Archive& ar, const tesseract_collision::ContactResult& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void load(Archive& ar, tesseract_collision::ContactResult& g, const unsigned int version);  // NOLINT
-
 template <class Archive>
 void serialize(Archive& ar, tesseract_collision::ContactResult& g, const unsigned int version);  // NOLINT
 
@@ -53,10 +43,44 @@ void load(Archive& ar, tesseract_collision::ContactResultMap& g, const unsigned 
 
 template <class Archive>
 void serialize(Archive& ar, tesseract_collision::ContactResultMap& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, tesseract_collision::ContactRequest& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void save(Archive& ar, const tesseract_collision::ContactManagerConfig& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar, tesseract_collision::ContactManagerConfig& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, tesseract_collision::ContactManagerConfig& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, tesseract_collision::CollisionCheckConfig& g, const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar,
+               tesseract_collision::ContactTrajectorySubstepResults& g,
+               const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar,
+               tesseract_collision::ContactTrajectoryStepResults& g,
+               const unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, tesseract_collision::ContactTrajectoryResults& g, const unsigned int version);  // NOLINT
+
 }  // namespace boost::serialization
 
-TESSERACT_ANY_EXPORT_KEY(tesseract_collision::ContactResult, TesseractCollisionContactResult)
-TESSERACT_ANY_EXPORT_KEY(tesseract_collision::ContactResultMap, TesseractCollisionContactResultMap)
-TESSERACT_ANY_EXPORT_KEY(std::vector<tesseract_collision::ContactResultMap>, TesseractCollisionContactResultMapVector)
+BOOST_CLASS_EXPORT_KEY(tesseract_collision::ContactResultAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_collision::ContactResultAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_collision::ContactResultMapAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_collision::ContactResultMapAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_collision::ContactResultMapVectorAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_collision::ContactResultMapVectorAnyPoly, boost::serialization::track_never)
 
 #endif  // TESSERACT_COLLISION_SERIALIZATION_H

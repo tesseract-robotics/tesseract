@@ -81,7 +81,7 @@ IKSolutions OPWInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link
   for (auto& sol : sols)
   {
     if (opw_kinematics::isValid<double>(sol))
-      solution_set.push_back(Eigen::Map<Eigen::VectorXd>(sol.data(), static_cast<Eigen::Index>(sol.size())));
+      solution_set.emplace_back(Eigen::Map<Eigen::VectorXd>(sol.data(), static_cast<Eigen::Index>(sol.size())));
   }
 
   return solution_set;

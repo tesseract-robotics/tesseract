@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <vector>
+#include <string_view>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
@@ -43,18 +44,21 @@ class XMLDocument;
 
 namespace tesseract_urdf
 {
+static constexpr std::string_view MESH_ELEMENT_NAME = "mesh";
+
 /**
  * @brief Parse xml element mesh
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
  * @param visual Indicate if visual
- * @param version The version number
+ * @param make_convex Flag to indicate if the mesh should be converted to a convex hull
  * @return A vector of Tesseract Meshes
  */
-std::vector<std::shared_ptr<tesseract_geometry::Mesh>> parseMesh(const tinyxml2::XMLElement* xml_element,
-                                                                 const tesseract_common::ResourceLocator& locator,
-                                                                 bool visual,
-                                                                 int version);
+std::vector<std::shared_ptr<tesseract_geometry::PolygonMesh>>
+parseMesh(const tinyxml2::XMLElement* xml_element,
+          const tesseract_common::ResourceLocator& locator,
+          bool visual,
+          bool make_convex);
 
 /**
  * @brief writeMesh Write a mesh to URDF XML and PLY file
@@ -66,7 +70,7 @@ std::vector<std::shared_ptr<tesseract_geometry::Mesh>> parseMesh(const tinyxml2:
  * should be an absolute path
  * @return XML element representing the mesh object in URDF format.
  */
-tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::Mesh>& mesh,
+tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh,
                                 tinyxml2::XMLDocument& doc,
                                 const std::string& package_path,
                                 const std::string& filename);

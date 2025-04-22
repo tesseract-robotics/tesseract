@@ -43,6 +43,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+bool isRelativePath(const std::string& url)
+{
+  std::filesystem::path path(url);
+  return (url.find("file:///") != 0 && url.find("package://") != 0 && path.is_relative());
+}
+
 bool ResourceLocator::operator==(const ResourceLocator& /*rhs*/) const { return true; }
 bool ResourceLocator::operator!=(const ResourceLocator& /*rhs*/) const { return false; }
 
@@ -51,24 +57,31 @@ void ResourceLocator::serialize(Archive& /*ar*/, const unsigned int /*version*/)
 {
 }
 
-GeneralResourceLocator::GeneralResourceLocator()
+GeneralResourceLocator::GeneralResourceLocator(const std::vector<std::string>& environment_variables)
 {
-  // This was added to allow user defined resource path
-  // When using this within a snap you can map host ros package paths to this environment variable
-  char* tesseract_resource_paths = std::getenv("TESSERACT_RESOURCE_PATH");
-  if (tesseract_resource_paths != nullptr)
+  for (const auto& env_variable : environment_variables)
   {
-    std::vector<std::string> tokens;
-#ifndef _WIN32
-    boost::split(tokens, tesseract_resource_paths, boost::is_any_of(":"), boost::token_compress_on);
-#else
-    boost::split(tokens, tesseract_resource_paths, boost::is_any_of(";"), boost::token_compress_on);
-#endif
-    for (const auto& token : tokens)
-      processToken(token);
+    loadEnvironmentVariable(env_variable);
+  }
+}
+
+GeneralResourceLocator::GeneralResourceLocator(const std::vector<std::filesystem::path>& paths,
+                                               const std::vector<std::string>& environment_variables)
+{
+  for (const auto& path : paths)
+  {
+    addPath(path);
   }
 
-  char* ros_package_paths = std::getenv("ROS_PACKAGE_PATH");
+  for (const auto& env_variable : environment_variables)
+  {
+    loadEnvironmentVariable(env_variable);
+  }
+}
+
+bool GeneralResourceLocator::loadEnvironmentVariable(const std::string& environment_variable)
+{
+  char* ros_package_paths = std::getenv(environment_variable.c_str());
   if (ros_package_paths != nullptr)
   {
     std::vector<std::string> tokens;
@@ -79,18 +92,33 @@ GeneralResourceLocator::GeneralResourceLocator()
 #endif
     for (const auto& token : tokens)
       processToken(token);
+
+    return true;
   }
+  return false;
+}
+
+bool GeneralResourceLocator::addPath(const std::filesystem::path& path)
+{
+  if (std::filesystem::is_directory(path) && std::filesystem::exists(path))
+  {
+    processToken(path.string());
+    return true;
+  }
+
+  CONSOLE_BRIDGE_logError("Package Path does not exist: %s", path.string().c_str());
+  return false;
 }
 
 void GeneralResourceLocator::processToken(const std::string& token)
 {
-  tesseract_common::fs::path d(token);
-  if (tesseract_common::fs::is_directory(d) && tesseract_common::fs::exists(d))
+  std::filesystem::path d(token);
+  if (std::filesystem::is_directory(d) && std::filesystem::exists(d))
   {
     // Check current directory
-    tesseract_common::fs::path check = d;
+    std::filesystem::path check = d;
     check.append("package.xml");
-    if (tesseract_common::fs::exists(check))
+    if (std::filesystem::exists(check))
     {
       std::string dir_name = d.filename().string();
       if (package_paths_.find(dir_name) == package_paths_.end())
@@ -98,12 +126,12 @@ void GeneralResourceLocator::processToken(const std::string& token)
     }
 
     // Check all subdirectories
-    tesseract_common::fs::recursive_directory_iterator dir(d), end;
+    std::filesystem::recursive_directory_iterator dir(d), end;
     while (dir != end)
     {
-      tesseract_common::fs::path check = dir->path();
+      std::filesystem::path check = dir->path();
       check.append("package.xml");
-      if (tesseract_common::fs::exists(check))
+      if (std::filesystem::exists(check))
       {
         std::string dir_name = dir->path().filename().string();
         if (package_paths_.find(dir_name) == package_paths_.end())
@@ -121,20 +149,37 @@ void GeneralResourceLocator::processToken(const std::string& token)
   }
 }
 
+std::size_t findSeparator(const std::string& str)
+{
+  const size_t pos_slash = str.find('/');
+  const size_t pos_backslash = str.find('\\');
+
+  if (pos_slash != std::string::npos && pos_backslash != std::string::npos)
+    return std::min(pos_slash, pos_backslash);
+
+  if (pos_slash != std::string::npos)
+    return pos_slash;
+
+  if (pos_backslash != std::string::npos)
+    return pos_backslash;
+
+  return std::string::npos;
+}
+
 std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::string& url) const
 {
   std::string mod_url = url;
   if (url.find("file:///") == 0)
   {
     mod_url.erase(0, strlen("file://"));
-    size_t pos = mod_url.find('/');
+    const size_t pos = findSeparator(mod_url);
     if (pos == std::string::npos)
       return nullptr;
   }
   else if (url.find("package://") == 0)
   {
     mod_url.erase(0, strlen("package://"));
-    size_t pos = mod_url.find('/');
+    const size_t pos = findSeparator(mod_url);
     if (pos == std::string::npos)
       return nullptr;
 
@@ -153,7 +198,7 @@ std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::stri
     }
   }
 
-  if (!tesseract_common::fs::path(mod_url).is_absolute())
+  if (!std::filesystem::path(mod_url).is_absolute())
   {
     CONSOLE_BRIDGE_logWarn("Resource not handled: %s", mod_url.c_str());
     return nullptr;
@@ -227,21 +272,30 @@ tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std:
   if (parent_ == nullptr || url.empty())
     return nullptr;
 
-  tesseract_common::Resource::Ptr resource = parent_->locateResource(url);
-  if (resource != nullptr)
-    return resource;
+  if (isRelativePath(url))
+  {
+    // Find the last occurrences of both separators
+    std::size_t last_slash = url_.find_last_of('/');
+    std::size_t last_backslash = url_.find_last_of('\\');
+    std::size_t last_separator{ 0 };
+    if (last_slash != std::string::npos && last_backslash != std::string::npos)
+      last_separator = std::max(last_slash, last_backslash);
+    else if (last_slash != std::string::npos)
+      last_separator = last_slash;
+    else if (last_backslash != std::string::npos)
+      last_separator = last_backslash;
+    else
+      return nullptr;
 
-  tesseract_common::fs::path path(url);
-  if (!path.is_relative())
-    return nullptr;
+    std::filesystem::path path(url);
+    std::string url_base_path = url_.substr(0, last_separator);
+    std::string new_url =
+        url_base_path + std::string(1, std::filesystem::path::preferred_separator) + path.filename().string();
+    CONSOLE_BRIDGE_logDebug("new_url: %s", new_url.c_str());
+    return parent_->locateResource(new_url);
+  }
 
-  auto last_slash = url_.find_last_of('/');
-  if (last_slash == std::string::npos)
-    return nullptr;
-
-  std::string url_base_path = url_.substr(0, last_slash);
-  std::string new_url = url_base_path + "/" + path.filename().string();
-  return parent_->locateResource(new_url);
+  return parent_->locateResource(url);
 }
 
 bool SimpleLocatedResource::operator==(const SimpleLocatedResource& rhs) const
@@ -285,7 +339,7 @@ std::shared_ptr<std::istream> BytesResource::getResourceContentStream() const
 {
   std::shared_ptr<std::stringstream> o = std::make_shared<std::stringstream>();
   o->write((const char*)&bytes_.at(0), static_cast<std::streamsize>(bytes_.size()));  // NOLINT
-  o->seekg(0, o->beg);
+  o->seekg(0, std::stringstream::beg);
   return o;
 }
 
@@ -298,14 +352,14 @@ Resource::Ptr BytesResource::locateResource(const std::string& url) const
   if (resource != nullptr)
     return resource;
 
-  tesseract_common::fs::path path(url);
-  if (!path.is_relative())
+  if (!isRelativePath(url))
     return nullptr;
 
   auto last_slash = url_.find_last_of('/');
   if (last_slash == std::string::npos)
     return nullptr;
 
+  std::filesystem::path path(url);
   std::string url_base_path = url_.substr(0, last_slash);
   std::string new_url = url_base_path + "/" + path.filename().string();
   return parent_->locateResource(new_url);

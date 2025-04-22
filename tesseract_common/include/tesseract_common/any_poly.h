@@ -27,129 +27,277 @@
 #define TESSERACT_COMMON_ANY_POLY_H
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/concept_check.hpp>
+#include <boost/stacktrace.hpp>
+#include <boost/core/demangle.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/serialization.h>
-#include <tesseract_common/type_erasure.h>
-
-#include <string>
+#include <memory>
+#include <typeindex>
 #include <unordered_map>
-
-#define COMMA ,
-
-/** @brief If shared library, this must go in the header after the class definition */
-#define TESSERACT_ANY_EXPORT_KEY(C, K)                                                                                 \
-  namespace tesseract_serialization::any_poly                                                                          \
-  {                                                                                                                    \
-  using K##AnyInstanceBase = tesseract_common::TypeErasureInstance<C, tesseract_common::TypeErasureInterface>;         \
-  using K##AnyInstance = tesseract_common::detail_any::AnyInstance<C>;                                                 \
-  using K##AnyInstanceWrapper = tesseract_common::TypeErasureInstanceWrapper<K##AnyInstance>;                          \
-  }                                                                                                                    \
-  BOOST_CLASS_EXPORT_KEY(tesseract_serialization::any_poly::K##AnyInstanceBase)                                        \
-  BOOST_CLASS_EXPORT_KEY(tesseract_serialization::any_poly::K##AnyInstance)                                            \
-  BOOST_CLASS_EXPORT_KEY(tesseract_serialization::any_poly::K##AnyInstanceWrapper)                                     \
-  BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstanceBase, boost::serialization::track_never)       \
-  BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstance, boost::serialization::track_never)           \
-  BOOST_CLASS_TRACKING(tesseract_serialization::any_poly::K##AnyInstanceWrapper, boost::serialization::track_never)
-
-/** @brief If shared library, this must go in the cpp after the implicit instantiation of the serialize function */
-#define TESSERACT_ANY_EXPORT_IMPLEMENT(K)                                                                              \
-  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstanceBase)                                  \
-  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstance)                                      \
-  BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_serialization::any_poly::K##AnyInstanceWrapper)
-
-/**
- * @brief This should not be used within shared libraries use the two above.
- * If not in a shared library it can go in header or cpp
- */
-#define TESSERACT_ANY_EXPORT(C, K)                                                                                     \
-  TESSERACT_ANY_EXPORT_KEY(C, K)                                                                                       \
-  TESSERACT_ANY_EXPORT_IMPLEMENT(K)
-
-namespace tesseract_common::detail_any
-{
-template <typename A>
-struct AnyConcept  // NOLINT
-  : boost::Assignable<A>,
-    boost::CopyConstructible<A>,
-    boost::EqualityComparable<A>
-{
-  BOOST_CONCEPT_USAGE(AnyConcept)
-  {
-    A cp(c);
-    A assign = c;
-    bool eq = (c == cp);
-    bool neq = (c != cp);
-    UNUSED(assign);
-    UNUSED(eq);
-    UNUSED(neq);
-  }
-
-private:
-  A c;
-};
-
-template <typename T>
-struct AnyInstance : tesseract_common::TypeErasureInstance<T, tesseract_common::TypeErasureInterface>  // NOLINT
-{
-  using BaseType = tesseract_common::TypeErasureInstance<T, tesseract_common::TypeErasureInterface>;
-  AnyInstance() = default;
-  AnyInstance(const T& x) : BaseType(x) {}
-  AnyInstance(AnyInstance&& x) noexcept : BaseType(std::move(x)) {}
-
-  BOOST_CONCEPT_ASSERT((AnyConcept<T>));
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
-  {
-    ar& boost::serialization::make_nvp("base", boost::serialization::base_object<BaseType>(*this));
-  }
-};
-}  // namespace tesseract_common::detail_any
+#include <tesseract_common/serialization.h>
 
 namespace tesseract_common
 {
-using AnyPolyBase = tesseract_common::TypeErasureBase<TypeErasureInterface, detail_any::AnyInstance>;
-
-struct AnyPoly : AnyPolyBase
+class AnyInterface
 {
-  using AnyPolyBase::AnyPolyBase;
+public:
+  virtual ~AnyInterface() = default;
+
+  /**
+   * @brief Get the type index of the object stored
+   * @return The type index
+   */
+  virtual std::type_index getType() const;
+
+  /**
+   * @brief Make a deep copy of the object
+   * @return A deep copy
+   */
+  virtual std::unique_ptr<AnyInterface> clone() const = 0;
+
+  // Operators
+  bool operator==(const AnyInterface& rhs) const;
+  bool operator!=(const AnyInterface& rhs) const;
+
+protected:
+  /**
+   * @brief Check if two objects are equal
+   * @param other The other object to compare with
+   * @return True if equal, otherwise false
+   */
+  virtual bool equals(const AnyInterface& other) const = 0;
 
 private:
   friend class boost::serialization::access;
   friend struct tesseract_common::Serialization;
-
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int /*version*/);  // NOLINT
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
+
+template <typename T>
+class AnyWrapper : public AnyInterface
+{
+public:
+  AnyWrapper() = default;
+  explicit AnyWrapper(const T& value_) : value(value_) {}
+  explicit AnyWrapper(T&& value_) : value(std::move(value_)) {}
+
+  std::type_index getType() const override final { return typeid(T); }
+
+  std::unique_ptr<AnyInterface> clone() const override final { return std::make_unique<AnyWrapper<T>>(value); }
+
+  bool equals(const AnyInterface& other) const override final
+  {
+    const auto* derived_other = dynamic_cast<const AnyWrapper<T>*>(&other);
+    if (derived_other == nullptr)
+      return false;
+
+    return (value == derived_other->value);
+  }
+
+  T value{};
+
+private:
+  friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int /*version*/)
+  {
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(AnyInterface);
+    ar& boost::serialization::make_nvp("value", value);
+  }
+};
+
+class AnyPoly
+{
+public:
+  AnyPoly() = default;   // Default constructor
+  ~AnyPoly() = default;  // Default destructor
+  AnyPoly(const AnyPoly& other);
+  AnyPoly& operator=(const AnyPoly& other);
+  AnyPoly(AnyPoly&& other) noexcept = default;
+  AnyPoly& operator=(AnyPoly&& other) noexcept = default;
+  AnyPoly(const AnyInterface& impl);
+
+  /** Template Constructor for Moving Arbitrary Values */
+  template <typename T,
+            typename std::enable_if_t<!std::is_base_of_v<AnyInterface, T> && !std::is_same_v<std::decay_t<T>, AnyPoly>,
+                                      bool> = true>
+  AnyPoly(T&& value) : impl_(std::make_unique<AnyWrapper<std::decay_t<T>>>(std::forward<T>(value)))
+  {
+  }
+
+  template <typename T,
+            typename std::enable_if_t<!std::is_base_of_v<AnyInterface, T> && !std::is_same_v<std::decay_t<T>, AnyPoly>,
+                                      bool> = true>
+  AnyPoly& operator=(T&& value)
+  {
+    impl_ = std::make_unique<AnyWrapper<std::decay_t<T>>>(std::forward<T>(value));
+    return *this;
+  }
+
+  /** Template Constructor for Copying Arbitrary Values */
+  template <typename T,
+            typename std::enable_if_t<!std::is_base_of_v<AnyInterface, T> && !std::is_same_v<std::decay_t<T>, AnyPoly>,
+                                      bool> = true>
+  AnyPoly(const T& value) : impl_(std::make_unique<AnyWrapper<T>>(value))
+  {
+  }
+
+  /** Templated Copy Assignment Operator */
+  template <typename T,
+            typename std::enable_if_t<!std::is_base_of_v<AnyInterface, T> && !std::is_same_v<std::decay_t<T>, AnyPoly>,
+                                      bool> = true>
+  AnyPoly& operator=(const T& value)
+  {
+    impl_ = std::make_unique<AnyWrapper<T>>(value);
+    return *this;
+  }
+
+  /**
+   * @brief Get the stored derived type
+   * @return The derived type index
+   */
+  std::type_index getType() const;
+
+  /**
+   * @brief Check if the poly type is null
+   * @return True if null, otherwise false
+   */
+  bool isNull() const;
+
+  /**
+   * @brief Get the instruction being stored
+   * @return The instruction
+   * @throws If null
+   */
+  AnyInterface& get();
+  const AnyInterface& get() const;
+
+  // Type Casting
+  template <typename T, typename std::enable_if_t<std::is_base_of_v<AnyInterface, T>, bool> = true>
+  T& as()
+  {
+    if (getType() != typeid(T))
+      throw std::runtime_error("AnyPoly, tried to cast '" + boost::core::demangle(getType().name()) + "' to '" +
+                               boost::core::demangle(typeid(T).name()) + "'\nBacktrace:\n" +
+                               boost::stacktrace::to_string(boost::stacktrace::stacktrace()) + "\n");
+
+    return *dynamic_cast<T*>(impl_.get());
+  }
+
+  template <typename T, typename std::enable_if_t<!std::is_base_of_v<AnyInterface, T>, bool> = true>
+  T& as()
+  {
+    if (getType() != typeid(T))
+      throw std::runtime_error("AnyPoly, tried to cast '" + boost::core::demangle(getType().name()) + "' to '" +
+                               boost::core::demangle(typeid(T).name()) + "'\nBacktrace:\n" +
+                               boost::stacktrace::to_string(boost::stacktrace::stacktrace()) + "\n");
+
+    return dynamic_cast<AnyWrapper<T>*>(impl_.get())->value;
+  }
+
+  template <typename T, typename std::enable_if_t<std::is_base_of_v<AnyInterface, T>, bool> = true>
+  const T& as() const
+  {
+    if (getType() != typeid(T))
+      throw std::runtime_error("AnyPoly, tried to cast '" + boost::core::demangle(getType().name()) + "' to '" +
+                               boost::core::demangle(typeid(T).name()) + "'\nBacktrace:\n" +
+                               boost::stacktrace::to_string(boost::stacktrace::stacktrace()) + "\n");
+
+    return *dynamic_cast<const T*>(impl_.get());
+  }
+
+  template <typename T, typename std::enable_if_t<!std::is_base_of_v<AnyInterface, T>, bool> = true>
+  const T& as() const
+  {
+    if (getType() != typeid(T))
+      throw std::runtime_error("AnyPoly, tried to cast '" + boost::core::demangle(getType().name()) + "' to '" +
+                               boost::core::demangle(typeid(T).name()) + "'\nBacktrace:\n" +
+                               boost::stacktrace::to_string(boost::stacktrace::stacktrace()) + "\n");
+
+    return dynamic_cast<const AnyWrapper<T>*>(impl_.get())->value;
+  }
+
+  // Operators
+  bool operator==(const AnyPoly& rhs) const;
+  bool operator!=(const AnyPoly& rhs) const;
+
+private:
+  std::unique_ptr<AnyInterface> impl_;
+
+  friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+};
+
+using BoolAnyPoly = AnyWrapper<bool>;
+using IntAnyPoly = AnyWrapper<int>;
+using UnsignedAnyPoly = AnyWrapper<unsigned>;
+using DoubleAnyPoly = AnyWrapper<double>;
+using FloatAnyPoly = AnyWrapper<float>;
+using StringAnyPoly = AnyWrapper<std::string>;
+using SizeTAnyPoly = AnyWrapper<std::size_t>;
+
+using UMapStringStringAnyPoly = AnyWrapper<std::unordered_map<std::string, std::string>>;
+using UMapStringBoolAnyPoly = AnyWrapper<std::unordered_map<std::string, bool>>;
+using UMapStringIntAnyPoly = AnyWrapper<std::unordered_map<std::string, int>>;
+using UMapStringUnsignedAnyPoly = AnyWrapper<std::unordered_map<std::string, unsigned>>;
+using UMapStringDoubleAnyPoly = AnyWrapper<std::unordered_map<std::string, double>>;
+using UMapStringFloatAnyPoly = AnyWrapper<std::unordered_map<std::string, float>>;
+using UMapStringSizeTAnyPoly = AnyWrapper<std::unordered_map<std::string, std::size_t>>;
 
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyPolyBase)
-BOOST_CLASS_TRACKING(tesseract_common::AnyPolyBase, boost::serialization::track_never)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyInterface)
+BOOST_CLASS_TRACKING(tesseract_common::AnyInterface, boost::serialization::track_never)
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyPoly)
 BOOST_CLASS_TRACKING(tesseract_common::AnyPoly, boost::serialization::track_never)
 
-TESSERACT_ANY_EXPORT_KEY(bool, IntegralBool)
-TESSERACT_ANY_EXPORT_KEY(int, IntegralInt)
-TESSERACT_ANY_EXPORT_KEY(unsigned, IntegralUnsigned)
-TESSERACT_ANY_EXPORT_KEY(double, IntegralDouble)
-TESSERACT_ANY_EXPORT_KEY(float, IntegralFloat)
-TESSERACT_ANY_EXPORT_KEY(std::string, StdString)
-TESSERACT_ANY_EXPORT_KEY(std::size_t, StdSizeT)
-TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA std::string>, StdUnorderedMapStringString)
-TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA bool>, StdUnorderedMapStringBool)
-TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA int>, StdUnorderedMapStringInt)
-TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA unsigned>, StdUnorderedMapStringUnsigned)
-TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA double>, StdUnorderedMapStringDouble)
-TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA float>, StdUnorderedMapStringFloat)
-TESSERACT_ANY_EXPORT_KEY(std::unordered_map<std::string COMMA std::size_t>, StdUnorderedMapStringStdSizeT)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::BoolAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::BoolAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::IntAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::IntAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::UnsignedAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::UnsignedAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::DoubleAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::DoubleAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::FloatAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::FloatAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::StringAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::StringAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::SizeTAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::SizeTAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::UMapStringStringAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::UMapStringStringAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::UMapStringBoolAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::UMapStringBoolAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::UMapStringIntAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::UMapStringIntAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::UMapStringUnsignedAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::UMapStringUnsignedAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::UMapStringDoubleAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::UMapStringDoubleAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::UMapStringFloatAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::UMapStringFloatAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::UMapStringSizeTAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::UMapStringSizeTAnyPoly, boost::serialization::track_never)
 
 #endif  // TESSERACT_COMMON_ANY_POLY_H

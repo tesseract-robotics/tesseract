@@ -8,7 +8,6 @@ add_executable(
   tesseract_urdf_capsule_unit.cpp
   tesseract_urdf_collision_unit.cpp
   tesseract_urdf_cone_unit.cpp
-  tesseract_urdf_convex_mesh_unit.cpp
   tesseract_urdf_cylinder_unit.cpp
   tesseract_urdf_dynamics_unit.cpp
   tesseract_urdf_extra_delimeters_unit.cpp

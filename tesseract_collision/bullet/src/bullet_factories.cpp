@@ -44,7 +44,7 @@ namespace tesseract_collision::tesseract_collision_bullet
 TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
 {
   if (config.IsNull())
-    return TesseractCollisionConfigurationInfo();
+    return {};
 
   bool share_pool_allocators{ false };
   if (YAML::Node n = config["share_pool_allocators"])
@@ -86,7 +86,7 @@ std::unique_ptr<ContinuousContactManager> BulletCastSimpleManagerFactory::create
   return std::make_unique<BulletCastSimpleManager>(name, getConfigInfo(config));
 }
 
-TESSERACT_PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
+PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
 
 }  // namespace tesseract_collision::tesseract_collision_bullet
 

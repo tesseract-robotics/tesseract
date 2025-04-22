@@ -163,24 +163,24 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
   g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_tree_example.dot");
 
   // Test if the graph is Acyclic
-  std::cout << "Is Acyclic: " << g.isAcyclic() << std::endl;
+  std::cout << "Is Acyclic: " << g.isAcyclic() << "\n";
   EXPECT_TRUE(g.isAcyclic());
 
   // Test if the graph is Tree
-  std::cout << "Is Tree: " << g.isTree() << std::endl;
+  std::cout << "Is Tree: " << g.isTree() << "\n";
   EXPECT_TRUE(g.isTree());
 
   // Test for unused links
   Link link_6("link_6");
   g.addLink(link_6);
-  std::cout << "Free Link, Is Tree: " << g.isTree() << std::endl;
+  std::cout << "Free Link, Is Tree: " << g.isTree() << "\n";
   EXPECT_FALSE(g.isTree());
 
   // Check Graph
   checkSceneGraph(g);
 
   g.removeLink("link_6");
-  std::cout << "Free Link Removed, Is Tree: " << g.isTree() << std::endl;
+  std::cout << "Free Link Removed, Is Tree: " << g.isTree() << "\n";
   EXPECT_TRUE(g.isTree());
 
   // Check Graph
@@ -200,11 +200,11 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
   g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_not_tree_example.dot");
 
   // Test if the graph is Acyclic
-  std::cout << "Is Acyclic: " << g.isAcyclic() << std::endl;
+  std::cout << "Is Acyclic: " << g.isAcyclic() << "\n";
   EXPECT_TRUE(g.isAcyclic());
 
   // Test if the graph is Tree
-  std::cout << "Is Tree: " << g.isTree() << std::endl;
+  std::cout << "Is Tree: " << g.isTree() << "\n";
   EXPECT_FALSE(g.isTree());
 
   Joint joint_6("joint_6");
@@ -221,17 +221,17 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
   g.saveDOT(tesseract_common::getTempPath() + "graph_cyclic_not_tree_example.dot");
 
   // Test if the graph is Acyclic
-  std::cout << "Is Acyclic: " << g.isAcyclic() << std::endl;
+  std::cout << "Is Acyclic: " << g.isAcyclic() << "\n";
   EXPECT_FALSE(g.isAcyclic());
 
   // Test if the graph is Tree
-  std::cout << "Is Tree: " << g.isTree() << std::endl;
+  std::cout << "Is Tree: " << g.isTree() << "\n";
   EXPECT_FALSE(g.isTree());
 
   {  // Get Shortest Path
     ShortestPath path = g.getShortestPath("link_1", "link_4");
 
-    std::cout << path << std::endl;
+    std::cout << path << "\n";
     EXPECT_TRUE(path.links.size() == 3);
     EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
     EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_5") != path.links.end());
@@ -243,13 +243,13 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
     EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_5") != path.active_joints.end());
     EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_6") != path.active_joints.end());
 
-    std::cout << (g.getName().c_str()) << std::endl;
+    std::cout << (g.getName().c_str()) << "\n";
   }
 
   {  // Get Shortest Path wit links reversed
     ShortestPath path = g.getShortestPath("link_4", "link_1");
 
-    std::cout << path << std::endl;
+    std::cout << path << "\n";
     EXPECT_TRUE(path.links.size() == 3);
     EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
     EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_5") != path.links.end());
@@ -261,7 +261,7 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
     EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_5") != path.active_joints.end());
     EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_6") != path.active_joints.end());
 
-    std::cout << (g.getName().c_str()) << std::endl;
+    std::cout << (g.getName().c_str()) << "\n";
   }
 
   // Should throw since this is a directory and not a file
@@ -802,7 +802,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveJointUnit)  // NOLINT
 void printKDLTree(const KDL::SegmentMap::const_iterator& link, const std::string& prefix)
 {
   std::cout << prefix << "- Segment " << GetTreeElementSegment(link->second).getName() << " has "
-            << GetTreeElementChildren(link->second).size() << " children" << std::endl;
+            << GetTreeElementChildren(link->second).size() << " children\n";
 
   for (auto child : GetTreeElementChildren(link->second))
     printKDLTree(child, prefix + "  ");
@@ -1171,9 +1171,9 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
     testSceneGraphKDLTree(data.tree);
 
     // walk through tree
-    std::cout << " ======================================" << std::endl;
-    std::cout << " Tree has " << data.tree.getNrOfSegments() << " link(s) and a root link" << std::endl;
-    std::cout << " ======================================" << std::endl;
+    std::cout << " ======================================\n";
+    std::cout << " Tree has " << data.tree.getNrOfSegments() << " link(s) and a root link\n";
+    std::cout << " ======================================\n";
     auto root = data.tree.getRootSegment();
     printKDLTree(root, "");
 
@@ -1201,9 +1201,9 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
     testSceneGraphKDLTree(data.tree);
 
     // walk through tree
-    std::cout << " ======================================" << std::endl;
-    std::cout << " Tree has " << data.tree.getNrOfSegments() << " link(s) and a root link" << std::endl;
-    std::cout << " ======================================" << std::endl;
+    std::cout << " ======================================\n";
+    std::cout << " Tree has " << data.tree.getNrOfSegments() << " link(s) and a root link\n";
+    std::cout << " ======================================\n";
     auto root = data.tree.getRootSegment();
     printKDLTree(root, "");
 
@@ -1238,7 +1238,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 
   {
     KDLTreeData full_data = parseSceneGraph(g);
-    KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values);
+    KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values, tesseract_common::TransformMap());
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
@@ -1248,9 +1248,9 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
     testSubSceneGraphKDLTree(data, full_data, joint_values);
 
     // walk through tree
-    std::cout << " ======================================" << std::endl;
-    std::cout << " Tree has " << data.tree.getNrOfSegments() << " link(s) and a root link" << std::endl;
-    std::cout << " ======================================" << std::endl;
+    std::cout << " ======================================\n";
+    std::cout << " Tree has " << data.tree.getNrOfSegments() << " link(s) and a root link\n";
+    std::cout << " ======================================\n";
     auto root = data.tree.getRootSegment();
     printKDLTree(root, "");
 
@@ -1269,7 +1269,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 
   {
     KDLTreeData full_data = parseSceneGraph(g);
-    KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values);
+    KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values, tesseract_common::TransformMap());
 
     EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
     EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
@@ -1279,48 +1279,15 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
     testSubSceneGraphKDLTree(data, full_data, joint_values);
 
     // walk through tree
-    std::cout << " ======================================" << std::endl;
-    std::cout << " Tree has " << data.tree.getNrOfSegments() << " link(s) and a root link" << std::endl;
-    std::cout << " ======================================" << std::endl;
+    std::cout << " ======================================\n";
+    std::cout << " Tree has " << data.tree.getNrOfSegments() << " link(s) and a root link\n";
+    std::cout << " ======================================\n";
     auto root = data.tree.getRootSegment();
     printKDLTree(root, "");
 
     EXPECT_EQ(data.tree.getNrOfJoints(), 6);
     EXPECT_EQ(data.tree.getNrOfSegments(), 8);
   }
-}
-
-/// Testing AllowedCollisionMatrix
-TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)  // NOLINT
-{
-  tesseract_common::AllowedCollisionMatrix acm;
-
-  acm.addAllowedCollision("link1", "link2", "test");
-  // collision between link1 and link2 should be allowed
-  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
-  // but now between link2 and link3
-  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
-
-  acm.removeAllowedCollision("link1", "link2");
-  // now collision link1 and link2 is not allowed anymore
-  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
-
-  acm.addAllowedCollision("link3", "link3", "test");
-  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
-  acm.clearAllowedCollisions();
-  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
-
-  tesseract_common::AllowedCollisionMatrix acm2;
-  acm.addAllowedCollision("link1", "link2", "test");
-  acm2.addAllowedCollision("link1", "link2", "test");
-  acm2.addAllowedCollision("link1", "link3", "test");
-  acm.insertAllowedCollisionMatrix(acm2);
-
-  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2);
-  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
-  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link3"));
-  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
-  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2);
 }
 
 TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT

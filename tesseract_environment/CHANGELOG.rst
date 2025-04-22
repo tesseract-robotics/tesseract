@@ -2,6 +2,64 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.29.1 (2025-03-26)
+-------------------
+
+0.29.0 (2025-03-20)
+-------------------
+* Leverage inheritance for AnyPoly (`#1128 <https://github.com/tesseract-robotics/tesseract/issues/1128>`_)
+* Update to leverage std::filesystem
+* Fix clang-tidy-17 errors (`#1122 <https://github.com/tesseract-robotics/tesseract/issues/1122>`_)
+* Fix missing includes causing clang warnings
+* Contributors: Levi Armstrong
+
+0.28.8 (2025-02-01)
+-------------------
+* Fix collision shape caching
+* Contributors: Levi Armstrong
+
+0.28.7 (2025-01-29)
+-------------------
+* Fix thread safety issue with set active contact manager
+* Contributors: Levi Armstrong
+
+0.28.6 (2025-01-26)
+-------------------
+
+0.28.5 (2025-01-21)
+-------------------
+
+0.28.4 (2025-01-18)
+-------------------
+* Add missing floating joint methods to environment monitor interface
+* Add missing floating joint methods to environment
+* Contributors: Levi Armstrong
+
+0.28.3 (2025-01-18)
+-------------------
+
+0.28.2 (2025-01-17)
+-------------------
+
+0.28.1 (2025-01-17)
+-------------------
+
+0.28.0 (2025-01-16)
+-------------------
+* Update tesseract_environment benchmarks
+* Add floating joint support
+* Add ContactAllowedValidator and ContactResultValidator (`#1095 <https://github.com/tesseract-robotics/tesseract/issues/1095>`_)
+* Change environment getJointGroup and getKinematicGroup to return shared pointers
+* Contributors: Levi Armstrong
+
+0.27.1 (2024-12-03)
+-------------------
+
+0.27.0 (2024-12-01)
+-------------------
+* Fix environment clear such that cache is cleared before plugin factories are destroyed
+* Contributors: Levi Armstrong
+
 0.26.0 (2024-10-27)
 -------------------
 * Remove TesseractSupportResourceLocator

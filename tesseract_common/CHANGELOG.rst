@@ -2,6 +2,71 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.29.1 (2025-03-26)
+-------------------
+
+0.29.0 (2025-03-20)
+-------------------
+* Leverage inheritance for AnyPoly (`#1128 <https://github.com/tesseract-robotics/tesseract/issues/1128>`_)
+* Do not log an error when correctly parsing a yaml include.
+* Update to leverage std::filesystem
+* Remove unused header from Timer
+* Do not pass double by const ref in CollisionMarginData
+* Fix SimpleResource::locateResource
+* Fix clang-tidy-17 errors (`#1122 <https://github.com/tesseract-robotics/tesseract/issues/1122>`_)
+* Contributors: Levi Armstrong, Roelof Oomen
+
+0.28.8 (2025-02-01)
+-------------------
+
+0.28.7 (2025-01-29)
+-------------------
+
+0.28.6 (2025-01-26)
+-------------------
+
+0.28.5 (2025-01-21)
+-------------------
+
+0.28.4 (2025-01-18)
+-------------------
+
+0.28.3 (2025-01-18)
+-------------------
+
+0.28.2 (2025-01-17)
+-------------------
+
+0.28.1 (2025-01-17)
+-------------------
+
+0.28.0 (2025-01-16)
+-------------------
+* Fix Bullet linking on MacOS (`#1101 <https://github.com/tesseract-robotics/tesseract/issues/1101>`_)
+  * Use Bullet cmake targets when available
+  * Guard creation of Bullet3::Bullet target
+  * Windows does not have Bullet3Geometry.lib
+  * Restore boost-stacktrace changes
+* Add GeneralResourceLocator API functions
+* Leverage tesseract_common loadYamlFile and loadYamlString
+* Add ContactAllowedValidator and ContactResultValidator (`#1095 <https://github.com/tesseract-robotics/tesseract/issues/1095>`_)
+* Leverage fs::path::preferred_separator in locateResource
+* Add yaml include directive support
+* Fix typo in tesseract_common CMakeLists.txt
+* Add more serialization for eigen types and collision types
+* Contributors: John Wason, Levi Armstrong
+
+0.27.1 (2024-12-03)
+-------------------
+* Include stdexcept in type_erasure.h
+* Contributors: John Wason
+
+0.27.0 (2024-12-01)
+-------------------
+* Simplify type erasure
+* Add uuid to tesseract_common::JointTrajectory
+* Contributors: Levi Armstrong
+
 0.26.0 (2024-10-27)
 -------------------
 * Add utility toArchiveFile method

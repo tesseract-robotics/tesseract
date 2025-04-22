@@ -97,8 +97,11 @@ private:
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
+
+using ManipulatorInfoAnyPoly = AnyWrapper<ManipulatorInfo>;
 }  // namespace tesseract_common
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::ManipulatorInfo)
-TESSERACT_ANY_EXPORT_KEY(tesseract_common::ManipulatorInfo, TesseractCommonManipulatorInfo)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::ManipulatorInfoAnyPoly)
+
 #endif  // TESSERACT_COMMON_MANIPULATOR_INFO_H

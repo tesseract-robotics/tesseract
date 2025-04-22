@@ -27,6 +27,7 @@
 #define TESSERACT_KINEMATICS_OPW_FACTORY_H
 
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
+#include <boost_plugin_loader/macros.h>
 
 namespace tesseract_kinematics
 {
@@ -39,7 +40,7 @@ class OPWInvKinFactory : public InvKinFactory
                                             const YAML::Node& config) const override final;
 };
 
-TESSERACT_PLUGIN_ANCHOR_DECL(OPWFactoriesAnchor)
+PLUGIN_ANCHOR_DECL(OPWFactoriesAnchor)
 
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_OPW_FACTORY_H

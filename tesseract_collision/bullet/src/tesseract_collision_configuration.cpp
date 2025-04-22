@@ -138,16 +138,16 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(const Tesseract
   }
 
   mem = btAlignedAlloc(sizeof(TesseractConvexConvexAlgorithm::CreateFunc), 16);
-  m_convexConvexCreateFunc = new (mem) TesseractConvexConvexAlgorithm::CreateFunc(m_pdSolver);
+  m_convexConvexCreateFunc = new (mem) TesseractConvexConvexAlgorithm::CreateFunc(m_pdSolver);  // NOLINT
 
   mem = btAlignedAlloc(sizeof(TesseractCompoundCollisionAlgorithm::CreateFunc), 16);
-  m_compoundCreateFunc = new (mem) TesseractCompoundCollisionAlgorithm::CreateFunc;
+  m_compoundCreateFunc = new (mem) TesseractCompoundCollisionAlgorithm::CreateFunc;  // NOLINT
 
   mem = btAlignedAlloc(sizeof(TesseractCompoundCompoundCollisionAlgorithm::CreateFunc), 16);
-  m_compoundCompoundCreateFunc = new (mem) TesseractCompoundCompoundCollisionAlgorithm::CreateFunc;
+  m_compoundCompoundCreateFunc = new (mem) TesseractCompoundCompoundCollisionAlgorithm::CreateFunc;  // NOLINT
 
   mem = btAlignedAlloc(sizeof(TesseractCompoundCollisionAlgorithm::SwappedCreateFunc), 16);
-  m_swappedCompoundCreateFunc = new (mem) TesseractCompoundCollisionAlgorithm::SwappedCreateFunc;
+  m_swappedCompoundCreateFunc = new (mem) TesseractCompoundCollisionAlgorithm::SwappedCreateFunc;  // NOLINT
 }
 
 }  // namespace tesseract_collision::tesseract_collision_bullet

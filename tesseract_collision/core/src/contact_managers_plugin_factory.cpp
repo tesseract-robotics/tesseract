@@ -31,9 +31,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_common/plugin_loader.hpp>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_common/yaml_utils.h>
+#include <tesseract_common/yaml_extenstions.h>
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
+#include <boost_plugin_loader/plugin_loader.hpp>
+#include <console_bridge/console.h>
 
 static const std::string TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGIN_"
                                                                              "DIRECTORIES";
@@ -43,8 +46,9 @@ using tesseract_common::ContactManagersPluginInfo;
 
 namespace tesseract_collision
 {
-const std::string DiscreteContactManagerFactory::SECTION_NAME = "DiscColl";
-const std::string ContinuousContactManagerFactory::SECTION_NAME = "ContColl";
+std::string DiscreteContactManagerFactory::getSection() { return "DiscColl"; }
+
+std::string ContinuousContactManagerFactory::getSection() { return "ContColl"; }
 
 ContactManagersPluginFactory::ContactManagersPluginFactory()
 {
@@ -57,7 +61,7 @@ ContactManagersPluginFactory::ContactManagersPluginFactory()
                boost::token_compress_on);
 }
 
-ContactManagersPluginFactory::ContactManagersPluginFactory(YAML::Node config) : ContactManagersPluginFactory()
+void ContactManagersPluginFactory::loadConfig(const YAML::Node& config)
 {
   if (const YAML::Node& plugin_info = config[ContactManagersPluginInfo::CONFIG_KEY])
   {
@@ -70,14 +74,26 @@ ContactManagersPluginFactory::ContactManagersPluginFactory(YAML::Node config) : 
   }
 }
 
-ContactManagersPluginFactory::ContactManagersPluginFactory(const tesseract_common::fs::path& config)
-  : ContactManagersPluginFactory(YAML::LoadFile(config.string()))
+ContactManagersPluginFactory::ContactManagersPluginFactory(YAML::Node config,
+                                                           const tesseract_common::ResourceLocator& locator)
+  : ContactManagersPluginFactory()
 {
+  config = tesseract_common::processYamlIncludeDirective(config, locator);
+  loadConfig(config);
 }
 
-ContactManagersPluginFactory::ContactManagersPluginFactory(const std::string& config)
-  : ContactManagersPluginFactory(YAML::Load(config))
+ContactManagersPluginFactory::ContactManagersPluginFactory(const std::filesystem::path& config,
+                                                           const tesseract_common::ResourceLocator& locator)
+  : ContactManagersPluginFactory()
 {
+  loadConfig(tesseract_common::loadYamlFile(config.string(), locator));
+}
+
+ContactManagersPluginFactory::ContactManagersPluginFactory(const std::string& config,
+                                                           const tesseract_common::ResourceLocator& locator)
+  : ContactManagersPluginFactory()
+{
+  loadConfig(tesseract_common::loadYamlString(config, locator));
 }
 
 // This prevents it from being defined inline.
@@ -229,7 +245,7 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
     if (it != discrete_factories_.end())
       return it->second->create(name, plugin_info.config);
 
-    auto plugin = plugin_loader_.instantiate<DiscreteContactManagerFactory>(plugin_info.class_name);
+    auto plugin = plugin_loader_.createInstance<DiscreteContactManagerFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
       CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
@@ -272,7 +288,7 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
     if (it != continuous_factories_.end())
       return it->second->create(name, plugin_info.config);
 
-    auto plugin = plugin_loader_.instantiate<ContinuousContactManagerFactory>(plugin_info.class_name);
+    auto plugin = plugin_loader_.createInstance<ContinuousContactManagerFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
       CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
@@ -290,7 +306,7 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
   // LCOV_EXCL_STOP
 }
 
-void ContactManagersPluginFactory::saveConfig(const tesseract_common::fs::path& file_path) const
+void ContactManagersPluginFactory::saveConfig(const std::filesystem::path& file_path) const
 {
   YAML::Node config = getConfig();
   std::ofstream fout(file_path.string());

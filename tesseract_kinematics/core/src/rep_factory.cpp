@@ -29,6 +29,8 @@
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/joint.h>
 
+#include <console_bridge/console.h>
+
 namespace tesseract_kinematics
 {
 std::unique_ptr<InverseKinematics> REPInvKinFactory::create(const std::string& solver_name,
@@ -173,7 +175,7 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::create(const std::string& s
       scene_graph, scene_state, std::move(inv_kin), m_reach, std::move(fwd_kin), sample_range, sample_res, solver_name);
 }
 
-TESSERACT_PLUGIN_ANCHOR_IMPL(REPInvKinFactoriesAnchor)
+PLUGIN_ANCHOR_IMPL(REPInvKinFactoriesAnchor)
 
 }  // namespace tesseract_kinematics
 

@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
+#include <tesseract_common/any_poly.h>
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_common/collision_margin_data.h>
 #include <tesseract_geometry/fwd.h>
@@ -49,18 +50,12 @@ using CollisionShapeConstPtr = std::shared_ptr<const tesseract_geometry::Geometr
 using CollisionShapePtr = std::shared_ptr<tesseract_geometry::Geometry>;
 using CollisionShapesConst = std::vector<CollisionShapeConstPtr>;
 using CollisionMarginData = tesseract_common::CollisionMarginData;
-using CollisionMarginOverrideType = tesseract_common::CollisionMarginOverrideType;
-using PairsCollisionMarginData =
-    std::unordered_map<std::pair<std::string, std::string>, double, tesseract_common::PairHash>;
+using CollisionMarginPairData = tesseract_common::CollisionMarginPairData;
+using CollisionMarginPairOverrideType = tesseract_common::CollisionMarginPairOverrideType;
 
-/**
- * @brief Should return true if contact allowed, otherwise false.
- *
- * Also the order of strings should not matter, the function should handled by the function.
- */
-using IsContactAllowedFn = std::function<bool(const std::string&, const std::string&)>;
+class ContactResultValidator;
 
-enum class ContinuousCollisionType
+enum class ContinuousCollisionType : std::uint8_t
 {
   CCType_None,
   CCType_Time0,
@@ -68,7 +63,7 @@ enum class ContinuousCollisionType
   CCType_Between
 };
 
-enum class ContactTestType
+enum class ContactTestType : std::uint8_t
 {
   FIRST = 0,   /**< Return at first contact for any pair of objects */
   CLOSEST = 1, /**< Return the global minimum for a pair of objects */
@@ -290,17 +285,16 @@ public:
   bool operator==(const ContactResultMap& rhs) const;
   bool operator!=(const ContactResultMap& rhs) const;
 
+  /**
+   * @brief Get a brief summary of the most frequently colliding link pair
+   * @return A string containing the collision summary
+   */
+  std::string getSummary() const;
+
 private:
   ContainerType data_;
   long count_{ 0 };
 };
-
-/**
- * @brief Should return true if contact results are valid, otherwise false.
- *
- * This is used so users may provide a callback to reject/approve collision results in various algorithms.
- */
-using IsContactResultValidFn = std::function<bool(const ContactResult&)>;
 
 /** @brief The ContactRequest struct */
 struct ContactRequest
@@ -319,9 +313,12 @@ struct ContactRequest
   long contact_limit = 0;
 
   /** @brief This provides a user defined function approve/reject contact results */
-  IsContactResultValidFn is_valid = nullptr;
+  std::shared_ptr<const ContactResultValidator> is_valid;
 
   ContactRequest(ContactTestType type = ContactTestType::ALL);
+
+  bool operator==(const ContactRequest& rhs) const;
+  bool operator!=(const ContactRequest& rhs) const;
 };
 
 /**
@@ -335,7 +332,7 @@ struct ContactTestData
   ContactTestData() = default;
   ContactTestData(const std::vector<std::string>& active,
                   CollisionMarginData collision_margin_data,
-                  IsContactAllowedFn fn,
+                  std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator,
                   ContactRequest req,
                   ContactResultMap& res);
 
@@ -346,7 +343,7 @@ struct ContactTestData
   CollisionMarginData collision_margin_data{ 0 };
 
   /** @brief The allowed collision function used to check if two links should be excluded from collision checking */
-  IsContactAllowedFn fn = nullptr;
+  std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator;
 
   /** @brief The type of contact request data */
   ContactRequest req;
@@ -366,7 +363,7 @@ struct ContactTestData
  * CONTINUOUS - Continuous contact manager using only steps specified
  * LVS_CONTINUOUS - Continuous contact manager interpolating using longest valid segment
  */
-enum class CollisionEvaluatorType
+enum class CollisionEvaluatorType : std::uint8_t
 {
   /** @brief None */
   NONE,
@@ -381,7 +378,7 @@ enum class CollisionEvaluatorType
 };
 
 /** @brief The mode used to check program */
-enum class CollisionCheckProgramType
+enum class CollisionCheckProgramType : std::uint8_t
 {
   /** @brief Check all states */
   ALL,
@@ -399,15 +396,15 @@ enum class CollisionCheckProgramType
 
 /** @brief Identifies how the provided AllowedCollisionMatrix should be applied relative to the isAllowedFn in the
  * contact manager */
-enum class ACMOverrideType
+enum class ACMOverrideType : std::uint8_t
 {
   /** @brief Do not apply AllowedCollisionMatrix */
   NONE,
-  /** @brief Replace the current IsContactAllowedFn with one generated from the ACM provided */
+  /** @brief Replace the current ContactAllowedValidator with one generated from the ACM provided */
   ASSIGN,
-  /** @brief New IsContactAllowedFn combines the contact manager fn and the ACM generated fn with and AND */
+  /** @brief New ContactAllowedValidator combines the contact manager fn and the ACM generated fn with and AND */
   AND,
-  /** @brief New IsContactAllowedFn combines the contact manager fn and the ACM generated fn with and OR */
+  /** @brief New ContactAllowedValidator combines the contact manager fn and the ACM generated fn with and OR */
   OR,
 };
 
@@ -425,19 +422,44 @@ struct ContactManagerConfig
   ContactManagerConfig() = default;
   ContactManagerConfig(double default_margin);
 
-  /** @brief Identify how the collision margin data should be applied to the contact manager */
-  CollisionMarginOverrideType margin_data_override_type{ CollisionMarginOverrideType::NONE };
-  /** @brief Stores information about how the margins allowed between collision objects*/
-  CollisionMarginData margin_data;
+  /** @brief override the default contact margin */
+  std::optional<double> default_margin;
+
+  /** @brief Identify how the collision margin pair data should be applied to the contact manager */
+  CollisionMarginPairOverrideType pair_margin_override_type{ CollisionMarginPairOverrideType::NONE };
+  /** @brief Stores collision margin pair data */
+  CollisionMarginPairData pair_margin_data;
 
   /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
   tesseract_common::AllowedCollisionMatrix acm;
-  /** @brief Specifies how to combine the IsContactAllowedFn from acm with the one preset in the contact manager */
-  ACMOverrideType acm_override_type{ ACMOverrideType::OR };
+  /** @brief Specifies how to combine the ContactAllowedValidator from acm with the one preset in the contact manager */
+  ACMOverrideType acm_override_type{ ACMOverrideType::NONE };
 
   /** @brief Each key is an object name. Objects will be enabled/disabled based on the value. Objects that aren't in the
    * map are unmodified from the defaults*/
   std::unordered_map<std::string, bool> modify_object_enabled;
+
+  /**
+   * @brief Increment all margins by input amount. Useful for inflating or reducing margins
+   * @param increment Amount to increment margins
+   */
+  void incrementMargins(double increment);
+
+  /**
+   * @brief Scale all margins by input value
+   * @param scale Value by which all margins are multiplied
+   */
+  void scaleMargins(double scale);
+
+  /**
+   * @brief Check for errors and throw exception if they exist
+   * @throws an exception if `margin_data_override_type` is set to `NONE`, but margin pair data exist; or if
+   * `acm_override_type` is set to `NONE` but allowed collision entries exist.
+   */
+  void validate() const;
+
+  bool operator==(const ContactManagerConfig& rhs) const;
+  bool operator!=(const ContactManagerConfig& rhs) const;
 };
 
 /**
@@ -446,15 +468,10 @@ struct ContactManagerConfig
  */
 struct CollisionCheckConfig
 {
-  CollisionCheckConfig() = default;
-  CollisionCheckConfig(double default_margin,
-                       ContactRequest request = ContactRequest(),
+  CollisionCheckConfig(ContactRequest request = ContactRequest(),
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
                        double longest_valid_segment_length = 0.005,
                        CollisionCheckProgramType check_program_mode = CollisionCheckProgramType::ALL);
-
-  /** @brief Used to configure the contact manager prior to a series of checks */
-  ContactManagerConfig contact_manager_config;
 
   /** @brief ContactRequest that will be used for this check. Default test type: ALL*/
   ContactRequest contact_request;
@@ -467,6 +484,9 @@ struct CollisionCheckConfig
 
   /** @brief Secifies the mode used when collision checking program/trajectory. Default: ALL */
   CollisionCheckProgramType check_program_mode{ CollisionCheckProgramType::ALL };
+
+  bool operator==(const CollisionCheckConfig& rhs) const;
+  bool operator!=(const CollisionCheckConfig& rhs) const;
 };
 
 /**
@@ -572,6 +592,10 @@ struct ContactTrajectoryResults
   std::vector<std::string> joint_names;
   int total_steps = 0;
 };
+
+using ContactResultAnyPoly = tesseract_common::AnyWrapper<ContactResult>;
+using ContactResultMapAnyPoly = tesseract_common::AnyWrapper<ContactResultMap>;
+using ContactResultMapVectorAnyPoly = tesseract_common::AnyWrapper<std::vector<tesseract_collision::ContactResultMap>>;
 
 }  // namespace tesseract_collision
 

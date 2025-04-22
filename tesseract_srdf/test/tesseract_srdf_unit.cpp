@@ -11,7 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/collision_margin_data.h>
 #include <tesseract_common/yaml_utils.h>
-#include <tesseract_scene_graph/graph.h>
+#include <tesseract_common/yaml_extenstions.h>
 #include <tesseract_srdf/collision_margins.h>
 #include <tesseract_srdf/configs.h>
 #include <tesseract_srdf/disabled_collisions.h>
@@ -24,7 +24,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
 
-enum class ABBConfig
+enum class ABBConfig : std::uint8_t
 {
   ROBOT_ONLY,
   ROBOT_ON_RAIL,
@@ -549,10 +549,10 @@ class TempResourceLocator : public tesseract_common::ResourceLocator
 public:
   std::shared_ptr<tesseract_common::Resource> locateResource(const std::string& url) const override final
   {
-    tesseract_common::fs::path mod_url(url);
+    std::filesystem::path mod_url(url);
     if (!mod_url.is_absolute())
     {
-      mod_url = tesseract_common::fs::path(tesseract_common::getTempPath() + url);
+      mod_url = std::filesystem::path(tesseract_common::getTempPath() + url);
     }
 
     return std::make_shared<tesseract_common::SimpleLocatedResource>(
@@ -696,15 +696,15 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   SRDFModel srdf_save;
   srdf_save.initString(*g, xml_string, locator);
 
-  YAML::Node kinematics_plugin_config = YAML::Load(yaml_kin_plugins_string);
+  YAML::Node kinematics_plugin_config = tesseract_common::loadYamlString(yaml_kin_plugins_string, locator);
   srdf_save.kinematics_information.kinematics_plugin_info =
       kinematics_plugin_config[KinematicsPluginInfo::CONFIG_KEY].as<KinematicsPluginInfo>();
 
-  YAML::Node contact_managers_plugin_config = YAML::Load(yaml_cm_plugins_string);
+  YAML::Node contact_managers_plugin_config = tesseract_common::loadYamlString(yaml_cm_plugins_string, locator);
   srdf_save.contact_managers_plugin_info =
       contact_managers_plugin_config[ContactManagersPluginInfo::CONFIG_KEY].as<ContactManagersPluginInfo>();
 
-  YAML::Node calibration_config = YAML::Load(yaml_calibration_string);
+  YAML::Node calibration_config = tesseract_common::loadYamlString(yaml_calibration_string, locator);
   srdf_save.calibration_info = calibration_config[CalibrationInfo::CONFIG_KEY].as<CalibrationInfo>();
 
   std::string save_path = tesseract_common::getTempPath() + "unit_test_save_srdf.srdf";
@@ -762,9 +762,9 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_TRUE(srdf.collision_margin_data != nullptr);
   EXPECT_NEAR(srdf.collision_margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
   EXPECT_NEAR(srdf.collision_margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
-  EXPECT_EQ(srdf.collision_margin_data->getPairCollisionMargins().size(), 2);
-  EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
-  EXPECT_NEAR(srdf.collision_margin_data->getPairCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
+  EXPECT_EQ(srdf.collision_margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 2);
+  EXPECT_NEAR(srdf.collision_margin_data->getCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
+  EXPECT_NEAR(srdf.collision_margin_data->getCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
 
   // Calibration failure joint does not exist
   yaml_calibration_string =
@@ -790,7 +790,7 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
                  y: 0
                  z: 0
                  w: 1)";
-  YAML::Node bad_calibration_config = YAML::Load(yaml_calibration_string);
+  YAML::Node bad_calibration_config = tesseract_common::loadYamlString(yaml_calibration_string, locator);
   srdf_save.calibration_info = bad_calibration_config[CalibrationInfo::CONFIG_KEY].as<CalibrationInfo>();
 
   save_path = tesseract_common::getTempPath() + "unit_test_save_bad_srdf.srdf";
@@ -1573,9 +1573,9 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(margin_data != nullptr);
     EXPECT_NEAR(margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
     EXPECT_NEAR(margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
-    EXPECT_EQ(margin_data->getPairCollisionMargins().size(), 2);
-    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
-    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
+    EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 2);
+    EXPECT_NEAR(margin_data->getCollisionMargin("link_5", "link_6"), 0.01, 1e-6);
+    EXPECT_NEAR(margin_data->getCollisionMargin("link_5", "link_4"), 0.015, 1e-6);
   }
 
   {  // Test only having default margin
@@ -1595,7 +1595,7 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(margin_data != nullptr);
     EXPECT_NEAR(margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
     EXPECT_NEAR(margin_data->getMaxCollisionMargin(), 0.025, 1e-6);
-    EXPECT_EQ(margin_data->getPairCollisionMargins().size(), 0);
+    EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 0);
   }
 
   {  // Testing having negative default margin and pair margin
@@ -1618,9 +1618,9 @@ TEST(TesseractSRDFUnit, SRDFCollisionMarginsUnit)  // NOLINT
     EXPECT_TRUE(margin_data != nullptr);
     EXPECT_NEAR(margin_data->getDefaultCollisionMargin(), -0.025, 1e-6);
     EXPECT_NEAR(margin_data->getMaxCollisionMargin(), -0.01, 1e-6);
-    EXPECT_EQ(margin_data->getPairCollisionMargins().size(), 2);
-    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_6"), -0.01, 1e-6);
-    EXPECT_NEAR(margin_data->getPairCollisionMargin("link_5", "link_4"), -0.015, 1e-6);
+    EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 2);
+    EXPECT_NEAR(margin_data->getCollisionMargin("link_5", "link_6"), -0.01, 1e-6);
+    EXPECT_NEAR(margin_data->getCollisionMargin("link_5", "link_4"), -0.015, 1e-6);
   }
 
   {  // Test not having collision margin data
@@ -1771,7 +1771,7 @@ TEST(TesseractSRDFUnit, AddRemoveChainGroupUnit)  // NOLINT
 
   // ADD
   ChainGroup chain_group;
-  chain_group.push_back(std::make_pair("base_link", "tool0"));
+  chain_group.emplace_back("base_link", "tool0");
   info.addChainGroup("manipulator", chain_group);
   EXPECT_TRUE(info.hasChainGroup("manipulator"));
   EXPECT_TRUE(info.chain_groups.at("manipulator") == chain_group);
@@ -1785,7 +1785,7 @@ TEST(TesseractSRDFUnit, AddRemoveChainGroupUnit)  // NOLINT
 
   // Not equal
   chain_group = ChainGroup();
-  chain_group.push_back(std::make_pair("tool0", "base_link"));
+  chain_group.emplace_back("tool0", "base_link");
   info1_copy.addChainGroup("manipulator", chain_group);
   EXPECT_NE(info1_copy, info);
 
@@ -1994,8 +1994,8 @@ TEST(TesseractSRDFUnit, ParseConfigFilePathUnit)  // NOLINT
     tinyxml2::XMLElement* element = robot_element->FirstChildElement("contact_managers_plugin_config");
     EXPECT_TRUE(element != nullptr);
 
-    tesseract_common::fs::path path = tesseract_srdf::parseConfigFilePath(locator, element, version);
-    EXPECT_TRUE(tesseract_common::fs::exists(path));
+    std::filesystem::path path = tesseract_srdf::parseConfigFilePath(locator, element, version);
+    EXPECT_TRUE(std::filesystem::exists(path));
   }
 
   {  // failures (incorrect attribute)

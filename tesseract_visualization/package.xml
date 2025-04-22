@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>tesseract_visualization</name>
-  <version>0.26.0</version>
+  <version>0.29.1</version>
   <description>The tesseract_visualization package</description>
   <maintainer email="levi.armstrong@gmail.com">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
@@ -15,6 +15,7 @@
   <depend>tesseract_environment</depend>
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_state_solver</depend>
+  <depend>boost_plugin_loader</depend>
   <depend>libconsole-bridge-dev</depend>
 
   <build_depend>eigen</build_depend>
