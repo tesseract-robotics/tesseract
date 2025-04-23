@@ -92,6 +92,8 @@ add_library(
   src/eigen_serialization.cpp
   src/utils.cpp
   src/plugin_info.cpp
+  src/profile_dictionary.cpp
+  src/profile.cpp
   src/resource_locator.cpp
   src/types.cpp
   src/stopwatch.cpp

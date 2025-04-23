@@ -42,8 +42,83 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/kinematic_limits.h>
 #include <tesseract_common/calibration_info.h>
 #include <tesseract_common/plugin_info.h>
+#include <tesseract_common/profile.h>
+#include <tesseract_common/profile_dictionary.h>
+
+namespace tesseract_common
+{
+bool operator==(const ProfileDictionary& lhs, const ProfileDictionary& rhs)
+{
+  using DataContainer =
+      std::unordered_map<std::string,
+                         std::unordered_map<std::size_t, std::unordered_map<std::string, Profile::ConstPtr>>>;
+
+  DataContainer lhs_data = lhs.getAllProfileEntries();
+  DataContainer rhs_data = rhs.getAllProfileEntries();
+
+  bool equal = true;
+  equal &= lhs_data.size() == rhs_data.size();
+  equal &= lhs_data.at("test_namespace_1").size() == rhs_data.at("test_namespace_1").size();
+  equal &= lhs_data.at("test_namespace_2").size() == rhs_data.at("test_namespace_2").size();
+  equal &= lhs_data.at("test_namespace_1").at(100).size() == rhs_data.at("test_namespace_1").at(100).size();
+  equal &= lhs_data.at("test_namespace_2").at(200).size() == rhs_data.at("test_namespace_2").at(200).size();
+  return equal;
+}
+
+bool operator!=(const ProfileDictionary& lhs, const ProfileDictionary& rhs) { return !(lhs == rhs); }
+}  // namespace tesseract_common
 
 using namespace tesseract_common;
+
+class TestProfile : public Profile
+{
+public:
+  TestProfile() = default;
+  ~TestProfile() override = default;
+  TestProfile(std::size_t key) : Profile(key){};
+  TestProfile(const TestProfile&) = default;
+  TestProfile& operator=(const TestProfile&) = default;
+  TestProfile(TestProfile&&) = default;
+  TestProfile& operator=(TestProfile&&) = default;
+
+  bool operator==(const TestProfile& rhs) const { return (key_ == rhs.key_); };
+  bool operator!=(const TestProfile& rhs) const { return !operator==(rhs); };
+
+protected:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int)  // NOLINT
+  {
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Profile);
+  }
+};
+
+BOOST_CLASS_EXPORT_KEY(TestProfile)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(TestProfile)
+BOOST_CLASS_EXPORT_IMPLEMENT(TestProfile)
+
+TEST(TesseractCommonSerializeUnit, Profile)  // NOLINT
+{
+  TestProfile profile(100);
+  EXPECT_EQ(profile.getKey(), 100);
+  tesseract_common::testSerialization<TestProfile>(profile, "TestProfile");
+}
+
+TEST(TesseractCommonSerializeUnit, ProfileDictionary)  // NOLINT
+{
+  auto profile_a = std::make_shared<TestProfile>(100);
+  auto profile_b = std::make_shared<TestProfile>(100);
+  auto profile_c = std::make_shared<TestProfile>(200);
+  auto profile_d = std::make_shared<TestProfile>(200);
+
+  ProfileDictionary profile_dictionary;
+  profile_dictionary.addProfile("test_namespace_1", "profile_a", profile_a);
+  profile_dictionary.addProfile("test_namespace_1", "profile_b", profile_b);
+  profile_dictionary.addProfile("test_namespace_2", "profile_c", profile_c);
+  profile_dictionary.addProfile("test_namespace_2", "profile_c", profile_d);
+
+  tesseract_common::testSerialization<ProfileDictionary>(profile_dictionary, "ProfileDictionary");
+}
 
 TEST(TesseractCommonSerializeUnit, GeneralResourceLocator)  // NOLINT
 {
