@@ -82,6 +82,10 @@ struct Serialization;
 
 // timer.h
 class Timer;
+
+// Profile Dictionary
+class Profile;
+class ProfileDictionary;
 }  // namespace tesseract_common
 
 #endif  // TESSERACT_COMMON_TESSERACT_COMMON_FWD_H

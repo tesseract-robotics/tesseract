@@ -22,6 +22,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/collision_margin_data.h>
 #include <tesseract_common/stopwatch.h>
 #include <tesseract_common/timer.h>
+#include <tesseract_common/profile.h>
+#include <tesseract_common/profile_dictionary.h>
 
 /** @brief Resource locator implementation using a provided function to locate file resources */
 class TestResourceLocator : public tesseract_common::ResourceLocator
@@ -60,6 +62,137 @@ public:
         url, mod_url, std::make_shared<TestResourceLocator>(*this));
   }
 };
+
+class TestProfile : public tesseract_common::Profile
+{
+public:
+  TestProfile() = default;
+  ~TestProfile() override = default;
+  TestProfile(std::size_t key) : Profile(key) {}
+  TestProfile(const TestProfile&) = default;
+  TestProfile& operator=(const TestProfile&) = default;
+  TestProfile(TestProfile&&) = default;
+  TestProfile& operator=(TestProfile&&) = default;
+
+  bool operator==(const TestProfile& rhs) const { return (key_ == rhs.key_); }
+  bool operator!=(const TestProfile& rhs) const { return !operator==(rhs); }
+};
+
+TEST(TesseractCommonUnit, ProfileDictionary)  // NOLINT
+{
+  tesseract_common::ProfileDictionary profiles;
+
+  const std::string ns{ "test_ns" };
+  const std::string profile_name{ "test_profile" };
+  const std::string profile_name_2{ "test_profile_2" };
+  const std::size_t profile_key{ 100 };
+  auto profile = std::make_shared<const TestProfile>(profile_key);
+  auto profile2 = std::make_shared<const TestProfile>(2 * profile_key);
+  profiles.addProfile(ns, profile_name, profile);
+  profiles.addProfile(ns, profile_name_2, profile);
+  profiles.addProfile(ns, profile_name, profile2);
+  profiles.addProfile(ns, profile_name_2, profile2);
+
+  // Constructors
+  auto data = profiles.getAllProfileEntries();
+  tesseract_common::ProfileDictionary profiles_copy(profiles);
+  EXPECT_EQ(data, profiles_copy.getAllProfileEntries());
+  tesseract_common::ProfileDictionary profiles_copy_assign;
+  profiles_copy_assign = profiles;
+  EXPECT_EQ(data, profiles_copy_assign.getAllProfileEntries());
+  tesseract_common::ProfileDictionary profiles_move(std::move(profiles_copy));
+  EXPECT_EQ(data, profiles_move.getAllProfileEntries());
+  tesseract_common::ProfileDictionary profiles_move_assign;
+  profiles_move_assign = std::move(profiles_copy_assign);
+  EXPECT_EQ(data, profiles_move_assign.getAllProfileEntries());
+
+  EXPECT_FALSE(profiles.hasProfile(profile_key, ns, "does_not_exist"));
+  EXPECT_FALSE(profiles.hasProfile(profile_key, "does_not_exist", profile_name));
+  EXPECT_FALSE(profiles.hasProfile(0, ns, profile_name));
+  EXPECT_TRUE(profiles.hasProfile(profile_key, ns, profile_name));
+  EXPECT_TRUE(profiles.hasProfile(profile_key, ns, profile_name_2));
+  EXPECT_TRUE(profiles.hasProfile(2 * profile_key, ns, profile_name));
+  EXPECT_TRUE(profiles.hasProfile(2 * profile_key, ns, profile_name_2));
+  EXPECT_TRUE(profile == profiles.getProfile(profile_key, ns, profile_name));
+  EXPECT_TRUE(profile == profiles.getProfile(profile_key, ns, profile_name_2));
+  EXPECT_TRUE(profile2 == profiles.getProfile(2 * profile_key, ns, profile_name));
+  EXPECT_TRUE(profile2 == profiles.getProfile(2 * profile_key, ns, profile_name_2));
+  EXPECT_TRUE(profiles.hasProfileEntry(profile_key, ns));
+  EXPECT_TRUE(profiles.hasProfileEntry(2 * profile_key, ns));
+  EXPECT_FALSE(profiles.hasProfileEntry(profile_key, "does_not_exist"));
+  EXPECT_FALSE(profiles.hasProfileEntry(0, ns));
+  EXPECT_EQ(profiles.getProfileEntry(profile_key, ns).size(), 2);
+  EXPECT_EQ(profiles.getProfileEntry(2 * profile_key, ns).size(), 2);
+
+  // Remove profile wich does not exist
+  profiles.removeProfile(profile_key, ns, "does_not_exist");
+  EXPECT_EQ(profiles.getProfileEntry(profile_key, ns).size(), 2);
+  profiles.removeProfile(profile_key, "does_not_exist", profile_name);
+  EXPECT_EQ(profiles.getProfileEntry(profile_key, ns).size(), 2);
+  EXPECT_EQ(profiles.getProfileEntry(2 * profile_key, ns).size(), 2);
+
+  // Remove profile which does exist
+  profiles.removeProfile(profile_key, ns, profile_name);
+  EXPECT_EQ(profiles.getProfileEntry(profile_key, ns).size(), 1);
+  EXPECT_EQ(profiles.getProfileEntry(2 * profile_key, ns).size(), 2);
+  profiles.removeProfile(profile_key, ns, profile_name_2);
+  EXPECT_FALSE(profiles.hasProfileEntry(profile_key, ns));
+  EXPECT_EQ(profiles.getProfileEntry(2 * profile_key, ns).size(), 2);
+
+  profiles.removeProfile(2 * profile_key, ns, profile_name);
+  EXPECT_FALSE(profiles.hasProfileEntry(profile_key, ns));
+  EXPECT_EQ(profiles.getProfileEntry(2 * profile_key, ns).size(), 1);
+  profiles.removeProfile(2 * profile_key, ns, profile_name_2);
+  EXPECT_FALSE(profiles.hasProfileEntry(profile_key, ns));
+  EXPECT_FALSE(profiles.hasProfileEntry(2 * profile_key, ns));
+  EXPECT_TRUE(profiles.getAllProfileEntries().empty());
+
+  // Test clear
+  profiles.addProfile(ns, std::vector<std::string>{ profile_name, profile_name_2 }, profile);
+  profiles.addProfile(ns, std::vector<std::string>{ profile_name, profile_name_2 }, profile2);
+  EXPECT_EQ(profiles.getProfileEntry(profile_key, ns).size(), 2);
+  EXPECT_EQ(profiles.getProfileEntry(2 * profile_key, ns).size(), 2);
+  EXPECT_FALSE(profiles.getAllProfileEntries().empty());
+  profiles.clear();
+  EXPECT_TRUE(profiles.getAllProfileEntries().empty());
+
+  profiles.addProfile(ns, std::vector<std::string>{ profile_name }, profile);
+  profiles.addProfile(ns, std::vector<std::string>{ profile_name_2 }, profile);
+  profiles.addProfile(ns, std::vector<std::string>{ profile_name }, profile2);
+  profiles.addProfile(ns, std::vector<std::string>{ profile_name_2 }, profile2);
+
+  EXPECT_TRUE(profiles.hasProfileEntry(profile_key, ns));
+  profiles.removeProfileEntry(profile_key, "does_not_exist");
+  EXPECT_TRUE(profiles.hasProfileEntry(profile_key, ns));
+  profiles.removeProfileEntry(profile_key, ns);
+  EXPECT_FALSE(profiles.hasProfileEntry(profile_key, ns));
+
+  EXPECT_TRUE(profiles.hasProfileEntry(2 * profile_key, ns));
+  profiles.removeProfileEntry(2 * profile_key, "does_not_exist");
+  EXPECT_TRUE(profiles.hasProfileEntry(2 * profile_key, ns));
+  profiles.removeProfileEntry(2 * profile_key, ns);
+  EXPECT_FALSE(profiles.hasProfileEntry(2 * profile_key, ns));
+
+  EXPECT_TRUE(profiles.getAllProfileEntries().empty());
+
+  // Test failures
+  EXPECT_ANY_THROW(profiles.addProfile(ns, std::vector<std::string>{ "" }, profile));  // NOLINT
+  EXPECT_TRUE(profiles.getAllProfileEntries().empty());
+
+  profiles.addProfile(ns, std::vector<std::string>{ profile_name }, profile);
+  profiles.addProfile(ns, std::vector<std::string>{ profile_name_2 }, profile);
+
+  EXPECT_ANY_THROW(profiles.addProfile("", profile_name, profile));                              // NOLINT
+  EXPECT_ANY_THROW(profiles.addProfile(ns, "", profile));                                        // NOLINT
+  EXPECT_ANY_THROW(profiles.addProfile(ns, profile_name, nullptr));                              // NOLINT
+  EXPECT_ANY_THROW(profiles.addProfile("", std::vector<std::string>{ profile_name }, profile));  // NOLINT
+  EXPECT_ANY_THROW(profiles.addProfile(ns, std::vector<std::string>(), profile));                // NOLINT
+  EXPECT_ANY_THROW(profiles.addProfile(ns, std::vector<std::string>{ "" }, profile));            // NOLINT
+  EXPECT_ANY_THROW(profiles.addProfile(ns, std::vector<std::string>{ "" }, profile2));           // NOLINT
+  EXPECT_ANY_THROW(profiles.addProfile(ns, std::vector<std::string>{ profile_name }, nullptr));  // NOLINT
+  EXPECT_ANY_THROW(profiles.getProfileEntry(profile_key, "does_not_exist"));                     // NOLINT
+  EXPECT_ANY_THROW(profiles.getProfileEntry(0, ns));                                             // NOLINT
+}
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
