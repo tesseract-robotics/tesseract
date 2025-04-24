@@ -2,6 +2,16 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Removed debug cache prints (`#1147 <https://github.com/tesseract-robotics/tesseract/issues/1147>`_)
+* Update to leverage boost_plugin_loader
+* Improve tesseract_environment codecov
+* Improve codecov CI
+* Fix use of CollisionCheckConfig and remove ContactMangerConfig from this struct
+* Add validate method to ContactManagerConfig
+* Contributors: Levi Armstrong, Michael Ripperger
+
 0.29.1 (2025-03-26)
 -------------------
 

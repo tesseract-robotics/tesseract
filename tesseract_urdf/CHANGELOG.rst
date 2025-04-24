@@ -2,6 +2,12 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve tesseract_urdf code coverage (`#1139 <https://github.com/tesseract-robotics/tesseract/issues/1139>`_)
+* Improve codecov CI
+* Contributors: Levi Armstrong
+
 0.29.1 (2025-03-26)
 -------------------
 

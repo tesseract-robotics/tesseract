@@ -2,6 +2,12 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to leverage boost_plugin_loader
+* Improve codecov CI
+* Contributors: Levi Armstrong
+
 0.29.1 (2025-03-26)
 -------------------
 

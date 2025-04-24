@@ -2,6 +2,11 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve codecov CI
+* Contributors: Levi Armstrong
+
 0.29.1 (2025-03-26)
 -------------------
 

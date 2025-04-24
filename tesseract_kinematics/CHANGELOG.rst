@@ -2,6 +2,14 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to leverage boost_plugin_loader
+* Improve tesseract_kinematics code coverage (`#1140 <https://github.com/tesseract-robotics/tesseract/issues/1140>`_)
+* Improve codecov CI
+* KinematicsGroup: return complete list of possible tip links and working frames (`#1136 <https://github.com/tesseract-robotics/tesseract/issues/1136>`_)
+* Contributors: Levi Armstrong, Michael Ripperger
+
 0.29.1 (2025-03-26)
 -------------------
 

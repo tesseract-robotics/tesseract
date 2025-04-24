@@ -2,6 +2,12 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve tesseract_geometry code coverage (`#1144 <https://github.com/tesseract-robotics/tesseract/issues/1144>`_)
+* Improve codecov CI
+* Contributors: Levi Armstrong
+
 0.29.1 (2025-03-26)
 -------------------
 * Fix polygon mesh not serializing its resource locator

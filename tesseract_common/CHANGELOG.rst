@@ -2,6 +2,18 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move profile dictionary to tesseract_common
+* Update cmake format CI to leverage 22.04 image
+* Update to leverage boost_plugin_loader
+* Update tesseract_common fwd.h
+* Add constructor to CollisionMarginPairData
+* Improve tesseract_common code coverage (`#1138 <https://github.com/tesseract-robotics/tesseract/issues/1138>`_)
+* Improve codecov CI
+* Fix use of CollisionCheckConfig and remove ContactMangerConfig from this struct
+* Contributors: Levi Armstrong
+
 0.29.1 (2025-03-26)
 -------------------
 

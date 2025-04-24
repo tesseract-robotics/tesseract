@@ -2,6 +2,20 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add unit tests for trajectory collision logging (`#1146 <https://github.com/tesseract-robotics/tesseract/issues/1146>`_)
+* Add increment and scale to ContactManagerConfig
+* Update to leverage boost_plugin_loader
+* Fix contact manager config serialization
+* Improve tesseract_collision code coverage
+* Improve tesseract_common code coverage (`#1138 <https://github.com/tesseract-robotics/tesseract/issues/1138>`_)
+* Improve codecov CI
+* Fix use of CollisionCheckConfig and remove ContactMangerConfig from this struct
+* Add incrementCollisionMarginData to contact manager interface
+* Add validate method to ContactManagerConfig
+* Contributors: Levi Armstrong, Tyler Marr
+
 0.29.1 (2025-03-26)
 -------------------
 

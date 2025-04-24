@@ -2,6 +2,11 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Documentation Update (`#1130 <https://github.com/tesseract-robotics/tesseract/issues/1130>`_)
+* Contributors: Michael Ripperger
+
 0.29.1 (2025-03-26)
 -------------------
 * Add missing declared namespace for tesseract in xacro and urdf files

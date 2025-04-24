@@ -2,6 +2,12 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve tesseract_common code coverage (`#1138 <https://github.com/tesseract-robotics/tesseract/issues/1138>`_)
+* Improve codecov CI
+* Contributors: Levi Armstrong
+
 0.29.1 (2025-03-26)
 -------------------
 
