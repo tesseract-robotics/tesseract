@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.30.0 (2025-04-23)
+-------------------
 * Update to leverage boost_plugin_loader
 * Improve tesseract_kinematics code coverage (`#1140 <https://github.com/tesseract-robotics/tesseract/issues/1140>`_)
 * Improve codecov CI

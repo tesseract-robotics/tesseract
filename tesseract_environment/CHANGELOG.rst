@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.30.0 (2025-04-23)
+-------------------
 * Removed debug cache prints (`#1147 <https://github.com/tesseract-robotics/tesseract/issues/1147>`_)
 * Update to leverage boost_plugin_loader
 * Improve tesseract_environment codecov

@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.30.0 (2025-04-23)
+-------------------
 * Move profile dictionary to tesseract_common
 * Update cmake format CI to leverage 22.04 image
 * Update to leverage boost_plugin_loader

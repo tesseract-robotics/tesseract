@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.30.0 (2025-04-23)
+-------------------
 * Add unit tests for trajectory collision logging (`#1146 <https://github.com/tesseract-robotics/tesseract/issues/1146>`_)
 * Add increment and scale to ContactManagerConfig
 * Update to leverage boost_plugin_loader

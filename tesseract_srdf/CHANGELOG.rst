@@ -2,8 +2,8 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.30.0 (2025-04-23)
+-------------------
 * Improve codecov CI
 * Fix use of CollisionCheckConfig and remove ContactMangerConfig from this struct
 * Contributors: Levi Armstrong
