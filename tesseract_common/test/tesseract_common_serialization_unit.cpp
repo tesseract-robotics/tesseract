@@ -265,6 +265,20 @@ TEST(TesseractCommonSerializeUnit, TaskComposerPluginInfo)  // NOLINT
     object->task_plugin_infos.plugins["plugin_key2"] = plugin;
   }
 
+  {
+    PluginInfo plugin;
+    plugin.class_name = "test_class_name 3";
+    plugin.config["test3"] = "value3";
+    object->profile_plugin_infos["task_ns_1"]["section_1"].default_plugin = "test_string";
+    object->profile_plugin_infos["task_ns_1"]["section_1"].plugins["plugin_key"] = plugin;
+    object->profile_plugin_infos["task_ns_1"]["section_2"].default_plugin = "test_string2";
+    object->profile_plugin_infos["task_ns_1"]["section_2"].plugins["plugin_key2"] = plugin;
+    object->profile_plugin_infos["task_ns_2"]["section_1"].default_plugin = "test_string";
+    object->profile_plugin_infos["task_ns_2"]["section_1"].plugins["plugin_key"] = plugin;
+    object->profile_plugin_infos["task_ns_2"]["section_2"].default_plugin = "test_string2";
+    object->profile_plugin_infos["task_ns_2"]["section_2"].plugins["plugin_key2"] = plugin;
+  }
+
   tesseract_common::testSerialization<TaskComposerPluginInfo>(*object, "TaskComposerPluginInfo");
 }
 

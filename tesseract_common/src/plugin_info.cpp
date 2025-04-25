@@ -254,6 +254,20 @@ void TaskComposerPluginInfo::insert(const TaskComposerPluginInfo& other)
 
   for (const auto& plugin_info : other.task_plugin_infos.plugins)
     task_plugin_infos.plugins[plugin_info.first] = plugin_info.second;
+
+  for (const auto& profile_plugins : other.profile_plugin_infos)
+  {
+    for (const auto& section_plugin : profile_plugins.second)
+    {
+      if (!section_plugin.second.default_plugin.empty())
+        profile_plugin_infos[profile_plugins.first][section_plugin.first].default_plugin =
+            section_plugin.second.default_plugin;
+
+      for (const auto& plugin_info : section_plugin.second.plugins)
+        profile_plugin_infos[profile_plugins.first][section_plugin.first].plugins[plugin_info.first] =
+            plugin_info.second;
+    }
+  }
 }
 
 void TaskComposerPluginInfo::clear()
@@ -262,12 +276,13 @@ void TaskComposerPluginInfo::clear()
   search_libraries.clear();
   executor_plugin_infos.clear();
   task_plugin_infos.clear();
+  profile_plugin_infos.clear();
 }
 
 bool TaskComposerPluginInfo::empty() const
 {
   return (search_paths.empty() && search_libraries.empty() && executor_plugin_infos.plugins.empty() &&
-          task_plugin_infos.plugins.empty());
+          task_plugin_infos.plugins.empty() && profile_plugin_infos.empty());
 }
 
 bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
@@ -277,6 +292,7 @@ bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
   equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
   equal &= (executor_plugin_infos == rhs.executor_plugin_infos);
   equal &= (task_plugin_infos == rhs.task_plugin_infos);
+  equal &= (profile_plugin_infos == rhs.profile_plugin_infos);
   return equal;
 }
 bool TaskComposerPluginInfo::operator!=(const TaskComposerPluginInfo& rhs) const { return !operator==(rhs); }
@@ -288,6 +304,7 @@ void TaskComposerPluginInfo::serialize(Archive& ar, const unsigned int /*version
   ar& BOOST_SERIALIZATION_NVP(search_libraries);
   ar& BOOST_SERIALIZATION_NVP(executor_plugin_infos);
   ar& BOOST_SERIALIZATION_NVP(task_plugin_infos);
+  ar& BOOST_SERIALIZATION_NVP(profile_plugin_infos);
 }
 
 }  // namespace tesseract_common

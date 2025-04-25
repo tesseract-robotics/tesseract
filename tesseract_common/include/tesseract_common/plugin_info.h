@@ -177,6 +177,9 @@ struct TaskComposerPluginInfo
   /** @brief A map of name to task composer task plugin information */
   tesseract_common::PluginInfoContainer task_plugin_infos;
 
+  /** @brief A map of task namespace to a map of section_names to profile plugin information */
+  std::map<std::string, std::map<std::string, tesseract_common::PluginInfoContainer>> profile_plugin_infos;
+
   /** @brief Insert the content of an other TaskComposerPluginInfo */
   void insert(const TaskComposerPluginInfo& other);
 
