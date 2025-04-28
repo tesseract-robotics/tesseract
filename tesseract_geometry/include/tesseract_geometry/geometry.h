@@ -36,6 +36,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cstdint>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/fwd.h>
+
 namespace boost::serialization
 {
 class access;
@@ -100,6 +102,7 @@ private:
   boost::uuids::uuid uuid_{};
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };

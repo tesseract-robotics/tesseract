@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+struct Serialization;
 /**
  * @brief Contains information about a robot manipulator
  */
@@ -93,6 +94,7 @@ struct ManipulatorInfo
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT

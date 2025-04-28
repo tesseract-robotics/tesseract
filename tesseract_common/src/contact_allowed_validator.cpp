@@ -93,7 +93,6 @@ void CombinedContactAllowedValidator::serialize(Archive& ar, const unsigned int 
 
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ContactAllowedValidator)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ContactAllowedValidator)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ACMContactAllowedValidator)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ACMContactAllowedValidator)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CombinedContactAllowedValidator)

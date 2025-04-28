@@ -48,8 +48,9 @@ public:
 
   virtual bool operator()(const std::string&, const std::string&) const = 0;
 
-protected:
+private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
@@ -70,7 +71,9 @@ public:
 protected:
   tesseract_common::AllowedCollisionMatrix acm_;
 
+private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
@@ -102,14 +105,16 @@ protected:
   std::vector<std::shared_ptr<const ContactAllowedValidator>> validators_;
   CombinedContactAllowedValidatorType type_{ CombinedContactAllowedValidatorType::OR };
 
+private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY(tesseract_common::ContactAllowedValidator)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::ContactAllowedValidator)
 BOOST_CLASS_EXPORT_KEY(tesseract_common::ACMContactAllowedValidator)
 BOOST_CLASS_EXPORT_KEY(tesseract_common::CombinedContactAllowedValidator)
 

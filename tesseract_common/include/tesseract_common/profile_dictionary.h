@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+struct Serialization;
 /**
  * @brief This class is used to store profiles used by various tasks
  * @details This is a thread safe class
@@ -133,7 +134,9 @@ protected:
   std::unordered_map<std::string, std::unordered_map<std::size_t, std::unordered_map<std::string, Profile::ConstPtr>>>
       profiles_;
 
+private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };

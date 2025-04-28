@@ -35,6 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
+struct Serialization;
+
 /** @brief Store kinematic limits */
 struct KinematicLimits
 {
@@ -61,6 +63,7 @@ struct KinematicLimits
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };

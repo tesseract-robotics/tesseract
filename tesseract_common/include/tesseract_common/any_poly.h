@@ -252,7 +252,7 @@ using UMapStringSizeTAnyPoly = AnyWrapper<std::unordered_map<std::string, std::s
 
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyInterface)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::AnyInterface)
 BOOST_CLASS_TRACKING(tesseract_common::AnyInterface, boost::serialization::track_never)
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyPoly)

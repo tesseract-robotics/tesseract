@@ -93,7 +93,9 @@ public:
 protected:
   std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph_;
 
+private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
   {
@@ -411,6 +413,7 @@ struct Environment::Implementation
   std::unique_ptr<Implementation> clone() const;
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void save(Archive& ar, const unsigned int /*version*/) const  // NOLINT
   {

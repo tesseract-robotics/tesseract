@@ -86,6 +86,7 @@ public:
 
 protected:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int)  // NOLINT
   {
@@ -795,6 +796,7 @@ struct TestAtomic
   bool operator!=(const TestAtomic& rhs) const { return rhs.value.load() != value.load(); }
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
   {

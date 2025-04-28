@@ -18,6 +18,8 @@ class access;
 
 namespace tesseract_common
 {
+struct Serialization;
+
 using AllowedCollisionEntries =
     std::unordered_map<tesseract_common::LinkNamesPair, std::string, tesseract_common::PairHash>;
 
@@ -104,6 +106,7 @@ private:
   AllowedCollisionEntries lookup_table_;
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };

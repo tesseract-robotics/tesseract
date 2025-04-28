@@ -29,6 +29,7 @@
 #include <memory>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#include <tesseract_common/fwd.h>
 
 namespace tesseract_collision
 {
@@ -51,8 +52,9 @@ public:
 
   virtual bool operator()(const ContactResult&) const = 0;
 
-protected:
+private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
