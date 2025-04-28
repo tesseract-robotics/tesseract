@@ -44,6 +44,8 @@ class access;
 
 namespace tesseract_common
 {
+struct Serialization;
+
 /** @brief The Plugin Information struct */
 // NOLINTNEXTLINE
 struct PluginInfo
@@ -62,6 +64,7 @@ struct PluginInfo
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const;  // NOLINT
 
@@ -86,6 +89,7 @@ struct PluginInfoContainer
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
@@ -122,6 +126,7 @@ struct KinematicsPluginInfo
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
@@ -158,6 +163,7 @@ struct ContactManagersPluginInfo
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
@@ -194,6 +200,7 @@ struct TaskComposerPluginInfo
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };

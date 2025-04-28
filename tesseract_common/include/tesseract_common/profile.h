@@ -32,6 +32,7 @@
 
 namespace tesseract_common
 {
+struct Serialization;
 /**
  * @brief The Profile class
  */
@@ -58,7 +59,10 @@ protected:
   Profile& operator=(Profile&&) = default;
 
   std::size_t key_{ 0 };
+
+private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive&, const unsigned int);  // NOLINT
 };

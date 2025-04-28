@@ -67,6 +67,7 @@ private:
   Eigen::Isometry3d origin_{ Eigen::Isometry3d::Identity() };
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };

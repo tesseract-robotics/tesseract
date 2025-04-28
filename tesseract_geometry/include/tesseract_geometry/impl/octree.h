@@ -113,6 +113,7 @@ private:
                           unsigned int& num_pruned);
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const;  // NOLINT
 

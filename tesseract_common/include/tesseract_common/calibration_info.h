@@ -26,6 +26,7 @@
 #ifndef TESSERACT_COMMON_CALIBRATION_INFO_H
 #define TESSERACT_COMMON_CALIBRATION_INFO_H
 
+#include <tesseract_common/fwd.h>
 #include <tesseract_common/eigen_types.h>
 
 #include <boost/serialization/export.hpp>
@@ -69,6 +70,7 @@ struct CalibrationInfo
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };

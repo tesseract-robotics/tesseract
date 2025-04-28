@@ -78,6 +78,7 @@ private:
   CollisionMarginPairOverrideType pair_override_type_{ CollisionMarginPairOverrideType::NONE };
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version);  // NOLINT

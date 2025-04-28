@@ -47,6 +47,7 @@ namespace tesseract_common
 {
 // Forward declare
 class Resource;
+struct Serialization;
 
 /** @brief Abstract class for resource loaders */
 class ResourceLocator
@@ -70,6 +71,7 @@ public:
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
@@ -132,6 +134,7 @@ public:
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 
@@ -187,6 +190,7 @@ public:
 
 private:
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
@@ -237,6 +241,7 @@ private:
   ResourceLocator::ConstPtr parent_;
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
@@ -271,6 +276,7 @@ private:
   ResourceLocator::ConstPtr parent_;
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };

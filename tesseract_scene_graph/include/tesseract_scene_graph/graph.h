@@ -606,6 +606,7 @@ private:
   std::vector<std::string> getLinkChildrenHelper(Vertex start_vertex) const;
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const;  // NOLINT
 

@@ -212,6 +212,7 @@ private:
   std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures_;
 
   friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };

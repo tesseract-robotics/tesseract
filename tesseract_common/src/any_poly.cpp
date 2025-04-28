@@ -107,7 +107,6 @@ void AnyPoly::serialize(Archive& ar, const unsigned int /*version*/)
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyInterface)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyInterface)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyPoly)
 
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::BoolAnyPoly)
