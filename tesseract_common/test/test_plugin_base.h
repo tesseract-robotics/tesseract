@@ -27,6 +27,7 @@
 #define TESSERACT_COMMON_TEST_PLUGIN_BASE_H
 
 #include <string>
+#include <boost_plugin_loader/fwd.h>
 
 namespace tesseract_common
 {
@@ -44,7 +45,7 @@ public:
   static std::string getSection() { return "TestBase"; }
 
 protected:
-  friend class PluginLoader;
+  friend class boost_plugin_loader::PluginLoader;
 };
 
 }  // namespace tesseract_common

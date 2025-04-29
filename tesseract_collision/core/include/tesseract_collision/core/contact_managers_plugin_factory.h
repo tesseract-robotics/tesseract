@@ -72,7 +72,7 @@ public:
 
 protected:
   static std::string getSection();
-  friend class PluginLoader;
+  friend class boost_plugin_loader::PluginLoader;
 };
 
 /** @brief Define a continuous contact manager plugin which the factory can create an instance */
@@ -94,7 +94,7 @@ public:
 
 protected:
   static std::string getSection();
-  friend class PluginLoader;
+  friend class boost_plugin_loader::PluginLoader;
 };
 
 class ContactManagersPluginFactory

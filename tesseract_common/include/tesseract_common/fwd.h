@@ -44,9 +44,6 @@ struct PairHash;
 class AnyInterface;
 class AnyPoly;
 
-// class_loader.h
-struct ClassLoader;
-
 // allowed_collision_matrix
 class AllowedCollisionMatrix;
 
@@ -69,9 +66,6 @@ struct KinematicLimits;
 
 // manipulator_info.h
 struct ManipulatorInfo;
-
-// plugin_loader.h
-class PluginLoader;
 
 // resource_locator.h
 class Resource;

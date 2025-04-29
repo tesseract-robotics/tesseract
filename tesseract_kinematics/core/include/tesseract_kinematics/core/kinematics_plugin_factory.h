@@ -82,7 +82,7 @@ public:
 
 protected:
   static std::string getSection();
-  friend class PluginLoader;
+  friend class boost_plugin_loader::PluginLoader;
 };
 
 /** @brief Define a forward kinematics plugin which the factory can create an instance */
@@ -110,7 +110,7 @@ public:
 
 protected:
   static std::string getSection();
-  friend class PluginLoader;
+  friend class boost_plugin_loader::PluginLoader;
 };
 
 class KinematicsPluginFactory
