@@ -57,6 +57,15 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
   return true;
 }
 
+AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& entries)
+{
+  for (const auto& entry : entries)
+  {
+    auto link_pair = tesseract_common::makeOrderedLinkPair(entry.first.first, entry.first.second);
+    lookup_table_[link_pair] = entry.second;
+  }
+}
+
 void AllowedCollisionMatrix::addAllowedCollision(const std::string& link_name1,
                                                  const std::string& link_name2,
                                                  const std::string& reason)

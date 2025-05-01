@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/plugin_info.h>
 #include <tesseract_common/calibration_info.h>
+#include <tesseract_common/collision_margin_data.h>
 
 namespace YAML
 {
@@ -669,6 +670,165 @@ struct convert<tesseract_common::Toolpath>
     return true;
   }
 };
+
+//=========================== CollisionMarginPairOverrideType Enum ===========================
+template <>
+struct convert<tesseract_common::CollisionMarginPairOverrideType>
+{
+  static Node encode(const tesseract_common::CollisionMarginPairOverrideType& rhs)
+  {
+    static const std::map<tesseract_common::CollisionMarginPairOverrideType, std::string> m = {
+      { tesseract_common::CollisionMarginPairOverrideType::NONE, "NONE" },
+      { tesseract_common::CollisionMarginPairOverrideType::MODIFY, "MODIFY" },
+      { tesseract_common::CollisionMarginPairOverrideType::REPLACE, "REPLACE" }
+    };
+    return Node(m.at(rhs));
+  }
+
+  static bool decode(const Node& node, tesseract_common::CollisionMarginPairOverrideType& rhs)
+  {
+    static const std::map<std::string, tesseract_common::CollisionMarginPairOverrideType> inv = {
+      { "NONE", tesseract_common::CollisionMarginPairOverrideType::NONE },
+      { "MODIFY", tesseract_common::CollisionMarginPairOverrideType::MODIFY },
+      { "REPLACE", tesseract_common::CollisionMarginPairOverrideType::REPLACE }
+    };
+
+    if (!node.IsScalar())
+      return false;
+
+    auto it = inv.find(node.Scalar());
+    if (it == inv.end())
+      return false;
+
+    rhs = it->second;
+    return true;
+  }
+};
+
+//============================ PairsCollisionMarginData ============================
+template <>
+struct convert<tesseract_common::PairsCollisionMarginData>
+{
+  static Node encode(const tesseract_common::PairsCollisionMarginData& rhs)
+  {
+    Node node(NodeType::Map);
+    for (const auto& pair : rhs)
+    {
+      Node key_node(NodeType::Sequence);
+      key_node.push_back(pair.first.first);
+      key_node.push_back(pair.first.second);
+
+      // tell yaml-cpp “emit this sequence in [a, b] inline style”
+      key_node.SetStyle(YAML::EmitterStyle::Flow);
+
+      node[key_node] = pair.second;
+    }
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_common::PairsCollisionMarginData& rhs)
+  {
+    if (!node.IsMap())
+      return false;
+
+    for (auto it = node.begin(); it != node.end(); ++it)
+    {
+      Node key_node = it->first;
+      if (!key_node.IsSequence() || key_node.size() != 2)
+        return false;
+
+      std::pair<std::string, std::string> key;
+      key.first = key_node[0].as<std::string>();
+      key.second = key_node[1].as<std::string>();
+
+      auto v = it->second.as<double>();
+      rhs.emplace(std::move(key), v);
+    }
+    return true;
+  }
+};
+
+//================================== CollisionMarginPairData =================================
+template <>
+struct convert<tesseract_common::CollisionMarginPairData>
+{
+  static Node encode(const tesseract_common::CollisionMarginPairData& rhs)
+  {
+    const tesseract_common::PairsCollisionMarginData& data = rhs.getCollisionMargins();
+    return Node(data);
+  }
+
+  static bool decode(const Node& node, tesseract_common::CollisionMarginPairData& rhs)
+  {
+    auto data = node.as<tesseract_common::PairsCollisionMarginData>();
+    rhs = tesseract_common::CollisionMarginPairData(data);
+    return true;
+  }
+};
+
+//============================ AllowedCollisionEntries ============================
+template <>
+struct convert<tesseract_common::AllowedCollisionEntries>
+{
+  static Node encode(const tesseract_common::AllowedCollisionEntries& rhs)
+  {
+    Node node(NodeType::Map);
+    for (const auto& pair : rhs)
+    {
+      Node key_node(NodeType::Sequence);
+      key_node.push_back(pair.first.first);
+      key_node.push_back(pair.first.second);
+
+      // tell yaml-cpp “emit this sequence in [a, b] inline style”
+      key_node.SetStyle(YAML::EmitterStyle::Flow);
+
+      node[key_node] = pair.second;
+    }
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_common::AllowedCollisionEntries& rhs)
+  {
+    if (!node.IsMap())
+      return false;
+
+    for (auto it = node.begin(); it != node.end(); ++it)
+    {
+      Node key_node = it->first;
+      if (!key_node.IsSequence() || key_node.size() != 2)
+        return false;
+
+      std::pair<std::string, std::string> key;
+      key.first = key_node[0].as<std::string>();
+      key.second = key_node[1].as<std::string>();
+
+      auto v = it->second.as<std::string>();
+      rhs.emplace(std::move(key), v);
+    }
+    return true;
+  }
+};
+
+//================================== AllowedCollisionMatrix =================================
+template <>
+struct convert<tesseract_common::AllowedCollisionMatrix>
+{
+  static Node encode(const tesseract_common::AllowedCollisionMatrix& rhs)
+  {
+    const tesseract_common::AllowedCollisionEntries& data = rhs.getAllAllowedCollisions();
+    return Node(data);
+  }
+
+  static bool decode(const Node& node, tesseract_common::AllowedCollisionMatrix& rhs)
+  {
+    auto data = node.as<tesseract_common::AllowedCollisionEntries>();
+    rhs = tesseract_common::AllowedCollisionMatrix(data);
+    return true;
+  }
+};
+
 }  // namespace YAML
 
 #endif  // TESSERACT_COMMON_YAML_EXTENSTIONS_H

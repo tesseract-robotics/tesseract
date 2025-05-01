@@ -3541,6 +3541,178 @@ key1: !include
   std::filesystem::remove_all(test_dir);
 }
 
+TEST(TesseractCommonUnit, YamlCollisionMarginPairOverrideType)  // NOLINT
+{
+  {
+    YAML::Node n = YAML::Load(R"(NONE)");
+    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::NONE);
+  }
+
+  {
+    YAML::Node n = YAML::Load(R"(MODIFY)");
+    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+  }
+
+  {
+    YAML::Node n = YAML::Load(R"(REPLACE)");
+    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::REPLACE);
+  }
+
+  {
+    YAML::Node n(tesseract_common::CollisionMarginPairOverrideType::NONE);
+    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::NONE);
+  }
+
+  {
+    YAML::Node n(tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+  }
+
+  {
+    YAML::Node n(tesseract_common::CollisionMarginPairOverrideType::REPLACE);
+    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::REPLACE);
+  }
+
+  {
+    YAML::Node n = YAML::Load(R"(DOES_NOT_EXIST)");
+    EXPECT_ANY_THROW(n.as<tesseract_common::CollisionMarginPairOverrideType>());  // NOLINT
+  }
+}
+
+TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
+{
+  const std::string yaml_string = R"(
+  ["link1","link2"]: 0.8
+  ["base","tool0"]: 1.5
+)";
+
+  tesseract_common::PairsCollisionMarginData data_original;
+  data_original[std::make_pair("link1", "link2")] = 0.8;
+  data_original[std::make_pair("base", "tool0")] = 1.5;
+
+  {
+    YAML::Node n(data_original);
+    auto data = n.as<tesseract_common::PairsCollisionMarginData>();
+    EXPECT_EQ(data.size(), 2U);
+    EXPECT_DOUBLE_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
+    EXPECT_DOUBLE_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+  }
+
+  {
+    YAML::Node n = YAML::Load(yaml_string);
+    auto data = n.as<tesseract_common::PairsCollisionMarginData>();
+    EXPECT_EQ(data.size(), 2U);
+    EXPECT_DOUBLE_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
+    EXPECT_DOUBLE_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+  }
+}
+
+TEST(TesseractCommonUnit, YamlCollisionMarginPairData)  // NOLINT
+{
+  const std::string yaml_string = R"(
+  ["link1","link2"]: 0.8
+  ["base","tool0"]: 1.5
+)";
+
+  tesseract_common::CollisionMarginPairData data_original;
+  {
+    tesseract_common::PairsCollisionMarginData pair_data;
+    pair_data[std::make_pair("link1", "link2")] = 0.8;
+    pair_data[std::make_pair("base", "tool0")] = 1.5;
+    data_original = tesseract_common::CollisionMarginPairData(pair_data);
+  }
+
+  {
+    YAML::Node n = YAML::Load(yaml_string);
+    auto data = n.as<tesseract_common::CollisionMarginPairData>();
+    EXPECT_EQ(data.getCollisionMargins().size(), 2U);
+    // NOLINTNEXTLINE
+    EXPECT_DOUBLE_EQ(data.getCollisionMargin("link1", "link2").value(),
+                     data_original.getCollisionMargin("link1", "link2").value());
+    // NOLINTNEXTLINE
+    EXPECT_DOUBLE_EQ(data.getCollisionMargin("base", "tool0").value(),
+                     data_original.getCollisionMargin("base", "tool0").value());
+  }
+
+  {
+    YAML::Node n(data_original);
+    auto data = n.as<tesseract_common::CollisionMarginPairData>();
+    EXPECT_EQ(data.getCollisionMargins().size(), 2U);
+    // NOLINTNEXTLINE
+    EXPECT_DOUBLE_EQ(data.getCollisionMargin("link1", "link2").value(),
+                     data_original.getCollisionMargin("link1", "link2").value());
+    // NOLINTNEXTLINE
+    EXPECT_DOUBLE_EQ(data.getCollisionMargin("base", "tool0").value(),
+                     data_original.getCollisionMargin("base", "tool0").value());
+  }
+}
+
+TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
+{
+  const std::string yaml_string = R"(
+  ["link1","link2"]: "adjacent"
+  ["base","tool0"]: "never"
+)";
+
+  tesseract_common::AllowedCollisionEntries data_original;
+  data_original[std::make_pair("link1", "link2")] = "adjacent";
+  data_original[std::make_pair("base", "tool0")] = "never";
+
+  {
+    YAML::Node n(data_original);
+    auto data = n.as<tesseract_common::AllowedCollisionEntries>();
+    EXPECT_EQ(data.size(), 2U);
+    EXPECT_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
+    EXPECT_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+  }
+
+  {
+    YAML::Node n = YAML::Load(yaml_string);
+    auto data = n.as<tesseract_common::AllowedCollisionEntries>();
+    EXPECT_EQ(data.size(), 2U);
+    EXPECT_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
+    EXPECT_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+  }
+}
+
+TEST(TesseractCommonUnit, YamlAllowedCollisionMatrix)  // NOLINT
+{
+  const std::string yaml_string = R"(
+  ["link1","link2"]: "adjacent"
+  ["base","tool0"]: "never"
+)";
+
+  tesseract_common::AllowedCollisionMatrix data_original;
+  {
+    tesseract_common::AllowedCollisionEntries pair_data;
+    pair_data[std::make_pair("link1", "link2")] = "adjacent";
+    pair_data[std::make_pair("base", "tool0")] = "never";
+    data_original = tesseract_common::AllowedCollisionMatrix(pair_data);
+  }
+
+  {
+    YAML::Node n(data_original);
+    auto data = n.as<tesseract_common::AllowedCollisionMatrix>();
+    EXPECT_EQ(data.getAllAllowedCollisions().size(), 2U);
+    EXPECT_EQ(data.isCollisionAllowed("link1", "link2"), data_original.isCollisionAllowed("link1", "link2"));
+    EXPECT_EQ(data.isCollisionAllowed("base", "tool0"), data_original.isCollisionAllowed("base", "tool0"));
+  }
+
+  {
+    YAML::Node n = YAML::Load(yaml_string);
+    auto data = n.as<tesseract_common::AllowedCollisionMatrix>();
+    EXPECT_EQ(data.getAllAllowedCollisions().size(), 2U);
+    EXPECT_EQ(data.isCollisionAllowed("link1", "link2"), data_original.isCollisionAllowed("link1", "link2"));
+    EXPECT_EQ(data.isCollisionAllowed("base", "tool0"), data_original.isCollisionAllowed("base", "tool0"));
+  }
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
