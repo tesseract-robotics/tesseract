@@ -3583,6 +3583,11 @@ TEST(TesseractCommonUnit, YamlCollisionMarginPairOverrideType)  // NOLINT
     YAML::Node n = YAML::Load(R"(DOES_NOT_EXIST)");
     EXPECT_ANY_THROW(n.as<tesseract_common::CollisionMarginPairOverrideType>());  // NOLINT
   }
+
+  {
+    YAML::Node n = YAML::Load(R"(["test", "test"])");
+    EXPECT_ANY_THROW(n.as<tesseract_common::CollisionMarginPairOverrideType>());  // NOLINT
+  }
 }
 
 TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
@@ -3610,6 +3615,20 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
     EXPECT_EQ(data.size(), 2U);
     EXPECT_DOUBLE_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
     EXPECT_DOUBLE_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+  }
+
+  {  // Failure: Is not map
+    YAML::Node n = YAML::Load(R"(["test", "test"])");
+    EXPECT_ANY_THROW(n.as<tesseract_common::PairsCollisionMarginData>());  // NOLINT
+  }
+
+  {  // Failure: Invalid Key
+    const std::string invalid_yaml = R"(
+  ["link1","link2", "link2"]: 0.8
+  ["base","tool0"]: 1.5
+)";
+    YAML::Node n = YAML::Load(invalid_yaml);
+    EXPECT_ANY_THROW(n.as<tesseract_common::PairsCollisionMarginData>());  // NOLINT
   }
 }
 
@@ -3678,6 +3697,20 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
     EXPECT_EQ(data.size(), 2U);
     EXPECT_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
     EXPECT_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+  }
+
+  {  // Failure: Is not map
+    YAML::Node n = YAML::Load(R"(["test", "test"])");
+    EXPECT_ANY_THROW(n.as<tesseract_common::AllowedCollisionEntries>());  // NOLINT
+  }
+
+  {  // Failure: Invalid Key
+    const std::string invalid_yaml = R"(
+  ["link1","link2", "link2"]: 0.8
+  ["base","tool0"]: 1.5
+)";
+    YAML::Node n = YAML::Load(invalid_yaml);
+    EXPECT_ANY_THROW(n.as<tesseract_common::AllowedCollisionEntries>());  // NOLINT
   }
 }
 

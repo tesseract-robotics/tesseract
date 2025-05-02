@@ -677,21 +677,25 @@ struct convert<tesseract_common::CollisionMarginPairOverrideType>
 {
   static Node encode(const tesseract_common::CollisionMarginPairOverrideType& rhs)
   {
+    // LCOV_EXCL_START
     static const std::map<tesseract_common::CollisionMarginPairOverrideType, std::string> m = {
       { tesseract_common::CollisionMarginPairOverrideType::NONE, "NONE" },
       { tesseract_common::CollisionMarginPairOverrideType::MODIFY, "MODIFY" },
       { tesseract_common::CollisionMarginPairOverrideType::REPLACE, "REPLACE" }
     };
+    // LCOV_EXCL_STOP
     return Node(m.at(rhs));
   }
 
   static bool decode(const Node& node, tesseract_common::CollisionMarginPairOverrideType& rhs)
   {
+    // LCOV_EXCL_START
     static const std::map<std::string, tesseract_common::CollisionMarginPairOverrideType> inv = {
       { "NONE", tesseract_common::CollisionMarginPairOverrideType::NONE },
       { "MODIFY", tesseract_common::CollisionMarginPairOverrideType::MODIFY },
       { "REPLACE", tesseract_common::CollisionMarginPairOverrideType::REPLACE }
     };
+    // LCOV_EXCL_STOP
 
     if (!node.IsScalar())
       return false;
