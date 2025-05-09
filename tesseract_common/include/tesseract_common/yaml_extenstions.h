@@ -833,6 +833,31 @@ struct convert<tesseract_common::AllowedCollisionMatrix>
   }
 };
 
+//============================== std::unordered_map<std::string, bool> =============================
+template <>
+struct convert<std::unordered_map<std::string, bool>>
+{
+  static Node encode(const std::unordered_map<std::string, bool>& rhs)
+  {
+    Node node(NodeType::Map);
+    for (const auto& pair : rhs)
+      node[pair.first] = pair.second;
+
+    return node;
+  }
+
+  static bool decode(const Node& node, std::unordered_map<std::string, bool>& rhs)
+  {
+    if (!node.IsMap())
+      return false;
+
+    for (auto it = node.begin(); it != node.end(); ++it)
+      rhs[it->first.as<std::string>()] = it->second.as<bool>();
+
+    return true;
+  }
+};
+
 }  // namespace YAML
 
 #endif  // TESSERACT_COMMON_YAML_EXTENSTIONS_H

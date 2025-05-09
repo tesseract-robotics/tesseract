@@ -3746,6 +3746,41 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionMatrix)  // NOLINT
   }
 }
 
+TEST(TesseractCommonUnit, YamlStdUnorderedMapStringBool)  // NOLINT
+{
+  using DataType = std::unordered_map<std::string, bool>;
+
+  const std::string yaml_string = R"(
+  link1: true
+  tool0: false
+)";
+
+  DataType data_original;
+  data_original["link1"] = true;
+  data_original["tool0"] = false;
+
+  {
+    YAML::Node n(data_original);
+    auto data = n.as<DataType>();
+    EXPECT_EQ(data.size(), 2U);
+    EXPECT_EQ(data["link1"], data_original["link1"]);
+    EXPECT_EQ(data["tool0"], data_original["tool0"]);
+  }
+
+  {
+    YAML::Node n = YAML::Load(yaml_string);
+    auto data = n.as<DataType>();
+    EXPECT_EQ(data.size(), 2U);
+    EXPECT_EQ(data["link1"], data_original["link1"]);
+    EXPECT_EQ(data["tool0"], data_original["tool0"]);
+  }
+
+  {  // Failure: Is not map
+    YAML::Node n = YAML::Load(R"(["test", "test"])");
+    EXPECT_ANY_THROW(n.as<DataType>());  // NOLINT
+  }
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
