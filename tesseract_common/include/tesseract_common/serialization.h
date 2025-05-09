@@ -184,7 +184,7 @@ struct Serialization
   {
     std::stringstream ss;
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
-      boost::archive::xml_oarchive oa(ss);
+      boost::archive::binary_oarchive oa(ss);
 
       // Boost uses the same function for serialization and deserialization so it requires a non-const reference
       // Because we are only serializing here it is safe to cast away const
@@ -262,7 +262,7 @@ struct Serialization
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
       std::stringstream ss;
       std::copy(archive_binary.begin(), archive_binary.end(), std::ostreambuf_iterator<char>(ss));
-      boost::archive::xml_iarchive ia(ss);
+      boost::archive::binary_iarchive ia(ss);
       ia >> BOOST_SERIALIZATION_NVP(archive_type);
     }
 
