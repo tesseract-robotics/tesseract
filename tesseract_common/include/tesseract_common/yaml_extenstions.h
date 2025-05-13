@@ -492,6 +492,7 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
     const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
     const std::string NODE_PLUGINS_KEY{ "tasks" };
+    const std::string PROFILE_PLUGINS_KEY{ "profiles" };
 
     YAML::Node task_composer_plugins;
     if (!rhs.search_paths.empty())
@@ -506,6 +507,9 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
     if (!rhs.task_plugin_infos.plugins.empty())
       task_composer_plugins[NODE_PLUGINS_KEY] = rhs.task_plugin_infos;
 
+    if (!rhs.profile_plugin_infos.empty())
+      task_composer_plugins[PROFILE_PLUGINS_KEY] = rhs.profile_plugin_infos;
+
     return task_composer_plugins;
   }
 
@@ -515,6 +519,7 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
     const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
     const std::string NODE_PLUGINS_KEY{ "tasks" };
+    const std::string PROFILE_PLUGINS_KEY{ "profiles" };
 
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
@@ -580,6 +585,26 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
       {
         throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + NODE_PLUGINS_KEY +
                                  "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+      }
+    }
+
+    if (const YAML::Node& profile_plugins = node[PROFILE_PLUGINS_KEY])
+    {
+      if (!profile_plugins.IsMap())
+        throw std::runtime_error(PROFILE_PLUGINS_KEY + ", should contain a map<task_namespace, map<section_name, "
+                                                       "map<profile_name, plugin>>>!");
+
+      try
+      {
+        rhs.profile_plugin_infos =
+            profile_plugins.as<std::map<std::string, std::map<std::string, tesseract_common::PluginInfoContainer>>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + PROFILE_PLUGINS_KEY +
+                                 "' to std::map<std::string, std::map<std::string, "
+                                 "tesseract_common::PluginInfoContainer>>>! Details: " +
+                                 e.what());
       }
     }
 
