@@ -833,11 +833,11 @@ struct convert<tesseract_common::AllowedCollisionMatrix>
   }
 };
 
-//============================== std::unordered_map<std::string, bool> =============================
-template <>
-struct convert<std::unordered_map<std::string, bool>>
+//============================== std::unordered_map =============================
+template <typename T, typename A>
+struct convert<std::unordered_map<T, A>>
 {
-  static Node encode(const std::unordered_map<std::string, bool>& rhs)
+  static Node encode(const std::unordered_map<T, A>& rhs)
   {
     Node node(NodeType::Map);
     for (const auto& pair : rhs)
@@ -846,13 +846,13 @@ struct convert<std::unordered_map<std::string, bool>>
     return node;
   }
 
-  static bool decode(const Node& node, std::unordered_map<std::string, bool>& rhs)
+  static bool decode(const Node& node, std::unordered_map<T, A>& rhs)
   {
     if (!node.IsMap())
       return false;
 
     for (auto it = node.begin(); it != node.end(); ++it)
-      rhs[it->first.as<std::string>()] = it->second.as<bool>();
+      rhs[it->first.as<T>()] = it->second.as<A>();
 
     return true;
   }
