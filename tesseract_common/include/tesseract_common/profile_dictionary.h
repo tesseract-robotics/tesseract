@@ -89,6 +89,24 @@ public:
   Profile::ConstPtr getProfile(std::size_t key, const std::string& ns, const std::string& profile_name) const;
 
   /**
+   * @brief Gets the profile specified from the profile map
+   * @param ns The profile namespace
+   * @param profile_name The profile name
+   * @param default_profile Profile that is returned if the requested profile is not found. Default = nullptr
+   * @return The profile requested if found. Otherwise the default_profile
+   */
+  template <typename ProfileType>
+  std::shared_ptr<const ProfileType> getProfile(const std::string& ns,
+                                                const std::string& profile_name,
+                                                std::shared_ptr<const ProfileType> default_profile = nullptr) const
+  {
+    if (hasProfile(ProfileType::getStaticKey(), ns, profile_name))
+      return std::static_pointer_cast<const ProfileType>(getProfile(ProfileType::getStaticKey(), ns, profile_name));
+
+    return default_profile;
+  }
+
+  /**
    * @brief Remove a profile
    * @param key The profile key
    * @param ns The profile namespace
@@ -142,6 +160,7 @@ private:
 };
 
 using ProfileDictionaryPtrAnyPoly = tesseract_common::AnyWrapper<std::shared_ptr<ProfileDictionary>>;
+
 }  // namespace tesseract_common
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::ProfileDictionary)
