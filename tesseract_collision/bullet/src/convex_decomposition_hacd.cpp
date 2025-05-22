@@ -17,9 +17,12 @@ namespace tesseract_collision
 ConvexDecompositionHACD::ConvexDecompositionHACD(const HACDParameters& params) : params_(params) {}
 
 std::vector<tesseract_geometry::ConvexMesh::Ptr>
-ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertices, const Eigen::VectorXi& faces) const
+ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertices,
+                                 const Eigen::VectorXi& faces,
+                                 bool verbose) const
 {
-  params_.print();
+  if (verbose)
+    params_.print();
 
   std::vector<HACD::Vec3<HACD::Real>> points_local;
   points_local.reserve(vertices.size());
