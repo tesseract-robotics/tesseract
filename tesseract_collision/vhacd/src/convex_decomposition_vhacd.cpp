@@ -15,6 +15,7 @@ class ProgressCallback : public VHACD::IVHACD::IUserCallback
 public:
   ProgressCallback() = default;
   ~ProgressCallback() override = default;
+  ProgressCallback(bool verbose) : verbose_(verbose) {}
   ProgressCallback(const ProgressCallback&) = default;
   ProgressCallback& operator=(const ProgressCallback&) = default;
   ProgressCallback(ProgressCallback&&) = default;
@@ -25,18 +26,26 @@ public:
               const char* const stage,
               const char* operation) override
   {
+    if (!verbose_)
+      return;
     std::cout << std::setfill(' ') << std::setw(3) << ceil(overallProgress) << "% "
               << "[ " << stage << " " << std::setfill(' ') << std::setw(3) << ceil(stageProgress) << "% ] " << operation
               << "\n";
   }
+
+private:
+  bool verbose_{ true };
 };
 
 ConvexDecompositionVHACD::ConvexDecompositionVHACD(const VHACDParameters& params) : params_(params) {}
 
 std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh> >
-ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertices, const Eigen::VectorXi& faces) const
+ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertices,
+                                  const Eigen::VectorXi& faces,
+                                  bool verbose) const
 {
-  params_.print();
+  if (verbose)
+    params_.print();
 
   std::vector<double> points_local;
   points_local.reserve(vertices.size() * 3);
@@ -63,7 +72,7 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
   // run V-HACD
   VHACD::IVHACD* interfaceVHACD = VHACD::CreateVHACD();
 
-  ProgressCallback progress_callback;
+  ProgressCallback progress_callback(verbose);
   VHACD::IVHACD::Parameters par;
   par.m_maxConvexHulls = params_.max_convex_hulls;
   par.m_resolution = params_.resolution;
