@@ -53,7 +53,9 @@ public:
    * @return
    */
   virtual std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>>
-  compute(const tesseract_common::VectorVector3d& vertices, const Eigen::VectorXi& faces) const = 0;
+  compute(const tesseract_common::VectorVector3d& vertices,
+          const Eigen::VectorXi& faces,
+          bool verbose = true) const = 0;
 };
 
 }  // namespace tesseract_collision

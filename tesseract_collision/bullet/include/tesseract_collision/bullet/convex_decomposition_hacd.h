@@ -55,7 +55,8 @@ public:
   ConvexDecompositionHACD(const HACDParameters& params);
 
   std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>> compute(const tesseract_common::VectorVector3d& vertices,
-                                                                       const Eigen::VectorXi& faces) const override;
+                                                                       const Eigen::VectorXi& faces,
+                                                                       bool verbose = true) const override;
 
 private:
   HACDParameters params_;
