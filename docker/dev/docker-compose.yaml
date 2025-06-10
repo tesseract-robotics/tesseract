@@ -7,8 +7,8 @@
 services:
   qtcreator:
     build:
-        context: .
-        dockerfile: DockerfileDev
+        context: ..
+        dockerfile: dev/Dockerfile
         args:
           UBUNTU_TAG: "${UBUNTU_TAG}"
           USERNAME: "${USER}"    # Passes the host user's username
