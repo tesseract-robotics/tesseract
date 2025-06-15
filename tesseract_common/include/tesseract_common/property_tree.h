@@ -29,13 +29,13 @@ constexpr std::string_view MAXIMUM{ "maximum" };
 class PropertyTree
 {
 public:
-  using ValidatorFn = std::function<bool(const PropertyTree&, std::vector<std::string>&, const std::string&)>;
+  using ValidatorFn = std::function<void(const PropertyTree&)>;
 
   PropertyTree() = default;
 
   void mergeSchema(const PropertyTree& schema);
 
-  bool validate(std::vector<std::string>& errors, const std::string& path = "") const;
+  void validate() const;
 
   void addValidator(ValidatorFn fn);
 
@@ -69,11 +69,11 @@ private:
   std::vector<ValidatorFn> validators_;
 };
 
-bool validateRequired(const PropertyTree& node, std::vector<std::string>& errors, const std::string& path);
+void validateRequired(const PropertyTree& node);
 
-bool validateRange(const PropertyTree& node, std::vector<std::string>& errors, const std::string& path);
+void validateRange(const PropertyTree& node);
 
-bool validateEnum(const PropertyTree& node, std::vector<std::string>& errors, const std::string& path);
+void validateEnum(const PropertyTree& node);
 
 }  // namespace tesseract_common
 
