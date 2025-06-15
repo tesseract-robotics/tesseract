@@ -107,6 +107,12 @@ void PropertyTree::setAttribute(std::string_view name, int attr) { setAttribute(
 
 void PropertyTree::setAttribute(std::string_view name, double attr) { setAttribute(name, YAML::Node(attr)); }
 
+bool PropertyTree::hasAttribute(std::string_view name) const
+{
+  auto it = attributes_.find(std::string(name));
+  return (it != attributes_.end() && it->second && !it->second.IsNull());
+}
+
 std::optional<YAML::Node> PropertyTree::getAttribute(std::string_view name) const
 {
   auto it = attributes_.find(std::string(name));
@@ -115,10 +121,13 @@ std::optional<YAML::Node> PropertyTree::getAttribute(std::string_view name) cons
   return std::nullopt;
 }
 
-bool PropertyTree::hasAttribute(std::string_view name) const
+std::vector<std::string> PropertyTree::getAttributeKeys() const
 {
-  auto it = attributes_.find(std::string(name));
-  return (it != attributes_.end() && it->second && !it->second.IsNull());
+  std::vector<std::string> res;
+  res.reserve(attributes_.size());
+  for (const auto& pair : attributes_)
+    res.push_back(pair.first);
+  return res;
 }
 
 PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
