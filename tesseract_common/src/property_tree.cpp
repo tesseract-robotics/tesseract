@@ -42,23 +42,24 @@ void PropertyTree::mergeSchema(const PropertyTree& schema)
   }
 }
 
-bool PropertyTree::validate(std::vector<std::string>& errors, const std::string& path) const
+void PropertyTree::validate() const
 {
-  bool ok = true;
   // run custom validators
   for (const auto& vfn : validators_)
-  {
-    if (!vfn(*this, errors, path))
-      ok = false;
-  }
+    vfn(*this);
+
   // recurse children
   for (const auto& kv : children_)
   {
-    const std::string nextPath = path.empty() ? kv.first : path + "." + kv.first;
-    if (!kv.second.validate(errors, nextPath))
-      ok = false;
+    try
+    {
+      kv.second.validate();
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Validation failed for property: " + kv.first));
+    }
   }
-  return ok;
 }
 
 /// Add a custom validator for this node
@@ -184,22 +185,18 @@ YAML::Node PropertyTree::toYAML() const
   return value_;
 }
 
-bool validateRequired(const PropertyTree& node, std::vector<std::string>& errors, const std::string& path)
+void validateRequired(const PropertyTree& node)
 {
   auto req_attr = node.getAttribute(property_attribute::REQUIRED);
   if (req_attr && req_attr->as<bool>())
   {
     // if leaf node with no value or null
     if (!node.getValue() || node.getValue().IsNull())
-    {
-      errors.push_back(path + ": required property missing or null");
-      return false;
-    }
+      std::throw_with_nested(std::runtime_error("Required property missing or null"));
   }
-  return true;
 }
 
-bool validateRange(const PropertyTree& node, std::vector<std::string>& errors, const std::string& path)
+void validateRange(const PropertyTree& node)
 {
   auto min_attr = node.getAttribute(property_attribute::MINIMUM);
   auto max_attr = node.getAttribute(property_attribute::MAXIMUM);
@@ -210,15 +207,13 @@ bool validateRange(const PropertyTree& node, std::vector<std::string>& errors, c
     const auto val = node.getValue().as<double>();
     if (val < minv || val > maxv)
     {
-      errors.push_back(path + ": value " + std::to_string(val) + " out of range [" + std::to_string(minv) + "," +
-                       std::to_string(maxv) + "]");
-      return false;
+      std::throw_with_nested(std::runtime_error("Property value " + std::to_string(val) + " out of range [" +
+                                                std::to_string(minv) + "," + std::to_string(maxv) + "]"));
     }
   }
-  return true;
 }
 
-bool validateEnum(const PropertyTree& node, std::vector<std::string>& errors, const std::string& path)
+void validateEnum(const PropertyTree& node)
 {
   auto enum_attr = node.getAttribute(property_attribute::ENUM);
   if (enum_attr.has_value() && enum_attr->IsSequence())
@@ -227,12 +222,10 @@ bool validateEnum(const PropertyTree& node, std::vector<std::string>& errors, co
     for (const auto& v : enum_attr.value())
     {
       if (v.as<std::string>() == val)
-        return true;
+        return;
     }
-    errors.push_back(path + ": value '" + val + "' not in enum list");
-    return false;
+    std::throw_with_nested(std::runtime_error("Property value '" + val + "' not in enum list"));
   }
-  return true;
 }
 
 }  // namespace tesseract_common

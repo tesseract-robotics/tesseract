@@ -1,6 +1,7 @@
 #include <iostream>
 #include <yaml-cpp/yaml.h>
 #include <tesseract_common/property_tree.h>
+#include <tesseract_common/utils.h>
 
 using namespace tesseract_common;
 
@@ -68,6 +69,7 @@ PropertyTree buildConfigSchema()
     auto& prop = outs.get("program");
     prop.setAttribute("type", property_type::STRING);
     prop.setAttribute("required", true);
+    prop.addValidator(validateRequired);
   }
   // format_result_as_input
   {
@@ -97,10 +99,19 @@ std::string str2 = R"(config:
                            outputs:
                              program: output_data)";
 
+std::string str3 = R"(config:
+                           conditional: true
+                           inputs:
+                             program: input_data
+                             environment: environment
+                             profiles: profiles
+                           outputs:
+                             programs: output_data)";
+
 int main()
 {
   // Load configuration from YAML
-  PropertyTree prop = PropertyTree::fromYAML(YAML::Load(str2));
+  PropertyTree prop = PropertyTree::fromYAML(YAML::Load(str3));
 
   // Parse schema from external file (config_schema.yaml)
   PropertyTree schema = buildConfigSchema();
@@ -109,14 +120,23 @@ int main()
   prop.mergeSchema(schema);
   std::cout << prop.toYAML() << "\n";
 
-  std::vector<std::string> errors;
-  if (!prop.validate(errors, "config"))
+  try
   {
-    std::cerr << "Validation errors:\n";
-    for (auto const& e : errors)
-      std::cerr << " - " << e << "\n";
+    prop.validate();
+  }
+  catch (const std::exception& e)
+  {
+    tesseract_common::printNestedException(e);
     return 1;
   }
+
+  // if (!prop.validate(errors, "config"))
+  // {
+  //   std::cerr << "Validation errors:\n";
+  //   for (auto const& e : errors)
+  //     std::cerr << " - " << e << "\n";
+  //   return 1;
+  // }
   bool cond = prop.get("config").get("conditional").getValue().as<bool>();
   std::cout << "conditional = " << std::boolalpha << cond << "\n";
   return 0;
