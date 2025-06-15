@@ -96,8 +96,9 @@ add_library(
   src/profile.cpp
   src/property_tree.cpp
   src/resource_locator.cpp
-  src/types.cpp
+  src/schema_registry.cpp
   src/stopwatch.cpp
+  src/types.cpp
   src/timer.cpp
   src/yaml_utils.cpp)
 target_link_libraries(

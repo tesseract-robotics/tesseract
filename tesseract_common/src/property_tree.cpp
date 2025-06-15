@@ -1,7 +1,9 @@
 #include <tesseract_common/property_tree.h>
+#include <tesseract_common/schema_registry.h>
 
 const static std::string ATTRIBUTES_KEY{ "attributes" };
 const static std::string VALUE_KEY{ "value" };
+const static std::string FOLLOW_KEY{ "follow" };
 
 namespace tesseract_common
 {
@@ -132,6 +134,17 @@ std::vector<std::string> PropertyTree::getAttributeKeys() const
 
 PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
 {
+  // Handle 'follow' directive: load external YAML or schema file
+  if (node.IsMap() && node[FOLLOW_KEY] && node[FOLLOW_KEY].IsScalar())
+  {
+    if (node.size() > 1)
+      throw std::runtime_error("'follow' cannot be mixed with other entries");
+
+    auto key = node[FOLLOW_KEY].as<std::string>();
+    auto registry = SchemaRegistry::instance();
+    return registry->contains(key) ? registry->get(key) : SchemaRegistry::loadFile(key);
+  }
+
   PropertyTree tree;
   tree.value_ = node;
   if (node.IsMap())
