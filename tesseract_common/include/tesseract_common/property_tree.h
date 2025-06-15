@@ -60,7 +60,7 @@ public:
 
   static PropertyTree fromYAML(const YAML::Node& node);
 
-  YAML::Node toYAML() const;
+  YAML::Node toYAML(bool exclude_attributes = true) const;
 
 private:
   YAML::Node value_;

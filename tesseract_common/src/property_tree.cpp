@@ -155,34 +155,36 @@ PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
   return tree;
 }
 
-YAML::Node PropertyTree::toYAML() const
+YAML::Node PropertyTree::toYAML(bool exclude_attributes) const
 {
+  // pure leaf without attributes or children: emit scalar/sequence directly
+  if (attributes_.empty() && children_.empty())
+    return value_;
+
+  // pure leaf with attributes excluded and no children: emit scalar/sequence directly
+  if (exclude_attributes && children_.empty())
+    return value_;
+
   // Always emit a mapping if attributes exist or children exist
-  if (!attributes_.empty() || !children_.empty())
+  YAML::Node node(YAML::NodeType::Map);
+  // emit attributes first
+  if (!exclude_attributes && !attributes_.empty())
   {
-    YAML::Node node(YAML::NodeType::Map);
-    // emit attributes first
-    if (!attributes_.empty())
-    {
-      YAML::Node attr_node(YAML::NodeType::Map);
-      for (const auto& pair : attributes_)
-        attr_node[pair.first] = pair.second;
+    YAML::Node attr_node(YAML::NodeType::Map);
+    for (const auto& pair : attributes_)
+      attr_node[pair.first] = pair.second;
 
-      node[ATTRIBUTES_KEY] = attr_node;
-    }
-    // emit children
-    for (const auto& pair : children_)
-      node[pair.first] = pair.second.toYAML();
-
-    // if leaf (no children) but value present, emit under 'value'
-    if (children_.empty() && value_)
-      node[VALUE_KEY] = value_;
-
-    return node;
+    node[ATTRIBUTES_KEY] = attr_node;
   }
+  // emit children
+  for (const auto& pair : children_)
+    node[pair.first] = pair.second.toYAML(exclude_attributes);
 
-  // pure leaf without attributes: emit scalar/sequence directly
-  return value_;
+  // if leaf (no children) but value present, emit under 'value'
+  if (children_.empty() && value_)
+    node[VALUE_KEY] = value_;
+
+  return node;
 }
 
 void validateRequired(const PropertyTree& node)

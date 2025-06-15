@@ -111,14 +111,15 @@ std::string str3 = R"(config:
 int main()
 {
   // Load configuration from YAML
-  PropertyTree prop = PropertyTree::fromYAML(YAML::Load(str3));
+  PropertyTree prop = PropertyTree::fromYAML(YAML::Load(str2));
 
   // Parse schema from external file (config_schema.yaml)
   PropertyTree schema = buildConfigSchema();
 
   // Merge schema metadata into config tree
   prop.mergeSchema(schema);
-  std::cout << prop.toYAML() << "\n";
+  std::cout << "Exclude attrubutes:\n" << prop.toYAML() << "\n\n";
+  std::cout << "Include attrubutes:\n" << prop.toYAML(false) << "\n\n";
 
   try
   {
@@ -130,13 +131,6 @@ int main()
     return 1;
   }
 
-  // if (!prop.validate(errors, "config"))
-  // {
-  //   std::cerr << "Validation errors:\n";
-  //   for (auto const& e : errors)
-  //     std::cerr << " - " << e << "\n";
-  //   return 1;
-  // }
   bool cond = prop.get("config").get("conditional").getValue().as<bool>();
   std::cout << "conditional = " << std::boolalpha << cond << "\n";
   return 0;
