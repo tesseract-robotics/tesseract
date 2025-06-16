@@ -79,6 +79,8 @@ const PropertyTree* PropertyTree::find(std::string_view key) const
 void PropertyTree::setValue(const YAML::Node& v) { value_ = v; }
 const YAML::Node& PropertyTree::getValue() const { return value_; }
 
+bool PropertyTree::isNull() const { return value_.IsNull(); }
+
 std::vector<std::string> PropertyTree::keys() const
 {
   std::vector<std::string> res;
@@ -130,6 +132,15 @@ std::vector<std::string> PropertyTree::getAttributeKeys() const
   for (const auto& pair : attributes_)
     res.push_back(pair.first);
   return res;
+}
+
+bool PropertyTree::isRequired() const
+{
+  std::optional<YAML::Node> required = getAttribute(property_attribute::REQUIRED);
+  if (!required.has_value())
+    return false;
+
+  return required.value().as<bool>();
 }
 
 PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
@@ -200,7 +211,13 @@ YAML::Node PropertyTree::toYAML(bool exclude_attributes) const
   }
   // emit children
   for (const auto& pair : children_)
+  {
+    // If the property is not required and is null then skip when excluding attributes
+    if (exclude_attributes && !pair.second.isRequired() && pair.second.isNull())
+      continue;
+
     node[pair.first] = pair.second.toYAML(exclude_attributes);
+  }
 
   // if leaf (no children) but value present, emit under 'value'
   if (children_.empty() && value_)

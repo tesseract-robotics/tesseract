@@ -10,8 +10,8 @@ PropertyTree buildConfigSchema()
 {
   PropertyTree schema;
   auto& cfg = schema.get("config");
-  cfg.setAttribute("description", "Main config for plugin");
-  cfg.setAttribute("required", true);
+  cfg.setAttribute(property_attribute::DOC, "Main config for plugin");
+  cfg.setAttribute(property_attribute::REQUIRED, true);
   std::map<int, std::string> return_options;
   return_options[0] = "Error";
   return_options[1] = "Successful";
@@ -21,40 +21,40 @@ PropertyTree buildConfigSchema()
   // conditional
   {
     auto& prop = cfg.get("conditional");
-    prop.setAttribute("type", property_type::BOOL);
-    prop.setAttribute("default", true);
-    prop.setAttribute("description", "Enable conditional execution");
-    prop.setAttribute("required", true);
+    prop.setAttribute(property_attribute::TYPE, property_type::BOOL);
+    prop.setAttribute(property_attribute::DEFAULT, true);
+    prop.setAttribute(property_attribute::DOC, "Enable conditional execution");
+    prop.setAttribute(property_attribute::REQUIRED, true);
     prop.addValidator(validateRequired);
   }
   // inputs
   {
     auto& inputs = cfg.get("inputs");
-    inputs.setAttribute("description", "Input sources");
-    inputs.setAttribute("required", true);
+    inputs.setAttribute(property_attribute::DOC, "Input sources");
+    inputs.setAttribute(property_attribute::REQUIRED, true);
     // program
     {
       auto& prop = inputs.get("program");
-      prop.setAttribute("type", property_type::STRING);
-      prop.setAttribute("description", "The composite instruction");
-      prop.setAttribute("required", true);
+      prop.setAttribute(property_attribute::TYPE, property_type::STRING);
+      prop.setAttribute(property_attribute::DOC, "The composite instruction");
+      prop.setAttribute(property_attribute::REQUIRED, true);
       prop.addValidator(validateRequired);
     }
     // environment
     {
       auto& prop = inputs.get("environment");
       // env.setAttribute("enum", YAML::Load(R"(["dev","stag","prod"])"));
-      prop.setAttribute("type", property_type::STRING);
-      prop.setAttribute("description", "The tesseract environment");
-      prop.setAttribute("required", true);
+      prop.setAttribute(property_attribute::TYPE, property_type::STRING);
+      prop.setAttribute(property_attribute::DOC, "The tesseract environment");
+      prop.setAttribute(property_attribute::REQUIRED, true);
       prop.addValidator(validateRequired);
     }
     // profiles
     {
       auto& prop = inputs.get("profiles");
-      prop.setAttribute("type", property_type::STRING);
-      prop.setAttribute("description", "The tesseract profiles");
-      prop.setAttribute("required", true);
+      prop.setAttribute(property_attribute::TYPE, property_type::STRING);
+      prop.setAttribute(property_attribute::DOC, "The tesseract profiles");
+      prop.setAttribute(property_attribute::REQUIRED, true);
       prop.addValidator(validateRequired);
       // prof.setAttribute("enum", YAML::Load(R"(["A","B"])"));
       //   prof.addValidator(validateEnum);
@@ -72,15 +72,15 @@ PropertyTree buildConfigSchema()
   {
     auto& outs = cfg.get("outputs");
     auto& prop = outs.get("program");
-    prop.setAttribute("type", property_type::STRING);
-    prop.setAttribute("required", true);
+    prop.setAttribute(property_attribute::TYPE, property_type::STRING);
+    prop.setAttribute(property_attribute::REQUIRED, true);
     prop.addValidator(validateRequired);
   }
   // format_result_as_input
   {
     auto& prop = cfg.get("format_result_as_input");
-    prop.setAttribute("type", property_type::BOOL);
-    prop.setAttribute("default", false);
+    prop.setAttribute(property_attribute::TYPE, property_type::BOOL);
+    prop.setAttribute(property_attribute::DEFAULT, false);
   }
   return schema;
 }
