@@ -13,14 +13,31 @@ namespace tesseract_common
 {
 namespace property_type
 {
+// Integral Types
 constexpr std::string_view BOOL{ "bool" };
-constexpr std::string_view STRING{ "string" };
+constexpr std::string_view CHAR{ "char" };
+constexpr std::string_view STRING{ "std::string" };
 constexpr std::string_view INT{ "int" };
+constexpr std::string_view UNSIGNED_INT{ "unsigned int" };
+constexpr std::string_view LONG_INT{ "long int" };
+constexpr std::string_view LONG_UNSIGNED_INT{ "long unsigned int" };
 constexpr std::string_view FLOAT{ "float" };
+constexpr std::string_view DOUBLE{ "double" };
+
+// Eigen Types
+constexpr std::string_view EIGEN_ISOMETRY_3D{ "Eigen::Isometry3d" };
+constexpr std::string_view EIGEN_MATRIX_XD{ "Eigen::MatrixXd" };
+constexpr std::string_view EIGEN_VECTOR_XD{ "Eigen::VectorXd" };
+constexpr std::string_view EIGEN_MATRIX_2D{ "Eigen::Matrix2d" };
+constexpr std::string_view EIGEN_VECTOR_2D{ "Eigen::Vector2d" };
+constexpr std::string_view EIGEN_MATRIX_3D{ "Eigen::Matrix3d" };
+constexpr std::string_view EIGEN_VECTOR_3D{ "Eigen::Vector3d" };
 }  // namespace property_type
 
 namespace property_attribute
 {
+constexpr std::string_view TYPE{ "type" };
+constexpr std::string_view DOC{ "doc" };
 constexpr std::string_view REQUIRED{ "required" };
 constexpr std::string_view DEFAULT{ "default" };
 constexpr std::string_view ENUM{ "enum" };
@@ -117,6 +134,12 @@ public:
   const YAML::Node& getValue() const;
 
   /**
+   * @brief Check if property value is null
+   * @return True if required, otherwise false
+   */
+  bool isNull() const;
+
+  /**
    * @brief List all immediate child keys.
    * @return Vector of child key strings.
    */
@@ -158,6 +181,12 @@ public:
    * @return Vector of attribute names.
    */
   std::vector<std::string> getAttributeKeys() const;
+
+  /**
+   * @brief Check if property is requried by checking for attribute and its value
+   * @return True if required, otherwise false
+   */
+  bool isRequired() const;
 
   /**
    * @brief Create a PropertyTree from a YAML::Node.
