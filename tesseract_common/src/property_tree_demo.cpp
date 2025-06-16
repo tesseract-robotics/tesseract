@@ -12,6 +12,11 @@ PropertyTree buildConfigSchema()
   auto& cfg = schema.get("config");
   cfg.setAttribute("description", "Main config for plugin");
   cfg.setAttribute("required", true);
+  std::map<int, std::string> return_options;
+  return_options[0] = "Error";
+  return_options[1] = "Successful";
+  cfg.setAttribute("return_options", YAML::Node(return_options));
+  cfg.addValidator(validateRequired);
 
   // conditional
   {
@@ -20,7 +25,7 @@ PropertyTree buildConfigSchema()
     prop.setAttribute("default", true);
     prop.setAttribute("description", "Enable conditional execution");
     prop.setAttribute("required", true);
-    // node.addValidator(validateRange);
+    prop.addValidator(validateRequired);
   }
   // inputs
   {
