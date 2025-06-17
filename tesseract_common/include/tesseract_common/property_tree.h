@@ -13,6 +13,21 @@ namespace tesseract_common
 {
 namespace property_type
 {
+/**
+ * @brief A utility for constructing the list type
+ * @param type The type assoicated with the list
+ * @return The string representation of the std::vector<type>, aka. type[]
+ */
+std::string createList(std::string_view type);
+
+/**
+ * @brief A utility for constructing the map type
+ * @param key_type The type assoicated with the map key
+ * @param value_type The type assoicated with the map value
+ * @return The string representation of the std::make<key_type, value_type>, aka. {key_type : value_type}
+ */
+std::string createMap(std::string_view key_type, std::string_view value_type);
+
 // Integral Types
 constexpr std::string_view BOOL{ "bool" };
 constexpr std::string_view CHAR{ "char" };
@@ -26,11 +41,11 @@ constexpr std::string_view DOUBLE{ "double" };
 
 // Eigen Types
 constexpr std::string_view EIGEN_ISOMETRY_3D{ "Eigen::Isometry3d" };
-constexpr std::string_view EIGEN_MATRIX_XD{ "Eigen::MatrixXd" };
+// constexpr std::string_view EIGEN_MATRIX_XD{ "Eigen::MatrixXd" };
 constexpr std::string_view EIGEN_VECTOR_XD{ "Eigen::VectorXd" };
-constexpr std::string_view EIGEN_MATRIX_2D{ "Eigen::Matrix2d" };
+// constexpr std::string_view EIGEN_MATRIX_2D{ "Eigen::Matrix2d" };
 constexpr std::string_view EIGEN_VECTOR_2D{ "Eigen::Vector2d" };
-constexpr std::string_view EIGEN_MATRIX_3D{ "Eigen::Matrix3d" };
+// constexpr std::string_view EIGEN_MATRIX_3D{ "Eigen::Matrix3d" };
 constexpr std::string_view EIGEN_VECTOR_3D{ "Eigen::Vector3d" };
 }  // namespace property_type
 
@@ -77,21 +92,22 @@ public:
   PropertyTree() = default;
 
   /**
-   * @brief Merge schema metadata into this node.
-   *
-   * Copies attributes from the schema, applies defaults for non-required
-   * properties, registers schema validators, and recursively merges children.
-   * @param schema  PropertyTree containing schema definitions.
+   * @brief Given that *this* is purely a schema tree, merge in the
+   *        user’s YAML config to populate all values (and apply defaults).
+   * @param config  The user-supplied YAML::Node (possibly null).
+   * @param allow_extra_properties  If false, “extra” keys in config will be flagged.
    */
-  void mergeSchema(const PropertyTree& schema);
+  void mergeConfig(const YAML::Node& config, bool allow_extra_properties = false);
 
   /**
    * @brief Validate the tree using registered validators.
    *
    * Recursively invokes all validators on this node and its children.
    * Throws on the first error encountered.
+   *
+   * @param allow_extra_properties Indicate if extra properties are allowed
    */
-  void validate() const;
+  void validate(bool allow_extra_properties = false) const;
 
   /**
    * @brief Register a custom validator for this node.
@@ -138,6 +154,12 @@ public:
    * @return True if required, otherwise false
    */
   bool isNull() const;
+
+  /**
+   * @brief Check if property is a container of child properties
+   * @return True if container, otherwise false
+   */
+  bool isContainer() const;
 
   /**
    * @brief List all immediate child keys.
@@ -204,10 +226,18 @@ public:
 
 private:
   YAML::Node value_;                             /**< Value stored at this node */
+  YAML::Node follow_;                            /**< Follow stored at this node */
   std::map<std::string, YAML::Node> attributes_; /**< Metadata attributes */
   std::map<std::string, PropertyTree> children_; /**< Nested child nodes */
   std::vector<ValidatorFn> validators_;          /**< Validators to invoke */
 };
+
+/**
+ * @brief Check if type is a sequence
+ * @param type The type to check
+ * @return If it is a sequence the underlying type is returned
+ */
+std::optional<std::string> isSequenceType(std::string_view type);
 
 /**
  * @brief Validator: ensure 'required' attribute is present and non-null.
@@ -217,18 +247,86 @@ private:
 void validateRequired(const PropertyTree& node);
 
 /**
- * @brief Validator: enforce 'minimum'/'maximum' range constraints.
- * @param node  Node to validate.
- * @throws runtime_error if out of range.
- */
-void validateRange(const PropertyTree& node);
-
-/**
  * @brief Validator: enforce that node's value is in 'enum' list.
  * @param node  Node to validate.
  * @throws runtime_error if not found.
  */
 void validateEnum(const PropertyTree& node);
+
+/**
+ * @brief Validtor: ensure node value is of type YAML::NodeType::Map
+ * @param node Node to validate.
+ * @throws runtime_error if not correct type.
+ */
+void validateMap(const PropertyTree& node);
+
+/**
+ * @brief Validtor: ensure node value is of type YAML::NodeType::Sequence
+ * @param node Node to validate.
+ * @throws runtime_error if not correct type.
+ */
+void validateSequence(const PropertyTree& node);
+
+void validateCustomType(const PropertyTree& node);
+
+/**
+ * @brief Validate that the node’s value can be interpreted as the provided type.
+ * @param node  PropertyTree node whose value to validate.
+ * @throws std::runtime_error or YAML::BadConversion if the value is not a valid type.
+ */
+template <typename T>
+void validateTypeCast(const PropertyTree& node)
+{
+  try
+  {
+    node.getValue().as<T>();
+  }
+  catch (const std::exception& e)
+  {
+    std::throw_with_nested(e);
+  }
+}
+
+/**
+ * @brief Validator: type cast and enforce 'minimum'/'maximum' range constraints.
+ * @param node  Node to validate.
+ * @throws runtime_error if out of range.
+ */
+template <typename T>
+void validateTypeCastWithRange(const PropertyTree& node)
+{
+  // Get value
+  const T val = [&]() {
+    try
+    {
+      return node.getValue().as<T>();
+    }
+    catch (const std::exception& e)
+    {
+      std::throw_with_nested(e);
+    }
+  }();
+
+  // If minimum attribute exist, validate
+  auto min_attr = node.getAttribute(property_attribute::MINIMUM);
+  if (min_attr)
+  {
+    const auto minv = min_attr->as<T>();
+    if (val < minv)
+      std::throw_with_nested(std::runtime_error("Property value " + std::to_string(val) + " is less than minimum " +
+                                                std::to_string(minv)));
+  }
+
+  // If maximum attribute exist, validate
+  auto max_attr = node.getAttribute(property_attribute::MAXIMUM);
+  if (max_attr)
+  {
+    const auto maxv = max_attr->as<T>();
+    if (val > maxv)
+      std::throw_with_nested(std::runtime_error("Property value " + std::to_string(val) + " is greater than maximum " +
+                                                std::to_string(maxv)));
+  }
+}
 
 }  // namespace tesseract_common
 
