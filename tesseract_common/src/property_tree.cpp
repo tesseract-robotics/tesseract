@@ -1,54 +1,95 @@
 #include <tesseract_common/property_tree.h>
 #include <tesseract_common/schema_registry.h>
+#include <tesseract_common/yaml_extenstions.h>
+#include <Eigen/Geometry>
 
 const static std::string ATTRIBUTES_KEY{ "attributes" };
 const static std::string VALUE_KEY{ "value" };
 const static std::string FOLLOW_KEY{ "follow" };
+const static std::string EXTRA_KEY{ "_extra" };
 
 namespace tesseract_common
 {
-void PropertyTree::mergeSchema(const PropertyTree& schema)
+namespace property_type
 {
-  // merge schema attributes
-  for (const auto& pair : schema.attributes_)
+std::string createList(std::string_view type) { return std::string(type) + "[]"; };
+std::string createMap(std::string_view key_type, std::string_view value_type)
+{
+  return "{" + std::string(key_type) + " : " + std::string(value_type) + "}";
+};
+}  // namespace property_type
+
+void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_properties)
+{
+  // 0) Leaf-schema override for both maps and sequences:
+  //    If this schema node has no children, but the user provided
+  //    either a map or a sequence, just store it wholesale.
+  if (children_.empty() && config && (config.IsMap() || config.IsSequence()))
   {
-    if (!hasAttribute(pair.first))
-      attributes_[pair.first] = pair.second;
+    value_ = config;
+    return;
   }
 
-  // apply default value only when property is not required and no explicit value present
-  auto default_it = attributes_.find(std::string(property_attribute::DEFAULT));
-  if (default_it != attributes_.end())
+  // 1) Apply default if no config & not required
+  auto def_it = attributes_.find(std::string(property_attribute::DEFAULT));
+  bool required = isRequired();
+  if ((!config || config.IsNull()) && def_it != attributes_.end() && !required)
+    value_ = YAML::Clone(def_it->second);
+
+  // 2) Scalar or (now only non‐leaf) sequence override
+  if (config && config.IsScalar())
+    value_ = config;
+
+  // 3) Map: recurse into declared children
+  if (config && config.IsMap())
   {
-    // determine if property is marked required
-    auto it = attributes_.find(std::string(property_attribute::REQUIRED));
-    const bool required = (it != attributes_.end() && it->second.as<bool>());
-    if (!required)
+    // 3a) Fill declared children
+    for (auto& [key, child_schema] : children_)
     {
-      if (!value_ || value_.IsNull())
-        value_ = YAML::Clone(default_it->second);
+      auto sub = config[key];
+      child_schema.mergeConfig(sub, allow_extra_properties);
+    }
+
+    // 3b) Handle extras
+    if (!allow_extra_properties)
+    {
+      for (auto it = config.begin(); it != config.end(); ++it)
+      {
+        const auto& key = it->first.as<std::string>();
+        if (children_.count(key) == 0)
+        {
+          auto& extra_node = children_[key];
+          extra_node.setAttribute(EXTRA_KEY, YAML::Node(true));
+          extra_node.mergeConfig(it->second, allow_extra_properties);
+        }
+      }
     }
   }
-
-  // merge schema validators
-  for (const auto& fn : schema.validators_)
-    validators_.push_back(fn);
-
-  // merge children recursively
-  for (const auto& pair : schema.children_)
+  // 4) Sequence (non-leaf): apply wildcard or numeric schema
+  else if (config && config.IsSequence())
   {
-    if (children_.find(pair.first) == children_.end())
-      children_[pair.first] = PropertyTree();
+    PropertyTree elem_schema;
+    auto w = children_.find("*");
+    if (w != children_.end())
+      elem_schema = w->second;
 
-    children_[pair.first].mergeSchema(pair.second);
+    children_.clear();
+    int idx = 0;
+    for (const auto& elt : config)
+    {
+      std::string key = std::to_string(idx++);
+      children_[key] = elem_schema;
+      children_[key].mergeConfig(elt, allow_extra_properties);
+    }
   }
+  // 5) Otherwise leave value_ (possibly set by default) as-is.
 }
 
-void PropertyTree::validate() const
+void PropertyTree::validate(bool allow_extra_properties) const
 {
-  // run custom validators
-  for (const auto& vfn : validators_)
-    vfn(*this);
+  // check if it is an extra property not found in schema
+  if (!allow_extra_properties && hasAttribute(EXTRA_KEY))
+    std::throw_with_nested(std::runtime_error("Property does not exist in schema"));
 
   // recurse children
   for (const auto& kv : children_)
@@ -62,6 +103,14 @@ void PropertyTree::validate() const
       std::throw_with_nested(std::runtime_error("Validation failed for property: " + kv.first));
     }
   }
+
+  // if not required and null skip validators
+  if (!isRequired() && isNull())
+    return;
+
+  // run custom validators
+  for (const auto& vfn : validators_)
+    vfn(*this);
 }
 
 /// Add a custom validator for this node
@@ -81,6 +130,8 @@ const YAML::Node& PropertyTree::getValue() const { return value_; }
 
 bool PropertyTree::isNull() const { return value_.IsNull(); }
 
+bool PropertyTree::isContainer() const { return !children_.empty(); }
+
 std::vector<std::string> PropertyTree::keys() const
 {
   std::vector<std::string> res;
@@ -93,6 +144,54 @@ std::vector<std::string> PropertyTree::keys() const
 void PropertyTree::setAttribute(std::string_view name, const YAML::Node& attr)
 {
   attributes_[std::string(name)] = attr;
+
+  if (name == property_attribute::REQUIRED)
+    validators_.emplace_back(validateRequired);
+
+  if (name == property_attribute::ENUM)
+    validators_.emplace_back(validateEnum);
+
+  if (name == property_attribute::TYPE)
+  {
+    const auto str_type = attr.as<std::string>();
+
+    std::optional<std::string> is_sequence = isSequenceType(str_type);
+    if (is_sequence.has_value())
+      validators_.emplace_back(validateSequence);
+
+    if (str_type == property_type::STRING)
+      validators_.emplace_back(validateTypeCast<std::string>);
+    else if (str_type == property_type::BOOL)
+      validators_.emplace_back(validateTypeCast<bool>);
+    else if (str_type == property_type::CHAR)
+      validators_.emplace_back(validateTypeCast<char>);
+    else if (str_type == property_type::FLOAT)
+      validators_.emplace_back(validateTypeCastWithRange<float>);
+    else if (str_type == property_type::DOUBLE)
+      validators_.emplace_back(validateTypeCastWithRange<double>);
+    else if (str_type == property_type::INT)
+      validators_.emplace_back(validateTypeCastWithRange<int>);
+    else if (str_type == property_type::UNSIGNED_INT)
+      validators_.emplace_back(validateTypeCastWithRange<unsigned int>);
+    else if (str_type == property_type::LONG_INT)
+      validators_.emplace_back(validateTypeCastWithRange<long int>);
+    else if (str_type == property_type::LONG_UNSIGNED_INT)
+      validators_.emplace_back(validateTypeCastWithRange<long unsigned int>);
+    else if (str_type == property_type::EIGEN_ISOMETRY_3D)
+      validators_.emplace_back(validateTypeCast<Eigen::Isometry3d>);
+    // else if (str_type == property_type::EIGEN_MATRIX_2D)
+    //   validators_.emplace_back(validateTypeCast<Eigen::MatrixXd>);
+    else if (str_type == property_type::EIGEN_VECTOR_XD)
+      validators_.emplace_back(validateTypeCast<Eigen::VectorXd>);
+    // else if (str_type == property_type::EIGEN_MATRIX_2D)
+    //   validators_.emplace_back(validateTypeCast<Eigen::Matrix2d>);
+    else if (str_type == property_type::EIGEN_VECTOR_2D)
+      validators_.emplace_back(validateTypeCast<Eigen::Vector2d>);
+    // else if (str_type == property_type::EIGEN_MATRIX_3D)
+    //   validators_.emplace_back(validateTypeCast<Eigen::Matrix3d>);
+    else if (str_type == property_type::EIGEN_VECTOR_3D)
+      validators_.emplace_back(validateTypeCast<Eigen::Vector3d>);
+  }
 }
 
 void PropertyTree::setAttribute(std::string_view name, std::string_view attr)
@@ -151,9 +250,16 @@ PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
     if (node.size() > 1)
       throw std::runtime_error("'follow' cannot be mixed with other entries");
 
-    auto key = node[FOLLOW_KEY].as<std::string>();
-    auto registry = SchemaRegistry::instance();
-    return registry->contains(key) ? registry->get(key) : SchemaRegistry::loadFile(key);
+    try
+    {
+      auto key = node[FOLLOW_KEY].as<std::string>();
+      auto registry = SchemaRegistry::instance();
+      return registry->contains(key) ? registry->get(key) : SchemaRegistry::loadFile(key);
+    }
+    catch (const std::exception& e)
+    {
+      std::throw_with_nested(e);
+    }
   }
 
   PropertyTree tree;
@@ -226,31 +332,25 @@ YAML::Node PropertyTree::toYAML(bool exclude_attributes) const
   return node;
 }
 
+std::optional<std::string> isSequenceType(std::string_view type)
+{
+  if (type.size() < 2)
+    return std::nullopt;
+
+  if (type.substr(type.size() - 2) != "[]")
+    return std::nullopt;
+
+  return std::string(type.substr(0, type.size() - 2));
+}
+
 void validateRequired(const PropertyTree& node)
 {
   auto req_attr = node.getAttribute(property_attribute::REQUIRED);
   if (req_attr && req_attr->as<bool>())
   {
     // if leaf node with no value or null
-    if (!node.getValue() || node.getValue().IsNull())
+    if (!node.isContainer() && node.isNull())
       std::throw_with_nested(std::runtime_error("Required property missing or null"));
-  }
-}
-
-void validateRange(const PropertyTree& node)
-{
-  auto min_attr = node.getAttribute(property_attribute::MINIMUM);
-  auto max_attr = node.getAttribute(property_attribute::MAXIMUM);
-  if (min_attr && max_attr)
-  {
-    const auto minv = min_attr->as<double>();
-    const auto maxv = max_attr->as<double>();
-    const auto val = node.getValue().as<double>();
-    if (val < minv || val > maxv)
-    {
-      std::throw_with_nested(std::runtime_error("Property value " + std::to_string(val) + " out of range [" +
-                                                std::to_string(minv) + "," + std::to_string(maxv) + "]"));
-    }
   }
 }
 
@@ -266,6 +366,53 @@ void validateEnum(const PropertyTree& node)
         return;
     }
     std::throw_with_nested(std::runtime_error("Property value '" + val + "' not in enum list"));
+  }
+}
+
+void validateMap(const PropertyTree& node)
+{
+  if (node.getValue().IsNull() && !node.getValue().IsMap())
+    std::throw_with_nested(std::runtime_error("Property value is not of type YAML::NodeType::Map"));
+}
+
+void validateSequence(const PropertyTree& node)
+{
+  if (!node.getValue().IsSequence())
+    std::throw_with_nested(std::runtime_error("Property value is not of type YAML::NodeType::Sequence"));
+}
+
+void validateCustomType(const PropertyTree& node)
+{
+  const auto type_attr = node.getAttribute(property_attribute::TYPE);
+  if (!type_attr.has_value())
+    std::throw_with_nested(std::runtime_error("Custom type validator was added buy type attribute does not exist"));
+
+  const auto type_str = type_attr.value().as<std::string>();
+  std::optional<std::string> is_sequence = isSequenceType(type_str);
+
+  auto registry = SchemaRegistry::instance();
+  if (!is_sequence.has_value())
+  {
+    if (!registry->contains(type_str))
+      std::throw_with_nested(std::runtime_error("No scheme registry entry found for key: " + type_str));
+
+    PropertyTree schema = registry->get(type_str);
+    schema.mergeConfig(node.getValue());
+    schema.validate();
+  }
+  else
+  {
+    if (!registry->contains(is_sequence.value()))
+      std::throw_with_nested(std::runtime_error("No scheme registry entry found for key: " + is_sequence.value()));
+
+    const YAML::Node& sequence = node.getValue();
+    PropertyTree schema = registry->get(is_sequence.value());
+    for (auto it = sequence.begin(); it != sequence.end(); ++it)
+    {
+      PropertyTree copy_schema(schema);
+      copy_schema.mergeConfig(*it);
+      copy_schema.validate();
+    }
   }
 }
 

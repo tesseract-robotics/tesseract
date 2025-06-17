@@ -96,6 +96,7 @@ add_library(
   src/profile.cpp
   src/property_tree.cpp
   src/resource_locator.cpp
+  src/schema_registration.cpp
   src/schema_registry.cpp
   src/stopwatch.cpp
   src/types.cpp

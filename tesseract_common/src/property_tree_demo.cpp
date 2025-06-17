@@ -1,6 +1,8 @@
 #include <iostream>
 #include <yaml-cpp/yaml.h>
 #include <tesseract_common/property_tree.h>
+#include <tesseract_common/schema_registry.h>
+#include <tesseract_common/schema_registration.h>
 #include <tesseract_common/utils.h>
 
 using namespace tesseract_common;
@@ -16,7 +18,6 @@ PropertyTree buildConfigSchema()
   return_options[0] = "Error";
   return_options[1] = "Successful";
   cfg.setAttribute("return_options", YAML::Node(return_options));
-  cfg.addValidator(validateRequired);
 
   // conditional
   {
@@ -25,7 +26,6 @@ PropertyTree buildConfigSchema()
     prop.setAttribute(property_attribute::DEFAULT, true);
     prop.setAttribute(property_attribute::DOC, "Enable conditional execution");
     prop.setAttribute(property_attribute::REQUIRED, true);
-    prop.addValidator(validateRequired);
   }
   // inputs
   {
@@ -38,7 +38,6 @@ PropertyTree buildConfigSchema()
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The composite instruction");
       prop.setAttribute(property_attribute::REQUIRED, true);
-      prop.addValidator(validateRequired);
     }
     // environment
     {
@@ -47,7 +46,6 @@ PropertyTree buildConfigSchema()
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The tesseract environment");
       prop.setAttribute(property_attribute::REQUIRED, true);
-      prop.addValidator(validateRequired);
     }
     // profiles
     {
@@ -55,7 +53,6 @@ PropertyTree buildConfigSchema()
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The tesseract profiles");
       prop.setAttribute(property_attribute::REQUIRED, true);
-      prop.addValidator(validateRequired);
       // prof.setAttribute("enum", YAML::Load(R"(["A","B"])"));
       //   prof.addValidator(validateEnum);
       //   prof.addValidator([](auto const& node, auto& errs, const auto& path){
@@ -74,7 +71,6 @@ PropertyTree buildConfigSchema()
     auto& prop = outs.get("program");
     prop.setAttribute(property_attribute::TYPE, property_type::STRING);
     prop.setAttribute(property_attribute::REQUIRED, true);
-    prop.addValidator(validateRequired);
   }
   // format_result_as_input
   {
@@ -85,7 +81,91 @@ PropertyTree buildConfigSchema()
   return schema;
 }
 
-std::string str = R"(config:
+tesseract_common::PropertyTree getTaskComposerGraphSchema()
+{
+  using namespace tesseract_common;
+  PropertyTree schema;
+  schema.setAttribute(property_attribute::DOC, "TaskComposerGraph");
+  {
+    auto& prop = schema.get("class");
+    prop.setAttribute(property_attribute::TYPE, property_type::STRING);
+    prop.setAttribute(property_attribute::DOC, "The class factory name");
+    prop.setAttribute(property_attribute::REQUIRED, true);
+  }
+
+  auto& config_schema = schema.get("config");
+  config_schema.setAttribute(property_attribute::REQUIRED, true);
+  {
+    auto& prop = config_schema.get("conditional");
+    prop.setAttribute(property_attribute::TYPE, property_type::BOOL);
+    prop.setAttribute(property_attribute::DEFAULT, true);
+    prop.setAttribute(property_attribute::DOC, "Enable conditional execution");
+    prop.setAttribute(property_attribute::REQUIRED, true);
+  }
+
+  {
+    auto& inputs = config_schema.get("inputs");
+    inputs.setAttribute(property_attribute::DOC, "Input sources");
+    inputs.addValidator(validateMap);
+  }
+
+  {
+    auto& outputs = config_schema.get("outputs");
+    outputs.setAttribute(property_attribute::DOC, "Output sources");
+    outputs.addValidator(validateMap);
+  }
+
+  {
+    auto& prop = config_schema.get("nodes");
+    prop.setAttribute(property_attribute::DOC, "Map of all task nodes");
+    prop.setAttribute(property_attribute::REQUIRED, true);
+    prop.addValidator(validateMap);
+  }
+
+  {
+    auto& prop = config_schema.get("edges");
+    prop.setAttribute(property_attribute::TYPE, "TaskComposerGraphEdge[]");
+    prop.setAttribute(property_attribute::DOC, "List of graph edges");
+    prop.setAttribute(property_attribute::REQUIRED, true);
+    prop.addValidator(validateCustomType);
+  }
+
+  {
+    auto& prop = config_schema.get("terminals");
+    prop.setAttribute(property_attribute::TYPE, property_type::createList(property_type::STRING));
+    prop.setAttribute(property_attribute::DOC, "List of terminal tasks");
+    prop.setAttribute(property_attribute::REQUIRED, true);
+    prop.addValidator(validateTypeCast<std::vector<std::string>>);
+  }
+
+  return schema;
+}
+
+tesseract_common::PropertyTree getTaskComposerGraphEdgeSchema()
+{
+  using namespace tesseract_common;
+  PropertyTree schema;
+  schema.setAttribute(property_attribute::DOC, "TaskComposerGraphEdge");
+  {
+    auto& prop = schema.get("source");
+    prop.setAttribute(property_attribute::TYPE, property_type::STRING);
+    prop.setAttribute(property_attribute::DOC, "The source task name");
+    prop.setAttribute(property_attribute::REQUIRED, true);
+  }
+
+  {
+    auto& prop = schema.get("destinations");
+    prop.setAttribute(property_attribute::TYPE, property_type::createList(property_type::STRING));
+    prop.setAttribute(property_attribute::DOC, "The list of destination task name");
+    prop.setAttribute(property_attribute::REQUIRED, true);
+  }
+
+  return schema;
+}
+
+TESSERACT_REGISTER_SCHEMA(TaskComposerGraphEdge, getTaskComposerGraphEdgeSchema)
+
+const std::string str = R"(config:
                            conditional: true
                            inputs:
                              program: input_data
@@ -95,7 +175,7 @@ std::string str = R"(config:
                              program: output_data
                            format_result_as_input: false)";
 
-std::string str2 = R"(config:
+const std::string str2 = R"(config:
                            conditional: true
                            inputs:
                              program: input_data
@@ -104,7 +184,7 @@ std::string str2 = R"(config:
                            outputs:
                              program: output_data)";
 
-std::string str3 = R"(config:
+const std::string str3 = R"(config:
                            conditional: true
                            inputs:
                              program: input_data
@@ -113,22 +193,47 @@ std::string str3 = R"(config:
                            outputs:
                              programs: output_data)";
 
-int main()
-{
-  // Load configuration from YAML
-  PropertyTree prop = PropertyTree::fromYAML(YAML::Load(str2));
+const std::string str4 = R"(config:
+                           conditional: true
+                           should_not_exist: true
+                           inputs:
+                             program: input_data
+                             environment: environment
+                             profiles: profiles
+                           outputs:
+                             program: output_data)";
 
+const std::string graph_str = R"(
+class: PipelineTaskFactory
+config:
+  conditional: true
+  nodes:
+    StartTask:
+      class: StartTaskFactory
+      config:
+        conditional: false
+    DoneTask:
+      class: DoneTaskFactory
+      config:
+        conditional: false
+  edges:
+    - source: StartTask
+      destinations: [DoneTask]
+  terminals: [DoneTask])";
+
+int testBasic()
+{
   // Parse schema from external file (config_schema.yaml)
   PropertyTree schema = buildConfigSchema();
 
   // Merge schema metadata into config tree
-  prop.mergeSchema(schema);
-  std::cout << "Exclude attrubutes:\n" << prop.toYAML() << "\n\n";
-  std::cout << "Include attrubutes:\n" << prop.toYAML(false) << "\n\n";
+  schema.mergeConfig(YAML::Load(str4));
+  std::cout << "Exclude attrubutes:\n" << schema.toYAML() << "\n\n";
+  std::cout << "Include attrubutes:\n" << schema.toYAML(false) << "\n\n";
 
   try
   {
-    prop.validate();
+    schema.validate();
   }
   catch (const std::exception& e)
   {
@@ -136,7 +241,33 @@ int main()
     return 1;
   }
 
-  bool cond = prop.get("config").get("conditional").getValue().as<bool>();
+  bool cond = schema.get("config").get("conditional").getValue().as<bool>();
   std::cout << "conditional = " << std::boolalpha << cond << "\n";
   return 0;
 }
+
+int testCustomType()
+{
+  // Parse schema from external file (config_schema.yaml)
+  PropertyTree schema = getTaskComposerGraphSchema();
+  std::cout << "Schema:\n" << schema.toYAML(false) << "\n\n";
+
+  // Merge schema metadata into config tree
+  schema.mergeConfig(YAML::Load(graph_str));
+  std::cout << "Exclude attrubutes:\n" << schema.toYAML() << "\n\n";
+  std::cout << "Include attrubutes:\n" << schema.toYAML(false) << "\n\n";
+
+  try
+  {
+    schema.validate();
+  }
+  catch (const std::exception& e)
+  {
+    tesseract_common::printNestedException(e);
+    return 1;
+  }
+
+  return 0;
+}
+
+int main() { return testCustomType(); }
