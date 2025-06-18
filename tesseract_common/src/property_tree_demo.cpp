@@ -258,8 +258,7 @@ tesseract_common::PropertyTree getTaskComposerRasterOnlySchema()
     }
     {
       auto& prop = raster_config.get("remapping");
-      prop.setAttribute(property_attribute::TYPE,
-                        property_type::createMap(property_type::STRING, property_type::STRING));
+      prop.setAttribute(property_attribute::TYPE, property_type::createMap(property_type::STRING));
       prop.setAttribute(property_attribute::DOC, "The remapping of input and output keys");
     }
     {
@@ -291,8 +290,7 @@ tesseract_common::PropertyTree getTaskComposerRasterOnlySchema()
     }
     {
       auto& prop = transition_config.get("remapping");
-      prop.setAttribute(property_attribute::TYPE,
-                        property_type::createMap(property_type::STRING, property_type::STRING));
+      prop.setAttribute(property_attribute::TYPE, property_type::createMap(property_type::STRING));
       prop.setAttribute(property_attribute::DOC, "The remapping of input and output keys");
     }
     {

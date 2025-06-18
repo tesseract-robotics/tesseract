@@ -14,19 +14,18 @@ namespace tesseract_common
 namespace property_type
 {
 /**
- * @brief A utility for constructing the list type
+ * @brief A utility for constructing the std::vector<type>
  * @param type The type assoicated with the list
  * @return The string representation of the std::vector<type>, aka. type[]
  */
 std::string createList(std::string_view type);
 
 /**
- * @brief A utility for constructing the map type
- * @param key_type The type assoicated with the map key
- * @param value_type The type assoicated with the map value
- * @return The string representation of the std::make<key_type, value_type>, aka. {key_type : value_type}
+ * @brief A utility for constructing the std::map<std::string, type>
+ * @param type The value type assoicated with the map
+ * @return The string representation of the std::map<std::string, type>, aka. type{}
  */
-std::string createMap(std::string_view key_type, std::string_view value_type);
+std::string createMap(std::string_view type);
 
 // Integral Types
 constexpr std::string_view BOOL{ "bool" };

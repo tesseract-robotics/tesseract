@@ -13,10 +13,7 @@ namespace tesseract_common
 namespace property_type
 {
 std::string createList(std::string_view type) { return std::string(type) + "[]"; };
-std::string createMap(std::string_view key_type, std::string_view value_type)
-{
-  return "{" + std::string(key_type) + " : " + std::string(value_type) + "}";
-};
+std::string createMap(std::string_view type) { return std::string(type) + "{}"; };
 }  // namespace property_type
 
 void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_properties)
