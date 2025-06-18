@@ -3,10 +3,10 @@
 #include <tesseract_common/yaml_extenstions.h>
 #include <Eigen/Geometry>
 
-const static std::string ATTRIBUTES_KEY{ "attributes" };
-const static std::string VALUE_KEY{ "value" };
-const static std::string FOLLOW_KEY{ "follow" };
+const static std::string ATTRIBUTES_KEY{ "_attributes" };
+const static std::string VALUE_KEY{ "_value" };
 const static std::string EXTRA_KEY{ "_extra" };
+const static std::string FOLLOW_KEY{ "follow" };
 
 namespace tesseract_common
 {
