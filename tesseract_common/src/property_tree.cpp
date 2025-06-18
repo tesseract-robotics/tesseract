@@ -55,7 +55,7 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
         const auto& key = it->first.as<std::string>();
         if (children_.count(key) == 0)
         {
-          auto& extra_node = children_[key];
+          auto& extra_node = get(key);
           extra_node.setAttribute(EXTRA_KEY, YAML::Node(true));
           extra_node.mergeConfig(it->second, allow_extra_properties);
         }
@@ -71,10 +71,12 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
       elem_schema = w->second;
 
     children_.clear();
+    keys_.clear();
     int idx = 0;
     for (const auto& elt : config)
     {
       std::string key = std::to_string(idx++);
+      keys_.push_back(key);
       children_[key] = elem_schema;
       children_[key].mergeConfig(elt, allow_extra_properties);
     }
@@ -110,10 +112,22 @@ void PropertyTree::validate(bool allow_extra_properties) const
     vfn(*this);
 }
 
-/// Add a custom validator for this node
 void PropertyTree::addValidator(ValidatorFn fn) { validators_.push_back(std::move(fn)); }
 
-PropertyTree& PropertyTree::get(std::string_view key) { return children_[std::string(key)]; }
+PropertyTree& PropertyTree::get(std::string_view key)
+{
+  auto k = std::string(key);
+  auto it = children_.find(k);
+  if (it == children_.end())
+  {
+    // first time insertion
+    keys_.push_back(k);
+    // default-construct in map
+    it = children_.emplace(k, PropertyTree{}).first;
+  }
+  return it->second;
+}
+
 const PropertyTree& PropertyTree::get(std::string_view key) const { return children_.at(std::string(key)); }
 
 const PropertyTree* PropertyTree::find(std::string_view key) const
@@ -129,14 +143,7 @@ bool PropertyTree::isNull() const { return value_.IsNull(); }
 
 bool PropertyTree::isContainer() const { return !children_.empty(); }
 
-std::vector<std::string> PropertyTree::keys() const
-{
-  std::vector<std::string> res;
-  res.reserve(children_.size());
-  for (const auto& pair : children_)
-    res.push_back(pair.first);
-  return res;
-}
+std::vector<std::string> PropertyTree::keys() const { return keys_; }
 
 void PropertyTree::setAttribute(std::string_view name, const YAML::Node& attr)
 {
@@ -318,14 +325,19 @@ YAML::Node PropertyTree::toYAML(bool exclude_attributes) const
 
     node[ATTRIBUTES_KEY] = attr_node;
   }
+
+  if (keys_.size() != children_.size())
+    throw std::runtime_error("PropertyTree, keys_ and children_ are not the same size");
+
   // emit children
-  for (const auto& pair : children_)
+  for (const auto& key : keys_)
   {
+    const PropertyTree& child = children_.at(key);
     // If the property is not required and is null then skip when excluding attributes
-    if (exclude_attributes && !pair.second.isRequired() && pair.second.isNull())
+    if (exclude_attributes && !child.isRequired() && child.isNull())
       continue;
 
-    node[pair.first] = pair.second.toYAML(exclude_attributes);
+    node[key] = child.toYAML(exclude_attributes);
   }
 
   // if leaf (no children) but value present, emit under 'value'
