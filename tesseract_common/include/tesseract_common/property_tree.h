@@ -39,6 +39,9 @@ constexpr std::string_view LONG_UNSIGNED_INT{ "long unsigned int" };
 constexpr std::string_view FLOAT{ "float" };
 constexpr std::string_view DOUBLE{ "double" };
 
+// Container of properties
+constexpr std::string_view CONTAINER{ "YAML::NodeType::Map" };
+
 // Eigen Types
 constexpr std::string_view EIGEN_ISOMETRY_3D{ "Eigen::Isometry3d" };
 // constexpr std::string_view EIGEN_MATRIX_XD{ "Eigen::MatrixXd" };
@@ -235,9 +238,16 @@ private:
 /**
  * @brief Check if type is a sequence
  * @param type The type to check
- * @return If it is a sequence the underlying type is returned
+ * @return If it is a sequence, the underlying type is returned
  */
 std::optional<std::string> isSequenceType(std::string_view type);
+
+/**
+ * @brief Check if type is a map
+ * @param type The type to check
+ * @return If it is a map, the underlying type is returned
+ */
+std::optional<std::string> isMapType(std::string_view type);
 
 /**
  * @brief Validator: ensure 'required' attribute is present and non-null.
@@ -266,6 +276,14 @@ void validateMap(const PropertyTree& node);
  * @throws runtime_error if not correct type.
  */
 void validateSequence(const PropertyTree& node);
+
+/**
+ * @brief Validator: ensure property is a container of child properties
+ * The property should have children and the value should be null
+ * @param node  Node to validate.
+ * @throws runtime_error if not correct.
+ */
+void validateContainer(const PropertyTree& node);
 
 void validateCustomType(const PropertyTree& node);
 
