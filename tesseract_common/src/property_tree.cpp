@@ -159,7 +159,13 @@ void PropertyTree::setAttribute(std::string_view name, const YAML::Node& attr)
     if (is_sequence.has_value())
       validators_.emplace_back(validateSequence);
 
-    if (str_type == property_type::STRING)
+    std::optional<std::string> is_map = isMapType(str_type);
+    if (is_map.has_value())
+      validators_.emplace_back(validateMap);
+
+    if (str_type == property_type::CONTAINER)
+      validators_.emplace_back(validateContainer);
+    else if (str_type == property_type::STRING)
       validators_.emplace_back(validateTypeCast<std::string>);
     else if (str_type == property_type::BOOL)
       validators_.emplace_back(validateTypeCast<bool>);
@@ -343,6 +349,17 @@ std::optional<std::string> isSequenceType(std::string_view type)
   return std::string(type.substr(0, type.size() - 2));
 }
 
+std::optional<std::string> isMapType(std::string_view type)
+{
+  if (type.size() < 2)
+    return std::nullopt;
+
+  if (type.substr(type.size() - 2) != "{}")
+    return std::nullopt;
+
+  return std::string(type.substr(0, type.size() - 2));
+}
+
 void validateRequired(const PropertyTree& node)
 {
   auto req_attr = node.getAttribute(property_attribute::REQUIRED);
@@ -371,7 +388,7 @@ void validateEnum(const PropertyTree& node)
 
 void validateMap(const PropertyTree& node)
 {
-  if (node.getValue().IsNull() && !node.getValue().IsMap())
+  if (!node.getValue().IsMap())
     std::throw_with_nested(std::runtime_error("Property value is not of type YAML::NodeType::Map"));
 }
 
@@ -379,6 +396,15 @@ void validateSequence(const PropertyTree& node)
 {
   if (!node.getValue().IsSequence())
     std::throw_with_nested(std::runtime_error("Property value is not of type YAML::NodeType::Sequence"));
+}
+
+void validateContainer(const PropertyTree& node)
+{
+  if (!node.isContainer())
+    std::throw_with_nested(std::runtime_error("Property is not a container"));
+
+  if (!node.isNull())
+    std::throw_with_nested(std::runtime_error("Property is a container but value is not null"));
 }
 
 void validateCustomType(const PropertyTree& node)
