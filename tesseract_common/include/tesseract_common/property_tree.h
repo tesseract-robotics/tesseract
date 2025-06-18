@@ -231,6 +231,7 @@ private:
   YAML::Node follow_;                            /**< Follow stored at this node */
   std::map<std::string, YAML::Node> attributes_; /**< Metadata attributes */
   std::map<std::string, PropertyTree> children_; /**< Nested child nodes */
+  std::vector<std::string> keys_;                /**< Nested child keys */
   std::vector<ValidatorFn> validators_;          /**< Validators to invoke */
 };
 
