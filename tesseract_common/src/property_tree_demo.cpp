@@ -11,7 +11,7 @@ using namespace tesseract_common;
 PropertyTree buildConfigSchema()
 {
   PropertyTree schema;
-  auto& cfg = schema.get("config");
+  auto& cfg = schema["config"];
   cfg.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
   cfg.setAttribute(property_attribute::DOC, "Main config for plugin");
   cfg.setAttribute(property_attribute::REQUIRED, true);
@@ -22,7 +22,7 @@ PropertyTree buildConfigSchema()
 
   // conditional
   {
-    auto& prop = cfg.get("conditional");
+    auto& prop = cfg["conditional"];
     prop.setAttribute(property_attribute::TYPE, property_type::BOOL);
     prop.setAttribute(property_attribute::DEFAULT, true);
     prop.setAttribute(property_attribute::DOC, "Enable conditional execution");
@@ -30,20 +30,20 @@ PropertyTree buildConfigSchema()
   }
   // inputs
   {
-    auto& inputs = cfg.get("inputs");
+    auto& inputs = cfg["inputs"];
     inputs.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     inputs.setAttribute(property_attribute::DOC, "Input sources");
     inputs.setAttribute(property_attribute::REQUIRED, true);
     // program
     {
-      auto& prop = inputs.get("program");
+      auto& prop = inputs["program"];
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The composite instruction");
       prop.setAttribute(property_attribute::REQUIRED, true);
     }
     // environment
     {
-      auto& prop = inputs.get("environment");
+      auto& prop = inputs["environment"];
       // env.setAttribute("enum", YAML::Load(R"(["dev","stag","prod"])"));
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The tesseract environment");
@@ -51,14 +51,14 @@ PropertyTree buildConfigSchema()
     }
     // profiles
     {
-      auto& prop = inputs.get("profiles");
+      auto& prop = inputs["profiles"];
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The tesseract profiles");
       prop.setAttribute(property_attribute::REQUIRED, true);
       // prof.setAttribute("enum", YAML::Load(R"(["A","B"])"));
       //   prof.addValidator(validateEnum);
       //   prof.addValidator([](auto const& node, auto& errs, const auto& path){
-      //     auto s = node.getValue().template as<std::string>();
+      //     auto s = node[Value().template as<std::string>();
       //     if (s.find(',') == std::string::npos) {
       //       errs.push_back(path + ": profiles should be comma-separated");
       //       return false;
@@ -69,19 +69,19 @@ PropertyTree buildConfigSchema()
   }
   // outputs
   {
-    auto& outputs = cfg.get("outputs");
+    auto& outputs = cfg["outputs"];
     outputs.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     outputs.setAttribute(property_attribute::DOC, "Output sources");
     outputs.setAttribute(property_attribute::REQUIRED, true);
     {
-      auto& prop = outputs.get("program");
+      auto& prop = outputs["program"];
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::REQUIRED, true);
     }
   }
   // format_result_as_input
   {
-    auto& prop = cfg.get("format_result_as_input");
+    auto& prop = cfg["format_result_as_input"];
     prop.setAttribute(property_attribute::TYPE, property_type::BOOL);
     prop.setAttribute(property_attribute::DEFAULT, false);
   }
@@ -95,17 +95,17 @@ tesseract_common::PropertyTree getTaskComposerGraphSchema()
   schema.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
   schema.setAttribute(property_attribute::DOC, "TaskComposerGraph");
   {
-    auto& prop = schema.get("class");
+    auto& prop = schema["class"];
     prop.setAttribute(property_attribute::TYPE, property_type::STRING);
     prop.setAttribute(property_attribute::DOC, "The class factory name");
     prop.setAttribute(property_attribute::REQUIRED, true);
   }
 
-  auto& config_schema = schema.get("config");
+  auto& config_schema = schema["config"];
   config_schema.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
   config_schema.setAttribute(property_attribute::REQUIRED, true);
   {
-    auto& prop = config_schema.get("conditional");
+    auto& prop = config_schema["conditional"];
     prop.setAttribute(property_attribute::TYPE, property_type::BOOL);
     prop.setAttribute(property_attribute::DEFAULT, true);
     prop.setAttribute(property_attribute::DOC, "Enable conditional execution");
@@ -113,26 +113,26 @@ tesseract_common::PropertyTree getTaskComposerGraphSchema()
   }
 
   {
-    auto& inputs = config_schema.get("inputs");
+    auto& inputs = config_schema["inputs"];
     inputs.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     inputs.setAttribute(property_attribute::DOC, "Input sources");
   }
 
   {
-    auto& outputs = config_schema.get("outputs");
+    auto& outputs = config_schema["outputs"];
     outputs.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     outputs.setAttribute(property_attribute::DOC, "Output sources");
   }
 
   {
-    auto& prop = config_schema.get("nodes");
+    auto& prop = config_schema["nodes"];
     prop.setAttribute(property_attribute::TYPE, "TaskComposerGraphNode{}");
     prop.setAttribute(property_attribute::DOC, "Map of all task nodes");
     prop.setAttribute(property_attribute::REQUIRED, true);
   }
 
   {
-    auto& prop = config_schema.get("edges");
+    auto& prop = config_schema["edges"];
     prop.setAttribute(property_attribute::TYPE, "TaskComposerGraphEdge[]");
     prop.setAttribute(property_attribute::DOC, "List of graph edges");
     prop.setAttribute(property_attribute::REQUIRED, true);
@@ -140,7 +140,7 @@ tesseract_common::PropertyTree getTaskComposerGraphSchema()
   }
 
   {
-    auto& prop = config_schema.get("terminals");
+    auto& prop = config_schema["terminals"];
     prop.setAttribute(property_attribute::TYPE, property_type::createList(property_type::STRING));
     prop.setAttribute(property_attribute::DOC, "List of terminal tasks");
     prop.setAttribute(property_attribute::REQUIRED, true);
@@ -157,14 +157,14 @@ tesseract_common::PropertyTree getTaskComposerGraphEdgeSchema()
   schema.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
   schema.setAttribute(property_attribute::DOC, "TaskComposerGraphEdge");
   {
-    auto& prop = schema.get("source");
+    auto& prop = schema["source"];
     prop.setAttribute(property_attribute::TYPE, property_type::STRING);
     prop.setAttribute(property_attribute::DOC, "The source task name");
     prop.setAttribute(property_attribute::REQUIRED, true);
   }
 
   {
-    auto& prop = schema.get("destinations");
+    auto& prop = schema["destinations"];
     prop.setAttribute(property_attribute::TYPE, property_type::createList(property_type::STRING));
     prop.setAttribute(property_attribute::DOC, "The list of destination task name");
     prop.setAttribute(property_attribute::REQUIRED, true);
@@ -185,17 +185,17 @@ tesseract_common::PropertyTree getTaskComposerRasterOnlySchema()
   return_options[1] = "Successful";
   schema.setAttribute("return_options", YAML::Node(return_options));
   {
-    auto& prop = schema.get("class");
+    auto& prop = schema["class"];
     prop.setAttribute(property_attribute::TYPE, property_type::STRING);
     prop.setAttribute(property_attribute::DOC, "The class factory name");
     prop.setAttribute(property_attribute::REQUIRED, true);
   }
 
-  auto& config_schema = schema.get("config");
+  auto& config_schema = schema["config"];
   config_schema.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
   config_schema.setAttribute(property_attribute::REQUIRED, true);
   {
-    auto& prop = config_schema.get("conditional");
+    auto& prop = config_schema["conditional"];
     prop.setAttribute(property_attribute::TYPE, property_type::BOOL);
     prop.setAttribute(property_attribute::DEFAULT, true);
     prop.setAttribute(property_attribute::DOC, "Enable conditional execution");
@@ -203,20 +203,20 @@ tesseract_common::PropertyTree getTaskComposerRasterOnlySchema()
   }
 
   {
-    auto& inputs = config_schema.get("inputs");
+    auto& inputs = config_schema["inputs"];
     inputs.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     inputs.setAttribute(property_attribute::DOC, "Input sources");
 
     // program
     {
-      auto& prop = inputs.get("program");
+      auto& prop = inputs["program"];
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The composite instruction");
       prop.setAttribute(property_attribute::REQUIRED, true);
     }
     // environment
     {
-      auto& prop = inputs.get("environment");
+      auto& prop = inputs["environment"];
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The tesseract environment");
       prop.setAttribute(property_attribute::REQUIRED, true);
@@ -224,12 +224,12 @@ tesseract_common::PropertyTree getTaskComposerRasterOnlySchema()
   }
 
   {
-    auto& outputs = config_schema.get("outputs");
+    auto& outputs = config_schema["outputs"];
     outputs.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     outputs.setAttribute(property_attribute::DOC, "Output sources");
     // program
     {
-      auto& prop = outputs.get("program");
+      auto& prop = outputs["program"];
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The composite instruction");
       prop.setAttribute(property_attribute::REQUIRED, true);
@@ -237,64 +237,64 @@ tesseract_common::PropertyTree getTaskComposerRasterOnlySchema()
   }
 
   {
-    auto& raster = config_schema.get("raster");
+    auto& raster = config_schema["raster"];
     raster.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     raster.setAttribute(property_attribute::DOC, "The raster task");
     raster.setAttribute(property_attribute::REQUIRED, true);
     {
-      auto& prop = raster.get("task");
+      auto& prop = raster["task"];
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The task name");
       prop.setAttribute(property_attribute::REQUIRED, true);
     }
-    auto& raster_config = raster.get("config");
+    auto& raster_config = raster["config"];
     raster_config.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     raster_config.setAttribute(property_attribute::REQUIRED, true);
     {
-      auto& prop = raster_config.get("abort_terminal");
+      auto& prop = raster_config["abort_terminal"];
       prop.setAttribute(property_attribute::TYPE, property_type::INT);
       prop.setAttribute(property_attribute::MINIMUM, 0);
       prop.setAttribute(property_attribute::DOC, "The abort terminal");
     }
     {
-      auto& prop = raster_config.get("remapping");
+      auto& prop = raster_config["remapping"];
       prop.setAttribute(property_attribute::TYPE, property_type::createMap(property_type::STRING));
       prop.setAttribute(property_attribute::DOC, "The remapping of input and output keys");
     }
     {
-      auto& prop = raster_config.get("indexing");
+      auto& prop = raster_config["indexing"];
       prop.setAttribute(property_attribute::TYPE, property_type::createList(property_type::STRING));
       prop.setAttribute(property_attribute::DOC, "The input and output keys to index");
     }
   }
 
   {
-    auto& transition = config_schema.get("transition");
+    auto& transition = config_schema["transition"];
     transition.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     transition.setAttribute(property_attribute::DOC, "The transition task");
     transition.setAttribute(property_attribute::REQUIRED, true);
     {
-      auto& prop = transition.get("task");
+      auto& prop = transition["task"];
       prop.setAttribute(property_attribute::TYPE, property_type::STRING);
       prop.setAttribute(property_attribute::DOC, "The task name");
       prop.setAttribute(property_attribute::REQUIRED, true);
     }
-    auto& transition_config = transition.get("config");
+    auto& transition_config = transition["config"];
     transition_config.setAttribute(property_attribute::TYPE, property_type::CONTAINER);
     transition_config.setAttribute(property_attribute::REQUIRED, true);
     {
-      auto& prop = transition_config.get("abort_terminal");
+      auto& prop = transition_config["abort_terminal"];
       prop.setAttribute(property_attribute::TYPE, property_type::INT);
       prop.setAttribute(property_attribute::MINIMUM, 0);
       prop.setAttribute(property_attribute::DOC, "The abort terminal");
     }
     {
-      auto& prop = transition_config.get("remapping");
+      auto& prop = transition_config["remapping"];
       prop.setAttribute(property_attribute::TYPE, property_type::createMap(property_type::STRING));
       prop.setAttribute(property_attribute::DOC, "The remapping of input and output keys");
     }
     {
-      auto& prop = transition_config.get("indexing");
+      auto& prop = transition_config["indexing"];
       prop.setAttribute(property_attribute::TYPE, property_type::createList(property_type::STRING));
       prop.setAttribute(property_attribute::DOC, "The input and output keys to index");
     }
@@ -399,7 +399,7 @@ int testBasic()
     return 1;
   }
 
-  bool cond = schema.get("config").get("conditional").getValue().as<bool>();
+  bool cond = schema["config"]["conditional"].getValue().as<bool>();
   std::cout << "conditional = " << std::boolalpha << cond << "\n";
   return 0;
 }
