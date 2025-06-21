@@ -55,7 +55,7 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
         const auto& key = it->first.as<std::string>();
         if (children_.count(key) == 0)
         {
-          auto& extra_node = get(key);
+          auto& extra_node = (*this)[key];
           extra_node.setAttribute(EXTRA_KEY, YAML::Node(true));
           extra_node.mergeConfig(it->second, allow_extra_properties);
         }
@@ -114,7 +114,7 @@ void PropertyTree::validate(bool allow_extra_properties) const
 
 void PropertyTree::addValidator(ValidatorFn fn) { validators_.push_back(std::move(fn)); }
 
-PropertyTree& PropertyTree::get(std::string_view key)
+PropertyTree& PropertyTree::operator[](std::string_view key)
 {
   auto k = std::string(key);
   auto it = children_.find(k);
@@ -123,12 +123,13 @@ PropertyTree& PropertyTree::get(std::string_view key)
     // first time insertion
     keys_.push_back(k);
     // default-construct in map
-    it = children_.emplace(k, PropertyTree{}).first;
+    it = children_.emplace(std::move(k), PropertyTree{}).first;
   }
   return it->second;
 }
 
-const PropertyTree& PropertyTree::get(std::string_view key) const { return children_.at(std::string(key)); }
+PropertyTree& PropertyTree::at(std::string_view key) { return children_.at(std::string(key)); }
+const PropertyTree& PropertyTree::at(std::string_view key) const { return children_.at(std::string(key)); }
 
 const PropertyTree* PropertyTree::find(std::string_view key) const
 {

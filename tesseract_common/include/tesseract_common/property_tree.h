@@ -122,7 +122,15 @@ public:
    * @param key  Child identifier (string key).
    * @return Reference to the child PropertyTree.
    */
-  PropertyTree& get(std::string_view key);
+  PropertyTree& operator[](std::string_view key);
+
+  /**
+   * @brief Access a child node by key.
+   * @param key  Child identifier.
+   * @return Reference to the child.
+   * @throws std::out_of_range if key not found.
+   */
+  PropertyTree& at(std::string_view key);
 
   /**
    * @brief Access a child node by key (const).
@@ -130,7 +138,7 @@ public:
    * @return Const reference to the child.
    * @throws std::out_of_range if key not found.
    */
-  const PropertyTree& get(std::string_view key) const;
+  const PropertyTree& at(std::string_view key) const;
 
   /**
    * @brief Find a child node without creating it.
