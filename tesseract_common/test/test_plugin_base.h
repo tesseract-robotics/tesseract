@@ -26,6 +26,8 @@
 #ifndef TESSERACT_COMMON_TEST_PLUGIN_BASE_H
 #define TESSERACT_COMMON_TEST_PLUGIN_BASE_H
 
+#include <boost_plugin_loader/fwd.h>
+
 #include <string>
 #include <boost_plugin_loader/fwd.h>
 
