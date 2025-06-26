@@ -80,6 +80,12 @@ class Timer;
 // Profile Dictionary
 class Profile;
 class ProfileDictionary;
+
+// property_tree.h
+class PropertyTree;
+
+// schema_registry.h
+class SchemaRegistry;
 }  // namespace tesseract_common
 
 #endif  // TESSERACT_COMMON_TESSERACT_COMMON_FWD_H
