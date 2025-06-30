@@ -11,17 +11,17 @@ on:
 jobs:
   deploy_documentation:
     runs-on: ubuntu-latest
-    image: ubuntu:18.04
+    image: ubuntu:22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Build Doxygen Documentation
         uses: mattnotmitt/doxygen-action@v1
         with:
-            doxyfile-path: 'docs/doxygen.config'
+            doxyfile-path: 'docs/Doxyfile'
 
       - name: Deploy Documentation
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           deploy_key: ${{ secrets.DOCS_DEPLOY_KEY }}
           publish_dir: ./docs
