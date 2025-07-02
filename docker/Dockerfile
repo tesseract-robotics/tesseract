@@ -27,7 +27,7 @@ RUN apt update -y -qq \
 # Use a tmpfs mount for the workspace so as not to unnecessarily copy files into the final image
 # Bind mount the source directory so as not to unnecessarily copy source code into the docker image
 ARG WORKSPACE_DIR=/tmpfs/tesseract
-ARG INSTALL_DIR=/opt/tesseract/install
+ARG INSTALL_DIR=/opt/tesseract
 RUN mkdir -p ${INSTALL_DIR}
 
 RUN --mount=type=tmpfs,target=${WORKSPACE_DIR} --mount=type=bind,target=${WORKSPACE_DIR}/src/tesseract \
