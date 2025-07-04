@@ -11,6 +11,8 @@ contact_manager_plugins:
         class: BulletDiscreteBVHManagerFactory
       BulletDiscreteSimpleManager:
         class: BulletDiscreteSimpleManagerFactory
+        config:
+          share_pool_allocators: false
       FCLDiscreteBVHManager:
         class: FCLDiscreteBVHManagerFactory
   continuous_plugins:
@@ -20,4 +22,6 @@ contact_manager_plugins:
         class: BulletCastBVHManagerFactory
       BulletCastSimpleManager:
         class: BulletCastSimpleManagerFactory
+        config:
+          share_pool_allocators: false
 

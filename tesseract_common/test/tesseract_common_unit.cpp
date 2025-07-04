@@ -18,7 +18,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/kinematic_limits.h>
 #include <tesseract_common/yaml_utils.h>
-#include <tesseract_common/yaml_extenstions.h>
+#include <tesseract_common/yaml_extensions.h>
 #include <tesseract_common/collision_margin_data.h>
 #include <tesseract_common/stopwatch.h>
 #include <tesseract_common/timer.h>

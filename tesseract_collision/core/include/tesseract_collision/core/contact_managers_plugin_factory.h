@@ -70,6 +70,12 @@ public:
    */
   virtual std::unique_ptr<DiscreteContactManager> create(const std::string& name, const YAML::Node& config) const = 0;
 
+  /**
+   * @brief Get the config yaml schema
+   * @return The schema
+   */
+  virtual tesseract_common::PropertyTree schema() const = 0;
+
 protected:
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
@@ -91,6 +97,12 @@ public:
    */
   virtual std::unique_ptr<ContinuousContactManager> create(const std::string& solver_name,
                                                            const YAML::Node& config) const = 0;
+
+  /**
+   * @brief Get the config yaml schema
+   * @return The schema
+   */
+  virtual tesseract_common::PropertyTree schema() const = 0;
 
 protected:
   static std::string getSection();
@@ -124,6 +136,12 @@ public:
    * @param config The config string
    */
   ContactManagersPluginFactory(const std::string& config, const tesseract_common::ResourceLocator& locator);
+
+  /**
+   * @brief Get the schema
+   * @return The schema
+   */
+  tesseract_common::PropertyTree getSchema() const;
 
   /**
    * @brief Add location for the plugin loader to search

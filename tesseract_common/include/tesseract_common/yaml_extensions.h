@@ -1,5 +1,5 @@
 /**
- * @file yaml_extenstions.h
+ * @file yaml_extensions.h
  * @brief YAML Type conversions
  *
  * @author Levi Armstrong
@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/plugin_info.h>
 #include <tesseract_common/calibration_info.h>
 #include <tesseract_common/collision_margin_data.h>
+#include <tesseract_common/property_tree.h>
 
 namespace YAML
 {
@@ -199,6 +200,55 @@ struct convert<Eigen::Isometry3d>
     rhs = out;
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // Top-level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, CONTAINER);
+
+    // position: map{x:double,y:double,z:double}
+    {
+      auto& prop = sch["position"];
+      prop.setAttribute(TYPE, CONTAINER);
+      prop.setAttribute(REQUIRED, true);
+
+      // x, y, z all required doubles
+      for (auto key : { "x", "y", "z" })
+      {
+        auto& c = prop[key];
+        c.setAttribute(TYPE, DOUBLE);
+        c.setAttribute(REQUIRED, true);
+      }
+    }
+
+    // orientation: either quaternion (x,y,z,w) or rpy (r,p,y)
+    {
+      auto& prop = sch["orientation"];
+      prop.setAttribute(TYPE, ONEOF);
+      prop.setAttribute(REQUIRED, true);
+
+      auto& option0 = prop["xyzw"];
+      for (auto key : { "x", "y", "z", "w" })
+      {
+        auto& c = option0[key];
+        c.setAttribute(TYPE, DOUBLE);
+      }
+
+      auto& option1 = prop["rpy"];
+      for (auto key : { "r", "p", "y" })
+      {
+        auto& c = option1[key];
+        c.setAttribute(TYPE, DOUBLE);
+      }
+    }
+
+    return sch;
+  }
 };
 
 template <>
@@ -224,6 +274,14 @@ struct convert<Eigen::VectorXd>
 
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    PropertyTree sch;
+    sch.setAttribute(property_attribute::TYPE, property_type::EIGEN_VECTOR_XD);
+    return sch;
+  }
 };
 
 template <>
@@ -247,6 +305,14 @@ struct convert<Eigen::Vector2d>
       rhs(i) = node[i].as<double>();
 
     return true;
+  }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    PropertyTree sch;
+    sch.setAttribute(property_attribute::TYPE, property_type::EIGEN_VECTOR_2D);
+    return sch;
   }
 };
 
@@ -272,18 +338,25 @@ struct convert<Eigen::Vector3d>
 
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    PropertyTree sch;
+    sch.setAttribute(property_attribute::TYPE, property_type::EIGEN_VECTOR_3D);
+    return sch;
+  }
 };
 
 template <>
 struct convert<tesseract_common::KinematicsPluginInfo>
 {
+  inline static const std::string SEARCH_PATHS_KEY{ "search_paths" };
+  inline static const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+  inline static const std::string FWD_KIN_PLUGINS_KEY{ "fwd_kin_plugins" };
+  inline static const std::string INV_KIN_PLUGINS_KEY{ "inv_kin_plugins" };
   static Node encode(const tesseract_common::KinematicsPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
-    const std::string FWD_KIN_PLUGINS_KEY{ "fwd_kin_plugins" };
-    const std::string INV_KIN_PLUGINS_KEY{ "inv_kin_plugins" };
-
     YAML::Node kinematic_plugins;
     if (!rhs.search_paths.empty())
       kinematic_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
@@ -302,11 +375,6 @@ struct convert<tesseract_common::KinematicsPluginInfo>
 
   static bool decode(const Node& node, tesseract_common::KinematicsPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
-    const std::string FWD_KIN_PLUGINS_KEY{ "fwd_kin_plugins" };
-    const std::string INV_KIN_PLUGINS_KEY{ "inv_kin_plugins" };
-
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
       std::set<std::string> sp;
@@ -379,18 +447,54 @@ struct convert<tesseract_common::KinematicsPluginInfo>
 
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    PropertyTree sch;
+
+    // This is a map of named fields
+    sch.setAttribute(TYPE, CONTAINER);
+
+    {  // search_paths: optional list<string>
+      auto& prop = sch[SEARCH_PATHS_KEY];
+      prop.setAttribute(TYPE, createList(STRING));
+    }
+
+    {  // search_libraries: optional list<string>
+      auto& prop = sch[SEARCH_LIBRARIES_KEY];
+      prop.setAttribute(TYPE, createList(STRING));
+    }
+
+    {  // fwd_kin_plugins: optional map<string,PluginInfoContainer>
+      auto& prop = sch[FWD_KIN_PLUGINS_KEY];
+      prop.setAttribute(TYPE, createMap("tesseract_common::PluginInfoContainer"));
+      // contents are custom type → use validateCustomType
+      prop.addValidator(validateCustomType);
+    }
+
+    {  // inv_kin_plugins: optional map<string,PluginInfoContainer>
+      auto& prop = sch[INV_KIN_PLUGINS_KEY];
+      prop.setAttribute(TYPE, createMap("tesseract_common::PluginInfoContainer"));
+      prop.addValidator(validateCustomType);
+    }
+
+    return sch;
+  }
 };
 
 template <>
 struct convert<tesseract_common::ContactManagersPluginInfo>
 {
+  inline static const std::string SEARCH_PATHS_KEY{ "search_paths" };
+  inline static const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+  inline static const std::string DISCRETE_PLUGINS_KEY{ "discrete_plugins" };
+  inline static const std::string CONTINUOUS_PLUGINS_KEY{ "continuous_plugins" };
   static Node encode(const tesseract_common::ContactManagersPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
-    const std::string DISCRETE_PLUGINS_KEY{ "discrete_plugins" };
-    const std::string CONTINUOUS_PLUGINS_KEY{ "continuous_plugins" };
-
     YAML::Node contact_manager_plugins;
     if (!rhs.search_paths.empty())
       contact_manager_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
@@ -409,11 +513,6 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
 
   static bool decode(const Node& node, tesseract_common::ContactManagersPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
-    const std::string DISCRETE_PLUGINS_KEY{ "discrete_plugins" };
-    const std::string CONTINUOUS_PLUGINS_KEY{ "continuous_plugins" };
-
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
       std::set<std::string> sp;
@@ -482,18 +581,57 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
 
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    PropertyTree sch;
+    // top-level is a map container
+    sch.setAttribute(TYPE, CONTAINER);
+
+    // search_paths: optional list<string>
+    {
+      auto& prop = sch[SEARCH_PATHS_KEY];
+      prop.setAttribute(TYPE, createList(STRING));
+    }
+
+    // search_libraries: optional list<string>
+    {
+      auto& prop = sch[SEARCH_LIBRARIES_KEY];
+      prop.setAttribute(TYPE, createList(STRING));
+    }
+
+    // discrete_plugins: optional map<string, PluginInfoContainer>
+    {
+      auto& prop = sch[DISCRETE_PLUGINS_KEY];
+      prop.setAttribute(TYPE, createMap("tesseract_common::PluginInfoContainer"));
+      prop.addValidator(validateCustomType);
+    }
+
+    // continuous_plugins: optional map<string, PluginInfoContainer>
+    {
+      auto& prop = sch[CONTINUOUS_PLUGINS_KEY];
+      prop.setAttribute(TYPE, createMap("tesseract_common::PluginInfoContainer"));
+      prop.addValidator(validateCustomType);
+    }
+
+    return sch;
+  }
 };
 
 template <>
 struct convert<tesseract_common::TaskComposerPluginInfo>
 {
+  inline static const std::string SEARCH_PATHS_KEY{ "search_paths" };
+  inline static const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+  inline static const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
+  inline static const std::string NODE_PLUGINS_KEY{ "tasks" };
+
   static Node encode(const tesseract_common::TaskComposerPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
-    const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
-    const std::string NODE_PLUGINS_KEY{ "tasks" };
-
     YAML::Node task_composer_plugins;
     if (!rhs.search_paths.empty())
       task_composer_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
@@ -512,11 +650,6 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
 
   static bool decode(const Node& node, tesseract_common::TaskComposerPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
-    const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
-    const std::string NODE_PLUGINS_KEY{ "tasks" };
-
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
       std::set<std::string> sp;
@@ -586,6 +719,46 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
 
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    PropertyTree sch;
+
+    // top‐level must be a map container
+    sch.setAttribute(TYPE, CONTAINER);
+
+    // search_paths: optional list<string>
+    {
+      auto& node = sch[SEARCH_PATHS_KEY];
+      node.setAttribute(TYPE, createList(STRING));
+    }
+
+    // search_libraries: optional list<string>
+    {
+      auto& node = sch[SEARCH_LIBRARIES_KEY];
+      node.setAttribute(TYPE, createList(STRING));
+    }
+
+    // executors: optional map<string, PluginInfoContainer>
+    {
+      auto& node = sch[EXECUTOR_PLUGINS_KEY];
+      node.setAttribute(TYPE, createMap("tesseract_common::PluginInfoContainer"));
+      node.addValidator(validateCustomType);
+    }
+
+    // tasks: optional map<string, PluginInfoContainer>
+    {
+      auto& node = sch[NODE_PLUGINS_KEY];
+      node.setAttribute(TYPE, createMap("tesseract_common::PluginInfoContainer"));
+      node.addValidator(validateCustomType);
+    }
+
+    return sch;
+  }
 };
 
 template <>
@@ -610,26 +783,57 @@ struct convert<tesseract_common::TransformMap>
 
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, createMap(EIGEN_ISOMETRY_3D));
+
+    return sch;
+  }
 };
 
 template <>
 struct convert<tesseract_common::CalibrationInfo>
 {
+  inline static const std::string JOINTS_KEY{ "joints" };
   static Node encode(const tesseract_common::CalibrationInfo& rhs)
   {
     Node node;
-    node["joints"] = rhs.joints;
+    node[JOINTS_KEY] = rhs.joints;
 
     return node;
   }
 
   static bool decode(const Node& node, tesseract_common::CalibrationInfo& rhs)
   {
-    const YAML::Node& joints_node = node["joints"];
+    const YAML::Node& joints_node = node[JOINTS_KEY];
 
     rhs.joints = joints_node.as<tesseract_common::TransformMap>();
 
     return true;
+  }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, CONTAINER);
+
+    auto& prop = sch[JOINTS_KEY];
+    prop.setAttribute(TYPE, "tesseract_common::TransformMap");
+    prop.setAttribute(REQUIRED, true);
+
+    return sch;
   }
 };
 
@@ -669,6 +873,19 @@ struct convert<tesseract_common::Toolpath>
 
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, createList(EIGEN_ISOMETRY_3D));
+
+    return sch;
+  }
 };
 
 //=========================== CollisionMarginPairOverrideType Enum ===========================
@@ -706,6 +923,20 @@ struct convert<tesseract_common::CollisionMarginPairOverrideType>
 
     rhs = it->second;
     return true;
+  }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, STRING);
+    sch.setAttribute(ENUM, { "NONE", "MODIFY", "REPLACE" });
+
+    return sch;
   }
 };
 
@@ -751,6 +982,40 @@ struct convert<tesseract_common::PairsCollisionMarginData>
     }
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, "tesseract_common::PairsCollisionMarginData");
+    sch.addValidator([](const PropertyTree& node) {
+      const YAML::Node& yn = node.getValue();
+      if (!yn.IsMap())
+        std::throw_with_nested(std::runtime_error("PairsCollisionMarginData, must be a map"));
+
+      for (auto it = yn.begin(); it != yn.end(); ++it)
+      {
+        Node key_node = it->first;
+        if (!key_node.IsSequence() || key_node.size() != 2)
+          std::throw_with_nested(std::runtime_error("PairsCollisionMarginData, key must be a sequenc of size 2"));
+
+        try
+        {
+          it->second.as<double>();
+        }
+        catch (const std::exception& e)
+        {
+          std::throw_with_nested(e);
+        }
+      }
+    });
+
+    return sch;
+  }
 };
 
 //================================== CollisionMarginPairData =================================
@@ -768,6 +1033,19 @@ struct convert<tesseract_common::CollisionMarginPairData>
     auto data = node.as<tesseract_common::PairsCollisionMarginData>();
     rhs = tesseract_common::CollisionMarginPairData(data);
     return true;
+  }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, "tesseract_common::PairsCollisionMarginData");
+
+    return sch;
   }
 };
 
@@ -813,6 +1091,40 @@ struct convert<tesseract_common::AllowedCollisionEntries>
     }
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, "tesseract_common::AllowedCollisionEntries");
+    sch.addValidator([](const PropertyTree& node) {
+      const YAML::Node& yn = node.getValue();
+      if (!yn.IsMap())
+        std::throw_with_nested(std::runtime_error("AllowedCollisionEntries, must be a map"));
+
+      for (auto it = yn.begin(); it != yn.end(); ++it)
+      {
+        Node key_node = it->first;
+        if (!key_node.IsSequence() || key_node.size() != 2)
+          std::throw_with_nested(std::runtime_error("AllowedCollisionEntries, key must be a sequenc of size 2"));
+
+        try
+        {
+          it->second.as<std::string>();
+        }
+        catch (const std::exception& e)
+        {
+          std::throw_with_nested(e);
+        }
+      }
+    });
+
+    return sch;
+  }
 };
 
 //================================== AllowedCollisionMatrix =================================
@@ -830,6 +1142,19 @@ struct convert<tesseract_common::AllowedCollisionMatrix>
     auto data = node.as<tesseract_common::AllowedCollisionEntries>();
     rhs = tesseract_common::AllowedCollisionMatrix(data);
     return true;
+  }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, "tesseract_common::AllowedCollisionEntries");
+
+    return sch;
   }
 };
 

@@ -94,10 +94,14 @@ add_library(
   src/plugin_info.cpp
   src/profile_dictionary.cpp
   src/profile.cpp
+  src/property_tree.cpp
   src/resource_locator.cpp
-  src/types.cpp
+  src/schema_registration.cpp
+  src/schema_registry.cpp
   src/stopwatch.cpp
+  src/types.cpp
   src/timer.cpp
+  src/yaml_extensions.cpp
   src/yaml_utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
@@ -124,7 +128,14 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
+add_executable(${PROJECT_NAME}_property_tree_demo src/property_tree_demo.cpp)
+target_link_libraries(${PROJECT_NAME}_property_tree_demo PRIVATE ${PROJECT_NAME})
+target_compile_options(${PROJECT_NAME}_property_tree_demo PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                                  ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(${PROJECT_NAME}_property_tree_demo PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_cxx_version(${PROJECT_NAME}_property_tree_demo PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_property_tree_demo)
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC Bcrypt)
 endif()
