@@ -6,6 +6,7 @@
 const static std::string ATTRIBUTES_KEY{ "_attributes" };
 const static std::string VALUE_KEY{ "_value" };
 const static std::string EXTRA_KEY{ "_extra" };
+const static std::string ONEOF_KEY{ "_oneof" };
 const static std::string FOLLOW_KEY{ "follow" };
 
 namespace tesseract_common
@@ -16,38 +17,124 @@ std::string createList(std::string_view type) { return std::string(type) + "[]";
 std::string createMap(std::string_view type) { return std::string(type) + "{}"; };
 }  // namespace property_type
 
+PropertyTree::PropertyTree(const PropertyTree& other)
+  : value_(YAML::Clone(other.value_))
+  , follow_(YAML::Clone(other.follow_))
+  , children_(other.children_)
+  , keys_(other.keys_)
+  , validators_(other.validators_)
+{
+  if (other.oneof_ != nullptr)
+    oneof_ = std::make_unique<PropertyTree>(*other.oneof_);
+
+  // Deep-clone all attributes
+  for (auto const& [k, node] : other.attributes_)
+    attributes_[k] = YAML::Clone(node);
+}
+
+PropertyTree& PropertyTree::operator=(const PropertyTree& other)
+{
+  if (this == &other)
+    return *this;
+
+  // Clone the YAML values
+  value_ = YAML::Clone(other.value_);
+  follow_ = YAML::Clone(other.follow_);
+
+  // Copy and clone attributes
+  attributes_.clear();
+  for (const auto& [k, node] : other.attributes_)
+    attributes_[k] = YAML::Clone(node);
+
+  // Copy children, keys and validators
+  children_ = other.children_;
+  keys_ = other.keys_;
+  validators_ = other.validators_;
+
+  // Copy oneOf
+  if (other.oneof_ != nullptr)
+    oneof_ = std::make_unique<PropertyTree>(*other.oneof_);
+
+  return *this;
+}
+
 void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_properties)
 {
-  // 0) Leaf-schema override for both maps and sequences:
-  //    If this schema node has no children, but the user provided
-  //    either a map or a sequence, just store it wholesale.
+  // Handle oneOf nodes up front
+  auto t = getAttribute(property_attribute::TYPE);
+  if (t.has_value() && t->as<std::string>() == property_type::ONEOF)
+  {
+    if (!config || !config.IsMap())
+      std::throw_with_nested(std::runtime_error("oneOf schema expects a YAML map"));
+
+    // Find exactly one branch whose schema-keys all appear in config
+    std::string chosen;
+    for (const auto& [branch_name, branch_schema] : children_)
+    {
+      bool matches = true;
+      for (const auto& key : branch_schema.keys())
+      {
+        if (branch_schema.at(key).isRequired() && !config[key])
+        {
+          matches = false;
+          break;
+        }
+      }
+
+      if (matches)
+      {
+        if (!chosen.empty())
+          std::throw_with_nested(std::runtime_error("oneOf: multiple branches match"));
+
+        chosen = branch_name;
+      }
+    }
+
+    if (chosen.empty())
+      std::throw_with_nested(std::runtime_error("oneOf: no branch matches the provided keys"));
+
+    // Store schema
+    oneof_ = std::make_unique<PropertyTree>(*this);
+
+    // Flatten: replace this node's children with the chosen branch's children
+    PropertyTree schema_copy = children_.at(chosen);
+    *this = schema_copy;
+
+    // Now call merge again
+    mergeConfig(config, allow_extra_properties);
+    return;
+  }
+
+  // Leaf-schema override for both maps and sequences:
+  // If this schema node has no children, but the user provided
+  // either a map or a sequence, just store it wholesale.
   if (children_.empty() && config && (config.IsMap() || config.IsSequence()))
   {
     value_ = config;
     return;
   }
 
-  // 1) Apply default if no config & not required
+  // Apply default if no config & not required
   auto def_it = attributes_.find(std::string(property_attribute::DEFAULT));
   bool required = isRequired();
   if ((!config || config.IsNull()) && def_it != attributes_.end() && !required)
     value_ = YAML::Clone(def_it->second);
 
-  // 2) Scalar or (now only non‐leaf) sequence override
+  // Scalar or (now only non‐leaf) sequence override
   if (config && config.IsScalar())
     value_ = config;
 
-  // 3) Map: recurse into declared children
+  // Map: recurse into declared children
   if (config && config.IsMap())
   {
-    // 3a) Fill declared children
+    // Fill declared children
     for (auto& [key, child_schema] : children_)
     {
       auto sub = config[key];
       child_schema.mergeConfig(sub, allow_extra_properties);
     }
 
-    // 3b) Handle extras
+    // Handle extras
     if (!allow_extra_properties)
     {
       for (auto it = config.begin(); it != config.end(); ++it)
@@ -62,7 +149,8 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
       }
     }
   }
-  // 4) Sequence (non-leaf): apply wildcard or numeric schema
+
+  // Sequence (non-leaf): apply wildcard or numeric schema
   else if (config && config.IsSequence())
   {
     PropertyTree elem_schema;
@@ -81,7 +169,7 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
       children_[key].mergeConfig(elt, allow_extra_properties);
     }
   }
-  // 5) Otherwise leave value_ (possibly set by default) as-is.
+  // Otherwise leave value_ (possibly set by default) as-is.
 }
 
 void PropertyTree::validate(bool allow_extra_properties) const
@@ -193,15 +281,24 @@ void PropertyTree::setAttribute(std::string_view name, const YAML::Node& attr)
     // else if (str_type == property_type::EIGEN_MATRIX_2D)
     //   validators_.emplace_back(validateTypeCast<Eigen::MatrixXd>);
     else if (str_type == property_type::EIGEN_VECTOR_XD)
+    {
+      validators_.emplace_back(validateSequence);
       validators_.emplace_back(validateTypeCast<Eigen::VectorXd>);
+    }
     // else if (str_type == property_type::EIGEN_MATRIX_2D)
     //   validators_.emplace_back(validateTypeCast<Eigen::Matrix2d>);
     else if (str_type == property_type::EIGEN_VECTOR_2D)
+    {
+      validators_.emplace_back(validateSequence);
       validators_.emplace_back(validateTypeCast<Eigen::Vector2d>);
+    }
     // else if (str_type == property_type::EIGEN_MATRIX_3D)
     //   validators_.emplace_back(validateTypeCast<Eigen::Matrix3d>);
     else if (str_type == property_type::EIGEN_VECTOR_3D)
+    {
+      validators_.emplace_back(validateSequence);
       validators_.emplace_back(validateTypeCast<Eigen::Vector3d>);
+    }
   }
 }
 
@@ -220,6 +317,11 @@ void PropertyTree::setAttribute(std::string_view name, bool attr) { setAttribute
 void PropertyTree::setAttribute(std::string_view name, int attr) { setAttribute(name, YAML::Node(attr)); }
 
 void PropertyTree::setAttribute(std::string_view name, double attr) { setAttribute(name, YAML::Node(attr)); }
+
+void PropertyTree::setAttribute(std::string_view name, const std::vector<std::string>& attr)
+{
+  setAttribute(name, YAML::Node(attr));
+}
 
 bool PropertyTree::hasAttribute(std::string_view name) const
 {
@@ -259,7 +361,7 @@ PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
   if (node.IsMap() && node[FOLLOW_KEY] && node[FOLLOW_KEY].IsScalar())
   {
     if (node.size() > 1)
-      throw std::runtime_error("'follow' cannot be mixed with other entries");
+      std::throw_with_nested(std::runtime_error("'follow' cannot be mixed with other entries"));
 
     try
     {
@@ -277,7 +379,7 @@ PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
   tree.value_ = node;
   if (node.IsMap())
   {
-    // extract attributes map
+    // extract attributes if it exists
     if (node[ATTRIBUTES_KEY] && node[ATTRIBUTES_KEY].IsMap())
     {
       for (const auto& it : node[ATTRIBUTES_KEY])
@@ -286,11 +388,16 @@ PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
         tree.attributes_[key] = it.second;
       }
     }
+
+    // extract oneof if it exist
+    if (node[ONEOF_KEY] && node[ONEOF_KEY].IsMap())
+      tree.oneof_ = std::make_unique<PropertyTree>(fromYAML(node[ONEOF_KEY]));
+
     // extract children
     for (const auto& it : node)
     {
       const auto key = it.first.as<std::string>();
-      if (key == ATTRIBUTES_KEY)
+      if (key == ATTRIBUTES_KEY || key == ONEOF_KEY)
         continue;
 
       tree.children_[key] = fromYAML(it.second);
@@ -328,7 +435,7 @@ YAML::Node PropertyTree::toYAML(bool exclude_attributes) const
   }
 
   if (keys_.size() != children_.size())
-    throw std::runtime_error("PropertyTree, keys_ and children_ are not the same size");
+    std::throw_with_nested(std::runtime_error("PropertyTree, keys_ and children_ are not the same size"));
 
   // emit children
   for (const auto& key : keys_)
@@ -341,12 +448,18 @@ YAML::Node PropertyTree::toYAML(bool exclude_attributes) const
     node[key] = child.toYAML(exclude_attributes);
   }
 
+  // emit oneof
+  if (!exclude_attributes && oneof_ != nullptr)
+    node[ONEOF_KEY] = oneof_->toYAML(exclude_attributes);
+
   // if leaf (no children) but value present, emit under 'value'
   if (children_.empty() && value_)
     node[VALUE_KEY] = value_;
 
   return node;
 }
+
+PropertyTree::operator bool() const noexcept { return (!children_.empty() || !value_.IsNull()); }
 
 std::optional<std::string> isSequenceType(std::string_view type)
 {

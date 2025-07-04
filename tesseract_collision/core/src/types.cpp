@@ -399,8 +399,17 @@ void ContactManagerConfig::validate() const
     throw std::runtime_error("ContactManagerConfig, pair margin override type is NONE but pair collision margins "
                              "exist!");
 
+  if (pair_margin_override_type != CollisionMarginPairOverrideType::NONE &&
+      pair_margin_data.getCollisionMargins().empty())
+    throw std::runtime_error("ContactManagerConfig, pair collision margins are empty, but pair margin override type is "
+                             "not NONE!");
+
   if (acm_override_type == ACMOverrideType::NONE && !acm.getAllAllowedCollisions().empty())
     throw std::runtime_error("ContactManagerConfig, acm override type is NONE but allowed collision entries exist!");
+
+  if (acm_override_type != ACMOverrideType::NONE && acm.getAllAllowedCollisions().empty())
+    throw std::runtime_error("ContactManagerConfig, allowed collision entries are empty, but acm override type is not "
+                             "NONE!");
 }
 
 bool ContactManagerConfig::operator==(const ContactManagerConfig& rhs) const

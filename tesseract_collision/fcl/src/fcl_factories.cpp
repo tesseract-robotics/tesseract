@@ -27,6 +27,7 @@
 #include <tesseract_collision/fcl/fcl_factories.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_common/property_tree.h>
 
 namespace tesseract_collision::tesseract_collision_fcl
 {
@@ -35,6 +36,8 @@ FCLDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Node& 
 {
   return std::make_unique<FCLDiscreteBVHManager>(name);
 }
+
+tesseract_common::PropertyTree FCLDiscreteBVHManagerFactory::schema() const { return {}; }
 
 PLUGIN_ANCHOR_IMPL(FCLFactoriesAnchor)  // LCOV_EXCL_LINE
 

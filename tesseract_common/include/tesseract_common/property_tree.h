@@ -40,6 +40,7 @@ constexpr std::string_view DOUBLE{ "double" };
 
 // Container of properties
 constexpr std::string_view CONTAINER{ "YAML::NodeType::Map" };
+constexpr std::string_view ONEOF{ "oneOf" };
 
 // Eigen Types
 constexpr std::string_view EIGEN_ISOMETRY_3D{ "Eigen::Isometry3d" };
@@ -92,6 +93,15 @@ public:
    * @brief Default constructor. Creates an empty tree node.
    */
   PropertyTree() = default;
+
+  /** @brief Deep-copy constructor — clones all YAML::Nodes and subtrees */
+  PropertyTree(const PropertyTree& other);
+  /** @brief Deep-copy assignment operator */
+  PropertyTree& operator=(const PropertyTree& other);
+
+  /** @brief Default move constructor/assignment are fine */
+  PropertyTree(PropertyTree&&) noexcept = default;
+  PropertyTree& operator=(PropertyTree&&) noexcept = default;
 
   /**
    * @brief Given that *this* is purely a schema tree, merge in the
@@ -160,6 +170,16 @@ public:
   const YAML::Node& getValue() const;
 
   /**
+   * @brief Retrieve the YAML value casted to the provided type
+   * @return The casted value
+   */
+  template <typename T>
+  inline T as() const
+  {
+    return value_.as<T>();
+  }
+
+  /**
    * @brief Check if property value is null
    * @return True if required, otherwise false
    */
@@ -193,6 +213,8 @@ public:
   void setAttribute(std::string_view name, int attr);
   /** @brief Set a double attribute. */
   void setAttribute(std::string_view name, double attr);
+  /** @brief Set a vector of strings attribute. */
+  void setAttribute(std::string_view name, const std::vector<std::string>& attr);
 
   /**
    * @brief Check if an attribute exists and is not null.
@@ -234,6 +256,9 @@ public:
    */
   YAML::Node toYAML(bool exclude_attributes = true) const;
 
+  /** @brief Indicate if defined, meaning it has children or a value */
+  explicit operator bool() const noexcept;
+
 private:
   YAML::Node value_;                             /**< Value stored at this node */
   YAML::Node follow_;                            /**< Follow stored at this node */
@@ -241,6 +266,7 @@ private:
   std::map<std::string, PropertyTree> children_; /**< Nested child nodes */
   std::vector<std::string> keys_;                /**< Nested child keys */
   std::vector<ValidatorFn> validators_;          /**< Validators to invoke */
+  std::unique_ptr<PropertyTree> oneof_;          /**< Store the property content on merge */
 };
 
 /**
@@ -293,6 +319,11 @@ void validateSequence(const PropertyTree& node);
  */
 void validateContainer(const PropertyTree& node);
 
+/**
+ * @brief Validator: Retrieve schema for the custom type and runs it validtor
+ * @param node Node to validate
+ * @throws runtime_error if not correct.
+ */
 void validateCustomType(const PropertyTree& node);
 
 /**

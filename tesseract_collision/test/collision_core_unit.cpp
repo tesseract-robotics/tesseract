@@ -128,6 +128,12 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
   {
     tesseract_collision::ContactManagerConfig config;
     config.pair_margin_override_type = tesseract_collision::CollisionMarginPairOverrideType::MODIFY;
+    EXPECT_ANY_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.pair_margin_override_type = tesseract_collision::CollisionMarginPairOverrideType::MODIFY;
     config.pair_margin_data.setCollisionMargin("a", "b", 0.1);
     EXPECT_NO_THROW(config.validate());  // NOLINT
   }
@@ -135,6 +141,12 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
   {
     tesseract_collision::ContactManagerConfig config;
     config.acm.addAllowedCollision("a", "b", "never");
+    EXPECT_ANY_THROW(config.validate());  // NOLINT
+  }
+
+  {
+    tesseract_collision::ContactManagerConfig config;
+    config.acm_override_type = tesseract_collision::ACMOverrideType::OR;
     EXPECT_ANY_THROW(config.validate());  // NOLINT
   }
 
