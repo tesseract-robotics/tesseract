@@ -1,5 +1,5 @@
 /**
- * @file yaml_extenstions.h
+ * @file yaml_extensions.h
  * @brief YAML Type conversions
  *
  * @author Levi Armstrong
@@ -982,6 +982,40 @@ struct convert<tesseract_common::PairsCollisionMarginData>
     }
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, "tesseract_common::PairsCollisionMarginData");
+    sch.addValidator([](const PropertyTree& node) {
+      const YAML::Node& yn = node.getValue();
+      if (!yn.IsMap())
+        std::throw_with_nested(std::runtime_error("PairsCollisionMarginData, must be a map"));
+
+      for (auto it = yn.begin(); it != yn.end(); ++it)
+      {
+        Node key_node = it->first;
+        if (!key_node.IsSequence() || key_node.size() != 2)
+          std::throw_with_nested(std::runtime_error("PairsCollisionMarginData, key must be a sequenc of size 2"));
+
+        try
+        {
+          it->second.as<double>();
+        }
+        catch (const std::exception& e)
+        {
+          std::throw_with_nested(e);
+        }
+      }
+    });
+
+    return sch;
+  }
 };
 
 //================================== CollisionMarginPairData =================================
@@ -999,6 +1033,19 @@ struct convert<tesseract_common::CollisionMarginPairData>
     auto data = node.as<tesseract_common::PairsCollisionMarginData>();
     rhs = tesseract_common::CollisionMarginPairData(data);
     return true;
+  }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, "tesseract_common::PairsCollisionMarginData");
+
+    return sch;
   }
 };
 
@@ -1044,6 +1091,40 @@ struct convert<tesseract_common::AllowedCollisionEntries>
     }
     return true;
   }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, "tesseract_common::AllowedCollisionEntries");
+    sch.addValidator([](const PropertyTree& node) {
+      const YAML::Node& yn = node.getValue();
+      if (!yn.IsMap())
+        std::throw_with_nested(std::runtime_error("AllowedCollisionEntries, must be a map"));
+
+      for (auto it = yn.begin(); it != yn.end(); ++it)
+      {
+        Node key_node = it->first;
+        if (!key_node.IsSequence() || key_node.size() != 2)
+          std::throw_with_nested(std::runtime_error("AllowedCollisionEntries, key must be a sequenc of size 2"));
+
+        try
+        {
+          it->second.as<std::string>();
+        }
+        catch (const std::exception& e)
+        {
+          std::throw_with_nested(e);
+        }
+      }
+    });
+
+    return sch;
+  }
 };
 
 //================================== AllowedCollisionMatrix =================================
@@ -1061,6 +1142,19 @@ struct convert<tesseract_common::AllowedCollisionMatrix>
     auto data = node.as<tesseract_common::AllowedCollisionEntries>();
     rhs = tesseract_common::AllowedCollisionMatrix(data);
     return true;
+  }
+
+  static tesseract_common::PropertyTree schema()
+  {
+    using namespace tesseract_common;
+    using namespace property_attribute;
+    using namespace property_type;
+
+    // top‐level must be a map container
+    PropertyTree sch;
+    sch.setAttribute(TYPE, "tesseract_common::AllowedCollisionEntries");
+
+    return sch;
   }
 };
 

@@ -1,7 +1,8 @@
 #include <tesseract_common/property_tree.h>
 #include <tesseract_common/schema_registry.h>
-#include <tesseract_common/yaml_extenstions.h>
+#include <tesseract_common/yaml_extensions.h>
 #include <Eigen/Geometry>
+#include <regex>
 
 const static std::string ATTRIBUTES_KEY{ "_attributes" };
 const static std::string VALUE_KEY{ "_value" };
@@ -13,8 +14,19 @@ namespace tesseract_common
 {
 namespace property_type
 {
-std::string createList(std::string_view type) { return std::string(type) + "[]"; };
-std::string createMap(std::string_view type) { return std::string(type) + "{}"; };
+std::string createList(std::string_view type, std::size_t length)
+{
+  if (length == 0)
+    return std::string(type) + "[]";
+
+  return std::string(type) + "[" + std::to_string(length) + "]";
+}
+
+std::string createMap(std::string_view key, std::string_view type)
+{
+  return "{" + std::string(key) + "," + std::string(type) + "}";
+}
+std::string createMap(std::string_view type) { return createMap(STRING, type); }
 }  // namespace property_type
 
 PropertyTree::PropertyTree(const PropertyTree& other)
@@ -248,11 +260,12 @@ void PropertyTree::setAttribute(std::string_view name, const YAML::Node& attr)
   {
     const auto str_type = attr.as<std::string>();
 
-    std::optional<std::string> is_sequence = isSequenceType(str_type);
+    std::optional<std::pair<std::string, std::size_t>> is_sequence = isSequenceType(str_type);
     if (is_sequence.has_value())
-      validators_.emplace_back(validateSequence);
+      validators_.emplace_back(
+          [length = is_sequence.value().second](const PropertyTree& node) { validateSequence(node, length); });
 
-    std::optional<std::string> is_map = isMapType(str_type);
+    std::optional<std::pair<std::string, std::string>> is_map = isMapType(str_type);
     if (is_map.has_value())
       validators_.emplace_back(validateMap);
 
@@ -282,21 +295,21 @@ void PropertyTree::setAttribute(std::string_view name, const YAML::Node& attr)
     //   validators_.emplace_back(validateTypeCast<Eigen::MatrixXd>);
     else if (str_type == property_type::EIGEN_VECTOR_XD)
     {
-      validators_.emplace_back(validateSequence);
+      validators_.emplace_back([](const PropertyTree& node) { validateSequence(node); });
       validators_.emplace_back(validateTypeCast<Eigen::VectorXd>);
     }
     // else if (str_type == property_type::EIGEN_MATRIX_2D)
     //   validators_.emplace_back(validateTypeCast<Eigen::Matrix2d>);
     else if (str_type == property_type::EIGEN_VECTOR_2D)
     {
-      validators_.emplace_back(validateSequence);
+      validators_.emplace_back([](const PropertyTree& node) { validateSequence(node, 2); });
       validators_.emplace_back(validateTypeCast<Eigen::Vector2d>);
     }
     // else if (str_type == property_type::EIGEN_MATRIX_3D)
     //   validators_.emplace_back(validateTypeCast<Eigen::Matrix3d>);
     else if (str_type == property_type::EIGEN_VECTOR_3D)
     {
-      validators_.emplace_back(validateSequence);
+      validators_.emplace_back([](const PropertyTree& node) { validateSequence(node, 3); });
       validators_.emplace_back(validateTypeCast<Eigen::Vector3d>);
     }
   }
@@ -461,26 +474,40 @@ YAML::Node PropertyTree::toYAML(bool exclude_attributes) const
 
 PropertyTree::operator bool() const noexcept { return (!children_.empty() || !value_.IsNull()); }
 
-std::optional<std::string> isSequenceType(std::string_view type)
+std::optional<std::pair<std::string, std::size_t>> isSequenceType(std::string_view type)
 {
-  if (type.size() < 2)
-    return std::nullopt;
+  static const std::regex re(R"(^([^\[\]]+)\[(\d*)\]$)");
+  std::string s{ type };
 
-  if (type.substr(type.size() - 2) != "[]")
-    return std::nullopt;
+  std::smatch m;
+  if (std::regex_match(s, m, re))
+  {
+    std::string base_type = m[1].str();
+    std::string length_str = m[2].str();
+    std::size_t length{ 0 };
+    if (!length_str.empty())
+    {
+      if (!toNumeric<std::size_t>(length_str, length))
+        std::throw_with_nested(std::runtime_error("Invalid fixed size sequence definition"));
+    }
 
-  return std::string(type.substr(0, type.size() - 2));
+    return std::make_pair(base_type, length);
+  }
+
+  return std::nullopt;
 }
 
-std::optional<std::string> isMapType(std::string_view type)
+std::optional<std::pair<std::string, std::string>> isMapType(std::string_view type)
 {
-  if (type.size() < 2)
-    return std::nullopt;
+  static const std::regex re(R"(^\{([^,]+),([^}]+)\}$)");
+  std::string s{ type };
+  std::smatch m;
 
-  if (type.substr(type.size() - 2) != "{}")
-    return std::nullopt;
+  // m[0] is the full match, m[1] is the first capture, m[2] the second
+  if (std::regex_match(s, m, re))
+    return std::make_pair(m[1].str(), m[2].str());
 
-  return std::string(type.substr(0, type.size() - 2));
+  return std::nullopt;
 }
 
 void validateRequired(const PropertyTree& node)
@@ -515,10 +542,16 @@ void validateMap(const PropertyTree& node)
     std::throw_with_nested(std::runtime_error("Property value is not of type YAML::NodeType::Map"));
 }
 
-void validateSequence(const PropertyTree& node)
+void validateSequence(const PropertyTree& node, std::size_t length)
 {
   if (!node.getValue().IsSequence())
     std::throw_with_nested(std::runtime_error("Property value is not of type YAML::NodeType::Sequence"));
+
+  if (length == 0)
+    return;
+
+  if (node.getValue().size() != length)
+    std::throw_with_nested(std::runtime_error("Property value YAML::NodeType::Sequence is not correct length"));
 }
 
 void validateContainer(const PropertyTree& node)
@@ -537,7 +570,7 @@ void validateCustomType(const PropertyTree& node)
     std::throw_with_nested(std::runtime_error("Custom type validator was added buy type attribute does not exist"));
 
   const auto type_str = type_attr.value().as<std::string>();
-  std::optional<std::string> is_sequence = isSequenceType(type_str);
+  std::optional<std::pair<std::string, std::size_t>> is_sequence = isSequenceType(type_str);
 
   auto registry = SchemaRegistry::instance();
   if (!is_sequence.has_value())
@@ -551,11 +584,12 @@ void validateCustomType(const PropertyTree& node)
   }
   else
   {
-    if (!registry->contains(is_sequence.value()))
-      std::throw_with_nested(std::runtime_error("No scheme registry entry found for key: " + is_sequence.value()));
+    if (!registry->contains(is_sequence.value().first))
+      std::throw_with_nested(
+          std::runtime_error("No scheme registry entry found for key: " + is_sequence.value().first));
 
     const YAML::Node& sequence = node.getValue();
-    PropertyTree schema = registry->get(is_sequence.value());
+    PropertyTree schema = registry->get(is_sequence.value().first);
     for (auto it = sequence.begin(); it != sequence.end(); ++it)
     {
       PropertyTree copy_schema(schema);
