@@ -39,24 +39,60 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 
+#include <tesseract_common/property_tree.h>
+
 namespace tesseract_collision::tesseract_collision_bullet
 {
+tesseract_common::PropertyTree getConfigSchema()
+{
+  using namespace tesseract_common;
+  PropertyTree schema;
+  {
+    auto& prop = schema["share_pool_allocators"];
+    prop.setAttribute(property_attribute::TYPE, property_type::BOOL);
+    prop.setAttribute(property_attribute::DOC, "Indicate if shared pool allocators should be leverage.");
+    prop.setAttribute(property_attribute::REQUIRED, false);
+    prop.setAttribute(property_attribute::DEFAULT, false);
+  }
+
+  {
+    auto& prop = schema["max_persistent_manifold_pool_size"];
+    prop.setAttribute(property_attribute::TYPE, property_type::INT);
+    prop.setAttribute(property_attribute::DOC, "The max size for the persistent manifold pool size.");
+    prop.setAttribute(property_attribute::MINIMUM, 0);
+  }
+
+  {
+    auto& prop = schema["max_collision_algorithm_pool_size"];
+    prop.setAttribute(property_attribute::TYPE, property_type::INT);
+    prop.setAttribute(property_attribute::DOC, "The max size for the persistent algorithm pool size.");
+    prop.setAttribute(property_attribute::MINIMUM, 0);
+  }
+
+  return schema;
+}
+
 TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
 {
   if (config.IsNull())
     return {};
 
+  // Validate config
+  tesseract_common::PropertyTree schema = getConfigSchema();
+  schema.mergeConfig(config);
+  schema.validate();
+
   bool share_pool_allocators{ false };
-  if (YAML::Node n = config["share_pool_allocators"])
-    share_pool_allocators = n.as<bool>();
+  if (const tesseract_common::PropertyTree& prop = schema.at("share_pool_allocators"))
+    share_pool_allocators = prop.as<bool>();
 
   TesseractCollisionConfigurationInfo config_info(false, share_pool_allocators);
 
-  if (YAML::Node n = config["max_persistent_manifold_pool_size"])
-    config_info.m_defaultMaxPersistentManifoldPoolSize = n.as<int>();
+  if (const tesseract_common::PropertyTree& prop = schema.at("max_persistent_manifold_pool_size"))
+    config_info.m_defaultMaxPersistentManifoldPoolSize = prop.as<int>();
 
-  if (YAML::Node n = config["max_collision_algorithm_pool_size"])
-    config_info.m_defaultMaxCollisionAlgorithmPoolSize = n.as<int>();
+  if (const tesseract_common::PropertyTree& prop = schema.at("max_collision_algorithm_pool_size"))
+    config_info.m_defaultMaxCollisionAlgorithmPoolSize = prop.as<int>();
 
   config_info.createPoolAllocators();
   return config_info;
@@ -68,11 +104,15 @@ BulletDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Nod
   return std::make_unique<BulletDiscreteBVHManager>(name, getConfigInfo(config));
 }
 
+tesseract_common::PropertyTree BulletDiscreteBVHManagerFactory::schema() const { return getConfigSchema(); }
+
 std::unique_ptr<DiscreteContactManager> BulletDiscreteSimpleManagerFactory::create(const std::string& name,
                                                                                    const YAML::Node& config) const
 {
   return std::make_unique<BulletDiscreteSimpleManager>(name, getConfigInfo(config));
 }
+
+tesseract_common::PropertyTree BulletDiscreteSimpleManagerFactory::schema() const { return getConfigSchema(); }
 
 std::unique_ptr<ContinuousContactManager> BulletCastBVHManagerFactory::create(const std::string& name,
                                                                               const YAML::Node& config) const
@@ -80,11 +120,15 @@ std::unique_ptr<ContinuousContactManager> BulletCastBVHManagerFactory::create(co
   return std::make_unique<BulletCastBVHManager>(name, getConfigInfo(config));
 }
 
+tesseract_common::PropertyTree BulletCastBVHManagerFactory::schema() const { return getConfigSchema(); }
+
 std::unique_ptr<ContinuousContactManager> BulletCastSimpleManagerFactory::create(const std::string& name,
                                                                                  const YAML::Node& config) const
 {
   return std::make_unique<BulletCastSimpleManager>(name, getConfigInfo(config));
 }
+
+tesseract_common::PropertyTree BulletCastSimpleManagerFactory::schema() const { return getConfigSchema(); }
 
 PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
 

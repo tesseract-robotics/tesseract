@@ -87,7 +87,7 @@ YAML::Node processYamlIncludeDirective(const YAML::Node& node, const ResourceLoc
   }
 
   // Return the node as-is for scalars and unsupported types
-  return node;
+  return YAML::Clone(node);
 }
 
 YAML::Node loadYamlFile(const std::string& file_path, const ResourceLocator& locator)

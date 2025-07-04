@@ -45,6 +45,7 @@ class access;
 namespace tesseract_common
 {
 struct Serialization;
+class PropertyTree;
 
 /** @brief The Plugin Information struct */
 // NOLINTNEXTLINE
@@ -154,6 +155,9 @@ struct ContactManagersPluginInfo
 
   /** @brief Check if structure is empty */
   bool empty() const;
+
+  /** @brief Get the schema */
+  static PropertyTree schema();
 
   // Yaml Config key
   static inline const std::string CONFIG_KEY{ "contact_manager_plugins" };
