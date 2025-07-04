@@ -101,6 +101,7 @@ add_library(
   src/stopwatch.cpp
   src/types.cpp
   src/timer.cpp
+  src/yaml_extensions.cpp
   src/yaml_utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}

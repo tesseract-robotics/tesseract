@@ -14,18 +14,26 @@ namespace tesseract_common
 namespace property_type
 {
 /**
- * @brief A utility for constructing the std::vector<type>
+ * @brief A utility for constructing the vector<type>
  * @param type The type assoicated with the list
- * @return The string representation of the std::vector<type>, aka. type[]
+ * @param length The length if fixed size
+ * @return The string representation of the vector<type>, aka. type[] and type[length] for fixed size
  */
-std::string createList(std::string_view type);
+std::string createList(std::string_view type, std::size_t length = 0);
 
 /**
- * @brief A utility for constructing the std::map<std::string, type>
+ * @brief A utility for constructing the map<std::string, type>
  * @param type The value type assoicated with the map
- * @return The string representation of the std::map<std::string, type>, aka. type{}
+ * @return The string representation of the map<std::string, type>, aka. {string,string}
  */
 std::string createMap(std::string_view type);
+
+/**
+ * @brief A utility for constructing the map<key, type>
+ * @param type The value type assoicated with the map
+ * @return The string representation of the map<key, type>, aka. {string, string} or {string[2], string}
+ */
+std::string createMap(std::string_view key, std::string_view type);
 
 // Integral Types
 constexpr std::string_view BOOL{ "bool" };
@@ -272,16 +280,16 @@ private:
 /**
  * @brief Check if type is a sequence
  * @param type The type to check
- * @return If it is a sequence, the underlying type is returned
+ * @return If it is a sequence, the underlying type is returned and size
  */
-std::optional<std::string> isSequenceType(std::string_view type);
+std::optional<std::pair<std::string, std::size_t>> isSequenceType(std::string_view type);
 
 /**
  * @brief Check if type is a map
  * @param type The type to check
- * @return If it is a map, the underlying type is returned
+ * @return If it is a map, the underlying pair<key,type> is returned
  */
-std::optional<std::string> isMapType(std::string_view type);
+std::optional<std::pair<std::string, std::string>> isMapType(std::string_view type);
 
 /**
  * @brief Validator: ensure 'required' attribute is present and non-null.
@@ -307,9 +315,10 @@ void validateMap(const PropertyTree& node);
 /**
  * @brief Validtor: ensure node value is of type YAML::NodeType::Sequence
  * @param node Node to validate.
+ * @param length The length if fixed size. If zero, it is considered dynamic size sequence
  * @throws runtime_error if not correct type.
  */
-void validateSequence(const PropertyTree& node);
+void validateSequence(const PropertyTree& node, std::size_t length = 0);
 
 /**
  * @brief Validator: ensure property is a container of child properties
