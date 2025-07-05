@@ -71,7 +71,8 @@ tesseract_common::CalibrationInfo parseCalibrationConfig(const tesseract_scene_g
   YAML::Node config;
   try
   {
-    config = tesseract_common::processYamlIncludeDirective(YAML::LoadFile(cal_config_file_path.string()), locator);
+    config = YAML::LoadFile(cal_config_file_path.string());
+    tesseract_common::processYamlIncludeDirective(config, locator);
   }
   // LCOV_EXCL_START
   catch (...)
@@ -103,7 +104,8 @@ tesseract_common::KinematicsPluginInfo parseKinematicsPluginConfig(const tessera
   YAML::Node config;
   try
   {
-    config = tesseract_common::processYamlIncludeDirective(YAML::LoadFile(kin_plugin_file_path.string()), locator);
+    config = YAML::LoadFile(kin_plugin_file_path.string());
+    tesseract_common::processYamlIncludeDirective(config, locator);
   }
   // LCOV_EXCL_START
   catch (...)
@@ -128,7 +130,8 @@ parseContactManagersPluginConfig(const tesseract_common::ResourceLocator& locato
   YAML::Node config;
   try
   {
-    config = tesseract_common::processYamlIncludeDirective(YAML::LoadFile(cm_plugin_file_path.string()), locator);
+    config = YAML::LoadFile(cm_plugin_file_path.string());
+    tesseract_common::processYamlIncludeDirective(config, locator);
   }
   // LCOV_EXCL_START
   catch (...)

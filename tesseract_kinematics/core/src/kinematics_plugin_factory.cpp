@@ -76,7 +76,7 @@ void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
 KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config, const tesseract_common::ResourceLocator& locator)
   : KinematicsPluginFactory()
 {
-  config = tesseract_common::processYamlIncludeDirective(config, locator);
+  tesseract_common::processYamlIncludeDirective(config, locator);
   loadConfig(config);
 }
 

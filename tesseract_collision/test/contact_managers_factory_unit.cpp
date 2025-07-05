@@ -41,8 +41,8 @@ void runContactManagersFactoryTest(const std::filesystem::path& config_path)
 {
   tesseract_common::GeneralResourceLocator locator;
   ContactManagersPluginFactory factory(config_path, locator);
-  YAML::Node plugin_config =
-      tesseract_common::processYamlIncludeDirective(YAML::LoadFile(config_path.string()), locator);
+  YAML::Node plugin_config = YAML::LoadFile(config_path.string());
+  tesseract_common::processYamlIncludeDirective(plugin_config, locator);
 
   const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
   const YAML::Node& search_paths = plugin_info["search_paths"];

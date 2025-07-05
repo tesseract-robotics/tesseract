@@ -35,22 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-/**
- * @brief Recursively processes a YAML node to resolve `!include` directives.
- *
- * This function replaces any node tagged with `!include` with the content of the
- * specified file. It also recursively processes maps and sequences to handle nested
- * `!include` directives.
- *
- * @param node The YAML node to process.
- * @param locator The locator used to resolve urls and relative file paths.
- * @return A YAML::Node with all `!include` directives resolved.
- *
- * @throws std::runtime_error if an `!include` tag is used improperly (e.g., not scalar),
- *         or if a file specified in an `!include` directive cannot be loaded.
- */
-YAML::Node processYamlIncludeDirective(const YAML::Node& node, const ResourceLocator& locator)
+void processYamlIncludeDirective(YAML::Node& node, const ResourceLocator& locator)
 {
+  // Case 1: this node *is* an include → replace it with the loaded file
   if (node.Tag() == "!include")
   {
     // Ensure the node is scalar and contains a file path
@@ -63,44 +50,76 @@ YAML::Node processYamlIncludeDirective(const YAML::Node& node, const ResourceLoc
     if (resource == nullptr)
       throw std::runtime_error("Unable to locate resource: " + included_file);
 
-    return processYamlIncludeDirective(YAML::LoadFile(resource->getFilePath()), *resource);
+    // Parse once
+    YAML::Node loaded = YAML::LoadFile(resource->getFilePath());
+
+    // Take over this node
+    node = loaded;
+
+    // Clear the old tag so we don't re‐process it
+    node.SetTag("");
+
+    // Recurse into what we just loaded
+    processYamlIncludeDirective(node, *resource);
+    return;
   }
 
+  // Case 2: map → mutate each value in‐place
   if (node.IsMap())
   {
-    // Create a new map and process each key-value pair
-    YAML::Node processed_map = YAML::Node(YAML::NodeType::Map);
     for (auto it = node.begin(); it != node.end(); ++it)
-      processed_map[it->first] = processYamlIncludeDirective(it->second, locator);
+    {
+      // 1) pull out the key
+      const std::string key = it->first.Scalar();
 
-    return processed_map;
+      // 2) copy the child handle (this is cheap)
+      YAML::Node child = it->second;
+
+      // 3) recurse & mutate the child
+      processYamlIncludeDirective(child, locator);
+
+      // 4) write it back into the map
+      node[key] = child;
+    }
+
+    return;
   }
 
+  // Case 3: sequence → mutate each element in‐place
   if (node.IsSequence())
   {
-    // Create a new sequence and process each element
-    YAML::Node processed_sequence = YAML::Node(YAML::NodeType::Sequence);
-    for (const auto& child : node)
-      processed_sequence.push_back(processYamlIncludeDirective(child, locator));
+    // NOLINTNEXTLINE(modernize-loop-convert)
+    for (std::size_t i = 0; i < node.size(); ++i)
+    {
+      // 1) pull out the element (this is cheap—just a handle copy)
+      YAML::Node child = node[i];
 
-    return processed_sequence;
+      // 2) recurse & mutate that subtree
+      processYamlIncludeDirective(child, locator);
+
+      // 3) write it back into the sequence
+      node[i] = child;
+    }
+
+    return;
   }
 
-  // Return the node as-is for scalars and unsupported types
-  return node;
+  // Case 4: scalar or anything else → nothing to do
 }
 
 YAML::Node loadYamlFile(const std::string& file_path, const ResourceLocator& locator)
 {
   auto resource = locator.locateResource(file_path);
   YAML::Node root = YAML::LoadFile(resource->getFilePath());
-  return processYamlIncludeDirective(root, *resource);
+  processYamlIncludeDirective(root, *resource);
+  return root;
 }
 
 YAML::Node loadYamlString(const std::string& yaml_string, const ResourceLocator& locator)
 {
   YAML::Node root = YAML::Load(yaml_string);
-  return processYamlIncludeDirective(root, locator);
+  processYamlIncludeDirective(root, locator);
+  return root;
 }
 
 void writeYamlToFile(const YAML::Node& node, const std::string& file_path)
