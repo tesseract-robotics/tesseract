@@ -78,7 +78,7 @@ ContactManagersPluginFactory::ContactManagersPluginFactory(YAML::Node config,
                                                            const tesseract_common::ResourceLocator& locator)
   : ContactManagersPluginFactory()
 {
-  config = tesseract_common::processYamlIncludeDirective(config, locator);
+  tesseract_common::processYamlIncludeDirective(config, locator);
   loadConfig(config);
 }
 

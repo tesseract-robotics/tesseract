@@ -41,20 +41,30 @@ namespace tesseract_common
 class ResourceLocator;
 
 /**
- * @brief Recursively processes a YAML node to resolve `!include` directives.
+ * @brief Recursively expands `!include` directives in a YAML node, in-place.
  *
- * This function replaces any node tagged with `!include` with the content of the
- * specified file. It also recursively processes maps and sequences to handle nested
- * `!include` directives.
+ * This function walks the given node and:
+ *  - When it encounters a node tagged `!include`, it loads the referenced file
+ *    (via the provided ResourceLocator), replaces the tagged node with the parsed
+ *    content of that file, clears the `!include` tag, and then continues processing
+ *    the newly loaded subtree.
+ *  - When it encounters a mapping, it recurses into each value in-place.
+ *  - When it encounters a sequence, it recurses into each element in-place.
  *
- * @param node The YAML node to process.
- * @param locator The locator used to resolve urls and relative file paths.
- * @return A YAML::Node with all `!include` directives resolved.
+ * After this call returns, `node` and its entire subtree will have had all
+ * `!include` directives resolved and removed. Subsequent calls on the same
+ * expanded tree are no-ops.
  *
- * @throws std::runtime_error if an `!include` tag is used improperly (e.g., not scalar),
- *         or if a file specified in an `!include` directive cannot be loaded.
+ * @param node    The YAML node to process. Must be non-const so it can
+ *                        be mutated in-place as includes are expanded.
+ * @param locator The locator used to resolve file paths or URLs for
+ *                        `!include` directives. May maintain internal state
+ *                        (e.g. cache) between calls.
+ *
+ * @throws std::runtime_error if an `!include` tag is not a scalar string,
+ *         or if the specified file cannot be located or loaded.
  */
-YAML::Node processYamlIncludeDirective(const YAML::Node& node, const ResourceLocator& locator);
+void processYamlIncludeDirective(YAML::Node& node, const ResourceLocator& locator);
 
 /**
  * @brief Loads a YAML file and processes `!include` directives recursively.
