@@ -1,5 +1,5 @@
 /**
- * @file yaml_extenstions.h
+ * @file yaml_extensions.h
  * @brief YAML Type conversions
  *
  * @author Levi Armstrong
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMON_YAML_EXTENSTIONS_H
-#define TESSERACT_COMMON_YAML_EXTENSTIONS_H
+#ifndef TESSERACT_COMMON_YAML_EXTENSIONS_H
+#define TESSERACT_COMMON_YAML_EXTENSIONS_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -860,4 +860,4 @@ struct convert<std::unordered_map<T, A>>
 
 }  // namespace YAML
 
-#endif  // TESSERACT_COMMON_YAML_EXTENSTIONS_H
+#endif  // TESSERACT_COMMON_YAML_EXTENSIONS_H
