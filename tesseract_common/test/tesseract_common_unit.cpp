@@ -1393,6 +1393,14 @@ TEST(TesseractCommonUnit, TaskComposerPluginInfoUnit)  // NOLINT
     tcpi_insert.task_plugin_infos.default_plugin = "TaskComposerNodePlugin";
   }
 
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "TaskComposerProfilePluginFactory";
+    tcpi_insert.profile_plugin_infos["CheckTask"]["waypoint"].plugins = { std::make_pair("TaskComposerProfilePlugin",
+                                                                                         pi) };
+    tcpi_insert.profile_plugin_infos["CheckTask"]["waypoint"].default_plugin = "TaskComposerProfilePlugin";
+  }
+
   EXPECT_FALSE(tcpi_insert.empty());
 
   EXPECT_NE(tcpi, tcpi_insert);
@@ -1915,7 +1923,16 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                        class: FreespaceMotionPipelineFactory
                                        config:
                                          input_key: "input"
-                                         output_key: "output")";
+                                         output_key: "output"
+                                 profiles:
+                                   TrajOptMotionPlanningTask:
+                                     waypoint:
+                                       default: glass_up_right
+                                       plugins:
+                                         glass_up_right:
+                                           class: TrajOptDefaultMoveProfileFactory
+                                           config:
+                                             weights: [1,1,1,1,1])";
 
   {  // Success
     tesseract_common::GeneralResourceLocator locator;
@@ -1992,7 +2009,17 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          class: FreespaceMotionPipelineFactory
                                          config:
                                            input_key: "input"
-                                           output_key: "output")";
+                                           output_key: "output"
+                                   profiles:
+                                     TrajOptMotionPlanningTask:
+                                       waypoint:
+                                         default: glass_up_right
+                                         plugins:
+                                           glass_up_right:
+                                             class: TrajOptDefaultMoveProfileFactory
+                                             config:
+                                               weights: [1,1,1,1,1])";
+
     tesseract_common::GeneralResourceLocator locator;
     YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
@@ -2032,7 +2059,17 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          class: FreespaceMotionPipelineFactory
                                          config:
                                            input_key: "input"
-                                           output_key: "output")";
+                                           output_key: "output"
+                                   profiles:
+                                     TrajOptMotionPlanningTask:
+                                       waypoint:
+                                         default: glass_up_right
+                                         plugins:
+                                           glass_up_right:
+                                             class: TrajOptDefaultMoveProfileFactory
+                                             config:
+                                               weights: [1,1,1,1,1])";
+
     tesseract_common::GeneralResourceLocator locator;
     YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
@@ -2060,7 +2097,17 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          class: FreespaceMotionPipelineFactory
                                          config:
                                            input_key: "input"
-                                           output_key: "output")";
+                                           output_key: "output"
+                                   profiles:
+                                     TrajOptMotionPlanningTask:
+                                       waypoint:
+                                         default: glass_up_right
+                                         plugins:
+                                           glass_up_right:
+                                             class: TrajOptDefaultMoveProfileFactory
+                                             config:
+                                               weights: [1,1,1,1,1])";
+
     tesseract_common::GeneralResourceLocator locator;
     YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
@@ -2099,7 +2146,17 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          class: FreespaceMotionPipelineFactory
                                          config:
                                            input_key: "input"
-                                           output_key: "output")";
+                                           output_key: "output"
+                                   profiles:
+                                     TrajOptMotionPlanningTask:
+                                       waypoint:
+                                         default: glass_up_right
+                                         plugins:
+                                           glass_up_right:
+                                             class: TrajOptDefaultMoveProfileFactory
+                                             config:
+                                               weights: [1,1,1,1,1])";
+
     tesseract_common::GeneralResourceLocator locator;
     YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
@@ -2129,14 +2186,24 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            threads: 15
                                    tasks:
-                                     default: CartesianMotionPipeline)";
+                                     default: CartesianMotionPipeline
+                                   profiles:
+                                     TrajOptMotionPlanningTask:
+                                       waypoint:
+                                         default: glass_up_right
+                                         plugins:
+                                           glass_up_right:
+                                             class: TrajOptDefaultMoveProfileFactory
+                                             config:
+                                               weights: [1,1,1,1,1])";
+
     tesseract_common::GeneralResourceLocator locator;
     YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
   }
 
-  {  // continuous plugins is not map failure
+  {  // node plugins is not map failure
     std::string yaml_string = R"(task_composer_plugins:
                                    search_paths:
                                      - /usr/local/lib
@@ -2168,7 +2235,164 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          class: FreespaceMotionPipelineFactory
                                          config:
                                            input_key: "input"
-                                           output_key: "output")";
+                                           output_key: "output"
+                                   profiles:
+                                     TrajOptMotionPlanningTask:
+                                       waypoint:
+                                         default: glass_up_right
+                                         plugins:
+                                           glass_up_right:
+                                             class: TrajOptDefaultMoveProfileFactory
+                                             config:
+                                               weights: [1,1,1,1,1])";
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+  }
+
+  {  // missing profile plugins failure
+    std::string yaml_string = R"(task_composer_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_task_composer_executor_factories
+                                     - tesseract_task_composer_node_factories
+                                   executors:
+                                     default: TaskflowTaskComposerExecutor
+                                     plugins:
+                                       TaskflowTaskComposerExecutor:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 5
+                                       TaskflowTaskComposerExecutor2:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 10
+                                       TaskflowTaskComposerExecutor3:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 15
+                                   tasks:
+                                     default: CartesianMotionPipeline
+                                     plugins:
+                                       CartesianMotionPipeline:
+                                         class: CartesianMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                       FreespaceMotionPipeline:
+                                         class: FreespaceMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                   profiles:
+                                     TrajOptMotionPlanningTask:
+                                       waypoint:
+                                         default: glass_up_right)";
+
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+  }
+
+  {  // profile plugins is not map failure
+    std::string yaml_string = R"(task_composer_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_task_composer_executor_factories
+                                     - tesseract_task_composer_node_factories
+                                   executors:
+                                     default: TaskflowTaskComposerExecutor
+                                     plugins:
+                                       TaskflowTaskComposerExecutor:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 5
+                                       TaskflowTaskComposerExecutor2:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 10
+                                       TaskflowTaskComposerExecutor3:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 15
+                                   tasks:
+                                     default: CartesianMotionPipeline
+                                     plugins:
+                                       CartesianMotionPipeline:
+                                         class: CartesianMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                       FreespaceMotionPipeline:
+                                         class: FreespaceMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                   profiles:
+                                     - TrajOptMotionPlanningTask:
+                                         waypoint:
+                                           default: glass_up_right
+                                           plugins:
+                                             glass_up_right:
+                                               class: TrajOptDefaultMoveProfileFactory
+                                               config:
+                                                 weights: [1,1,1,1,1])";
+
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+  }
+
+  {  // profile section is not map failure
+    std::string yaml_string = R"(task_composer_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_task_composer_executor_factories
+                                     - tesseract_task_composer_node_factories
+                                   executors:
+                                     default: TaskflowTaskComposerExecutor
+                                     plugins:
+                                       TaskflowTaskComposerExecutor:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 5
+                                       TaskflowTaskComposerExecutor2:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 10
+                                       TaskflowTaskComposerExecutor3:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 15
+                                   tasks:
+                                     default: CartesianMotionPipeline
+                                     plugins:
+                                       CartesianMotionPipeline:
+                                         class: CartesianMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                       FreespaceMotionPipeline:
+                                         class: FreespaceMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                   profiles:
+                                     TrajOptMotionPlanningTask:
+                                       - waypoint:
+                                           default: glass_up_right
+                                           plugins:
+                                             glass_up_right:
+                                               class: TrajOptDefaultMoveProfileFactory
+                                               config:
+                                                 weights: [1,1,1,1,1])";
+
     tesseract_common::GeneralResourceLocator locator;
     YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
