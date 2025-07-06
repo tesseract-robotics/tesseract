@@ -12,7 +12,8 @@ tesseract_variables()
 # Configure Package
 configure_package()
 
-foreach(dir urdf meshes)
+# Install resources
+foreach(dir meshes urdf)
   install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
 endforeach()
 
