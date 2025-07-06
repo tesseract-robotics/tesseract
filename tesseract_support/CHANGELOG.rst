@@ -2,6 +2,9 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.30.0 (2025-04-23)
 -------------------
 * Documentation Update (`#1130 <https://github.com/tesseract-robotics/tesseract/issues/1130>`_)

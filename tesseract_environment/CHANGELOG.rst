@@ -2,6 +2,11 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make sure serialized objects have friend struct tesseract_common::Serialization
+* Contributors: Levi Armstrong
+
 0.30.0 (2025-04-23)
 -------------------
 * Removed debug cache prints (`#1147 <https://github.com/tesseract-robotics/tesseract/issues/1147>`_)

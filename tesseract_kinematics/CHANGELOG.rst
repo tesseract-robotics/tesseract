@@ -2,6 +2,13 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix yaml extensions file name spelling
+* Improve processYamlIncludeDirective peformance
+* Remove PluginLoader and ClassLoader from tesseract_common fwd.h
+* Contributors: Levi Armstrong
+
 0.30.0 (2025-04-23)
 -------------------
 * Update to leverage boost_plugin_loader

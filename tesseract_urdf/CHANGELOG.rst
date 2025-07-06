@@ -2,6 +2,9 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.30.0 (2025-04-23)
 -------------------
 * Improve tesseract_urdf code coverage (`#1139 <https://github.com/tesseract-robotics/tesseract/issues/1139>`_)

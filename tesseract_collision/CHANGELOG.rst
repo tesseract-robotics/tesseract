@@ -2,6 +2,15 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix yaml extensions file name spelling
+* Improve processYamlIncludeDirective peformance
+* Make printouts during convex decomposition optional at compute time
+* Remove PluginLoader and ClassLoader from tesseract_common fwd.h
+* Make sure serialized objects have friend struct tesseract_common::Serialization
+* Contributors: Levi Armstrong, Tyler Marr
+
 0.30.0 (2025-04-23)
 -------------------
 * Add unit tests for trajectory collision logging (`#1146 <https://github.com/tesseract-robotics/tesseract/issues/1146>`_)

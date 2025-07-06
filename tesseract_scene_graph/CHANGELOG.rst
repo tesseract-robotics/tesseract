@@ -2,6 +2,11 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make sure serialized objects have friend struct tesseract_common::Serialization
+* Contributors: Levi Armstrong
+
 0.30.0 (2025-04-23)
 -------------------
 * Improve tesseract_common code coverage (`#1138 <https://github.com/tesseract-robotics/tesseract/issues/1138>`_)

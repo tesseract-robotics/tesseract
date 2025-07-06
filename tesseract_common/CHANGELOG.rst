@@ -2,6 +2,18 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix yaml extensions file name spelling
+* Improve processYamlIncludeDirective peformance
+* Move the templated getProfile utility function to the profile dictionary
+* Update yaml serialization of std::unordered_map to be generic
+* Add AllowedCollisionMatrix and CollisionMarginData to yaml extensions (`#1152 <https://github.com/tesseract-robotics/tesseract/issues/1152>`_)
+* Fix boost::archive type for binary serialization
+* Remove PluginLoader and ClassLoader from tesseract_common fwd.h
+* Make sure serialized objects have friend struct tesseract_common::Serialization
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.30.0 (2025-04-23)
 -------------------
 * Move profile dictionary to tesseract_common

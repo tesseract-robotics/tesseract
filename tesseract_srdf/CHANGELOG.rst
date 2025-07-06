@@ -2,6 +2,13 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix yaml extensions file name spelling
+* Improve processYamlIncludeDirective peformance
+* Make sure serialized objects have friend struct tesseract_common::Serialization
+* Contributors: Levi Armstrong
+
 0.30.0 (2025-04-23)
 -------------------
 * Improve codecov CI
