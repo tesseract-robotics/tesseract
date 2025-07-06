@@ -2,8 +2,8 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.31.0 (2025-07-05)
+-------------------
 * Make sure serialized objects have friend struct tesseract_common::Serialization
 * Contributors: Levi Armstrong
 

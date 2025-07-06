@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.31.0 (2025-07-05)
+-------------------
 * Fix yaml extensions file name spelling
 * Improve processYamlIncludeDirective peformance
 * Move the templated getProfile utility function to the profile dictionary

@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.31.0 (2025-07-05)
+-------------------
 * Fix yaml extensions file name spelling
 * Improve processYamlIncludeDirective peformance
 * Make printouts during convex decomposition optional at compute time

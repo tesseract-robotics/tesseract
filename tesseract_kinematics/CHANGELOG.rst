@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.31.0 (2025-07-05)
+-------------------
 * Fix yaml extensions file name spelling
 * Improve processYamlIncludeDirective peformance
 * Remove PluginLoader and ClassLoader from tesseract_common fwd.h
