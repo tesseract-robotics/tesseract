@@ -604,11 +604,11 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
   EXPECT_TRUE(nany_type.as<tesseract_common::JointState>() == joint_state);
 
-  // Test bad cast
-  #ifndef _MSC_VER
+// Test bad cast
+#ifndef _MSC_VER
   // Horrible compilation errors on MSVC
   EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
-  #endif
+#endif
 }
 
 template <typename T>
@@ -643,11 +643,11 @@ void runAnyPolyIntegralTest(T value, const std::string& type_str)
   EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(T)));
   EXPECT_TRUE(nany_type.as<T>() == value);
 
-  // Test bad cast
-  #ifndef _MSC_VER
+// Test bad cast
+#ifndef _MSC_VER
   // Horrible compilation errors on MSVC
   EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
-  #endif
+#endif
 }
 
 TEST(TesseractCommonUnit, anyIntegralTypesUnit)  // NOLINT
