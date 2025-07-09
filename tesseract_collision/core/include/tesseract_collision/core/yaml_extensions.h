@@ -121,6 +121,70 @@ struct convert<tesseract_collision::ContactManagerConfig>
   }
 };
 
+//=========================== ContactRequest ===========================
+template <>
+struct convert<tesseract_collision::ContactRequest>
+{
+  static Node encode(const tesseract_collision::ContactRequest& rhs)
+  {
+    Node node;
+    
+    node["type"] = rhs.type;
+    node["calculate_penetration"] = rhs.calculate_penetration;
+    node["calculate_distance"] = rhs.calculate_distance;
+    node["contact_limit"] = rhs.contact_limit;
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_collision::ContactRequest& rhs) 
+  {
+    if (const YAML::Node& n = node["type"])
+      rhs.type = n.as<tesseract_collision::ContractRequestType>();
+    
+    if (const YAML::Node& n = node["calculate_penetration"])
+      rhs.calculate_penetration = n.as<bool>();
+    
+    if (const YAML::Node& n = node["calculate_distance"])
+      rhs.calculate_distance = n.as<bool>();
+    
+    if (const YAML::Node& n = node["contact_limit"])
+      rhs.contact_limit = n.as<long>();
+
+    return true;
+  }
+};
+
+//=========================== CollisionCheckConfig ===========================
+template <>
+struct convert<tesseract_collision::CollisionCheckConfig>
+{
+  static Node encode(const tesseract_collision::CollisionCheckConfig& rhs)
+  {
+    Node node;
+    
+    node["contact_request"] = YAML::convert<tesseract_collision::ContactRequest>::encode(&rhs.contact_request);
+    node["type"] = rhs.type;
+    node["longest_valid_segment_length"] = rhs.longest_valid_segment_length;
+    node["check_program_mode"] = rhs.check_program_mode;
+    
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_collision::CollisionCheckConfig& rhs) 
+  {
+    if (const YAML::Node& n = node["contact_request"])
+      YAML::convert<tesseract_collision::ContactRequest>::decode(node["contact_request"], &rhs.contact_request);
+    if (const YAML::Node& n = node["type"]) 
+      rhs.type = node["type"];
+    if (const YAML::Node& n = node["longest_valid_segment_length"])
+      rhs.longest_valid_segment_length = node["longest_valid_segment_length"];
+    if (const YAML::Node& n = node["check_program_mode"]) 
+      rhs.check_program_mode = node["check_program_mode"];
+    return true;
+  }
+};
+
+
 }  // namespace YAML
 
 #endif  // TESSERACT_COLLISION_CORE_YAML_EXTENSIONS_H
