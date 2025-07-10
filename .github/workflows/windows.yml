@@ -15,22 +15,23 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, windows-2022]
+        config:
+          - name: MSVC-2019
+            os: windows-2022
+            toolset: "v14.2"
+          - name: MSVC-2022
+            os: windows-2022
+            toolset: "v14.3"
+          
     steps:
     - uses: actions/checkout@v4
       with:
         path: target_ws/src
-
-    - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.28.x'
-
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v6
       with:
@@ -38,13 +39,14 @@ jobs:
         triplet: x64-windows-release
         extra-args: --clean-after-build
         token: ${{ github.token }}
-        cache-key: ci-${{ matrix.os }}
+        cache-key: ci-win-vcpkg-${{ matrix.config.name }}
         github-binarycache: true
 
     - name: configure-msvc
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+        toolset: ${{ matrix.config.toolset }}
 
     - name: update environment
       shell: bash
@@ -53,9 +55,9 @@ jobs:
         echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE\vcpkg\installed\x64-windows-release" >> "$GITHUB_ENV"
 
     - name: Build and Tests
-      uses: tesseract-robotics/colcon-action@v11
+      uses: tesseract-robotics/colcon-action@v13
       with:
-        ccache-prefix: ${{ matrix.distro }}
+        ccache-prefix: ci-win-build-${{ matrix.config.name }}
         vcs-file: .github/workflows/windows_dependencies.repos
         upstream-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release
         target-path: target_ws/src
