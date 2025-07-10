@@ -310,8 +310,6 @@ struct convert<tesseract_collision::CollisionCheckConfig>
   }
 };
 
-// TODO FIX ENUMS
-
 }  // namespace YAML
 
 #endif  // TESSERACT_COLLISION_CORE_YAML_EXTENSIONS_H
