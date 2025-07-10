@@ -146,32 +146,33 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
     config.acm.addAllowedCollision("a", "b", "never");
     EXPECT_NO_THROW(config.validate());  // NOLINT
   }
+}
 
-  { // YAML Conversion
+TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit) // NOLINT
+{
 
-    const std::string yaml_string = R"(
-      pair_margin_override_type: NONE
-      acm_override_type: NONE
-    )";
+  const std::string yaml_string = R"(
+    pair_margin_override_type: NONE
+    acm_override_type: NONE
+  )";
 
-    tesseract_collision::ContactManagerConfig data_original;
+  tesseract_collision::ContactManagerConfig data_original;
 
-    { // decode
-      tesseract_collision::ContactManagerConfig cm;
-      YAML::Node n = YAML::Load(yaml_string);
-      auto success = YAML::convert<tesseract_collision::ContactManagerConfig>::decode(n, cm);
-      EXPECT_TRUE(success);
-      EXPECT_EQ(cm.pair_margin_override_type, data_original.pair_margin_override_type);
-      EXPECT_EQ(cm.acm_override_type, data_original.acm_override_type);
-    }
+  { // decode
+    tesseract_collision::ContactManagerConfig cm;
+    YAML::Node n = YAML::Load(yaml_string);
+    auto success = YAML::convert<tesseract_collision::ContactManagerConfig>::decode(n, cm);
+    EXPECT_TRUE(success);
+    EXPECT_EQ(cm.pair_margin_override_type, data_original.pair_margin_override_type);
+    EXPECT_EQ(cm.acm_override_type, data_original.acm_override_type);
+  }
 
-    { // encode
-      tesseract_collision::ContactManagerConfig cm;
-      YAML::Node n = YAML::Load(yaml_string);
-      YAML::Node output_n = YAML::convert<tesseract_collision::ContactManagerConfig>::encode(cm);
-      EXPECT_EQ(cm.pair_margin_override_type, data_original.pair_margin_override_type);
-      EXPECT_EQ(cm.acm_override_type, data_original.acm_override_type);
-    }
+  { // encode
+    tesseract_collision::ContactManagerConfig cm;
+    YAML::Node n = YAML::Load(yaml_string);
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactManagerConfig>::encode(cm);
+    EXPECT_EQ(cm.pair_margin_override_type, data_original.pair_margin_override_type);
+    EXPECT_EQ(cm.acm_override_type, data_original.acm_override_type);
   }
 }
 
@@ -908,41 +909,42 @@ TEST(TesseractCoreUnit, ContactRequestUnit)  // NOLINT
 
     tesseract_common::testSerialization<tesseract_collision::ContactRequest>(request, "ContactRequest");
   }
+}
 
-  { // YAML Conversion
-    const std::string yaml_string = R"(
-      type: ALL
-      calculate_penetration: true
-      calculate_distance: true
-      contact_limit: 0
-    )";
+TEST(TesseractCoreUnit, ContactRequestYamlUnit) // NOLINT
+{
+  const std::string yaml_string = R"(
+    type: ALL
+    calculate_penetration: true
+    calculate_distance: true
+    contact_limit: 0
+  )";
 
-    tesseract_collision::ContactRequest data_original;
-    data_original.type = tesseract_collision::ContactTestType::ALL;
-    data_original.calculate_penetration = true;
-    data_original.calculate_distance = true;
-    data_original.contact_limit = 0;
+  tesseract_collision::ContactRequest data_original;
+  data_original.type = tesseract_collision::ContactTestType::ALL;
+  data_original.calculate_penetration = true;
+  data_original.calculate_distance = true;
+  data_original.contact_limit = 0;
 
-    { // decode
-      tesseract_collision::ContactRequest cr;
-      YAML::Node n = YAML::Load(yaml_string);
-      auto success = YAML::convert<tesseract_collision::ContactRequest>::decode(n, cr);
-      EXPECT_TRUE(success);
-      EXPECT_EQ(cr.type, data_original.type);
-      EXPECT_EQ(cr.calculate_penetration, data_original.calculate_penetration);
-      EXPECT_EQ(cr.calculate_distance, data_original.calculate_distance);
-      EXPECT_EQ(cr.contact_limit, data_original.contact_limit);
-    }
+  { // decode
+    tesseract_collision::ContactRequest cr;
+    YAML::Node n = YAML::Load(yaml_string);
+    auto success = YAML::convert<tesseract_collision::ContactRequest>::decode(n, cr);
+    EXPECT_TRUE(success);
+    EXPECT_EQ(cr.type, data_original.type);
+    EXPECT_EQ(cr.calculate_penetration, data_original.calculate_penetration);
+    EXPECT_EQ(cr.calculate_distance, data_original.calculate_distance);
+    EXPECT_EQ(cr.contact_limit, data_original.contact_limit);
+  }
 
-    { // encode
-      tesseract_collision::ContactRequest cr;
-      YAML::Node n = YAML::Load(yaml_string);
-      YAML::Node output_n = YAML::convert<tesseract_collision::ContactRequest>::encode(cr);
-      EXPECT_EQ(cr.type, data_original.type);
-      EXPECT_EQ(cr.calculate_penetration, data_original.calculate_penetration);
-      EXPECT_EQ(cr.calculate_distance, data_original.calculate_distance);
-      EXPECT_EQ(cr.contact_limit, data_original.contact_limit);
-    }
+  { // encode
+    tesseract_collision::ContactRequest cr;
+    YAML::Node n = YAML::Load(yaml_string);
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactRequest>::encode(cr);
+    EXPECT_EQ(cr.type, data_original.type);
+    EXPECT_EQ(cr.calculate_penetration, data_original.calculate_penetration);
+    EXPECT_EQ(cr.calculate_distance, data_original.calculate_distance);
+    EXPECT_EQ(cr.contact_limit, data_original.contact_limit);
   }
 }
 
@@ -971,53 +973,54 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
 
     tesseract_common::testSerialization<tesseract_collision::CollisionCheckConfig>(config, "CollisionCheckConfig");
   }
+}
 
-  { // YAML Conversions
-    const std::string contact_request_yaml_string = R"(
-      type: ALL
-      calculate_penetration: true
-      calculate_distance: true
-      contact_limit: 0
-    )";
+TEST(TesseractCoreUnit, CollisionCheckConfigYamlUnit) // NOLINT
+{
+  const std::string contact_request_yaml_string = R"(
+    type: ALL
+    calculate_penetration: true
+    calculate_distance: true
+    contact_limit: 0
+  )";
 
-      const std::string yaml_string = R"(
-      type: DISCRETE
-      longest_valid_segment_length: 0.005
-      check_program_mode: ALL
-    )";
+    const std::string yaml_string = R"(
+    type: DISCRETE
+    longest_valid_segment_length: 0.005
+    check_program_mode: ALL
+  )";
 
-    tesseract_collision::ContactRequest cr_original;
-    cr_original.type = tesseract_collision::ContactTestType::ALL;
-    cr_original.calculate_penetration = true;
-    cr_original.calculate_distance = true;
-    cr_original.contact_limit = 0;
+  tesseract_collision::ContactRequest cr_original;
+  cr_original.type = tesseract_collision::ContactTestType::ALL;
+  cr_original.calculate_penetration = true;
+  cr_original.calculate_distance = true;
+  cr_original.contact_limit = 0;
 
-    tesseract_collision::CollisionCheckConfig data_original;
-    data_original.contact_request = cr_original;
-    data_original.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
-    data_original.longest_valid_segment_length = 0.005;
-    data_original.check_program_mode = tesseract_collision::CollisionCheckProgramType::ALL;
+  tesseract_collision::CollisionCheckConfig data_original;
+  data_original.contact_request = cr_original;
+  data_original.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+  data_original.longest_valid_segment_length = 0.005;
+  data_original.check_program_mode = tesseract_collision::CollisionCheckProgramType::ALL;
 
-    { // decode
-      tesseract_collision::CollisionCheckConfig cr;
-      YAML::Node n = YAML::Load(yaml_string);
-      auto success = YAML::convert<tesseract_collision::CollisionCheckConfig>::decode(n, cr);
-      EXPECT_TRUE(success);
-      EXPECT_EQ(cr.contact_request, data_original.contact_request);
-      EXPECT_EQ(cr.type, data_original.type);
-      EXPECT_EQ(cr.longest_valid_segment_length, data_original.longest_valid_segment_length);
-      EXPECT_EQ(cr.check_program_mode, data_original.check_program_mode);
-    }
+  { // decode
+    tesseract_collision::CollisionCheckConfig cr;
+    YAML::Node n = YAML::Load(yaml_string);
+    auto success = YAML::convert<tesseract_collision::CollisionCheckConfig>::decode(n, cr);
+    EXPECT_TRUE(success);
+    EXPECT_EQ(cr.contact_request, data_original.contact_request);
+    EXPECT_EQ(cr.type, data_original.type);
+    EXPECT_EQ(cr.longest_valid_segment_length, data_original.longest_valid_segment_length);
+    EXPECT_EQ(cr.check_program_mode, data_original.check_program_mode);
+  }
 
-    { // encode
-      tesseract_collision::CollisionCheckConfig cr;
-      YAML::Node n = YAML::Load(yaml_string);
-      n["contact_request"] = YAML::Load(contact_request_yaml_string);
-      YAML::Node output_n = YAML::convert<tesseract_collision::CollisionCheckConfig>::encode(cr);
-      EXPECT_EQ(cr.type, data_original.type);
-      EXPECT_EQ(cr.longest_valid_segment_length, data_original.longest_valid_segment_length);
-      EXPECT_EQ(cr.check_program_mode, data_original.check_program_mode);
-    }
+  { // encode
+    tesseract_collision::CollisionCheckConfig cr;
+    YAML::Node n = YAML::Load(yaml_string);
+    n["contact_request"] = YAML::Load(contact_request_yaml_string);
+    YAML::Node output_n = YAML::convert<tesseract_collision::CollisionCheckConfig>::encode(cr);
+    EXPECT_EQ(cr.type, data_original.type);
+    EXPECT_EQ(cr.longest_valid_segment_length, data_original.longest_valid_segment_length);
+    EXPECT_EQ(cr.check_program_mode, data_original.check_program_mode);
   }
 }
 
