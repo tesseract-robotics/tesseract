@@ -23,10 +23,10 @@ jobs:
         config:
           - name: MSVC-2019
             os: windows-2022
-            toolset: "v14.2"
+            toolset: "14.2"
           - name: MSVC-2022
             os: windows-2022
-            toolset: "v14.3"
+            toolset: "14.3"
           
     steps:
     - uses: actions/checkout@v4
