@@ -61,7 +61,7 @@ jobs:
         pkgs: >-
           ${{ env.VCPKG_PKGS }}
         triplet: ${{ matrix.config.vcpkg_triplet }}
-        extra-args: --clean-after-build --overlay-triplets=${{ github.workspace }}/target_ws/tesseract/.github/workflows/vcpkg_triplets
+        extra-args: --clean-after-build --overlay-triplets=${{ github.workspace }}/target_ws/.github/workflows/vcpkg_triplets
         token: ${{ github.token }}
         cache-key: osx-${{ matrix.config.arch }}-vcpkg
         revision: master
