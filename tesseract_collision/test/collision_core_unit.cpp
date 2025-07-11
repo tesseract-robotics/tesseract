@@ -148,9 +148,8 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
   }
 }
 
-TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit) // NOLINT
+TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit)  // NOLINT
 {
-
   const std::string yaml_string = R"(
     pair_margin_override_type: NONE
     acm_override_type: NONE
@@ -158,7 +157,7 @@ TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit) // NOLINT
 
   tesseract_collision::ContactManagerConfig data_original;
 
-  { // decode
+  {  // decode
     tesseract_collision::ContactManagerConfig cm;
     YAML::Node n = YAML::Load(yaml_string);
     auto success = YAML::convert<tesseract_collision::ContactManagerConfig>::decode(n, cm);
@@ -167,7 +166,7 @@ TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit) // NOLINT
     EXPECT_EQ(cm.acm_override_type, data_original.acm_override_type);
   }
 
-  { // encode
+  {  // encode
     tesseract_collision::ContactManagerConfig cm;
     YAML::Node n = YAML::Load(yaml_string);
     YAML::Node output_n = YAML::convert<tesseract_collision::ContactManagerConfig>::encode(cm);
@@ -911,7 +910,7 @@ TEST(TesseractCoreUnit, ContactRequestUnit)  // NOLINT
   }
 }
 
-TEST(TesseractCoreUnit, ContactRequestYamlUnit) // NOLINT
+TEST(TesseractCoreUnit, ContactRequestYamlUnit)  // NOLINT
 {
   const std::string yaml_string = R"(
     type: ALL
@@ -926,7 +925,7 @@ TEST(TesseractCoreUnit, ContactRequestYamlUnit) // NOLINT
   data_original.calculate_distance = true;
   data_original.contact_limit = 0;
 
-  { // decode
+  {  // decode
     tesseract_collision::ContactRequest cr;
     YAML::Node n = YAML::Load(yaml_string);
     auto success = YAML::convert<tesseract_collision::ContactRequest>::decode(n, cr);
@@ -937,7 +936,7 @@ TEST(TesseractCoreUnit, ContactRequestYamlUnit) // NOLINT
     EXPECT_EQ(cr.contact_limit, data_original.contact_limit);
   }
 
-  { // encode
+  {  // encode
     tesseract_collision::ContactRequest cr;
     YAML::Node n = YAML::Load(yaml_string);
     YAML::Node output_n = YAML::convert<tesseract_collision::ContactRequest>::encode(cr);
@@ -975,7 +974,7 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
   }
 }
 
-TEST(TesseractCoreUnit, CollisionCheckConfigYamlUnit) // NOLINT
+TEST(TesseractCoreUnit, CollisionCheckConfigYamlUnit)  // NOLINT
 {
   const std::string contact_request_yaml_string = R"(
     type: ALL
@@ -984,7 +983,7 @@ TEST(TesseractCoreUnit, CollisionCheckConfigYamlUnit) // NOLINT
     contact_limit: 0
   )";
 
-    const std::string yaml_string = R"(
+  const std::string yaml_string = R"(
     type: DISCRETE
     longest_valid_segment_length: 0.005
     check_program_mode: ALL
@@ -1002,7 +1001,7 @@ TEST(TesseractCoreUnit, CollisionCheckConfigYamlUnit) // NOLINT
   data_original.longest_valid_segment_length = 0.005;
   data_original.check_program_mode = tesseract_collision::CollisionCheckProgramType::ALL;
 
-  { // decode
+  {  // decode
     tesseract_collision::CollisionCheckConfig cr;
     YAML::Node n = YAML::Load(yaml_string);
     auto success = YAML::convert<tesseract_collision::CollisionCheckConfig>::decode(n, cr);
@@ -1013,7 +1012,7 @@ TEST(TesseractCoreUnit, CollisionCheckConfigYamlUnit) // NOLINT
     EXPECT_EQ(cr.check_program_mode, data_original.check_program_mode);
   }
 
-  { // encode
+  {  // encode
     tesseract_collision::CollisionCheckConfig cr;
     YAML::Node n = YAML::Load(yaml_string);
     n["contact_request"] = YAML::Load(contact_request_yaml_string);
