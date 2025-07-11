@@ -1,5 +1,3 @@
-set CXXFLAGS=%CXXFLAGS% -DEIGEN_DONT_ALIGN=1 -DEIGEN_DONT_VECTORIZE=1
-set CXXFLAGS=%CXXFLAGS% /std:c++17
 
 colcon build --merge-install --install-base="%PREFIX%\opt\tesseract_robotics" ^
    --event-handlers console_cohesion+ ^
@@ -25,8 +23,10 @@ call "%PREFIX%\opt\tesseract_robotics\setup.bat"
 
 set TESSERACT_PYTHON_DLL_PATH=%PREFIX%\opt\tesseract_robotics\bin
 
+set TESSERACT_RESOURCE_PATH=%PREFIX%\opt\tesseract_robotics\share
+
 colcon test --event-handlers console_direct+ --return-code-on-test-failure ^
-   --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp tesseract_common ^
+   --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp ^
    --merge-install --install-base="%PREFIX%\opt\tesseract_robotics"
 
 if %errorlevel% neq 0 exit /b %errorlevel%
