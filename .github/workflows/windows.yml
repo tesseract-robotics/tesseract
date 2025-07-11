@@ -60,3 +60,11 @@ jobs:
         upstream-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release
         target-path: target_ws/src
         target-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
+    
+    - name: collect logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-win-logs-${{ matrix.config.name }}
+        path: ./**/*.log
+        retention-days: 7
