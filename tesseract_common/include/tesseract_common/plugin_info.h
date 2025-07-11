@@ -30,7 +30,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/export.hpp>
 #include <Eigen/Core>
-#include <vector>
 #include <map>
 #include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -94,6 +93,40 @@ private:
   void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
+/** @brief The profile plugin information structure */
+struct ProfilesPluginInfo
+{
+  /** @brief A list of paths to search for plugins */
+  std::set<std::string> search_paths;
+
+  /** @brief A list of library names without the prefix or suffix that contain plugins*/
+  std::set<std::string> search_libraries;
+
+  /** @brief A map of name to task composer executor plugin information */
+  std::map<std::string, PluginInfoMap> plugin_infos;
+
+  /** @brief Insert the content of an other ProfilesPluginInfo */
+  void insert(const ProfilesPluginInfo& other);
+
+  /** @brief Clear the contents */
+  void clear();
+
+  /** @brief Check if structure is empty */
+  bool empty() const;
+
+  // Yaml Config key
+  static inline const std::string CONFIG_KEY{ "profile_plugins" };
+
+  bool operator==(const ProfilesPluginInfo& rhs) const;
+  bool operator!=(const ProfilesPluginInfo& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  friend struct tesseract_common::Serialization;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+};
+
 /** @brief The kinematics plugin information structure */
 struct KinematicsPluginInfo
 {
@@ -104,10 +137,10 @@ struct KinematicsPluginInfo
   std::set<std::string> search_libraries;
 
   /** @brief A map of group name to forward kinematics plugin information */
-  std::map<std::string, tesseract_common::PluginInfoContainer> fwd_plugin_infos;
+  std::map<std::string, PluginInfoContainer> fwd_plugin_infos;
 
   /** @brief A map of group name to inverse kinematics plugin information */
-  std::map<std::string, tesseract_common::PluginInfoContainer> inv_plugin_infos;
+  std::map<std::string, PluginInfoContainer> inv_plugin_infos;
 
   /** @brief Insert the content of an other KinematicsPluginInfo */
   void insert(const KinematicsPluginInfo& other);
@@ -141,10 +174,10 @@ struct ContactManagersPluginInfo
   std::set<std::string> search_libraries;
 
   /** @brief A map of name to discrete contact manager plugin information */
-  tesseract_common::PluginInfoContainer discrete_plugin_infos;
+  PluginInfoContainer discrete_plugin_infos;
 
   /** @brief A map of name to continuous contact manager plugin information */
-  tesseract_common::PluginInfoContainer continuous_plugin_infos;
+  PluginInfoContainer continuous_plugin_infos;
 
   /** @brief Insert the content of an other ContactManagersPluginInfo */
   void insert(const ContactManagersPluginInfo& other);
@@ -178,10 +211,10 @@ struct TaskComposerPluginInfo
   std::set<std::string> search_libraries;
 
   /** @brief A map of name to task composer executor plugin information */
-  tesseract_common::PluginInfoContainer executor_plugin_infos;
+  PluginInfoContainer executor_plugin_infos;
 
   /** @brief A map of name to task composer task plugin information */
-  tesseract_common::PluginInfoContainer task_plugin_infos;
+  PluginInfoContainer task_plugin_infos;
 
   /** @brief Insert the content of an other TaskComposerPluginInfo */
   void insert(const TaskComposerPluginInfo& other);
@@ -209,6 +242,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::PluginInfo)
 BOOST_CLASS_EXPORT_KEY(tesseract_common::PluginInfoContainer)
+BOOST_CLASS_EXPORT_KEY(tesseract_common::ProfilesPluginInfo)
 BOOST_CLASS_EXPORT_KEY(tesseract_common::KinematicsPluginInfo)
 BOOST_CLASS_EXPORT_KEY(tesseract_common::ContactManagersPluginInfo)
 BOOST_CLASS_EXPORT_KEY(tesseract_common::TaskComposerPluginInfo)
