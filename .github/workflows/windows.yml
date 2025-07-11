@@ -26,7 +26,7 @@ jobs:
             toolset: "14.2"
           - name: MSVC-2022
             os: windows-2022
-            toolset: "14.3"
+            toolset: "14.4"
           
     steps:
     - uses: actions/checkout@v4
