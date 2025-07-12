@@ -15,48 +15,58 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, windows-2022]
+        config:
+          - name: MSVC-2019
+            os: windows-2022
+            toolset: "14.2"
+            triplet: x64-windows-v142-release
+          - name: MSVC-2022
+            os: windows-2022
+            toolset: "14.4"
+            triplet: x64-windows-v143-release
+          
     steps:
     - uses: actions/checkout@v4
       with:
         path: target_ws/src
-
-    - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.28.x'
-
     - name: vcpkg build
-      uses: johnwason/vcpkg-action@v6
+      uses: johnwason/vcpkg-action@v7
       with:
         pkgs: fcl bullet3[multithreading,double-precision,rtti] octomap console-bridge eigen3 yaml-cpp benchmark tinyxml2 assimp orocos-kdl pcl lapack-reference boost-dll boost-filesystem boost-filesystem boost-serialization boost-program-options boost-graph boost-stacktrace urdfdom ccd[double-precision] gtest
-        triplet: x64-windows-release
-        extra-args: --clean-after-build
+        triplet: ${{ matrix.config.triplet }}
+        extra-args: --clean-after-build --overlay-triplets=${{ github.workspace }}/target_ws/src/.github/workflows/vcpkg_triplets
         token: ${{ github.token }}
-        cache-key: ci-${{ matrix.os }}
-        github-binarycache: true
-
+        cache-key: ci-win-vcpkg-${{ matrix.config.name }}
     - name: configure-msvc
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+        toolset: ${{ matrix.config.toolset }}
 
     - name: update environment
       shell: bash
       run: |
-        echo "PATH=${{ env.PATH }};$GITHUB_WORKSPACE\vcpkg\installed\x64-windows-release\bin" >> "$GITHUB_ENV"
-        echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE\vcpkg\installed\x64-windows-release" >> "$GITHUB_ENV"
+        echo "PATH=${{ env.PATH }};$GITHUB_WORKSPACE\vcpkg\installed\${{ matrix.config.triplet }}\bin" >> "$GITHUB_ENV"
+        echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE\vcpkg\installed\${{ matrix.config.triplet }}" >> "$GITHUB_ENV"
 
     - name: Build and Tests
-      uses: tesseract-robotics/colcon-action@v11
+      uses: tesseract-robotics/colcon-action@v13
       with:
-        ccache-prefix: ${{ matrix.distro }}
+        ccache-prefix: ci-win-build-${{ matrix.config.name }}
         vcs-file: .github/workflows/windows_dependencies.repos
-        upstream-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release
+        upstream-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=${{ matrix.config.triplet }} -DCMAKE_BUILD_TYPE=Release
         target-path: target_ws/src
-        target-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
+        target-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=${{ matrix.config.triplet }} -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
+    
+    - name: collect logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-win-logs-${{ matrix.config.name }}
+        path: ./**/*.log
+        retention-days: 7
