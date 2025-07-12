@@ -13,7 +13,7 @@ requirements:
       - gmock
       - cmake
       - ninja # [win]
-      - make # [linux]
+      - make # [unix]
       - pkg-config
       - swig
       - colcon-common-extensions 
@@ -21,7 +21,7 @@ requirements:
       - {{ cdt('mesa-libgl-devel') }}    # [linux]
       - {{ cdt('mesa-dri-drivers') }}    # [linux]
     host:
-      - boost-cpp 
+      - libboost-devel
       - eigen 
       - tinyxml2
       - console_bridge
@@ -43,7 +43,7 @@ requirements:
       - xorg-libx11    # [unix]
       - xorg-libxext   # [unix]
     run:
-      - boost-cpp
+      - libboost-devel
       - eigen 
       - tinyxml2
       - console_bridge

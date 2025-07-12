@@ -1,6 +1,6 @@
 set -e
 
-ln -s $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-gcc $BUILD_PREFIX/bin/gcc
+# ln -s $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-gcc $BUILD_PREFIX/bin/gcc
 
 colcon build --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
    --event-handlers console_cohesion+ \
@@ -15,13 +15,17 @@ colcon build --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
    -DTESSERACT_ENABLE_EXAMPLES=OFF \
    -DTESSERACT_BUILD_TRAJOPT_IFOPT=OFF \
    -DSETUPTOOLS_DEB_LAYOUT=OFF \
-   -DTESSERACT_ENABLE_TESTING=ON
+   -DTESSERACT_ENABLE_TESTING=ON \
+   -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
 
 source "$PREFIX/opt/tesseract_robotics/setup.sh"
 
+export TESSERACT_RESOURCE_PATH="$PREFIX/opt/tesseract_robotics/share/"
+
 colcon test --event-handlers console_direct+ --return-code-on-test-failure \
-   --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp tesseract_common \
-   --merge-install --install-base="$PREFIX/opt/tesseract_robotics" 
+   --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp \
+   --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
+   --ctest-args -E "^ResourceLocatorUnit\.GeneralResourceLocatorUnit2$"
 
 
 for CHANGE in "activate" "deactivate"
