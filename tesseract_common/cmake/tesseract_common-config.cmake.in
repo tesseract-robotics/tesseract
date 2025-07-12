@@ -11,6 +11,7 @@ include(CMakeFindDependencyMacro)
 find_dependency(Eigen3)
 find_dependency(TinyXML2)
 find_dependency(yaml-cpp)
+find_dependency(boost_plugin_loader)
 find_dependency(Boost COMPONENTS system filesystem serialization @TESSERACT_BACKTRACE_COMPONENT@)
 find_dependency(console_bridge)
 
