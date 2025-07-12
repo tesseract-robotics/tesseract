@@ -16,6 +16,7 @@
   <depend>libconsole-bridge-dev</depend>
   <depend>tinyxml2</depend>
   <depend>yaml-cpp</depend>
+  <depend>boost_plugin_loader</depend>
 
   <build_depend>libboost-system-dev</build_depend>
   <build_export_depend>libboost-system-dev</build_export_depend>
@@ -32,7 +33,6 @@
   <test_depend>gtest</test_depend>
   <test_depend>lcov</test_depend>
   <test_depend>libclang-dev</test_depend>
-  <test_depend>boost_plugin_loader</test_depend>
 
   <export>
     <build_type>cmake</build_type>

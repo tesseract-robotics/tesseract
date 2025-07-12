@@ -34,6 +34,7 @@ namespace tesseract_common
 // types.h
 struct PluginInfo;
 struct PluginInfoContainer;
+struct ProfilesPluginInfo;
 struct KinematicsPluginInfo;
 struct ContactManagersPluginInfo;
 struct TaskComposerPluginInfo;
