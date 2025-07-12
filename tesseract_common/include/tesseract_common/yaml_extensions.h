@@ -275,6 +275,85 @@ struct convert<Eigen::Vector3d>
 };
 
 template <>
+struct convert<tesseract_common::ProfilesPluginInfo>
+{
+  inline static const std::string SEARCH_PATHS_KEY{ "search_paths" };
+  inline static const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+  inline static const std::string PROFILE_PLUGINS_KEY{ "profiles" };
+  static Node encode(const tesseract_common::ProfilesPluginInfo& rhs)
+  {
+    YAML::Node plugins;
+    if (!rhs.search_paths.empty())
+      plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
+
+    if (!rhs.search_libraries.empty())
+      plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+
+    if (!rhs.plugin_infos.empty())
+      plugins[PROFILE_PLUGINS_KEY] = rhs.plugin_infos;
+
+    return plugins;
+  }
+
+  static bool decode(const Node& node, tesseract_common::ProfilesPluginInfo& rhs)
+  {
+    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
+    {
+      std::set<std::string> sp;
+      try
+      {
+        sp = search_paths.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ProfilePluginInfo: Constructor failed to cast '" + SEARCH_PATHS_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_paths.insert(sp.begin(), sp.end());
+    }
+
+    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
+    {
+      std::set<std::string> sl;
+      try
+      {
+        sl = search_libraries.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ProfilePluginInfo: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_libraries.insert(sl.begin(), sl.end());
+    }
+
+    if (const YAML::Node& profile_plugins = node[PROFILE_PLUGINS_KEY])
+    {
+      if (!profile_plugins.IsMap())
+        throw std::runtime_error(PROFILE_PLUGINS_KEY + ", should contain a map of group names to solver plugins!");
+
+      try
+      {
+        rhs.plugin_infos = profile_plugins.as<std::map<std::string, tesseract_common::PluginInfoMap>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("ProfilePluginInfo: Constructor failed to cast '" + PROFILE_PLUGINS_KEY +
+                                 "' to std::map<std::string, "
+                                 "tesseract_common::PluginInfoContainer>! Details: " +
+                                 e.what());
+      }
+    }
+
+    return true;
+  }
+};
+
+template <>
 struct convert<tesseract_common::KinematicsPluginInfo>
 {
   static Node encode(const tesseract_common::KinematicsPluginInfo& rhs)

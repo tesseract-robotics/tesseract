@@ -1380,6 +1380,38 @@ TEST(TesseractCommonUnit, ContactManagersPluginInfoUnit)  // NOLINT
   EXPECT_TRUE(cmpi.empty());
 }
 
+TEST(TesseractCommonUnit, ProfilePluginInfoUnit)  // NOLINT
+{
+  tesseract_common::ProfilesPluginInfo kpi;
+  EXPECT_TRUE(kpi.empty());
+
+  tesseract_common::ProfilesPluginInfo kpi_insert;
+  kpi_insert.search_paths.insert("/usr/local/lib");
+  kpi_insert.search_libraries.insert("tesseract_collision");
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "Profile";
+    kpi_insert.plugin_infos["manipulator"]["KDLFwdKin"] = pi;
+  }
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "Profile";
+    kpi_insert.plugin_infos["manipulator"]["KDLInvKin"] = pi;
+  }
+
+  EXPECT_FALSE(kpi_insert.empty());
+
+  EXPECT_NE(kpi, kpi_insert);
+  kpi.insert(kpi_insert);
+  EXPECT_FALSE(kpi.empty());
+  EXPECT_EQ(kpi, kpi_insert);
+
+  kpi.clear();
+  EXPECT_TRUE(kpi.empty());
+}
+
 TEST(TesseractCommonUnit, TaskComposerPluginInfoUnit)  // NOLINT
 {
   tesseract_common::TaskComposerPluginInfo tcpi;
@@ -1887,6 +1919,174 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
     YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+  }
+}
+
+TEST(TesseractPluginFactoryUnit, ProfilePluginInfoYamlUnit)  // NOLINT
+{
+  std::string yaml_string = R"(profile_plugins:
+                                 search_paths:
+                                   - /usr/local/lib
+                                 search_libraries:
+                                   - profile_factories
+                                 profiles:
+                                   TrajOptCollisionCost:
+                                     DiscreteCollisionProfile:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                     DiscreteCollisionProfile2:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                   TrajOptCollisionConstraint:
+                                     DiscreteCollisionProfile:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                     DiscreteCollisionProfile2:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01)";
+
+  {  // Success
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
+    auto cmpi = config.as<tesseract_common::ProfilesPluginInfo>();
+
+    const YAML::Node& plugin_info = plugin_config["profile_plugins"];
+    const YAML::Node& search_paths = plugin_info["search_paths"];
+    const YAML::Node& search_libraries = plugin_info["search_libraries"];
+    const YAML::Node& cost_plugins = plugin_info["profiles"]["TrajOptCollisionCost"];
+    const YAML::Node& constraint_plugins = plugin_info["profiles"]["TrajOptCollisionConstraint"];
+
+    {
+      std::set<std::string> sp = cmpi.search_paths;
+      EXPECT_EQ(sp.size(), 1);
+
+      for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
+      {
+        EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+      }
+    }
+
+    {
+      std::set<std::string> sl = cmpi.search_libraries;
+      EXPECT_EQ(sl.size(), 1);
+
+      for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
+      {
+        EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+      }
+    }
+
+    EXPECT_EQ(cost_plugins.size(), cmpi.plugin_infos["TrajOptCollisionCost"].size());
+    EXPECT_EQ(constraint_plugins.size(), cmpi.plugin_infos["TrajOptCollisionConstraint"].size());
+  }
+
+  {  // search_paths failure
+    std::string yaml_string = R"(profile_plugins:
+                                 search_paths:
+                                   failure: issue
+                                 search_libraries:
+                                   - profile_factories
+                                 profiles:
+                                   TrajOptCollisionCost:
+                                     DiscreteCollisionProfile:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                     DiscreteCollisionProfile2:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                   TrajOptCollisionConstraint:
+                                     DiscreteCollisionProfile:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                     DiscreteCollisionProfile2:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01)";
+
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ProfilesPluginInfo>());  // NOLINT
+  }
+
+  {  // search_libraries failure
+    std::string yaml_string = R"(profile_plugins:
+                                 search_paths:
+                                   - /usr/local/lib
+                                 search_libraries:
+                                   failure: issue
+                                 profiles:
+                                   TrajOptCollisionCost:
+                                     DiscreteCollisionProfile:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                     DiscreteCollisionProfile2:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                   TrajOptCollisionConstraint:
+                                     DiscreteCollisionProfile:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                     DiscreteCollisionProfile2:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01)";
+
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ProfilesPluginInfo>());  // NOLINT
+  }
+
+  {  // missing cost plugins failure
+    std::string yaml_string = R"(profile_plugins:
+                                 search_paths:
+                                   - /usr/local/lib
+                                 search_libraries:
+                                   - profile_factories
+                                 profiles:
+                                   TrajOptCollisionCost:
+                                   TrajOptCollisionConstraint:
+                                     DiscreteCollisionProfile:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01
+                                     DiscreteCollisionProfile2:
+                                       class: DiscreteCollisionProfileFactory
+                                       config:
+                                         threshold: 0.01)";
+
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ProfilesPluginInfo>());  // NOLINT
+  }
+
+  {  // profiles is not map failure
+    std::string yaml_string = R"(profile_plugins:
+                                 search_paths:
+                                   - /usr/local/lib
+                                 search_libraries:
+                                   - profile_factories
+                                 profiles:
+                                   - TrajOptCollisionCost
+                                   - TrajOptCollisionConstraint)";
+
+    tesseract_common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::ProfilesPluginInfo>());  // NOLINT
   }
 }
 

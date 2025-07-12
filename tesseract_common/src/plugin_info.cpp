@@ -112,6 +112,51 @@ void PluginInfoContainer::serialize(Archive& ar, const unsigned int /*version*/)
 }
 
 /*********************************************************/
+/**********          ProfilePluginInfo           *********/
+/*********************************************************/
+void ProfilesPluginInfo::insert(const ProfilesPluginInfo& other)
+{
+  search_paths.insert(other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
+
+  for (const auto& group_plugins : other.plugin_infos)
+  {
+    for (const auto& plugin_info : group_plugins.second)
+      plugin_infos[group_plugins.first][plugin_info.first] = plugin_info.second;
+  }
+}
+
+void ProfilesPluginInfo::clear()
+{
+  search_paths.clear();
+  search_libraries.clear();
+  plugin_infos.clear();
+}
+
+bool ProfilesPluginInfo::empty() const
+{
+  return (search_paths.empty() && search_libraries.empty() && plugin_infos.empty());
+}
+
+bool ProfilesPluginInfo::operator==(const ProfilesPluginInfo& rhs) const
+{
+  bool equal = true;
+  equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
+  equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
+  equal &= isIdenticalMap<std::map<std::string, PluginInfoMap>, PluginInfoMap>(plugin_infos, rhs.plugin_infos);
+  return equal;
+}
+bool ProfilesPluginInfo::operator!=(const ProfilesPluginInfo& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void ProfilesPluginInfo::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(search_paths);
+  ar& BOOST_SERIALIZATION_NVP(search_libraries);
+  ar& BOOST_SERIALIZATION_NVP(plugin_infos);
+}
+
+/*********************************************************/
 /******           KinematicsPluginInfo               *****/
 /*********************************************************/
 void KinematicsPluginInfo::insert(const KinematicsPluginInfo& other)
@@ -295,12 +340,14 @@ void TaskComposerPluginInfo::serialize(Archive& ar, const unsigned int /*version
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::PluginInfo)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::PluginInfoContainer)
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ProfilesPluginInfo)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::KinematicsPluginInfo)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ContactManagersPluginInfo)
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::TaskComposerPluginInfo)
 
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::PluginInfo)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::PluginInfoContainer)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ProfilesPluginInfo)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::KinematicsPluginInfo)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ContactManagersPluginInfo)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::TaskComposerPluginInfo)

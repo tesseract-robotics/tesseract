@@ -31,6 +31,7 @@ endif()
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(boost_plugin_loader REQUIRED)
 
 if(TARGET Boost::stacktrace_backtrace)
   find_file(BACKTRACE_INCLUDE_FILE backtrace.h PATHS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
@@ -93,6 +94,7 @@ add_library(
   src/utils.cpp
   src/plugin_info.cpp
   src/profile_dictionary.cpp
+  src/profile_plugin_factory.cpp
   src/profile.cpp
   src/resource_locator.cpp
   src/types.cpp
@@ -103,6 +105,7 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
          tinyxml2::tinyxml2
+         boost_plugin_loader::boost_plugin_loader
          ${CMAKE_DL_LIBS}
          Boost::boost
          Boost::system
