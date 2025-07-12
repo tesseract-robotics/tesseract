@@ -50,7 +50,7 @@ TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
 TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
 {
   using tesseract_common::TestPluginBase;
-  const std::string lib_name = "tesseract_common_test_plugin_multiply";
+  const std::string lib_name = "tesseract_common_test_plugins";
   const std::string lib_dir = std::string(TEST_PLUGIN_DIR);
   const std::string symbol_name = "plugin";
 
@@ -62,8 +62,9 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
 
   {
     std::vector<std::string> sections = boost_plugin_loader::getAllAvailableSections(lib);
-    EXPECT_EQ(sections.size(), 1);
+    EXPECT_EQ(sections.size(), 2);
     EXPECT_EQ(sections.at(0), "TestBase");
+    EXPECT_EQ(sections.at(1), "Profile");
 
     sections = boost_plugin_loader::getAllAvailableSections(lib, true);
     EXPECT_TRUE(sections.size() > 1);
@@ -89,7 +90,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
   {
     PluginLoader plugin_loader;
     plugin_loader.search_paths.insert(std::string(TEST_PLUGIN_DIR));
-    plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
+    plugin_loader.search_libraries.insert("tesseract_common_test_plugins");
 
     EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
     auto plugin = plugin_loader.createInstance<TestPluginBase>("plugin");
@@ -97,8 +98,9 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     EXPECT_NEAR(plugin->multiply(5, 5), 25, 1e-8);
 
     std::vector<std::string> sections = plugin_loader.getAvailableSections();
-    EXPECT_EQ(sections.size(), 1);
+    EXPECT_EQ(sections.size(), 2);
     EXPECT_EQ(sections.at(0), "TestBase");
+    EXPECT_EQ(sections.at(1), "Profile");
 
     sections = plugin_loader.getAvailableSections(true);
     EXPECT_TRUE(sections.size() > 1);
@@ -117,7 +119,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
   //   {
   //     PluginLoader plugin_loader;
   //     plugin_loader.search_paths.insert(".");
-  //     plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
+  //     plugin_loader.search_libraries.insert("tesseract_common_test_plugins");
 
   //     EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
   //     auto plugin = plugin_loader.createInstance<TestPluginBase>("plugin");
@@ -130,7 +132,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
     PluginLoader plugin_loader;
     plugin_loader.search_system_folders = false;
     plugin_loader.search_paths.insert("does_not_exist");
-    plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
+    plugin_loader.search_libraries.insert("tesseract_common_test_plugins");
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
@@ -141,7 +143,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
   {
     PluginLoader plugin_loader;
     plugin_loader.search_system_folders = false;
-    plugin_loader.search_libraries.insert("tesseract_common_test_plugin_multiply");
+    plugin_loader.search_libraries.insert("tesseract_common_test_plugins");
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("does_not_exist"));
