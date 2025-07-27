@@ -48,6 +48,34 @@ public:
   using Ptr = std::shared_ptr<AddTrajectoryLinkCommand>;
   using ConstPtr = std::shared_ptr<const AddTrajectoryLinkCommand>;
 
+  /**
+   * @brief Specifies how the trajectory is represented as a collision object in the environment.
+   */
+  enum class Method
+  {
+    /**
+     * @brief Adds the collision objects of all active links for every state in the trajectory.
+     */
+    PER_STATE_OBJECTS,
+
+    /**
+     * @brief Adds a single convex hull for every state in the trajectory.
+     */
+    PER_STATE_CONVEX_HULL,
+
+    /**
+     * @brief Converts each active link's collision geometry across all trajectory states
+     * into a single convex hull, resulting in one collision object per active link.
+     */
+    GLOBAL_PER_LINK_CONVEX_HULL,
+
+    /**
+     * @brief Merges all collision geometries across all trajectory states and all active links
+     * into a single convex hull, represented as one unified collision object.
+     */
+    GLOBAL_CONVEX_HULL,
+  };
+
   AddTrajectoryLinkCommand();
   /**
    * @brief Adds or replace a trajectory link to the environment
@@ -69,16 +97,19 @@ public:
    * @param parent_link_name The parent link name
    * @param trajectory The trajectory to used for generating link
    * @param replace_allowed If true then if the link exists it will be replaced, otherwise if false it will fail.
+   * @param method Specifies how the trajectory is represented as a collision object in the environment.
    */
   AddTrajectoryLinkCommand(std::string link_name,
                            std::string parent_link_name,
                            tesseract_common::JointTrajectory trajectory,
-                           bool replace_allowed = false);
+                           bool replace_allowed = false,
+                           Method method = Method::PER_STATE_OBJECTS);
 
   const std::string& getLinkName() const;
   const std::string& getParentLinkName() const;
   const tesseract_common::JointTrajectory& getTrajectory() const;
   bool replaceAllowed() const;
+  AddTrajectoryLinkCommand::Method getMethod() const;
 
   bool operator==(const AddTrajectoryLinkCommand& rhs) const;
   bool operator!=(const AddTrajectoryLinkCommand& rhs) const;
@@ -88,6 +119,7 @@ private:
   std::string parent_link_name_;
   tesseract_common::JointTrajectory trajectory_;
   bool replace_allowed_{ false };
+  Method method_{ Method::PER_STATE_OBJECTS };
 
   friend class boost::serialization::access;
   friend struct tesseract_common::Serialization;

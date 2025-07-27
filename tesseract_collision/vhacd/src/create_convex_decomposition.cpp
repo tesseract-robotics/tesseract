@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_collision/core/common.h>
+#include <tesseract_common/ply_io.h>
 #include <tesseract_collision/vhacd/convex_decomposition_vhacd.h>
 #include <tesseract_geometry/impl/convex_mesh.h>
 
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 
   tesseract_common::VectorVector3d mesh_vertices;
   Eigen::VectorXi mesh_faces;
-  int num_faces = tesseract_collision::loadSimplePlyFile(input, mesh_vertices, mesh_faces, true);
+  int num_faces = tesseract_common::loadSimplePlyFile(input, mesh_vertices, mesh_faces, true);
   if (num_faces < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to read mesh from file!");
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
   for (std::size_t i = 0; i < convex_hulls.size(); ++i)
   {
     auto ch = convex_hulls[i];
-    if (!tesseract_collision::writeSimplePlyFile(
+    if (!tesseract_common::writeSimplePlyFile(
             std::to_string(i) + "_" + output, *(ch->getVertices()), *(ch->getFaces()), ch->getFaceCount()))
     {
       CONSOLE_BRIDGE_logError("Failed to write convex hull to file!");

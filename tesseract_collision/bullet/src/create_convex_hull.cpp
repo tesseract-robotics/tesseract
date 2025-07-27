@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_collision/core/common.h>
+#include <tesseract_common/ply_io.h>
 #include <tesseract_collision/bullet/convex_hull_utils.h>
 
 namespace
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 
   tesseract_common::VectorVector3d mesh_vertices;
   Eigen::VectorXi mesh_faces;
-  int num_faces = tesseract_collision::loadSimplePlyFile(input, mesh_vertices, mesh_faces);
+  int num_faces = tesseract_common::loadSimplePlyFile(input, mesh_vertices, mesh_faces);
   if (num_faces < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to read mesh from file!");
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  if (!tesseract_collision::writeSimplePlyFile(output, ch_vertices, ch_faces, ch_num_faces))
+  if (!tesseract_common::writeSimplePlyFile(output, ch_vertices, ch_faces, ch_num_faces))
   {
     CONSOLE_BRIDGE_logError("Failed to write convex hull to file!");
     return ERROR_UNHANDLED_EXCEPTION;

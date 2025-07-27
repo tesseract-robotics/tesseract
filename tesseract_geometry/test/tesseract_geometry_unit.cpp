@@ -1,21 +1,90 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <algorithm>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_geometry/mesh_parser.h>
+#include <tesseract_geometry/conversions.h>
 #include <tesseract_geometry/utils.h>
 #include <tesseract_geometry/impl/octree_utils.h>
 #include <tesseract_common/utils.h>
 
+static constexpr double BIG_TOL = 1e6;
+
+// Helper macro to check a mesh
+void checkTriangleMesh(const tesseract_geometry::Mesh& mesh, std::size_t exp_v, std::size_t exp_t)
+{
+  const auto& verts = mesh.getVertices();
+  const auto& norms = mesh.getNormals();
+  const auto& faces = mesh.getFaces();
+  EXPECT_EQ(verts->size(), exp_v) << " vertex count";
+  EXPECT_EQ(norms->size(), exp_v) << " normal count";
+  EXPECT_EQ(faces->size(), exp_t) << " triangle index count";
+  /* every face record should start with a '3' */
+  for (int i = 0; i < faces->size(); i += 4)
+  {
+    EXPECT_EQ((*faces)[i], 3) << " face begins with 3";
+  }
+  /* normals should be unit length */
+  for (const auto& n : *norms)
+  {
+    EXPECT_NEAR(n.norm(), 1.0, 1e-6) << " non‐unit normal";
+  }
+}
+
+TEST(TesseractGeometryUnit, ToTriangleMeshSphere)  // NOLINT
+{
+  tesseract_geometry::Sphere s(1.0);
+  auto mesh = toTriangleMesh(s, BIG_TOL);
+  // lat=3,lon=3 ⇒ verts=(3−1)*3+2=8, tris=12⇒face‐entries=12*4=48
+  checkTriangleMesh(*mesh, 8, 48);
+}
+
+TEST(TesseractGeometryUnit, ToTriangleMeshBox)  // NOLINT
+{
+  tesseract_geometry::Box b(2.0, 4.0, 6.0);
+  auto mesh = toTriangleMesh(b, BIG_TOL);
+  // always 8 corners, 12 tris ⇒ 8 verts, 48 face‐entries
+  checkTriangleMesh(*mesh, 8, 48);
+}
+
+TEST(TesseractGeometryUnit, ToTriangleMeshCylinder)  // NOLINT
+{
+  tesseract_geometry::Cylinder c(1.0, 2.0);
+  auto mesh = toTriangleMesh(c, BIG_TOL);
+  // radial=3 ⇒ verts=2 + 2*3 = 8, tris=12⇒48 face‐entries
+  checkTriangleMesh(*mesh, 8, 48);
+}
+
+TEST(TesseractGeometryUnit, ToTriangleMeshCone)  // NOLINT
+{
+  tesseract_geometry::Cone c(1.0, 2.0);
+  auto mesh = toTriangleMesh(c, BIG_TOL);
+  // radial=3 ⇒ verts=2 + 3 = 5, tris=6 ⇒ 6*4=24 face‐entries
+  checkTriangleMesh(*mesh, 5, 24);
+}
+
+TEST(TesseractGeometryUnit, ToTriangleMeshCapsule)  // NOLINT
+{
+  tesseract_geometry::Capsule c(1.0, 2.0);
+  auto mesh = toTriangleMesh(c, BIG_TOL);
+  // hemi_rows=4/2=2, cyl=1, lon=6 ⇒ total_rows=2*2+1+2=7, cols=7
+  // verts=7*7=49, tris=(total_rows−1)*lon*2=72⇒*4=288 face‐entries
+  checkTriangleMesh(*mesh, 49, 288);
+}
+
+TEST(TesseractGeometryUnit, ToTriangleMeshFailure)  // NOLINT
+{
+  tesseract_geometry::Plane p(1.0, 2.0, 3.0, 4.0);
+  EXPECT_ANY_THROW(toTriangleMesh(p, BIG_TOL));  // NOLINT
+}
+
 TEST(TesseractGeometryUnit, Instantiation)  // NOLINT
 {
-  std::shared_ptr<const tesseract_common::VectorVector3d> vertices =
-      std::make_shared<const tesseract_common::VectorVector3d>();
-  std::shared_ptr<const Eigen::VectorXi> faces = std::make_shared<const Eigen::VectorXi>();
+  auto vertices = std::make_shared<const tesseract_common::VectorVector3d>();
+  auto faces = std::make_shared<const Eigen::VectorXi>();
 
   auto box = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
   auto cone = std::make_shared<tesseract_geometry::Cone>(1, 1);
@@ -805,6 +874,154 @@ TEST(TesseractGeometryUnit, LoadMeshWithMaterialGltf2Unit)  // NOLINT
   EXPECT_EQ(texture->getUVs()->size(), 4);
 }
 #endif
+
+// Helper to create a trivial single-triangle mesh
+static std::shared_ptr<tesseract_geometry::Mesh> makeSimpleTriangleMesh()
+{
+  auto verts = std::make_shared<tesseract_common::VectorVector3d>();
+  verts->emplace_back(0, 0, 0);
+  verts->emplace_back(1, 0, 0);
+  verts->emplace_back(0, 1, 0);
+
+  std::vector<int> idx = { 3, 0, 1, 2 };
+  auto faces = std::make_shared<Eigen::VectorXi>(Eigen::Map<Eigen::VectorXi>(idx.data(), static_cast<int>(idx.size())));
+  return std::make_shared<tesseract_geometry::Mesh>(verts, faces, nullptr, Eigen::Vector3d(1, 1, 1), verts);
+}
+
+// Generic translation test for primitives
+static void checkTranslationInvariant(const std::shared_ptr<tesseract_geometry::Geometry>& geom)
+{
+  // Identity
+  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+  tesseract_common::VectorVector3d out_id = tesseract_geometry::extractVertices(*geom, origin);
+  ASSERT_GT(out_id.size(), 0U);
+
+  // Translation
+  Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
+  tf.translate(Eigen::Vector3d{ 1.5, -2.0, 0.75 });
+  tf.rotate(Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ()));
+  tesseract_common::VectorVector3d out_tr = tesseract_geometry::extractVertices(*geom, tf);
+  ASSERT_EQ(out_tr.size(), out_id.size());
+  for (size_t i = 0; i < out_id.size(); ++i)
+  {
+    EXPECT_TRUE(out_tr[i].isApprox(tf * out_id[i], 1e-6));
+  }
+}
+
+TEST(TesseractGeometryUnit, ExtractVerticesBox)
+{
+  checkTranslationInvariant(std::make_shared<tesseract_geometry::Box>(1.0, 2.0, 3.0));
+}
+TEST(TesseractGeometryUnit, ExtractVerticesSphere)
+{
+  checkTranslationInvariant(std::make_shared<tesseract_geometry::Sphere>(1.0));
+}
+TEST(TesseractGeometryUnit, ExtractVerticesCylinder)
+{
+  checkTranslationInvariant(std::make_shared<tesseract_geometry::Cylinder>(0.5, 1.0));
+}
+TEST(TesseractGeometryUnit, ExtractVerticesCone)
+{
+  checkTranslationInvariant(std::make_shared<tesseract_geometry::Cone>(0.5, 1.0));
+}
+TEST(TesseractGeometryUnit, ExtractVerticesCapsule)
+{
+  checkTranslationInvariant(std::make_shared<tesseract_geometry::Capsule>(0.5, 1.0));
+}
+TEST(TesseractGeometryUnit, ExtractVerticesPlane)
+{
+  EXPECT_ANY_THROW(checkTranslationInvariant(std::make_shared<tesseract_geometry::Plane>(0, 0, 1, 0)));  // NOLINT
+}
+
+TEST(TesseractGeometryUnit, ExtractVerticesMesh)
+{
+  std::shared_ptr<tesseract_geometry::Mesh> geom = makeSimpleTriangleMesh();
+  Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
+  tf.translate(Eigen::Vector3d{ 1.0, 2.0, 3.0 });
+  tf.rotate(Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ()));
+
+  tesseract_common::VectorVector3d out = tesseract_geometry::extractVertices(*geom, tf);
+  ASSERT_EQ(out.size(), 3U);
+  EXPECT_TRUE(out[0].isApprox(tf * Eigen::Vector3d(0, 0, 0), 1e-6));
+  EXPECT_TRUE(out[1].isApprox(tf * Eigen::Vector3d(1, 0, 0), 1e-6));
+  EXPECT_TRUE(out[2].isApprox(tf * Eigen::Vector3d(0, 1, 0), 1e-6));
+}
+
+TEST(TesseractGeometryUnit, ExtractVerticesConvexMesh)
+{
+  auto simple = makeSimpleTriangleMesh();
+  auto geom = std::make_shared<tesseract_geometry::ConvexMesh>(
+      simple->getVertices(), simple->getFaces(), 1, nullptr, Eigen::Vector3d(1, 1, 1));
+  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+  tesseract_common::VectorVector3d id = tesseract_geometry::extractVertices(*geom, origin);
+  origin = Eigen::Translation3d(0.2, 0.3, 0.4);
+  tesseract_common::VectorVector3d tr = tesseract_geometry::extractVertices(*geom, origin);
+  ASSERT_EQ(id.size(), tr.size());
+  for (size_t i = 0; i < id.size(); ++i)
+  {
+    EXPECT_TRUE(tr[i].isApprox(id[i] + Eigen::Vector3d(0.2, 0.3, 0.4), 1e-6));
+  }
+}
+
+TEST(TesseractGeometryUnit, ExtractVerticesSDFMesh)
+{
+  auto simple = makeSimpleTriangleMesh();
+  auto geom = std::make_shared<tesseract_geometry::SDFMesh>(
+      simple->getVertices(), simple->getFaces(), 1, nullptr, Eigen::Vector3d(1, 1, 1));
+  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+  tesseract_common::VectorVector3d id = tesseract_geometry::extractVertices(*geom, origin);
+  origin = Eigen::Translation3d(0.2, 0.3, 0.4);
+  tesseract_common::VectorVector3d tr = tesseract_geometry::extractVertices(*geom, origin);
+  ASSERT_EQ(id.size(), tr.size());
+  for (size_t i = 0; i < id.size(); ++i)
+  {
+    EXPECT_TRUE(tr[i].isApprox(id[i] + Eigen::Vector3d(0.2, 0.3, 0.4), 1e-6));
+  }
+}
+
+TEST(TesseractGeometryUnit, ExtractVerticesPolygonMesh)
+{
+  auto simple = makeSimpleTriangleMesh();
+  auto geom = std::make_shared<tesseract_geometry::PolygonMesh>(
+      simple->getVertices(), simple->getFaces(), 1, nullptr, Eigen::Vector3d(1, 1, 1));
+  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+  tesseract_common::VectorVector3d id = tesseract_geometry::extractVertices(*geom, origin);
+  origin = Eigen::Translation3d(0.2, 0.3, 0.4);
+  tesseract_common::VectorVector3d tr = tesseract_geometry::extractVertices(*geom, origin);
+  ASSERT_EQ(id.size(), tr.size());
+  for (size_t i = 0; i < id.size(); ++i)
+  {
+    EXPECT_TRUE(tr[i].isApprox(id[i] + Eigen::Vector3d(0.2, 0.3, 0.4), 1e-6));
+  }
+}
+
+TEST(TesseractGeometryUnit, ExtractVerticesCompoundMesh)
+{
+  std::vector<std::shared_ptr<tesseract_geometry::Mesh>> c{ makeSimpleTriangleMesh(), makeSimpleTriangleMesh() };
+  auto geom = std::make_shared<tesseract_geometry::CompoundMesh>(c);
+  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+  tesseract_common::VectorVector3d id = tesseract_geometry::extractVertices(*geom, origin);
+  origin = Eigen::Translation3d(-1, 1, 0);
+  tesseract_common::VectorVector3d tr = tesseract_geometry::extractVertices(*geom, origin);
+  ASSERT_EQ(id.size(), tr.size());
+  for (size_t i = 0; i < id.size(); ++i)
+  {
+    EXPECT_TRUE(tr[i].isApprox(id[i] + Eigen::Vector3d(-1, 1, 0), 1e-6));
+  }
+}
+
+struct DummyGeometry : public tesseract_geometry::Geometry
+{
+  DummyGeometry() : Geometry(tesseract_geometry::GeometryType::OCTREE) {}
+  std::shared_ptr<Geometry> clone() const override { return nullptr; }
+};
+
+TEST(TesseractGeometryUnit, ExtractVerticesUnsupported)
+{
+  auto geom = std::make_shared<DummyGeometry>();
+  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+  EXPECT_ANY_THROW(tesseract_geometry::extractVertices(*geom, origin));  // NOLINT
+}
 
 int main(int argc, char** argv)
 {

@@ -39,6 +39,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/command.h>
 #include <tesseract_environment/commands.h>
 
+#include <tesseract_geometry/utils.h>
+
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
@@ -58,11 +60,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/core/types.h>
+#include <tesseract_collision/bullet/convex_hull_utils.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_common/eigen_types.h>
 
 #include <tesseract_state_solver/mutable_state_solver.h>
 #include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
@@ -1399,6 +1403,9 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
   auto traj_link = std::make_shared<tesseract_scene_graph::Link>(cmd->getLinkName());
   std::vector<std::string> joint_names;
   std::vector<std::string> active_link_names;
+  std::unordered_map<std::string, std::vector<tesseract_scene_graph::Collision::Ptr>> link_collision_geom;
+  std::vector<std::vector<tesseract_scene_graph::Collision::Ptr>> per_state_collision_geom;
+  per_state_collision_geom.reserve(traj.size());
   for (const auto& state : traj)
   {
     if (state.joint_names.empty())
@@ -1435,6 +1442,7 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
       }
     }
 
+    std::vector<tesseract_scene_graph::Collision::Ptr> state_collision_geom;
     Eigen::Isometry3d parent_link_tf_inv = scene_state.link_transforms[cmd->getParentLinkName()].inverse();  // NOLINT
     for (const auto& link_name : active_link_names)
     {
@@ -1453,9 +1461,94 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
       for (auto& col_clone : clone.collision)
       {
         col_clone->origin = link_transform * col_clone->origin;
-        traj_link->collision.push_back(col_clone);
+        link_collision_geom[link_name].push_back(col_clone);
+        state_collision_geom.push_back(col_clone);
       }
     }
+    per_state_collision_geom.push_back(state_collision_geom);
+  }
+
+  // Utility function to create convex hull
+  auto createCollision = [](const tesseract_common::VectorVector3d& vertices) {
+    std::shared_ptr<tesseract_common::VectorVector3d> ch_vertices =
+        std::make_shared<tesseract_common::VectorVector3d>();
+    std::shared_ptr<Eigen::VectorXi> ch_faces = std::make_shared<Eigen::VectorXi>();
+    int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, vertices);
+    auto convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(
+        ch_vertices, ch_faces, ch_num_faces, nullptr, Eigen::Vector3d(1, 1, 1));
+
+    auto col_obj = std::make_shared<tesseract_scene_graph::Collision>();
+    col_obj->geometry = std::make_shared<tesseract_geometry::ConvexMesh>(
+        ch_vertices, ch_faces, ch_num_faces, nullptr, Eigen::Vector3d(1, 1, 1));
+    col_obj->origin = Eigen::Isometry3d::Identity();
+    return col_obj;
+  };
+
+  switch (cmd->getMethod())
+  {
+    case AddTrajectoryLinkCommand::Method::PER_STATE_OBJECTS:
+    {
+      for (const auto& pair : link_collision_geom)
+        traj_link->collision.insert(traj_link->collision.end(), pair.second.begin(), pair.second.end());
+      break;
+    }
+    case AddTrajectoryLinkCommand::Method::PER_STATE_CONVEX_HULL:
+    {
+      for (const auto& state_collision_geom : per_state_collision_geom)
+      {
+        tesseract_common::VectorVector3d vertices;
+        for (const auto& col_obj : state_collision_geom)
+        {
+          tesseract_common::VectorVector3d cov =
+              tesseract_geometry::extractVertices(*col_obj->geometry, col_obj->origin);
+          if (cov.empty())
+            return false;
+          vertices.insert(vertices.end(), cov.begin(), cov.end());
+        }
+
+        traj_link->collision.push_back(createCollision(vertices));
+      }
+      break;
+    }
+    case AddTrajectoryLinkCommand::Method::GLOBAL_CONVEX_HULL:
+    {
+      tesseract_common::VectorVector3d vertices;
+      for (const auto& pair : link_collision_geom)
+      {
+        for (const auto& col_obj : pair.second)
+        {
+          tesseract_common::VectorVector3d cov =
+              tesseract_geometry::extractVertices(*col_obj->geometry, col_obj->origin);
+          if (cov.empty())
+            return false;
+          vertices.insert(vertices.end(), cov.begin(), cov.end());
+        }
+      }
+
+      traj_link->collision.push_back(createCollision(vertices));
+      break;
+    }
+    case AddTrajectoryLinkCommand::Method::GLOBAL_PER_LINK_CONVEX_HULL:
+    {
+      for (const auto& pair : link_collision_geom)
+      {
+        tesseract_common::VectorVector3d vertices;
+        for (const auto& col_obj : pair.second)
+        {
+          tesseract_common::VectorVector3d cov =
+              tesseract_geometry::extractVertices(*col_obj->geometry, col_obj->origin);
+          if (cov.empty())
+            return false;
+          vertices.insert(vertices.end(), cov.begin(), cov.end());
+        }
+
+        traj_link->collision.push_back(createCollision(vertices));
+      }
+
+      break;
+    }
+    default:
+      throw std::runtime_error("Environment, unhandled AddTrajectoryLinkCommand::Method type!");
   }
 
   auto traj_joint = std::make_shared<tesseract_scene_graph::Joint>("joint_" + cmd->getLinkName());

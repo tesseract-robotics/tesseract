@@ -1,7 +1,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <algorithm>
 #include <vector>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_common/resource_locator.h>

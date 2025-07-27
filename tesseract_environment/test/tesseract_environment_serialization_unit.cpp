@@ -155,7 +155,8 @@ TEST(EnvironmentCommandsSerializeUnit, AddTrajectoryLinkCommand)  // NOLINT
   trajectory.push_back(tesseract_common::JointState({ "j1", "j2" }, Eigen::VectorXd::Zero(2)));
   trajectory.push_back(tesseract_common::JointState({ "j1", "j2" }, Eigen::VectorXd::Ones(2)));
 
-  auto object = std::make_shared<AddTrajectoryLinkCommand>("link_name", "parent_link_name", trajectory, false);
+  AddTrajectoryLinkCommand::Method method = AddTrajectoryLinkCommand::Method::GLOBAL_CONVEX_HULL;
+  auto object = std::make_shared<AddTrajectoryLinkCommand>("link_name", "parent_link_name", trajectory, false, method);
   testSerialization<AddTrajectoryLinkCommand>(*object, "AddTrajectoryLinkCommand");
   testSerializationDerivedClass<Command, AddTrajectoryLinkCommand>(object, "AddTrajectoryLinkCommand");
 }

@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/utils.h>
 #include <tesseract_geometry/geometries.h>
+#include <tesseract_geometry/conversions.h>
 
 namespace tesseract_geometry
 {
@@ -252,4 +253,69 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
 
   return true;
 }
+
+tesseract_common::VectorVector3d extractVertices(const Geometry& geom, const Eigen::Isometry3d& origin)
+{
+  tesseract_common::VectorVector3d vertices;
+  switch (geom.getType())
+  {
+    case tesseract_geometry::GeometryType::BOX:
+    case tesseract_geometry::GeometryType::SPHERE:
+    case tesseract_geometry::GeometryType::CYLINDER:
+    case tesseract_geometry::GeometryType::CONE:
+    case tesseract_geometry::GeometryType::CAPSULE:
+    case tesseract_geometry::GeometryType::PLANE:
+    {
+      std::unique_ptr<tesseract_geometry::Mesh> mesh = tesseract_geometry::toTriangleMesh(geom, 0.002, origin);
+      return { mesh->getVertices()->begin(), mesh->getVertices()->end() };
+    }
+    case tesseract_geometry::GeometryType::MESH:
+    {
+      const auto& mesh = static_cast<const tesseract_geometry::Mesh&>(geom);
+      for (const auto& v : *mesh.getVertices())
+        vertices.emplace_back(origin * v);
+      return vertices;
+    }
+    case tesseract_geometry::GeometryType::CONVEX_MESH:
+    {
+      const auto& convex_mesh = static_cast<const tesseract_geometry::ConvexMesh&>(geom);
+      for (const auto& v : *convex_mesh.getVertices())
+        vertices.emplace_back(origin * v);
+      return vertices;
+    }
+    case tesseract_geometry::GeometryType::SDF_MESH:
+    {
+      const auto& sdf_mesh = static_cast<const tesseract_geometry::SDFMesh&>(geom);
+      for (const auto& v : *sdf_mesh.getVertices())
+        vertices.emplace_back(origin * v);
+      return vertices;
+    }
+    case tesseract_geometry::GeometryType::POLYGON_MESH:
+    {
+      const auto& polygon_mesh = static_cast<const tesseract_geometry::PolygonMesh&>(geom);
+      for (const auto& v : *polygon_mesh.getVertices())
+        vertices.emplace_back(origin * v);
+      return vertices;
+    }
+    case tesseract_geometry::GeometryType::COMPOUND_MESH:
+    {
+      const auto& compound_mesh = static_cast<const tesseract_geometry::CompoundMesh&>(geom);
+      for (const auto& mesh : compound_mesh.getMeshes())
+      {
+        for (const auto& v : *mesh->getVertices())
+          vertices.emplace_back(origin * v);
+      }
+      return vertices;
+    }
+    case tesseract_geometry::GeometryType::OCTREE:
+    default:
+    {
+      const std::string type_str = std::to_string(static_cast<int>(geom.getType()));
+      const std::string message = "This geometric shape type (" + type_str + ") is not supported";
+      CONSOLE_BRIDGE_logError(message.c_str());
+      throw std::runtime_error(message);
+    }
+  }
+}
+
 }  // namespace tesseract_geometry

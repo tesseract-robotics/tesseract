@@ -11,6 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
+#include <tesseract_common/ply_io.h>
 #include <tesseract_common/sfinae_utils.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/manipulator_info.h>
@@ -3989,6 +3990,326 @@ TEST(TesseractCommonUnit, YamlStdUnorderedMapStringBool)  // NOLINT
     YAML::Node n = YAML::Load(R"(["test", "test"])");
     EXPECT_ANY_THROW(n.as<DataType>());  // NOLINT
   }
+}
+
+static constexpr char const* NO_COLOR_USE_TRIANGLE_PLY = "test_no_color_use_triangle.ply";
+static constexpr char const* NO_COLOR_PLY = "test_no_color.ply";
+static constexpr char const* SINGLE_COLOR_PLY = "test_single_color.ply";
+static constexpr char const* PER_VERTEX_COLOR_PLY = "test_per_vertex_color.ply";
+static constexpr char const* MISSING_PLY = "no_such_file.ply";
+
+TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColor)  // NOLINT
+{
+  // Prepare a single quad (4 verts, 1 face)
+  tesseract_common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, 0 }, { 0, 1, 0 } };
+
+  // One face: quad with 4 vertex indices
+  Eigen::VectorXi faces(5);
+  faces << 4, 0, 1, 2, 3;
+  int num_faces = 1;
+
+  // Write PLY (no color)
+  EXPECT_TRUE(
+      tesseract_common::writeSimplePlyFile(tesseract_common::getTempPath() + NO_COLOR_PLY, verts, faces, num_faces));
+
+  // Load back
+  tesseract_common::VectorVector3d loaded_verts;
+  Eigen::VectorXi loaded_faces;
+  int ret = tesseract_common::loadSimplePlyFile(
+      tesseract_common::getTempPath() + NO_COLOR_PLY, loaded_verts, loaded_faces, /*triangles_only=*/false);
+
+  // Should get exactly one face back
+  EXPECT_EQ(ret, num_faces);
+  EXPECT_EQ(loaded_verts.size(), verts.size());
+  // Compare vertex positions
+  for (size_t i = 0; i < verts.size(); ++i)
+  {
+    EXPECT_DOUBLE_EQ(loaded_verts[i].x(), verts[i].x());
+    EXPECT_DOUBLE_EQ(loaded_verts[i].y(), verts[i].y());
+    EXPECT_DOUBLE_EQ(loaded_verts[i].z(), verts[i].z());
+  }
+  // Compare face buffer
+  ASSERT_EQ(loaded_faces.size(), faces.size());
+  for (int i = 0; i < faces.size(); ++i)
+    EXPECT_EQ(loaded_faces[i], faces[i]);
+}
+
+TEST(TesseractCommonUnit, PlyIO_WriteWithSingleColor)  // NOLINT
+{
+  // Two vertices, single default color
+  tesseract_common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 } };
+  std::vector<Eigen::Vector3i> colors{ Eigen::Vector3i{ 255, 128, 64 } };
+
+  // One edge (treated as face of 2 verts here for demonstration)
+  Eigen::VectorXi faces(3);
+  faces << 2, 0, 1;
+  int num_faces = 1;
+
+  // Write PLY with per-vertex default color
+  EXPECT_TRUE(tesseract_common::writeSimplePlyFile(
+      tesseract_common::getTempPath() + SINGLE_COLOR_PLY, verts, colors, faces, num_faces));
+
+  // Open file and inspect header + first vertex line
+  std::ifstream ifs(tesseract_common::getTempPath() + SINGLE_COLOR_PLY);
+  ASSERT_TRUE(ifs.is_open());
+
+  std::string line;
+  bool saw_red_prop = false;
+  std::vector<std::string> file_lines;
+  while (std::getline(ifs, line))
+  {
+    file_lines.push_back(line);
+    if (line == "property uchar red")
+      saw_red_prop = true;
+  }
+  ifs.close();
+
+  // Expect the color property in header
+  EXPECT_TRUE(saw_red_prop);
+
+  // Locate "end_header"
+  auto it = std::find(file_lines.begin(), file_lines.end(), "end_header");
+  ASSERT_NE(it, file_lines.end());
+  auto header_idx = static_cast<std::size_t>(std::distance(file_lines.begin(), it));
+  ASSERT_GT(file_lines.size(), header_idx + 1);
+
+  // First vertex line should have: x y z R G B
+  std::istringstream vs(file_lines[header_idx + 1]);
+  std::vector<std::string> tokens;
+  while (vs >> line)
+    tokens.push_back(line);
+
+  EXPECT_EQ(tokens.size(), 6);
+  EXPECT_EQ(tokens[3], "255");
+  EXPECT_EQ(tokens[4], "128");
+  EXPECT_EQ(tokens[5], "64");
+}
+
+TEST(TesseractCommonUnit, PlyIO_WriteWithPerVertexColors)
+{
+  // 3 vertices, each with its own color
+  tesseract_common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
+  std::vector<Eigen::Vector3i> colors{ Eigen::Vector3i{ 10, 20, 30 },
+                                       Eigen::Vector3i{ 40, 50, 60 },
+                                       Eigen::Vector3i{ 70, 80, 90 } };
+
+  // Single triangular face
+  Eigen::VectorXi faces(4);
+  faces << 3, 0, 1, 2;
+  int num_faces = 1;
+
+  // Write PLY with per-vertex colors
+  EXPECT_TRUE(tesseract_common::writeSimplePlyFile(
+      tesseract_common::getTempPath() + PER_VERTEX_COLOR_PLY, verts, colors, faces, num_faces));
+
+  // Read the entire file
+  std::ifstream ifs(tesseract_common::getTempPath() + PER_VERTEX_COLOR_PLY);
+  ASSERT_TRUE(ifs.is_open());
+  std::string line;
+  std::vector<std::string> lines;
+  bool saw_color_property = false;
+  while (std::getline(ifs, line))
+  {
+    lines.push_back(line);
+    if (line == "property uchar blue")
+      saw_color_property = true;
+  }
+  ifs.close();
+
+  // Header must contain the RGB property lines
+  EXPECT_TRUE(saw_color_property);
+
+  // Find end_header
+  auto it = std::find(lines.begin(), lines.end(), "end_header");
+  ASSERT_NE(it, lines.end());
+  auto header_idx = static_cast<std::size_t>(std::distance(lines.begin(), it));
+
+  // Next 3 lines are the vertices with their colors
+  for (std::size_t i = 0; i < verts.size(); ++i)
+  {
+    ASSERT_GT(lines.size(), header_idx + 1 + i);
+    std::istringstream ss(lines[header_idx + 1 + i]);
+    std::vector<std::string> tokens;
+    while (ss >> line)
+      tokens.push_back(line);
+
+    // Expect: x y z R G B
+    ASSERT_EQ(tokens.size(), 6U);
+    EXPECT_EQ(tokens[3], std::to_string(colors[i][0]));
+    EXPECT_EQ(tokens[4], std::to_string(colors[i][1]));
+    EXPECT_EQ(tokens[5], std::to_string(colors[i][2]));
+  }
+}
+
+TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColorAndUseTriangles)  // NOLINT
+{
+  // Prepare a single quad (4 verts, 1 face)
+  tesseract_common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, 0 }, { 0, 1, 0 } };
+
+  // One face: quad with 4 vertex indices
+  Eigen::VectorXi faces(5);
+  faces << 4, 0, 1, 2, 3;
+  int num_faces = 1;
+
+  // Write PLY (no color)
+  EXPECT_TRUE(tesseract_common::writeSimplePlyFile(
+      tesseract_common::getTempPath() + NO_COLOR_USE_TRIANGLE_PLY, verts, faces, num_faces));
+
+  // Load back
+  tesseract_common::VectorVector3d loaded_verts;
+  Eigen::VectorXi loaded_faces;
+  int ret = tesseract_common::loadSimplePlyFile(
+      tesseract_common::getTempPath() + NO_COLOR_USE_TRIANGLE_PLY, loaded_verts, loaded_faces, true);
+
+  // Should get exactly one face back
+  EXPECT_EQ(ret, num_faces + 1);
+  EXPECT_EQ(loaded_verts.size(), verts.size());
+  // Compare vertex positions
+  for (size_t i = 0; i < verts.size(); ++i)
+  {
+    EXPECT_DOUBLE_EQ(loaded_verts[i].x(), verts[i].x());
+    EXPECT_DOUBLE_EQ(loaded_verts[i].y(), verts[i].y());
+    EXPECT_DOUBLE_EQ(loaded_verts[i].z(), verts[i].z());
+  }
+  // Compare face buffer
+  Eigen::VectorXi loaded_faces_check(8);
+  loaded_faces_check << 3, 0, 1, 2, 3, 0, 2, 3;
+  ASSERT_EQ(loaded_faces.size(), loaded_faces_check.size());
+  for (int i = 0; i < loaded_faces_check.size(); ++i)
+    EXPECT_EQ(loaded_faces[i], loaded_faces_check[i]);
+}
+
+// Test failure when the "element vertex" line is malformed
+TEST(TesseractCommonUnit, PlyIO_LoadSimplePlyFileFailures)
+{
+  {  // Test failure when the "element vertex" line is malformed
+    const std::string path = tesseract_common::getTempPath() + "bad_vertex_header.ply";
+    {
+      std::ofstream ofs(path);
+      ofs << "ply\n";
+      ofs << "format ascii 1.0\n";
+      ofs << "comment test\n";
+      // Here we intentionally break the header: too many tokens
+      ofs << "element vertex 4 extra\n";
+      ofs << "property float x\nproperty float y\nproperty float z\n";
+      ofs << "element face 1\nproperty list uchar int vertex_indices\n";
+      ofs << "end_header\n";
+      // dummy data
+      ofs << "0 0 0\n0 0 0 0\n";
+    }
+    tesseract_common::VectorVector3d verts;
+    Eigen::VectorXi faces;
+    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, /*triangles_only=*/false);
+    EXPECT_EQ(ret, 0);
+    EXPECT_TRUE(verts.empty());
+    EXPECT_EQ(faces.size(), 0);
+  }
+
+  {  // Test failure when the "element face" line is malformed
+    const std::string path = tesseract_common::getTempPath() + "bad_face_header.ply";
+    {
+      std::ofstream ofs(path);
+      ofs << "ply\n";
+      ofs << "format ascii 1.0\n";
+      ofs << "comment test\n";
+      ofs << "element vertex 1\n";
+      ofs << "property float x\nproperty float y\nproperty float z\n";
+      // Break the face header: missing numeric face count
+      ofs << "element face faces\n";
+      ofs << "property list uchar int vertex_indices\n";
+      ofs << "end_header\n";
+      ofs << "0 0 0\n";    // one vertex
+      ofs << "3 0 0 0\n";  // dummy face
+    }
+    tesseract_common::VectorVector3d verts;
+    Eigen::VectorXi faces;
+    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, false);
+    EXPECT_EQ(ret, 0);
+    EXPECT_TRUE(verts.empty());
+    EXPECT_EQ(faces.size(), 0);
+  }
+
+  {  // Test failure when the "end_header" line is missing or wrong
+    const std::string path = tesseract_common::getTempPath() + "no_end_header.ply";
+    {
+      std::ofstream ofs(path);
+      ofs << "ply\n";
+      ofs << "format ascii 1.0\n";
+      ofs << "comment test\n";
+      ofs << "element vertex 1\n";
+      ofs << "property float x\nproperty float y\nproperty float z\n";
+      ofs << "element face 1\n";
+      ofs << "property list uchar int vertex_indices\n";
+      // Missing "end_header" here:
+      ofs << "header_over\n";
+      ofs << "0 0 0\n";    // one vertex
+      ofs << "3 0 0 0\n";  // one face
+    }
+    tesseract_common::VectorVector3d verts;
+    Eigen::VectorXi faces;
+    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, false);
+    EXPECT_EQ(ret, 0);
+    EXPECT_TRUE(verts.empty());
+    EXPECT_EQ(faces.size(), 0);
+  }
+
+  {  // Test failure on a malformed vertex data line (not exactly 3 floats)
+    const std::string path = tesseract_common::getTempPath() + "bad_vertex_data.ply";
+    {
+      std::ofstream ofs(path);
+      ofs << "ply\n";
+      ofs << "format ascii 1.0\n";
+      ofs << "comment test\n";
+      ofs << "element vertex 2\n";
+      ofs << "property float x\nproperty float y\nproperty float z\n";
+      ofs << "element face 1\n";
+      ofs << "property list uchar int vertex_indices\n";
+      ofs << "end_header\n";
+      ofs << "0 0   \n";   // too few values
+      ofs << "1 1 1\n";    // correct line
+      ofs << "3 0 1 1\n";  // face
+    }
+    tesseract_common::VectorVector3d verts;
+    Eigen::VectorXi faces;
+    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, false);
+    EXPECT_EQ(ret, 0);
+    EXPECT_TRUE(verts.empty());
+    EXPECT_EQ(faces.size(), 0);
+  }
+
+  {  // Test failure on a malformed face data line (fewer than 3 indices)
+    const std::string path = tesseract_common::getTempPath() + "bad_face_data.ply";
+    {
+      std::ofstream ofs(path);
+      ofs << "ply\n";
+      ofs << "format ascii 1.0\n";
+      ofs << "comment test\n";
+      ofs << "element vertex 3\n";
+      ofs << "property float x\nproperty float y\nproperty float z\n";
+      ofs << "element face 1\n";
+      ofs << "property list uchar int vertex_indices\n";
+      ofs << "end_header\n";
+      ofs << "0 0 0\n1 1 1\n2 2 2\n";  // three vertices
+      ofs << "2 0 1\n";                // only 2 indices → error
+    }
+    tesseract_common::VectorVector3d verts;
+    Eigen::VectorXi faces;
+    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, false);
+    EXPECT_EQ(ret, 0);
+    EXPECT_FALSE(verts.empty());
+    EXPECT_EQ(faces.size(), 0);
+  }
+}
+
+TEST(TesseractCommonUnit, PlyIO_LoadNonexistentFile)  // NOLINT
+{
+  tesseract_common::VectorVector3d verts;
+  Eigen::VectorXi faces;
+  // Should return 0 and print an error
+  int ret = tesseract_common::loadSimplePlyFile(tesseract_common::getTempPath() + MISSING_PLY, verts, faces, false);
+  EXPECT_EQ(ret, 0);
+  EXPECT_TRUE(verts.empty());
+  EXPECT_EQ(faces.size(), 0);
 }
 
 int main(int argc, char** argv)

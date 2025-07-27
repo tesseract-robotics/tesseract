@@ -26,6 +26,9 @@
 #ifndef TESSERACT_GEOMETRY_UTILS_H
 #define TESSERACT_GEOMETRY_UTILS_H
 
+#include <Eigen/Geometry>
+#include <tesseract_common/eigen_types.h>
+
 namespace tesseract_geometry
 {
 class Geometry;
@@ -37,6 +40,15 @@ class Geometry;
  * @return True if identical, otherwise false
  */
 bool isIdentical(const Geometry& geom1, const Geometry& geom2);
+
+/**
+ * @brief A utility for extracting vertices from a geomtry
+ * If it is a primitive shape, it will be converted to a mesh and then extract vertices
+ * @param geom The geometry to extract vertices from
+ * @param origin The origin of the geometry transform the extracted vertices
+ * @return The extracted vertices
+ */
+tesseract_common::VectorVector3d extractVertices(const Geometry& geom, const Eigen::Isometry3d& origin);
 
 }  // namespace tesseract_geometry
 #endif
