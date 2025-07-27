@@ -93,6 +93,7 @@ add_library(
   src/eigen_serialization.cpp
   src/utils.cpp
   src/plugin_info.cpp
+  src/ply_io.cpp
   src/profile_dictionary.cpp
   src/profile_plugin_factory.cpp
   src/profile.cpp

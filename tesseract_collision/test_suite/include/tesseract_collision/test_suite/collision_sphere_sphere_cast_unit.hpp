@@ -6,6 +6,7 @@
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_common/ply_io.h>
 
 namespace tesseract_collision::test_suite
 {
@@ -23,12 +24,12 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   {
     auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
     auto mesh_faces = std::make_shared<Eigen::VectorXi>();
-    EXPECT_GT(
-        loadSimplePlyFile(locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
-                          *mesh_vertices,
-                          *mesh_faces,
-                          true),
-        0);
+    EXPECT_GT(tesseract_common::loadSimplePlyFile(
+                  locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
+                  *mesh_vertices,
+                  *mesh_faces,
+                  true),
+              0);
 
     auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
     sphere = makeConvexMesh(*mesh);
@@ -79,12 +80,12 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   {
     auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
     auto mesh_faces = std::make_shared<Eigen::VectorXi>();
-    EXPECT_GT(
-        loadSimplePlyFile(locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
-                          *mesh_vertices,
-                          *mesh_faces,
-                          true),
-        0);
+    EXPECT_GT(tesseract_common::loadSimplePlyFile(
+                  locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
+                  *mesh_vertices,
+                  *mesh_faces,
+                  true),
+              0);
 
     auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
     sphere1 = makeConvexMesh(*mesh);

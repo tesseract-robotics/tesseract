@@ -809,7 +809,7 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
   }
 }
 
-TEST(TesseractEnvironmentUnit, EnvAddandRemoveTrajectoryLink)  // NOLINT
+void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
 {
   // Get the environment
   auto env = getEnvironment();
@@ -822,13 +822,14 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveTrajectoryLink)  // NOLINT
   std::string parent_link_name = "base_link";
 
   {
-    auto cmd = std::make_shared<AddTrajectoryLinkCommand>(link_name, parent_link_name, trajectory, false);
+    auto cmd = std::make_shared<AddTrajectoryLinkCommand>(link_name, parent_link_name, trajectory, false, method);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::ADD_TRAJECTORY_LINK);
     EXPECT_TRUE(cmd->getLinkName() == link_name);
     EXPECT_TRUE(cmd->getParentLinkName() == parent_link_name);
     EXPECT_TRUE(!cmd->getTrajectory().empty());
     EXPECT_TRUE(cmd->replaceAllowed() == false);
+    EXPECT_EQ(cmd->getMethod(), method);
     EXPECT_TRUE(env->applyCommand(cmd));
   }
 
@@ -899,6 +900,14 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveTrajectoryLink)  // NOLINT
   EXPECT_EQ(env->getRevision(), 5);
   EXPECT_EQ(env->getInitRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 5);
+}
+
+TEST(TesseractEnvironmentUnit, EnvAddandRemoveTrajectoryLink)  // NOLINT
+{
+  runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method::PER_STATE_OBJECTS);
+  runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method::PER_STATE_CONVEX_HULL);
+  runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method::GLOBAL_PER_LINK_CONVEX_HULL);
+  runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method::GLOBAL_CONVEX_HULL);
 }
 
 TEST(TesseractEnvironmentUnit, EnvAddKinematicsInformationCommandUnit)  // NOLINT

@@ -42,12 +42,14 @@ AddTrajectoryLinkCommand::AddTrajectoryLinkCommand() : Command(CommandType::ADD_
 AddTrajectoryLinkCommand::AddTrajectoryLinkCommand(std::string link_name,
                                                    std::string parent_link_name,
                                                    tesseract_common::JointTrajectory trajectory,
-                                                   bool replace_allowed)
+                                                   bool replace_allowed,
+                                                   Method method)
   : Command(CommandType::ADD_TRAJECTORY_LINK)
   , link_name_(std::move(link_name))
   , parent_link_name_(std::move(parent_link_name))
   , trajectory_(std::move(trajectory))
   , replace_allowed_(replace_allowed)
+  , method_(method)
 {
 }
 
@@ -55,6 +57,7 @@ const std::string& AddTrajectoryLinkCommand::getLinkName() const { return link_n
 const std::string& AddTrajectoryLinkCommand::getParentLinkName() const { return parent_link_name_; }
 const tesseract_common::JointTrajectory& AddTrajectoryLinkCommand::getTrajectory() const { return trajectory_; }
 bool AddTrajectoryLinkCommand::replaceAllowed() const { return replace_allowed_; }
+AddTrajectoryLinkCommand::Method AddTrajectoryLinkCommand::getMethod() const { return method_; }
 
 bool AddTrajectoryLinkCommand::operator==(const AddTrajectoryLinkCommand& rhs) const
 {
@@ -64,6 +67,7 @@ bool AddTrajectoryLinkCommand::operator==(const AddTrajectoryLinkCommand& rhs) c
   equal &= (parent_link_name_ == rhs.parent_link_name_);
   equal &= (trajectory_ == rhs.trajectory_);
   equal &= (replace_allowed_ == rhs.replace_allowed_);
+  equal &= (method_ == rhs.method_);
   return equal;
 }
 bool AddTrajectoryLinkCommand::operator!=(const AddTrajectoryLinkCommand& rhs) const { return !operator==(rhs); }
@@ -76,6 +80,7 @@ void AddTrajectoryLinkCommand::serialize(Archive& ar, const unsigned int /*versi
   ar& BOOST_SERIALIZATION_NVP(parent_link_name_);
   ar& BOOST_SERIALIZATION_NVP(trajectory_);
   ar& BOOST_SERIALIZATION_NVP(replace_allowed_);
+  ar& BOOST_SERIALIZATION_NVP(method_);
 }
 }  // namespace tesseract_environment
 

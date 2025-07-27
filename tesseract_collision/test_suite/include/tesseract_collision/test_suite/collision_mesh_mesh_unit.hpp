@@ -5,6 +5,7 @@
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_common/ply_io.h>
 
 namespace tesseract_collision::test_suite
 {
@@ -20,11 +21,11 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
   auto faces = std::make_shared<Eigen::VectorXi>();
   tesseract_common::GeneralResourceLocator locator;
-  int num_faces =
-      loadSimplePlyFile(locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
-                        *vertices,
-                        *faces,
-                        true);
+  int num_faces = tesseract_common::loadSimplePlyFile(
+      locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
+      *vertices,
+      *faces,
+      true);
   EXPECT_GT(num_faces, 0);
 
   sphere = std::make_shared<tesseract_geometry::Mesh>(vertices, faces);

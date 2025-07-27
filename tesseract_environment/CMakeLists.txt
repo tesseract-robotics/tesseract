@@ -12,7 +12,7 @@ endif()
 # System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
-find_package(tesseract_collision REQUIRED COMPONENTS core)
+find_package(tesseract_collision REQUIRED COMPONENTS core bullet)
 find_package(tesseract_kinematics REQUIRED COMPONENTS core)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_state_solver REQUIRED)
@@ -68,6 +68,7 @@ target_link_libraries(
          tesseract::tesseract_urdf
          tesseract::tesseract_kinematics_core
          ${PROJECT_NAME}_commands)
+target_link_libraries(${PROJECT_NAME} PRIVATE tesseract::tesseract_collision_bullet)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})

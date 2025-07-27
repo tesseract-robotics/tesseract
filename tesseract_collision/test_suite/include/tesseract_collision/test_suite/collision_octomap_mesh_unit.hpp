@@ -12,6 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/resource_locator.h>
+#include <tesseract_common/ply_io.h>
 
 namespace tesseract_collision::test_suite
 {
@@ -127,7 +128,8 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
         (*mesh_triangles)[4 * r.subshape_id[static_cast<std::size_t>(idx)] + 3])] = Eigen::Vector3i(255, 0, 0);
   }
 
-  writeSimplePlyFile(file_path, *mesh_vertices, mesh_vertices_color, *mesh_triangles, mesh->getFaceCount());
+  tesseract_common::writeSimplePlyFile(
+      file_path, *mesh_vertices, mesh_vertices_color, *mesh_triangles, mesh->getFaceCount());
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_TRUE(result_vector.size() == 2712);

@@ -104,47 +104,6 @@ void scaleVertices(tesseract_common::VectorVector3d& vertices,
  */
 void scaleVertices(tesseract_common::VectorVector3d& vertices, const Eigen::Vector3d& scale);
 
-/**
- * @brief Write a simple ply file given vertices and faces
- * @param path The file path
- * @param vertices A vector of vertices
- * @param vertices_color The vertices color (0-255,0-255,0-255), if empty uses a default color
- * @param faces The first values indicates the number of vertices that define the face followed by the vertice index
- * @param num_faces The number of faces
- * @return False if failed to write file, otherwise true
- */
-bool writeSimplePlyFile(const std::string& path,
-                        const tesseract_common::VectorVector3d& vertices,
-                        const std::vector<Eigen::Vector3i>& vectices_color,
-                        const Eigen::VectorXi& faces,
-                        int num_faces);
-
-/**
- * @brief Write a simple ply file given vertices and faces
- * @param path The file path
- * @param vertices A vector of vertices
- * @param faces The first values indicates the number of vertices that define the face followed by the vertice index
- * @param num_faces The number of faces
- * @return False if failed to write file, otherwise true
- */
-bool writeSimplePlyFile(const std::string& path,
-                        const tesseract_common::VectorVector3d& vertices,
-                        const Eigen::VectorXi& faces,
-                        int num_faces);
-
-/**
- * @brief Loads a simple ply file given a path
- * @param path The file path
- * @param vertices A vector of vertices
- * @param faces The first values indicates the number of vertices that define the face followed by the vertice index
- * @param triangles_only Convert to only include triangles
- * @return Number of faces, If returned 0 it failed to load.
- */
-int loadSimplePlyFile(const std::string& path,
-                      tesseract_common::VectorVector3d& vertices,
-                      Eigen::VectorXi& faces,
-                      bool triangles_only = false);
-
 }  // namespace tesseract_collision
 
 #endif  // TESSERACT_COLLISION_COMMON_H
