@@ -65,8 +65,9 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
   return *this;
 }
 
-IKSolutions OPWInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
-                                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
+void OPWInvKin::calcInvKin(IKSolutions& solutions,
+                           const tesseract_common::TransformMap& tip_link_poses,
+                           const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);                                                       // NOLINT
   assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());                      // NOLINT
@@ -76,15 +77,14 @@ IKSolutions OPWInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link
   opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, tip_link_poses.at(tip_link_name_));
 
   // Check the output
-  IKSolutions solution_set;
-  solution_set.reserve(sols.size());
+  if (solutions.capacity() < (solutions.size() + sols.size()))
+    solutions.reserve((solutions.size() + sols.size()));
+
   for (auto& sol : sols)
   {
     if (opw_kinematics::isValid<double>(sol))
-      solution_set.emplace_back(Eigen::Map<Eigen::VectorXd>(sol.data(), static_cast<Eigen::Index>(sol.size())));
+      solutions.emplace_back(Eigen::Map<Eigen::VectorXd>(sol.data(), static_cast<Eigen::Index>(sol.size())));
   }
-
-  return solution_set;
 }
 
 Eigen::Index OPWInvKin::numJoints() const { return 6; }

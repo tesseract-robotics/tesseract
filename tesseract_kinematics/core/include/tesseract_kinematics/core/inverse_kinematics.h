@@ -72,8 +72,26 @@ public:
    * @param seed Vector of seed joint angles (size must match number of joints in kinematic object)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
-  virtual IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
-                                 const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
+  IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
+                         const Eigen::Ref<const Eigen::VectorXd>& seed) const;
+
+  /**
+   * @brief Calculates joint solutions given a pose for each tip link.
+   * @details This interface supports IK for both kinematic chains that have a single tool tip link and kinematic chains
+   * that have multiple tip links. For example, consider a robot with external part positioner: a pose can be specified
+   * to be relative to the tip link of the robot or the tip link of the positioner is to support a pose relative to a
+   * active link. For example a robot with an external positioner where the pose is relative to the tip link of the
+   * positioner.
+   * @note Redundant joint solutions can be provided by the utility function getRedundantSolutions
+   * @param solutions The object to store the calculated solutions
+   * @param tip_link_poses A map of poses corresponding to each tip link provided in getTipLinkNames and relative to the
+   * working frame of the kinematics group for which to solve inverse kinematics
+   * @param seed Vector of seed joint angles (size must match number of joints in kinematic object)
+   * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
+   */
+  virtual void calcInvKin(IKSolutions& solutions,
+                          const tesseract_common::TransformMap& tip_link_poses,
+                          const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
 
   /**
    * @brief Get list of joint names for kinematic object

@@ -293,7 +293,9 @@ SceneState OFKTStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& jo
                                      const tesseract_common::TransformMap& floating_joint_values) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  assert(static_cast<Eigen::Index>(active_joint_names_.size()) == joint_values.size());
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
   auto state = SceneState(current_state_);
   for (std::size_t i = 0; i < active_joint_names_.size(); ++i)
     state.joints[active_joint_names_[i]] = joint_values[static_cast<long>(i)];
@@ -301,13 +303,17 @@ SceneState OFKTStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& jo
   for (const auto& floating_joint_value : floating_joint_values)
     state.floating_joints.at(floating_joint_value.first) = floating_joint_value.second;
 
-  update(state, root_.get(), Eigen::Isometry3d::Identity(), false);
+  update(state, root_.get(), parent_frame, false);
   return state;
 }
 
 SceneState OFKTStateSolver::getState(const std::unordered_map<std::string, double>& joint_values,
                                      const tesseract_common::TransformMap& floating_joint_values) const
 {
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
   auto state = SceneState(current_state_);
   for (const auto& joint : joint_values)
     state.joints[joint.first] = joint.second;
@@ -315,7 +321,7 @@ SceneState OFKTStateSolver::getState(const std::unordered_map<std::string, doubl
   for (const auto& floating_joint_value : floating_joint_values)
     state.floating_joints.at(floating_joint_value.first) = floating_joint_value.second;
 
-  update(state, root_.get(), Eigen::Isometry3d::Identity(), false);
+  update(state, root_.get(), parent_frame, false);
   return state;
 }
 
@@ -324,26 +330,32 @@ SceneState OFKTStateSolver::getState(const std::vector<std::string>& joint_names
                                      const tesseract_common::TransformMap& floating_joint_values) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  assert(static_cast<Eigen::Index>(joint_names.size()) == joint_values.size());
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
   auto state = SceneState(current_state_);
+  assert(static_cast<Eigen::Index>(joint_names.size()) == joint_values.size());
   for (std::size_t i = 0; i < joint_names.size(); ++i)
     state.joints[joint_names[i]] = joint_values[static_cast<long>(i)];
 
   for (const auto& floating_joint_value : floating_joint_values)
     state.floating_joints.at(floating_joint_value.first) = floating_joint_value.second;
 
-  update(state, root_.get(), Eigen::Isometry3d::Identity(), false);
+  update(state, root_.get(), parent_frame, false);
   return state;
 }
 
 SceneState OFKTStateSolver::getState(const tesseract_common::TransformMap& floating_joint_values) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
   auto state = SceneState(current_state_);
   for (const auto& floating_joint_value : floating_joint_values)
     state.floating_joints.at(floating_joint_value.first) = floating_joint_value.second;
 
-  update(state, root_.get(), Eigen::Isometry3d::Identity(), false);
+  update(state, root_.get(), parent_frame, false);
   return state;
 }
 
@@ -351,6 +363,43 @@ SceneState OFKTStateSolver::getState() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return current_state_;
+}
+
+void OFKTStateSolver::getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                                        const std::vector<std::string>& joint_names,
+                                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                        const tesseract_common::TransformMap& floating_joint_values) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  std::unordered_map<std::string, double> joints{ current_state_.joints };
+  for (std::size_t i = 0; i < joint_names.size(); ++i)
+    joints[joint_names[i]] = joint_values[static_cast<long>(i)];
+
+  tesseract_common::TransformMap floating_joints{ current_state_.floating_joints };
+  for (const auto& floating_joint_value : floating_joint_values)
+    floating_joints.at(floating_joint_value.first) = floating_joint_value.second;
+
+  link_transforms.insert(current_state_.link_transforms.begin(), current_state_.link_transforms.end());
+  update(link_transforms, joints, floating_joints, root_.get(), parent_frame, false);
+}
+
+void OFKTStateSolver::getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                                        const std::vector<std::string>& joint_names,
+                                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  std::unordered_map<std::string, double> joints{ current_state_.joints };
+  for (std::size_t i = 0; i < joint_names.size(); ++i)
+    joints[joint_names[i]] = joint_values[static_cast<long>(i)];
+
+  link_transforms.insert(current_state_.link_transforms.begin(), current_state_.link_transforms.end());
+  update(link_transforms, joints, current_state_.floating_joints, root_.get(), parent_frame, false);
 }
 
 SceneState OFKTStateSolver::getRandomState() const
@@ -922,37 +971,63 @@ void OFKTStateSolver::update(OFKTNode* node, bool update_required)
     update(child, update_required);
 }
 
+bool OFKTStateSolver::updateRequired(Eigen::Isometry3d& updated_parent_world_tf,
+                                     const std::unordered_map<std::string, double>& joints,
+                                     const tesseract_common::TransformMap& floating_joints,
+                                     const OFKTNode* node,
+                                     const Eigen::Isometry3d& parent_world_tf)
+{
+  if (node->getType() == tesseract_scene_graph::JointType::FIXED)
+  {
+    updated_parent_world_tf = parent_world_tf * node->getLocalTransformation();
+    return false;
+  }
+
+  if (node->getType() == tesseract_scene_graph::JointType::FLOATING)
+  {
+    const auto& tf = floating_joints.at(node->getJointName());
+    updated_parent_world_tf = parent_world_tf * tf;
+    return (!tf.isApprox(node->getLocalTransformation(), 1e-8));
+  }
+
+  double jv = joints.at(node->getJointName());
+  if (!tesseract_common::almostEqualRelativeAndAbs(node->getJointValue(), jv, 1e-8))
+  {
+    updated_parent_world_tf = parent_world_tf * node->computeLocalTransformation(jv);
+    return true;
+  }
+
+  updated_parent_world_tf = parent_world_tf * node->getLocalTransformation();
+  return false;
+}
+
+void OFKTStateSolver::update(tesseract_common::TransformMap& link_transforms,
+                             const std::unordered_map<std::string, double>& joints,
+                             const tesseract_common::TransformMap& floating_joints,
+                             const OFKTNode* node,
+                             const Eigen::Isometry3d& parent_world_tf,
+                             bool update_required) const
+{
+  Eigen::Isometry3d updated_parent_world_tf{ Eigen::Isometry3d::Identity() };
+  const bool local_update_required =
+      updateRequired(updated_parent_world_tf, joints, floating_joints, node, parent_world_tf);
+  update_required = static_cast<bool>(update_required | local_update_required);  // NOLINT
+  if (update_required)
+    link_transforms[node->getLinkName()] = updated_parent_world_tf;
+
+  for (const auto* child : node->getChildren())
+    update(link_transforms, joints, floating_joints, child, updated_parent_world_tf, update_required);
+}
+
 void OFKTStateSolver::update(SceneState& state,
                              const OFKTNode* node,
                              const Eigen::Isometry3d& parent_world_tf,
                              bool update_required) const
 {
   Eigen::Isometry3d updated_parent_world_tf{ Eigen::Isometry3d::Identity() };
-  if (node->getType() == tesseract_scene_graph::JointType::FIXED)
-  {
-    updated_parent_world_tf = parent_world_tf * node->getLocalTransformation();
-  }
-  else if (node->getType() == tesseract_scene_graph::JointType::FLOATING)
-  {
-    const auto& tf = state.floating_joints.at(node->getJointName());
-    updated_parent_world_tf = parent_world_tf * tf;
-    if (!tf.isApprox(node->getLocalTransformation(), 1e-8))
-      update_required = true;
-  }
-  else
-  {
-    double jv = state.joints[node->getJointName()];
-    if (!tesseract_common::almostEqualRelativeAndAbs(node->getJointValue(), jv, 1e-8))
-    {
-      updated_parent_world_tf = parent_world_tf * node->computeLocalTransformation(jv);
-      update_required = true;
-    }
-    else
-    {
-      updated_parent_world_tf = parent_world_tf * node->getLocalTransformation();
-    }
-  }
-
+  const bool local_update_required =
+      updateRequired(updated_parent_world_tf, state.joints, state.floating_joints, node, parent_world_tf);
+  update_required = static_cast<bool>(update_required | local_update_required);  // NOLINT
   if (update_required)
   {
     state.link_transforms[node->getLinkName()] = updated_parent_world_tf;

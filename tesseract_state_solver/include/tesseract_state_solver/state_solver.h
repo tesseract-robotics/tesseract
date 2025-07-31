@@ -122,6 +122,38 @@ public:
   virtual SceneState getState(const tesseract_common::TransformMap& floating_joint_values) const = 0;
 
   /**
+   * @brief Get the link transforms of the scene for a given set or subset of joint values.
+   *
+   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   *
+   * This does not change the internal state of the solver.
+   *
+   * @param link_transforms The link_transforms to populate with data.
+   * @param joints A map of joint names to joint values to change.
+   * @param joint_values The joint values
+   * @param floating_joint_values The floating joint origin transform
+   */
+  virtual void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                                 const std::vector<std::string>& joint_names,
+                                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                 const tesseract_common::TransformMap& floating_joint_values) const = 0;
+
+  /**
+   * @brief Get the link transforms of the scene for a given set or subset of joint values.
+   *
+   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   *
+   * This does not change the internal state of the solver.
+   *
+   * @param link_transforms The link_transforms to populate with data.
+   * @param joints A map of joint names to joint values to change.
+   * @param joint_values The joint values
+   */
+  virtual void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                                 const std::vector<std::string>& joint_names,
+                                 const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
+
+  /**
    * @brief Get the current state of the scene
    * @return The current state
    */

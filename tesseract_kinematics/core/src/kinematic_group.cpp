@@ -210,6 +210,21 @@ KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
 IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
                                        const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
+  IKSolutions solutions;
+  calcInvKin(solutions, tip_link_poses, seed);
+  return solutions;
+}
+
+IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInput& tip_link_pose,
+                                       const Eigen::Ref<const Eigen::VectorXd>& seed) const
+{
+  return calcInvKin(KinGroupIKInputs{ tip_link_pose }, seed);  // NOLINT
+}
+
+void KinematicGroup::calcInvKin(IKSolutions& solutions,
+                                const KinGroupIKInputs& tip_link_poses,
+                                const Eigen::Ref<const Eigen::VectorXd>& seed) const
+{
   // Convert to IK Inputs
   tesseract_common::TransformMap ik_inputs;
   for (const auto& tip_link_pose : tip_link_poses)
@@ -261,47 +276,41 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
     ik_inputs[ik_solver_tip_link] = wf_to_tl;
   }
 
+  const long num_sol = static_cast<long>(solutions.size());
+
   // format seed for inverse kinematic solver
   if (reorder_required_)
   {
-    Eigen::VectorXd ordered_seed = seed;
+    Eigen::VectorXd ordered = seed;
     for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
-      ordered_seed(inv_kin_joint_map_[static_cast<std::size_t>(i)]) = seed(i);
+      ordered(inv_kin_joint_map_[static_cast<std::size_t>(i)]) = seed(i);
 
-    IKSolutions solutions = inv_kin_->calcInvKin(ik_inputs, ordered_seed);
-    IKSolutions solutions_filtered;
-    solutions_filtered.reserve(solutions.size());
-    for (const auto& solution : solutions)
-    {
-      Eigen::VectorXd ordered_sol = solution;
+    inv_kin_->calcInvKin(solutions, ik_inputs, ordered);
+
+    auto ne = std::remove_if(solutions.begin() + num_sol, solutions.end(), [&](Eigen::VectorXd& solution) {
       for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
-        ordered_sol(i) = solution(inv_kin_joint_map_[static_cast<std::size_t>(i)]);
+        ordered(i) = solution(inv_kin_joint_map_[static_cast<std::size_t>(i)]);
 
-      tesseract_kinematics::harmonizeTowardMedian<double>(ordered_sol, redundancy_indices_, limits_.joint_limits);
-      if (tesseract_common::satisfiesLimits<double>(ordered_sol, limits_.joint_limits))
-        solutions_filtered.push_back(ordered_sol);
-    }
-
-    return solutions_filtered;
+      tesseract_kinematics::harmonizeTowardMedian<double>(solution, redundancy_indices_, limits_.joint_limits);
+      return (!tesseract_common::satisfiesLimits<double>(solution, limits_.joint_limits));
+    });
+    solutions.erase(ne, solutions.end());
+    return;
   }
 
-  IKSolutions solutions = inv_kin_->calcInvKin(ik_inputs, seed);
-  IKSolutions solutions_filtered;
-  solutions_filtered.reserve(solutions.size());
-  for (auto& solution : solutions)
-  {
+  inv_kin_->calcInvKin(solutions, ik_inputs, seed);
+  auto ne = std::remove_if(solutions.begin() + num_sol, solutions.end(), [&](Eigen::VectorXd& solution) {
     tesseract_kinematics::harmonizeTowardMedian<double>(solution, redundancy_indices_, limits_.joint_limits);
-    if (tesseract_common::satisfiesLimits<double>(solution, limits_.joint_limits))
-      solutions_filtered.push_back(solution);
-  }
-
-  return solutions_filtered;
+    return (!tesseract_common::satisfiesLimits<double>(solution, limits_.joint_limits));
+  });
+  solutions.erase(ne, solutions.end());
 }
 
-IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInput& tip_link_pose,
-                                       const Eigen::Ref<const Eigen::VectorXd>& seed) const
+void KinematicGroup::calcInvKin(IKSolutions& solutions,
+                                const KinGroupIKInput& tip_link_pose,
+                                const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  return calcInvKin(KinGroupIKInputs{ tip_link_pose }, seed);  // NOLINT
+  calcInvKin(solutions, KinGroupIKInputs{ tip_link_pose }, seed);  // NOLINT
 }
 
 std::vector<std::string> KinematicGroup::getAllValidWorkingFrames() const { return working_frames_; }

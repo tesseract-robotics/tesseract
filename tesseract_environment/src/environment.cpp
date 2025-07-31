@@ -2618,6 +2618,24 @@ tesseract_scene_graph::SceneState Environment::getState() const
   return std::as_const<Implementation>(*impl_).current_state;
 }
 
+void Environment::getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                                    const std::vector<std::string>& joint_names,
+                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                    const tesseract_common::TransformMap& floating_joints) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::as_const<Implementation>(*impl_).state_solver->getLinkTransforms(
+      link_transforms, joint_names, joint_values, floating_joints);
+}
+
+void Environment::getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                                    const std::vector<std::string>& joint_names,
+                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::as_const<Implementation>(*impl_).state_solver->getLinkTransforms(link_transforms, joint_names, joint_values);
+}
+
 std::chrono::system_clock::time_point Environment::getTimestamp() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);

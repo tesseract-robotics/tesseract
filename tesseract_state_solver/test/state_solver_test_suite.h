@@ -110,7 +110,9 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
   {
     SceneState base_random_state;
     SceneState comp_state_const;
-
+    tesseract_common::TransformMap base_link_transforms;
+    tesseract_common::TransformMap comp_link_transforms;
+    tesseract_common::TransformMap comp_link_transforms1;
     if (i < 3)
     {
       base_random_state = comp_solver.getRandomState();
@@ -132,6 +134,11 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
         joint_values(static_cast<Eigen::Index>(j)) = joint.second;
         ++j;
       }
+
+      base_solver.getLinkTransforms(base_link_transforms, joint_names, joint_values);
+      comp_solver.getLinkTransforms(comp_link_transforms, joint_names, joint_values);
+      comp_solver.getLinkTransforms(
+          comp_link_transforms1, joint_names, joint_values, base_random_state.floating_joints);
       comp_solver.setState(joint_names, joint_values);
     }
     else if (i < 10)
@@ -148,6 +155,19 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
 
     runCompareSceneStates(base_random_state, comp_state_const);
     runCompareSceneStates(base_random_state, comp_state);
+
+    if (!comp_link_transforms.empty())
+    {
+      for (const auto& link_pair : base_random_state.link_transforms)
+      {
+        EXPECT_TRUE(link_pair.second.isApprox(comp_link_transforms.at(link_pair.first), 1e-6));
+      }
+
+      for (const auto& link_pair : base_random_state.link_transforms)
+      {
+        EXPECT_TRUE(link_pair.second.isApprox(base_link_transforms.at(link_pair.first), 1e-6));
+      }
+    }
 
     // Test differetn link transform methods
     for (const auto& base_link_tf : base_random_state.link_transforms)

@@ -1,5 +1,6 @@
 add_library(
   ${PROJECT_NAME}_core
+  src/forward_kinematics.cpp
   src/inverse_kinematics.cpp
   src/rop_inv_kin.cpp
   src/rep_inv_kin.cpp
