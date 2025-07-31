@@ -131,13 +131,31 @@ void runGetLinkTransformsTest(Environment& env)
     env.setState(random_state.joints);
 
     std::vector<std::string> link_names = env.getLinkNames();
+
+    std::vector<std::string> joint_names(random_state.joints.size());
+    Eigen::VectorXd joint_values(random_state.joints.size());
+    std::size_t j{ 0 };
+    for (const auto& joint : random_state.joints)
+    {
+      joint_names.at(j) = joint.first;
+      joint_values(static_cast<Eigen::Index>(j)) = joint.second;
+      ++j;
+    }
+
     SceneState env_state = env.getState();
     tesseract_common::VectorIsometry3d link_transforms = env.getLinkTransforms();
+    tesseract_common::TransformMap link_transforms2;
+    env.getLinkTransforms(link_transforms2, joint_names, joint_values);
+
+    tesseract_common::TransformMap link_transforms3;
+    env.getLinkTransforms(link_transforms3, joint_names, joint_values, env.getCurrentFloatingJointValues());
     for (std::size_t i = 0; i < link_names.size(); ++i)
     {
-      EXPECT_TRUE(env_state.link_transforms.at(link_names.at(i)).isApprox(link_transforms.at(i), 1e-6));
-      EXPECT_TRUE(
-          env_state.link_transforms.at(link_names.at(i)).isApprox(env.getLinkTransform(link_names.at(i)), 1e-6));
+      const std::string link_name = link_names.at(i);
+      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms.at(i), 1e-6));
+      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms2.at(link_name), 1e-6));
+      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms3.at(link_name), 1e-6));
+      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(env.getLinkTransform(link_name), 1e-6));
     }
   }
 

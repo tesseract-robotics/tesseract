@@ -79,6 +79,15 @@ public:
 
   SceneState getState() const override final;
 
+  void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                         const std::vector<std::string>& joint_names,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                         const tesseract_common::TransformMap& floating_joint_values) const override final;
+
+  void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                         const std::vector<std::string>& joint_names,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
+
   SceneState getRandomState() const override final;
 
   Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
@@ -130,12 +139,24 @@ private:
   tesseract_common::KinematicLimits limits_; /**< The kinematic limits */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
-  void calculateTransforms(SceneState& state,
+  void calculateTransforms(tesseract_common::TransformMap& link_transforms,
                            const KDL::JntArray& q_in,
                            const KDL::SegmentMap::const_iterator& it,
                            const Eigen::Isometry3d& parent_frame) const;
 
-  void calculateTransformsHelper(SceneState& state,
+  void calculateTransformsHelper(tesseract_common::TransformMap& link_transforms,
+                                 const KDL::JntArray& q_in,
+                                 const KDL::SegmentMap::const_iterator& it,
+                                 const Eigen::Isometry3d& parent_frame) const;
+
+  void calculateTransforms(tesseract_common::TransformMap& link_transforms,
+                           tesseract_common::TransformMap& joint_transforms,
+                           const KDL::JntArray& q_in,
+                           const KDL::SegmentMap::const_iterator& it,
+                           const Eigen::Isometry3d& parent_frame) const;
+
+  void calculateTransformsHelper(tesseract_common::TransformMap& link_transforms,
+                                 tesseract_common::TransformMap& joint_transforms,
                                  const KDL::JntArray& q_in,
                                  const KDL::SegmentMap::const_iterator& it,
                                  const Eigen::Isometry3d& parent_frame) const;

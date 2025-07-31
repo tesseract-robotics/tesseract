@@ -332,6 +332,38 @@ public:
   /** @brief Get the current state of the environment */
   tesseract_scene_graph::SceneState getState() const;
 
+  /**
+   * @brief Get the link transforms of the scene for a given set or subset of joint values.
+   *
+   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   *
+   * This does not change the internal state of the solver.
+   *
+   * @param link_transforms The link_transforms to populate with data.
+   * @param joints A map of joint names to joint values to change.
+   * @param joint_values The joint values
+   * @param floating_joints The floating joint origin transform
+   */
+  void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                         const std::vector<std::string>& joint_names,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                         const tesseract_common::TransformMap& floating_joints) const;
+
+  /**
+   * @brief Get the link transforms of the scene for a given set or subset of joint values.
+   *
+   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   *
+   * This does not change the internal state of the solver.
+   *
+   * @param link_transforms The link_transforms to populate with data.
+   * @param joints A map of joint names to joint values to change.
+   * @param joint_values The joint values
+   */
+  void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                         const std::vector<std::string>& joint_names,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
+
   /** @brief Last update time. Updated when any change to the environment occurs */
   std::chrono::system_clock::time_point getTimestamp() const;
 

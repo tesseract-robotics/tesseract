@@ -44,15 +44,17 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 {
   Eigen::VectorXd njvals;
   double delta = 1e-8;
-  tesseract_common::TransformMap poses = kin.calcFwdKin(joint_values);
+  thread_local tesseract_common::TransformMap poses;
+  poses.clear();
+  kin.calcFwdKin(poses, joint_values);
   Eigen::Isometry3d pose{ change_base * poses[link_name] };
 
   for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
   {
     njvals = joint_values;
     njvals[i] += delta;
-    Eigen::Isometry3d updated_pose = kin.calcFwdKin(njvals)[link_name];
-    updated_pose = change_base * updated_pose;
+    kin.calcFwdKin(poses, njvals);
+    Eigen::Isometry3d updated_pose = change_base * poses[link_name];
 
     Eigen::Vector3d temp{ pose * link_point };
     Eigen::Vector3d temp2{ updated_pose * link_point };

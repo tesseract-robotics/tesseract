@@ -83,7 +83,14 @@ void KDLStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_val
       current_state_.joints[data_.active_joint_names[i]] = joint_values[i];
   }
 
-  calculateTransforms(current_state_, kdl_jnt_array_, data_.tree.getRootSegment(), Eigen::Isometry3d::Identity());
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(current_state_.link_transforms,
+                      current_state_.joint_transforms,
+                      kdl_jnt_array_,
+                      data_.tree.getRootSegment(),
+                      parent_frame);
 }
 
 void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joint_values,
@@ -95,7 +102,14 @@ void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joi
       current_state_.joints[joint.first] = joint.second;
   }
 
-  calculateTransforms(current_state_, kdl_jnt_array_, data_.tree.getRootSegment(), Eigen::Isometry3d::Identity());
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(current_state_.link_transforms,
+                      current_state_.joint_transforms,
+                      kdl_jnt_array_,
+                      data_.tree.getRootSegment(),
+                      parent_frame);
 }
 
 void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
@@ -109,7 +123,14 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
       current_state_.joints[joint_names[i]] = joint_values[i];
   }
 
-  calculateTransforms(current_state_, kdl_jnt_array_, data_.tree.getRootSegment(), Eigen::Isometry3d::Identity());
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(current_state_.link_transforms,
+                      current_state_.joint_transforms,
+                      kdl_jnt_array_,
+                      data_.tree.getRootSegment(),
+                      parent_frame);
 }
 
 void KDLStateSolver::setState(const tesseract_common::TransformMap& /*floating_joint_values*/)
@@ -120,9 +141,13 @@ void KDLStateSolver::setState(const tesseract_common::TransformMap& /*floating_j
 SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                     const tesseract_common::TransformMap& /*floating_joint_values*/) const
 {
-  assert(static_cast<Eigen::Index>(data_.active_joint_names.size()) == joint_values.size());
   SceneState state{ current_state_ };
-  KDL::JntArray jnt_array = kdl_jnt_array_;
+
+  thread_local KDL::JntArray jnt_array;
+  if (jnt_array.rows() != kdl_jnt_array_.rows())
+    jnt_array = kdl_jnt_array_;
+  else
+    jnt_array.data.noalias() = kdl_jnt_array_.data;
 
   for (auto i = 0U; i < data_.active_joint_names.size(); ++i)
   {
@@ -130,8 +155,11 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
       state.joints[data_.active_joint_names[i]] = joint_values[i];
   }
 
-  calculateTransforms(state, jnt_array, data_.tree.getRootSegment(), Eigen::Isometry3d::Identity());
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
 
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(
+      state.link_transforms, state.joint_transforms, jnt_array, data_.tree.getRootSegment(), parent_frame);
   return state;
 }
 
@@ -139,7 +167,11 @@ SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double
                                     const tesseract_common::TransformMap& /*floating_joint_values*/) const
 {
   SceneState state{ current_state_ };
-  KDL::JntArray jnt_array = kdl_jnt_array_;
+  thread_local KDL::JntArray jnt_array;
+  if (jnt_array.rows() != kdl_jnt_array_.rows())
+    jnt_array = kdl_jnt_array_;
+  else
+    jnt_array.data.noalias() = kdl_jnt_array_.data;
 
   for (const auto& joint : joint_values)
   {
@@ -147,10 +179,40 @@ SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double
       state.joints[joint.first] = joint.second;
   }
 
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
   // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
-  calculateTransforms(state, jnt_array, data_.tree.getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(
+      state.link_transforms, state.joint_transforms, jnt_array, data_.tree.getRootSegment(), parent_frame);
 
   return state;
+}
+
+void KDLStateSolver::getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                                       const std::vector<std::string>& joint_names,
+                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                       const tesseract_common::TransformMap& /*floating_joint_values*/) const
+{
+  getLinkTransforms(link_transforms, joint_names, joint_values);
+}
+
+void KDLStateSolver::getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                                       const std::vector<std::string>& joint_names,
+                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+{
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  thread_local KDL::JntArray jnt_array;
+  if (jnt_array.rows() != kdl_jnt_array_.rows())
+    jnt_array = kdl_jnt_array_;
+  else
+    jnt_array.data.noalias() = kdl_jnt_array_.data;
+
+  for (auto i = 0U; i < joint_names.size(); ++i)
+    setJointValuesHelper(jnt_array, joint_names[i], joint_values[i]);
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(link_transforms, jnt_array, data_.tree.getRootSegment(), parent_frame);
 }
 
 SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
@@ -158,7 +220,12 @@ SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
                                     const tesseract_common::TransformMap& /*floating_joint_values*/) const
 {
   SceneState state{ current_state_ };
-  KDL::JntArray jnt_array = kdl_jnt_array_;
+
+  thread_local KDL::JntArray jnt_array;
+  if (jnt_array.rows() != kdl_jnt_array_.rows())
+    jnt_array = kdl_jnt_array_;
+  else
+    jnt_array.data.noalias() = kdl_jnt_array_.data;
 
   for (auto i = 0U; i < joint_names.size(); ++i)
   {
@@ -166,8 +233,11 @@ SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
       state.joints[joint_names[i]] = joint_values[i];
   }
 
-  Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
-  calculateTransforms(state, jnt_array, data_.tree.getRootSegment(), parent_frame);  // NOLINT
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(
+      state.link_transforms, state.joint_transforms, jnt_array, data_.tree.getRootSegment(), parent_frame);
 
   return state;
 }
@@ -312,7 +382,11 @@ bool KDLStateSolver::processKDLData(const tesseract_scene_graph::SceneGraph& sce
 
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
-  calculateTransforms(current_state_, kdl_jnt_array_, data_.tree.getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(current_state_.link_transforms,
+                      current_state_.joint_transforms,
+                      kdl_jnt_array_,
+                      data_.tree.getRootSegment(),
+                      Eigen::Isometry3d::Identity());
   return true;
 }
 
@@ -331,7 +405,8 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
   return false;
 }
 
-void KDLStateSolver::calculateTransformsHelper(SceneState& state,
+void KDLStateSolver::calculateTransformsHelper(tesseract_common::TransformMap& link_transforms,
+                                               tesseract_common::TransformMap& joint_transforms,
                                                const KDL::JntArray& q_in,
                                                const KDL::SegmentMap::const_iterator& it,
                                                const Eigen::Isometry3d& parent_frame) const
@@ -347,24 +422,58 @@ void KDLStateSolver::calculateTransformsHelper(SceneState& state,
 
     Eigen::Isometry3d local_frame = convert(current_frame);
     Eigen::Isometry3d global_frame{ parent_frame * local_frame };
-    state.link_transforms[current_element.segment.getName()] = global_frame;
+    link_transforms[current_element.segment.getName()] = global_frame;
     if (current_element.segment.getName() != data_.tree.getRootSegment()->first)
-      state.joint_transforms[current_element.segment.getJoint().getName()] = global_frame;
+      joint_transforms[current_element.segment.getJoint().getName()] = global_frame;
 
     for (const auto& child : current_element.children)
     {
-      calculateTransformsHelper(state, q_in, child, global_frame);  // NOLINT
+      calculateTransformsHelper(link_transforms, joint_transforms, q_in, child, global_frame);  // NOLINT
     }
   }
 }
 
-void KDLStateSolver::calculateTransforms(SceneState& state,
+void KDLStateSolver::calculateTransformsHelper(tesseract_common::TransformMap& link_transforms,
+                                               const KDL::JntArray& q_in,
+                                               const KDL::SegmentMap::const_iterator& it,
+                                               const Eigen::Isometry3d& parent_frame) const
+{
+  if (it != data_.tree.getSegments().end())
+  {
+    const KDL::TreeElementType& current_element = it->second;
+    KDL::Frame current_frame;
+    if (q_in.data.size() > 0)
+      current_frame = GetTreeElementSegment(current_element).pose(q_in(GetTreeElementQNr(current_element)));
+    else
+      current_frame = GetTreeElementSegment(current_element).pose(0);
+
+    Eigen::Isometry3d local_frame = convert(current_frame);
+    Eigen::Isometry3d global_frame{ parent_frame * local_frame };
+    link_transforms[current_element.segment.getName()] = global_frame;
+    for (const auto& child : current_element.children)
+    {
+      calculateTransformsHelper(link_transforms, q_in, child, global_frame);  // NOLINT
+    }
+  }
+}
+
+void KDLStateSolver::calculateTransforms(tesseract_common::TransformMap& link_transforms,
+                                         tesseract_common::TransformMap& joint_transforms,
                                          const KDL::JntArray& q_in,
                                          const KDL::SegmentMap::const_iterator& it,
                                          const Eigen::Isometry3d& parent_frame) const
 {
   std::lock_guard<std::mutex> guard(mutex_);
-  calculateTransformsHelper(state, q_in, it, parent_frame);  // NOLINT
+  calculateTransformsHelper(link_transforms, joint_transforms, q_in, it, parent_frame);  // NOLINT
+}
+
+void KDLStateSolver::calculateTransforms(tesseract_common::TransformMap& link_transforms,
+                                         const KDL::JntArray& q_in,
+                                         const KDL::SegmentMap::const_iterator& it,
+                                         const Eigen::Isometry3d& parent_frame) const
+{
+  std::lock_guard<std::mutex> guard(mutex_);
+  calculateTransformsHelper(link_transforms, q_in, it, parent_frame);  // NOLINT
 }
 
 bool KDLStateSolver::calcJacobianHelper(KDL::Jacobian& jacobian,

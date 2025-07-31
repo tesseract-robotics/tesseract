@@ -123,6 +123,32 @@ public:
    */
   IKSolutions calcInvKin(const KinGroupIKInput& tip_link_pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
+  /**
+   * @brief Calculates joint solutions given a pose.
+   * @details If redundant solutions are needed see utility function getRedundantSolutions.
+   * @param solutions The object to populated with solutions
+   * @param tip_link_poses The input information to solve inverse kinematics for. There must be an input for each link
+   * provided in getTipLinkNames
+   * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
+   * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
+   */
+  void calcInvKin(IKSolutions& solutions,
+                  const KinGroupIKInputs& tip_link_poses,
+                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
+
+  /**
+   * @brief Calculates joint solutions given a pose.
+   * @details If redundant solutions are needed see utility function getRedundantSolutions.
+   * @param solutions The object to populated with solutions
+   * @param tip_link_pose The input information to solve inverse kinematics for. This is a convenience function for
+   * when only one tip link exists
+   * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
+   * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
+   */
+  void calcInvKin(IKSolutions& solutions,
+                  const KinGroupIKInput& tip_link_pose,
+                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
+
   /** @brief Returns all possible working frames in which goal poses can be defined
    * @details The inverse kinematics solver requires that all poses be defined relative to a single working frame.
    * However if this working frame is static, a pose can be defined in another static frame in the environment and

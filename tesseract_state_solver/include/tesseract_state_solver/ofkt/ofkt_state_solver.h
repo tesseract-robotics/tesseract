@@ -95,6 +95,15 @@ public:
                       const tesseract_common::TransformMap& floating_joint_values = {}) const override final;
   SceneState getState(const tesseract_common::TransformMap& floating_joint_values) const override final;
 
+  void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                         const std::vector<std::string>& joint_names,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                         const tesseract_common::TransformMap& floating_joint_values) const override final;
+
+  void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+                         const std::vector<std::string>& joint_names,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
+
   SceneState getState() const override final;
 
   SceneState getRandomState() const override final;
@@ -201,7 +210,39 @@ private:
   void update(OFKTNode* node, bool update_required);
 
   /**
+   * @brief Check if update is required
+   * @param updated_parent_world_tf Transform to update
+   * @param joints The joint values
+   * @param floating_joints The floating joint values
+   * @param node he node to start from
+   * @param parent_world_tf The nodes parent's world transformaiton
+   * @return True if update is required
+   */
+  static bool updateRequired(Eigen::Isometry3d& updated_parent_world_tf,
+                             const std::unordered_map<std::string, double>& joints,
+                             const tesseract_common::TransformMap& floating_joints,
+                             const OFKTNode* node,
+                             const Eigen::Isometry3d& parent_world_tf);
+
+  /**
    * @brief This is a const version of the function above
+   * @param link_transform The link transforms to update
+   * @param joints The joint values
+   * @param floating_joints The floating joint values
+   * @param node The node to start from
+   * @param parent_world_tf The nodes parent's world transformaiton
+   * @param update_required Indicates if work transform update is required
+   */
+  void update(tesseract_common::TransformMap& link_transform,
+              const std::unordered_map<std::string, double>& joints,
+              const tesseract_common::TransformMap& floating_joints,
+              const OFKTNode* node,
+              const Eigen::Isometry3d& parent_world_tf,
+              bool update_required) const;
+
+  /**
+   * @brief This is a const version of the function above
+   * @param state The scene state to update
    * @param node The node to start from
    * @param parent_world_tf The nodes parent's world transformaiton
    * @param update_required Indicates if work transform update is required

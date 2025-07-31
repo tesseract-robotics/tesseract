@@ -1,6 +1,6 @@
 /**
- * @file inverse_kinematics.cpp
- * @brief Inverse kinematics functions.
+ * @file forward_kinematics.h
+ * @brief Forward kinematics functions.
  *
  * @author Levi Armstrong
  * @date April 15, 2018
@@ -24,20 +24,28 @@
  * limitations under the License.
  */
 
-#include <tesseract_kinematics/core/inverse_kinematics.h>
-#include <tesseract_kinematics/core/types.h>
+#include <tesseract_kinematics/core/forward_kinematics.h>
 
 #include <tesseract_common/eigen_types.h>
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 namespace tesseract_kinematics
 {
-InverseKinematics::~InverseKinematics() = default;
-
-IKSolutions InverseKinematics::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
-                                          const Eigen::Ref<const Eigen::VectorXd>& seed) const
+tesseract_common::TransformMap
+ForwardKinematics::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
-  IKSolutions solutions;
-  calcInvKin(solutions, tip_link_poses, seed);
-  return solutions;
+  tesseract_common::TransformMap transforms;
+  calcFwdKin(transforms, joint_angles);
+  return transforms;
+}
+
+Eigen::MatrixXd ForwardKinematics::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                                const std::string& link_name) const
+{
+  Eigen::MatrixXd jacobian(6, numJoints());
+  calcJacobian(jacobian, joint_angles, link_name);
+  return jacobian;
 }
 }  // namespace tesseract_kinematics

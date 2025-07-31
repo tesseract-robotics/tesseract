@@ -252,8 +252,9 @@ URInvKin& URInvKin::operator=(const URInvKin& other)
   return *this;
 }
 
-IKSolutions URInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
-                                 const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
+void URInvKin::calcInvKin(IKSolutions& solutions,
+                          const tesseract_common::TransformMap& tip_link_poses,
+                          const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);
   assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
@@ -268,8 +269,9 @@ IKSolutions URInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_
   auto num_sols = static_cast<std::size_t>(inverse(corrected_pose, params_, sols[0].data(), 0));
 
   // Check the output
-  IKSolutions solution_set;
-  solution_set.reserve(num_sols);
+  if (solutions.capacity() < (solutions.size() + num_sols))
+    solutions.reserve((solutions.size() + num_sols));
+
   for (std::size_t i = 0; i < num_sols; ++i)
   {
     Eigen::Map<Eigen::VectorXd> eigen_sol(sols[i].data(), static_cast<Eigen::Index>(sols[i].size()));
@@ -278,10 +280,8 @@ IKSolutions URInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_
     harmonizeTowardZero<double>(eigen_sol, REDUNDANT_CAPABLE_JOINTS);  // Modifies 'sol' in place
 
     // Add solution
-    solution_set.emplace_back(eigen_sol);
+    solutions.emplace_back(eigen_sol);
   }
-
-  return solution_set;
 }
 
 Eigen::Index URInvKin::numJoints() const { return 6; }

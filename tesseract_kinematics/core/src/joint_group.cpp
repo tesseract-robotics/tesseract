@@ -125,9 +125,16 @@ JointGroup& JointGroup::operator=(const JointGroup& other)
 
 tesseract_common::TransformMap JointGroup::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
-  tesseract_common::TransformMap state = state_solver_->getState(joint_names_, joint_angles).link_transforms;
-  state.insert(static_link_transforms_.begin(), static_link_transforms_.end());
-  return state;
+  tesseract_common::TransformMap transforms = state_solver_->getState(joint_names_, joint_angles).link_transforms;
+  transforms.insert(static_link_transforms_.begin(), static_link_transforms_.end());
+  return transforms;
+}
+
+void JointGroup::calcFwdKin(tesseract_common::TransformMap& transforms,
+                            const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+{
+  state_solver_->getLinkTransforms(transforms, joint_names_, joint_angles);
+  transforms.insert(static_link_transforms_.begin(), static_link_transforms_.end());
 }
 
 Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,

@@ -203,6 +203,7 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
         if (val < limits(*current_index, 1) ||
             tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
         {
+          /** @brief Making this thread_local does not help */
           Eigen::VectorXd new_sol = sol;
           new_sol[*current_index] = val;
 
@@ -233,6 +234,7 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
         if (val > limits(*current_index, 0) ||
             tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
         {
+          /** @brief Making this thread_local does not help */
           Eigen::VectorXd new_sol = sol;
           new_sol[*current_index] = val;
 
@@ -252,17 +254,19 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
 /**
  * @brief Kinematics only return solution between PI and -PI. Provided the limits it will append redundant solutions.
  * @details The list of redundant solutions does not include the provided solutions.
+ * @param solutions The object to populate with redundant solutions
  * @param sol The solution to calculate redundant solutions about
  * @param limits The joint limits of the robot
  * @param redundancy_capable_joints The indices of the redundancy capable joints
  */
 template <typename FloatType>
-inline std::vector<VectorX<FloatType>> getRedundantSolutions(const Eigen::Ref<const VectorX<FloatType>>& sol,
-                                                             const Eigen::MatrixX2d& limits,
-                                                             const std::vector<Eigen::Index>& redundancy_capable_joints)
+inline void getRedundantSolutions(std::vector<VectorX<FloatType>>& solutions,
+                                  const Eigen::Ref<const VectorX<FloatType>>& sol,
+                                  const Eigen::MatrixX2d& limits,
+                                  const std::vector<Eigen::Index>& redundancy_capable_joints)
 {
   if (redundancy_capable_joints.empty())
-    return {};
+    return;
 
   for (const Eigen::Index& idx : redundancy_capable_joints)
   {
@@ -275,12 +279,27 @@ inline std::vector<VectorX<FloatType>> getRedundantSolutions(const Eigen::Ref<co
     }
   }
 
-  std::vector<VectorX<FloatType>> redundant_sols;
-  getRedundantSolutionsHelper<FloatType>(redundant_sols,
+  getRedundantSolutionsHelper<FloatType>(solutions,
                                          sol.template cast<double>(),
                                          limits,
                                          redundancy_capable_joints.begin(),
                                          redundancy_capable_joints.end());
+}
+
+/**
+ * @brief Kinematics only return solution between PI and -PI. Provided the limits it will append redundant solutions.
+ * @details The list of redundant solutions does not include the provided solutions.
+ * @param sol The solution to calculate redundant solutions about
+ * @param limits The joint limits of the robot
+ * @param redundancy_capable_joints The indices of the redundancy capable joints
+ */
+template <typename FloatType>
+inline std::vector<VectorX<FloatType>> getRedundantSolutions(const Eigen::Ref<const VectorX<FloatType>>& sol,
+                                                             const Eigen::MatrixX2d& limits,
+                                                             const std::vector<Eigen::Index>& redundancy_capable_joints)
+{
+  std::vector<VectorX<FloatType>> redundant_sols;
+  getRedundantSolutions<FloatType>(redundant_sols, sol, limits, redundancy_capable_joints);
   return redundant_sols;
 }
 
