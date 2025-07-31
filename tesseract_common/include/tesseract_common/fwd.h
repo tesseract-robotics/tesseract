@@ -81,6 +81,7 @@ class Timer;
 // Profile Dictionary
 class Profile;
 class ProfileDictionary;
+class ProfilePluginFactory;
 }  // namespace tesseract_common
 
 #endif  // TESSERACT_COMMON_TESSERACT_COMMON_FWD_H
