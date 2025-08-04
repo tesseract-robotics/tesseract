@@ -114,16 +114,14 @@ bool BulletCastSimpleManager::addCollisionObject(const std::string& name,
 const CollisionShapesConst& BulletCastSimpleManager::getCollisionObjectGeometries(const std::string& name) const
 {
   auto cow = link2cow_.find(name);
-  return (link2cow_.find(name) != link2cow_.end()) ? cow->second->getCollisionGeometries() :
-                                                     EMPTY_COLLISION_SHAPES_CONST;
+  return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
 const tesseract_common::VectorIsometry3d&
 BulletCastSimpleManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
   auto cow = link2cow_.find(name);
-  return (link2cow_.find(name) != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() :
-                                                     EMPTY_COLLISION_SHAPES_TRANSFORMS;
+  return (cow != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
 bool BulletCastSimpleManager::hasCollisionObject(const std::string& name) const
