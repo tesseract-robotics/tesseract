@@ -135,10 +135,21 @@ bool satisfiesLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dyna
                      FloatType max_diff = static_cast<FloatType>(1e-6),
                      FloatType max_rel_diff = std::numeric_limits<FloatType>::epsilon())
 {
-  const auto eigen_max_diff = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(values.size(), max_diff);
-  const auto eigen_max_rel_diff = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>::Constant(values.size(), max_rel_diff);
-  // NOLINTNEXTLINE(clang-analyzer-core.uninitialized.UndefReturn)
-  return satisfiesLimits<FloatType>(values, limits, eigen_max_diff, eigen_max_rel_diff);
+  auto p = values.array();
+  auto l0 = limits.col(0).array();
+  auto l1 = limits.col(1).array();
+
+  auto lower_diff_abs = (p - l0).abs();
+  auto lower_diff = (lower_diff_abs <= max_diff);
+  auto lower_relative_diff = (lower_diff_abs <= max_rel_diff * p.abs().max(l0.abs()));
+  auto lower_check = p > l0 || lower_diff || lower_relative_diff;
+
+  auto upper_diff_abs = (p - l1).abs();
+  auto upper_diff = (upper_diff_abs <= max_diff);
+  auto upper_relative_diff = (upper_diff_abs <= max_rel_diff * p.abs().max(l1.abs()));
+  auto upper_check = p < l1 || upper_diff || upper_relative_diff;
+
+  return (lower_check.all() && upper_check.all());
 }
 
 /**
