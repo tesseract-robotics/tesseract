@@ -39,7 +39,7 @@ ForwardKinematics::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_ang
   tesseract_common::TransformMap transforms;
   calcFwdKin(transforms, joint_angles);
   return transforms;
-}
+}  // LCOV_EXCL_LINE
 
 Eigen::MatrixXd ForwardKinematics::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                                 const std::string& link_name) const
