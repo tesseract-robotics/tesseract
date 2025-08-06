@@ -75,6 +75,10 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_unique<ROPInvKin>(
+        scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution, ""));
+
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(std::make_unique<ROPInvKin>(
         scene_graph, scene_state, nullptr, 2.5, positioner_kin->clone(), positioner_resolution));
 
     // NOLINTNEXTLINE

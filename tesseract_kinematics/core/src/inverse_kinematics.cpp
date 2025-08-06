@@ -39,5 +39,5 @@ IKSolutions InverseKinematics::calcInvKin(const tesseract_common::TransformMap& 
   IKSolutions solutions;
   calcInvKin(solutions, tip_link_poses, seed);
   return solutions;
-}
+}  // LCOV_EXCL_LINE
 }  // namespace tesseract_kinematics
