@@ -518,6 +518,7 @@ std::unique_ptr<Environment::Implementation> Environment::Implementation::clone(
   cloned_env->timestamp = timestamp;
   cloned_env->current_state = current_state;
   cloned_env->current_state_timestamp = current_state_timestamp;
+  cloned_env->resource_locator = resource_locator;
 
   // There is not dynamic pointer cast for std::unique_ptr
   auto cloned_solver = state_solver->clone();
