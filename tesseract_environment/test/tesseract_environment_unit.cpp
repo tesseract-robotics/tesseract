@@ -175,6 +175,7 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
   EXPECT_FALSE(env->isInitialized());
   EXPECT_TRUE(env->clone() != nullptr);
   EXPECT_TRUE(env->getEventCallbacks().empty());
+  EXPECT_TRUE(env->getResourceLocator() == nullptr);
 
   bool success = false;
   switch (init_type)
@@ -2367,6 +2368,7 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
   // Clone the environment
   auto clone = env->clone();
   EXPECT_TRUE(clone->getEventCallbacks().empty());
+  EXPECT_TRUE(clone->getResourceLocator() != nullptr);
 
   // Timestamp should be identical after clone
   EXPECT_TRUE(timestamp == clone->getTimestamp());
@@ -2376,6 +2378,7 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
   EXPECT_EQ(clone->getName(), env->getName());
   EXPECT_EQ(clone->getRevision(), env->getRevision());
   EXPECT_EQ(clone->getInitRevision(), env->getInitRevision());
+  EXPECT_EQ(clone->getResourceLocator(), env->getResourceLocator());
 
   // Check that all links got cloned
   std::vector<std::string> link_names = env->getLinkNames();
