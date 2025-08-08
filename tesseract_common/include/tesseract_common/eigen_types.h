@@ -29,7 +29,7 @@ using VectorIsometry3d = AlignedVector<Eigen::Isometry3d>;
 using VectorVector4d = AlignedVector<Eigen::Vector4d>;
 using VectorVector3d = std::vector<Eigen::Vector3d>;
 using VectorVector2d = AlignedVector<Eigen::Vector2d>;
-using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
+using TransformMap = AlignedUnorderedMap<std::string, Eigen::Isometry3d>;
 using Toolpath = AlignedVector<VectorIsometry3d>;
 using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 }  // namespace tesseract_common

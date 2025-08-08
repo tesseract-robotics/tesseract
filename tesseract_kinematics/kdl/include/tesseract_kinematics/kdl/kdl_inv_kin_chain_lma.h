@@ -102,8 +102,9 @@ public:
                     Config kdl_config,
                     std::string solver_name = KDL_INV_KIN_CHAIN_LMA_SOLVER_NAME);
 
-  IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
-                         const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
+  void calcInvKin(IKSolutions& solutions,
+                  const tesseract_common::TransformMap& tip_link_poses,
+                  const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   std::vector<std::string> getJointNames() const override final;
   Eigen::Index numJoints() const override final;
@@ -121,9 +122,10 @@ private:
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
   /** @brief calcFwdKin helper function */
-  IKSolutions calcInvKinHelper(const Eigen::Isometry3d& pose,
-                               const Eigen::Ref<const Eigen::VectorXd>& seed,
-                               int segment_num = -1) const;
+  void calcInvKinHelper(IKSolutions& solutions,
+                        const Eigen::Isometry3d& pose,
+                        const Eigen::Ref<const Eigen::VectorXd>& seed,
+                        int segment_num = -1) const;
 };
 
 }  // namespace tesseract_kinematics

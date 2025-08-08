@@ -69,10 +69,14 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
       scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution);
 
   {  // Test failure
-    auto scene_graph_empty = std::make_shared<tesseract_scene_graph::SceneGraph>();
+    tesseract_scene_graph::SceneGraph scene_graph_empty;
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
-        *scene_graph_empty, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution));
+        scene_graph_empty, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution));
+
+    // NOLINTNEXTLINE
+    EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
+        scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution, ""));
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_shared<REPInvKin>(

@@ -66,8 +66,9 @@ inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
   return *this;
 }
 
-inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
-                                            const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
+inline void IKFastInvKin::calcInvKin(IKSolutions& solutions,
+                                     const tesseract_common::TransformMap& tip_link_poses,
+                                     const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);
   assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
@@ -89,7 +90,6 @@ inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap
 
   // Call IK (TODO: Make a better solution list class? One that uses vector instead of list)
   ikfast::IkSolutionList<IkReal> ikfast_solution_set;
-  std::vector<double> sols;
 
   // Lambda to add all possible solutions for a given combination of free joints, or nullptr if no free joints
   auto addSols = [&](const double* pfree) {
@@ -98,19 +98,19 @@ inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap
     // Unpack the solutions into the output vector
     const auto n_sols = ikfast_solution_set.GetNumSolutions();
 
-    std::vector<IkReal> ikfast_output;
-    ikfast_output.resize(n_sols * ikfast_dof);
+    thread_local std::vector<IkReal> ikfast_output;
+    ikfast_output.resize(ikfast_dof);
 
     for (std::size_t i = 0; i < n_sols; ++i)
     {
       // This actually walks the list EVERY time from the start of i.
       const auto& sol = ikfast_solution_set.GetSolution(i);
-      auto* out = ikfast_output.data() + i * ikfast_dof;
-      sol.GetSolution(out, pfree);
-    }
+      sol.GetSolution(ikfast_output.data(), pfree);
 
-    sols.insert(
-        end(sols), std::make_move_iterator(ikfast_output.begin()), std::make_move_iterator(ikfast_output.end()));
+      Eigen::Map<Eigen::VectorXd> eigen_sol(ikfast_output.data(), static_cast<Eigen::Index>(ikfast_dof));
+      if (eigen_sol.array().allFinite())
+        solutions.push_back(eigen_sol);
+    }
   };
 
   if (!free_joint_states_.empty())
@@ -124,19 +124,6 @@ inline IKSolutions IKFastInvKin::calcInvKin(const tesseract_common::TransformMap
   {
     addSols(nullptr);
   }
-
-  // Check the output
-  std::size_t num_sol = sols.size() / ikfast_dof;
-  IKSolutions solution_set;
-  solution_set.reserve(sols.size());
-  for (std::size_t i = 0; i < num_sol; i++)
-  {
-    Eigen::Map<Eigen::VectorXd> eigen_sol(sols.data() + ikfast_dof * i, static_cast<Eigen::Index>(ikfast_dof));
-    if (eigen_sol.array().allFinite())
-      solution_set.push_back(eigen_sol);
-  }
-
-  return solution_set;
 }
 
 inline Eigen::Index IKFastInvKin::numJoints() const { return static_cast<Eigen::Index>(GetNumJoints()); }

@@ -172,13 +172,12 @@ REPInvKin& REPInvKin::operator=(const REPInvKin& other)
   return *this;
 }
 
-IKSolutions REPInvKin::calcInvKinHelper(const tesseract_common::TransformMap& tip_link_poses,
-                                        const Eigen::Ref<const Eigen::VectorXd>& seed) const
+void REPInvKin::calcInvKinHelper(IKSolutions& solutions,
+                                 const tesseract_common::TransformMap& tip_link_poses,
+                                 const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
-  IKSolutions solutions;
   nested_ik(solutions, 0, dof_range_, tip_link_poses, positioner_pose, seed);
-  return solutions;
 }
 
 void REPInvKin::nested_ik(IKSolutions& solutions,
@@ -206,7 +205,9 @@ void REPInvKin::ikAt(IKSolutions& solutions,
                      Eigen::VectorXd& positioner_pose,
                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  tesseract_common::TransformMap positioner_poses = positioner_fwd_kin_->calcFwdKin(positioner_pose);
+  thread_local tesseract_common::TransformMap positioner_poses;
+  positioner_poses.clear();
+  positioner_fwd_kin_->calcFwdKin(positioner_poses, positioner_pose);
   Eigen::Isometry3d positioner_tf = positioner_poses[working_frame_];
 
   Eigen::Isometry3d robot_target_pose =
@@ -214,32 +215,39 @@ void REPInvKin::ikAt(IKSolutions& solutions,
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
 
-  tesseract_common::TransformMap robot_target_poses{ std::make_pair(manip_tip_link_, robot_target_pose) };
+  tesseract_common::TransformMap robot_target_poses;
+  robot_target_poses[manip_tip_link_] = robot_target_pose;
+
   auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
   auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
 
-  IKSolutions robot_solution_set = manip_inv_kin_->calcInvKin(robot_target_poses, seed.tail(robot_dof));
+  thread_local IKSolutions robot_solution_set;
+  robot_solution_set.clear();
+  manip_inv_kin_->calcInvKin(robot_solution_set, robot_target_poses, seed.tail(robot_dof));
   if (robot_solution_set.empty())
     return;
 
   for (const auto& robot_solution : robot_solution_set)
   {
+    /** @brief Making this thread_local does not help */
     Eigen::VectorXd full_sol;
     full_sol.resize(positioner_dof + robot_dof);
+
     full_sol.head(positioner_dof) = positioner_pose;
     full_sol.tail(robot_dof) = robot_solution;
     solutions.push_back(full_sol);
   }
 }
 
-IKSolutions REPInvKin::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
-                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
+void REPInvKin::calcInvKin(IKSolutions& solutions,
+                           const tesseract_common::TransformMap& tip_link_poses,
+                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
   assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());
   assert(std::abs(1.0 - tip_link_poses.at(manip_tip_link_).matrix().determinant()) < 1e-6);  // NOLINT
 
-  return calcInvKinHelper(tip_link_poses, seed);
+  calcInvKinHelper(solutions, tip_link_poses, seed);
 }
 
 std::vector<std::string> REPInvKin::getJointNames() const { return joint_names_; }

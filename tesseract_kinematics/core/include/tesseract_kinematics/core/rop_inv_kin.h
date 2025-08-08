@@ -103,8 +103,9 @@ public:
             const Eigen::VectorXd& positioner_sample_resolution,
             std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
 
-  IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
-                         const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
+  void calcInvKin(IKSolutions& solutions,
+                  const tesseract_common::TransformMap& tip_link_poses,
+                  const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   std::vector<std::string> getJointNames() const override final;
   Eigen::Index numJoints() const override final;
@@ -136,8 +137,9 @@ private:
             std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
 
   /** @brief calcFwdKin helper function */
-  IKSolutions calcInvKinHelper(const tesseract_common::TransformMap& tip_link_poses,
-                               const Eigen::Ref<const Eigen::VectorXd>& seed) const;
+  void calcInvKinHelper(IKSolutions& solutions,
+                        const tesseract_common::TransformMap& tip_link_poses,
+                        const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void nested_ik(IKSolutions& solutions,
                  int loop_level,

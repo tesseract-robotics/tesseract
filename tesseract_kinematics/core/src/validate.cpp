@@ -86,6 +86,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
             Eigen::Quaterniond(test1.linear()).angularDistance(Eigen::Quaterniond(test2.linear()));
         if (translation_distance > tol || angular_distance > tol)
         {
+          // LCOV_EXCL_START
           if (translation_distance > tol)
             ++translation_failures;
 
@@ -103,6 +104,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
             data.push_back(sol(i));
 
           failed_data.push_back(data);
+          // LCOV_EXCL_STOP
         }
         else
         {

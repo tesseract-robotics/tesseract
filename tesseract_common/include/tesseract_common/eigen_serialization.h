@@ -40,7 +40,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/tracking.hpp>
 #include <boost/serialization/tracking_enum.hpp>
+#include <boost/serialization/version.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#if (BOOST_VERSION < 107200)
+#include <tesseract_common/eigen_types.h>
+#endif
 
 namespace boost::serialization
 {
@@ -136,6 +141,21 @@ void serialize(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, con
 template <class Archive>
 void serialize(Archive& ar, Eigen::Matrix<double, 6, 1>& g, const unsigned int version);  // NOLINT
 
+#if (BOOST_VERSION < 107200)
+/****************************************/
+/************* TransformMap *************/
+/****************************************/
+
+template <class Archive>
+void save(Archive& ar, const tesseract_common::TransformMap& g, unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar, tesseract_common::TransformMap& g, unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar, tesseract_common::TransformMap& g, const unsigned int version);  // NOLINT
+#endif
+
 }  // namespace boost::serialization
 
 // Set the tracking to track_never for all Eigen types.
@@ -146,4 +166,7 @@ BOOST_CLASS_TRACKING(Eigen::VectorXi, boost::serialization::track_never)
 BOOST_CLASS_TRACKING(Eigen::Isometry3d, boost::serialization::track_never)
 BOOST_CLASS_TRACKING(Eigen::MatrixX2d, boost::serialization::track_never)
 
+#if (BOOST_VERSION < 107200)
+BOOST_CLASS_TRACKING(tesseract_common::TransformMap, boost::serialization::track_never)
+#endif
 #endif  // TESSERACT_COMMON_SERIALIZATION_H

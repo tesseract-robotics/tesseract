@@ -87,9 +87,10 @@ KDLInvKinChainLMA& KDLInvKinChainLMA::operator=(const KDLInvKinChainLMA& other)
   return *this;
 }
 
-IKSolutions KDLInvKinChainLMA::calcInvKinHelper(const Eigen::Isometry3d& pose,
-                                                const Eigen::Ref<const Eigen::VectorXd>& seed,
-                                                int /*segment_num*/) const
+void KDLInvKinChainLMA::calcInvKinHelper(IKSolutions& solutions,
+                                         const Eigen::Isometry3d& pose,
+                                         const Eigen::Ref<const Eigen::VectorXd>& seed,
+                                         int /*segment_num*/) const
 {
   assert(std::abs(1.0 - pose.matrix().determinant()) < 1e-6);  // NOLINT
   KDL::JntArray kdl_seed;
@@ -126,19 +127,19 @@ IKSolutions KDLInvKinChainLMA::calcInvKinHelper(const Eigen::Isometry3d& pose,
     CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK");
 #endif
     // LCOV_EXCL_STOP
-    return {};
+    return;
   }
 
   KDLToEigen(kdl_solution, solution);
-
-  return { solution };
+  solutions.push_back(solution);
 }
 
-IKSolutions KDLInvKinChainLMA::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
-                                          const Eigen::Ref<const Eigen::VectorXd>& seed) const
+void KDLInvKinChainLMA::calcInvKin(IKSolutions& solutions,
+                                   const tesseract_common::TransformMap& tip_link_poses,
+                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(tip_link_poses.find(kdl_data_.tip_link_name) != tip_link_poses.end());
-  return calcInvKinHelper(tip_link_poses.at(kdl_data_.tip_link_name), seed);
+  calcInvKinHelper(solutions, tip_link_poses.at(kdl_data_.tip_link_name), seed);
 }
 
 std::vector<std::string> KDLInvKinChainLMA::getJointNames() const { return kdl_data_.joint_names; }

@@ -38,6 +38,8 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+thread_local KDL::JntArray KDLFwdKinChain::kdl_joints_cache;
+
 KDLFwdKinChain::KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_graph,
                                const std::vector<std::pair<std::string, std::string>>& chains,
                                std::string solver_name)
@@ -74,50 +76,49 @@ KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& other)
   return *this;
 }
 
-tesseract_common::TransformMap
-KDLFwdKinChain::calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+void KDLFwdKinChain::calcFwdKinHelperAll(tesseract_common::TransformMap& transforms,
+                                         const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   if (joint_angles.rows() != kdl_data_.robot_chain.getNrOfJoints())
     throw std::runtime_error("kdl_joints size is not correct!");
 
-  KDL::JntArray kdl_joints;
-  EigenToKDL(joint_angles, kdl_joints);
+  if (kdl_joints_cache.rows() != joint_angles.rows())
+    kdl_joints_cache.data = joint_angles;
+  else
+    kdl_joints_cache.data.noalias() = joint_angles;
 
   KDL::Frame kdl_pose;
   {
     std::lock_guard<std::mutex> guard(mutex_);
-    fk_solver_->JntToCart(kdl_joints, kdl_pose);
+    fk_solver_->JntToCart(kdl_joints_cache, kdl_pose);
   }
 
-  Eigen::Isometry3d pose;
+  Eigen::Isometry3d& pose = transforms[kdl_data_.tip_link_name];
   KDLToEigen(kdl_pose, pose);
-
-  tesseract_common::TransformMap poses;
-  poses[kdl_data_.tip_link_name] = pose;
-
-  return poses;
 }
 
-tesseract_common::TransformMap KDLFwdKinChain::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+void KDLFwdKinChain::calcFwdKin(tesseract_common::TransformMap& transforms,
+                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(joint_angles.size() == numJoints());
-
-  return calcFwdKinHelperAll(joint_angles);
+  calcFwdKinHelperAll(transforms, joint_angles);
 }
 
 bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
                                         const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                         int segment_num) const
 {
-  KDL::JntArray kdl_joints;
-  EigenToKDL(joint_angles, kdl_joints);
+  if (kdl_joints_cache.rows() != joint_angles.rows())
+    kdl_joints_cache.data = joint_angles;
+  else
+    kdl_joints_cache.data.noalias() = joint_angles;
 
   // compute jacobian
   jacobian.resize(static_cast<unsigned>(joint_angles.size()));
   int success{ -1 };
   {
     std::lock_guard<std::mutex> guard(mutex_);
-    success = jac_solver_->JntToJac(kdl_joints, jacobian, segment_num);
+    success = jac_solver_->JntToJac(kdl_joints_cache, jacobian, segment_num);
   }
 
   if (success < 0)
@@ -129,22 +130,19 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
   return true;
 }
 
-Eigen::MatrixXd KDLFwdKinChain::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                             const std::string& link_name) const
+void KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                  const std::string& link_name) const
 {
   assert(joint_angles.size() == numJoints());
 
   int segment_nr = kdl_data_.segment_index.at(link_name);
   KDL::Jacobian kdl_jacobian;
 
-  if (calcJacobianHelper(kdl_jacobian, joint_angles, segment_nr))
-  {
-    Eigen::MatrixXd jacobian(6, numJoints());
-    KDLToEigen(kdl_jacobian, jacobian);
-    return jacobian;
-  }
+  if (!calcJacobianHelper(kdl_jacobian, joint_angles, segment_nr))
+    throw std::runtime_error("KDLFwdKinChain: Failed to calculate jacobian.");
 
-  throw std::runtime_error("KDLFwdKinChain: Failed to calculate jacobian.");
+  KDLToEigen(kdl_jacobian, jacobian);
 }
 
 std::vector<std::string> KDLFwdKinChain::getJointNames() const { return kdl_data_.joint_names; }

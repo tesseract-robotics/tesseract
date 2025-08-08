@@ -80,6 +80,16 @@ public:
   tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
+   * @brief Calculates tool pose of robot chain
+   * @details Throws an exception on failures (including uninitialized)
+   * @param transforms The object to populated with transforms
+   * @param pose Transform of end-of-tip relative to root
+   * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
+   */
+  void calcFwdKin(tesseract_common::TransformMap& transforms,
+                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
+
+  /**
    * @brief Calculated jacobian of robot given joint angles
    * @param joint_angles Input vector of joint angles
    * @param link_name The frame that the jacobian is calculated for

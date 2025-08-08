@@ -67,7 +67,7 @@ public:
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    * @return A map of tip link names and transforms
    */
-  virtual tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
+  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
    * @brief Calculates the Jacobian matrix for a given joint state in the reference frame of the specified link
@@ -78,8 +78,34 @@ public:
    * @param link_name The link name to calculate jacobian
    * @return The jacobian at the provided link
    */
-  virtual Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                       const std::string& link_name) const = 0;
+  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                               const std::string& link_name) const;
+
+  /**
+   * @brief Calculates the transform for each tip link in the kinematic group
+   * @details
+   * This should return a transform for every link listed in getTipLinkNames()
+   * Throws an exception on failures (including uninitialized)
+   * @param transforms(out) The object to populate with transforms
+   * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
+   * @return A map of tip link names and transforms
+   */
+  virtual void calcFwdKin(tesseract_common::TransformMap& transforms,
+                          const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
+
+  /**
+   * @brief Calculates the Jacobian matrix for a given joint state in the reference frame of the specified link
+   * @details
+   * This should be able to return a jacobian given any link listed in getTipLinkNames()
+   * Throws an exception on failures (including uninitialized)
+   * @param jacobian[out] The object to populate (assumes already the correct size)
+   * @param joint_angles Input vector of joint angles
+   * @param link_name The link name to calculate jacobian
+   * @return The jacobian at the provided link
+   */
+  virtual void calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                            const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                            const std::string& link_name) const = 0;
 
   /** @brief Get the robot base link name */
   virtual std::string getBaseLinkName() const = 0;

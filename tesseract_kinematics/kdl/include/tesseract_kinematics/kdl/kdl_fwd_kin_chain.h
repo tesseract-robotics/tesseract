@@ -88,10 +88,12 @@ public:
                  const std::vector<std::pair<std::string, std::string> >& chains,
                  std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
 
-  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
+  void calcFwdKin(tesseract_common::TransformMap& transforms,
+                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
-  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& joint_link_name) const override final;
+  void calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                    const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                    const std::string& joint_link_name) const override final;
 
   std::string getBaseLinkName() const override final;
   std::vector<std::string> getJointNames() const override final;
@@ -108,8 +110,11 @@ private:
   std::string solver_name_{ KDL_FWD_KIN_CHAIN_SOLVER_NAME };   /**< @brief Name of this solver */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
+  static thread_local KDL::JntArray kdl_joints_cache;
+
   /** @brief calcFwdKin helper function */
-  tesseract_common::TransformMap calcFwdKinHelperAll(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
+  void calcFwdKinHelperAll(tesseract_common::TransformMap& transforms,
+                           const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /** @brief calcJacobian helper function */
   bool calcJacobianHelper(KDL::Jacobian& jacobian,

@@ -121,6 +121,9 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
   std::string base_link_name = "base_link";
   std::string tip_link_name = "tool0";
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  std::vector<std::string> invalid_joint_names{
+    "joint_a1", "joint_a2", "joint_a3", "joint_a4", "joint_a5", "joint_a6"
+  };
 
   opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
 
@@ -129,6 +132,7 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
   tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract_scene_graph::SceneState scene_state = state_solver.getState();
 
+  // Check Inverse Kinematics
   KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
 
   runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
