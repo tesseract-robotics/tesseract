@@ -38,6 +38,8 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+thread_local KDL::JntArray KDLFwdKinChain::kdl_joints_cache;
+
 KDLFwdKinChain::KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_graph,
                                const std::vector<std::pair<std::string, std::string>>& chains,
                                std::string solver_name)
@@ -80,16 +82,15 @@ void KDLFwdKinChain::calcFwdKinHelperAll(tesseract_common::TransformMap& transfo
   if (joint_angles.rows() != kdl_data_.robot_chain.getNrOfJoints())
     throw std::runtime_error("kdl_joints size is not correct!");
 
-  thread_local KDL::JntArray kdl_joints;
-  if (kdl_joints.rows() != joint_angles.rows())
-    kdl_joints.data = joint_angles;
+  if (kdl_joints_cache.rows() != joint_angles.rows())
+    kdl_joints_cache.data = joint_angles;
   else
-    kdl_joints.data.noalias() = joint_angles;
+    kdl_joints_cache.data.noalias() = joint_angles;
 
   KDL::Frame kdl_pose;
   {
     std::lock_guard<std::mutex> guard(mutex_);
-    fk_solver_->JntToCart(kdl_joints, kdl_pose);
+    fk_solver_->JntToCart(kdl_joints_cache, kdl_pose);
   }
 
   Eigen::Isometry3d& pose = transforms[kdl_data_.tip_link_name];
@@ -107,18 +108,17 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
                                         const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                         int segment_num) const
 {
-  thread_local KDL::JntArray kdl_joints;
-  if (kdl_joints.rows() != joint_angles.rows())
-    kdl_joints.data = joint_angles;
+  if (kdl_joints_cache.rows() != joint_angles.rows())
+    kdl_joints_cache.data = joint_angles;
   else
-    kdl_joints.data.noalias() = joint_angles;
+    kdl_joints_cache.data.noalias() = joint_angles;
 
   // compute jacobian
   jacobian.resize(static_cast<unsigned>(joint_angles.size()));
   int success{ -1 };
   {
     std::lock_guard<std::mutex> guard(mutex_);
-    success = jac_solver_->JntToJac(kdl_joints, jacobian, segment_num);
+    success = jac_solver_->JntToJac(kdl_joints_cache, jacobian, segment_num);
   }
 
   if (success < 0)

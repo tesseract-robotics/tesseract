@@ -110,6 +110,8 @@ private:
   std::string solver_name_{ KDL_FWD_KIN_CHAIN_SOLVER_NAME };   /**< @brief Name of this solver */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
+  static thread_local KDL::JntArray kdl_joints_cache;
+
   /** @brief calcFwdKin helper function */
   void calcFwdKinHelperAll(tesseract_common::TransformMap& transforms,
                            const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
