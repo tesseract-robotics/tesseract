@@ -43,6 +43,9 @@ using Eigen::VectorXd;
 // This is compared directory to the OFKT state solver results so disable code coverage
 
 // LCOV_EXCL_START
+
+thread_local KDL::JntArray KDLStateSolver::kdl_joints_cache;
+
 StateSolver::UPtr KDLStateSolver::clone() const { return std::make_unique<KDLStateSolver>(*this); }
 
 KDLStateSolver::KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph)
@@ -143,15 +146,14 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
 {
   SceneState state{ current_state_ };
 
-  thread_local KDL::JntArray jnt_array;
-  if (jnt_array.rows() != kdl_jnt_array_.rows())
-    jnt_array = kdl_jnt_array_;
+  if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
+    kdl_joints_cache = kdl_jnt_array_;
   else
-    jnt_array.data.noalias() = kdl_jnt_array_.data;
+    kdl_joints_cache.data.noalias() = kdl_jnt_array_.data;
 
   for (auto i = 0U; i < data_.active_joint_names.size(); ++i)
   {
-    if (setJointValuesHelper(jnt_array, data_.active_joint_names[i], joint_values[i]))
+    if (setJointValuesHelper(kdl_joints_cache, data_.active_joint_names[i], joint_values[i]))
       state.joints[data_.active_joint_names[i]] = joint_values[i];
   }
 
@@ -159,7 +161,7 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
 
   // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
   calculateTransforms(
-      state.link_transforms, state.joint_transforms, jnt_array, data_.tree.getRootSegment(), parent_frame);
+      state.link_transforms, state.joint_transforms, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
   return state;
 }
 
@@ -167,15 +169,15 @@ SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double
                                     const tesseract_common::TransformMap& /*floating_joint_values*/) const
 {
   SceneState state{ current_state_ };
-  thread_local KDL::JntArray jnt_array;
-  if (jnt_array.rows() != kdl_jnt_array_.rows())
-    jnt_array = kdl_jnt_array_;
+
+  if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
+    kdl_joints_cache = kdl_jnt_array_;
   else
-    jnt_array.data.noalias() = kdl_jnt_array_.data;
+    kdl_joints_cache.data.noalias() = kdl_jnt_array_.data;
 
   for (const auto& joint : joint_values)
   {
-    if (setJointValuesHelper(jnt_array, joint.first, joint.second))
+    if (setJointValuesHelper(kdl_joints_cache, joint.first, joint.second))
       state.joints[joint.first] = joint.second;
   }
 
@@ -183,7 +185,7 @@ SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double
 
   // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
   calculateTransforms(
-      state.link_transforms, state.joint_transforms, jnt_array, data_.tree.getRootSegment(), parent_frame);
+      state.link_transforms, state.joint_transforms, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
 
   return state;
 }
@@ -202,17 +204,16 @@ void KDLStateSolver::getLinkTransforms(tesseract_common::TransformMap& link_tran
 {
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
 
-  thread_local KDL::JntArray jnt_array;
-  if (jnt_array.rows() != kdl_jnt_array_.rows())
-    jnt_array = kdl_jnt_array_;
+  if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
+    kdl_joints_cache = kdl_jnt_array_;
   else
-    jnt_array.data.noalias() = kdl_jnt_array_.data;
+    kdl_joints_cache.data.noalias() = kdl_jnt_array_.data;
 
   for (auto i = 0U; i < joint_names.size(); ++i)
-    setJointValuesHelper(jnt_array, joint_names[i], joint_values[i]);
+    setJointValuesHelper(kdl_joints_cache, joint_names[i], joint_values[i]);
 
   // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
-  calculateTransforms(link_transforms, jnt_array, data_.tree.getRootSegment(), parent_frame);
+  calculateTransforms(link_transforms, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
 }
 
 SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
@@ -221,15 +222,14 @@ SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
 {
   SceneState state{ current_state_ };
 
-  thread_local KDL::JntArray jnt_array;
-  if (jnt_array.rows() != kdl_jnt_array_.rows())
-    jnt_array = kdl_jnt_array_;
+  if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
+    kdl_joints_cache = kdl_jnt_array_;
   else
-    jnt_array.data.noalias() = kdl_jnt_array_.data;
+    kdl_joints_cache.data.noalias() = kdl_jnt_array_.data;
 
   for (auto i = 0U; i < joint_names.size(); ++i)
   {
-    if (setJointValuesHelper(jnt_array, joint_names[i], joint_values[i]))
+    if (setJointValuesHelper(kdl_joints_cache, joint_names[i], joint_values[i]))
       state.joints[joint_names[i]] = joint_values[i];
   }
 
@@ -237,7 +237,7 @@ SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
 
   // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
   calculateTransforms(
-      state.link_transforms, state.joint_transforms, jnt_array, data_.tree.getRootSegment(), parent_frame);
+      state.link_transforms, state.joint_transforms, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
 
   return state;
 }
