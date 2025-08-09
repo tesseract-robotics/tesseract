@@ -139,7 +139,7 @@ private:
   tesseract_common::KinematicLimits limits_; /**< The kinematic limits */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
-  static thread_local KDL::JntArray kdl_joints_cache;
+  static thread_local KDL::JntArray kdl_joints_cache;  // NOLINT
 
   void calculateTransforms(tesseract_common::TransformMap& link_transforms,
                            const KDL::JntArray& q_in,

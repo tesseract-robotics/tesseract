@@ -44,7 +44,7 @@ using Eigen::VectorXd;
 
 // LCOV_EXCL_START
 
-thread_local KDL::JntArray KDLStateSolver::kdl_joints_cache;
+thread_local KDL::JntArray KDLStateSolver::kdl_joints_cache;  // NOLINT
 
 StateSolver::UPtr KDLStateSolver::clone() const { return std::make_unique<KDLStateSolver>(*this); }
 
