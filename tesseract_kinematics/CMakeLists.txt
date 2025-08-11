@@ -12,6 +12,7 @@ endif()
 # All of these are used by all components so to avoid having them in each they are include here
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
+find_package(Boost REQUIRED COMPONENTS thread)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_state_solver REQUIRED)
 find_package(tesseract_common REQUIRED)

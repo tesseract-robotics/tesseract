@@ -44,7 +44,11 @@ using Eigen::VectorXd;
 
 // LCOV_EXCL_START
 
+#ifdef USE_THREAD_LOCAL
 thread_local KDL::JntArray KDLStateSolver::kdl_joints_cache;  // NOLINT
+#else
+boost::thread_specific_ptr<KDL::JntArray> KDLStateSolver::kdl_joints_cache_ptr;  // NOLINT
+#endif
 
 StateSolver::UPtr KDLStateSolver::clone() const { return std::make_unique<KDLStateSolver>(*this); }
 
@@ -146,6 +150,13 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
 {
   SceneState state{ current_state_ };
 
+#ifndef USE_THREAD_LOCAL
+  if (kdl_joints_cache_ptr.get() == nullptr)
+    kdl_joints_cache_ptr.reset(new KDL::JntArray());
+
+  KDL::JntArray& kdl_joints_cache = *kdl_joints_cache_ptr;
+#endif
+
   if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
     kdl_joints_cache = kdl_jnt_array_;
   else
@@ -169,6 +180,13 @@ SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double
                                     const tesseract_common::TransformMap& /*floating_joint_values*/) const
 {
   SceneState state{ current_state_ };
+
+#ifndef USE_THREAD_LOCAL
+  if (kdl_joints_cache_ptr.get() == nullptr)
+    kdl_joints_cache_ptr.reset(new KDL::JntArray());
+
+  KDL::JntArray& kdl_joints_cache = *kdl_joints_cache_ptr;
+#endif
 
   if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
     kdl_joints_cache = kdl_jnt_array_;
@@ -204,6 +222,13 @@ void KDLStateSolver::getLinkTransforms(tesseract_common::TransformMap& link_tran
 {
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
 
+#ifndef USE_THREAD_LOCAL
+  if (kdl_joints_cache_ptr.get() == nullptr)
+    kdl_joints_cache_ptr.reset(new KDL::JntArray());
+
+  KDL::JntArray& kdl_joints_cache = *kdl_joints_cache_ptr;
+#endif
+
   if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
     kdl_joints_cache = kdl_jnt_array_;
   else
@@ -221,6 +246,13 @@ SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
                                     const tesseract_common::TransformMap& /*floating_joint_values*/) const
 {
   SceneState state{ current_state_ };
+
+#ifndef USE_THREAD_LOCAL
+  if (kdl_joints_cache_ptr.get() == nullptr)
+    kdl_joints_cache_ptr.reset(new KDL::JntArray());
+
+  KDL::JntArray& kdl_joints_cache = *kdl_joints_cache_ptr;
+#endif
 
   if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
     kdl_joints_cache = kdl_jnt_array_;

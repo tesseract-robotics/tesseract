@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 #include <console_bridge/console.h>
 #include <tesseract_kinematics/ikfast/external/ikfast.h>
+#include <boost/thread/tss.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/ikfast/ikfast_inv_kin.h>
@@ -98,7 +99,16 @@ inline void IKFastInvKin::calcInvKin(IKSolutions& solutions,
     // Unpack the solutions into the output vector
     const auto n_sols = ikfast_solution_set.GetNumSolutions();
 
+#ifdef USE_THREAD_LOCAL
     thread_local std::vector<IkReal> ikfast_output;
+#else
+    static boost::thread_specific_ptr<std::vector<IkReal>> ikfast_output_ptr;
+    if (ikfast_output_ptr.get() == nullptr)
+      ikfast_output_ptr.reset(new std::vector<IkReal>());
+
+    std::vector<IkReal>& ikfast_output = *ikfast_output_ptr;
+#endif
+
     ikfast_output.resize(ikfast_dof);
 
     for (std::size_t i = 0; i < n_sols; ++i)
