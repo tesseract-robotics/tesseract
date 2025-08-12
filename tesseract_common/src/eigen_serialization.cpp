@@ -285,9 +285,7 @@ void serialize(Archive& ar, tesseract_common::TransformMap& g, const unsigned in
 /********************************************************************/
 
 template <class Archive>
-void save(Archive& ar,
-          const tesseract_common::AlignedUnorderedMap<std::string, tesseract_common::TransformMap>& g,
-          unsigned int version)
+void save(Archive& ar, const TesseractUnorderedMapStringTransformMap& g, unsigned int version)
 {
   tesseract_common::AlignedMap<std::string, tesseract_common::AlignedMap<std::string, Eigen::Isometry3d>> map_data;
   for (const auto& pair : g)
@@ -301,9 +299,7 @@ void save(Archive& ar,
 }
 
 template <class Archive>
-void load(Archive& ar,
-          tesseract_common::AlignedUnorderedMap<std::string, tesseract_common::TransformMap>& g,
-          unsigned int version)
+void load(Archive& ar, TesseractUnorderedMapStringTransformMap& g, unsigned int version)
 {
   tesseract_common::AlignedMap<std::string, tesseract_common::AlignedMap<std::string, Eigen::Isometry3d>> map_data;
   ar& BOOST_SERIALIZATION_NVP(map_data);
@@ -317,9 +313,7 @@ void load(Archive& ar,
 }
 
 template <class Archive>
-void serialize(Archive& ar,
-               tesseract_common::AlignedUnorderedMap<std::string, tesseract_common::TransformMap>& g,
-               const unsigned int version)
+void serialize(Archive& ar, TesseractUnorderedMapStringTransformMap& g, const unsigned int version)
 {
   split_free(ar, g, version);
 }
@@ -339,6 +333,5 @@ TESSERACT_SERIALIZE_FREE_ARCHIVES_INSTANTIATE(Eigen::Matrix<double COMMA 6 COMMA
 
 #if (BOOST_VERSION < 107200)
 TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(tesseract_common::TransformMap)
-TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(
-    tesseract_common::AlignedUnorderedMap<std::string COMMA tesseract_common::TransformMap>)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(boost::serialization::TesseractUnorderedMapStringTransformMap)
 #endif
