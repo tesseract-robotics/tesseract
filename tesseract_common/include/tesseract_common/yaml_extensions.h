@@ -275,6 +275,30 @@ struct convert<Eigen::Vector3d>
 };
 
 template <>
+struct convert<Eigen::Matrix<double, 6, 1>>
+{
+  static Node encode(const Eigen::Matrix<double, 6, 1>& rhs)
+  {
+    Node node;
+    for (long i = 0; i < 6; ++i)
+      node.push_back(rhs(i));
+
+    return node;
+  }
+
+  static bool decode(const Node& node, Eigen::Matrix<double, 6, 1>& rhs)
+  {
+    if (!node.IsSequence() || (node.size() != 6))
+      return false;
+
+    for (long i = 0; i < 6; ++i)
+      rhs(i) = node[i].as<double>();
+
+    return true;
+  }
+};
+
+template <>
 struct convert<tesseract_common::ProfilesPluginInfo>
 {
   inline static const std::string SEARCH_PATHS_KEY{ "search_paths" };
