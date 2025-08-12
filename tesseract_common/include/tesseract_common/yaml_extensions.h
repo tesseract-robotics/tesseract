@@ -206,7 +206,7 @@ struct convert<Eigen::VectorXd>
 {
   static Node encode(const Eigen::VectorXd& rhs)
   {
-    Node node;
+    Node node(NodeType::Sequence);
     for (long i = 0; i < static_cast<long>(rhs.size()); ++i)
       node.push_back(rhs(i));
 
@@ -231,7 +231,7 @@ struct convert<Eigen::Vector2d>
 {
   static Node encode(const Eigen::Vector2d& rhs)
   {
-    Node node;
+    Node node(NodeType::Sequence);
     for (long i = 0; i < rhs.size(); ++i)
       node.push_back(rhs(i));
 
@@ -255,7 +255,7 @@ struct convert<Eigen::Vector3d>
 {
   static Node encode(const Eigen::Vector3d& rhs)
   {
-    Node node;
+    Node node(NodeType::Sequence);
     for (long i = 0; i < rhs.size(); ++i)
       node.push_back(rhs(i));
 
@@ -279,7 +279,7 @@ struct convert<Eigen::Matrix<double, 6, 1>>
 {
   static Node encode(const Eigen::Matrix<double, 6, 1>& rhs)
   {
-    Node node;
+    Node node(NodeType::Sequence);
     for (long i = 0; i < 6; ++i)
       node.push_back(rhs(i));
 
