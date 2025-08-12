@@ -3992,6 +3992,298 @@ TEST(TesseractCommonUnit, YamlStdUnorderedMapStringBool)  // NOLINT
   }
 }
 
+// Eigen YAML start tests here
+TEST(TesseractCommonUnit, EigenIsometry3dYamlUnit)  // NOLINT
+{
+  // Test data: identity transform with translation
+  Eigen::Isometry3d original = Eigen::Isometry3d::Identity();
+  original.translation() = Eigen::Vector3d(1.0, 2.0, 3.0);
+  Eigen::Quaterniond quat(0.7071, 0.0, 0.0, 0.7071);  // 90 degrees around X
+  quat.normalize();
+  original.linear() = quat.toRotationMatrix();
+
+  // Test encode
+  YAML::Node encoded = YAML::convert<Eigen::Isometry3d>::encode(original);
+  EXPECT_TRUE(encoded.IsMap());
+  EXPECT_TRUE(encoded["position"]);
+  EXPECT_TRUE(encoded["orientation"]);
+
+  // Verify encoded values
+  EXPECT_DOUBLE_EQ(encoded["position"]["x"].as<double>(), 1.0);
+  EXPECT_DOUBLE_EQ(encoded["position"]["y"].as<double>(), 2.0);
+  EXPECT_DOUBLE_EQ(encoded["position"]["z"].as<double>(), 3.0);
+
+  // Test successful decode
+  Eigen::Isometry3d decoded;
+  bool decode_result = YAML::convert<Eigen::Isometry3d>::decode(encoded, decoded);
+  EXPECT_TRUE(decode_result);
+
+  // Verify decoded values
+  EXPECT_DOUBLE_EQ(decoded.translation().x(), 1.0);
+  EXPECT_DOUBLE_EQ(decoded.translation().y(), 2.0);
+  EXPECT_DOUBLE_EQ(decoded.translation().z(), 3.0);
+
+  // Test roundtrip (encode -> decode -> compare)
+  YAML::Node roundtrip_encoded = YAML::convert<Eigen::Isometry3d>::encode(decoded);
+  Eigen::Isometry3d roundtrip_decoded;
+  YAML::convert<Eigen::Isometry3d>::decode(roundtrip_encoded, roundtrip_decoded);
+
+  EXPECT_TRUE(original.translation().isApprox(roundtrip_decoded.translation(), 1e-6));
+  EXPECT_TRUE(original.linear().isApprox(roundtrip_decoded.linear(), 1e-6));
+
+  // Test RPY orientation format
+  std::string rpy_yaml = R"(
+    position:
+      x: 1.0
+      y: 2.0
+      z: 3.0
+    orientation:
+      r: 1.5708
+      p: 0.0
+      y: 0.0
+  )";
+  YAML::Node rpy_node = YAML::Load(rpy_yaml);
+  Eigen::Isometry3d rpy_decoded;
+  bool rpy_result = YAML::convert<Eigen::Isometry3d>::decode(rpy_node, rpy_decoded);
+  EXPECT_TRUE(rpy_result);
+  EXPECT_DOUBLE_EQ(rpy_decoded.translation().x(), 1.0);
+
+  // Test faulty decode - missing orientation
+  std::string faulty_yaml1 = R"(
+    position:
+      x: 1.0
+      y: 2.0
+      z: 3.0
+  )";
+  YAML::Node faulty_node1 = YAML::Load(faulty_yaml1);
+  Eigen::Isometry3d faulty_decoded1;
+  EXPECT_ANY_THROW(YAML::convert<Eigen::Isometry3d>::decode(faulty_node1, faulty_decoded1));
+
+  // Test faulty decode - incomplete orientation
+  std::string faulty_yaml2 = R"(
+    position:
+      x: 1.0
+      y: 2.0
+      z: 3.0
+    orientation:
+      x: 0.0
+      y: 0.0
+  )";
+  YAML::Node faulty_node2 = YAML::Load(faulty_yaml2);
+  Eigen::Isometry3d faulty_decoded2;
+  EXPECT_ANY_THROW(YAML::convert<Eigen::Isometry3d>::decode(faulty_node2, faulty_decoded2));
+}
+
+TEST(TesseractCommonUnit, EigenVectorXdYamlUnit)  // NOLINT
+{
+  // Test data: variable length vector
+  Eigen::VectorXd original(5);
+  original << 1.1, 2.2, 3.3, 4.4, 5.5;
+
+  // Test encode
+  YAML::Node encoded = YAML::convert<Eigen::VectorXd>::encode(original);
+  EXPECT_TRUE(encoded.IsSequence());
+  EXPECT_EQ(encoded.size(), 5);
+  EXPECT_DOUBLE_EQ(encoded[0].as<double>(), 1.1);
+  EXPECT_DOUBLE_EQ(encoded[4].as<double>(), 5.5);
+
+  // Test successful decode
+  Eigen::VectorXd decoded;
+  bool decode_result = YAML::convert<Eigen::VectorXd>::decode(encoded, decoded);
+  EXPECT_TRUE(decode_result);
+  EXPECT_EQ(decoded.size(), 5);
+  EXPECT_DOUBLE_EQ(decoded(0), 1.1);
+  EXPECT_DOUBLE_EQ(decoded(4), 5.5);
+
+  // Test roundtrip (encode -> decode -> compare)
+  YAML::Node roundtrip_encoded = YAML::convert<Eigen::VectorXd>::encode(decoded);
+  Eigen::VectorXd roundtrip_decoded;
+  YAML::convert<Eigen::VectorXd>::decode(roundtrip_encoded, roundtrip_decoded);
+
+  EXPECT_TRUE(original.isApprox(roundtrip_decoded, 1e-6));
+
+  // Test empty vector
+  Eigen::VectorXd empty_vector(0);
+  YAML::Node empty_encoded = YAML::convert<Eigen::VectorXd>::encode(empty_vector);
+  Eigen::VectorXd empty_decoded;
+  bool empty_result = YAML::convert<Eigen::VectorXd>::decode(empty_encoded, empty_decoded);
+  EXPECT_TRUE(empty_result);
+  EXPECT_EQ(empty_decoded.size(), 0);
+
+  // Test faulty decode - not a sequence
+  std::string faulty_yaml = R"(
+    x: 1.0
+    y: 2.0
+  )";
+  YAML::Node faulty_node = YAML::Load(faulty_yaml);
+  Eigen::VectorXd faulty_decoded;
+  bool faulty_result = YAML::convert<Eigen::VectorXd>::decode(faulty_node, faulty_decoded);
+  EXPECT_FALSE(faulty_result);
+}
+
+TEST(TesseractCommonUnit, EigenVector2dYamlUnit)  // NOLINT
+{
+  // Test data: 2D vector
+  Eigen::Vector2d original(1.5, 2.5);
+
+  // Test encode
+  YAML::Node encoded = YAML::convert<Eigen::Vector2d>::encode(original);
+  EXPECT_TRUE(encoded.IsSequence());
+  EXPECT_EQ(encoded.size(), 2);
+  EXPECT_DOUBLE_EQ(encoded[0].as<double>(), 1.5);
+  EXPECT_DOUBLE_EQ(encoded[1].as<double>(), 2.5);
+
+  // Test successful decode
+  Eigen::Vector2d decoded;
+  bool decode_result = YAML::convert<Eigen::Vector2d>::decode(encoded, decoded);
+  EXPECT_TRUE(decode_result);
+  EXPECT_DOUBLE_EQ(decoded(0), 1.5);
+  EXPECT_DOUBLE_EQ(decoded(1), 2.5);
+
+  // Test roundtrip (encode -> decode -> compare)
+  YAML::Node roundtrip_encoded = YAML::convert<Eigen::Vector2d>::encode(decoded);
+  Eigen::Vector2d roundtrip_decoded;
+  YAML::convert<Eigen::Vector2d>::decode(roundtrip_encoded, roundtrip_decoded);
+
+  EXPECT_TRUE(original.isApprox(roundtrip_decoded, 1e-6));
+
+  // Test faulty decode - wrong size sequence (too small)
+  std::string faulty_yaml1 = R"([1.0])";
+  YAML::Node faulty_node1 = YAML::Load(faulty_yaml1);
+  Eigen::Vector2d faulty_decoded1;
+  bool faulty_result1 = YAML::convert<Eigen::Vector2d>::decode(faulty_node1, faulty_decoded1);
+  EXPECT_FALSE(faulty_result1);
+
+  // Test faulty decode - wrong size sequence (too large)
+  std::string faulty_yaml2 = R"([1.0, 2.0, 3.0])";
+  YAML::Node faulty_node2 = YAML::Load(faulty_yaml2);
+  Eigen::Vector2d faulty_decoded2;
+  bool faulty_result2 = YAML::convert<Eigen::Vector2d>::decode(faulty_node2, faulty_decoded2);
+  EXPECT_FALSE(faulty_result2);
+
+  // Test faulty decode - not a sequence
+  std::string faulty_yaml3 = R"(
+    x: 1.0
+    y: 2.0
+  )";
+  YAML::Node faulty_node3 = YAML::Load(faulty_yaml3);
+  Eigen::Vector2d faulty_decoded3;
+  bool faulty_result3 = YAML::convert<Eigen::Vector2d>::decode(faulty_node3, faulty_decoded3);
+  EXPECT_FALSE(faulty_result3);
+}
+
+TEST(TesseractCommonUnit, EigenVector3dYamlUnit)  // NOLINT
+{
+  // Test data: 3D vector
+  Eigen::Vector3d original(1.1, 2.2, 3.3);
+
+  // Test encode
+  YAML::Node encoded = YAML::convert<Eigen::Vector3d>::encode(original);
+  EXPECT_TRUE(encoded.IsSequence());
+  EXPECT_EQ(encoded.size(), 3);
+  EXPECT_DOUBLE_EQ(encoded[0].as<double>(), 1.1);
+  EXPECT_DOUBLE_EQ(encoded[1].as<double>(), 2.2);
+  EXPECT_DOUBLE_EQ(encoded[2].as<double>(), 3.3);
+
+  // Test successful decode
+  Eigen::Vector3d decoded;
+  bool decode_result = YAML::convert<Eigen::Vector3d>::decode(encoded, decoded);
+  EXPECT_TRUE(decode_result);
+  EXPECT_DOUBLE_EQ(decoded(0), 1.1);
+  EXPECT_DOUBLE_EQ(decoded(1), 2.2);
+  EXPECT_DOUBLE_EQ(decoded(2), 3.3);
+
+  // Test roundtrip (encode -> decode -> compare)
+  YAML::Node roundtrip_encoded = YAML::convert<Eigen::Vector3d>::encode(decoded);
+  Eigen::Vector3d roundtrip_decoded;
+  YAML::convert<Eigen::Vector3d>::decode(roundtrip_encoded, roundtrip_decoded);
+
+  EXPECT_TRUE(original.isApprox(roundtrip_decoded, 1e-6));
+
+  // Test faulty decode - wrong size sequence (too small)
+  std::string faulty_yaml1 = R"([1.0, 2.0])";
+  YAML::Node faulty_node1 = YAML::Load(faulty_yaml1);
+  Eigen::Vector3d faulty_decoded1;
+  bool faulty_result1 = YAML::convert<Eigen::Vector3d>::decode(faulty_node1, faulty_decoded1);
+  EXPECT_FALSE(faulty_result1);
+
+  // Test faulty decode - wrong size sequence (too large)
+  std::string faulty_yaml2 = R"([1.0, 2.0, 3.0, 4.0])";
+  YAML::Node faulty_node2 = YAML::Load(faulty_yaml2);
+  Eigen::Vector3d faulty_decoded2;
+  bool faulty_result2 = YAML::convert<Eigen::Vector3d>::decode(faulty_node2, faulty_decoded2);
+  EXPECT_FALSE(faulty_result2);
+
+  // Test faulty decode - not a sequence
+  std::string faulty_yaml3 = R"(
+    x: 1.0
+    y: 2.0
+    z: 3.0
+  )";
+  YAML::Node faulty_node3 = YAML::Load(faulty_yaml3);
+  Eigen::Vector3d faulty_decoded3;
+  bool faulty_result3 = YAML::convert<Eigen::Vector3d>::decode(faulty_node3, faulty_decoded3);
+  EXPECT_FALSE(faulty_result3);
+}
+
+TEST(TesseractCommonUnit, EigenMatrix6x1YamlUnit)  // NOLINT
+{
+  // Test data: 6x1 matrix (commonly used for 6DOF poses)
+  Eigen::Matrix<double, 6, 1> original;
+  original << 1.0, 2.0, 3.0, 0.1, 0.2, 0.3;
+
+  // Test encode
+  YAML::Node encoded = YAML::convert<Eigen::Matrix<double, 6, 1>>::encode(original);
+  EXPECT_TRUE(encoded.IsSequence());
+  EXPECT_EQ(encoded.size(), 6);
+  EXPECT_DOUBLE_EQ(encoded[0].as<double>(), 1.0);
+  EXPECT_DOUBLE_EQ(encoded[3].as<double>(), 0.1);
+  EXPECT_DOUBLE_EQ(encoded[5].as<double>(), 0.3);
+
+  // Test successful decode
+  Eigen::Matrix<double, 6, 1> decoded;
+  bool decode_result = YAML::convert<Eigen::Matrix<double, 6, 1>>::decode(encoded, decoded);
+  EXPECT_TRUE(decode_result);
+  EXPECT_DOUBLE_EQ(decoded(0), 1.0);
+  EXPECT_DOUBLE_EQ(decoded(3), 0.1);
+  EXPECT_DOUBLE_EQ(decoded(5), 0.3);
+
+  // Test roundtrip (encode -> decode -> compare)
+  YAML::Node roundtrip_encoded = YAML::convert<Eigen::Matrix<double, 6, 1>>::encode(decoded);
+  Eigen::Matrix<double, 6, 1> roundtrip_decoded;
+  YAML::convert<Eigen::Matrix<double, 6, 1>>::decode(roundtrip_encoded, roundtrip_decoded);
+
+  EXPECT_TRUE(original.isApprox(roundtrip_decoded, 1e-6));
+
+  // Test faulty decode - wrong size sequence (too small)
+  std::string faulty_yaml1 = R"([1.0, 2.0, 3.0])";
+  YAML::Node faulty_node1 = YAML::Load(faulty_yaml1);
+  Eigen::Matrix<double, 6, 1> faulty_decoded1;
+  bool faulty_result1 = YAML::convert<Eigen::Matrix<double, 6, 1>>::decode(faulty_node1, faulty_decoded1);
+  EXPECT_FALSE(faulty_result1);
+
+  // Test faulty decode - wrong size sequence (too large)
+  std::string faulty_yaml2 = R"([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])";
+  YAML::Node faulty_node2 = YAML::Load(faulty_yaml2);
+  Eigen::Matrix<double, 6, 1> faulty_decoded2;
+  bool faulty_result2 = YAML::convert<Eigen::Matrix<double, 6, 1>>::decode(faulty_node2, faulty_decoded2);
+  EXPECT_FALSE(faulty_result2);
+
+  // Test faulty decode - not a sequence
+  std::string faulty_yaml3 = R"(
+    x: 1.0
+    y: 2.0
+    z: 3.0
+    rx: 0.1
+    ry: 0.2
+    rz: 0.3
+  )";
+  YAML::Node faulty_node3 = YAML::Load(faulty_yaml3);
+  Eigen::Matrix<double, 6, 1> faulty_decoded3;
+  bool faulty_result3 = YAML::convert<Eigen::Matrix<double, 6, 1>>::decode(faulty_node3, faulty_decoded3);
+  EXPECT_FALSE(faulty_result3);
+}
+
 static constexpr char const* NO_COLOR_USE_TRIANGLE_PLY = "test_no_color_use_triangle.ply";
 static constexpr char const* NO_COLOR_PLY = "test_no_color.ply";
 static constexpr char const* SINGLE_COLOR_PLY = "test_single_color.ply";
