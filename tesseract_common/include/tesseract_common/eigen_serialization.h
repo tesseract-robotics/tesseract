@@ -187,7 +187,7 @@ BOOST_CLASS_TRACKING(Eigen::MatrixX2d, boost::serialization::track_never)
 
 #if (BOOST_VERSION < 107200)
 BOOST_CLASS_TRACKING(tesseract_common::TransformMap, boost::serialization::track_never)
-BOOST_CLASS_TRACKING(tesseract_common::AlignedUnorderedMap<std::string, tesseract_common::TransformMap>,
+BOOST_CLASS_TRACKING(tesseract_common::AlignedUnorderedMap<std::string COMMA tesseract_common::TransformMap>,
                      boost::serialization::track_never)
 #endif
 #endif  // TESSERACT_COMMON_SERIALIZATION_H
