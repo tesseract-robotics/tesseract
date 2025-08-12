@@ -279,6 +279,44 @@ void serialize(Archive& ar, tesseract_common::TransformMap& g, const unsigned in
 {
   split_free(ar, g, version);
 }
+
+/********************************************************************/
+/* tesseract_common::AlignedUnorderedMap<std::string, TransformMap> */
+/********************************************************************/
+
+template <class Archive>
+void save(Archive& ar, const TesseractUnorderedMapStringTransformMap& g, unsigned int version)
+{
+  tesseract_common::AlignedMap<std::string, tesseract_common::AlignedMap<std::string, Eigen::Isometry3d>> map_data;
+  for (const auto& pair : g)
+  {
+    tesseract_common::AlignedMap<std::string, Eigen::Isometry3d> mp;
+    mp.insert(pair.second.begin(), pair.second.end());
+    map_data[pair.first] = mp;
+  }
+
+  ar& BOOST_SERIALIZATION_NVP(map_data);
+}
+
+template <class Archive>
+void load(Archive& ar, TesseractUnorderedMapStringTransformMap& g, unsigned int version)
+{
+  tesseract_common::AlignedMap<std::string, tesseract_common::AlignedMap<std::string, Eigen::Isometry3d>> map_data;
+  ar& BOOST_SERIALIZATION_NVP(map_data);
+  g.clear();
+  for (const auto& pair : map_data)
+  {
+    tesseract_common::TransformMap mp;
+    mp.insert(pair.second.begin(), pair.second.end());
+    g[pair.first] = mp;
+  }
+}
+
+template <class Archive>
+void serialize(Archive& ar, TesseractUnorderedMapStringTransformMap& g, const unsigned int version)
+{
+  split_free(ar, g, version);
+}
 #endif
 
 }  // namespace boost::serialization
@@ -295,4 +333,5 @@ TESSERACT_SERIALIZE_FREE_ARCHIVES_INSTANTIATE(Eigen::Matrix<double COMMA 6 COMMA
 
 #if (BOOST_VERSION < 107200)
 TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(tesseract_common::TransformMap)
+TESSERACT_SERIALIZE_SAVE_LOAD_FREE_ARCHIVES_INSTANTIATE(boost::serialization::TesseractUnorderedMapStringTransformMap)
 #endif

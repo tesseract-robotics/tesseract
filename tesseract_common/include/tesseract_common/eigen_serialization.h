@@ -154,6 +154,26 @@ void load(Archive& ar, tesseract_common::TransformMap& g, unsigned int version);
 
 template <class Archive>
 void serialize(Archive& ar, tesseract_common::TransformMap& g, const unsigned int version);  // NOLINT
+
+/********************************************************************/
+/* tesseract_common::AlignedUnorderedMap<std::string, TransformMap> */
+/********************************************************************/
+using TesseractUnorderedMapStringTransformMap =
+    tesseract_common::AlignedUnorderedMap<std::string, tesseract_common::TransformMap>;
+template <class Archive>
+void save(Archive& ar,
+          const TesseractUnorderedMapStringTransformMap& g,
+          unsigned int version);  // NOLINT
+
+template <class Archive>
+void load(Archive& ar,
+          TesseractUnorderedMapStringTransformMap& g,
+          unsigned int version);  // NOLINT
+
+template <class Archive>
+void serialize(Archive& ar,
+               TesseractUnorderedMapStringTransformMap& g,
+               const unsigned int version);  // NOLINT
 #endif
 
 }  // namespace boost::serialization
@@ -168,5 +188,6 @@ BOOST_CLASS_TRACKING(Eigen::MatrixX2d, boost::serialization::track_never)
 
 #if (BOOST_VERSION < 107200)
 BOOST_CLASS_TRACKING(tesseract_common::TransformMap, boost::serialization::track_never)
+BOOST_CLASS_TRACKING(boost::serialization::TesseractUnorderedMapStringTransformMap, boost::serialization::track_never)
 #endif
 #endif  // TESSERACT_COMMON_SERIALIZATION_H

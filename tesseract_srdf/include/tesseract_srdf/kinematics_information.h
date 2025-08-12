@@ -49,8 +49,8 @@ namespace tesseract_srdf
 using GroupsJointState = std::unordered_map<std::string, double>;
 using GroupsJointStates = std::unordered_map<std::string, GroupsJointState>;
 using GroupJointStates = std::unordered_map<std::string, GroupsJointStates>;
-using GroupsTCPs = tesseract_common::AlignedMap<std::string, Eigen::Isometry3d>;
-using GroupTCPs = tesseract_common::AlignedMap<std::string, GroupsTCPs>;
+using GroupsTCPs = tesseract_common::TransformMap;
+using GroupTCPs = tesseract_common::AlignedUnorderedMap<std::string, GroupsTCPs>;
 using ChainGroup = std::vector<std::pair<std::string, std::string>>;
 using ChainGroups = std::unordered_map<std::string, ChainGroup>;
 using JointGroup = std::vector<std::string>;
