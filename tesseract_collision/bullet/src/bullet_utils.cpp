@@ -530,7 +530,7 @@ const tesseract_common::VectorIsometry3d& CollisionObjectWrapper::getCollisionGe
 void CollisionObjectWrapper::getAABB(btVector3& aabb_min, btVector3& aabb_max) const
 {
   getCollisionShape()->getAabb(getWorldTransform(), aabb_min, aabb_max);
-  const btScalar& d = getContactProcessingThreshold();
+  const btScalar& d = getContactProcessingThreshold() / 2.0;
   btVector3 contactThreshold(d, d, d);
   aabb_min -= contactThreshold;
   aabb_max += contactThreshold;
