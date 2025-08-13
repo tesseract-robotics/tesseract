@@ -36,11 +36,6 @@ namespace tesseract_common
 {
 using LinkNamesPair = std::pair<std::string, std::string>;
 
-struct PairHash
-{
-  std::size_t operator()(const LinkNamesPair& pair) const;
-};
-
 /**
  * @brief Create a pair of strings, where the pair.first is always <= pair.second.
  *
@@ -65,5 +60,17 @@ LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::stri
 void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, const std::string& link_name2);
 
 }  // namespace tesseract_common
+
+// std::hash support (for unordered_map and unordered_set)
+namespace std
+{
+
+template <>
+struct hash<tesseract_common::LinkNamesPair>
+{
+  std::size_t operator()(const tesseract_common::LinkNamesPair& pair) const noexcept;
+};
+
+}  // namespace std
 
 #endif  // TESSERACT_COMMON_TYPES_H
