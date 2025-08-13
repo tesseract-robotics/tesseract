@@ -27,6 +27,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Eigenvalues>
+#include <boost/thread/tss.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/utils.h>
@@ -42,10 +43,20 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const std::string& link_name,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point)
 {
+#ifdef USE_THREAD_LOCAL
+  thread_local tesseract_common::TransformMap poses;
+#else
+  static boost::thread_specific_ptr<tesseract_common::TransformMap> poses_ptr;
+  if (poses_ptr.get() == nullptr)
+    poses_ptr.reset(new tesseract_common::TransformMap());
+
+  tesseract_common::TransformMap& poses = *poses_ptr;
+#endif
+
+  poses.clear();
+
   Eigen::VectorXd njvals;
   double delta = 1e-8;
-  thread_local tesseract_common::TransformMap poses;
-  poses.clear();
   kin.calcFwdKin(poses, joint_values);
   Eigen::Isometry3d pose{ change_base * poses[link_name] };
 

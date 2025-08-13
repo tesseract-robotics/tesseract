@@ -38,7 +38,11 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+#ifdef USE_THREAD_LOCAL
 thread_local KDL::JntArray KDLFwdKinChain::kdl_joints_cache;  // NOLINT
+#else
+boost::thread_specific_ptr<KDL::JntArray> KDLFwdKinChain::kdl_joints_cache_ptr;  // NOLINT
+#endif
 
 KDLFwdKinChain::KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_graph,
                                const std::vector<std::pair<std::string, std::string>>& chains,
@@ -82,6 +86,13 @@ void KDLFwdKinChain::calcFwdKinHelperAll(tesseract_common::TransformMap& transfo
   if (joint_angles.rows() != kdl_data_.robot_chain.getNrOfJoints())
     throw std::runtime_error("kdl_joints size is not correct!");
 
+#ifndef USE_THREAD_LOCAL
+  if (kdl_joints_cache_ptr.get() == nullptr)
+    kdl_joints_cache_ptr.reset(new KDL::JntArray());
+
+  KDL::JntArray& kdl_joints_cache = *kdl_joints_cache_ptr;
+#endif
+
   if (kdl_joints_cache.rows() != joint_angles.rows())
     kdl_joints_cache.data = joint_angles;
   else
@@ -108,6 +119,13 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
                                         const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                         int segment_num) const
 {
+#ifndef USE_THREAD_LOCAL
+  if (kdl_joints_cache_ptr.get() == nullptr)
+    kdl_joints_cache_ptr.reset(new KDL::JntArray());
+
+  KDL::JntArray& kdl_joints_cache = *kdl_joints_cache_ptr;
+#endif
+
   if (kdl_joints_cache.rows() != joint_angles.rows())
     kdl_joints_cache.data = joint_angles;
   else

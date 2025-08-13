@@ -12,6 +12,7 @@ endif()
 # System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
+find_package(Boost REQUIRED COMPONENTS thread)
 find_package(orocos_kdl REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_common REQUIRED)
@@ -66,7 +67,8 @@ target_link_libraries(
          tesseract::tesseract_common
          tesseract::tesseract_scene_graph
          orocos-kdl
-         console_bridge::console_bridge)
+         console_bridge::console_bridge
+         Boost::thread)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -112,6 +114,7 @@ configure_package(
     console_bridge
     tesseract_scene_graph
     tesseract_common
+    "Boost COMPONENTS thread"
   CFG_EXTRAS cmake/tesseract_state_solver-extras.cmake)
 
 # Mark cpp header files for installation

@@ -39,7 +39,8 @@ target_link_libraries(
   PUBLIC ${PROJECT_NAME}_kdl
          tesseract::tesseract_scene_graph
          tesseract::tesseract_common
-         console_bridge::console_bridge)
+         console_bridge::console_bridge
+         Boost::thread)
 target_compile_options(${PROJECT_NAME}_kdl_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_kdl_factories PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_kdl_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -77,7 +78,7 @@ configure_component(
   COMPONENT kdl
   NAMESPACE tesseract
   TARGETS ${PROJECT_NAME}_kdl
-  DEPENDENCIES orocos_kdl "tesseract_kinematics COMPONENTS core")
+  DEPENDENCIES orocos_kdl "tesseract_kinematics COMPONENTS core" "Boost COMPONENTS thread")
 
 if(TESSERACT_PACKAGE)
   cpack_component(

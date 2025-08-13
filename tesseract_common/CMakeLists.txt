@@ -17,6 +17,7 @@ if(NOT APPLE)
     Boost REQUIRED
     COMPONENTS system
                filesystem
+               thread
                serialization
                stacktrace_noop
     OPTIONAL_COMPONENTS stacktrace_backtrace stacktrace_basic)
@@ -25,6 +26,7 @@ else()
     Boost REQUIRED
     COMPONENTS system
                filesystem
+               thread
                serialization
                stacktrace_noop)
 endif()
@@ -115,6 +117,7 @@ target_link_libraries(
          ${TESSERACT_BACKTRACE_LIB}
          console_bridge::console_bridge
          yaml-cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::thread)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_BACKTRACE_DEFINITION})
 target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})

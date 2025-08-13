@@ -1,6 +1,10 @@
 add_library(${PROJECT_NAME}_ikfast INTERFACE)
-target_link_libraries(${PROJECT_NAME}_ikfast INTERFACE ${PROJECT_NAME}_core Eigen3::Eigen
-                                                       console_bridge::console_bridge)
+target_link_libraries(
+  ${PROJECT_NAME}_ikfast
+  INTERFACE ${PROJECT_NAME}_core
+            Eigen3::Eigen
+            console_bridge::console_bridge
+            Boost::thread)
 target_compile_definitions(${PROJECT_NAME}_ikfast INTERFACE -DIKFAST_NO_MAIN -DIKFAST_CLIBRARY -DIKFAST_HAS_LIBRARY)
 target_compile_options(${PROJECT_NAME}_ikfast INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ikfast INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
@@ -21,7 +25,7 @@ configure_component(
   COMPONENT ikfast
   NAMESPACE tesseract
   TARGETS ${PROJECT_NAME}_ikfast
-  DEPENDENCIES "tesseract_kinematics COMPONENTS core")
+  DEPENDENCIES "tesseract_kinematics COMPONENTS core" "Boost COMPONENTS thread")
 
 if(TESSERACT_PACKAGE)
   cpack_component(
