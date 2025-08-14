@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-
 LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
 {
   return (link_name1 <= link_name2) ? std::make_pair(link_name1, link_name2) : std::make_pair(link_name2, link_name1);
@@ -57,7 +56,6 @@ void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, con
 
 namespace std
 {
-
 std::size_t
 hash<tesseract_common::LinkNamesPair>::operator()(const tesseract_common::LinkNamesPair& pair) const noexcept
 {

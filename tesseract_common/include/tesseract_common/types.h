@@ -64,7 +64,6 @@ void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, con
 // std::hash support (for unordered_map and unordered_set)
 namespace std
 {
-
 template <>
 struct hash<tesseract_common::LinkNamesPair>
 {
