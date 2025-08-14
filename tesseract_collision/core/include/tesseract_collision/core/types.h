@@ -493,166 +493,6 @@ struct CollisionCheckConfig
 };
 
 /**
- * @brief Represents a contact occurrence inside a trajectory step.
- *
- * A substep value of -1 indicates a contact at the discrete step (no substep).
- */
-struct ContactLocation
-{
-  int step{ -1 };    /**< The trajectory step index where contact occurred */
-  int substep{ -1 }; /**< The substep index (-1 if not applicable) */
-
-  ContactLocation() = default;
-  ContactLocation(int s) : step(s) {}
-  ContactLocation(int s, int sub_s) : step(s), substep(sub_s) {}
-
-  bool operator==(const ContactLocation& rhs) const { return step == rhs.step && substep == rhs.substep; }
-  bool operator!=(const ContactLocation& rhs) const { return !operator==(rhs); }
-};
-
-/**
- * @brief Per-step contact information.
- *
- * Stores a compact list of substep indices where contacts were detected for a given step.
- * A stored substep value of -1 represents a contact at the step itself (no substep).
- */
-struct StepContact
-{
-  int step = -1;
-  std::vector<int> substeps;  // may contain -1 to indicate a step-only contact
-
-  StepContact() = default;
-  explicit StepContact(int s) : step(s) {}
-};
-
-/**
- * @brief Efficient return type for checkTrajectory functions that replaces boolean return
- * while tracking contact locations with minimal overhead.
- *
- * Implementation uses a per-step container of substeps to avoid large reallocations when many
- * substep contacts occur between the same two steps. The API remains backward compatible via
- * an implicit bool conversion and a flattened accessor `getContactLocations()`.
- */
-struct TrajectoryContactResult
-{
-  /**
-   * @brief Default constructor - no contacts found
-   */
-  TrajectoryContactResult() = default;
-
-  /**
-   * @brief Constructor that reserves space for expected number of steps
-   * @param expected_steps Expected number of trajectory steps to reserve space for
-   */
-  explicit TrajectoryContactResult(std::size_t expected_steps) { step_substeps_.resize(expected_steps); }
-
-  /**
-   * @brief Implicit conversion to bool for backward compatibility
-   * @return true if any contacts were found, false otherwise
-   */
-  operator bool() const { return total_contacts_ > 0; }
-
-  /**
-   * @brief Add a contact location (step only)
-   * @param step The trajectory step index
-   */
-  void addContact(int step)
-  {
-    ensureStepExists(step);
-    step_substeps_[static_cast<std::size_t>(step)].push_back(-1);
-    ++total_contacts_;
-  }
-
-  /**
-   * @brief Add a contact location (step and substep)
-   * @param step The trajectory step index
-   * @param substep The substep index
-   */
-  void addContact(int step, int substep)
-  {
-    ensureStepExists(step);
-    step_substeps_[static_cast<std::size_t>(step)].push_back(substep);
-    ++total_contacts_;
-  }
-
-  /**
-   * @brief Get a flattened list of contact locations (step, substep)
-   * @return Vector of contact locations
-   *
-   * Note: This performs allocations when invoked. Use step-level accessors if possible to avoid
-   * extra allocations during performance critical code paths.
-   */
-  std::vector<ContactLocation> getContactLocations() const
-  {
-    std::vector<ContactLocation> out;
-    out.reserve(total_contacts_);
-    for (std::size_t s = 0; s < step_substeps_.size(); ++s)
-    {
-      const auto& subs = step_substeps_[s];
-      for (int ss : subs)
-        out.emplace_back(static_cast<int>(s), ss);
-    }
-    return out;
-  }
-
-  /**
-   * @brief Get per-step substep vector for random access
-   * @param step The trajectory step index
-   * @return const reference to vector of substeps (may be empty)
-   */
-  const std::vector<int>& getSubstepsForStep(int step) const
-  {
-    static const std::vector<int> empty;
-    if (step < 0 || static_cast<std::size_t>(step) >= step_substeps_.size())
-      return empty;
-    return step_substeps_[static_cast<std::size_t>(step)];
-  }
-
-  /**
-   * @brief Get the total number of recorded contact locations (flattened count)
-   * @return Number of contact locations
-   */
-  std::size_t size() const { return total_contacts_; }
-
-  /**
-   * @brief Check if any contacts were found
-   * @return true if contacts exist, false otherwise
-   */
-  bool empty() const { return total_contacts_ == 0; }
-
-  /**
-   * @brief Clear all contact records
-   */
-  void clear()
-  {
-    for (auto& v : step_substeps_)
-      v.clear();
-    total_contacts_ = 0;
-  }
-
-  /**
-   * @brief Number of tracked steps (capacity of the top-level container)
-   */
-  std::size_t trackedSteps() const { return step_substeps_.size(); }
-
-private:
-  void ensureStepExists(int step)
-  {
-    if (step < 0)
-      return;
-    auto idx = static_cast<std::size_t>(step);
-    if (idx >= step_substeps_.size())
-      step_substeps_.resize(idx + 1);
-  }
-
-  // Per-step list of substeps. An element value of -1 indicates a step-only contact.
-  std::vector<std::vector<int>> step_substeps_;
-
-  // Flattened count of recorded contact locations to allow O(1) size/bool checks.
-  std::size_t total_contacts_{ 0 };
-};
-
-/**
  * @brief The ContactTrajectorySubstepResults struct is the lowest level struct for tracking contacts in a trajectory.
  * This struct is used for substeps between waypoints in a trajectory when a longest valid segment is used, storing the
  * relevant states of the substep.
@@ -668,6 +508,13 @@ struct ContactTrajectorySubstepResults
   ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& state);
 
   using UPtr = std::unique_ptr<ContactTrajectorySubstepResults>;
+
+  operator bool() const;
+
+  void addContact(int substep_number,
+                  const Eigen::VectorXd& start_state,
+                  const Eigen::VectorXd& end_state,
+                  const tesseract_collision::ContactResultMap& new_contacts);
 
   int numContacts() const;
 
@@ -698,6 +545,15 @@ struct ContactTrajectoryStepResults
   ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state);
 
   using UPtr = std::unique_ptr<ContactTrajectoryStepResults>;
+
+  operator bool() const;
+
+  void addContact(int step_number,
+                  int substep_number,
+                  int num_substeps,
+                  const Eigen::VectorXd& start_state,
+                  const Eigen::VectorXd& end_state,
+                  const tesseract_collision::ContactResultMap& contacts);
 
   void resize(int num_substeps);
 
@@ -734,6 +590,15 @@ struct ContactTrajectoryResults
   ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps);
 
   using UPtr = std::unique_ptr<ContactTrajectoryResults>;
+
+  operator bool() const;
+
+  void addContact(int step_number,
+                  int substep_number,
+                  int num_substeps,
+                  const Eigen::VectorXd& start_state,
+                  const Eigen::VectorXd& end_state,
+                  const tesseract_collision::ContactResultMap& contacts);
 
   void resize(int num_steps);
 

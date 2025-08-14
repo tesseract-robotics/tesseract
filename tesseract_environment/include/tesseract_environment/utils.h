@@ -107,7 +107,7 @@ void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results
  * @param config CollisionCheckConfig used to specify collision check settings
  * @return TrajectoryContactResult containing contact locations found.
  */
-tesseract_collision::TrajectoryContactResult
+tesseract_collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                 tesseract_collision::ContinuousContactManager& manager,
                 const tesseract_scene_graph::StateSolver& state_solver,
@@ -125,7 +125,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
  * @param config CollisionCheckConfig used to specify collision check settings
  * @return TrajectoryContactResult containing contact locations found.
  */
-tesseract_collision::TrajectoryContactResult
+tesseract_collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                 tesseract_collision::ContinuousContactManager& manager,
                 const tesseract_kinematics::JointGroup& manip,
@@ -143,7 +143,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
  * @param config CollisionCheckConfig used to specify collision check settings
  * @return TrajectoryContactResult containing contact locations found.
  */
-tesseract_collision::TrajectoryContactResult
+tesseract_collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                 tesseract_collision::DiscreteContactManager& manager,
                 const tesseract_scene_graph::StateSolver& state_solver,
@@ -161,7 +161,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
  * @param config CollisionCheckConfig used to specify collision check settings
  * @return TrajectoryContactResult containing contact locations found.
  */
-tesseract_collision::TrajectoryContactResult
+tesseract_collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                 tesseract_collision::DiscreteContactManager& manager,
                 const tesseract_kinematics::JointGroup& manip,
