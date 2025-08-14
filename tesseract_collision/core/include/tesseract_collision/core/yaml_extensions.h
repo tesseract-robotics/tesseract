@@ -292,6 +292,7 @@ struct convert<tesseract_collision::CollisionCheckConfig>
     node["type"] = rhs.type;
     node["longest_valid_segment_length"] = rhs.longest_valid_segment_length;
     node["check_program_mode"] = rhs.check_program_mode;
+    node["exit_on_first_contact"] = rhs.exit_on_first_contact;
 
     return node;
   }
@@ -306,6 +307,8 @@ struct convert<tesseract_collision::CollisionCheckConfig>
       rhs.longest_valid_segment_length = n.as<double>();
     if (const YAML::Node& n = node["check_program_mode"])
       rhs.check_program_mode = n.as<tesseract_collision::CollisionCheckProgramType>();
+    if (const YAML::Node& n = node["exit_on_first_contact"])
+      rhs.exit_on_first_contact = n.as<bool>();
     return true;
   }
 };
