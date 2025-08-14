@@ -485,6 +485,9 @@ struct CollisionCheckConfig
   /** @brief Secifies the mode used when collision checking program/trajectory. Default: ALL */
   CollisionCheckProgramType check_program_mode{ CollisionCheckProgramType::ALL };
 
+  /** @brief If true, the collision check will exit on first state contact. Default: true */
+  bool exit_on_first_contact{ true };
+
   bool operator==(const CollisionCheckConfig& rhs) const;
   bool operator!=(const CollisionCheckConfig& rhs) const;
 };
