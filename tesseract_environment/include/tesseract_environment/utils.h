@@ -105,14 +105,15 @@ void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
  * @param traj The joint values at each time step
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return True if collision was found, otherwise false.
+ * @return TrajectoryContactResult containing contact locations found.
  */
-bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                     tesseract_collision::ContinuousContactManager& manager,
-                     const tesseract_scene_graph::StateSolver& state_solver,
-                     const std::vector<std::string>& joint_names,
-                     const tesseract_common::TrajArray& traj,
-                     const tesseract_collision::CollisionCheckConfig& config);
+tesseract_collision::TrajectoryContactResult
+checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                tesseract_collision::ContinuousContactManager& manager,
+                const tesseract_scene_graph::StateSolver& state_solver,
+                const std::vector<std::string>& joint_names,
+                const tesseract_common::TrajArray& traj,
+                const tesseract_collision::CollisionCheckConfig& config);
 
 /**
  * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
@@ -122,13 +123,14 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
  * @param manip The kinematic joint group
  * @param traj The joint values at each time step
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return True if collision was found, otherwise false.
+ * @return TrajectoryContactResult containing contact locations found.
  */
-bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                     tesseract_collision::ContinuousContactManager& manager,
-                     const tesseract_kinematics::JointGroup& manip,
-                     const tesseract_common::TrajArray& traj,
-                     const tesseract_collision::CollisionCheckConfig& config);
+tesseract_collision::TrajectoryContactResult
+checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                tesseract_collision::ContinuousContactManager& manager,
+                const tesseract_kinematics::JointGroup& manip,
+                const tesseract_common::TrajArray& traj,
+                const tesseract_collision::CollisionCheckConfig& config);
 
 /**
  * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
@@ -139,14 +141,15 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
  * @param traj The joint values at each time step
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return True if collision was found, otherwise false.
+ * @return TrajectoryContactResult containing contact locations found.
  */
-bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                     tesseract_collision::DiscreteContactManager& manager,
-                     const tesseract_scene_graph::StateSolver& state_solver,
-                     const std::vector<std::string>& joint_names,
-                     const tesseract_common::TrajArray& traj,
-                     const tesseract_collision::CollisionCheckConfig& config);
+tesseract_collision::TrajectoryContactResult
+checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                tesseract_collision::DiscreteContactManager& manager,
+                const tesseract_scene_graph::StateSolver& state_solver,
+                const std::vector<std::string>& joint_names,
+                const tesseract_common::TrajArray& traj,
+                const tesseract_collision::CollisionCheckConfig& config);
 
 /**
  * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
@@ -156,13 +159,14 @@ bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contact
  * @param manip The kinematic joint group
  * @param traj The joint values at each time step
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return True if collision was found, otherwise false.
+ * @return TrajectoryContactResult containing contact locations found.
  */
-bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                     tesseract_collision::DiscreteContactManager& manager,
-                     const tesseract_kinematics::JointGroup& manip,
-                     const tesseract_common::TrajArray& traj,
-                     const tesseract_collision::CollisionCheckConfig& config);
+tesseract_collision::TrajectoryContactResult
+checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                tesseract_collision::DiscreteContactManager& manager,
+                const tesseract_kinematics::JointGroup& manip,
+                const tesseract_common::TrajArray& traj,
+                const tesseract_collision::CollisionCheckConfig& config);
 
 }  // namespace tesseract_environment
 #endif  // TESSERACT_ENVIRONMENT_CORE_UTILS_H
