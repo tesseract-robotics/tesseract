@@ -1397,12 +1397,17 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
     std::stringstream ss = results.trajectoryCollisionResultsTable();
     EXPECT_FALSE(ss.str().empty());
+    EXPECT_FALSE(ss.str().find("No contacts detected") != std::string::npos);
+    std::cout << ss.str();
 
     // Test frequency output method
     EXPECT_NO_THROW(results.collisionFrequencyPerLink());
 
     std::stringstream freq_ss = results.collisionFrequencyPerLink();
     EXPECT_FALSE(freq_ss.str().empty());
+
+    EXPECT_TRUE(static_cast<bool>(results));
+    EXPECT_FALSE(freq_ss.str().find("No contacts detected") != std::string::npos);
   }
 
   // Test with no contacts
@@ -1433,6 +1438,471 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
     std::stringstream freq_ss = results.collisionFrequencyPerLink();
     EXPECT_FALSE(freq_ss.str().empty());
     EXPECT_TRUE(freq_ss.str().find("No contacts detected") != std::string::npos);
+
+    EXPECT_FALSE(static_cast<bool>(results));
+  }
+
+  // Test addContact methods
+  {
+    std::vector<std::string> joint_names = { "joint1", "joint2", "joint3" };
+    int num_steps = 3;
+
+    tesseract_collision::ContactTrajectoryResults results(joint_names, num_steps);
+
+    // Test basic addContact functionality - ensure higher level calls properly initialize lower levels
+    {
+      int step_number = 0;
+      int substep_number = 1;
+      int num_substeps = 3;
+
+      Eigen::VectorXd start_state(3);
+      Eigen::VectorXd end_state(3);
+      start_state << 1.0, 2.0, 3.0;
+      end_state << 4.0, 5.0, 6.0;
+
+      // Create contact results to add
+      tesseract_collision::ContactResultMap contacts;
+      auto key1 = tesseract_common::makeOrderedLinkPair("link1", "link2");
+      auto key2 = tesseract_common::makeOrderedLinkPair("link3", "link4");
+
+      tesseract_collision::ContactResult cr1;
+      cr1.distance = -0.15;
+      cr1.link_names[0] = "link1";
+      cr1.link_names[1] = "link2";
+
+      tesseract_collision::ContactResult cr2;
+      cr2.distance = -0.25;
+      cr2.link_names[0] = "link3";
+      cr2.link_names[1] = "link4";
+
+      contacts.addContactResult(key1, cr1);
+      contacts.addContactResult(key2, cr2);
+
+      // Verify step is initially empty/uninitialized
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, -1);  // Default uninitialized step value
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].total_substeps, 0);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].substeps.size(), 0);
+
+      // Add the contact - this should automatically initialize the step with the right number of substeps
+      results.addContact(step_number, substep_number, num_substeps, start_state, end_state, contacts);
+
+      // Verify the step was properly initialized by the addContact call
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, step_number);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].total_substeps, num_substeps);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].substeps.size(), num_substeps);
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)].state0.isApprox(start_state));
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)].state1.isApprox(end_state));
+
+      // Verify the contact was added correctly to the specific substep
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
+                    .substeps[static_cast<std::size_t>(substep_number)]
+                    .substep,
+                substep_number);
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
+                      .substeps[static_cast<std::size_t>(substep_number)]
+                      .state0.isApprox(start_state));
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
+                      .substeps[static_cast<std::size_t>(substep_number)]
+                      .state1.isApprox(end_state));
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
+                    .substeps[static_cast<std::size_t>(substep_number)]
+                    .numContacts(),
+                2);
+
+      // Check that the contacts were copied correctly
+      const auto& substep_contacts = results.steps[static_cast<std::size_t>(step_number)]
+                                         .substeps[static_cast<std::size_t>(substep_number)]
+                                         .contacts;
+      EXPECT_EQ(substep_contacts.count(), 2);
+
+      auto it1 = substep_contacts.find(key1);
+      auto it2 = substep_contacts.find(key2);
+      EXPECT_NE(it1, substep_contacts.end());
+      EXPECT_NE(it2, substep_contacts.end());
+
+      if (it1 != substep_contacts.end())
+      {
+        EXPECT_EQ(it1->second.size(), 1);
+        EXPECT_EQ(it1->second[0].distance, -0.15);
+        EXPECT_EQ(it1->second[0].link_names[0], "link1");
+        EXPECT_EQ(it1->second[0].link_names[1], "link2");
+      }
+
+      if (it2 != substep_contacts.end())
+      {
+        EXPECT_EQ(it2->second.size(), 1);
+        EXPECT_EQ(it2->second[0].distance, -0.25);
+        EXPECT_EQ(it2->second[0].link_names[0], "link3");
+        EXPECT_EQ(it2->second[0].link_names[1], "link4");
+      }
+    }
+
+    // Test multiple contacts to the same step/substep - verify automatic initialization
+    {
+      int step_number = 1;
+      int substep_number = 0;
+      int num_substeps = 2;
+
+      Eigen::VectorXd start_state(2);
+      Eigen::VectorXd end_state(2);
+      start_state << 0.5, 1.5;
+      end_state << 2.5, 3.5;
+
+      // Verify step is initially uninitialized
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, -1);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].total_substeps, 0);
+
+      // Add first set of contacts - this should automatically initialize the step
+      tesseract_collision::ContactResultMap contacts1;
+      auto key1 = tesseract_common::makeOrderedLinkPair("linkA", "linkB");
+
+      tesseract_collision::ContactResult cr1;
+      cr1.distance = -0.1;
+      cr1.link_names[0] = "linkA";
+      cr1.link_names[1] = "linkB";
+
+      contacts1.addContactResult(key1, cr1);
+
+      results.addContact(step_number, substep_number, num_substeps, start_state, end_state, contacts1);
+
+      // Verify step was automatically initialized
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, step_number);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].total_substeps, num_substeps);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].substeps.size(), num_substeps);
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)].state0.isApprox(start_state));
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)].state1.isApprox(end_state));
+
+      // Verify first contact was added
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
+                    .substeps[static_cast<std::size_t>(substep_number)]
+                    .numContacts(),
+                1);
+
+      // Add second set of contacts to same substep (this should replace the previous ones)
+      Eigen::VectorXd new_start_state(2);
+      Eigen::VectorXd new_end_state(2);
+      new_start_state << 1.0, 2.0;
+      new_end_state << 3.0, 4.0;
+
+      tesseract_collision::ContactResultMap contacts2;
+      auto key2 = tesseract_common::makeOrderedLinkPair("linkC", "linkD");
+
+      tesseract_collision::ContactResult cr2;
+      cr2.distance = -0.3;
+      cr2.link_names[0] = "linkC";
+      cr2.link_names[1] = "linkD";
+
+      contacts2.addContactResult(key2, cr2);
+
+      results.addContact(step_number, substep_number, num_substeps, new_start_state, new_end_state, contacts2);
+
+      // Verify the substep was updated with new states and contacts
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
+                      .substeps[static_cast<std::size_t>(substep_number)]
+                      .state0.isApprox(new_start_state));
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
+                      .substeps[static_cast<std::size_t>(substep_number)]
+                      .state1.isApprox(new_end_state));
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
+                    .substeps[static_cast<std::size_t>(substep_number)]
+                    .numContacts(),
+                1);
+
+      // Verify it's the new contact
+      const auto& substep_contacts = results.steps[static_cast<std::size_t>(step_number)]
+                                         .substeps[static_cast<std::size_t>(substep_number)]
+                                         .contacts;
+      auto it = substep_contacts.find(key2);
+      EXPECT_NE(it, substep_contacts.end());
+      if (it != substep_contacts.end())
+      {
+        EXPECT_EQ(it->second[0].distance, -0.3);
+        EXPECT_EQ(it->second[0].link_names[0], "linkC");
+        EXPECT_EQ(it->second[0].link_names[1], "linkD");
+      }
+    }
+
+    // Test error cases - out of range step number
+    {
+      int invalid_step_number = 5;  // Out of range (we have 3 steps: 0, 1, 2)
+      int substep_number = 0;
+      int num_substeps = 1;
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      EXPECT_THROW(results.addContact(invalid_step_number, substep_number, num_substeps, state, state, contacts),
+                   std::out_of_range);
+    }
+
+    // Test error cases - negative step number
+    {
+      int invalid_step_number = -1;
+      int substep_number = 0;
+      int num_substeps = 1;
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      EXPECT_THROW(results.addContact(invalid_step_number, substep_number, num_substeps, state, state, contacts),
+                   std::out_of_range);
+    }
+
+    // Test total contact counting after adding contacts
+    EXPECT_GT(results.numContacts(), 0);
+    EXPECT_TRUE(static_cast<bool>(results));
+  }
+
+  // Test ContactTrajectoryStepResults addContact method directly
+  {
+    int step_number = 2;
+    Eigen::VectorXd start_state(2);
+    Eigen::VectorXd end_state(2);
+    start_state << 1.0, 2.0;
+    end_state << 3.0, 4.0;
+    int initial_substeps = 2;
+
+    tesseract_collision::ContactTrajectoryStepResults step_results(
+        step_number, start_state, end_state, initial_substeps);
+
+    // Test addContact to a valid substep within existing range
+    {
+      int substep_number = 1;  // Within the current 2 substeps
+      int same_substeps = 2;   // Same number of substeps
+
+      Eigen::VectorXd substep_start(2);
+      Eigen::VectorXd substep_end(2);
+      substep_start << 1.5, 2.0;
+      substep_end << 2.0, 2.5;
+
+      tesseract_collision::ContactResultMap contacts;
+      auto key = tesseract_common::makeOrderedLinkPair("testLink1", "testLink2");
+
+      tesseract_collision::ContactResult cr;
+      cr.distance = -0.05;
+      cr.link_names[0] = "testLink1";
+      cr.link_names[1] = "testLink2";
+
+      contacts.addContactResult(key, cr);
+
+      // This should work since substep is within range and no resize is needed
+      step_results.addContact(step_number, substep_number, same_substeps, substep_start, substep_end, contacts);
+
+      // Verify no resize occurred
+      EXPECT_EQ(step_results.total_substeps, initial_substeps);
+      EXPECT_EQ(step_results.substeps.size(), initial_substeps);
+
+      // Verify the contact was added correctly
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].substep, substep_number);
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state0.isApprox(substep_start));
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state1.isApprox(substep_end));
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].numContacts(), 1);
+      EXPECT_EQ(step_results.numContacts(), 1);
+    }
+
+    // Test addContact that requires automatic resizing to accommodate more substeps
+    {
+      int substep_number = 3;     // This is beyond the current 2 substeps
+      int required_substeps = 5;  // Need to resize to 5 substeps
+
+      Eigen::VectorXd substep_start(2);
+      Eigen::VectorXd substep_end(2);
+      substep_start << 2.0, 2.5;
+      substep_end << 2.5, 3.0;
+
+      tesseract_collision::ContactResultMap contacts;
+      auto key = tesseract_common::makeOrderedLinkPair("anotherLink1", "anotherLink2");
+
+      tesseract_collision::ContactResult cr;
+      cr.distance = -0.03;
+      cr.link_names[0] = "anotherLink1";
+      cr.link_names[1] = "anotherLink2";
+
+      contacts.addContactResult(key, cr);
+
+      // Verify initial state
+      EXPECT_EQ(step_results.total_substeps, initial_substeps);
+      EXPECT_EQ(step_results.substeps.size(), initial_substeps);
+
+      // This should automatically resize the step to accommodate the required substeps
+      step_results.addContact(step_number, substep_number, required_substeps, substep_start, substep_end, contacts);
+
+      // Verify the step was resized to accommodate the new requirements
+      EXPECT_EQ(step_results.total_substeps, required_substeps);
+      EXPECT_EQ(step_results.substeps.size(), required_substeps);
+
+      // Verify the contact was added correctly
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].substep, substep_number);
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state0.isApprox(substep_start));
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state1.isApprox(substep_end));
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].numContacts(), 1);
+      EXPECT_EQ(step_results.numContacts(), 2);  // Now should have 2 total contacts
+    }
+
+    // Test that calling addContact with the same number of substeps doesn't cause unnecessary resize
+    {
+      int substep_number = 4;  // Within the current 5 substeps
+      int same_substeps = 5;   // Same number of substeps
+
+      Eigen::VectorXd substep_start(2);
+      Eigen::VectorXd substep_end(2);
+      substep_start << 3.0, 3.5;
+      substep_end << 3.5, 4.0;
+
+      tesseract_collision::ContactResultMap contacts;
+      auto key = tesseract_common::makeOrderedLinkPair("thirdLink1", "thirdLink2");
+
+      tesseract_collision::ContactResult cr;
+      cr.distance = -0.01;
+      cr.link_names[0] = "thirdLink1";
+      cr.link_names[1] = "thirdLink2";
+
+      contacts.addContactResult(key, cr);
+
+      // This should not resize since substeps already matches num_substeps
+      step_results.addContact(step_number, substep_number, same_substeps, substep_start, substep_end, contacts);
+
+      // Verify no resize occurred
+      EXPECT_EQ(step_results.total_substeps, 5);
+      EXPECT_EQ(step_results.substeps.size(), 5);
+
+      // Verify the contact was added correctly
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].substep, substep_number);
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state0.isApprox(substep_start));
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state1.isApprox(substep_end));
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].numContacts(), 1);
+      EXPECT_EQ(step_results.numContacts(), 3);  // Now should have 3 total contacts
+    }
+
+    // Test addContact with out of range substep number
+    {
+      int invalid_substep_number = 10;  // Out of range
+      int same_substeps = 5;
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      EXPECT_THROW(step_results.addContact(step_number, invalid_substep_number, same_substeps, state, state, contacts),
+                   std::out_of_range);
+    }
+
+    // Test addContact with negative substep number
+    {
+      int invalid_substep_number = -1;
+      int same_substeps = 5;
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      EXPECT_THROW(step_results.addContact(step_number, invalid_substep_number, same_substeps, state, state, contacts),
+                   std::runtime_error);
+    }
+  }
+
+  // Test ContactTrajectorySubstepResults addContact method directly
+  {
+    tesseract_collision::ContactTrajectorySubstepResults substep_results;
+
+    int substep_number = 5;
+    Eigen::VectorXd start_state(3);
+    Eigen::VectorXd end_state(3);
+    start_state << 1.0, 2.0, 3.0;
+    end_state << 4.0, 5.0, 6.0;
+
+    // Create contacts to add
+    tesseract_collision::ContactResultMap contacts;
+    auto key1 = tesseract_common::makeOrderedLinkPair("substepLink1", "substepLink2");
+    auto key2 = tesseract_common::makeOrderedLinkPair("substepLink3", "substepLink4");
+
+    tesseract_collision::ContactResult cr1;
+    cr1.distance = -0.12;
+    cr1.link_names[0] = "substepLink1";
+    cr1.link_names[1] = "substepLink2";
+
+    tesseract_collision::ContactResult cr2;
+    cr2.distance = -0.08;
+    cr2.link_names[0] = "substepLink3";
+    cr2.link_names[1] = "substepLink4";
+
+    contacts.addContactResult(key1, cr1);
+    contacts.addContactResult(key2, cr2);
+
+    // Add the contacts
+    substep_results.addContact(substep_number, start_state, end_state, contacts);
+
+    // Verify everything was set correctly
+    EXPECT_EQ(substep_results.substep, substep_number);
+    EXPECT_TRUE(substep_results.state0.isApprox(start_state));
+    EXPECT_TRUE(substep_results.state1.isApprox(end_state));
+    EXPECT_EQ(substep_results.numContacts(), 2);
+
+    // Verify the contacts were copied correctly
+    EXPECT_EQ(substep_results.contacts.count(), 2);
+
+    auto it1 = substep_results.contacts.find(key1);
+    auto it2 = substep_results.contacts.find(key2);
+    EXPECT_NE(it1, substep_results.contacts.end());
+    EXPECT_NE(it2, substep_results.contacts.end());
+
+    if (it1 != substep_results.contacts.end())
+    {
+      EXPECT_EQ(it1->second.size(), 1);
+      EXPECT_EQ(it1->second[0].distance, -0.12);
+      EXPECT_EQ(it1->second[0].link_names[0], "substepLink1");
+      EXPECT_EQ(it1->second[0].link_names[1], "substepLink2");
+    }
+
+    if (it2 != substep_results.contacts.end())
+    {
+      EXPECT_EQ(it2->second.size(), 1);
+      EXPECT_EQ(it2->second[0].distance, -0.08);
+      EXPECT_EQ(it2->second[0].link_names[0], "substepLink3");
+      EXPECT_EQ(it2->second[0].link_names[1], "substepLink4");
+    }
+
+    // Test that calling addContact again replaces the previous data
+    int new_substep_number = 8;
+    Eigen::VectorXd new_start_state(2);
+    Eigen::VectorXd new_end_state(2);
+    new_start_state << 10.0, 20.0;
+    new_end_state << 30.0, 40.0;
+
+    tesseract_collision::ContactResultMap new_contacts;
+    auto new_key = tesseract_common::makeOrderedLinkPair("newLink1", "newLink2");
+
+    tesseract_collision::ContactResult new_cr;
+    new_cr.distance = -0.99;
+    new_cr.link_names[0] = "newLink1";
+    new_cr.link_names[1] = "newLink2";
+
+    new_contacts.addContactResult(new_key, new_cr);
+
+    substep_results.addContact(new_substep_number, new_start_state, new_end_state, new_contacts);
+
+    // Verify the data was replaced
+    EXPECT_EQ(substep_results.substep, new_substep_number);
+    EXPECT_TRUE(substep_results.state0.isApprox(new_start_state));
+    EXPECT_TRUE(substep_results.state1.isApprox(new_end_state));
+    EXPECT_EQ(substep_results.numContacts(), 1);
+
+    // Verify the old contacts are gone and new contact is present
+    EXPECT_EQ(substep_results.contacts.count(), 1);
+    auto new_it = substep_results.contacts.find(new_key);
+    EXPECT_NE(new_it, substep_results.contacts.end());
+    if (new_it != substep_results.contacts.end())
+    {
+      EXPECT_EQ(new_it->second[0].distance, -0.99);
+      EXPECT_EQ(new_it->second[0].link_names[0], "newLink1");
+      EXPECT_EQ(new_it->second[0].link_names[1], "newLink2");
+    }
   }
 }
 
