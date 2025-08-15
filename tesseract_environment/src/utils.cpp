@@ -544,7 +544,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                                      static_cast<int>(iSubStep),
                                      static_cast<int>(end_idx),
                                      subtraj.row(iSubStep),
-                                     subtraj.row(iSubStep + 1),
+                                     subtraj.row(iSubStep),
                                      sub_state_results);
             double segment_dt = (sub_segment_last_index > 0) ? 1.0 / static_cast<double>(sub_segment_last_index) : 0.0;
             state_results.addInterpolatedCollisionResults(sub_state_results,
@@ -697,8 +697,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
       checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
       if (!sub_state_results.empty())
       {
-        traj_contacts.addContact(
-            static_cast<int>(iStep), 0, 1, traj.row(iStep), traj.row(iStep + 1), sub_state_results);
+        traj_contacts.addContact(static_cast<int>(iStep), 0, 1, traj.row(iStep), traj.row(iStep), sub_state_results);
         state_results.addInterpolatedCollisionResults(
             sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
       }
