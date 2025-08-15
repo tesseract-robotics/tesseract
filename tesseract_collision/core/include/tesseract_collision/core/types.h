@@ -485,6 +485,9 @@ struct CollisionCheckConfig
   /** @brief Secifies the mode used when collision checking program/trajectory. Default: ALL */
   CollisionCheckProgramType check_program_mode{ CollisionCheckProgramType::ALL };
 
+  /** @brief If true, the collision check will exit on first state contact. Default: true */
+  bool exit_on_first_contact{ true };
+
   bool operator==(const CollisionCheckConfig& rhs) const;
   bool operator!=(const CollisionCheckConfig& rhs) const;
 };
@@ -505,6 +508,13 @@ struct ContactTrajectorySubstepResults
   ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& state);
 
   using UPtr = std::unique_ptr<ContactTrajectorySubstepResults>;
+
+  operator bool() const;
+
+  void addContact(int substep_number,
+                  const Eigen::VectorXd& start_state,
+                  const Eigen::VectorXd& end_state,
+                  const tesseract_collision::ContactResultMap& new_contacts);
 
   int numContacts() const;
 
@@ -535,6 +545,15 @@ struct ContactTrajectoryStepResults
   ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state);
 
   using UPtr = std::unique_ptr<ContactTrajectoryStepResults>;
+
+  operator bool() const;
+
+  void addContact(int step_number,
+                  int substep_number,
+                  int num_substeps,
+                  const Eigen::VectorXd& start_state,
+                  const Eigen::VectorXd& end_state,
+                  const tesseract_collision::ContactResultMap& contacts);
 
   void resize(int num_substeps);
 
@@ -571,6 +590,15 @@ struct ContactTrajectoryResults
   ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps);
 
   using UPtr = std::unique_ptr<ContactTrajectoryResults>;
+
+  operator bool() const;
+
+  void addContact(int step_number,
+                  int substep_number,
+                  int num_substeps,
+                  const Eigen::VectorXd& start_state,
+                  const Eigen::VectorXd& end_state,
+                  const tesseract_collision::ContactResultMap& contacts);
 
   void resize(int num_steps);
 
