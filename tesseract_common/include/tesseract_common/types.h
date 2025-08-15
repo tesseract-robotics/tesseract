@@ -39,7 +39,8 @@ using LinkNamesPair = std::pair<std::string, std::string>;
 /**
  * @brief Create a pair of strings, where the pair.first is always <= pair.second.
  *
- * This is commonly used along with PairHash as the key to an unordered_map<LinkNamesPair, Type, PairHash>
+ * This is commonly used as the key to an unordered_map<LinkNamesPair, Type>
+ *
  * @param link_name1 First link name
  * @param link_name2 Second link name
  * @return LinkNamesPair a lexicographically sorted pair of strings
@@ -51,7 +52,7 @@ LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::stri
  *
  * This is used to avoid multiple memory application throughout the code base
  *
- * This is commonly used along with PairHash as the key to an unordered_map<LinkNamesPair, Type, PairHash>
+ * This is commonly used as the key to an unordered_map<LinkNamesPair, Type>
  *
  * @param pair The link name pair to load a lexicographically sorted pair of strings
  * @param link_name1 First link name
