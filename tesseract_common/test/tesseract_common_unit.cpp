@@ -2504,8 +2504,7 @@ TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT
     EXPECT_EQ(p1.first, p2.first);
     EXPECT_EQ(p1.second, p2.second);
 
-    tesseract_common::PairHash hash;
-    EXPECT_EQ(hash(p1), hash(p2));
+    EXPECT_EQ(std::hash<tesseract_common::LinkNamesPair>()(p1), std::hash<tesseract_common::LinkNamesPair>()(p2));
   }
 
   {
@@ -2517,8 +2516,7 @@ TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT
     EXPECT_EQ(p1.first, p2.first);
     EXPECT_EQ(p1.second, p2.second);
 
-    tesseract_common::PairHash hash;
-    EXPECT_EQ(hash(p1), hash(p2));
+    EXPECT_EQ(std::hash<tesseract_common::LinkNamesPair>()(p1), std::hash<tesseract_common::LinkNamesPair>()(p2));
   }
 
   {

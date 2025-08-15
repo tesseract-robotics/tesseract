@@ -39,7 +39,6 @@ struct KinematicsPluginInfo;
 struct ContactManagersPluginInfo;
 struct TaskComposerPluginInfo;
 struct CalibrationInfo;
-struct PairHash;
 
 // any_poly.h
 class AnyInterface;

@@ -20,8 +20,7 @@ namespace tesseract_common
 {
 struct Serialization;
 
-using AllowedCollisionEntries =
-    std::unordered_map<tesseract_common::LinkNamesPair, std::string, tesseract_common::PairHash>;
+using AllowedCollisionEntries = std::unordered_map<tesseract_common::LinkNamesPair, std::string>;
 
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2);
 

@@ -62,8 +62,7 @@ enum class CollisionMarginPairOverrideType : std::uint8_t
   MODIFY
 };
 
-using PairsCollisionMarginData =
-    std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>;
+using PairsCollisionMarginData = std::unordered_map<tesseract_common::LinkNamesPair, double>;
 
 class CollisionMarginPairData
 {
