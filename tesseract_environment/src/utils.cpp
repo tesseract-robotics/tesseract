@@ -291,12 +291,12 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                                                           false);
           }
 
-          if (result && config.exit_on_first_contact)
+          if (traj_contacts && config.exit_on_first_contact)
             break;
         }
         contacts.push_back(state_results);
 
-        if (result && config.exit_on_first_contact)
+        if (traj_contacts && config.exit_on_first_contact)
           break;
       }
       else
@@ -328,7 +328,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
         }
         contacts.push_back(state_results);
 
-        if (result && config.exit_on_first_contact)
+        if (traj_contacts && config.exit_on_first_contact)
           break;
       }
     }
@@ -362,8 +362,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
       }
       contacts.push_back(state_results);
 
-
-      if (result && config.exit_on_first_contact)
+      if (traj_contacts && config.exit_on_first_contact)
         break;
     }
   }
@@ -556,12 +555,12 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                                                           true);
           }
 
-          if (result && config.exit_on_first_contact)
+          if (traj_contacts && config.exit_on_first_contact)
             break;
         }
         contacts.push_back(state_results);
 
-          if (result && config.exit_on_first_contact)
+        if (traj_contacts && config.exit_on_first_contact)
           break;
       }
       else
@@ -582,7 +581,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                   sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
             }
 
-            if (result && config.exit_on_first_contact)
+            if (traj_contacts && config.exit_on_first_contact)
             {
               contacts.push_back(state_results);
               break;
@@ -603,7 +602,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                   sub_state_results, 1, 1, manager.getActiveCollisionObjects(), 1, true);
             }
 
-            if (result && config.exit_on_first_contact)
+            if (traj_contacts && config.exit_on_first_contact)
             {
               contacts.push_back(state_results);
               break;
@@ -635,7 +634,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
               sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
         }
 
-        if (result && config.exit_on_first_contact)
+        if (traj_contacts && config.exit_on_first_contact)
         {
           contacts.push_back(state_results);
           break;
@@ -662,7 +661,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                 sub_state_results, 1, 1, manager.getActiveCollisionObjects(), 1, true);
           }
 
-          if (result && config.exit_on_first_contact)
+          if (traj_contacts && config.exit_on_first_contact)
           {
             contacts.push_back(state_results);
             break;
@@ -705,7 +704,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
       }
       contacts.push_back(state_results);
 
-      if (result && config.exit_on_first_contact)
+      if (traj_contacts && config.exit_on_first_contact)
         break;
     }
   }
