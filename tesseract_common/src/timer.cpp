@@ -34,9 +34,10 @@ void Timer::start(const std::function<void()>& callback, std::chrono::steady_clo
 {
   running_ = true;
   timer_thread_ = std::thread([this, callback, interval]() {
+    auto next_time = std::chrono::steady_clock::now();
     while (running_)
     {
-      auto next_time = std::chrono::steady_clock::now() + interval;
+      next_time += interval;
       callback();  // Call the provided function
       std::this_thread::sleep_until(next_time);
     }
