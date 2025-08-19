@@ -1,6 +1,5 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <random>
 #include <chrono>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -13,7 +12,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
 
 #include <tesseract_geometry/impl/sphere.h>
+#include <tesseract_common/ply_io.h>
 #include <tesseract_common/resource_locator.h>
+
 static const std::size_t DIM = 10;
 
 using namespace tesseract_collision;
@@ -33,10 +34,11 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_single_link, 
     auto mesh_faces = std::make_shared<Eigen::VectorXi>();
 
     tesseract_common::GeneralResourceLocator locator;
-    loadSimplePlyFile(locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
-                      *mesh_vertices,
-                      *mesh_faces,
-                      true);
+    tesseract_common::loadSimplePlyFile(
+        locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
+        *mesh_vertices,
+        *mesh_faces,
+        true);
 
     auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
     sphere = makeConvexMesh(*mesh);
@@ -104,10 +106,11 @@ void addCollisionObjects(ContinuousContactManager& checker, bool use_single_link
     auto mesh_faces = std::make_shared<Eigen::VectorXi>();
 
     tesseract_common::GeneralResourceLocator locator;
-    loadSimplePlyFile(locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
-                      *mesh_vertices,
-                      *mesh_faces,
-                      true);
+    tesseract_common::loadSimplePlyFile(
+        locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
+        *mesh_vertices,
+        *mesh_faces,
+        true);
 
     auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
     sphere = makeConvexMesh(*mesh);

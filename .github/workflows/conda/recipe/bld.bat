@@ -16,6 +16,8 @@ colcon build --merge-install --install-base="%PREFIX%\opt\tesseract_robotics" ^
    -DTESSERACT_ENABLE_EXAMPLES=OFF ^
    -DTESSERACT_BUILD_TRAJOPT_IFOPT=OFF ^
    -DTESSERACT_ENABLE_TESTING=ON
+   -DTESSERACT_ENABLE_BENCHMARKING=ON
+   -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF
 
 if %errorlevel% neq 0 exit /b %errorlevel%
 

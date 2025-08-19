@@ -50,4 +50,4 @@ jobs:
           vcs-file: ${{ matrix.distro == 'focal' && 'dependencies_focal.repos' || 'dependencies.repos' }}
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src
-          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_PACKAGE=ON
+          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DTESSERACT_PACKAGE=ON

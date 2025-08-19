@@ -159,6 +159,12 @@ NOTE: Must be a clean build when generating a code coverage report. Also must bu
 
 .. NOTE: You can replace **LCOV** above with **GCOV** or **GCOVR**.
 
+## Building Benchmarks
+
+Tesseract's Google benchmarks can be built by building with the flag `DTESSERACT_ENABLE_BENCHMARKING=ON`.
+
+To run the benchmarks at compile time and save the results to a json file in the build directory, add the flag `-DTESSERACT_ENABLE_RUN_BENCHMARKING=ON`
+
 ## Boost Serialization
 
 This package leverages boost serialization. When adding new classes which may be inherited from and then serialized as the base type it is imported to add the following macros for the base type and all derived types.
