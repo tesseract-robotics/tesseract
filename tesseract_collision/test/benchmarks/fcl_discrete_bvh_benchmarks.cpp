@@ -12,7 +12,7 @@ using namespace test_suite;
 using namespace tesseract_geometry;
 
 // Removes some of the long running tests (greater than 30s). Set to false to run everything.
-static bool RUN_QUICK = true;
+static const bool RUN_QUICK = true;
 
 int main(int argc, char** argv)
 {

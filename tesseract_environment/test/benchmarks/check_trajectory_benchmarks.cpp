@@ -1,7 +1,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <benchmark/benchmark.h>
-#include <algorithm>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/environment.h>
@@ -14,7 +13,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_urdf/urdf_parser.h>
-#include <tesseract_common/resource_locator.h>
 #include <tesseract_geometry/impl/sphere.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
@@ -46,11 +44,11 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
 
 static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
                                               std::vector<tesseract_collision::ContactResultMap> contacts,
-                                              tesseract_collision::ContinuousContactManager::Ptr manager,
-                                              tesseract_scene_graph::StateSolver::Ptr state_solver,
-                                              std::vector<std::string> joint_names,
-                                              tesseract_common::TrajArray traj,
-                                              tesseract_collision::CollisionCheckConfig config,
+                                              const tesseract_collision::ContinuousContactManager::Ptr& manager,
+                                              const tesseract_scene_graph::StateSolver::Ptr& state_solver,
+                                              const std::vector<std::string>& joint_names,
+                                              const tesseract_common::TrajArray& traj,
+                                              const tesseract_collision::CollisionCheckConfig& config,
                                               bool log_level_debug)
 {
   if (log_level_debug)
@@ -58,7 +56,7 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
   else
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_names, traj, config));
   }
@@ -66,10 +64,10 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
 
 static void BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP(benchmark::State& state,
                                                  std::vector<tesseract_collision::ContactResultMap> contacts,
-                                                 tesseract_collision::ContinuousContactManager::Ptr manager,
-                                                 tesseract_kinematics::JointGroup::ConstPtr manip,
-                                                 tesseract_common::TrajArray traj,
-                                                 tesseract_collision::CollisionCheckConfig config,
+                                                 const tesseract_collision::ContinuousContactManager::Ptr& manager,
+                                                 const tesseract_kinematics::JointGroup::ConstPtr& manip,
+                                                 const tesseract_common::TrajArray& traj,
+                                                 const tesseract_collision::CollisionCheckConfig& config,
                                                  bool log_level_debug)
 {
   if (log_level_debug)
@@ -77,7 +75,7 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP(benchmark::State& state,
   else
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *manip, traj, config));
   }
@@ -85,11 +83,11 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP(benchmark::State& state,
 
 static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
                                             std::vector<tesseract_collision::ContactResultMap> contacts,
-                                            tesseract_collision::DiscreteContactManager::Ptr manager,
-                                            tesseract_scene_graph::StateSolver::Ptr state_solver,
-                                            std::vector<std::string> joint_names,
-                                            tesseract_common::TrajArray traj,
-                                            tesseract_collision::CollisionCheckConfig config,
+                                            const tesseract_collision::DiscreteContactManager::Ptr& manager,
+                                            const tesseract_scene_graph::StateSolver::Ptr& state_solver,
+                                            const std::vector<std::string>& joint_names,
+                                            const tesseract_common::TrajArray& traj,
+                                            const tesseract_collision::CollisionCheckConfig& config,
                                             bool log_level_debug)
 {
   if (log_level_debug)
@@ -97,7 +95,7 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
   else
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_names, traj, config));
   }
@@ -105,10 +103,10 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
 
 static void BM_CHECK_TRAJECTORY_DISCRETE_MANIP(benchmark::State& state,
                                                std::vector<tesseract_collision::ContactResultMap> contacts,
-                                               tesseract_collision::DiscreteContactManager::Ptr manager,
-                                               tesseract_kinematics::JointGroup::ConstPtr manip,
-                                               tesseract_common::TrajArray traj,
-                                               tesseract_collision::CollisionCheckConfig config,
+                                               const tesseract_collision::DiscreteContactManager::Ptr& manager,
+                                               const tesseract_kinematics::JointGroup::ConstPtr& manip,
+                                               const tesseract_common::TrajArray& traj,
+                                               const tesseract_collision::CollisionCheckConfig& config,
                                                bool log_level_debug)
 {
   if (log_level_debug)
@@ -116,7 +114,7 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_MANIP(benchmark::State& state,
   else
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *manip, traj, config));
   }
@@ -282,7 +280,7 @@ int main(int argc, char** argv)
     {
       for (std::size_t i = 0; i < traj_arrays.size(); i++)
       {
-        std::string debug_str = "";
+        std::string debug_str;
         if (log_level_debug)
           debug_str = "-Debug";
         const auto& traj_array = traj_arrays[i];
