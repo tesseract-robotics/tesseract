@@ -61,7 +61,7 @@ jobs:
         vcs-file: .github/workflows/windows_dependencies.repos
         upstream-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=${{ matrix.config.triplet }} -DCMAKE_BUILD_TYPE=Release
         target-path: target_ws/src
-        target-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=${{ matrix.config.triplet }} -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
+        target-args: --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=${{ matrix.config.triplet }} -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF
     
     - name: collect logs
       if: failure()
