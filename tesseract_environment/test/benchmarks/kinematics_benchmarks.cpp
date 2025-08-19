@@ -1,7 +1,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <benchmark/benchmark.h>
-#include <algorithm>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_srdf/srdf_model.h>
@@ -37,11 +36,11 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_commo
 using CalcStateFn = std::function<tesseract_common::TransformMap(const Eigen::Ref<const Eigen::VectorXd>& state)>;
 
 static void BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
-                                                     CalcStateFn fn,
+                                                     const CalcStateFn& fn,
                                                      const tesseract_common::TrajArray& traj)
 {
   tesseract_common::TransformMap transform_map;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
     {
@@ -51,11 +50,11 @@ static void BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
 }
 
 static void BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
-                                                             CalcStateFn fn,
+                                                             const CalcStateFn& fn,
                                                              const tesseract_common::TrajArray& traj)
 {
   tesseract_common::TransformMap transform_map;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
     {
@@ -65,13 +64,13 @@ static void BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& s
 }
 
 static void BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
-                                                        tesseract_scene_graph::StateSolver::Ptr state_solver,
-                                                        std::vector<std::string> joint_names,
+                                                        const tesseract_scene_graph::StateSolver::Ptr& state_solver,
+                                                        const std::vector<std::string>& joint_names,
                                                         const tesseract_common::TrajArray& traj,
-                                                        std::string link_name)
+                                                        const std::string& link_name)
 {
   Eigen::MatrixXd jacobian;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
     {
@@ -80,10 +79,12 @@ static void BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
   }
 }
 
-static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state, CalcStateFn fn, const tesseract_common::TrajArray& traj)
+static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state,
+                                  const CalcStateFn& fn,
+                                  const tesseract_common::TrajArray& traj)
 {
   tesseract_common::TransformMap transforms;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
     {
@@ -93,12 +94,12 @@ static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state, CalcStateFn fn, const
 }
 
 static void BM_GET_JACOBIAN_MANIP(benchmark::State& state,
-                                  tesseract_kinematics::JointGroup::ConstPtr manip,
+                                  const tesseract_kinematics::JointGroup::ConstPtr& manip,
                                   const tesseract_common::TrajArray& traj,
-                                  std::string link_name)
+                                  const std::string& link_name)
 {
   Eigen::MatrixXd jacobian;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
     {

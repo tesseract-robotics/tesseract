@@ -1,7 +1,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <benchmark/benchmark.h>
-#include <algorithm>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_srdf/srdf_model.h>
@@ -11,7 +10,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/kinematic_group.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/urdf_parser.h>
-#include <tesseract_common/resource_locator.h>
 
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
@@ -37,49 +35,49 @@ tesseract_srdf::SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph,
 }
 
 /** @brief Benchmark that checks the Tesseract clone method*/
-static void BM_ENVIRONMENT_CLONE(benchmark::State& state, Environment::Ptr env)
+static void BM_ENVIRONMENT_CLONE(benchmark::State& state, const Environment::Ptr& env)
 {
   Environment::Ptr clone;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(clone = env->clone());
   }
 }
 
 /** @brief Benchmark that checks the Tesseract clone method*/
-static void BM_STATE_SOLVER_CLONE(benchmark::State& state, StateSolver::Ptr state_solver)
+static void BM_STATE_SOLVER_CLONE(benchmark::State& state, const StateSolver::Ptr& state_solver)
 {
   StateSolver::Ptr clone;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(clone = state_solver->clone());
   }
 }
 
 /** @brief Benchmark that checks the Tesseract clone method*/
-static void BM_SCENE_GRAPH_CLONE(benchmark::State& state, SceneGraph::Ptr sg)
+static void BM_SCENE_GRAPH_CLONE(benchmark::State& state, const SceneGraph::Ptr& sg)
 {
   SceneGraph::Ptr clone;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(clone = sg->clone());
   }
 }
 
 /** @brief Benchmark that checks the Tesseract clone method*/
-static void BM_JOINT_GROUP_COPY(benchmark::State& state, JointGroup::ConstPtr jg)
+static void BM_JOINT_GROUP_COPY(benchmark::State& state, const JointGroup::ConstPtr& jg)
 {
   JointGroup::Ptr clone;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(clone = std::make_unique<JointGroup>(*jg));
   }
 }
 
-static void BM_KINEMATIC_GROUP_COPY(benchmark::State& state, KinematicGroup::ConstPtr kg)
+static void BM_KINEMATIC_GROUP_COPY(benchmark::State& state, const KinematicGroup::ConstPtr& kg)
 {
   KinematicGroup::Ptr clone;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(clone = std::make_unique<KinematicGroup>(*kg));
   }

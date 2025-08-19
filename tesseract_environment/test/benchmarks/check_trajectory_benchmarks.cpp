@@ -56,7 +56,7 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
   else
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_names, traj, config));
   }
@@ -75,7 +75,7 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP(benchmark::State& state,
   else
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *manip, traj, config));
   }
@@ -95,7 +95,7 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
   else
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_names, traj, config));
   }
@@ -114,7 +114,7 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_MANIP(benchmark::State& state,
   else
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
 
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *manip, traj, config));
   }
