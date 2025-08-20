@@ -394,6 +394,17 @@ enum class CollisionCheckProgramType : std::uint8_t
   INTERMEDIATE_ONLY
 };
 
+/** @brief Controls when collision checking exits or continues collecting results */
+enum class CollisionCheckExitType : std::uint8_t
+{
+  /** @brief Exit as soon as any collision is detected */
+  FIRST,
+  /** @brief For LVS, stop at first collision per step; continue to next step */
+  ONE_PER_STEP,
+  /** @brief Collect all collisions */
+  ALL
+};
+
 /** @brief Identifies how the provided AllowedCollisionMatrix should be applied relative to the isAllowedFn in the
  * contact manager */
 enum class ACMOverrideType : std::uint8_t
@@ -471,7 +482,8 @@ struct CollisionCheckConfig
   CollisionCheckConfig(ContactRequest request = ContactRequest(),
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
                        double longest_valid_segment_length = 0.005,
-                       CollisionCheckProgramType check_program_mode = CollisionCheckProgramType::ALL);
+                       CollisionCheckProgramType check_program_mode = CollisionCheckProgramType::ALL,
+                       CollisionCheckExitType exit_condition = CollisionCheckExitType::FIRST);
 
   /** @brief ContactRequest that will be used for this check. Default test type: ALL*/
   ContactRequest contact_request;
@@ -486,7 +498,7 @@ struct CollisionCheckConfig
   CollisionCheckProgramType check_program_mode{ CollisionCheckProgramType::ALL };
 
   /** @brief If true, the collision check will exit on first state contact. Default: true */
-  bool exit_on_first_contact{ true };
+  CollisionCheckExitType exit_condition{ CollisionCheckExitType::FIRST };
 
   bool operator==(const CollisionCheckConfig& rhs) const;
   bool operator!=(const CollisionCheckConfig& rhs) const;

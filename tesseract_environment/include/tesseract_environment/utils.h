@@ -105,7 +105,7 @@ void checkTrajectoryState(tesseract_collision::ContactResultMap& contact_results
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
  * @param traj The joint values at each time step
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return TrajectoryContactResult containing contact locations found.
+ * @return ContactTrajectoryResults containing contact step/substep locations and joint values.
  */
 tesseract_collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
@@ -123,7 +123,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
  * @param manip The kinematic joint group
  * @param traj The joint values at each time step
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return TrajectoryContactResult containing contact locations found.
+ * @return ContactTrajectoryResults containing contact step/substep locations and joint values.
  */
 tesseract_collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
@@ -141,7 +141,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
  * @param traj The joint values at each time step
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return TrajectoryContactResult containing contact locations found.
+ * @return ContactTrajectoryResults containing contact step/substep locations and joint values.
  */
 tesseract_collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
@@ -159,7 +159,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
  * @param manip The kinematic joint group
  * @param traj The joint values at each time step
  * @param config CollisionCheckConfig used to specify collision check settings
- * @return TrajectoryContactResult containing contact locations found.
+ * @return ContactTrajectoryResults containing contact step/substep locations and joint values.
  */
 tesseract_collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,

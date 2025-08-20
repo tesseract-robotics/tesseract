@@ -1050,6 +1050,7 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
     EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::DISCRETE);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.longest_valid_segment_length, 0.005));
     EXPECT_EQ(config.check_program_mode, tesseract_collision::CollisionCheckProgramType::ALL);
+    EXPECT_EQ(config.exit_condition, tesseract_collision::CollisionCheckExitType::FIRST);
 
     tesseract_common::testSerialization<tesseract_collision::CollisionCheckConfig>(config, "CollisionCheckConfig");
   }
@@ -1058,12 +1059,14 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
     tesseract_collision::CollisionCheckConfig config(request,
                                                      tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE,
                                                      0.5,
-                                                     tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START);
+                                                     tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START,
+                                                     tesseract_collision::CollisionCheckExitType::ONE_PER_STEP);
 
     EXPECT_EQ(config.contact_request, request);
     EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.longest_valid_segment_length, 0.5));
     EXPECT_EQ(config.check_program_mode, tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START);
+    EXPECT_EQ(config.exit_condition, tesseract_collision::CollisionCheckExitType::ONE_PER_STEP);
 
     tesseract_common::testSerialization<tesseract_collision::CollisionCheckConfig>(config, "CollisionCheckConfig");
   }
@@ -1071,50 +1074,77 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
 
 TEST(TesseractCoreUnit, CollisionCheckConfigYamlUnit)  // NOLINT
 {
-  const std::string contact_request_yaml_string = R"(
-    type: ALL
-    calculate_penetration: true
-    calculate_distance: true
-    contact_limit: 0
-  )";
-
+  // Use non-default values for all fields
   const std::string yaml_string = R"(
-    type: DISCRETE
-    longest_valid_segment_length: 0.005
-    check_program_mode: ALL
+    contact_request:
+      type: CLOSEST
+      calculate_penetration: false
+      calculate_distance: false
+      contact_limit: 10
+    type: LVS_CONTINUOUS
+    longest_valid_segment_length: 0.123
+    check_program_mode: ALL_EXCEPT_END
+    exit_condition: ONE_PER_STEP
   )";
 
   tesseract_collision::ContactRequest cr_original;
-  cr_original.type = tesseract_collision::ContactTestType::ALL;
-  cr_original.calculate_penetration = true;
-  cr_original.calculate_distance = true;
-  cr_original.contact_limit = 0;
+  cr_original.type = tesseract_collision::ContactTestType::CLOSEST;
+  cr_original.calculate_penetration = false;
+  cr_original.calculate_distance = false;
+  cr_original.contact_limit = 10;
 
   tesseract_collision::CollisionCheckConfig data_original;
   data_original.contact_request = cr_original;
-  data_original.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
-  data_original.longest_valid_segment_length = 0.005;
-  data_original.check_program_mode = tesseract_collision::CollisionCheckProgramType::ALL;
+  data_original.type = tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS;
+  data_original.longest_valid_segment_length = 0.123;
+  data_original.check_program_mode = tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_END;
+  data_original.exit_condition = tesseract_collision::CollisionCheckExitType::ONE_PER_STEP;
 
-  {  // decode
-    tesseract_collision::CollisionCheckConfig cr;
+  // Decode test
+  {
+    tesseract_collision::CollisionCheckConfig ccc;
     YAML::Node n = YAML::Load(yaml_string);
-    auto success = YAML::convert<tesseract_collision::CollisionCheckConfig>::decode(n, cr);
+    auto success = YAML::convert<tesseract_collision::CollisionCheckConfig>::decode(n, ccc);
     EXPECT_TRUE(success);
-    EXPECT_EQ(cr.contact_request, data_original.contact_request);
-    EXPECT_EQ(cr.type, data_original.type);
-    EXPECT_EQ(cr.longest_valid_segment_length, data_original.longest_valid_segment_length);
-    EXPECT_EQ(cr.check_program_mode, data_original.check_program_mode);
+    EXPECT_EQ(ccc, data_original);
   }
 
-  {  // encode
-    tesseract_collision::CollisionCheckConfig cr;
-    YAML::Node n = YAML::Load(yaml_string);
-    n["contact_request"] = YAML::Load(contact_request_yaml_string);
-    YAML::Node output_n = YAML::convert<tesseract_collision::CollisionCheckConfig>::encode(cr);
-    EXPECT_EQ(cr.type, data_original.type);
-    EXPECT_EQ(cr.longest_valid_segment_length, data_original.longest_valid_segment_length);
-    EXPECT_EQ(cr.check_program_mode, data_original.check_program_mode);
+  // Encode test: compare YAML output to expected YAML
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::CollisionCheckConfig>::encode(data_original);
+
+    // Check that the YAML node contains the expected values
+    EXPECT_TRUE(output_n["contact_request"]);
+    auto contact_request_node = output_n["contact_request"];
+    EXPECT_TRUE(contact_request_node["type"]);
+    EXPECT_EQ(contact_request_node["type"].as<std::string>(), "CLOSEST");
+    EXPECT_TRUE(contact_request_node["calculate_penetration"]);
+    EXPECT_EQ(contact_request_node["calculate_penetration"].as<bool>(), false);
+    EXPECT_TRUE(contact_request_node["calculate_distance"]);
+    EXPECT_EQ(contact_request_node["calculate_distance"].as<bool>(), false);
+    EXPECT_TRUE(contact_request_node["contact_limit"]);
+    EXPECT_EQ(contact_request_node["contact_limit"].as<long>(), 10);
+
+    EXPECT_TRUE(output_n["type"]);
+    EXPECT_EQ(output_n["type"].as<std::string>(), "LVS_CONTINUOUS");
+
+    EXPECT_TRUE(output_n["longest_valid_segment_length"]);
+    EXPECT_NEAR(output_n["longest_valid_segment_length"].as<double>(), 0.123, 1e-8);
+
+    EXPECT_TRUE(output_n["check_program_mode"]);
+    EXPECT_EQ(output_n["check_program_mode"].as<std::string>(), "ALL_EXCEPT_END");
+
+    EXPECT_TRUE(output_n["exit_condition"]);
+    EXPECT_EQ(output_n["exit_condition"].as<std::string>(), "ONE_PER_STEP");
+  }
+
+  // Encode-decode cycle test
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::CollisionCheckConfig>::encode(data_original);
+    tesseract_collision::CollisionCheckConfig roundtrip;
+    auto success = YAML::convert<tesseract_collision::CollisionCheckConfig>::decode(output_n, roundtrip);
+    EXPECT_TRUE(success);
+    EXPECT_EQ(roundtrip, data_original);
   }
 }
 
