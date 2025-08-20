@@ -534,15 +534,6 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
             ++start_idx;
         }
 
-        if (iStep == (traj.rows() - 2))
-        {
-          // This is the last segment so check the last state
-          end_idx = subtraj.rows();
-          if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_END ||
-              config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
-            --end_idx;
-        }
-
         for (tesseract_common::TrajArray::Index iSubStep = start_idx; iSubStep < end_idx; ++iSubStep)
         {
           tesseract_common::TransformMap state = state_fn(subtraj.row(iSubStep));
@@ -582,6 +573,7 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
       }
       else
       {
+        // Special case for two state trajectory
         if (iStep == 0 && traj.rows() == 2)
         {
           if (config.check_program_mode != tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START &&
@@ -602,11 +594,17 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
                 break;
               }
             }
+            contacts.push_back(state_results);
           }
 
           if (config.check_program_mode != tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_END &&
               config.check_program_mode != tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
           {
+            // Need to add empty start state if checking the end state and start was skipped
+            if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START)
+              contacts.push_back(state_results);
+
+            state_results.clear();
             tesseract_common::TransformMap state = state_fn(traj.row(iStep + 1));
             sub_state_results.clear();
             checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
@@ -615,16 +613,15 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
               traj_contacts.addContact(
                   static_cast<int>(iStep + 1), 0, 1, traj.row(iStep + 1), traj.row(iStep + 1), sub_state_results);
               state_results.addInterpolatedCollisionResults(
-                  sub_state_results, 1, 1, manager.getActiveCollisionObjects(), 1, true);
+                  sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
               if (config.exit_condition == tesseract_collision::CollisionCheckExitType::FIRST)
               {
                 contacts.push_back(state_results);
                 break;
               }
             }
+            contacts.push_back(state_results);
           }
-
-          contacts.push_back(state_results);
           break;
         }
 
@@ -656,34 +653,28 @@ checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
           }
         }
 
-        // If last segment check the end state
-        if (iStep == (traj.rows() - 2))
+        contacts.push_back(state_results);
+      }
+      // If last segment check the end state
+      if (iStep == (traj.rows() - 2))
+      {
+        state_results.clear();
+        if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_END ||
+            config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
         {
-          if (config.check_program_mode == tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_END ||
-              config.check_program_mode == tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY)
-          {
-            contacts.push_back(state_results);
-            continue;
-          }
-
-          tesseract_common::TransformMap state = state_fn(traj.row(iStep + 1));
-          sub_state_results.clear();
-          checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
-          if (!sub_state_results.empty())
-          {
-            traj_contacts.addContact(
-                static_cast<int>(iStep + 1), 0, 1, traj.row(iStep + 1), traj.row(iStep + 1), sub_state_results);
-            state_results.addInterpolatedCollisionResults(
-                sub_state_results, 1, 1, manager.getActiveCollisionObjects(), 1, true);
-
-            if (config.exit_condition == tesseract_collision::CollisionCheckExitType::FIRST)
-            {
-              contacts.push_back(state_results);
-              break;
-            }
-          }
+          continue;
         }
 
+        tesseract_common::TransformMap state = state_fn(traj.row(iStep + 1));
+        sub_state_results.clear();
+        checkTrajectoryState(sub_state_results, manager, state, config.contact_request);
+        if (!sub_state_results.empty())
+        {
+          traj_contacts.addContact(
+              static_cast<int>(iStep + 1), 0, 1, traj.row(iStep + 1), traj.row(iStep + 1), sub_state_results);
+          state_results.addInterpolatedCollisionResults(
+              sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+        }
         contacts.push_back(state_results);
       }
     }
