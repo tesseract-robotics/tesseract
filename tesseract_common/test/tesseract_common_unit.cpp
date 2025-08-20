@@ -464,7 +464,8 @@ TEST(TesseractCommonUnit, timer)  // NOLINT
   timer.start(callback, interval);
   std::this_thread::sleep_for(std::chrono::seconds(1));
   timer.stop();
-  EXPECT_GT(counter, 900);
+  EXPECT_GT(counter, 950);
+  EXPECT_LT(counter, 1050);
 }
 
 TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
@@ -613,7 +614,7 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 }
 
 template <typename T>
-void runAnyPolyIntegralTest(T value, const std::string& type_str)
+void runAnyPolyIntegralTest(const T& value, const std::string& type_str)
 {
   tesseract_common::AnyPoly any_type{ value };
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(T)));
