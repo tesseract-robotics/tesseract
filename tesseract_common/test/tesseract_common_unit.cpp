@@ -3492,6 +3492,298 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   }
 }
 
+TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit)  // NOLINT
+{
+  double tol = std::numeric_limits<double>::epsilon();
+
+  {  // Test Empty data should return lowest value
+    tesseract_common::CollisionMarginPairData data;
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+  }
+
+  {  // Test adding collision margins
+    tesseract_common::CollisionMarginPairData data;
+    data.setCollisionMargin("link1", "link2", 0.5);
+    data.setCollisionMargin("link1", "link3", 0.8);
+    data.setCollisionMargin("link2", "link3", 0.3);
+    data.setCollisionMargin("link1", "link4", 0.2);
+
+    // link1 should have max margin of 0.8 (from link1-link3 pair)
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, 0.8, tol);
+
+    // link2 should have max margin of 0.5 (from link1-link2 pair)
+    result = data.getMaxCollisionMargin("link2");
+    EXPECT_NEAR(result, 0.5, tol);
+
+    // link3 should have max margin of 0.8 (from link1-link3 pair)
+    result = data.getMaxCollisionMargin("link3");
+    EXPECT_NEAR(result, 0.8, tol);
+
+    // link4 should have max margin of 0.2 (from link1-link4 pair)
+    result = data.getMaxCollisionMargin("link4");
+    EXPECT_NEAR(result, 0.2, tol);
+
+    // link5 (non-existent) should return lowest value
+    result = data.getMaxCollisionMargin("link5");
+    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+  }
+
+  {  // Test increment margins
+    tesseract_common::CollisionMarginPairData data;
+    data.setCollisionMargin("link1", "link2", 0.5);
+    data.setCollisionMargin("link1", "link3", 0.8);
+    data.setCollisionMargin("link2", "link3", 0.3);
+
+    data.incrementMargins(0.1);
+
+    // All margins should be incremented by 0.1
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, 0.9, tol);  // 0.8 + 0.1
+
+    result = data.getMaxCollisionMargin("link2");
+    EXPECT_NEAR(result, 0.6, tol);  // 0.5 + 0.1
+
+    result = data.getMaxCollisionMargin("link3");
+    EXPECT_NEAR(result, 0.9, tol);  // 0.8 + 0.1
+  }
+
+  {  // Test scale margins
+    tesseract_common::CollisionMarginPairData data;
+    data.setCollisionMargin("link1", "link2", 0.5);
+    data.setCollisionMargin("link1", "link3", 0.8);
+    data.setCollisionMargin("link2", "link3", 0.3);
+
+    data.scaleMargins(2.0);
+
+    // All margins should be scaled by 2.0
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, 1.6, tol);  // 0.8 * 2.0
+
+    result = data.getMaxCollisionMargin("link2");
+    EXPECT_NEAR(result, 1.0, tol);  // 0.5 * 2.0
+
+    result = data.getMaxCollisionMargin("link3");
+    EXPECT_NEAR(result, 1.6, tol);  // 0.8 * 2.0
+  }
+
+  {  // Test clear data
+    tesseract_common::CollisionMarginPairData data;
+    data.setCollisionMargin("link1", "link2", 0.5);
+    data.setCollisionMargin("link1", "link3", 0.8);
+
+    data.clear();
+
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+
+    result = data.getMaxCollisionMargin("link2");
+    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+  }
+
+  {  // Test updating existing pair with different margin
+    tesseract_common::CollisionMarginPairData data;
+    data.setCollisionMargin("link1", "link2", 0.8);
+    data.setCollisionMargin("link1", "link3", 0.5);
+
+    // link1 should have max margin of 0.8
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, 0.8, tol);
+
+    // Update existing pair to a smaller value
+    data.setCollisionMargin("link1", "link2", 0.3);
+
+    // link1 should now have max margin of 0.5 (from link1-link3 pair)
+    result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, 0.5, tol);
+
+    // link2 should have max margin of 0.3
+    result = data.getMaxCollisionMargin("link2");
+    EXPECT_NEAR(result, 0.3, tol);
+  }
+
+  {  // Test apply with MODIFY override type
+    tesseract_common::CollisionMarginPairData data;
+    data.setCollisionMargin("link1", "link2", 0.5);
+    data.setCollisionMargin("link2", "link3", 0.3);
+
+    tesseract_common::CollisionMarginPairData override_data;
+    override_data.setCollisionMargin("link1", "link3", 0.9);
+    override_data.setCollisionMargin("link2", "link4", 0.4);
+
+    data.apply(override_data, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+
+    // link1 should have max margin of 0.9 (from new link1-link3 pair)
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, 0.9, tol);
+
+    // link2 should have max margin of 0.5 (from original link1-link2 pair)
+    result = data.getMaxCollisionMargin("link2");
+    EXPECT_NEAR(result, 0.5, tol);
+
+    // link3 should have max margin of 0.9
+    result = data.getMaxCollisionMargin("link3");
+    EXPECT_NEAR(result, 0.9, tol);
+
+    // link4 should have max margin of 0.4
+    result = data.getMaxCollisionMargin("link4");
+    EXPECT_NEAR(result, 0.4, tol);
+  }
+
+  {  // Test apply with REPLACE override type
+    tesseract_common::CollisionMarginPairData data;
+    data.setCollisionMargin("link1", "link2", 0.5);
+    data.setCollisionMargin("link2", "link3", 0.3);
+
+    tesseract_common::CollisionMarginPairData override_data;
+    override_data.setCollisionMargin("link1", "link3", 0.9);
+
+    data.apply(override_data, tesseract_common::CollisionMarginPairOverrideType::REPLACE);
+
+    // After replace, only the override data should remain
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, 0.9, tol);
+
+    result = data.getMaxCollisionMargin("link3");
+    EXPECT_NEAR(result, 0.9, tol);
+
+    // link2 should no longer have any margin data
+    result = data.getMaxCollisionMargin("link2");
+    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+  }
+
+  {  // Test construction from PairsCollisionMarginData
+    tesseract_common::PairsCollisionMarginData temp;
+    temp[std::make_pair("link1", "link2")] = 0.7;
+    temp[std::make_pair("link1", "link3")] = 0.4;
+    temp[std::make_pair("link2", "link4")] = 0.6;
+
+    tesseract_common::CollisionMarginPairData data(temp);
+
+    // link1 should have max margin of 0.7
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, 0.7, tol);
+
+    // link2 should have max margin of 0.7 (from link1-link2 pair)
+    result = data.getMaxCollisionMargin("link2");
+    EXPECT_NEAR(result, 0.7, tol);
+
+    // link3 should have max margin of 0.4
+    result = data.getMaxCollisionMargin("link3");
+    EXPECT_NEAR(result, 0.4, tol);
+
+    // link4 should have max margin of 0.6
+    result = data.getMaxCollisionMargin("link4");
+    EXPECT_NEAR(result, 0.6, tol);
+  }
+
+  {  // Test CollisionMarginData getMaxCollisionMargin for specific object
+    double default_margin = 0.1;
+    tesseract_common::CollisionMarginData data(default_margin);
+    
+    // When no pairs exist, should return default margin
+    double result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, default_margin, tol);
+
+    // Add some pair margins
+    data.setCollisionMargin("link1", "link2", 0.5);
+    data.setCollisionMargin("link1", "link3", 0.8);
+    data.setCollisionMargin("link2", "link4", 0.3);
+
+    // link1 should return max of default and its pair margins
+    result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, std::max(default_margin, 0.8), tol);
+
+    // link2 should return max of default and its pair margins
+    result = data.getMaxCollisionMargin("link2");
+    EXPECT_NEAR(result, std::max(default_margin, 0.5), tol);
+
+    // link5 (no pairs) should return default margin
+    result = data.getMaxCollisionMargin("link5");
+    EXPECT_NEAR(result, default_margin, tol);
+
+    // Test with higher default margin
+    data.setDefaultCollisionMargin(1.0);
+    result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result, 1.0, tol);  // default is now higher than pair margins
+  }
+}
+
+TEST(TesseractCommonUnit, CollisionMarginDataSerialization)  // NOLINT
+{
+  const double tol = 1e-6;
+  
+  // Create original data with comprehensive margin setup
+  tesseract_common::CollisionMarginData original_data(0.1);
+  original_data.setCollisionMargin("link1", "link2", 0.5);
+  original_data.setCollisionMargin("link1", "link3", 0.8);
+  original_data.setCollisionMargin("link2", "link3", 0.3);
+  original_data.setCollisionMargin("link2", "link4", 0.7);
+  original_data.setCollisionMargin("link4", "link5", 0.4);
+  
+  // Verify original data state before serialization
+  double original_overall_max = original_data.getMaxCollisionMargin();
+  double original_link1_max = original_data.getMaxCollisionMargin("link1");
+  double original_link2_max = original_data.getMaxCollisionMargin("link2");
+  double original_link3_max = original_data.getMaxCollisionMargin("link3");
+  double original_link4_max = original_data.getMaxCollisionMargin("link4");
+  double original_link5_max = original_data.getMaxCollisionMargin("link5");
+  double original_nonexistent_max = original_data.getMaxCollisionMargin("nonexistent");
+  
+  // Serialize the data
+  std::stringstream ss;
+  {
+    boost::archive::xml_oarchive oa(ss);
+    oa << boost::serialization::make_nvp("collision_margin_data", original_data);
+  }
+  
+  // Deserialize into new object
+  tesseract_common::CollisionMarginData deserialized_data;
+  {
+    boost::archive::xml_iarchive ia(ss);
+    ia >> boost::serialization::make_nvp("collision_margin_data", deserialized_data);
+  }
+  
+  // Verify that max_collision_margin_ is correctly reconstructed
+  double deserialized_overall_max = deserialized_data.getMaxCollisionMargin();
+  EXPECT_NEAR(deserialized_overall_max, original_overall_max, tol);
+  
+  // Verify that object_max_margins_ is correctly reconstructed for all objects
+  double deserialized_link1_max = deserialized_data.getMaxCollisionMargin("link1");
+  double deserialized_link2_max = deserialized_data.getMaxCollisionMargin("link2");
+  double deserialized_link3_max = deserialized_data.getMaxCollisionMargin("link3");
+  double deserialized_link4_max = deserialized_data.getMaxCollisionMargin("link4");
+  double deserialized_link5_max = deserialized_data.getMaxCollisionMargin("link5");
+  double deserialized_nonexistent_max = deserialized_data.getMaxCollisionMargin("nonexistent");
+  
+  EXPECT_NEAR(deserialized_link1_max, original_link1_max, tol);
+  EXPECT_NEAR(deserialized_link2_max, original_link2_max, tol);
+  EXPECT_NEAR(deserialized_link3_max, original_link3_max, tol);
+  EXPECT_NEAR(deserialized_link4_max, original_link4_max, tol);
+  EXPECT_NEAR(deserialized_link5_max, original_link5_max, tol);
+  EXPECT_NEAR(deserialized_nonexistent_max, original_nonexistent_max, tol);
+  
+  // Verify that the lookup table was properly serialized/deserialized
+  EXPECT_TRUE(original_data == deserialized_data);
+  
+  // Test that new operations work correctly on deserialized data
+  deserialized_data.setCollisionMargin("link1", "link6", 0.9);
+  double new_link1_max = deserialized_data.getMaxCollisionMargin("link1");
+  double new_overall_max = deserialized_data.getMaxCollisionMargin();
+  
+  EXPECT_NEAR(new_link1_max, 0.9, tol);  // Should be the new highest margin for link1
+  EXPECT_NEAR(new_overall_max, 0.9, tol);  // Should be the new overall maximum
+  
+  // Test scaling operation on deserialized data
+  deserialized_data.scaleMargins(2.0);
+  double scaled_link1_max = deserialized_data.getMaxCollisionMargin("link1");
+  double scaled_overall_max = deserialized_data.getMaxCollisionMargin();
+  
+  EXPECT_NEAR(scaled_link1_max, 1.8, tol);  // 0.9 * 2.0
+  EXPECT_NEAR(scaled_overall_max, 1.8, tol);  // Should be the scaled maximum
+}
+
 TEST(TesseractCommonUnit, CollisionMarginDataCompare)  // NOLINT
 {
   {  // EQUAL Default
