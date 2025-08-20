@@ -150,28 +150,107 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit)  // NOLINT
 {
+  // Use non-default values for all fields
   const std::string yaml_string = R"(
-    pair_margin_override_type: NONE
-    acm_override_type: NONE
+    default_margin: 0.123
+    pair_margin_override_type: MODIFY
+    pair_margin_data:
+      [linkA, linkB]: 0.456
+    acm_override_type: OR
+    acm:
+      [linkA, linkB]: "always"
+    modify_object_enabled:
+      object1: true
+      object2: false
   )";
 
   tesseract_collision::ContactManagerConfig data_original;
+  data_original.default_margin = 0.123;
+  data_original.pair_margin_override_type = tesseract_collision::CollisionMarginPairOverrideType::MODIFY;
+  data_original.pair_margin_data.setCollisionMargin("linkA", "linkB", 0.456);
+  data_original.acm_override_type = tesseract_collision::ACMOverrideType::OR;
+  data_original.acm.addAllowedCollision("linkA", "linkB", "always");
+  data_original.modify_object_enabled["object1"] = true;
+  data_original.modify_object_enabled["object2"] = false;
 
-  {  // decode
+  // Decode test
+  {
     tesseract_collision::ContactManagerConfig cm;
     YAML::Node n = YAML::Load(yaml_string);
     auto success = YAML::convert<tesseract_collision::ContactManagerConfig>::decode(n, cm);
     EXPECT_TRUE(success);
-    EXPECT_EQ(cm.pair_margin_override_type, data_original.pair_margin_override_type);
-    EXPECT_EQ(cm.acm_override_type, data_original.acm_override_type);
+    EXPECT_EQ(cm, data_original);
   }
 
-  {  // encode
-    tesseract_collision::ContactManagerConfig cm;
-    YAML::Node n = YAML::Load(yaml_string);
-    YAML::Node output_n = YAML::convert<tesseract_collision::ContactManagerConfig>::encode(cm);
-    EXPECT_EQ(cm.pair_margin_override_type, data_original.pair_margin_override_type);
-    EXPECT_EQ(cm.acm_override_type, data_original.acm_override_type);
+  // Encode test: compare YAML output to expected YAML
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactManagerConfig>::encode(data_original);
+
+    // Check that the YAML node contains the expected values
+    EXPECT_TRUE(output_n["default_margin"]);
+    EXPECT_NEAR(output_n["default_margin"].as<double>(), 0.123, 1e-8);
+
+    EXPECT_TRUE(output_n["pair_margin_override_type"]);
+    EXPECT_EQ(output_n["pair_margin_override_type"].as<std::string>(), "MODIFY");
+
+    EXPECT_TRUE(output_n["pair_margin_data"]);
+    auto margins = output_n["pair_margin_data"];
+    ASSERT_TRUE(margins && margins.IsMap());
+    bool found_margin = false;
+    for (const auto& margin : margins)
+    {
+      // Keys are encoded as a YAML flow sequence [linkA, linkB]
+      const YAML::Node& key = margin.first;
+      if (key.IsSequence() && key.size() == 2)
+      {
+        const std::string a = key[0].as<std::string>();
+        const std::string b = key[1].as<std::string>();
+        if ((a == "linkA" && b == "linkB") || (a == "linkB" && b == "linkA"))
+        {
+          EXPECT_NEAR(margin.second.as<double>(), 0.456, 1e-8);
+          found_margin = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found_margin);
+
+    EXPECT_TRUE(output_n["acm_override_type"]);
+    EXPECT_EQ(output_n["acm_override_type"].as<std::string>(), "OR");
+
+    EXPECT_TRUE(output_n["acm"]);
+    auto allowed_collisions = output_n["acm"];
+    ASSERT_TRUE(allowed_collisions && allowed_collisions.IsMap());
+    bool found_acm = false;
+    for (const auto& entry : allowed_collisions)
+    {
+      const YAML::Node& key = entry.first;
+      if (key.IsSequence() && key.size() == 2)
+      {
+        const std::string a = key[0].as<std::string>();
+        const std::string b = key[1].as<std::string>();
+        bool links_match = (a == "linkA" && b == "linkB") || (a == "linkB" && b == "linkA");
+        if (links_match && entry.second.as<std::string>() == "always")
+        {
+          found_acm = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found_acm);
+
+    EXPECT_TRUE(output_n["modify_object_enabled"]);
+    EXPECT_EQ(output_n["modify_object_enabled"]["object1"].as<bool>(), true);
+    EXPECT_EQ(output_n["modify_object_enabled"]["object2"].as<bool>(), false);
+  }
+
+  // Encode-decode cycle test
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactManagerConfig>::encode(data_original);
+    tesseract_collision::ContactManagerConfig roundtrip;
+    auto success = YAML::convert<tesseract_collision::ContactManagerConfig>::decode(output_n, roundtrip);
+    EXPECT_TRUE(success);
+    EXPECT_EQ(roundtrip, data_original);
   }
 }
 
@@ -912,38 +991,54 @@ TEST(TesseractCoreUnit, ContactRequestUnit)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactRequestYamlUnit)  // NOLINT
 {
+  // Use non-default values for all fields
   const std::string yaml_string = R"(
-    type: ALL
-    calculate_penetration: true
-    calculate_distance: true
-    contact_limit: 0
+    type: LIMITED
+    calculate_penetration: false
+    calculate_distance: false
+    contact_limit: 42
   )";
 
   tesseract_collision::ContactRequest data_original;
-  data_original.type = tesseract_collision::ContactTestType::ALL;
-  data_original.calculate_penetration = true;
-  data_original.calculate_distance = true;
-  data_original.contact_limit = 0;
+  data_original.type = tesseract_collision::ContactTestType::LIMITED;
+  data_original.calculate_penetration = false;
+  data_original.calculate_distance = false;
+  data_original.contact_limit = 42;
 
-  {  // decode
+  // Decode test
+  {
     tesseract_collision::ContactRequest cr;
     YAML::Node n = YAML::Load(yaml_string);
     auto success = YAML::convert<tesseract_collision::ContactRequest>::decode(n, cr);
     EXPECT_TRUE(success);
-    EXPECT_EQ(cr.type, data_original.type);
-    EXPECT_EQ(cr.calculate_penetration, data_original.calculate_penetration);
-    EXPECT_EQ(cr.calculate_distance, data_original.calculate_distance);
-    EXPECT_EQ(cr.contact_limit, data_original.contact_limit);
+    EXPECT_EQ(cr, data_original);
   }
 
-  {  // encode
-    tesseract_collision::ContactRequest cr;
-    YAML::Node n = YAML::Load(yaml_string);
-    YAML::Node output_n = YAML::convert<tesseract_collision::ContactRequest>::encode(cr);
-    EXPECT_EQ(cr.type, data_original.type);
-    EXPECT_EQ(cr.calculate_penetration, data_original.calculate_penetration);
-    EXPECT_EQ(cr.calculate_distance, data_original.calculate_distance);
-    EXPECT_EQ(cr.contact_limit, data_original.contact_limit);
+  // Encode test: compare YAML output to expected YAML
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactRequest>::encode(data_original);
+
+    // Check that the YAML node contains the expected values
+    EXPECT_TRUE(output_n["type"]);
+    EXPECT_EQ(output_n["type"].as<std::string>(), "LIMITED");
+
+    EXPECT_TRUE(output_n["calculate_penetration"]);
+    EXPECT_EQ(output_n["calculate_penetration"].as<bool>(), false);
+
+    EXPECT_TRUE(output_n["calculate_distance"]);
+    EXPECT_EQ(output_n["calculate_distance"].as<bool>(), false);
+
+    EXPECT_TRUE(output_n["contact_limit"]);
+    EXPECT_EQ(output_n["contact_limit"].as<long>(), 42);
+  }
+
+  // Encode-decode cycle test
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactRequest>::encode(data_original);
+    tesseract_collision::ContactRequest roundtrip;
+    auto success = YAML::convert<tesseract_collision::ContactRequest>::decode(output_n, roundtrip);
+    EXPECT_TRUE(success);
+    EXPECT_EQ(roundtrip, data_original);
   }
 }
 
