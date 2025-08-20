@@ -202,6 +202,40 @@ struct convert<tesseract_collision::CollisionCheckProgramType>
   }
 };
 
+//=========================== CollisionCheckExitType Enum ===========================
+template <>
+struct convert<tesseract_collision::CollisionCheckExitType>
+{
+  static Node encode(const tesseract_collision::CollisionCheckExitType& rhs)
+  {
+    static const std::map<tesseract_collision::CollisionCheckExitType, std::string> m = {
+      { tesseract_collision::CollisionCheckExitType::FIRST, "FIRST" },
+      { tesseract_collision::CollisionCheckExitType::ONE_PER_STEP, "ONE_PER_STEP" },
+      { tesseract_collision::CollisionCheckExitType::ALL, "ALL" }
+    };
+    return Node(m.at(rhs));
+  }
+
+  static bool decode(const Node& node, tesseract_collision::CollisionCheckExitType& rhs)
+  {
+    static const std::map<std::string, tesseract_collision::CollisionCheckExitType> inv = {
+      { "FIRST", tesseract_collision::CollisionCheckExitType::FIRST },
+      { "ONE_PER_STEP", tesseract_collision::CollisionCheckExitType::ONE_PER_STEP },
+      { "ALL", tesseract_collision::CollisionCheckExitType::ALL }
+    };
+
+    if (!node.IsScalar())
+      return false;
+
+    auto it = inv.find(node.Scalar());
+    if (it == inv.end())
+      return false;
+
+    rhs = it->second;
+    return true;
+  }
+};
+
 //=========================== ContactManagerConfig ===========================
 template <>
 struct convert<tesseract_collision::ContactManagerConfig>
@@ -292,7 +326,7 @@ struct convert<tesseract_collision::CollisionCheckConfig>
     node["type"] = rhs.type;
     node["longest_valid_segment_length"] = rhs.longest_valid_segment_length;
     node["check_program_mode"] = rhs.check_program_mode;
-    node["exit_on_first_contact"] = rhs.exit_on_first_contact;
+    node["exit_condition"] = rhs.exit_condition;
 
     return node;
   }
@@ -307,8 +341,8 @@ struct convert<tesseract_collision::CollisionCheckConfig>
       rhs.longest_valid_segment_length = n.as<double>();
     if (const YAML::Node& n = node["check_program_mode"])
       rhs.check_program_mode = n.as<tesseract_collision::CollisionCheckProgramType>();
-    if (const YAML::Node& n = node["exit_on_first_contact"])
-      rhs.exit_on_first_contact = n.as<bool>();
+    if (const YAML::Node& n = node["exit_condition"])
+      rhs.exit_condition = n.as<tesseract_collision::CollisionCheckExitType>();
     return true;
   }
 };

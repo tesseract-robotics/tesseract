@@ -419,11 +419,13 @@ bool ContactManagerConfig::operator!=(const ContactManagerConfig& rhs) const { r
 CollisionCheckConfig::CollisionCheckConfig(ContactRequest request,
                                            CollisionEvaluatorType type,
                                            double longest_valid_segment_length,
-                                           CollisionCheckProgramType check_program_mode)
+                                           CollisionCheckProgramType check_program_mode,
+                                           CollisionCheckExitType exit_condition)
   : contact_request(std::move(request))
   , type(type)
   , longest_valid_segment_length(longest_valid_segment_length)
   , check_program_mode(check_program_mode)
+  , exit_condition(exit_condition)
 {
 }
 
@@ -435,6 +437,7 @@ bool CollisionCheckConfig::operator==(const CollisionCheckConfig& rhs) const
   ret_val &=
       tesseract_common::almostEqualRelativeAndAbs(longest_valid_segment_length, rhs.longest_valid_segment_length);
   ret_val &= (check_program_mode == rhs.check_program_mode);
+  ret_val &= (exit_condition == rhs.exit_condition);
   return ret_val;
 }
 bool CollisionCheckConfig::operator!=(const CollisionCheckConfig& rhs) const { return !operator==(rhs); }
