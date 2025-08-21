@@ -191,8 +191,7 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
 
     tesseract_common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
     tesseract_common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
-
-    kin_jac = kin_jac + base_kin_jac;
+    kin_jac = kin_jac - base_kin_jac;
   }
   else
   {
@@ -235,7 +234,7 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
 
     tesseract_common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
 
-    kin_jac = kin_jac + base_kin_jac;
+    kin_jac = kin_jac - base_kin_jac;
   }
   else
   {
