@@ -46,8 +46,6 @@ struct ContactTrajectorySubstepResults;
 struct ContactTrajectoryStepResults;
 struct ContactTrajectoryResults;
 class ContactResultValidator;
-struct ContactLocation;
-struct TrajectoryContactResult;
 
 // contact_managers_plugin_factory.h
 class DiscreteContactManagerFactory;
