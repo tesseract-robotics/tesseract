@@ -72,11 +72,11 @@ const std::string& OFKTBaseNode::getJointName() const { return joint_name_; }
 
 void OFKTBaseNode::storeJointValue(double joint_value)
 {
-  if (!tesseract_common::almostEqualRelativeAndAbs(joint_value_, joint_value, 1e-8))
-  {
-    joint_value_ = joint_value;
-    joint_value_changed_ = true;
-  }
+  if (tesseract_common::almostEqualRelativeAndAbs(joint_value_, joint_value, 1e-10))
+    return;
+
+  joint_value_ = joint_value;
+  joint_value_changed_ = true;
 }
 
 double OFKTBaseNode::getJointValue() const { return joint_value_; }
