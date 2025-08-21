@@ -3017,8 +3017,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3034,8 +3034,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results2.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_step1 = traj_results2.steps.at(1);
     EXPECT_EQ(traj2_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
@@ -3053,8 +3053,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results3.numSteps(), static_cast<std::size_t>(traj3.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj3_step0 = traj_results3.steps.at(0);
     EXPECT_EQ(traj3_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_step0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_step0.state1.isApprox(traj3.row(0), 1e-6));
+    EXPECT_TRUE(traj3_step0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_step0.state1.isApprox(traj3.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResults(contacts);
@@ -3073,8 +3073,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step1 = traj_first_results.steps.at(1);
     EXPECT_EQ(traj_first_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_first_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_first_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3089,8 +3089,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_first_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_first_step1 = traj2_first_results.steps.at(1);
     EXPECT_EQ(traj2_first_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj2_first_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_first_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_first_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_first_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResults(contacts);
 
@@ -3105,8 +3105,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj3_first_results.numSteps(), static_cast<std::size_t>(traj3.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj3_first_step0 = traj3_first_results.steps.at(0);
     EXPECT_EQ(traj3_first_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_first_step0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_first_step0.state1.isApprox(traj3.row(0), 1e-6));
+    EXPECT_TRUE(traj3_first_step0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_first_step0.state1.isApprox(traj3.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     checkProcessInterpolatedResults(contacts);
 
@@ -3127,8 +3127,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_one_per_step_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_step1 = traj_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj_one_per_step_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3144,8 +3144,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_one_per_step_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_one_per_step_step1 = traj2_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj2_one_per_step_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
@@ -3163,8 +3163,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj3_one_per_step_results.numSteps(), static_cast<std::size_t>(traj3.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj3_one_per_step_step0 = traj3_one_per_step_results.steps.at(0);
     EXPECT_EQ(traj3_one_per_step_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_one_per_step_step0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_one_per_step_step0.state1.isApprox(traj3.row(0), 1e-6));
+    EXPECT_TRUE(traj3_one_per_step_step0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_one_per_step_step0.state1.isApprox(traj3.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResults(contacts);
@@ -3358,8 +3358,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3375,8 +3375,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_step1 = traj2_results.steps.at(1);
     EXPECT_EQ(traj2_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     // Change exit condition to FIRST
@@ -3393,8 +3393,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step1 = traj_first_results.steps.at(1);
     EXPECT_EQ(traj_first_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_first_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_first_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3409,8 +3409,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_first_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_first_step1 = traj2_first_results.steps.at(1);
     EXPECT_EQ(traj2_first_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj2_first_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_first_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_first_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_first_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     // Change exit condition to ONE_PER_STEP
@@ -3430,8 +3430,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_one_per_step_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_step1 = traj_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj_one_per_step_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3447,8 +3447,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_one_per_step_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_one_per_step_step1 = traj2_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj2_one_per_step_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
   }
 
@@ -3486,8 +3486,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(3)));
@@ -3507,8 +3507,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_step1 = traj2_results.steps.at(1);
     EXPECT_EQ(traj2_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
@@ -3526,8 +3526,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj3_results.numSteps(), static_cast<std::size_t>(traj3.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj3_step0 = traj3_results.steps.at(0);
     EXPECT_EQ(traj3_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_step0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_step0.state1.isApprox(traj3.row(0), 1e-6));
+    EXPECT_TRUE(traj3_step0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_step0.state1.isApprox(traj3.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResultsNoTime1(contacts.at(0));
@@ -3546,8 +3546,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj4_results.numSteps(), static_cast<std::size_t>(traj4.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj4_step0 = traj4_results.steps.at(0);
     EXPECT_EQ(traj4_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj4_step0.state0.isApprox(traj4.row(0), 1e-6));
-    EXPECT_TRUE(traj4_step0.state1.isApprox(traj4.row(0), 1e-6));
+    EXPECT_TRUE(traj4_step0.state0.isApprox(traj4.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj4_step0.state1.isApprox(traj4.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     checkProcessInterpolatedResultsNoTime1(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
@@ -3564,8 +3564,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj5_results.numSteps(), static_cast<std::size_t>(traj5.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj5_step1 = traj5_results.steps.at(1);
     EXPECT_EQ(traj5_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj5_step1.state0.isApprox(traj5.row(1), 1e-6));
-    EXPECT_TRUE(traj5_step1.state1.isApprox(traj5.row(1), 1e-6));
+    EXPECT_TRUE(traj5_step1.state0.isApprox(traj5.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj5_step1.state1.isApprox(traj5.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
@@ -3584,8 +3584,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step1 = traj_first_results.steps.at(1);
     EXPECT_EQ(traj_first_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_first_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_first_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3600,8 +3600,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_first_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_first_step1 = traj2_first_results.steps.at(1);
     EXPECT_EQ(traj2_first_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj2_first_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_first_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_first_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_first_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResults(contacts);
 
@@ -3616,8 +3616,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj3_first_results.numSteps(), static_cast<std::size_t>(traj3.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj3_first_step0 = traj3_first_results.steps.at(0);
     EXPECT_EQ(traj3_first_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_first_step0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_first_step0.state1.isApprox(traj3.row(0), 1e-6));
+    EXPECT_TRUE(traj3_first_step0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_first_step0.state1.isApprox(traj3.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     checkProcessInterpolatedResults(contacts);
 
@@ -3632,8 +3632,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj4_first_results.numSteps(), static_cast<std::size_t>(traj4.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj4_first_step0 = traj4_first_results.steps.at(0);
     EXPECT_EQ(traj4_first_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj4_first_step0.state0.isApprox(traj4.row(0), 1e-6));
-    EXPECT_TRUE(traj4_first_step0.state1.isApprox(traj4.row(0), 1e-6));
+    EXPECT_TRUE(traj4_first_step0.state0.isApprox(traj4.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj4_first_step0.state1.isApprox(traj4.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     checkProcessInterpolatedResults(contacts);
 
@@ -3649,8 +3649,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj5_first_results.numSteps(), static_cast<std::size_t>(traj5.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj5_first_step1 = traj5_first_results.steps.at(1);
     EXPECT_EQ(traj5_first_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj5_first_step1.state0.isApprox(traj5.row(1), 1e-6));
-    EXPECT_TRUE(traj5_first_step1.state1.isApprox(traj5.row(1), 1e-6));
+    EXPECT_TRUE(traj5_first_step1.state0.isApprox(traj5.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj5_first_step1.state1.isApprox(traj5.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
@@ -3672,8 +3672,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_one_per_step_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_step1 = traj_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj_one_per_step_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3689,8 +3689,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_one_per_step_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_one_per_step_step1 = traj2_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj2_one_per_step_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResults(contacts);
@@ -3708,8 +3708,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj3_one_per_step_results.numSteps(), static_cast<std::size_t>(traj3.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj3_one_per_step_step0 = traj3_one_per_step_results.steps.at(0);
     EXPECT_EQ(traj3_one_per_step_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_one_per_step_step0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_one_per_step_step0.state1.isApprox(traj3.row(0), 1e-6));
+    EXPECT_TRUE(traj3_one_per_step_step0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_one_per_step_step0.state1.isApprox(traj3.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResults(contacts);
@@ -3726,8 +3726,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj4_one_per_step_results.numSteps(), static_cast<std::size_t>(traj4.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj4_one_per_step_step0 = traj4_one_per_step_results.steps.at(0);
     EXPECT_EQ(traj4_one_per_step_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj4_one_per_step_step0.state0.isApprox(traj4.row(0), 1e-6));
-    EXPECT_TRUE(traj4_one_per_step_step0.state1.isApprox(traj4.row(0), 1e-6));
+    EXPECT_TRUE(traj4_one_per_step_step0.state0.isApprox(traj4.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj4_one_per_step_step0.state1.isApprox(traj4.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     checkProcessInterpolatedResultsNoTime1(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
@@ -3744,8 +3744,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj5_one_per_step_results.numSteps(), static_cast<std::size_t>(traj5.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj5_one_per_step_step1 = traj5_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj5_one_per_step_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj5_one_per_step_step1.state0.isApprox(traj5.row(1), 1e-6));
-    EXPECT_TRUE(traj5_one_per_step_step1.state1.isApprox(traj5.row(1), 1e-6));
+    EXPECT_TRUE(traj5_one_per_step_step1.state0.isApprox(traj5.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj5_one_per_step_step1.state1.isApprox(traj5.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
@@ -3996,8 +3996,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -4013,8 +4013,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_step1 = traj2_results.steps.at(1);
     EXPECT_EQ(traj2_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     // Change exit condition to FIRST
@@ -4031,8 +4031,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step1 = traj_first_results.steps.at(1);
     EXPECT_EQ(traj_first_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_first_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_first_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -4047,8 +4047,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_first_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_first_step1 = traj2_first_results.steps.at(1);
     EXPECT_EQ(traj2_first_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj2_first_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_first_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_first_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_first_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     // Change exit condition to ONE_PER_STEP
@@ -4068,8 +4068,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_one_per_step_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_step1 = traj_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj_one_per_step_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -4085,8 +4085,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_one_per_step_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_one_per_step_step1 = traj2_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj2_one_per_step_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResults(contacts);
   }
 
@@ -4109,17 +4109,17 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(80));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults most_coll_step = traj_results.mostCollisionsStep();
     EXPECT_EQ(most_coll_step.step, static_cast<int>(2));
     EXPECT_EQ(most_coll_step.numContacts(), static_cast<int>(117));
-    EXPECT_TRUE(most_coll_step.state0.isApprox(traj.row(2), 1e-6));
-    EXPECT_TRUE(most_coll_step.state1.isApprox(traj.row(3), 1e-6));
+    EXPECT_TRUE(most_coll_step.state0.isApprox(traj.row(2).transpose(), 1e-6));
+    EXPECT_TRUE(most_coll_step.state1.isApprox(traj.row(3).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults substep0 = most_coll_step.substeps.at(0);
     EXPECT_EQ(substep0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(substep0.state0.isApprox(traj.row(2), 1e-6));
-    EXPECT_TRUE(substep0.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(substep0.state0.isApprox(traj.row(2).transpose(), 1e-6));
+    EXPECT_TRUE(substep0.state1.isApprox(traj.row(2).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
@@ -4140,16 +4140,16 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_step1 = traj2_results.steps.at(1);
     EXPECT_EQ(traj2_step1.numContacts(), static_cast<int>(80));
-    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(2), 1e-6));
+    EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj2_most_coll_step = traj2_results.mostCollisionsStep();
     EXPECT_EQ(traj2_most_coll_step.step, static_cast<int>(1));
     EXPECT_EQ(traj2_most_coll_step.numContacts(), static_cast<int>(80));
-    EXPECT_TRUE(traj2_most_coll_step.state0.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_most_coll_step.state0.isApprox(traj2.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj2_substep0 = traj2_most_coll_step.substeps.at(0);
     EXPECT_EQ(traj2_substep0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj2_substep0.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_substep0.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_substep0.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_substep0.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
@@ -4167,17 +4167,17 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj3_results.numSteps(), static_cast<std::size_t>(traj3.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj3_step0 = traj3_results.steps.at(0);
     EXPECT_EQ(traj3_step0.numContacts(), static_cast<int>(115));
-    EXPECT_TRUE(traj3_step0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_step0.state1.isApprox(traj3.row(1), 1e-6));
+    EXPECT_TRUE(traj3_step0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_step0.state1.isApprox(traj3.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj3_most_coll_step = traj3_results.mostCollisionsStep();
     EXPECT_EQ(traj3_most_coll_step.step, static_cast<int>(0));
     EXPECT_EQ(traj3_most_coll_step.numContacts(), static_cast<int>(115));
-    EXPECT_TRUE(traj3_most_coll_step.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_most_coll_step.state1.isApprox(traj3.row(1), 1e-6));
+    EXPECT_TRUE(traj3_most_coll_step.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_most_coll_step.state1.isApprox(traj3.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj3_substep0 = traj3_most_coll_step.substeps.at(0);
     EXPECT_EQ(traj3_substep0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_substep0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_substep0.state1.isApprox(traj3.row(0), 1e-6));
+    EXPECT_TRUE(traj3_substep0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_substep0.state1.isApprox(traj3.row(0).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
     checkProcessInterpolatedResultsNoTime1(contacts.at(1));
@@ -4196,14 +4196,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step0 = traj_first_results.steps.at(0);
     EXPECT_EQ(traj_first_step0.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj_first_most_coll_step =
         traj_first_results.mostCollisionsStep();
     EXPECT_EQ(traj_first_most_coll_step.step, static_cast<int>(0));
     EXPECT_EQ(traj_first_most_coll_step.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_first_most_coll_step.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_first_most_coll_step.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_most_coll_step.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_most_coll_step.state1.isApprox(traj.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj_most_coll_substep =
         traj_first_most_coll_step.mostCollisionsSubstep();
     EXPECT_EQ(traj_most_coll_substep.numContacts(), static_cast<int>(1));
@@ -4221,14 +4221,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_first_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_first_step0 = traj2_first_results.steps.at(0);
     EXPECT_EQ(traj2_first_step0.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj2_first_step0.state0.isApprox(traj2.row(0), 1e-6));
-    EXPECT_TRUE(traj2_first_step0.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_first_step0.state0.isApprox(traj2.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_first_step0.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj2_first_most_coll_step =
         traj2_first_results.mostCollisionsStep();
     EXPECT_EQ(traj2_first_most_coll_step.step, static_cast<int>(0));
     EXPECT_EQ(traj2_first_most_coll_step.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj2_first_most_coll_step.state0.isApprox(traj2.row(0), 1e-6));
-    EXPECT_TRUE(traj2_first_most_coll_step.state1.isApprox(traj2.row(1), 1e-6));
+    EXPECT_TRUE(traj2_first_most_coll_step.state0.isApprox(traj2.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_first_most_coll_step.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj2_first_most_coll_substep =
         traj2_first_most_coll_step.mostCollisionsSubstep();
     EXPECT_EQ(traj2_first_most_coll_substep.numContacts(), static_cast<int>(1));
@@ -4246,14 +4246,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj3_first_results.numSteps(), static_cast<std::size_t>(traj3.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj3_first_step0 = traj3_first_results.steps.at(0);
     EXPECT_EQ(traj3_first_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_first_step0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_first_step0.state1.isApprox(traj3.row(1), 1e-6));
+    EXPECT_TRUE(traj3_first_step0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_first_step0.state1.isApprox(traj3.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj3_first_most_coll_step =
         traj3_first_results.mostCollisionsStep();
     EXPECT_EQ(traj3_first_most_coll_step.step, static_cast<int>(0));
     EXPECT_EQ(traj3_first_most_coll_step.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_first_most_coll_step.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_first_most_coll_step.state1.isApprox(traj3.row(1), 1e-6));
+    EXPECT_TRUE(traj3_first_most_coll_step.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_first_most_coll_step.state1.isApprox(traj3.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj3_first_most_coll_substep =
         traj3_first_most_coll_step.mostCollisionsSubstep();
     EXPECT_EQ(traj3_first_most_coll_substep.numContacts(), static_cast<int>(2));
@@ -4277,14 +4277,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_one_per_step_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_step1 = traj_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj_one_per_step_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_most_coll_step =
         traj_one_per_step_results.mostCollisionsStep();
     EXPECT_EQ(traj_one_per_step_most_coll_step.step, static_cast<int>(1));
     EXPECT_EQ(traj_one_per_step_most_coll_step.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_one_per_step_most_coll_step.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_most_coll_step.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_most_coll_step.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_most_coll_step.state1.isApprox(traj.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj_one_per_step_most_coll_substep =
         traj_one_per_step_most_coll_step.mostCollisionsSubstep();
     EXPECT_EQ(traj_one_per_step_most_coll_substep.numContacts(), static_cast<int>(2));
@@ -4304,14 +4304,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj2_one_per_step_results.numSteps(), static_cast<std::size_t>(traj2.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj2_one_per_step_step1 = traj2_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj2_one_per_step_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(2), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj2_one_per_step_most_coll_step =
         traj2_one_per_step_results.mostCollisionsStep();
     EXPECT_EQ(traj2_one_per_step_most_coll_step.step, static_cast<int>(1));
     EXPECT_EQ(traj2_one_per_step_most_coll_step.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj2_one_per_step_most_coll_step.state0.isApprox(traj2.row(1), 1e-6));
-    EXPECT_TRUE(traj2_one_per_step_most_coll_step.state1.isApprox(traj2.row(2), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_most_coll_step.state0.isApprox(traj2.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj2_one_per_step_most_coll_step.state1.isApprox(traj2.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj2_one_per_step_most_coll_substep =
         traj2_one_per_step_most_coll_step.mostCollisionsSubstep();
     EXPECT_EQ(traj2_one_per_step_most_coll_substep.numContacts(), static_cast<int>(2));
@@ -4332,14 +4332,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj3_one_per_step_results.numSteps(), static_cast<std::size_t>(traj3.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj3_one_per_step_step0 = traj3_one_per_step_results.steps.at(0);
     EXPECT_EQ(traj3_one_per_step_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_one_per_step_step0.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_one_per_step_step0.state1.isApprox(traj3.row(1), 1e-6));
+    EXPECT_TRUE(traj3_one_per_step_step0.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_one_per_step_step0.state1.isApprox(traj3.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj3_one_per_step_most_coll_step =
         traj3_one_per_step_results.mostCollisionsStep();
     EXPECT_EQ(traj3_one_per_step_most_coll_step.step, static_cast<int>(0));
     EXPECT_EQ(traj3_one_per_step_most_coll_step.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj3_one_per_step_most_coll_step.state0.isApprox(traj3.row(0), 1e-6));
-    EXPECT_TRUE(traj3_one_per_step_most_coll_step.state1.isApprox(traj3.row(1), 1e-6));
+    EXPECT_TRUE(traj3_one_per_step_most_coll_step.state0.isApprox(traj3.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj3_one_per_step_most_coll_step.state1.isApprox(traj3.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj3_one_per_step_most_coll_substep =
         traj3_one_per_step_most_coll_step.mostCollisionsSubstep();
     EXPECT_EQ(traj3_one_per_step_most_coll_substep.numContacts(), static_cast<int>(2));
@@ -4737,8 +4737,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResultsNoTime1(contacts.at(3));
     checkProcessInterpolatedResults(contacts);
@@ -4776,8 +4776,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step0 = traj_first_results.steps.at(0);
     EXPECT_EQ(traj_first_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
 
@@ -5002,8 +5002,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResultsNoTime1(contacts.at(3));
     checkProcessInterpolatedResults(contacts);
@@ -5031,8 +5031,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step0 = traj_first_results.steps.at(0);
     EXPECT_EQ(traj_first_step0.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
 
@@ -5090,8 +5090,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResultsNoTime1(contacts.at(3));
     checkProcessInterpolatedResults(contacts);
@@ -5129,8 +5129,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step0 = traj_first_results.steps.at(0);
     EXPECT_EQ(traj_first_step0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
 
@@ -5360,16 +5360,16 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(40));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults most_collision_step = traj_results.mostCollisionsStep();
     EXPECT_EQ(most_collision_step.step, 2);
     EXPECT_EQ(most_collision_step.numContacts(), static_cast<int>(41));
-    EXPECT_TRUE(most_collision_step.state0.isApprox(traj.row(2), 1e-6));
-    EXPECT_TRUE(most_collision_step.state1.isApprox(traj.row(3), 1e-6));
+    EXPECT_TRUE(most_collision_step.state0.isApprox(traj.row(2).transpose(), 1e-6));
+    EXPECT_TRUE(most_collision_step.state1.isApprox(traj.row(3).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults substep0 = most_collision_step.substeps.at(0);
     EXPECT_EQ(substep0.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(substep0.state0.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(substep0.state0.isApprox(traj.row(2).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResultsNoTime1(contacts.at(3));
     checkProcessInterpolatedResults(contacts);
@@ -5397,14 +5397,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step0 = traj_first_results.steps.at(0);
     EXPECT_EQ(traj_first_step0.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj_first_most_collision_step =
         traj_first_results.mostCollisionsStep();
     EXPECT_EQ(traj_first_most_collision_step.step, 0);
     EXPECT_EQ(traj_first_most_collision_step.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_first_most_collision_step.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_first_most_collision_step.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_most_collision_step.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_most_collision_step.state1.isApprox(traj.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj_first_most_coll_substep0 =
         traj_first_most_collision_step.mostCollisionsSubstep();
     EXPECT_EQ(traj_first_most_coll_substep0.substep, 13);
@@ -5436,14 +5436,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_one_per_step_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_step1 = traj_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj_one_per_step_step1.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_most_collision_step =
         traj_one_per_step_results.mostCollisionsStep();
     EXPECT_EQ(traj_one_per_step_most_collision_step.step, 0);
     EXPECT_EQ(traj_one_per_step_most_collision_step.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_one_per_step_most_collision_step.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_most_collision_step.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_most_collision_step.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_most_collision_step.state1.isApprox(traj.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj_one_per_step_most_coll_substep0 =
         traj_one_per_step_most_collision_step.mostCollisionsSubstep();
     EXPECT_EQ(traj_one_per_step_most_coll_substep0.substep, 13);
@@ -5483,16 +5483,16 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_step1 = traj_results.steps.at(1);
     EXPECT_EQ(traj_step1.numContacts(), static_cast<int>(80));
-    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_step1.state1.isApprox(traj.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults most_collision_step = traj_results.mostCollisionsStep();
     EXPECT_EQ(most_collision_step.step, 2);
     EXPECT_EQ(most_collision_step.numContacts(), static_cast<int>(118));
-    EXPECT_TRUE(most_collision_step.state0.isApprox(traj.row(2), 1e-6));
-    EXPECT_TRUE(most_collision_step.state1.isApprox(traj.row(3), 1e-6));
+    EXPECT_TRUE(most_collision_step.state0.isApprox(traj.row(2).transpose(), 1e-6));
+    EXPECT_TRUE(most_collision_step.state1.isApprox(traj.row(3).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults substep0 = most_collision_step.substeps.at(0);
     EXPECT_EQ(substep0.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(substep0.state0.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(substep0.state0.isApprox(traj.row(2).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResultsNoTime1(contacts.at(3));
     checkProcessInterpolatedResults(contacts);
@@ -5529,14 +5529,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_first_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_first_step0 = traj_first_results.steps.at(0);
     EXPECT_EQ(traj_first_step0.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_step0.state1.isApprox(traj.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj_first_most_collision_step =
         traj_first_results.mostCollisionsStep();
     EXPECT_EQ(traj_first_most_collision_step.step, 0);
     EXPECT_EQ(traj_first_most_collision_step.numContacts(), static_cast<int>(1));
-    EXPECT_TRUE(traj_first_most_collision_step.state0.isApprox(traj.row(0), 1e-6));
-    EXPECT_TRUE(traj_first_most_collision_step.state1.isApprox(traj.row(1), 1e-6));
+    EXPECT_TRUE(traj_first_most_collision_step.state0.isApprox(traj.row(0).transpose(), 1e-6));
+    EXPECT_TRUE(traj_first_most_collision_step.state1.isApprox(traj.row(1).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj_first_most_coll_substep0 =
         traj_first_most_collision_step.mostCollisionsSubstep();
     EXPECT_EQ(traj_first_most_coll_substep0.substep, 13);
@@ -5576,14 +5576,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj_one_per_step_results.numSteps(), static_cast<std::size_t>(traj.rows()));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_step1 = traj_one_per_step_results.steps.at(1);
     EXPECT_EQ(traj_one_per_step_step1.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_step1.state1.isApprox(traj.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectoryStepResults traj_one_per_step_most_collision_step =
         traj_one_per_step_results.mostCollisionsStep();
     EXPECT_EQ(traj_one_per_step_most_collision_step.step, 1);
     EXPECT_EQ(traj_one_per_step_most_collision_step.numContacts(), static_cast<int>(2));
-    EXPECT_TRUE(traj_one_per_step_most_collision_step.state0.isApprox(traj.row(1), 1e-6));
-    EXPECT_TRUE(traj_one_per_step_most_collision_step.state1.isApprox(traj.row(2), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_most_collision_step.state0.isApprox(traj.row(1).transpose(), 1e-6));
+    EXPECT_TRUE(traj_one_per_step_most_collision_step.state1.isApprox(traj.row(2).transpose(), 1e-6));
     tesseract_collision::ContactTrajectorySubstepResults traj_one_per_step_most_coll_substep0 =
         traj_one_per_step_most_collision_step.mostCollisionsSubstep();
     EXPECT_EQ(traj_one_per_step_most_coll_substep0.substep, 0);
@@ -5928,11 +5928,11 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     }
     // Get state at step 0
     tesseract_collision::ContactTrajectoryStepResults step0 = traj_res2.steps.at(0);
-    EXPECT_TRUE(step0.state0.isApprox(traj2.row(0)));
-    EXPECT_TRUE(step0.state1.isApprox(traj2.row(1)));
+    EXPECT_TRUE(step0.state0.isApprox(traj2.row(0).transpose()));
+    EXPECT_TRUE(step0.state1.isApprox(traj2.row(1).transpose()));
     tesseract_collision::ContactTrajectoryStepResults step1 = traj_res2.steps.at(1);
-    EXPECT_TRUE(step1.state0.isApprox(traj2.row(1)));
-    EXPECT_TRUE(step1.state1.isApprox(traj2.row(2)));
+    EXPECT_TRUE(step1.state0.isApprox(traj2.row(1).transpose()));
+    EXPECT_TRUE(step1.state1.isApprox(traj2.row(2).transpose()));
   }
 
   // Failures
