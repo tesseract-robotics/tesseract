@@ -207,6 +207,13 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
   std::pair<Eigen::Vector3d, double> perturbed_pose_rotation_err =
       calcRotationalErrorDecomposed(perturbed_pose_err.rotation());
 
+  // They should always pointing in the same direction, but when error is close to zero this can flip so we will correct
+  if (perturbed_pose_rotation_err.first.dot(pose_rotation_err.first) < 0)
+  {
+    perturbed_pose_rotation_err.first *= -1;
+    perturbed_pose_rotation_err.second *= -1;
+  }
+
   // They should always pointing in the same direction
 #ifndef NDEBUG
   if (std::abs(pose_rotation_err.second) > 0.01 && perturbed_pose_rotation_err.first.dot(pose_rotation_err.first) < 0)

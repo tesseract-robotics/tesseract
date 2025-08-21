@@ -47,6 +47,7 @@ class ForwardKinematics;
 /**
  * @brief Numerically calculate a jacobian. This is mainly used for testing
  * @param jacobian (Return) The jacobian which gets filled out.
+ * @param change_base  The transform from the desired frame to the current base frame of the jacobian
  * @param kin          The kinematics object
  * @param joint_values The joint values for which to calculate the jacobian
  * @param link_name    The link_name for which the jacobian should be calculated
@@ -62,7 +63,8 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 /**
  * @brief Numerically calculate a jacobian. This is mainly used for testing
  * @param jacobian (Return) The jacobian which gets filled out.
- * @param joint_group          The joint group object
+ * @param change_base  The transform from the desired frame to the current base frame of the jacobian
+ * @param joint_group  The joint group object
  * @param joint_values The joint values for which to calculate the jacobian
  * @param link_name    The link_name for which the jacobian should be calculated
  * @param link_point   The point on the link for which to calculate the jacobian
@@ -73,6 +75,24 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                        const std::string& link_name,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point);
+
+/**
+ * @brief Numerically calculate a jacobian when both source and target are active links
+ * @param jacobian (Return) The jacobian which gets filled out.
+ * @param joint_group       The joint group object
+ * @param joint_values      The joint values for which to calculate the jacobian
+ * @param base_link_name    The link name for which the jacobian is calculated in
+ * @param base_link_offset  The offset on the base link for which to calculate the jacobian in
+ * @param link_name         The link name for which the jacobian is calculated for
+ * @param link_offset       The offset on the link for which the jacobian is calcualted for
+ */
+void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                       const JointGroup& joint_group,
+                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                       const std::string& base_link_name,
+                       const Eigen::Isometry3d& base_link_offset,
+                       const std::string& link_name,
+                       const Eigen::Isometry3d& link_offset);
 
 /**
  * @brief Solve equation Ax=b for x

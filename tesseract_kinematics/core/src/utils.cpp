@@ -105,6 +105,35 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   }
 }
 
+void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                       const JointGroup& joint_group,
+                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                       const std::string& base_link_name,
+                       const Eigen::Isometry3d& base_link_offset,
+                       const std::string& link_name,
+                       const Eigen::Isometry3d& link_offset)
+{
+  tesseract_common::TransformMap poses;
+
+  joint_group.calcFwdKin(poses, joint_values);
+  const Eigen::Isometry3d change_base = (poses[base_link_name] * base_link_offset).inverse();
+  Eigen::MatrixXd base_jacobian(6, joint_group.numJoints());
+  numericalJacobian(base_jacobian,
+                    Eigen::Isometry3d::Identity(),
+                    joint_group,
+                    joint_values,
+                    base_link_name,
+                    base_link_offset.translation());
+  tesseract_common::jacobianChangeBase(base_jacobian, change_base);
+
+  Eigen::MatrixXd link_jacobian(6, joint_group.numJoints());
+  numericalJacobian(
+      link_jacobian, Eigen::Isometry3d::Identity(), joint_group, joint_values, link_name, link_offset.translation());
+  tesseract_common::jacobianChangeBase(link_jacobian, change_base);
+
+  jacobian.noalias() = link_jacobian - base_jacobian;
+}
+
 bool solvePInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
                const Eigen::Ref<const Eigen::VectorXd>& b,
                Eigen::Ref<Eigen::VectorXd> x)

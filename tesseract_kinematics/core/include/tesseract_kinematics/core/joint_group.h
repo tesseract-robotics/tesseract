@@ -113,6 +113,7 @@ public:
    * @brief Calculated jacobian of robot given joint angles
    * @param joint_angles Input vector of joint angles
    * @param base_link_name The frame that the jacobian is calculated in
+   * @param link_name The frame that the jacobian is calculated for
    * @return The jacobian at the provided link_name relative to the provided base_link_name
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
