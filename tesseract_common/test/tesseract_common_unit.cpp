@@ -3681,7 +3681,7 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   {  // Test CollisionMarginData getMaxCollisionMargin for specific object
     double default_margin = 0.1;
     tesseract_common::CollisionMarginData data(default_margin);
-    
+
     // When no pairs exist, should return default margin
     double result = data.getMaxCollisionMargin("link1");
     EXPECT_NEAR(result, default_margin, tol);
@@ -3713,7 +3713,7 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
 TEST(TesseractCommonUnit, CollisionMarginDataSerialization)  // NOLINT
 {
   const double tol = 1e-6;
-  
+
   // Create original data with comprehensive margin setup
   tesseract_common::CollisionMarginData original_data(0.1);
   original_data.setCollisionMargin("link1", "link2", 0.5);
@@ -3721,7 +3721,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataSerialization)  // NOLINT
   original_data.setCollisionMargin("link2", "link3", 0.3);
   original_data.setCollisionMargin("link2", "link4", 0.7);
   original_data.setCollisionMargin("link4", "link5", 0.4);
-  
+
   // Verify original data state before serialization
   double original_overall_max = original_data.getMaxCollisionMargin();
   double original_link1_max = original_data.getMaxCollisionMargin("link1");
@@ -3730,25 +3730,25 @@ TEST(TesseractCommonUnit, CollisionMarginDataSerialization)  // NOLINT
   double original_link4_max = original_data.getMaxCollisionMargin("link4");
   double original_link5_max = original_data.getMaxCollisionMargin("link5");
   double original_nonexistent_max = original_data.getMaxCollisionMargin("nonexistent");
-  
+
   // Serialize the data
   std::stringstream ss;
   {
     boost::archive::xml_oarchive oa(ss);
     oa << boost::serialization::make_nvp("collision_margin_data", original_data);
   }
-  
+
   // Deserialize into new object
   tesseract_common::CollisionMarginData deserialized_data;
   {
     boost::archive::xml_iarchive ia(ss);
     ia >> boost::serialization::make_nvp("collision_margin_data", deserialized_data);
   }
-  
+
   // Verify that max_collision_margin_ is correctly reconstructed
   double deserialized_overall_max = deserialized_data.getMaxCollisionMargin();
   EXPECT_NEAR(deserialized_overall_max, original_overall_max, tol);
-  
+
   // Verify that object_max_margins_ is correctly reconstructed for all objects
   double deserialized_link1_max = deserialized_data.getMaxCollisionMargin("link1");
   double deserialized_link2_max = deserialized_data.getMaxCollisionMargin("link2");
@@ -3756,31 +3756,31 @@ TEST(TesseractCommonUnit, CollisionMarginDataSerialization)  // NOLINT
   double deserialized_link4_max = deserialized_data.getMaxCollisionMargin("link4");
   double deserialized_link5_max = deserialized_data.getMaxCollisionMargin("link5");
   double deserialized_nonexistent_max = deserialized_data.getMaxCollisionMargin("nonexistent");
-  
+
   EXPECT_NEAR(deserialized_link1_max, original_link1_max, tol);
   EXPECT_NEAR(deserialized_link2_max, original_link2_max, tol);
   EXPECT_NEAR(deserialized_link3_max, original_link3_max, tol);
   EXPECT_NEAR(deserialized_link4_max, original_link4_max, tol);
   EXPECT_NEAR(deserialized_link5_max, original_link5_max, tol);
   EXPECT_NEAR(deserialized_nonexistent_max, original_nonexistent_max, tol);
-  
+
   // Verify that the lookup table was properly serialized/deserialized
   EXPECT_TRUE(original_data == deserialized_data);
-  
+
   // Test that new operations work correctly on deserialized data
   deserialized_data.setCollisionMargin("link1", "link6", 0.9);
   double new_link1_max = deserialized_data.getMaxCollisionMargin("link1");
   double new_overall_max = deserialized_data.getMaxCollisionMargin();
-  
-  EXPECT_NEAR(new_link1_max, 0.9, tol);  // Should be the new highest margin for link1
+
+  EXPECT_NEAR(new_link1_max, 0.9, tol);    // Should be the new highest margin for link1
   EXPECT_NEAR(new_overall_max, 0.9, tol);  // Should be the new overall maximum
-  
+
   // Test scaling operation on deserialized data
   deserialized_data.scaleMargins(2.0);
   double scaled_link1_max = deserialized_data.getMaxCollisionMargin("link1");
   double scaled_overall_max = deserialized_data.getMaxCollisionMargin();
-  
-  EXPECT_NEAR(scaled_link1_max, 1.8, tol);  // 0.9 * 2.0
+
+  EXPECT_NEAR(scaled_link1_max, 1.8, tol);    // 0.9 * 2.0
   EXPECT_NEAR(scaled_overall_max, 1.8, tol);  // Should be the scaled maximum
 }
 
