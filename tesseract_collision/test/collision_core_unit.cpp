@@ -1637,10 +1637,10 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
                 substep_number);
       EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
                       .substeps[static_cast<std::size_t>(substep_number)]
-                      .state0.isApprox(traj_array_with_substates.row(1)));
+                      .state0.isApprox(traj_array_with_substates.row(1).transpose()));
       EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
                       .substeps[static_cast<std::size_t>(substep_number)]
-                      .state1.isApprox(traj_array_with_substates.row(2)));
+                      .state1.isApprox(traj_array_with_substates.row(2).transpose()));
       EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
                     .substeps[static_cast<std::size_t>(substep_number)]
                     .numContacts(),
