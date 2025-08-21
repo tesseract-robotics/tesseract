@@ -457,12 +457,12 @@ ContactTrajectorySubstepResults::ContactTrajectorySubstepResults(int substep_num
 ContactTrajectorySubstepResults::operator bool() const { return !contacts.empty(); }
 
 void ContactTrajectorySubstepResults::addContact(int substep_number,
-                                                 const Eigen::VectorXd& start_state,  // NOLINT
-                                                 const Eigen::VectorXd& end_state,    // NOLINT
+                                                 const Eigen::VectorXd& start_substate,  // NOLINT
+                                                 const Eigen::VectorXd& end_substate,    // NOLINT
                                                  const tesseract_collision::ContactResultMap& new_contacts)
 {
-  state0 = start_state;
-  state1 = end_state;
+  state0 = start_substate;
+  state1 = end_substate;
   substep = substep_number;
 
   contacts = new_contacts;
@@ -514,8 +514,10 @@ ContactTrajectoryStepResults::operator bool() const
 void ContactTrajectoryStepResults::addContact(int step_number,
                                               int substep_number,
                                               int num_substeps,
-                                              const Eigen::VectorXd& start_state,  // NOLINT
-                                              const Eigen::VectorXd& end_state,    // NOLINT
+                                              const Eigen::VectorXd& start_state,     // NOLINT
+                                              const Eigen::VectorXd& end_state,       // NOLINT
+                                              const Eigen::VectorXd& start_substate,  // NOLINT
+                                              const Eigen::VectorXd& end_substate,    // NOLINT
                                               const tesseract_collision::ContactResultMap& contacts)
 {
   if (total_substeps < num_substeps)
@@ -534,7 +536,7 @@ void ContactTrajectoryStepResults::addContact(int step_number,
       throw std::out_of_range("ContactTrajectoryStepResults::addContact: substep_number out of range");
   }
 
-  substeps[static_cast<std::size_t>(substep_number)].addContact(substep_number, start_state, end_state, contacts);
+  substeps[static_cast<std::size_t>(substep_number)].addContact(substep_number, start_substate, end_substate, contacts);
 }
 
 void ContactTrajectoryStepResults::resize(int num_substeps)
@@ -618,15 +620,17 @@ ContactTrajectoryResults::operator bool() const
 void ContactTrajectoryResults::addContact(int step_number,
                                           int substep_number,
                                           int num_substeps,
-                                          const Eigen::VectorXd& start_state,  // NOLINT
-                                          const Eigen::VectorXd& end_state,    // NOLINT
+                                          const Eigen::VectorXd& start_state,     // NOLINT
+                                          const Eigen::VectorXd& end_state,       // NOLINT
+                                          const Eigen::VectorXd& start_substate,  // NOLINT
+                                          const Eigen::VectorXd& end_substate,    // NOLINT
                                           const tesseract_collision::ContactResultMap& contacts)
 {
   if (step_number < 0 || step_number >= total_steps)
     throw std::out_of_range("ContactTrajectoryResults::addContact: step_number out of range");
 
   steps[static_cast<std::size_t>(step_number)].addContact(
-      step_number, substep_number, num_substeps, start_state, end_state, contacts);
+      step_number, substep_number, num_substeps, start_state, end_state, start_substate, end_substate, contacts);
 }
 
 void ContactTrajectoryResults::resize(int num_steps)
