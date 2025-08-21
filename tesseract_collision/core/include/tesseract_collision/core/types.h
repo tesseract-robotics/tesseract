@@ -551,8 +551,8 @@ struct ContactTrajectoryStepResults
 
   ContactTrajectoryStepResults() = default;
   ContactTrajectoryStepResults(int step_number,
-                               const Eigen::VectorXd& start_state,
-                               const Eigen::VectorXd& end_state,
+                               const Eigen::VectorXd& start_substate,
+                               const Eigen::VectorXd& end_substate,
                                int num_substeps);
   ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state);
 
@@ -565,6 +565,8 @@ struct ContactTrajectoryStepResults
                   int num_substeps,
                   const Eigen::VectorXd& start_state,
                   const Eigen::VectorXd& end_state,
+                  const Eigen::VectorXd& start_substate,
+                  const Eigen::VectorXd& end_substate,
                   const tesseract_collision::ContactResultMap& contacts);
 
   void resize(int num_substeps);
@@ -610,6 +612,8 @@ struct ContactTrajectoryResults
                   int num_substeps,
                   const Eigen::VectorXd& start_state,
                   const Eigen::VectorXd& end_state,
+                  const Eigen::VectorXd& start_substate,
+                  const Eigen::VectorXd& end_substate,
                   const tesseract_collision::ContactResultMap& contacts);
 
   void resize(int num_steps);

@@ -1585,6 +1585,11 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       start_state << 1.0, 2.0, 3.0;
       end_state << 4.0, 5.0, 6.0;
 
+      tesseract_common::TrajArray traj_array_with_substates(3, start_state.size());
+      traj_array_with_substates.row(0) = start_state;
+      traj_array_with_substates.row(1) = (start_state + end_state) / 2.0;  // Intermediate state
+      traj_array_with_substates.row(2) = end_state;
+
       // Create contact results to add
       tesseract_collision::ContactResultMap contacts;
       auto key1 = tesseract_common::makeOrderedLinkPair("link1", "link2");
@@ -1609,7 +1614,14 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].substeps.size(), 0);
 
       // Add the contact - this should automatically initialize the step with the right number of substeps
-      results.addContact(step_number, substep_number, num_substeps, start_state, end_state, contacts);
+      results.addContact(step_number,
+                         substep_number,
+                         num_substeps,
+                         start_state,
+                         end_state,
+                         traj_array_with_substates.row(1),
+                         traj_array_with_substates.row(2),
+                         contacts);
 
       // Verify the step was properly initialized by the addContact call
       EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, step_number);
@@ -1625,10 +1637,10 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
                 substep_number);
       EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
                       .substeps[static_cast<std::size_t>(substep_number)]
-                      .state0.isApprox(start_state));
+                      .state0.isApprox(traj_array_with_substates.row(1)));
       EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
                       .substeps[static_cast<std::size_t>(substep_number)]
-                      .state1.isApprox(end_state));
+                      .state1.isApprox(traj_array_with_substates.row(2)));
       EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
                     .substeps[static_cast<std::size_t>(substep_number)]
                     .numContacts(),
@@ -1688,7 +1700,8 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
       contacts1.addContactResult(key1, cr1);
 
-      results.addContact(step_number, substep_number, num_substeps, start_state, end_state, contacts1);
+      results.addContact(
+          step_number, substep_number, num_substeps, start_state, end_state, start_state, end_state, contacts1);
 
       // Verify step was automatically initialized
       EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, step_number);
@@ -1719,7 +1732,14 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
       contacts2.addContactResult(key2, cr2);
 
-      results.addContact(step_number, substep_number, num_substeps, new_start_state, new_end_state, contacts2);
+      results.addContact(step_number,
+                         substep_number,
+                         num_substeps,
+                         new_start_state,
+                         new_end_state,
+                         new_start_state,
+                         new_end_state,
+                         contacts2);
 
       // Verify the substep was updated with new states and contacts
       EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
@@ -1758,8 +1778,9 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
       tesseract_collision::ContactResultMap contacts;
 
-      EXPECT_THROW(results.addContact(invalid_step_number, substep_number, num_substeps, state, state, contacts),
-                   std::out_of_range);
+      EXPECT_THROW(
+          results.addContact(invalid_step_number, substep_number, num_substeps, state, state, state, state, contacts),
+          std::out_of_range);
     }
 
     // Test error cases - negative step number
@@ -1773,8 +1794,9 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
       tesseract_collision::ContactResultMap contacts;
 
-      EXPECT_THROW(results.addContact(invalid_step_number, substep_number, num_substeps, state, state, contacts),
-                   std::out_of_range);
+      EXPECT_THROW(
+          results.addContact(invalid_step_number, substep_number, num_substeps, state, state, state, state, contacts),
+          std::out_of_range);
     }
 
     // Test total contact counting after adding contacts
@@ -1815,7 +1837,8 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       contacts.addContactResult(key, cr);
 
       // This should work since substep is within range and no resize is needed
-      step_results.addContact(step_number, substep_number, same_substeps, substep_start, substep_end, contacts);
+      step_results.addContact(
+          step_number, substep_number, same_substeps, start_state, end_state, substep_start, substep_end, contacts);
 
       // Verify no resize occurred
       EXPECT_EQ(step_results.total_substeps, initial_substeps);
@@ -1854,7 +1877,8 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       EXPECT_EQ(step_results.substeps.size(), initial_substeps);
 
       // This should automatically resize the step to accommodate the required substeps
-      step_results.addContact(step_number, substep_number, required_substeps, substep_start, substep_end, contacts);
+      step_results.addContact(
+          step_number, substep_number, required_substeps, start_state, end_state, substep_start, substep_end, contacts);
 
       // Verify the step was resized to accommodate the new requirements
       EXPECT_EQ(step_results.total_substeps, required_substeps);
@@ -1889,7 +1913,8 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       contacts.addContactResult(key, cr);
 
       // This should not resize since substeps already matches num_substeps
-      step_results.addContact(step_number, substep_number, same_substeps, substep_start, substep_end, contacts);
+      step_results.addContact(
+          step_number, substep_number, same_substeps, start_state, end_state, substep_start, substep_end, contacts);
 
       // Verify no resize occurred
       EXPECT_EQ(step_results.total_substeps, 5);
@@ -1913,7 +1938,8 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
       tesseract_collision::ContactResultMap contacts;
 
-      EXPECT_THROW(step_results.addContact(step_number, invalid_substep_number, same_substeps, state, state, contacts),
+      EXPECT_THROW(step_results.addContact(
+                       step_number, invalid_substep_number, same_substeps, state, state, state, state, contacts),
                    std::out_of_range);
     }
 
@@ -1927,7 +1953,8 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
       tesseract_collision::ContactResultMap contacts;
 
-      EXPECT_THROW(step_results.addContact(step_number, invalid_substep_number, same_substeps, state, state, contacts),
+      EXPECT_THROW(step_results.addContact(
+                       step_number, invalid_substep_number, same_substeps, state, state, state, state, contacts),
                    std::runtime_error);
     }
   }
