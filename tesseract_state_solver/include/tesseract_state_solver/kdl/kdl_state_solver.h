@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl/jntarray.hpp>
 #include <kdl/treejnttojacsolver.hpp>
+#include <boost/thread/tss.hpp>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -139,7 +140,11 @@ private:
   tesseract_common::KinematicLimits limits_; /**< The kinematic limits */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
+#ifdef USE_THREAD_LOCAL
   static thread_local KDL::JntArray kdl_joints_cache;  // NOLINT
+#else
+  static boost::thread_specific_ptr<KDL::JntArray> kdl_joints_cache_ptr;  // NOLINT
+#endif
 
   void calculateTransforms(tesseract_common::TransformMap& link_transforms,
                            const KDL::JntArray& q_in,
