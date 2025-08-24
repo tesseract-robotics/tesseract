@@ -160,6 +160,7 @@ void serialize(Archive& ar, tesseract_collision::CollisionCheckConfig& g, const 
   ar& boost::serialization::make_nvp("type", g.type);
   ar& boost::serialization::make_nvp("longest_valid_segment_length", g.longest_valid_segment_length);
   ar& boost::serialization::make_nvp("check_program_mode", g.check_program_mode);
+  ar& boost::serialization::make_nvp("exit_condition", g.exit_condition);
 }
 
 template <class Archive>
