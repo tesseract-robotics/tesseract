@@ -530,7 +530,7 @@ const tesseract_common::VectorIsometry3d& CollisionObjectWrapper::getCollisionGe
 void CollisionObjectWrapper::getAABB(btVector3& aabb_min, btVector3& aabb_max) const
 {
   getCollisionShape()->getAabb(getWorldTransform(), aabb_min, aabb_max);
-  const btScalar& d = getContactProcessingThreshold();
+  const btScalar& d = getContactProcessingThreshold() / 2.0;
   btVector3 contactThreshold(d, d, d);
   aabb_min -= contactThreshold;
   aabb_max += contactThreshold;
@@ -1137,7 +1137,8 @@ bool TesseractCollisionPairCallback::processOverlap(btBroadphasePair& pair)
     if (pair.m_algorithm != nullptr)
     {
       TesseractBroadphaseBridgedManifoldResult contactPointResult(&obj0Wrap, &obj1Wrap, results_callback_);
-      contactPointResult.m_closestPointDistanceThreshold = static_cast<btScalar>(results_callback_.contact_distance_);
+      contactPointResult.m_closestPointDistanceThreshold =
+          results_callback_.collisions_.collision_margin_data.getCollisionMargin(cow0->getName(), cow1->getName());
 
       // discrete collision detection query
       pair.m_algorithm->processCollision(&obj0Wrap, &obj1Wrap, dispatch_info_, &contactPointResult);
