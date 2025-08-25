@@ -118,7 +118,9 @@ public:
   const tesseract_common::VectorIsometry3d& getCollisionGeometriesTransforms() const;
 
   /**
-   * @brief Get the collision objects axis aligned bounding box
+   * @brief Get the collision object's axis aligned bounding box
+   * This AABB is extended by half of the contact processing threshold, so the broadphase takes
+   * the full contact processing threshold into account when testing for the overlap of two AABBs.
    * @param aabb_min The minimum point
    * @param aabb_max The maximum point
    */
