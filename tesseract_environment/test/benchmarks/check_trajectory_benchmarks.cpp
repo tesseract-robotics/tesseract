@@ -149,6 +149,8 @@ int main(int argc, char** argv)
 
   auto cmd = std::make_shared<tesseract_environment::AddLinkCommand>(link_sphere, joint_sphere);
 
+  env->applyCommand(cmd);
+
   // Set the robot initial state
   std::vector<std::string> joint_names;
   joint_names.emplace_back("joint_a1");
@@ -318,7 +320,7 @@ int main(int argc, char** argv)
                                      continuous_manager,
                                      state_solver,
                                      joint_names,
-                                     traj,
+                                     traj_array,
                                      continuous_lvs_config,
                                      log_level_debug)
             ->UseRealTime()
@@ -360,7 +362,7 @@ int main(int argc, char** argv)
                                      discrete_manager,
                                      state_solver,
                                      joint_names,
-                                     traj,
+                                     traj_array,
                                      discrete_lvs_config,
                                      log_level_debug)
             ->UseRealTime()
