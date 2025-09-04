@@ -203,8 +203,8 @@ TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit)  // NOLINT
       const YAML::Node& key = margin.first;
       if (key.IsSequence() && key.size() == 2)
       {
-        const std::string a = key[0].as<std::string>();
-        const std::string b = key[1].as<std::string>();
+        const auto a = key[0].as<std::string>();
+        const auto b = key[1].as<std::string>();
         if ((a == "linkA" && b == "linkB") || (a == "linkB" && b == "linkA"))
         {
           EXPECT_NEAR(margin.second.as<double>(), 0.456, 1e-8);
@@ -227,8 +227,8 @@ TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit)  // NOLINT
       const YAML::Node& key = entry.first;
       if (key.IsSequence() && key.size() == 2)
       {
-        const std::string a = key[0].as<std::string>();
-        const std::string b = key[1].as<std::string>();
+        const auto a = key[0].as<std::string>();
+        const auto b = key[1].as<std::string>();
         bool links_match = (a == "linkA" && b == "linkB") || (a == "linkB" && b == "linkA");
         if (links_match && entry.second.as<std::string>() == "always")
         {

@@ -524,8 +524,8 @@ struct ContactTrajectorySubstepResults
   operator bool() const;
 
   void addContact(int substep_number,
-                  const Eigen::VectorXd& start_state,
-                  const Eigen::VectorXd& end_state,
+                  const Eigen::VectorXd& start_substate,
+                  const Eigen::VectorXd& end_substate,
                   const tesseract_collision::ContactResultMap& new_contacts);
 
   int numContacts() const;
@@ -551,8 +551,8 @@ struct ContactTrajectoryStepResults
 
   ContactTrajectoryStepResults() = default;
   ContactTrajectoryStepResults(int step_number,
-                               const Eigen::VectorXd& start_substate,
-                               const Eigen::VectorXd& end_substate,
+                               const Eigen::VectorXd& start_state,
+                               const Eigen::VectorXd& end_state,
                                int num_substeps);
   ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state);
 
