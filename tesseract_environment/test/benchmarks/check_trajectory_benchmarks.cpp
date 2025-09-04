@@ -149,6 +149,8 @@ int main(int argc, char** argv)
 
   auto cmd = std::make_shared<tesseract_environment::AddLinkCommand>(link_sphere, joint_sphere);
 
+  env->applyCommand(cmd);
+
   // Set the robot initial state
   std::vector<std::string> joint_names;
   joint_names.emplace_back("joint_a1");
@@ -226,15 +228,19 @@ int main(int argc, char** argv)
   tesseract_collision::CollisionCheckConfig discrete_config;
   discrete_config.type = CollisionEvaluatorType::DISCRETE;
   discrete_config.check_program_mode = CollisionCheckProgramType::ALL;
+  discrete_config.exit_condition = CollisionCheckExitType::ALL;
   tesseract_collision::CollisionCheckConfig discrete_lvs_config;
   discrete_lvs_config.type = CollisionEvaluatorType::LVS_DISCRETE;
   discrete_lvs_config.check_program_mode = CollisionCheckProgramType::ALL;
+  discrete_lvs_config.exit_condition = CollisionCheckExitType::ALL;
   tesseract_collision::CollisionCheckConfig continuous_config;
   continuous_config.type = CollisionEvaluatorType::CONTINUOUS;
   continuous_config.check_program_mode = CollisionCheckProgramType::ALL;
+  continuous_config.exit_condition = CollisionCheckExitType::ALL;
   tesseract_collision::CollisionCheckConfig continuous_lvs_config;
   continuous_lvs_config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
   continuous_lvs_config.check_program_mode = CollisionCheckProgramType::ALL;
+  continuous_lvs_config.exit_condition = CollisionCheckExitType::ALL;
 
   //////////////////////////////////////
   // Clone
@@ -318,7 +324,7 @@ int main(int argc, char** argv)
                                      continuous_manager,
                                      state_solver,
                                      joint_names,
-                                     traj,
+                                     traj_array,
                                      continuous_lvs_config,
                                      log_level_debug)
             ->UseRealTime()
@@ -360,7 +366,7 @@ int main(int argc, char** argv)
                                      discrete_manager,
                                      state_solver,
                                      joint_names,
-                                     traj,
+                                     traj_array,
                                      discrete_lvs_config,
                                      log_level_debug)
             ->UseRealTime()
@@ -385,6 +391,71 @@ int main(int argc, char** argv)
                                      log_level_debug)
             ->UseRealTime()
             ->Unit(benchmark::TimeUnit::kMicrosecond);
+      }
+    }
+  }
+
+  //////////////////////////////////////
+  // Discrete LVS Contact Request Type & Exit Condition Comparison
+  //////////////////////////////////////
+
+  {
+    std::function<void(benchmark::State&,
+                       std::vector<tesseract_collision::ContactResultMap>,
+                       tesseract_collision::DiscreteContactManager::Ptr,
+                       tesseract_kinematics::JointGroup::ConstPtr,
+                       tesseract_common::TrajArray,
+                       tesseract_collision::CollisionCheckConfig,
+                       bool)>
+        BM_CHECK_TRAJ_DM = BM_CHECK_TRAJECTORY_DISCRETE_MANIP;
+
+    // Define all contact test type options
+    std::vector<std::pair<ContactTestType, std::string>> contact_test_types = { { ContactTestType::FIRST, "FIRST" },
+                                                                                { ContactTestType::CLOSEST, "CLOSEST" },
+                                                                                { ContactTestType::ALL, "ALL" },
+                                                                                { ContactTestType::LIMITED,
+                                                                                  "LIMITED" } };
+
+    // Define all exit condition options
+    std::vector<std::pair<CollisionCheckExitType, std::string>> exit_conditions = {
+      { CollisionCheckExitType::FIRST, "FIRST" },
+      { CollisionCheckExitType::ONE_PER_STEP, "ONE_PER_STEP" },
+      { CollisionCheckExitType::ALL, "ALL" }
+    };
+
+    for (std::size_t i = 0; i < traj_arrays.size(); i++)
+    {
+      const auto& traj_array = traj_arrays[i];
+
+      for (const auto& contact_test_type : contact_test_types)
+      {
+        for (const auto& exit_condition : exit_conditions)
+        {
+          // Create discrete LVS config with specific contact request type and exit condition
+          tesseract_collision::CollisionCheckConfig discrete_lvs_test_config;
+          discrete_lvs_test_config.type = CollisionEvaluatorType::LVS_DISCRETE;
+          discrete_lvs_test_config.contact_request.type = contact_test_type.first;
+          discrete_lvs_test_config.check_program_mode = CollisionCheckProgramType::ALL;
+          discrete_lvs_test_config.exit_condition = exit_condition.first;
+
+          std::string config_suffix = "_" + contact_test_type.second + "_" + exit_condition.second;
+
+          // Current implementation
+          std::string BM_CHECK_TRAJ_DM_CURRENT_name =
+              "BM_CHECK_TRAJ_DISCRETE_LVS_JOINT_GROUP_CURRENT-TRAJ" + std::to_string(i + 1) + config_suffix;
+
+          // Register current implementation
+          benchmark::RegisterBenchmark(BM_CHECK_TRAJ_DM_CURRENT_name.c_str(),
+                                       BM_CHECK_TRAJ_DM,
+                                       contacts,
+                                       discrete_manager,
+                                       joint_group,
+                                       traj_array,
+                                       discrete_lvs_test_config,
+                                       false)  // log_level_debug = false
+              ->UseRealTime()
+              ->Unit(benchmark::TimeUnit::kMicrosecond);
+        }
       }
     }
   }

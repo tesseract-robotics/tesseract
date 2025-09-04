@@ -394,6 +394,17 @@ enum class CollisionCheckProgramType : std::uint8_t
   INTERMEDIATE_ONLY
 };
 
+/** @brief Controls when collision checking exits or continues collecting results */
+enum class CollisionCheckExitType : std::uint8_t
+{
+  /** @brief Exit as soon as any collision is detected */
+  FIRST,
+  /** @brief For LVS, stop at first collision per step; continue to next step */
+  ONE_PER_STEP,
+  /** @brief Collect all collisions */
+  ALL
+};
+
 /** @brief Identifies how the provided AllowedCollisionMatrix should be applied relative to the isAllowedFn in the
  * contact manager */
 enum class ACMOverrideType : std::uint8_t
@@ -471,7 +482,8 @@ struct CollisionCheckConfig
   CollisionCheckConfig(ContactRequest request = ContactRequest(),
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
                        double longest_valid_segment_length = 0.005,
-                       CollisionCheckProgramType check_program_mode = CollisionCheckProgramType::ALL);
+                       CollisionCheckProgramType check_program_mode = CollisionCheckProgramType::ALL,
+                       CollisionCheckExitType exit_condition = CollisionCheckExitType::FIRST);
 
   /** @brief ContactRequest that will be used for this check. Default test type: ALL*/
   ContactRequest contact_request;
@@ -484,6 +496,9 @@ struct CollisionCheckConfig
 
   /** @brief Secifies the mode used when collision checking program/trajectory. Default: ALL */
   CollisionCheckProgramType check_program_mode{ CollisionCheckProgramType::ALL };
+
+  /** @brief The condition in which the trajectory collision check will exit. Default: FIRST */
+  CollisionCheckExitType exit_condition{ CollisionCheckExitType::FIRST };
 
   bool operator==(const CollisionCheckConfig& rhs) const;
   bool operator!=(const CollisionCheckConfig& rhs) const;
@@ -505,6 +520,13 @@ struct ContactTrajectorySubstepResults
   ContactTrajectorySubstepResults(int substep, const Eigen::VectorXd& state);
 
   using UPtr = std::unique_ptr<ContactTrajectorySubstepResults>;
+
+  operator bool() const;
+
+  void addContact(int substep_number,
+                  const Eigen::VectorXd& start_substate,
+                  const Eigen::VectorXd& end_substate,
+                  const tesseract_collision::ContactResultMap& new_contacts);
 
   int numContacts() const;
 
@@ -535,6 +557,17 @@ struct ContactTrajectoryStepResults
   ContactTrajectoryStepResults(int step_number, const Eigen::VectorXd& state);
 
   using UPtr = std::unique_ptr<ContactTrajectoryStepResults>;
+
+  operator bool() const;
+
+  void addContact(int step_number,
+                  int substep_number,
+                  int num_substeps,
+                  const Eigen::VectorXd& start_state,
+                  const Eigen::VectorXd& end_state,
+                  const Eigen::VectorXd& start_substate,
+                  const Eigen::VectorXd& end_substate,
+                  const tesseract_collision::ContactResultMap& contacts);
 
   void resize(int num_substeps);
 
@@ -571,6 +604,17 @@ struct ContactTrajectoryResults
   ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps);
 
   using UPtr = std::unique_ptr<ContactTrajectoryResults>;
+
+  operator bool() const;
+
+  void addContact(int step_number,
+                  int substep_number,
+                  int num_substeps,
+                  const Eigen::VectorXd& start_state,
+                  const Eigen::VectorXd& end_state,
+                  const Eigen::VectorXd& start_substate,
+                  const Eigen::VectorXd& end_substate,
+                  const tesseract_collision::ContactResultMap& contacts);
 
   void resize(int num_steps);
 

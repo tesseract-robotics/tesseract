@@ -150,28 +150,107 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit)  // NOLINT
 {
+  // Use non-default values for all fields
   const std::string yaml_string = R"(
-    pair_margin_override_type: NONE
-    acm_override_type: NONE
+    default_margin: 0.123
+    pair_margin_override_type: MODIFY
+    pair_margin_data:
+      [linkA, linkB]: 0.456
+    acm_override_type: OR
+    acm:
+      [linkA, linkB]: "always"
+    modify_object_enabled:
+      object1: true
+      object2: false
   )";
 
   tesseract_collision::ContactManagerConfig data_original;
+  data_original.default_margin = 0.123;
+  data_original.pair_margin_override_type = tesseract_collision::CollisionMarginPairOverrideType::MODIFY;
+  data_original.pair_margin_data.setCollisionMargin("linkA", "linkB", 0.456);
+  data_original.acm_override_type = tesseract_collision::ACMOverrideType::OR;
+  data_original.acm.addAllowedCollision("linkA", "linkB", "always");
+  data_original.modify_object_enabled["object1"] = true;
+  data_original.modify_object_enabled["object2"] = false;
 
-  {  // decode
+  // Decode test
+  {
     tesseract_collision::ContactManagerConfig cm;
     YAML::Node n = YAML::Load(yaml_string);
     auto success = YAML::convert<tesseract_collision::ContactManagerConfig>::decode(n, cm);
     EXPECT_TRUE(success);
-    EXPECT_EQ(cm.pair_margin_override_type, data_original.pair_margin_override_type);
-    EXPECT_EQ(cm.acm_override_type, data_original.acm_override_type);
+    EXPECT_EQ(cm, data_original);
   }
 
-  {  // encode
-    tesseract_collision::ContactManagerConfig cm;
-    YAML::Node n = YAML::Load(yaml_string);
-    YAML::Node output_n = YAML::convert<tesseract_collision::ContactManagerConfig>::encode(cm);
-    EXPECT_EQ(cm.pair_margin_override_type, data_original.pair_margin_override_type);
-    EXPECT_EQ(cm.acm_override_type, data_original.acm_override_type);
+  // Encode test: compare YAML output to expected YAML
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactManagerConfig>::encode(data_original);
+
+    // Check that the YAML node contains the expected values
+    EXPECT_TRUE(output_n["default_margin"]);
+    EXPECT_NEAR(output_n["default_margin"].as<double>(), 0.123, 1e-8);
+
+    EXPECT_TRUE(output_n["pair_margin_override_type"]);
+    EXPECT_EQ(output_n["pair_margin_override_type"].as<std::string>(), "MODIFY");
+
+    EXPECT_TRUE(output_n["pair_margin_data"]);
+    auto margins = output_n["pair_margin_data"];
+    ASSERT_TRUE(margins && margins.IsMap());
+    bool found_margin = false;
+    for (const auto& margin : margins)
+    {
+      // Keys are encoded as a YAML flow sequence [linkA, linkB]
+      const YAML::Node& key = margin.first;
+      if (key.IsSequence() && key.size() == 2)
+      {
+        const auto a = key[0].as<std::string>();
+        const auto b = key[1].as<std::string>();
+        if ((a == "linkA" && b == "linkB") || (a == "linkB" && b == "linkA"))
+        {
+          EXPECT_NEAR(margin.second.as<double>(), 0.456, 1e-8);
+          found_margin = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found_margin);
+
+    EXPECT_TRUE(output_n["acm_override_type"]);
+    EXPECT_EQ(output_n["acm_override_type"].as<std::string>(), "OR");
+
+    EXPECT_TRUE(output_n["acm"]);
+    auto allowed_collisions = output_n["acm"];
+    ASSERT_TRUE(allowed_collisions && allowed_collisions.IsMap());
+    bool found_acm = false;
+    for (const auto& entry : allowed_collisions)
+    {
+      const YAML::Node& key = entry.first;
+      if (key.IsSequence() && key.size() == 2)
+      {
+        const auto a = key[0].as<std::string>();
+        const auto b = key[1].as<std::string>();
+        bool links_match = (a == "linkA" && b == "linkB") || (a == "linkB" && b == "linkA");
+        if (links_match && entry.second.as<std::string>() == "always")
+        {
+          found_acm = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found_acm);
+
+    EXPECT_TRUE(output_n["modify_object_enabled"]);
+    EXPECT_EQ(output_n["modify_object_enabled"]["object1"].as<bool>(), true);
+    EXPECT_EQ(output_n["modify_object_enabled"]["object2"].as<bool>(), false);
+  }
+
+  // Encode-decode cycle test
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactManagerConfig>::encode(data_original);
+    tesseract_collision::ContactManagerConfig roundtrip;
+    auto success = YAML::convert<tesseract_collision::ContactManagerConfig>::decode(output_n, roundtrip);
+    EXPECT_TRUE(success);
+    EXPECT_EQ(roundtrip, data_original);
   }
 }
 
@@ -912,38 +991,54 @@ TEST(TesseractCoreUnit, ContactRequestUnit)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactRequestYamlUnit)  // NOLINT
 {
+  // Use non-default values for all fields
   const std::string yaml_string = R"(
-    type: ALL
-    calculate_penetration: true
-    calculate_distance: true
-    contact_limit: 0
+    type: LIMITED
+    calculate_penetration: false
+    calculate_distance: false
+    contact_limit: 42
   )";
 
   tesseract_collision::ContactRequest data_original;
-  data_original.type = tesseract_collision::ContactTestType::ALL;
-  data_original.calculate_penetration = true;
-  data_original.calculate_distance = true;
-  data_original.contact_limit = 0;
+  data_original.type = tesseract_collision::ContactTestType::LIMITED;
+  data_original.calculate_penetration = false;
+  data_original.calculate_distance = false;
+  data_original.contact_limit = 42;
 
-  {  // decode
+  // Decode test
+  {
     tesseract_collision::ContactRequest cr;
     YAML::Node n = YAML::Load(yaml_string);
     auto success = YAML::convert<tesseract_collision::ContactRequest>::decode(n, cr);
     EXPECT_TRUE(success);
-    EXPECT_EQ(cr.type, data_original.type);
-    EXPECT_EQ(cr.calculate_penetration, data_original.calculate_penetration);
-    EXPECT_EQ(cr.calculate_distance, data_original.calculate_distance);
-    EXPECT_EQ(cr.contact_limit, data_original.contact_limit);
+    EXPECT_EQ(cr, data_original);
   }
 
-  {  // encode
-    tesseract_collision::ContactRequest cr;
-    YAML::Node n = YAML::Load(yaml_string);
-    YAML::Node output_n = YAML::convert<tesseract_collision::ContactRequest>::encode(cr);
-    EXPECT_EQ(cr.type, data_original.type);
-    EXPECT_EQ(cr.calculate_penetration, data_original.calculate_penetration);
-    EXPECT_EQ(cr.calculate_distance, data_original.calculate_distance);
-    EXPECT_EQ(cr.contact_limit, data_original.contact_limit);
+  // Encode test: compare YAML output to expected YAML
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactRequest>::encode(data_original);
+
+    // Check that the YAML node contains the expected values
+    EXPECT_TRUE(output_n["type"]);
+    EXPECT_EQ(output_n["type"].as<std::string>(), "LIMITED");
+
+    EXPECT_TRUE(output_n["calculate_penetration"]);
+    EXPECT_EQ(output_n["calculate_penetration"].as<bool>(), false);
+
+    EXPECT_TRUE(output_n["calculate_distance"]);
+    EXPECT_EQ(output_n["calculate_distance"].as<bool>(), false);
+
+    EXPECT_TRUE(output_n["contact_limit"]);
+    EXPECT_EQ(output_n["contact_limit"].as<long>(), 42);
+  }
+
+  // Encode-decode cycle test
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::ContactRequest>::encode(data_original);
+    tesseract_collision::ContactRequest roundtrip;
+    auto success = YAML::convert<tesseract_collision::ContactRequest>::decode(output_n, roundtrip);
+    EXPECT_TRUE(success);
+    EXPECT_EQ(roundtrip, data_original);
   }
 }
 
@@ -955,6 +1050,7 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
     EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::DISCRETE);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.longest_valid_segment_length, 0.005));
     EXPECT_EQ(config.check_program_mode, tesseract_collision::CollisionCheckProgramType::ALL);
+    EXPECT_EQ(config.exit_condition, tesseract_collision::CollisionCheckExitType::FIRST);
 
     tesseract_common::testSerialization<tesseract_collision::CollisionCheckConfig>(config, "CollisionCheckConfig");
   }
@@ -963,12 +1059,14 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
     tesseract_collision::CollisionCheckConfig config(request,
                                                      tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE,
                                                      0.5,
-                                                     tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START);
+                                                     tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START,
+                                                     tesseract_collision::CollisionCheckExitType::ONE_PER_STEP);
 
     EXPECT_EQ(config.contact_request, request);
     EXPECT_EQ(config.type, tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE);
     EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(config.longest_valid_segment_length, 0.5));
     EXPECT_EQ(config.check_program_mode, tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START);
+    EXPECT_EQ(config.exit_condition, tesseract_collision::CollisionCheckExitType::ONE_PER_STEP);
 
     tesseract_common::testSerialization<tesseract_collision::CollisionCheckConfig>(config, "CollisionCheckConfig");
   }
@@ -976,50 +1074,77 @@ TEST(TesseractCoreUnit, CollisionCheckConfigUnit)  // NOLINT
 
 TEST(TesseractCoreUnit, CollisionCheckConfigYamlUnit)  // NOLINT
 {
-  const std::string contact_request_yaml_string = R"(
-    type: ALL
-    calculate_penetration: true
-    calculate_distance: true
-    contact_limit: 0
-  )";
-
+  // Use non-default values for all fields
   const std::string yaml_string = R"(
-    type: DISCRETE
-    longest_valid_segment_length: 0.005
-    check_program_mode: ALL
+    contact_request:
+      type: CLOSEST
+      calculate_penetration: false
+      calculate_distance: false
+      contact_limit: 10
+    type: LVS_CONTINUOUS
+    longest_valid_segment_length: 0.123
+    check_program_mode: ALL_EXCEPT_END
+    exit_condition: ONE_PER_STEP
   )";
 
   tesseract_collision::ContactRequest cr_original;
-  cr_original.type = tesseract_collision::ContactTestType::ALL;
-  cr_original.calculate_penetration = true;
-  cr_original.calculate_distance = true;
-  cr_original.contact_limit = 0;
+  cr_original.type = tesseract_collision::ContactTestType::CLOSEST;
+  cr_original.calculate_penetration = false;
+  cr_original.calculate_distance = false;
+  cr_original.contact_limit = 10;
 
   tesseract_collision::CollisionCheckConfig data_original;
   data_original.contact_request = cr_original;
-  data_original.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
-  data_original.longest_valid_segment_length = 0.005;
-  data_original.check_program_mode = tesseract_collision::CollisionCheckProgramType::ALL;
+  data_original.type = tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS;
+  data_original.longest_valid_segment_length = 0.123;
+  data_original.check_program_mode = tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_END;
+  data_original.exit_condition = tesseract_collision::CollisionCheckExitType::ONE_PER_STEP;
 
-  {  // decode
-    tesseract_collision::CollisionCheckConfig cr;
+  // Decode test
+  {
+    tesseract_collision::CollisionCheckConfig ccc;
     YAML::Node n = YAML::Load(yaml_string);
-    auto success = YAML::convert<tesseract_collision::CollisionCheckConfig>::decode(n, cr);
+    auto success = YAML::convert<tesseract_collision::CollisionCheckConfig>::decode(n, ccc);
     EXPECT_TRUE(success);
-    EXPECT_EQ(cr.contact_request, data_original.contact_request);
-    EXPECT_EQ(cr.type, data_original.type);
-    EXPECT_EQ(cr.longest_valid_segment_length, data_original.longest_valid_segment_length);
-    EXPECT_EQ(cr.check_program_mode, data_original.check_program_mode);
+    EXPECT_EQ(ccc, data_original);
   }
 
-  {  // encode
-    tesseract_collision::CollisionCheckConfig cr;
-    YAML::Node n = YAML::Load(yaml_string);
-    n["contact_request"] = YAML::Load(contact_request_yaml_string);
-    YAML::Node output_n = YAML::convert<tesseract_collision::CollisionCheckConfig>::encode(cr);
-    EXPECT_EQ(cr.type, data_original.type);
-    EXPECT_EQ(cr.longest_valid_segment_length, data_original.longest_valid_segment_length);
-    EXPECT_EQ(cr.check_program_mode, data_original.check_program_mode);
+  // Encode test: compare YAML output to expected YAML
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::CollisionCheckConfig>::encode(data_original);
+
+    // Check that the YAML node contains the expected values
+    EXPECT_TRUE(output_n["contact_request"]);
+    auto contact_request_node = output_n["contact_request"];
+    EXPECT_TRUE(contact_request_node["type"]);
+    EXPECT_EQ(contact_request_node["type"].as<std::string>(), "CLOSEST");
+    EXPECT_TRUE(contact_request_node["calculate_penetration"]);
+    EXPECT_EQ(contact_request_node["calculate_penetration"].as<bool>(), false);
+    EXPECT_TRUE(contact_request_node["calculate_distance"]);
+    EXPECT_EQ(contact_request_node["calculate_distance"].as<bool>(), false);
+    EXPECT_TRUE(contact_request_node["contact_limit"]);
+    EXPECT_EQ(contact_request_node["contact_limit"].as<long>(), 10);
+
+    EXPECT_TRUE(output_n["type"]);
+    EXPECT_EQ(output_n["type"].as<std::string>(), "LVS_CONTINUOUS");
+
+    EXPECT_TRUE(output_n["longest_valid_segment_length"]);
+    EXPECT_NEAR(output_n["longest_valid_segment_length"].as<double>(), 0.123, 1e-8);
+
+    EXPECT_TRUE(output_n["check_program_mode"]);
+    EXPECT_EQ(output_n["check_program_mode"].as<std::string>(), "ALL_EXCEPT_END");
+
+    EXPECT_TRUE(output_n["exit_condition"]);
+    EXPECT_EQ(output_n["exit_condition"].as<std::string>(), "ONE_PER_STEP");
+  }
+
+  // Encode-decode cycle test
+  {
+    YAML::Node output_n = YAML::convert<tesseract_collision::CollisionCheckConfig>::encode(data_original);
+    tesseract_collision::CollisionCheckConfig roundtrip;
+    auto success = YAML::convert<tesseract_collision::CollisionCheckConfig>::decode(output_n, roundtrip);
+    EXPECT_TRUE(success);
+    EXPECT_EQ(roundtrip, data_original);
   }
 }
 
@@ -1397,12 +1522,17 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
     std::stringstream ss = results.trajectoryCollisionResultsTable();
     EXPECT_FALSE(ss.str().empty());
+    EXPECT_FALSE(ss.str().find("No contacts detected") != std::string::npos);
+    std::cout << ss.str();
 
     // Test frequency output method
     EXPECT_NO_THROW(results.collisionFrequencyPerLink());
 
     std::stringstream freq_ss = results.collisionFrequencyPerLink();
     EXPECT_FALSE(freq_ss.str().empty());
+
+    EXPECT_TRUE(static_cast<bool>(results));
+    EXPECT_FALSE(freq_ss.str().find("No contacts detected") != std::string::npos);
   }
 
   // Test with no contacts
@@ -1433,6 +1563,498 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
     std::stringstream freq_ss = results.collisionFrequencyPerLink();
     EXPECT_FALSE(freq_ss.str().empty());
     EXPECT_TRUE(freq_ss.str().find("No contacts detected") != std::string::npos);
+
+    EXPECT_FALSE(static_cast<bool>(results));
+  }
+
+  // Test addContact methods
+  {
+    std::vector<std::string> joint_names = { "joint1", "joint2", "joint3" };
+    int num_steps = 3;
+
+    tesseract_collision::ContactTrajectoryResults results(joint_names, num_steps);
+
+    // Test basic addContact functionality - ensure higher level calls properly initialize lower levels
+    {
+      int step_number = 0;
+      int substep_number = 1;
+      int num_substeps = 3;
+
+      Eigen::VectorXd start_state(3);
+      Eigen::VectorXd end_state(3);
+      start_state << 1.0, 2.0, 3.0;
+      end_state << 4.0, 5.0, 6.0;
+
+      tesseract_common::TrajArray traj_array_with_substates(3, start_state.size());
+      traj_array_with_substates.row(0) = start_state;
+      traj_array_with_substates.row(1) = (start_state + end_state) / 2.0;  // Intermediate state
+      traj_array_with_substates.row(2) = end_state;
+
+      // Create contact results to add
+      tesseract_collision::ContactResultMap contacts;
+      auto key1 = tesseract_common::makeOrderedLinkPair("link1", "link2");
+      auto key2 = tesseract_common::makeOrderedLinkPair("link3", "link4");
+
+      tesseract_collision::ContactResult cr1;
+      cr1.distance = -0.15;
+      cr1.link_names[0] = "link1";
+      cr1.link_names[1] = "link2";
+
+      tesseract_collision::ContactResult cr2;
+      cr2.distance = -0.25;
+      cr2.link_names[0] = "link3";
+      cr2.link_names[1] = "link4";
+
+      contacts.addContactResult(key1, cr1);
+      contacts.addContactResult(key2, cr2);
+
+      // Verify step is initially empty/uninitialized
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, -1);  // Default uninitialized step value
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].total_substeps, 0);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].substeps.size(), 0);
+
+      // Add the contact - this should automatically initialize the step with the right number of substeps
+      results.addContact(step_number,
+                         substep_number,
+                         num_substeps,
+                         start_state,
+                         end_state,
+                         traj_array_with_substates.row(1),
+                         traj_array_with_substates.row(2),
+                         contacts);
+
+      // Verify the step was properly initialized by the addContact call
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, step_number);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].total_substeps, num_substeps);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].substeps.size(), num_substeps);
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)].state0.isApprox(start_state));
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)].state1.isApprox(end_state));
+
+      // Verify the contact was added correctly to the specific substep
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
+                    .substeps[static_cast<std::size_t>(substep_number)]
+                    .substep,
+                substep_number);
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
+                      .substeps[static_cast<std::size_t>(substep_number)]
+                      .state0.isApprox(traj_array_with_substates.row(1).transpose()));
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
+                      .substeps[static_cast<std::size_t>(substep_number)]
+                      .state1.isApprox(traj_array_with_substates.row(2).transpose()));
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
+                    .substeps[static_cast<std::size_t>(substep_number)]
+                    .numContacts(),
+                2);
+
+      // Check that the contacts were copied correctly
+      const auto& substep_contacts = results.steps[static_cast<std::size_t>(step_number)]
+                                         .substeps[static_cast<std::size_t>(substep_number)]
+                                         .contacts;
+      EXPECT_EQ(substep_contacts.count(), 2);
+
+      auto it1 = substep_contacts.find(key1);
+      auto it2 = substep_contacts.find(key2);
+      EXPECT_NE(it1, substep_contacts.end());
+      EXPECT_NE(it2, substep_contacts.end());
+
+      if (it1 != substep_contacts.end())
+      {
+        EXPECT_EQ(it1->second.size(), 1);
+        EXPECT_EQ(it1->second[0].distance, -0.15);
+        EXPECT_EQ(it1->second[0].link_names[0], "link1");
+        EXPECT_EQ(it1->second[0].link_names[1], "link2");
+      }
+
+      if (it2 != substep_contacts.end())
+      {
+        EXPECT_EQ(it2->second.size(), 1);
+        EXPECT_EQ(it2->second[0].distance, -0.25);
+        EXPECT_EQ(it2->second[0].link_names[0], "link3");
+        EXPECT_EQ(it2->second[0].link_names[1], "link4");
+      }
+    }
+
+    // Test multiple contacts to the same step/substep - verify automatic initialization
+    {
+      int step_number = 1;
+      int substep_number = 0;
+      int num_substeps = 2;
+
+      Eigen::VectorXd start_state(2);
+      Eigen::VectorXd end_state(2);
+      start_state << 0.5, 1.5;
+      end_state << 2.5, 3.5;
+
+      // Verify step is initially uninitialized
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, -1);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].total_substeps, 0);
+
+      // Add first set of contacts - this should automatically initialize the step
+      tesseract_collision::ContactResultMap contacts1;
+      auto key1 = tesseract_common::makeOrderedLinkPair("linkA", "linkB");
+
+      tesseract_collision::ContactResult cr1;
+      cr1.distance = -0.1;
+      cr1.link_names[0] = "linkA";
+      cr1.link_names[1] = "linkB";
+
+      contacts1.addContactResult(key1, cr1);
+
+      results.addContact(
+          step_number, substep_number, num_substeps, start_state, end_state, start_state, end_state, contacts1);
+
+      // Verify step was automatically initialized
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].step, step_number);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].total_substeps, num_substeps);
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)].substeps.size(), num_substeps);
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)].state0.isApprox(start_state));
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)].state1.isApprox(end_state));
+
+      // Verify first contact was added
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
+                    .substeps[static_cast<std::size_t>(substep_number)]
+                    .numContacts(),
+                1);
+
+      // Add second set of contacts to same substep (this should replace the previous ones)
+      Eigen::VectorXd new_start_state(2);
+      Eigen::VectorXd new_end_state(2);
+      new_start_state << 1.0, 2.0;
+      new_end_state << 3.0, 4.0;
+
+      tesseract_collision::ContactResultMap contacts2;
+      auto key2 = tesseract_common::makeOrderedLinkPair("linkC", "linkD");
+
+      tesseract_collision::ContactResult cr2;
+      cr2.distance = -0.3;
+      cr2.link_names[0] = "linkC";
+      cr2.link_names[1] = "linkD";
+
+      contacts2.addContactResult(key2, cr2);
+
+      results.addContact(step_number,
+                         substep_number,
+                         num_substeps,
+                         new_start_state,
+                         new_end_state,
+                         new_start_state,
+                         new_end_state,
+                         contacts2);
+
+      // Verify the substep was updated with new states and contacts
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
+                      .substeps[static_cast<std::size_t>(substep_number)]
+                      .state0.isApprox(new_start_state));
+      EXPECT_TRUE(results.steps[static_cast<std::size_t>(step_number)]
+                      .substeps[static_cast<std::size_t>(substep_number)]
+                      .state1.isApprox(new_end_state));
+      EXPECT_EQ(results.steps[static_cast<std::size_t>(step_number)]
+                    .substeps[static_cast<std::size_t>(substep_number)]
+                    .numContacts(),
+                1);
+
+      // Verify it's the new contact
+      const auto& substep_contacts = results.steps[static_cast<std::size_t>(step_number)]
+                                         .substeps[static_cast<std::size_t>(substep_number)]
+                                         .contacts;
+      auto it = substep_contacts.find(key2);
+      EXPECT_NE(it, substep_contacts.end());
+      if (it != substep_contacts.end())
+      {
+        EXPECT_EQ(it->second[0].distance, -0.3);
+        EXPECT_EQ(it->second[0].link_names[0], "linkC");
+        EXPECT_EQ(it->second[0].link_names[1], "linkD");
+      }
+    }
+
+    // Test error cases - out of range step number
+    {
+      int invalid_step_number = 5;  // Out of range (we have 3 steps: 0, 1, 2)
+      int substep_number = 0;
+      int num_substeps = 1;
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      EXPECT_THROW(
+          results.addContact(invalid_step_number, substep_number, num_substeps, state, state, state, state, contacts),
+          std::out_of_range);
+    }
+
+    // Test error cases - negative step number
+    {
+      int invalid_step_number = -1;
+      int substep_number = 0;
+      int num_substeps = 1;
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      EXPECT_THROW(
+          results.addContact(invalid_step_number, substep_number, num_substeps, state, state, state, state, contacts),
+          std::out_of_range);
+    }
+
+    // Test total contact counting after adding contacts
+    EXPECT_GT(results.numContacts(), 0);
+    EXPECT_TRUE(static_cast<bool>(results));
+  }
+
+  // Test ContactTrajectoryStepResults addContact method directly
+  {
+    int step_number = 2;
+    Eigen::VectorXd start_state(2);
+    Eigen::VectorXd end_state(2);
+    start_state << 1.0, 2.0;
+    end_state << 3.0, 4.0;
+    int initial_substeps = 2;
+
+    tesseract_collision::ContactTrajectoryStepResults step_results(
+        step_number, start_state, end_state, initial_substeps);
+
+    // Test addContact to a valid substep within existing range
+    {
+      int substep_number = 1;  // Within the current 2 substeps
+      int same_substeps = 2;   // Same number of substeps
+
+      Eigen::VectorXd substep_start(2);
+      Eigen::VectorXd substep_end(2);
+      substep_start << 1.5, 2.0;
+      substep_end << 2.0, 2.5;
+
+      tesseract_collision::ContactResultMap contacts;
+      auto key = tesseract_common::makeOrderedLinkPair("testLink1", "testLink2");
+
+      tesseract_collision::ContactResult cr;
+      cr.distance = -0.05;
+      cr.link_names[0] = "testLink1";
+      cr.link_names[1] = "testLink2";
+
+      contacts.addContactResult(key, cr);
+
+      // This should work since substep is within range and no resize is needed
+      step_results.addContact(
+          step_number, substep_number, same_substeps, start_state, end_state, substep_start, substep_end, contacts);
+
+      // Verify no resize occurred
+      EXPECT_EQ(step_results.total_substeps, initial_substeps);
+      EXPECT_EQ(step_results.substeps.size(), initial_substeps);
+
+      // Verify the contact was added correctly
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].substep, substep_number);
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state0.isApprox(substep_start));
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state1.isApprox(substep_end));
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].numContacts(), 1);
+      EXPECT_EQ(step_results.numContacts(), 1);
+    }
+
+    // Test addContact that requires automatic resizing to accommodate more substeps
+    {
+      int substep_number = 3;     // This is beyond the current 2 substeps
+      int required_substeps = 5;  // Need to resize to 5 substeps
+
+      Eigen::VectorXd substep_start(2);
+      Eigen::VectorXd substep_end(2);
+      substep_start << 2.0, 2.5;
+      substep_end << 2.5, 3.0;
+
+      tesseract_collision::ContactResultMap contacts;
+      auto key = tesseract_common::makeOrderedLinkPair("anotherLink1", "anotherLink2");
+
+      tesseract_collision::ContactResult cr;
+      cr.distance = -0.03;
+      cr.link_names[0] = "anotherLink1";
+      cr.link_names[1] = "anotherLink2";
+
+      contacts.addContactResult(key, cr);
+
+      // Verify initial state
+      EXPECT_EQ(step_results.total_substeps, initial_substeps);
+      EXPECT_EQ(step_results.substeps.size(), initial_substeps);
+
+      // This should automatically resize the step to accommodate the required substeps
+      step_results.addContact(
+          step_number, substep_number, required_substeps, start_state, end_state, substep_start, substep_end, contacts);
+
+      // Verify the step was resized to accommodate the new requirements
+      EXPECT_EQ(step_results.total_substeps, required_substeps);
+      EXPECT_EQ(step_results.substeps.size(), required_substeps);
+
+      // Verify the contact was added correctly
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].substep, substep_number);
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state0.isApprox(substep_start));
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state1.isApprox(substep_end));
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].numContacts(), 1);
+      EXPECT_EQ(step_results.numContacts(), 2);  // Now should have 2 total contacts
+    }
+
+    // Test that calling addContact with the same number of substeps doesn't cause unnecessary resize
+    {
+      int substep_number = 4;  // Within the current 5 substeps
+      int same_substeps = 5;   // Same number of substeps
+
+      Eigen::VectorXd substep_start(2);
+      Eigen::VectorXd substep_end(2);
+      substep_start << 3.0, 3.5;
+      substep_end << 3.5, 4.0;
+
+      tesseract_collision::ContactResultMap contacts;
+      auto key = tesseract_common::makeOrderedLinkPair("thirdLink1", "thirdLink2");
+
+      tesseract_collision::ContactResult cr;
+      cr.distance = -0.01;
+      cr.link_names[0] = "thirdLink1";
+      cr.link_names[1] = "thirdLink2";
+
+      contacts.addContactResult(key, cr);
+
+      // This should not resize since substeps already matches num_substeps
+      step_results.addContact(
+          step_number, substep_number, same_substeps, start_state, end_state, substep_start, substep_end, contacts);
+
+      // Verify no resize occurred
+      EXPECT_EQ(step_results.total_substeps, 5);
+      EXPECT_EQ(step_results.substeps.size(), 5);
+
+      // Verify the contact was added correctly
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].substep, substep_number);
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state0.isApprox(substep_start));
+      EXPECT_TRUE(step_results.substeps[static_cast<std::size_t>(substep_number)].state1.isApprox(substep_end));
+      EXPECT_EQ(step_results.substeps[static_cast<std::size_t>(substep_number)].numContacts(), 1);
+      EXPECT_EQ(step_results.numContacts(), 3);  // Now should have 3 total contacts
+    }
+
+    // Test addContact with out of range substep number
+    {
+      int invalid_substep_number = 10;  // Out of range
+      int same_substeps = 5;
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      EXPECT_THROW(step_results.addContact(
+                       step_number, invalid_substep_number, same_substeps, state, state, state, state, contacts),
+                   std::out_of_range);
+    }
+
+    // Test addContact with negative substep number
+    {
+      int invalid_substep_number = -1;
+      int same_substeps = 5;
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      EXPECT_THROW(step_results.addContact(
+                       step_number, invalid_substep_number, same_substeps, state, state, state, state, contacts),
+                   std::runtime_error);
+    }
+  }
+
+  // Test ContactTrajectorySubstepResults addContact method directly
+  {
+    tesseract_collision::ContactTrajectorySubstepResults substep_results;
+
+    int substep_number = 5;
+    Eigen::VectorXd start_state(3);
+    Eigen::VectorXd end_state(3);
+    start_state << 1.0, 2.0, 3.0;
+    end_state << 4.0, 5.0, 6.0;
+
+    // Create contacts to add
+    tesseract_collision::ContactResultMap contacts;
+    auto key1 = tesseract_common::makeOrderedLinkPair("substepLink1", "substepLink2");
+    auto key2 = tesseract_common::makeOrderedLinkPair("substepLink3", "substepLink4");
+
+    tesseract_collision::ContactResult cr1;
+    cr1.distance = -0.12;
+    cr1.link_names[0] = "substepLink1";
+    cr1.link_names[1] = "substepLink2";
+
+    tesseract_collision::ContactResult cr2;
+    cr2.distance = -0.08;
+    cr2.link_names[0] = "substepLink3";
+    cr2.link_names[1] = "substepLink4";
+
+    contacts.addContactResult(key1, cr1);
+    contacts.addContactResult(key2, cr2);
+
+    // Add the contacts
+    substep_results.addContact(substep_number, start_state, end_state, contacts);
+
+    // Verify everything was set correctly
+    EXPECT_EQ(substep_results.substep, substep_number);
+    EXPECT_TRUE(substep_results.state0.isApprox(start_state));
+    EXPECT_TRUE(substep_results.state1.isApprox(end_state));
+    EXPECT_EQ(substep_results.numContacts(), 2);
+
+    // Verify the contacts were copied correctly
+    EXPECT_EQ(substep_results.contacts.count(), 2);
+
+    auto it1 = substep_results.contacts.find(key1);
+    auto it2 = substep_results.contacts.find(key2);
+    EXPECT_NE(it1, substep_results.contacts.end());
+    EXPECT_NE(it2, substep_results.contacts.end());
+
+    if (it1 != substep_results.contacts.end())
+    {
+      EXPECT_EQ(it1->second.size(), 1);
+      EXPECT_EQ(it1->second[0].distance, -0.12);
+      EXPECT_EQ(it1->second[0].link_names[0], "substepLink1");
+      EXPECT_EQ(it1->second[0].link_names[1], "substepLink2");
+    }
+
+    if (it2 != substep_results.contacts.end())
+    {
+      EXPECT_EQ(it2->second.size(), 1);
+      EXPECT_EQ(it2->second[0].distance, -0.08);
+      EXPECT_EQ(it2->second[0].link_names[0], "substepLink3");
+      EXPECT_EQ(it2->second[0].link_names[1], "substepLink4");
+    }
+
+    // Test that calling addContact again replaces the previous data
+    int new_substep_number = 8;
+    Eigen::VectorXd new_start_state(2);
+    Eigen::VectorXd new_end_state(2);
+    new_start_state << 10.0, 20.0;
+    new_end_state << 30.0, 40.0;
+
+    tesseract_collision::ContactResultMap new_contacts;
+    auto new_key = tesseract_common::makeOrderedLinkPair("newLink1", "newLink2");
+
+    tesseract_collision::ContactResult new_cr;
+    new_cr.distance = -0.99;
+    new_cr.link_names[0] = "newLink1";
+    new_cr.link_names[1] = "newLink2";
+
+    new_contacts.addContactResult(new_key, new_cr);
+
+    substep_results.addContact(new_substep_number, new_start_state, new_end_state, new_contacts);
+
+    // Verify the data was replaced
+    EXPECT_EQ(substep_results.substep, new_substep_number);
+    EXPECT_TRUE(substep_results.state0.isApprox(new_start_state));
+    EXPECT_TRUE(substep_results.state1.isApprox(new_end_state));
+    EXPECT_EQ(substep_results.numContacts(), 1);
+
+    // Verify the old contacts are gone and new contact is present
+    EXPECT_EQ(substep_results.contacts.count(), 1);
+    auto new_it = substep_results.contacts.find(new_key);
+    EXPECT_NE(new_it, substep_results.contacts.end());
+    if (new_it != substep_results.contacts.end())
+    {
+      EXPECT_EQ(new_it->second[0].distance, -0.99);
+      EXPECT_EQ(new_it->second[0].link_names[0], "newLink1");
+      EXPECT_EQ(new_it->second[0].link_names[1], "newLink2");
+    }
   }
 }
 
