@@ -1056,7 +1056,7 @@ std::stringstream ContactTrajectoryResults::condensedSummary() const
           continue;
 
         // Calculate the step with substep decimal
-        double step_with_substep = static_cast<double>(step.step);
+        auto step_with_substep = static_cast<double>(step.step);
         if (step.total_substeps > 0)
         {
           step_with_substep += static_cast<double>(substep.substep) / static_cast<double>(step.total_substeps);
