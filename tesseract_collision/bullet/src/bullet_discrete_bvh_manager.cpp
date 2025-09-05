@@ -306,8 +306,7 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const C
 
   broadphase_->calculateOverlappingPairs(dispatcher_.get());
 
-  DiscreteBroadphaseContactResultCallback cc(contact_test_data_,
-                                             contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+  DiscreteBroadphaseContactResultCallback cc(contact_test_data_);
 
   TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cc);
 

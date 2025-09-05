@@ -3498,8 +3498,8 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
 
   {  // Test Empty data should return lowest value
     tesseract_common::CollisionMarginPairData data;
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    EXPECT_FALSE(result.has_value());
   }
 
   {  // Test adding collision margins
@@ -3510,24 +3510,24 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
     data.setCollisionMargin("link1", "link4", 0.2);
 
     // link1 should have max margin of 0.8 (from link1-link3 pair)
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, 0.8, tol);
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result.value(), 0.8, tol);  // NOLINT
 
     // link2 should have max margin of 0.5 (from link1-link2 pair)
     result = data.getMaxCollisionMargin("link2");
-    EXPECT_NEAR(result, 0.5, tol);
+    EXPECT_NEAR(result.value(), 0.5, tol);  // NOLINT
 
     // link3 should have max margin of 0.8 (from link1-link3 pair)
     result = data.getMaxCollisionMargin("link3");
-    EXPECT_NEAR(result, 0.8, tol);
+    EXPECT_NEAR(result.value(), 0.8, tol);  // NOLINT
 
     // link4 should have max margin of 0.2 (from link1-link4 pair)
     result = data.getMaxCollisionMargin("link4");
-    EXPECT_NEAR(result, 0.2, tol);
+    EXPECT_NEAR(result.value(), 0.2, tol);  // NOLINT
 
     // link5 (non-existent) should return lowest value
     result = data.getMaxCollisionMargin("link5");
-    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+    EXPECT_FALSE(result.has_value());
   }
 
   {  // Test increment margins
@@ -3539,14 +3539,17 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
     data.incrementMargins(0.1);
 
     // All margins should be incremented by 0.1
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, 0.9, tol);  // 0.8 + 0.1
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    // NOLINTNEXTLINE
+    EXPECT_NEAR(result.value(), 0.9, tol);  // 0.8 + 0.1
 
     result = data.getMaxCollisionMargin("link2");
-    EXPECT_NEAR(result, 0.6, tol);  // 0.5 + 0.1
+    // NOLINTNEXTLINE
+    EXPECT_NEAR(result.value(), 0.6, tol);  // 0.5 + 0.1
 
     result = data.getMaxCollisionMargin("link3");
-    EXPECT_NEAR(result, 0.9, tol);  // 0.8 + 0.1
+    // NOLINTNEXTLINE
+    EXPECT_NEAR(result.value(), 0.9, tol);  // 0.8 + 0.1
   }
 
   {  // Test scale margins
@@ -3558,14 +3561,17 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
     data.scaleMargins(2.0);
 
     // All margins should be scaled by 2.0
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, 1.6, tol);  // 0.8 * 2.0
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    // NOLINTNEXTLINE
+    EXPECT_NEAR(result.value(), 1.6, tol);  // 0.8 * 2.0
 
     result = data.getMaxCollisionMargin("link2");
-    EXPECT_NEAR(result, 1.0, tol);  // 0.5 * 2.0
+    // NOLINTNEXTLINE
+    EXPECT_NEAR(result.value(), 1.0, tol);  // 0.5 * 2.0
 
     result = data.getMaxCollisionMargin("link3");
-    EXPECT_NEAR(result, 1.6, tol);  // 0.8 * 2.0
+    // NOLINTNEXTLINE
+    EXPECT_NEAR(result.value(), 1.6, tol);  // 0.8 * 2.0
   }
 
   {  // Test clear data
@@ -3575,11 +3581,11 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
 
     data.clear();
 
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    EXPECT_FALSE(result.has_value());
 
     result = data.getMaxCollisionMargin("link2");
-    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+    EXPECT_FALSE(result.has_value());
   }
 
   {  // Test updating existing pair with different margin
@@ -3588,19 +3594,19 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
     data.setCollisionMargin("link1", "link3", 0.5);
 
     // link1 should have max margin of 0.8
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, 0.8, tol);
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result.value(), 0.8, tol);  // NOLINT
 
     // Update existing pair to a smaller value
     data.setCollisionMargin("link1", "link2", 0.3);
 
     // link1 should now have max margin of 0.5 (from link1-link3 pair)
     result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, 0.5, tol);
+    EXPECT_NEAR(result.value(), 0.5, tol);  // NOLINT
 
     // link2 should have max margin of 0.3
     result = data.getMaxCollisionMargin("link2");
-    EXPECT_NEAR(result, 0.3, tol);
+    EXPECT_NEAR(result.value(), 0.3, tol);  // NOLINT
   }
 
   {  // Test apply with MODIFY override type
@@ -3615,20 +3621,20 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
     data.apply(override_data, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
 
     // link1 should have max margin of 0.9 (from new link1-link3 pair)
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, 0.9, tol);
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result.value(), 0.9, tol);  // NOLINT
 
     // link2 should have max margin of 0.5 (from original link1-link2 pair)
     result = data.getMaxCollisionMargin("link2");
-    EXPECT_NEAR(result, 0.5, tol);
+    EXPECT_NEAR(result.value(), 0.5, tol);  // NOLINT
 
     // link3 should have max margin of 0.9
     result = data.getMaxCollisionMargin("link3");
-    EXPECT_NEAR(result, 0.9, tol);
+    EXPECT_NEAR(result.value(), 0.9, tol);  // NOLINT
 
     // link4 should have max margin of 0.4
     result = data.getMaxCollisionMargin("link4");
-    EXPECT_NEAR(result, 0.4, tol);
+    EXPECT_NEAR(result.value(), 0.4, tol);  // NOLINT
   }
 
   {  // Test apply with REPLACE override type
@@ -3642,15 +3648,15 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
     data.apply(override_data, tesseract_common::CollisionMarginPairOverrideType::REPLACE);
 
     // After replace, only the override data should remain
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, 0.9, tol);
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result.value(), 0.9, tol);  // NOLINT
 
     result = data.getMaxCollisionMargin("link3");
-    EXPECT_NEAR(result, 0.9, tol);
+    EXPECT_NEAR(result.value(), 0.9, tol);  // NOLINT
 
     // link2 should no longer have any margin data
     result = data.getMaxCollisionMargin("link2");
-    EXPECT_EQ(result, std::numeric_limits<double>::lowest());
+    EXPECT_FALSE(result.has_value());
   }
 
   {  // Test construction from PairsCollisionMarginData
@@ -3662,20 +3668,20 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
     tesseract_common::CollisionMarginPairData data(temp);
 
     // link1 should have max margin of 0.7
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, 0.7, tol);
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result.value(), 0.7, tol);  // NOLINT
 
     // link2 should have max margin of 0.7 (from link1-link2 pair)
     result = data.getMaxCollisionMargin("link2");
-    EXPECT_NEAR(result, 0.7, tol);
+    EXPECT_NEAR(result.value(), 0.7, tol);  // NOLINT
 
     // link3 should have max margin of 0.4
     result = data.getMaxCollisionMargin("link3");
-    EXPECT_NEAR(result, 0.4, tol);
+    EXPECT_NEAR(result.value(), 0.4, tol);  // NOLINT
 
     // link4 should have max margin of 0.6
     result = data.getMaxCollisionMargin("link4");
-    EXPECT_NEAR(result, 0.6, tol);
+    EXPECT_NEAR(result.value(), 0.6, tol);  // NOLINT
   }
 
   {  // Test CollisionMarginData getMaxCollisionMargin for specific object
@@ -3683,8 +3689,8 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
     tesseract_common::CollisionMarginData data(default_margin);
 
     // When no pairs exist, should return default margin
-    double result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, default_margin, tol);
+    std::optional<double> result = data.getMaxCollisionMargin("link1");
+    EXPECT_NEAR(result.value(), default_margin, tol);  // NOLINT
 
     // Add some pair margins
     data.setCollisionMargin("link1", "link2", 0.5);
@@ -3693,20 +3699,20 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
 
     // link1 should return max of default and its pair margins
     result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, std::max(default_margin, 0.8), tol);
+    EXPECT_NEAR(result.value(), std::max(default_margin, 0.8), tol);  // NOLINT
 
     // link2 should return max of default and its pair margins
     result = data.getMaxCollisionMargin("link2");
-    EXPECT_NEAR(result, std::max(default_margin, 0.5), tol);
+    EXPECT_NEAR(result.value(), std::max(default_margin, 0.5), tol);  // NOLINT
 
     // link5 (no pairs) should return default margin
     result = data.getMaxCollisionMargin("link5");
-    EXPECT_NEAR(result, default_margin, tol);
+    EXPECT_NEAR(result.value(), default_margin, tol);  // NOLINT
 
     // Test with higher default margin
     data.setDefaultCollisionMargin(1.0);
     result = data.getMaxCollisionMargin("link1");
-    EXPECT_NEAR(result, 1.0, tol);  // default is now higher than pair margins
+    EXPECT_NEAR(result.value(), 1.0, tol);  // NOLINT
   }
 }
 

@@ -52,9 +52,7 @@ void CollisionMarginPairData::setCollisionMargin(const std::string& obj1, const 
   updateMaxMargins();
 }
 
-inline void CollisionMarginPairData::setCollisionMarginHelper(const std::string& obj1,
-                                                              const std::string& obj2,
-                                                              double margin)
+void CollisionMarginPairData::setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin)
 {
   auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
   lookup_table_[key] = margin;
@@ -75,13 +73,13 @@ std::optional<double> CollisionMarginPairData::getCollisionMargin(const std::str
 
 double CollisionMarginPairData::getMaxCollisionMargin() const { return max_collision_margin_; }
 
-double CollisionMarginPairData::getMaxCollisionMargin(const std::string& obj) const
+std::optional<double> CollisionMarginPairData::getMaxCollisionMargin(const std::string& obj) const
 {
   auto it = object_max_margins_.find(obj);
   if (it != object_max_margins_.end())
     return it->second;
 
-  return std::numeric_limits<double>::lowest();
+  return {};
 }
 
 const PairsCollisionMarginData& CollisionMarginPairData::getCollisionMargins() const { return lookup_table_; }
@@ -269,7 +267,11 @@ double CollisionMarginData::getMaxCollisionMargin(const std::string& obj) const
   if (pair_margins_.empty())
     return default_collision_margin_;
 
-  return std::max(default_collision_margin_, pair_margins_.getMaxCollisionMargin(obj));
+  std::optional<double> object_max = pair_margins_.getMaxCollisionMargin(obj);
+  if (!object_max.has_value())
+    return default_collision_margin_;
+
+  return std::max(default_collision_margin_, object_max.value());
 }
 
 void CollisionMarginData::incrementMargins(double increment)

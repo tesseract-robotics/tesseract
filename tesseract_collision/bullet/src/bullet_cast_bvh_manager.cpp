@@ -486,8 +486,7 @@ void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const Conta
 
   btOverlappingPairCache* pairCache = broadphase_->getOverlappingPairCache();
 
-  CastBroadphaseContactResultCallback cc(contact_test_data_,
-                                         contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+  CastBroadphaseContactResultCallback cc(contact_test_data_);
 
   TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cc);
 

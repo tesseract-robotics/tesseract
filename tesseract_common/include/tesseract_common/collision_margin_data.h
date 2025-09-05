@@ -101,9 +101,9 @@ public:
 
   /**
    * @brief Get the largest collision margin for the given object
-   * @return Max contact distance threshold
+   * @return Max contact distance threshold if object exists
    */
-  double getMaxCollisionMargin(const std::string& obj) const;
+  std::optional<double> getMaxCollisionMargin(const std::string& obj) const;
 
   /**
    * @brief Get Collision Margin Data for stored pairs
@@ -155,7 +155,7 @@ private:
   std::unordered_map<std::string, double> object_max_margins_;
 
   /** @brief Set the margin for a given contact pair without updating the max margins */
-  inline void setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin);
+  void setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin);
 
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();

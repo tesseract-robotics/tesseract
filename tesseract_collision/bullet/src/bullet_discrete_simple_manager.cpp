@@ -294,7 +294,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
 
     btCollisionObjectWrapper obA(nullptr, cow1->getCollisionShape(), cow1.get(), cow1->getWorldTransform(), -1, -1);
 
-    DiscreteCollisionCollector cc(contact_test_data_, cow1, cow1->getContactProcessingThreshold());
+    DiscreteCollisionCollector cc(contact_test_data_, cow1);
     for (auto cow2_iter = cow1_iter + 1; cow2_iter != cows_.end(); cow2_iter++)
     {
       assert(!contact_test_data_.done);
@@ -320,9 +320,10 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
           assert(algorithm != nullptr);
           if (algorithm != nullptr)
           {
-            TesseractBridgedManifoldResult contactPointResult(&obA, &obB, cc);
-            contactPointResult.m_closestPointDistanceThreshold =
+            // Update the contact threshold to be pair specific
+            cc.m_closestDistanceThreshold =
                 contact_test_data_.collision_margin_data.getCollisionMargin(cow1->getName(), cow2->getName());
+            TesseractBridgedManifoldResult contactPointResult(&obA, &obB, cc);
 
             // discrete collision detection query
             algorithm->processCollision(&obA, &obB, dispatch_info_, &contactPointResult);
