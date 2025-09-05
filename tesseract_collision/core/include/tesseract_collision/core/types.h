@@ -632,6 +632,8 @@ struct ContactTrajectoryResults
 
   std::stringstream collisionFrequencyPerLink() const;
 
+  std::stringstream condensedSummary() const;
+
   std::vector<ContactTrajectoryStepResults> steps;
   std::vector<std::string> joint_names;
   int total_steps = 0;

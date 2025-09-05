@@ -1533,6 +1533,23 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
     EXPECT_TRUE(static_cast<bool>(results));
     EXPECT_FALSE(freq_ss.str().find("No contacts detected") != std::string::npos);
+
+    // Test condensed summary method
+    EXPECT_NO_THROW(results.condensedSummary());
+
+    std::stringstream condensed_ss = results.condensedSummary();
+    EXPECT_FALSE(condensed_ss.str().empty());
+    EXPECT_FALSE(condensed_ss.str().find("No contacts detected") != std::string::npos);
+
+    // Check that the condensed summary contains expected format: "step.substep: [link1, link2]->distance"
+    std::string condensed_output = condensed_ss.str();
+    std::cout << "Condensed Summary Output:\n" << condensed_output;
+
+    // Should contain "0.0: [link1, link2]" for first collision at step 0, substep 0
+    EXPECT_TRUE(condensed_output.find("0.0: [link1, link2]") != std::string::npos);
+
+    // Should contain "1.3: [link3, link4]" for first collision at step 1, substep 1 (1/3 = 0.3, so 1.3)
+    EXPECT_TRUE(condensed_output.find("1.3: [link3, link4]") != std::string::npos);
   }
 
   // Test with no contacts
@@ -1563,6 +1580,13 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
     std::stringstream freq_ss = results.collisionFrequencyPerLink();
     EXPECT_FALSE(freq_ss.str().empty());
     EXPECT_TRUE(freq_ss.str().find("No contacts detected") != std::string::npos);
+
+    // Test condensed summary method with no contacts
+    EXPECT_NO_THROW(results.condensedSummary());
+
+    std::stringstream condensed_ss = results.condensedSummary();
+    EXPECT_FALSE(condensed_ss.str().empty());
+    EXPECT_TRUE(condensed_ss.str().find("No contacts detected") != std::string::npos);
 
     EXPECT_FALSE(static_cast<bool>(results));
   }
