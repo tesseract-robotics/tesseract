@@ -1023,4 +1023,62 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   return ss;
 }
 
+std::stringstream ContactTrajectoryResults::condensedSummary() const
+{
+  std::stringstream ss;
+
+  if (numContacts() == 0)
+  {
+    ss << "No contacts detected\n";
+    return ss;
+  }
+
+  ss << "Contact(s) found: \n";
+  ss << "Format: Step: [link_a, link_b] @ distance\n";
+
+  // Iterate through each step to find the first collision per step
+  for (const auto& step : steps)
+  {
+    if (step.numContacts() == 0)
+      continue;
+
+    // Find the first collision in this step
+    bool found_first_collision = false;
+    for (const auto& substep : step.substeps)
+    {
+      if (substep.contacts.empty() || substep.numContacts() == 0)
+        continue;
+
+      // Get the first collision pair from this substep
+      for (const auto& collision_pair : substep.contacts.getContainer())
+      {
+        if (collision_pair.second.empty())
+          continue;
+
+        // Calculate the step with substep decimal
+        double step_with_substep = static_cast<double>(step.step);
+        if (step.total_substeps > 0)
+        {
+          step_with_substep += static_cast<double>(substep.substep) / static_cast<double>(step.total_substeps);
+        }
+
+        // Get the first contact result from this collision pair
+        const auto& first_contact = collision_pair.second.front();
+
+        // Format: "14.4: [link_a, link_b]->0.001"
+        ss << "Step " << std::fixed << std::setprecision(1) << step_with_substep << ": [" << first_contact.link_names[0]
+           << ", " << first_contact.link_names[1] << "] @ " << std::setprecision(4) << first_contact.distance << "\n";
+
+        found_first_collision = true;
+        break;
+      }
+
+      if (found_first_collision)
+        break;
+    }
+  }
+
+  return ss;
+}
+
 }  // namespace tesseract_collision
