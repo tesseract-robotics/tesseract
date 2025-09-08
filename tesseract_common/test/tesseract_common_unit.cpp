@@ -3496,7 +3496,7 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
 {
   double tol = std::numeric_limits<double>::epsilon();
 
-  {  // Test Empty data should return lowest value
+  {  // Test Empty should return no value
     tesseract_common::CollisionMarginPairData data;
     std::optional<double> result = data.getMaxCollisionMargin("link1");
     EXPECT_FALSE(result.has_value());
