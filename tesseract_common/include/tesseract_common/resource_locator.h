@@ -92,7 +92,8 @@ public:
    * @param environment_variables A vector of environment variables to search for paths
    */
   GeneralResourceLocator(const std::vector<std::string>& environment_variables = { "TESSERACT_RESOURCE_PATH",
-                                                                                   "ROS_PACKAGE_PATH" });
+                                                                                   "ROS_PACKAGE_PATH",
+                                                                                   "AMENT_PREFIX_PATH" });
   /**
    * @brief Construct a new General Resource Locator object using the provided paths and/or the TESSERACT_RESOURCE_PATH
    * environment variable
@@ -102,7 +103,8 @@ public:
    */
   GeneralResourceLocator(const std::vector<std::filesystem::path>& paths,
                          const std::vector<std::string>& environment_variables = { "TESSERACT_RESOURCE_PATH",
-                                                                                   "ROS_PACKAGE_PATH" });
+                                                                                   "ROS_PACKAGE_PATH",
+                                                                                   "AMENT_PREFIX_PATH" });
   GeneralResourceLocator(const GeneralResourceLocator&) = default;
   GeneralResourceLocator& operator=(const GeneralResourceLocator&) = default;
   GeneralResourceLocator(GeneralResourceLocator&&) = default;
