@@ -71,7 +71,7 @@ std::optional<double> CollisionMarginPairData::getCollisionMargin(const std::str
   return {};
 }
 
-double CollisionMarginPairData::getMaxCollisionMargin() const { return max_collision_margin_; }
+std::optional<double> CollisionMarginPairData::getMaxCollisionMargin() const { return max_collision_margin_; }
 
 std::optional<double> CollisionMarginPairData::getMaxCollisionMargin(const std::string& obj) const
 {
@@ -89,7 +89,8 @@ void CollisionMarginPairData::incrementMargins(double increment)
   if (lookup_table_.empty())
     return;
 
-  max_collision_margin_ += increment;
+  assert(max_collision_margin_.has_value());
+  max_collision_margin_.value() += increment;  // NOLINT
   for (auto& pair : lookup_table_)
     pair.second += increment;
 
@@ -103,7 +104,8 @@ void CollisionMarginPairData::scaleMargins(double scale)
   if (lookup_table_.empty())
     return;
 
-  max_collision_margin_ *= scale;
+  assert(max_collision_margin_.has_value());
+  max_collision_margin_.value() *= scale;  // NOLINT
   for (auto& pair : lookup_table_)
     pair.second *= scale;
 
@@ -118,11 +120,14 @@ void CollisionMarginPairData::clear()
 {
   lookup_table_.clear();
   object_max_margins_.clear();
-  max_collision_margin_ = std::numeric_limits<double>::lowest();
+  max_collision_margin_.reset();
 }
 
 void CollisionMarginPairData::updateMaxMargins()
 {
+  if (lookup_table_.empty())
+    return;
+
   max_collision_margin_ = std::numeric_limits<double>::lowest();
   object_max_margins_.clear();
   for (const auto& pair : lookup_table_)
@@ -132,7 +137,8 @@ void CollisionMarginPairData::updateMaxMargins()
     double margin = pair.second;
 
     // Update the overall max margin
-    max_collision_margin_ = std::max(max_collision_margin_, margin);
+    assert(max_collision_margin_.has_value());
+    max_collision_margin_ = std::max(max_collision_margin_.value(), margin);  // NOLINT
 
     // Update max margin for obj1
     auto it1 = object_max_margins_.find(obj1);
@@ -178,7 +184,12 @@ void CollisionMarginPairData::apply(const CollisionMarginPairData& pair_margin_d
 bool CollisionMarginPairData::operator==(const CollisionMarginPairData& rhs) const
 {
   bool ret_val = true;
-  ret_val &= (tesseract_common::almostEqualRelativeAndAbs(max_collision_margin_, rhs.max_collision_margin_, 1e-5));
+  ret_val &= (max_collision_margin_.has_value() == rhs.max_collision_margin_.has_value());
+
+  if (max_collision_margin_.has_value() && rhs.max_collision_margin_.has_value())
+    ret_val &= (tesseract_common::almostEqualRelativeAndAbs(
+        max_collision_margin_.value(), rhs.max_collision_margin_.value(), 1e-5));
+
   ret_val &= (lookup_table_.size() == rhs.lookup_table_.size());
   ret_val &= (object_max_margins_.size() == rhs.object_max_margins_.size());
   // The contents of object_max_margins_ are not compared, as they are derived from lookup_table_
@@ -259,7 +270,11 @@ double CollisionMarginData::getMaxCollisionMargin() const
   if (pair_margins_.empty())
     return default_collision_margin_;
 
-  return std::max(default_collision_margin_, pair_margins_.getMaxCollisionMargin());
+  std::optional<double> mv = pair_margins_.getMaxCollisionMargin();
+  if (!mv.has_value())
+    return default_collision_margin_;
+
+  return std::max(default_collision_margin_, mv.value());
 }
 
 double CollisionMarginData::getMaxCollisionMargin(const std::string& obj) const

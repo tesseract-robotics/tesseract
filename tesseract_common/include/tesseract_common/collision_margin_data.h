@@ -95,9 +95,9 @@ public:
 
   /**
    * @brief Get the largest pair collision margin
-   * @return Max pair contact distance threshold
+   * @return Max pair contact distance threshold if objects exist
    */
-  double getMaxCollisionMargin() const;
+  std::optional<double> getMaxCollisionMargin() const;
 
   /**
    * @brief Get the largest collision margin for the given object
@@ -149,7 +149,7 @@ private:
   PairsCollisionMarginData lookup_table_;
 
   /** @brief Stores the largest collision margin */
-  double max_collision_margin_{ std::numeric_limits<double>::lowest() };
+  std::optional<double> max_collision_margin_;
 
   /** @brief Stores the maximum collision margin for each object */
   std::unordered_map<std::string, double> object_max_margins_;
