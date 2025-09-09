@@ -70,8 +70,6 @@ DiscreteContactManager::UPtr BulletDiscreteSimpleManager::clone() const
 {
   auto manager = std::make_unique<BulletDiscreteSimpleManager>(name_, config_info_.clone());
 
-  auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
-
   for (const auto& cow : link2cow_)
   {
     COW::Ptr new_cow = cow.second->clone();
@@ -80,6 +78,8 @@ DiscreteContactManager::UPtr BulletDiscreteSimpleManager::clone() const
     assert(new_cow->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
+    auto margin =
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getName()));
     new_cow->setContactProcessingThreshold(margin);
 
     manager->addCollisionObject(new_cow);
@@ -104,7 +104,8 @@ bool BulletDiscreteSimpleManager::addCollisionObject(const std::string& name,
   COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
-    auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+    auto margin =
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getName()));
     new_cow->setContactProcessingThreshold(margin);
     addCollisionObject(new_cow);
     return true;
@@ -293,7 +294,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
 
     btCollisionObjectWrapper obA(nullptr, cow1->getCollisionShape(), cow1.get(), cow1->getWorldTransform(), -1, -1);
 
-    DiscreteCollisionCollector cc(contact_test_data_, cow1, cow1->getContactProcessingThreshold());
+    DiscreteCollisionCollector cc(contact_test_data_, cow1);
     for (auto cow2_iter = cow1_iter + 1; cow2_iter != cows_.end(); cow2_iter++)
     {
       assert(!contact_test_data_.done);
@@ -319,8 +320,10 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
           assert(algorithm != nullptr);
           if (algorithm != nullptr)
           {
+            // Update the contact threshold to be pair specific
+            cc.m_closestDistanceThreshold =
+                contact_test_data_.collision_margin_data.getCollisionMargin(cow1->getName(), cow2->getName());
             TesseractBridgedManifoldResult contactPointResult(&obA, &obB, cc);
-            contactPointResult.m_closestPointDistanceThreshold = cc.m_closestDistanceThreshold;
 
             // discrete collision detection query
             algorithm->processCollision(&obA, &obB, dispatch_info_, &contactPointResult);
@@ -354,9 +357,12 @@ void BulletDiscreteSimpleManager::addCollisionObject(const COW::Ptr& cow)
 
 void BulletDiscreteSimpleManager::onCollisionMarginDataChanged()
 {
-  auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
   for (auto& co : link2cow_)
+  {
+    auto margin =
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(co.second->getName()));
     co.second->setContactProcessingThreshold(margin);
+  }
 }
 
 }  // namespace tesseract_collision::tesseract_collision_bullet

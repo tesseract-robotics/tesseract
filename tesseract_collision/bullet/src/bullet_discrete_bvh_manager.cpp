@@ -84,8 +84,6 @@ DiscreteContactManager::UPtr BulletDiscreteBVHManager::clone() const
 {
   auto manager = std::make_unique<BulletDiscreteBVHManager>(name_, config_info_.clone());
 
-  auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
-
   for (const auto& cow : link2cow_)
   {
     COW::Ptr new_cow = cow.second->clone();
@@ -94,6 +92,8 @@ DiscreteContactManager::UPtr BulletDiscreteBVHManager::clone() const
     assert(new_cow->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
+    auto margin =
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getName()));
     new_cow->setContactProcessingThreshold(margin);
 
     manager->addCollisionObject(new_cow);
@@ -118,7 +118,8 @@ bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
   COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
-    auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+    auto margin =
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getName()));
     new_cow->setContactProcessingThreshold(margin);
     addCollisionObject(new_cow);
     return true;
@@ -305,8 +306,7 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const C
 
   broadphase_->calculateOverlappingPairs(dispatcher_.get());
 
-  DiscreteBroadphaseContactResultCallback cc(contact_test_data_,
-                                             contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+  DiscreteBroadphaseContactResultCallback cc(contact_test_data_);
 
   TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cc);
 
@@ -325,10 +325,10 @@ void BulletDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 
 void BulletDiscreteBVHManager::onCollisionMarginDataChanged()
 {
-  auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
   for (auto& co : link2cow_)
   {
     COW::Ptr& cow = co.second;
+    auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(cow->getName()));
     cow->setContactProcessingThreshold(margin);
     assert(cow->getBroadphaseHandle() != nullptr);
     updateBroadphaseAABB(cow, broadphase_, dispatcher_);

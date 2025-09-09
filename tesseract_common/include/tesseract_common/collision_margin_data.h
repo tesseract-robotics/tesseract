@@ -95,9 +95,15 @@ public:
 
   /**
    * @brief Get the largest pair collision margin
-   * @return Max pair contact distance threshold
+   * @return Max pair contact distance threshold if objects exist
    */
-  double getMaxCollisionMargin() const;
+  std::optional<double> getMaxCollisionMargin() const;
+
+  /**
+   * @brief Get the largest collision margin for the given object
+   * @return Max contact distance threshold if object exists
+   */
+  std::optional<double> getMaxCollisionMargin(const std::string& obj) const;
 
   /**
    * @brief Get Collision Margin Data for stored pairs
@@ -143,10 +149,16 @@ private:
   PairsCollisionMarginData lookup_table_;
 
   /** @brief Stores the largest collision margin */
-  double max_collision_margin_{ std::numeric_limits<double>::lowest() };
+  std::optional<double> max_collision_margin_;
 
-  /** @brief Recalculate the max margin */
-  void updateCollisionMarginMax();
+  /** @brief Stores the maximum collision margin for each object */
+  std::unordered_map<std::string, double> object_max_margins_;
+
+  /** @brief Set the margin for a given contact pair without updating the max margins */
+  void setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin);
+
+  /** @brief Recalculate the overall and the per-object max margins */
+  void updateMaxMargins();
 
   friend class boost::serialization::access;
   friend struct tesseract_common::Serialization;
@@ -216,6 +228,15 @@ public:
    * @return Max contact distance threshold
    */
   double getMaxCollisionMargin() const;
+
+  /**
+   * @brief Get the largest collision margin for the given object
+   *
+   * This used when setting the contact distance in the contact manager.
+   *
+   * @return Max contact distance threshold
+   */
+  double getMaxCollisionMargin(const std::string& obj) const;
 
   /**
    * @brief Increment all margins by input amount. Useful for inflating or reducing margins

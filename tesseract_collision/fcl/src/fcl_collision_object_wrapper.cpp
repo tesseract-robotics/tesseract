@@ -41,14 +41,14 @@ void FCLCollisionObjectWrapper::updateAABB()
   if (t.linear().isIdentity())
   {
     aabb = translate(cgeom->aabb_local, t.translation());
-    fcl::Vector3<double> delta = fcl::Vector3<double>::Constant(contact_distance_);
+    fcl::Vector3<double> delta = fcl::Vector3<double>::Constant(contact_distance_ / 2.0);
     aabb.min_ -= delta;
     aabb.max_ += delta;
   }
   else
   {
     fcl::Vector3<double> center = t * cgeom->aabb_center;
-    fcl::Vector3<double> delta = fcl::Vector3<double>::Constant(cgeom->aabb_radius + contact_distance_);
+    fcl::Vector3<double> delta = fcl::Vector3<double>::Constant(cgeom->aabb_radius + (contact_distance_ / 2.0));
     aabb.min_ = center - delta;
     aabb.max_ = center + delta;
   }
