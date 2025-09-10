@@ -2,6 +2,11 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add trajectory link collision representation options
+* Contributors: Levi Armstrong
+
 0.31.0 (2025-07-05)
 -------------------
 

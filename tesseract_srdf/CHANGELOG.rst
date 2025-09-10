@@ -2,6 +2,11 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Leverage TransformMap in tesseract_srdf package (`#1196 <https://github.com/tesseract-robotics/tesseract/issues/1196>`_)
+* Contributors: Levi Armstrong
+
 0.31.0 (2025-07-05)
 -------------------
 * Fix yaml extensions file name spelling

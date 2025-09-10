@@ -2,6 +2,15 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Check trajectory return contact location (`#1200 <https://github.com/tesseract-robotics/tesseract/issues/1200>`_)
+* Fix benchmarks (`#1201 <https://github.com/tesseract-robotics/tesseract/issues/1201>`_)
+* Improve memory allocation during motion planning
+* Fix environment clone missing resource locator
+* Add trajectory link collision representation options
+* Contributors: Levi Armstrong, Roelof Oomen, Tyler Marr
+
 0.31.0 (2025-07-05)
 -------------------
 * Make sure serialized objects have friend struct tesseract_common::Serialization

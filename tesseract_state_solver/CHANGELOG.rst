@@ -2,6 +2,14 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Increase OKFT joint change tolerance to 1e-10
+* Fix clang-tidy errors
+* Reduce number of thread local variables by making class member variable
+* Improve memory allocation during motion planning
+* Contributors: Levi Armstrong
+
 0.31.0 (2025-07-05)
 -------------------
 

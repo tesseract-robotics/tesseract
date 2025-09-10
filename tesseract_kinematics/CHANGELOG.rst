@@ -2,6 +2,15 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix Joint Group jacobian when base link is an active link with unit test
+* Fix clang-tidy errors
+* Reduce number of thread local variables by making class member variable
+* Improve tesseract_kinematics unit test coverage
+* Improve memory allocation during motion planning
+* Contributors: Levi Armstrong
+
 0.31.0 (2025-07-05)
 -------------------
 * Fix yaml extensions file name spelling

@@ -2,6 +2,26 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add AMENT environment variable to GeneralResourceLocator
+* Use per object max margin for the broadphase and the actual link pair margin for the narrow phase, instead of the overall max margin everywhere (`#1198 <https://github.com/tesseract-robotics/tesseract/issues/1198>`_)
+* Fix Joint Group jacobian when base link is an active link with unit test
+* Fix timer
+* Fix benchmarks (`#1201 <https://github.com/tesseract-robotics/tesseract/issues/1201>`_)
+* Replace PairHash by template specialization of std::hash (`#1197 <https://github.com/tesseract-robotics/tesseract/issues/1197>`_)
+* Leverage TransformMap in tesseract_srdf package (`#1196 <https://github.com/tesseract-robotics/tesseract/issues/1196>`_)
+* Add yaml encode/decode for commonly used Eigen::Matrix<double, 6, 1> (`#1193 <https://github.com/tesseract-robotics/tesseract/issues/1193>`_)
+* Fix focal build with changes to TransformMap
+* Improve memory allocation during motion planning
+* Improve memory allocations in satisfiesLimits
+* Add ProfilePluginFactory to fwd.h
+* Add trajectory link collision representation options
+* Add profile plugin factory
+* Add Profiles Plugin Info
+* Improve GitHub actions for Windows and MacOS (`#1179 <https://github.com/tesseract-robotics/tesseract/issues/1179>`_)
+* Contributors: John Wason, Levi Armstrong, Roelof Oomen, Tyler Marr
+
 0.31.0 (2025-07-05)
 -------------------
 * Fix yaml extensions file name spelling
