@@ -2,8 +2,8 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.32.0 (2025-09-10)
+-------------------
 * Fix Joint Group jacobian when base link is an active link with unit test
 * Fix clang-tidy errors
 * Reduce number of thread local variables by making class member variable

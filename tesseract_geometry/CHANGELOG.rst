@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.32.0 (2025-09-10)
+-------------------
 * Add trajectory link collision representation options
 * Contributors: Levi Armstrong
 
