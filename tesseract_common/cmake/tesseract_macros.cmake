@@ -157,7 +157,7 @@ macro(tesseract_variables)
     endif()
   endif()
 
-  set(TESSERACT_CXX_VERSION 17)
+  set(TESSERACT_CXX_VERSION 20)
 endmacro()
 
 macro(find_bullet)
