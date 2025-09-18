@@ -242,6 +242,14 @@ using FloatAnyPoly = AnyWrapper<float>;
 using StringAnyPoly = AnyWrapper<std::string>;
 using SizeTAnyPoly = AnyWrapper<std::size_t>;
 
+using VectorStringAnyPoly = AnyWrapper<std::vector<std::string>>;
+using VectorBoolAnyPoly = AnyWrapper<std::vector<bool>>;
+using VectorIntAnyPoly = AnyWrapper<std::vector<int>>;
+using VectorUnsignedAnyPoly = AnyWrapper<std::vector<unsigned>>;
+using VectorDoubleAnyPoly = AnyWrapper<std::vector<double>>;
+using VectorFloatAnyPoly = AnyWrapper<std::vector<float>>;
+using VectorSizeTAnyPoly = AnyWrapper<std::vector<std::size_t>>;
+
 using UMapStringStringAnyPoly = AnyWrapper<std::unordered_map<std::string, std::string>>;
 using UMapStringBoolAnyPoly = AnyWrapper<std::unordered_map<std::string, bool>>;
 using UMapStringIntAnyPoly = AnyWrapper<std::unordered_map<std::string, int>>;
@@ -278,6 +286,27 @@ BOOST_CLASS_TRACKING(tesseract_common::StringAnyPoly, boost::serialization::trac
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::SizeTAnyPoly)
 BOOST_CLASS_TRACKING(tesseract_common::SizeTAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::VectorStringAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::VectorStringAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::VectorBoolAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::VectorBoolAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::VectorIntAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::VectorIntAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::VectorUnsignedAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::VectorUnsignedAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::VectorDoubleAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::VectorDoubleAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::VectorFloatAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::VectorFloatAnyPoly, boost::serialization::track_never)
+
+BOOST_CLASS_EXPORT_KEY(tesseract_common::VectorSizeTAnyPoly)
+BOOST_CLASS_TRACKING(tesseract_common::VectorSizeTAnyPoly, boost::serialization::track_never)
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::UMapStringStringAnyPoly)
 BOOST_CLASS_TRACKING(tesseract_common::UMapStringStringAnyPoly, boost::serialization::track_never)
