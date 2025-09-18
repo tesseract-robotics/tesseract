@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/library_version_type.hpp>
 #endif
 #include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/any_poly.h>
@@ -129,6 +130,27 @@ BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::StringAnyPoly)
 
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::SizeTAnyPoly)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::SizeTAnyPoly)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorStringAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorStringAnyPoly)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorBoolAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorBoolAnyPoly)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorIntAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorIntAnyPoly)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorUnsignedAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorUnsignedAnyPoly)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorDoubleAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorDoubleAnyPoly)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorFloatAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorFloatAnyPoly)
+
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorSizeTAnyPoly)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorSizeTAnyPoly)
 
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::UMapStringStringAnyPoly)
 BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::UMapStringStringAnyPoly)
