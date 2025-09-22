@@ -25,6 +25,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/thread/tss.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>
@@ -99,7 +100,16 @@ void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name
 
 bool AllowedCollisionMatrix::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
 {
+#ifdef USE_THREAD_LOCAL
   thread_local LinkNamesPair link_pair;
+#else
+  static boost::thread_specific_ptr<LinkNamesPair> link_pair_ptr;
+  if (link_pair_ptr.get() == nullptr)
+    link_pair_ptr.reset(new LinkNamesPair());
+
+  LinkNamesPair& link_pair = *link_pair_ptr;
+#endif
+
   tesseract_common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
   return (lookup_table_.find(link_pair) != lookup_table_.end());
 }
