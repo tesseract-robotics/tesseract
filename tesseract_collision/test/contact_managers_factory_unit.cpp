@@ -51,22 +51,22 @@ void runContactManagersFactoryTest(const std::filesystem::path& config_path)
   const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
 
   {
-    std::set<std::string> sp = factory.getSearchPaths();
+    std::vector<std::string> sp = factory.getSearchPaths();
     EXPECT_EQ(sp.size(), 2);
 
     for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
     {
-      EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+      EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
     }
   }
 
   {
-    std::set<std::string> sl = factory.getSearchLibraries();
+    std::vector<std::string> sl = factory.getSearchLibraries();
     EXPECT_EQ(sl.size(), 2);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {
-      EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+      EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
     }
   }
 
@@ -167,22 +167,22 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
   const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
 
   {
-    std::set<std::string> sp = factory.getSearchPaths();
+    std::vector<std::string> sp = factory.getSearchPaths();
     EXPECT_EQ(sp.size(), 2);
 
     for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
     {
-      EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+      EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
     }
   }
 
   {
-    std::set<std::string> sl = factory.getSearchLibraries();
+    std::vector<std::string> sl = factory.getSearchLibraries();
     EXPECT_EQ(sl.size(), 2);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {
-      EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+      EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
     }
   }
 
@@ -333,22 +333,22 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyDiscretePluginTest)  // NOLINT
   const YAML::Node& discrete_plugins = plugin_info["discrete_plugins"]["plugins"];
 
   {
-    std::set<std::string> sp = factory.getSearchPaths();
+    std::vector<std::string> sp = factory.getSearchPaths();
     EXPECT_EQ(sp.size(), 2);
 
     for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
     {
-      EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+      EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
     }
   }
 
   {
-    std::set<std::string> sl = factory.getSearchLibraries();
+    std::vector<std::string> sl = factory.getSearchLibraries();
     EXPECT_EQ(sl.size(), 2);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {
-      EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+      EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
     }
   }
 
@@ -388,22 +388,22 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyContinuousPluginTest)  // NOLI
   const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
 
   {
-    std::set<std::string> sp = factory.getSearchPaths();
+    std::vector<std::string> sp = factory.getSearchPaths();
     EXPECT_EQ(sp.size(), 2);
 
     for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
     {
-      EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+      EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
     }
   }
 
   {
-    std::set<std::string> sl = factory.getSearchLibraries();
+    std::vector<std::string> sl = factory.getSearchLibraries();
     EXPECT_EQ(sl.size(), 2);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {
-      EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+      EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
     }
   }
 

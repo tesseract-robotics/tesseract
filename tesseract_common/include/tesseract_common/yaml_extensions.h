@@ -323,10 +323,10 @@ struct convert<tesseract_common::ProfilesPluginInfo>
   {
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
-      std::set<std::string> sp;
+      std::vector<std::string> sp;
       try
       {
-        sp = search_paths.as<std::set<std::string>>();
+        sp = search_paths.as<std::vector<std::string>>();
       }
       catch (const std::exception& e)
       {
@@ -335,15 +335,15 @@ struct convert<tesseract_common::ProfilesPluginInfo>
                                  "Details: " +
                                  e.what());
       }
-      rhs.search_paths.insert(sp.begin(), sp.end());
+      rhs.search_paths.insert(rhs.search_paths.end(), sp.begin(), sp.end());
     }
 
     if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
     {
-      std::set<std::string> sl;
+      std::vector<std::string> sl;
       try
       {
-        sl = search_libraries.as<std::set<std::string>>();
+        sl = search_libraries.as<std::vector<std::string>>();
       }
       catch (const std::exception& e)
       {
@@ -352,7 +352,7 @@ struct convert<tesseract_common::ProfilesPluginInfo>
                                  "Details: " +
                                  e.what());
       }
-      rhs.search_libraries.insert(sl.begin(), sl.end());
+      rhs.search_libraries.insert(rhs.search_libraries.end(), sl.begin(), sl.end());
     }
 
     if (const YAML::Node& profile_plugins = node[PROFILE_PLUGINS_KEY])
@@ -412,10 +412,10 @@ struct convert<tesseract_common::KinematicsPluginInfo>
 
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
-      std::set<std::string> sp;
+      std::vector<std::string> sp;
       try
       {
-        sp = search_paths.as<std::set<std::string>>();
+        sp = search_paths.as<std::vector<std::string>>();
       }
       catch (const std::exception& e)
       {
@@ -424,15 +424,15 @@ struct convert<tesseract_common::KinematicsPluginInfo>
                                  "Details: " +
                                  e.what());
       }
-      rhs.search_paths.insert(sp.begin(), sp.end());
+      rhs.search_paths.insert(rhs.search_paths.end(), sp.begin(), sp.end());
     }
 
     if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
     {
-      std::set<std::string> sl;
+      std::vector<std::string> sl;
       try
       {
-        sl = search_libraries.as<std::set<std::string>>();
+        sl = search_libraries.as<std::vector<std::string>>();
       }
       catch (const std::exception& e)
       {
@@ -441,7 +441,7 @@ struct convert<tesseract_common::KinematicsPluginInfo>
                                  "Details: " +
                                  e.what());
       }
-      rhs.search_libraries.insert(sl.begin(), sl.end());
+      rhs.search_libraries.insert(rhs.search_libraries.end(), sl.begin(), sl.end());
     }
 
     if (const YAML::Node& fwd_kin_plugins = node[FWD_KIN_PLUGINS_KEY])
@@ -519,10 +519,10 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
 
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
-      std::set<std::string> sp;
+      std::vector<std::string> sp;
       try
       {
-        sp = search_paths.as<std::set<std::string>>();
+        sp = search_paths.as<std::vector<std::string>>();
       }
       catch (const std::exception& e)
       {
@@ -531,15 +531,15 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
                                  "Details: " +
                                  e.what());
       }
-      rhs.search_paths.insert(sp.begin(), sp.end());
+      rhs.search_paths.insert(rhs.search_paths.end(), sp.begin(), sp.end());
     }
 
     if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
     {
-      std::set<std::string> sl;
+      std::vector<std::string> sl;
       try
       {
-        sl = search_libraries.as<std::set<std::string>>();
+        sl = search_libraries.as<std::vector<std::string>>();
       }
       catch (const std::exception& e)
       {
@@ -548,7 +548,7 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
                                  "Details: " +
                                  e.what());
       }
-      rhs.search_libraries.insert(sl.begin(), sl.end());
+      rhs.search_libraries.insert(rhs.search_libraries.end(), sl.begin(), sl.end());
     }
 
     if (const YAML::Node& discrete_plugins = node[DISCRETE_PLUGINS_KEY])
@@ -622,10 +622,10 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
 
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
-      std::set<std::string> sp;
+      std::vector<std::string> sp;
       try
       {
-        sp = search_paths.as<std::set<std::string>>();
+        sp = search_paths.as<std::vector<std::string>>();
       }
       catch (const std::exception& e)
       {
@@ -634,15 +634,15 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
                                  "Details: " +
                                  e.what());
       }
-      rhs.search_paths.insert(sp.begin(), sp.end());
+      rhs.search_paths.insert(rhs.search_paths.end(), sp.begin(), sp.end());
     }
 
     if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
     {
-      std::set<std::string> sl;
+      std::vector<std::string> sl;
       try
       {
-        sl = search_libraries.as<std::set<std::string>>();
+        sl = search_libraries.as<std::vector<std::string>>();
       }
       catch (const std::exception& e)
       {
@@ -651,7 +651,7 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
                                  "Details: " +
                                  e.what());
       }
-      rhs.search_libraries.insert(sl.begin(), sl.end());
+      rhs.search_libraries.insert(rhs.search_libraries.end(), sl.begin(), sl.end());
     }
 
     if (const YAML::Node& executor_plugins = node[EXECUTOR_PLUGINS_KEY])

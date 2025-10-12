@@ -54,11 +54,14 @@ ContactManagersPluginFactory::ContactManagersPluginFactory()
 {
   plugin_loader_.search_libraries_env = TESSERACT_CONTACT_MANAGERS_PLUGINS_ENV;
   plugin_loader_.search_paths_env = TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES_ENV;
-  plugin_loader_.search_paths.insert(TESSERACT_CONTACT_MANAGERS_PLUGIN_PATH);
+  plugin_loader_.search_paths.emplace_back(TESSERACT_CONTACT_MANAGERS_PLUGIN_PATH);
   boost::split(plugin_loader_.search_libraries,
                TESSERACT_CONTACT_MANAGERS_PLUGINS,
                boost::is_any_of(":"),
                boost::token_compress_on);
+
+  tesseract_common::removeDuplicates(plugin_loader_.search_paths);
+  tesseract_common::removeDuplicates(plugin_loader_.search_libraries);
 }
 
 void ContactManagersPluginFactory::loadConfig(const YAML::Node& config)
@@ -66,11 +69,16 @@ void ContactManagersPluginFactory::loadConfig(const YAML::Node& config)
   if (const YAML::Node& plugin_info = config[ContactManagersPluginInfo::CONFIG_KEY])
   {
     auto cm_plugin_info = plugin_info.as<tesseract_common::ContactManagersPluginInfo>();
-    plugin_loader_.search_paths.insert(cm_plugin_info.search_paths.begin(), cm_plugin_info.search_paths.end());
-    plugin_loader_.search_libraries.insert(cm_plugin_info.search_libraries.begin(),
+    plugin_loader_.search_paths.insert(
+        plugin_loader_.search_paths.end(), cm_plugin_info.search_paths.begin(), cm_plugin_info.search_paths.end());
+    plugin_loader_.search_libraries.insert(plugin_loader_.search_libraries.end(),
+                                           cm_plugin_info.search_libraries.begin(),
                                            cm_plugin_info.search_libraries.end());
     discrete_plugin_info_ = cm_plugin_info.discrete_plugin_infos;
     continuous_plugin_info_ = cm_plugin_info.continuous_plugin_infos;
+
+    tesseract_common::removeDuplicates(plugin_loader_.search_paths);
+    tesseract_common::removeDuplicates(plugin_loader_.search_libraries);
   }
 }
 
@@ -100,18 +108,25 @@ ContactManagersPluginFactory::ContactManagersPluginFactory(const std::string& co
 // If not the forward declare of PluginLoader cause compiler error.
 ContactManagersPluginFactory::~ContactManagersPluginFactory() = default;
 
-void ContactManagersPluginFactory::addSearchPath(const std::string& path) { plugin_loader_.search_paths.insert(path); }
+void ContactManagersPluginFactory::addSearchPath(const std::string& path)
+{
+  auto& v = plugin_loader_.search_paths;
+  if (std::find(v.begin(), v.end(), path) == v.end())
+    v.push_back(path);
+}
 
-std::set<std::string> ContactManagersPluginFactory::getSearchPaths() const { return plugin_loader_.search_paths; }
+std::vector<std::string> ContactManagersPluginFactory::getSearchPaths() const { return plugin_loader_.search_paths; }
 
 void ContactManagersPluginFactory::clearSearchPaths() { plugin_loader_.search_paths.clear(); }
 
 void ContactManagersPluginFactory::addSearchLibrary(const std::string& library_name)
 {
-  plugin_loader_.search_libraries.insert(library_name);
+  auto& v = plugin_loader_.search_libraries;
+  if (std::find(v.begin(), v.end(), library_name) == v.end())
+    v.push_back(library_name);
 }
 
-std::set<std::string> ContactManagersPluginFactory::getSearchLibraries() const
+std::vector<std::string> ContactManagersPluginFactory::getSearchLibraries() const
 {
   return plugin_loader_.search_libraries;
 }

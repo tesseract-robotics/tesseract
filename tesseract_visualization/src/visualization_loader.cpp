@@ -44,8 +44,8 @@ VisualizationLoader::VisualizationLoader()
 {
   search_paths_env = TESSERACT_VISUALIZATION_PLUGIN_DIRECTORIES_ENV;
   search_libraries_env = TESSERACT_VISUALIZATION_PLUGINS_ENV;
-  search_libraries.insert(TESSERACT_IGNITION_LIBRARY_NAME);
-  search_paths.insert(TESSERACT_VISUALIZATION_PLUGIN_PATH);
+  search_libraries.emplace_back(TESSERACT_IGNITION_LIBRARY_NAME);
+  search_paths.emplace_back(TESSERACT_VISUALIZATION_PLUGIN_PATH);
 }
 
 std::shared_ptr<Visualization> VisualizationLoader::get(std::string plugin_name) const

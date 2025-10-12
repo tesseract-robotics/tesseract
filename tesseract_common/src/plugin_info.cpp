@@ -116,8 +116,8 @@ void PluginInfoContainer::serialize(Archive& ar, const unsigned int /*version*/)
 /*********************************************************/
 void ProfilesPluginInfo::insert(const ProfilesPluginInfo& other)
 {
-  search_paths.insert(other.search_paths.begin(), other.search_paths.end());
-  search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
+  search_paths.insert(search_paths.end(), other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(search_libraries.end(), other.search_libraries.begin(), other.search_libraries.end());
 
   for (const auto& group_plugins : other.plugin_infos)
   {
@@ -141,8 +141,8 @@ bool ProfilesPluginInfo::empty() const
 bool ProfilesPluginInfo::operator==(const ProfilesPluginInfo& rhs) const
 {
   bool equal = true;
-  equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
-  equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
+  equal &= isIdentical<std::string>(search_paths, rhs.search_paths);
+  equal &= isIdentical<std::string>(search_libraries, rhs.search_libraries);
   equal &= isIdenticalMap<std::map<std::string, PluginInfoMap>, PluginInfoMap>(plugin_infos, rhs.plugin_infos);
   return equal;
 }
@@ -161,8 +161,8 @@ void ProfilesPluginInfo::serialize(Archive& ar, const unsigned int /*version*/)
 /*********************************************************/
 void KinematicsPluginInfo::insert(const KinematicsPluginInfo& other)
 {
-  search_paths.insert(other.search_paths.begin(), other.search_paths.end());
-  search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
+  search_paths.insert(search_paths.end(), other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(search_libraries.end(), other.search_libraries.begin(), other.search_libraries.end());
 
   for (const auto& group_plugins : other.fwd_plugin_infos)
   {
@@ -199,8 +199,8 @@ bool KinematicsPluginInfo::empty() const
 bool KinematicsPluginInfo::operator==(const KinematicsPluginInfo& rhs) const
 {
   bool equal = true;
-  equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
-  equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
+  equal &= isIdentical<std::string>(search_paths, rhs.search_paths);
+  equal &= isIdentical<std::string>(search_libraries, rhs.search_libraries);
   equal &= isIdenticalMap<std::map<std::string, PluginInfoContainer>, PluginInfoContainer>(fwd_plugin_infos,
                                                                                            rhs.fwd_plugin_infos);
   equal &= isIdenticalMap<std::map<std::string, PluginInfoContainer>, PluginInfoContainer>(inv_plugin_infos,
@@ -224,8 +224,8 @@ void KinematicsPluginInfo::serialize(Archive& ar, const unsigned int /*version*/
 /*********************************************************/
 void ContactManagersPluginInfo::insert(const ContactManagersPluginInfo& other)
 {
-  search_paths.insert(other.search_paths.begin(), other.search_paths.end());
-  search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
+  search_paths.insert(search_paths.end(), other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(search_libraries.end(), other.search_libraries.begin(), other.search_libraries.end());
 
   if (!other.discrete_plugin_infos.default_plugin.empty())
     discrete_plugin_infos.default_plugin = other.discrete_plugin_infos.default_plugin;
@@ -263,8 +263,8 @@ bool ContactManagersPluginInfo::empty() const
 bool ContactManagersPluginInfo::operator==(const ContactManagersPluginInfo& rhs) const
 {
   bool equal = true;
-  equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
-  equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
+  equal &= isIdentical<std::string>(search_paths, rhs.search_paths);
+  equal &= isIdentical<std::string>(search_libraries, rhs.search_libraries);
   equal &= (discrete_plugin_infos == rhs.discrete_plugin_infos);
   equal &= (continuous_plugin_infos == rhs.continuous_plugin_infos);
   return equal;
@@ -285,8 +285,8 @@ void ContactManagersPluginInfo::serialize(Archive& ar, const unsigned int /*vers
 /*********************************************************/
 void TaskComposerPluginInfo::insert(const TaskComposerPluginInfo& other)
 {
-  search_paths.insert(other.search_paths.begin(), other.search_paths.end());
-  search_libraries.insert(other.search_libraries.begin(), other.search_libraries.end());
+  search_paths.insert(search_paths.end(), other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(search_libraries.end(), other.search_libraries.begin(), other.search_libraries.end());
 
   if (!other.executor_plugin_infos.default_plugin.empty())
     executor_plugin_infos.default_plugin = other.executor_plugin_infos.default_plugin;
@@ -318,8 +318,8 @@ bool TaskComposerPluginInfo::empty() const
 bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
 {
   bool equal = true;
-  equal &= isIdenticalSet<std::string>(search_paths, rhs.search_paths);
-  equal &= isIdenticalSet<std::string>(search_libraries, rhs.search_libraries);
+  equal &= isIdentical<std::string>(search_paths, rhs.search_paths);
+  equal &= isIdentical<std::string>(search_libraries, rhs.search_libraries);
   equal &= (executor_plugin_infos == rhs.executor_plugin_infos);
   equal &= (task_plugin_infos == rhs.task_plugin_infos);
   return equal;

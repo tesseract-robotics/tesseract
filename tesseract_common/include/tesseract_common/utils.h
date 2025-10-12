@@ -35,6 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <sstream>
 #include <stdexcept>
 #include <random>
+#include <algorithm>
+#include <unordered_set>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -523,6 +525,17 @@ bool toNumeric(const std::string& s, FloatType& value)
 
   value = out;
   return true;
+}
+
+/**
+ * @brief Remove duplicates and keep first
+ * @param v The vector to remove duplicates from
+ */
+template <class T, class Hash = std::hash<T>, class Eq = std::equal_to<T>>
+void removeDuplicates(std::vector<T>& v)
+{
+  std::unordered_set<T, Hash, Eq> seen;
+  v.erase(std::remove_if(v.begin(), v.end(), [&](const T& x) { return !seen.insert(x).second; }), v.end());
 }
 
 /**
