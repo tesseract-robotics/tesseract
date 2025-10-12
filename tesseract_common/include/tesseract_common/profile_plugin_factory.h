@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <map>
 #include <memory>
-#include <set>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <boost_plugin_loader/fwd.h>
@@ -167,7 +167,7 @@ public:
    * @brief Get the plugin search paths
    * @return The search paths
    */
-  std::set<std::string> getSearchPaths() const;
+  std::vector<std::string> getSearchPaths() const;
 
   /**
    * @brief Clear the search paths
@@ -185,7 +185,7 @@ public:
    * @brief Get the plugin search libraries
    * @return The search libraries
    */
-  std::set<std::string> getSearchLibraries() const;
+  std::vector<std::string> getSearchLibraries() const;
 
   /**
    * @brief Clean the search libraries

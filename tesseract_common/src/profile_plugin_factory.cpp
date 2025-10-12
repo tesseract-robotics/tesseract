@@ -104,8 +104,10 @@ std::shared_ptr<const ProfileFactoryData> ProfilePluginFactory::getFactoryData()
 
 void ProfilePluginFactory::loadConfig(const tesseract_common::ProfilesPluginInfo& config)
 {
-  impl_->plugin_loader.search_libraries.insert(config.search_libraries.begin(), config.search_libraries.end());
-  impl_->plugin_loader.search_paths.insert(config.search_paths.begin(), config.search_paths.end());
+  impl_->plugin_loader.search_libraries.insert(
+      impl_->plugin_loader.search_libraries.end(), config.search_libraries.begin(), config.search_libraries.end());
+  impl_->plugin_loader.search_paths.insert(
+      impl_->plugin_loader.search_paths.end(), config.search_paths.begin(), config.search_paths.end());
   impl_->plugin_infos.insert(config.plugin_infos.begin(), config.plugin_infos.end());
 }
 
@@ -132,9 +134,9 @@ void ProfilePluginFactory::loadConfig(const std::string& config, const tesseract
   loadConfig(tesseract_common::loadYamlString(config, locator));
 }
 
-void ProfilePluginFactory::addSearchPath(const std::string& path) { impl_->plugin_loader.search_paths.insert(path); }
+void ProfilePluginFactory::addSearchPath(const std::string& path) { impl_->plugin_loader.search_paths.push_back(path); }
 
-std::set<std::string> ProfilePluginFactory::getSearchPaths() const
+std::vector<std::string> ProfilePluginFactory::getSearchPaths() const
 {
   return std::as_const(*impl_).plugin_loader.search_paths;
 }
@@ -143,10 +145,10 @@ void ProfilePluginFactory::clearSearchPaths() { impl_->plugin_loader.search_path
 
 void ProfilePluginFactory::addSearchLibrary(const std::string& library_name)
 {
-  impl_->plugin_loader.search_libraries.insert(library_name);
+  impl_->plugin_loader.search_libraries.push_back(library_name);
 }
 
-std::set<std::string> ProfilePluginFactory::getSearchLibraries() const
+std::vector<std::string> ProfilePluginFactory::getSearchLibraries() const
 {
   return std::as_const(*impl_).plugin_loader.search_libraries;
 }

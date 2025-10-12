@@ -151,7 +151,7 @@ public:
    * @brief Get the plugin search paths
    * @return The search paths
    */
-  std::set<std::string> getSearchPaths() const;
+  std::vector<std::string> getSearchPaths() const;
 
   /**
    * @brief Add a library to search for plugin name
@@ -163,7 +163,7 @@ public:
    * @brief Get the plugin search libraries
    * @return The search libraries
    */
-  std::set<std::string> getSearchLibraries() const;
+  std::vector<std::string> getSearchLibraries() const;
 
   /**
    * @brief Add a forward kinematics plugin to the manager

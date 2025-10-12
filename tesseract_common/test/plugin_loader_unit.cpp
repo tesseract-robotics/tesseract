@@ -35,16 +35,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
 {
 #ifndef _WIN32
-  std::string env_var = "UNITTESTENV=a:b:c";
+  std::string env_var = "UNITTESTENV=c:b:a";
 #else
-  std::string env_var = "UNITTESTENV=a;b;c";
+  std::string env_var = "UNITTESTENV=c;b;a";
 #endif
   putenv(env_var.data());
-  std::set<std::string> s = boost_plugin_loader::parseEnvironmentVariableList("UNITTESTENV");
-  std::vector<std::string> v(s.begin(), s.end());
-  EXPECT_EQ(v[0], "a");
-  EXPECT_EQ(v[1], "b");
-  EXPECT_EQ(v[2], "c");
+  std::vector<std::string> s = boost_plugin_loader::parseEnvironmentVariableList("UNITTESTENV");
+  EXPECT_EQ(s[0], "c");
+  EXPECT_EQ(s[1], "b");
+  EXPECT_EQ(s[2], "a");
 }
 
 TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
@@ -89,8 +88,8 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
 
   {
     PluginLoader plugin_loader;
-    plugin_loader.search_paths.insert(std::string(TEST_PLUGIN_DIR));
-    plugin_loader.search_libraries.insert("tesseract_common_test_plugins");
+    plugin_loader.search_paths.emplace_back(TEST_PLUGIN_DIR);
+    plugin_loader.search_libraries.emplace_back("tesseract_common_test_plugins");
 
     EXPECT_TRUE(plugin_loader.isPluginAvailable("plugin"));
     auto plugin = plugin_loader.createInstance<TestPluginBase>("plugin");
@@ -131,8 +130,8 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
   {
     PluginLoader plugin_loader;
     plugin_loader.search_system_folders = false;
-    plugin_loader.search_paths.insert("does_not_exist");
-    plugin_loader.search_libraries.insert("tesseract_common_test_plugins");
+    plugin_loader.search_paths.emplace_back("does_not_exist");
+    plugin_loader.search_libraries.emplace_back("tesseract_common_test_plugins");
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));
@@ -143,7 +142,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
   {
     PluginLoader plugin_loader;
     plugin_loader.search_system_folders = false;
-    plugin_loader.search_libraries.insert("tesseract_common_test_plugins");
+    plugin_loader.search_libraries.emplace_back("tesseract_common_test_plugins");
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("does_not_exist"));
@@ -161,7 +160,7 @@ TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
   {
     PluginLoader plugin_loader;
     plugin_loader.search_system_folders = false;
-    plugin_loader.search_libraries.insert("does_not_exist");
+    plugin_loader.search_libraries.emplace_back("does_not_exist");
 
     {
       EXPECT_FALSE(plugin_loader.isPluginAvailable("plugin"));

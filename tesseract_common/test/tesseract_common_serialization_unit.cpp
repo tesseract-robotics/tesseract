@@ -216,11 +216,11 @@ TEST(TesseractCommonSerializeUnit, CollisionMarginData)  // NOLINT
 TEST(TesseractCommonSerializeUnit, ContactManagersPluginInfo)  // NOLINT
 {
   auto object = std::make_shared<ContactManagersPluginInfo>();
-  object->search_paths.insert("path 1");
-  object->search_paths.insert("path 2");
-  object->search_libraries.insert("search_libraries 1");
-  object->search_libraries.insert("search_libraries 2");
-  object->search_libraries.insert("search_libraries 3");
+  object->search_paths.emplace_back("path 1");
+  object->search_paths.emplace_back("path 2");
+  object->search_libraries.emplace_back("search_libraries 1");
+  object->search_libraries.emplace_back("search_libraries 2");
+  object->search_libraries.emplace_back("search_libraries 3");
 
   {
     PluginInfoContainer container;
@@ -245,11 +245,11 @@ TEST(TesseractCommonSerializeUnit, ContactManagersPluginInfo)  // NOLINT
 TEST(TesseractCommonSerializeUnit, ProfilePluginInfo)  // NOLINT
 {
   auto object = std::make_shared<ProfilesPluginInfo>();
-  object->search_paths.insert("path 1");
-  object->search_paths.insert("path 2");
-  object->search_libraries.insert("search_libraries 1");
-  object->search_libraries.insert("search_libraries 2");
-  object->search_libraries.insert("search_libraries 3");
+  object->search_paths.emplace_back("path 1");
+  object->search_paths.emplace_back("path 2");
+  object->search_libraries.emplace_back("search_libraries 1");
+  object->search_libraries.emplace_back("search_libraries 2");
+  object->search_libraries.emplace_back("search_libraries 3");
 
   {
     PluginInfo plugin;
@@ -265,11 +265,11 @@ TEST(TesseractCommonSerializeUnit, ProfilePluginInfo)  // NOLINT
 TEST(TesseractCommonSerializeUnit, TaskComposerPluginInfo)  // NOLINT
 {
   auto object = std::make_shared<TaskComposerPluginInfo>();
-  object->search_paths.insert("path 1");
-  object->search_paths.insert("path 2");
-  object->search_libraries.insert("search_libraries 1");
-  object->search_libraries.insert("search_libraries 2");
-  object->search_libraries.insert("search_libraries 3");
+  object->search_paths.emplace_back("path 1");
+  object->search_paths.emplace_back("path 2");
+  object->search_libraries.emplace_back("search_libraries 1");
+  object->search_libraries.emplace_back("search_libraries 2");
+  object->search_libraries.emplace_back("search_libraries 3");
 
   {
     PluginInfo plugin;
@@ -292,11 +292,11 @@ TEST(TesseractCommonSerializeUnit, TaskComposerPluginInfo)  // NOLINT
 TEST(TesseractCommonSerializeUnit, KinematicsPluginInfo)  // NOLINT
 {
   auto object = std::make_shared<KinematicsPluginInfo>();
-  object->search_paths.insert("path 1");
-  object->search_paths.insert("path 2");
-  object->search_libraries.insert("search_libraries 1");
-  object->search_libraries.insert("search_libraries 2");
-  object->search_libraries.insert("search_libraries 3");
+  object->search_paths.emplace_back("path 1");
+  object->search_paths.emplace_back("path 2");
+  object->search_libraries.emplace_back("search_libraries 1");
+  object->search_libraries.emplace_back("search_libraries 2");
+  object->search_libraries.emplace_back("search_libraries 3");
 
   {
     PluginInfo plugin;

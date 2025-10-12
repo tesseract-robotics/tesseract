@@ -97,10 +97,10 @@ private:
 struct ProfilesPluginInfo
 {
   /** @brief A list of paths to search for plugins */
-  std::set<std::string> search_paths;
+  std::vector<std::string> search_paths;
 
   /** @brief A list of library names without the prefix or suffix that contain plugins*/
-  std::set<std::string> search_libraries;
+  std::vector<std::string> search_libraries;
 
   /** @brief A map of name to task composer executor plugin information */
   std::map<std::string, PluginInfoMap> plugin_infos;
@@ -131,10 +131,10 @@ private:
 struct KinematicsPluginInfo
 {
   /** @brief A list of paths to search for plugins */
-  std::set<std::string> search_paths;
+  std::vector<std::string> search_paths;
 
   /** @brief A list of library names without the prefix or suffix that contain plugins*/
-  std::set<std::string> search_libraries;
+  std::vector<std::string> search_libraries;
 
   /** @brief A map of group name to forward kinematics plugin information */
   std::map<std::string, PluginInfoContainer> fwd_plugin_infos;
@@ -168,10 +168,10 @@ private:
 struct ContactManagersPluginInfo
 {
   /** @brief A list of paths to search for plugins */
-  std::set<std::string> search_paths;
+  std::vector<std::string> search_paths;
 
   /** @brief A list of library names without the prefix or suffix that contain plugins*/
-  std::set<std::string> search_libraries;
+  std::vector<std::string> search_libraries;
 
   /** @brief A map of name to discrete contact manager plugin information */
   PluginInfoContainer discrete_plugin_infos;
@@ -205,10 +205,10 @@ private:
 struct TaskComposerPluginInfo
 {
   /** @brief A list of paths to search for plugins */
-  std::set<std::string> search_paths;
+  std::vector<std::string> search_paths;
 
   /** @brief A list of library names without the prefix or suffix that contain plugins*/
-  std::set<std::string> search_libraries;
+  std::vector<std::string> search_libraries;
 
   /** @brief A map of name to task composer executor plugin information */
   PluginInfoContainer executor_plugin_infos;

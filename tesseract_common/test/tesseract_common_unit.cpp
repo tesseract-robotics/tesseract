@@ -1320,8 +1320,8 @@ TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
   EXPECT_TRUE(kpi.empty());
 
   tesseract_common::KinematicsPluginInfo kpi_insert;
-  kpi_insert.search_paths.insert("/usr/local/lib");
-  kpi_insert.search_libraries.insert("tesseract_collision");
+  kpi_insert.search_paths.emplace_back("/usr/local/lib");
+  kpi_insert.search_libraries.emplace_back("tesseract_collision");
 
   {
     tesseract_common::PluginInfo pi;
@@ -1354,8 +1354,8 @@ TEST(TesseractCommonUnit, ContactManagersPluginInfoUnit)  // NOLINT
   EXPECT_TRUE(cmpi.empty());
 
   tesseract_common::ContactManagersPluginInfo cmpi_insert;
-  cmpi_insert.search_paths.insert("/usr/local/lib");
-  cmpi_insert.search_libraries.insert("tesseract_collision");
+  cmpi_insert.search_paths.emplace_back("/usr/local/lib");
+  cmpi_insert.search_libraries.emplace_back("tesseract_collision");
 
   {
     tesseract_common::PluginInfo pi;
@@ -1388,8 +1388,8 @@ TEST(TesseractCommonUnit, ProfilePluginInfoUnit)  // NOLINT
   EXPECT_TRUE(kpi.empty());
 
   tesseract_common::ProfilesPluginInfo kpi_insert;
-  kpi_insert.search_paths.insert("/usr/local/lib");
-  kpi_insert.search_libraries.insert("tesseract_collision");
+  kpi_insert.search_paths.emplace_back("/usr/local/lib");
+  kpi_insert.search_libraries.emplace_back("tesseract_collision");
 
   {
     tesseract_common::PluginInfo pi;
@@ -1420,8 +1420,8 @@ TEST(TesseractCommonUnit, TaskComposerPluginInfoUnit)  // NOLINT
   EXPECT_TRUE(tcpi.empty());
 
   tesseract_common::TaskComposerPluginInfo tcpi_insert;
-  tcpi_insert.search_paths.insert("/usr/local/lib");
-  tcpi_insert.search_libraries.insert("tesseract_collision");
+  tcpi_insert.search_paths.emplace_back("/usr/local/lib");
+  tcpi_insert.search_libraries.emplace_back("tesseract_collision");
 
   {
     tesseract_common::PluginInfo pi;
@@ -1494,22 +1494,22 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
     const YAML::Node& inv_kin_plugins = plugin_info["inv_kin_plugins"]["iiwa_manipulator"]["plugins"];
 
     {
-      std::set<std::string> sp = cmpi.search_paths;
+      std::vector<std::string> sp = cmpi.search_paths;
       EXPECT_EQ(sp.size(), 1);
 
       for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
       {
-        EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+        EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
       }
     }
 
     {
-      std::set<std::string> sl = cmpi.search_libraries;
+      std::vector<std::string> sl = cmpi.search_libraries;
       EXPECT_EQ(sl.size(), 1);
 
       for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
       {
-        EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+        EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
       }
     }
 
@@ -1746,22 +1746,22 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
     const YAML::Node& continuous_plugins = plugin_info["continuous_plugins"]["plugins"];
 
     {
-      std::set<std::string> sp = cmpi.search_paths;
+      std::vector<std::string> sp = cmpi.search_paths;
       EXPECT_EQ(sp.size(), 1);
 
       for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
       {
-        EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+        EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
       }
     }
 
     {
-      std::set<std::string> sl = cmpi.search_libraries;
+      std::vector<std::string> sl = cmpi.search_libraries;
       EXPECT_EQ(sl.size(), 2);
 
       for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
       {
-        EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+        EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
       }
     }
 
@@ -1964,22 +1964,22 @@ TEST(TesseractPluginFactoryUnit, ProfilePluginInfoYamlUnit)  // NOLINT
     const YAML::Node& constraint_plugins = plugin_info["profiles"]["TrajOptCollisionConstraint"];
 
     {
-      std::set<std::string> sp = cmpi.search_paths;
+      std::vector<std::string> sp = cmpi.search_paths;
       EXPECT_EQ(sp.size(), 1);
 
       for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
       {
-        EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+        EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
       }
     }
 
     {
-      std::set<std::string> sl = cmpi.search_libraries;
+      std::vector<std::string> sl = cmpi.search_libraries;
       EXPECT_EQ(sl.size(), 1);
 
       for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
       {
-        EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+        EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
       }
     }
 
@@ -2144,22 +2144,22 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
     const YAML::Node& task_plugins = plugin_info["tasks"]["plugins"];
 
     {
-      std::set<std::string> sp = tcpi.search_paths;
+      std::vector<std::string> sp = tcpi.search_paths;
       EXPECT_EQ(sp.size(), 1);
 
       for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
       {
-        EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+        EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
       }
     }
 
     {
-      std::set<std::string> sl = tcpi.search_libraries;
+      std::vector<std::string> sl = tcpi.search_libraries;
       EXPECT_EQ(sl.size(), 2);
 
       for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
       {
-        EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+        EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
       }
     }
 
