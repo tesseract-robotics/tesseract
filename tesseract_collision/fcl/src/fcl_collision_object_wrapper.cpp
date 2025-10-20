@@ -36,22 +36,33 @@ void FCLCollisionObjectWrapper::setContactDistanceThreshold(double contact_dista
 
 double FCLCollisionObjectWrapper::getContactDistanceThreshold() const { return contact_distance_; }
 
+fcl::AABB<double> FCLCollisionObjectWrapper::getAABB(double margin) const
+{
+  fcl::AABB<double> aabb_with_margin{ aabb_without_margin_ };
+  fcl::Vector3<double> delta = fcl::Vector3<double>::Constant(margin);
+  aabb_with_margin.min_ -= delta;
+  aabb_with_margin.max_ += delta;
+  return aabb_with_margin;
+}
+
 void FCLCollisionObjectWrapper::updateAABB()
 {
   if (t.linear().isIdentity())
   {
-    aabb = translate(cgeom->aabb_local, t.translation());
-    fcl::Vector3<double> delta = fcl::Vector3<double>::Constant(contact_distance_ / 2.0);
-    aabb.min_ -= delta;
-    aabb.max_ += delta;
+    aabb_without_margin_ = translate(cgeom->aabb_local, t.translation());
   }
   else
   {
     fcl::Vector3<double> center = t * cgeom->aabb_center;
-    fcl::Vector3<double> delta = fcl::Vector3<double>::Constant(cgeom->aabb_radius + (contact_distance_ / 2.0));
-    aabb.min_ = center - delta;
-    aabb.max_ = center + delta;
+    fcl::Vector3<double> aabb_radius = fcl::Vector3<double>::Constant(cgeom->aabb_radius);
+    aabb_without_margin_.min_ = center - aabb_radius;
+    aabb_without_margin_.max_ = center + aabb_radius;
   }
+
+  aabb = aabb_without_margin_;
+  fcl::Vector3<double> delta = fcl::Vector3<double>::Constant(contact_distance_ / 2.0);
+  aabb.min_ -= delta;
+  aabb.max_ += delta;
 }
 
 void FCLCollisionObjectWrapper::setShapeIndex(int index) { shape_index_ = index; }
