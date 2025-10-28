@@ -2,6 +2,12 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update due to changes with boost plugin loader package
+* Add std vector any poly types
+* Contributors: Levi Armstrong
+
 0.32.0 (2025-09-10)
 -------------------
 * Add AMENT environment variable to GeneralResourceLocator

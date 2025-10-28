@@ -2,6 +2,11 @@
 Changelog for package tesseract_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update due to changes with boost plugin loader package
+* Contributors: Levi Armstrong
+
 0.32.0 (2025-09-10)
 -------------------
 

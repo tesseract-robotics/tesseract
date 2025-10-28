@@ -2,6 +2,9 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.32.0 (2025-09-10)
 -------------------
 * Leverage TransformMap in tesseract_srdf package (`#1196 <https://github.com/tesseract-robotics/tesseract/issues/1196>`_)

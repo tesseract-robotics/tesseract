@@ -2,6 +2,11 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update due to changes with boost plugin loader package
+* Contributors: Levi Armstrong
+
 0.32.0 (2025-09-10)
 -------------------
 * Use per object max margin for the broadphase and the actual link pair margin for the narrow phase, instead of the overall max margin everywhere (`#1198 <https://github.com/tesseract-robotics/tesseract/issues/1198>`_)
