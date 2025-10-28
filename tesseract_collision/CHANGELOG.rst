@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.33.0 (2025-10-28)
+-------------------
 * Update due to changes with boost plugin loader package
 * Contributors: Levi Armstrong
 
