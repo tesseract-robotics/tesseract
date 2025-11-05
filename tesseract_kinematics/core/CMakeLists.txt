@@ -18,6 +18,7 @@ target_link_libraries(
          console_bridge::console_bridge
          boost_plugin_loader::boost_plugin_loader
          yaml-cpp)
+target_link_libraries(${PROJECT_NAME}_core PRIVATE Boost::thread)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})

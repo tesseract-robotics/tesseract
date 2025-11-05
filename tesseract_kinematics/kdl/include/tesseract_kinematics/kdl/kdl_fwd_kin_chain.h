@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
+#include <boost/thread/tss.hpp>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -110,7 +111,11 @@ private:
   std::string solver_name_{ KDL_FWD_KIN_CHAIN_SOLVER_NAME };   /**< @brief Name of this solver */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
+#ifdef USE_THREAD_LOCAL
   static thread_local KDL::JntArray kdl_joints_cache;  // NOLINT
+#else
+  static boost::thread_specific_ptr<KDL::JntArray> kdl_joints_cache_ptr;  // NOLINT
+#endif
 
   /** @brief calcFwdKin helper function */
   void calcFwdKinHelperAll(tesseract_common::TransformMap& transforms,

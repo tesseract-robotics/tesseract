@@ -30,6 +30,8 @@
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/scene_state.h>
 
+#include <boost/thread/tss.hpp>
+
 namespace tesseract_kinematics
 {
 using Eigen::MatrixXd;
@@ -208,8 +210,26 @@ void ROPInvKin::ikAt(IKSolutions& solutions,
                      Eigen::VectorXd& positioner_pose,
                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
+#ifdef USE_THREAD_LOCAL
   thread_local tesseract_common::TransformMap positioner_poses;
+  thread_local IKSolutions robot_solution_set;
+#else
+  static boost::thread_specific_ptr<tesseract_common::TransformMap> positioner_poses_ptr;
+  if (positioner_poses_ptr.get() == nullptr)
+    positioner_poses_ptr.reset(new tesseract_common::TransformMap());
+
+  tesseract_common::TransformMap& positioner_poses = *positioner_poses_ptr;
+
+  static boost::thread_specific_ptr<IKSolutions> robot_solution_set_ptr;
+  if (robot_solution_set_ptr.get() == nullptr)
+    robot_solution_set_ptr.reset(new IKSolutions());
+
+  IKSolutions& robot_solution_set = *robot_solution_set_ptr;
+#endif
+
   positioner_poses.clear();
+  robot_solution_set.clear();
+
   positioner_fwd_kin_->calcFwdKin(positioner_poses, positioner_pose);
   Eigen::Isometry3d positioner_tf = positioner_poses[positioner_tip_link_] * positioner_to_robot_;
   Eigen::Isometry3d robot_target_pose = positioner_tf.inverse() * tip_link_poses.at(manip_tip_link_);
@@ -222,8 +242,6 @@ void ROPInvKin::ikAt(IKSolutions& solutions,
   auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
   auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
 
-  thread_local IKSolutions robot_solution_set;
-  robot_solution_set.clear();
   manip_inv_kin_->calcInvKin(robot_solution_set, robot_target_poses, seed.tail(robot_dof));
   if (robot_solution_set.empty())
     return;
