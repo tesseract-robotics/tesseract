@@ -529,11 +529,16 @@ const tesseract_common::VectorIsometry3d& CollisionObjectWrapper::getCollisionGe
 
 void CollisionObjectWrapper::getAABB(btVector3& aabb_min, btVector3& aabb_max) const
 {
+  const btScalar d = getContactProcessingThreshold() / 2.0;
+  getAABB(aabb_min, aabb_max, d);
+}
+
+void CollisionObjectWrapper::getAABB(btVector3& aabb_min, btVector3& aabb_max, btScalar margin) const
+{
   getCollisionShape()->getAabb(getWorldTransform(), aabb_min, aabb_max);
-  const btScalar& d = getContactProcessingThreshold() / 2.0;
-  btVector3 contactThreshold(d, d, d);
-  aabb_min -= contactThreshold;
-  aabb_max += contactThreshold;
+  btVector3 contact_threshold(margin, margin, margin);
+  aabb_min -= contact_threshold;
+  aabb_max += contact_threshold;
 }
 
 std::shared_ptr<CollisionObjectWrapper> CollisionObjectWrapper::clone()
@@ -1131,27 +1136,42 @@ bool TesseractCollisionPairCallback::processOverlap(btBroadphasePair& pair)
   const auto* cow0 = static_cast<const CollisionObjectWrapper*>(pair.m_pProxy0->m_clientObject);
   const auto* cow1 = static_cast<const CollisionObjectWrapper*>(pair.m_pProxy1->m_clientObject);
 
-  if (results_callback_.needsCollision(cow0, cow1))
+  if (!results_callback_.needsCollision(cow0, cow1))
+    return false;
+
+  const double contact_threshold =
+      results_callback_.collisions_.collision_margin_data.getCollisionMargin(cow0->getName(), cow1->getName());
+  btVector3 min_aabb[2], max_aabb[2];  // NOLINT
+  cow0->getAABB(min_aabb[0], max_aabb[0], contact_threshold / 2.0);
+  cow1->getAABB(min_aabb[1], max_aabb[1], contact_threshold / 2.0);
+
+  const bool aabb_check = (min_aabb[0][0] <= max_aabb[1][0] && max_aabb[0][0] >= min_aabb[1][0]) &&
+                          (min_aabb[0][1] <= max_aabb[1][1] && max_aabb[0][1] >= min_aabb[1][1]) &&
+                          (min_aabb[0][2] <= max_aabb[1][2] && max_aabb[0][2] >= min_aabb[1][2]);
+
+  // Check if ABB are overlapping
+  if (!aabb_check)
+    return false;
+
+  btCollisionObjectWrapper obj0Wrap(nullptr, cow0->getCollisionShape(), cow0, cow0->getWorldTransform(), -1, -1);
+  btCollisionObjectWrapper obj1Wrap(nullptr, cow1->getCollisionShape(), cow1, cow1->getWorldTransform(), -1, -1);
+
+  // dispatcher will keep algorithms persistent in the collision pair
+  if (pair.m_algorithm == nullptr)
   {
-    btCollisionObjectWrapper obj0Wrap(nullptr, cow0->getCollisionShape(), cow0, cow0->getWorldTransform(), -1, -1);
-    btCollisionObjectWrapper obj1Wrap(nullptr, cow1->getCollisionShape(), cow1, cow1->getWorldTransform(), -1, -1);
-
-    // dispatcher will keep algorithms persistent in the collision pair
-    if (pair.m_algorithm == nullptr)
-    {
-      pair.m_algorithm = dispatcher_->findAlgorithm(&obj0Wrap, &obj1Wrap, nullptr, BT_CLOSEST_POINT_ALGORITHMS);
-    }
-
-    if (pair.m_algorithm != nullptr)
-    {
-      TesseractBroadphaseBridgedManifoldResult contactPointResult(&obj0Wrap, &obj1Wrap, results_callback_);
-      contactPointResult.m_closestPointDistanceThreshold =
-          results_callback_.collisions_.collision_margin_data.getCollisionMargin(cow0->getName(), cow1->getName());
-
-      // discrete collision detection query
-      pair.m_algorithm->processCollision(&obj0Wrap, &obj1Wrap, dispatch_info_, &contactPointResult);
-    }
+    pair.m_algorithm = dispatcher_->findAlgorithm(&obj0Wrap, &obj1Wrap, nullptr, BT_CLOSEST_POINT_ALGORITHMS);
   }
+
+  if (pair.m_algorithm != nullptr)
+  {
+    TesseractBroadphaseBridgedManifoldResult contactPointResult(&obj0Wrap, &obj1Wrap, results_callback_);
+    contactPointResult.m_closestPointDistanceThreshold = contact_threshold;
+
+    // discrete collision detection query
+    pair.m_algorithm->processCollision(&obj0Wrap, &obj1Wrap, dispatch_info_, &contactPointResult);
+  }
+
+  // Should this return true?
   return false;
 }
 
