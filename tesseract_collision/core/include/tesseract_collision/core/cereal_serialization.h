@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cereal/types/atomic.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/polymorphic.hpp>
-#include <tesseract_common/eigen_serialization.h>
+#include <tesseract_common/cereal_eigen_types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/serialization.h>

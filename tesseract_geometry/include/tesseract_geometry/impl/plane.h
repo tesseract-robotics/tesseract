@@ -28,19 +28,17 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_geometry
 {
+class Plane;
+template <class Archive>
+void serialize(Archive& ar, Plane& obj);
+
 class Plane : public Geometry
 {
 public:
@@ -48,7 +46,6 @@ public:
   using ConstPtr = std::shared_ptr<const Plane>;
 
   Plane(double a, double b, double c, double d);
-  Plane() = default;
   ~Plane() override = default;
 
   double getA() const;
@@ -66,12 +63,9 @@ private:
   double c_{ 0 };
   double d_{ 0 };
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_geometry::serialize(Archive& ar, Plane& obj);
 };
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY(tesseract_geometry::Plane)
 #endif

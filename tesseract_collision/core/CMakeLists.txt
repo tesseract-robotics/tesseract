@@ -5,7 +5,6 @@ add_library(
   src/contact_managers_plugin_factory.cpp
   src/continuous_contact_manager.cpp
   src/discrete_contact_manager.cpp
-  src/serialization.cpp
   src/types.cpp
   src/utils.cpp)
 target_link_libraries(

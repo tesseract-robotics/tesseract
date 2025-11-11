@@ -28,22 +28,20 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/polygon_mesh.h>
-
-namespace boost::serialization
-{
-class access;
-}
 
 namespace tesseract_geometry
 {
 class ConvexMesh;
 class Mesh;
 class SDFMesh;
+
+class CompoundMesh;
+template <class Archive>
+void serialize(Archive& ar, CompoundMesh& obj);
 
 /**  @brief This is store meshes that are associated with as single resource */
 class CompoundMesh : public Geometry
@@ -52,7 +50,6 @@ public:
   using Ptr = std::shared_ptr<CompoundMesh>;
   using ConstPtr = std::shared_ptr<const CompoundMesh>;
 
-  CompoundMesh() = default;
   CompoundMesh(std::vector<std::shared_ptr<PolygonMesh>> meshes);
   CompoundMesh(std::vector<std::shared_ptr<ConvexMesh>> meshes);
   CompoundMesh(std::vector<std::shared_ptr<Mesh>> meshes);
@@ -87,14 +84,10 @@ public:
 private:
   std::vector<std::shared_ptr<PolygonMesh>> meshes_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_geometry::serialize(Archive& ar, CompoundMesh& obj);
 };
 
 }  // namespace tesseract_geometry
-
-BOOST_CLASS_EXPORT_KEY(tesseract_geometry::CompoundMesh)
 
 #endif  // TESSERACT_GEOMETRY_COMPOUND_MESH_H

@@ -25,7 +25,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <boost/serialization/shared_ptr.hpp>
 #include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

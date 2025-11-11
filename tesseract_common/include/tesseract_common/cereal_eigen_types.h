@@ -27,8 +27,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMON_EIGEN_SERIALIZATION_H
-#define TESSERACT_COMMON_EIGEN_SERIALIZATION_H
+#ifndef TESSERACT_COMMON_CEREAL_EIGEN_TYPES_H
+#define TESSERACT_COMMON_CEREAL_EIGEN_TYPES_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -175,4 +175,4 @@ void serialize(Archive& ar, Eigen::Matrix<double, 6, 1>& g, const unsigned int /
 
 }  // namespace cereal
 
-#endif  // TESSERACT_COMMON_EIGEN_SERIALIZATION_H
+#endif  // TESSERACT_COMMON_CEREAL_EIGEN_TYPES_H

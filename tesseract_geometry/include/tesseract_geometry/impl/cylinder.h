@@ -28,19 +28,17 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_geometry
 {
+class Cylinder;
+template <class Archive>
+void serialize(Archive& ar, Cylinder& obj);
+
 class Cylinder : public Geometry
 {
 public:
@@ -48,7 +46,6 @@ public:
   using ConstPtr = std::shared_ptr<const Cylinder>;
 
   Cylinder(double radius, double length);
-  Cylinder() = default;
   ~Cylinder() override = default;
 
   double getRadius() const;
@@ -62,12 +59,9 @@ private:
   double r_{ 0 };
   double l_{ 0 };
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_geometry::serialize(Archive& ar, Cylinder& obj);
 };
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY(tesseract_geometry::Cylinder)
 #endif

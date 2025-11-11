@@ -55,6 +55,25 @@ struct extension
 };
 }  // namespace serialization::xml
 
+namespace serialization::json
+{
+template <class T>
+struct extension
+{
+  template <class U>
+  struct traits_class_extension
+  {
+    using extension_type = typename U::extenstion;
+  };
+
+  using extension_type = typename boost::mpl::eval_if<has_member_extension_type<T>,
+                                                      traits_class_extension<T>,
+                                                      boost::mpl::string<'.', 't', 'r', 's', 'j'>>::type;
+
+  static constexpr const char* value = boost::mpl::c_str<extension::extension_type>::value;
+};
+}  // namespace serialization::json
+
 namespace serialization::binary
 {
 template <class T>
@@ -92,6 +111,15 @@ struct extension
   {                                                                                                                    \
     static constexpr const char* value = X;                                                                            \
     static_assert(value[0] == '.', "XML extension value must start with a '.'");                                       \
+  };                                                                                                                   \
+  }                                                                                                                    \
+  namespace serialization::json                                                                                        \
+  {                                                                                                                    \
+  template <>                                                                                                          \
+  struct extension<T>                                                                                                  \
+  {                                                                                                                    \
+    static constexpr const char* value = X;                                                                            \
+    static_assert(value[0] == '.', "JSON extension value must start with a '.'");                                      \
   };                                                                                                                   \
   }                                                                                                                    \
   namespace serialization::binary                                                                                      \

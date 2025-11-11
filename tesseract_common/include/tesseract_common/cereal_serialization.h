@@ -13,11 +13,8 @@
 #include <tesseract_common/plugin_info.h>
 #include <tesseract_common/profile.h>
 #include <tesseract_common/profile_dictionary.h>
-#include <tesseract_common/eigen_serialization.h>
-
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
+#include <tesseract_common/cereal_boost_types.h>
+#include <tesseract_common/cereal_eigen_types.h>
 
 #include <cereal/cereal.hpp>
 #include <cereal/types/variant.hpp>
@@ -28,24 +25,6 @@
 #include <cereal/types/polymorphic.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/details/traits.hpp>
-
-namespace cereal
-{
-template <class Archive>
-void save(Archive& ar, const boost::uuids::uuid& g)
-{
-  const std::string data = boost::uuids::to_string(g);
-  ar(CEREAL_NVP(data));
-}
-
-template <class Archive>
-void load(Archive& ar, boost::uuids::uuid& g)
-{
-  std::string data;
-  ar(CEREAL_NVP(data));
-  g = boost::lexical_cast<boost::uuids::uuid>(data);
-}
-}  // namespace cereal
 
 namespace tesseract_common
 {
@@ -144,12 +123,12 @@ void serialize(Archive& ar, KinematicLimits& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, Resource& obj)
+void serialize(Archive& /*ar*/, Resource& /*obj*/)
 {
 }
 
 template <class Archive>
-void serialize(Archive& ar, GeneralResourceLocator& obj)
+void serialize(Archive& /*ar*/, GeneralResourceLocator& /*obj*/)
 {
 }
 

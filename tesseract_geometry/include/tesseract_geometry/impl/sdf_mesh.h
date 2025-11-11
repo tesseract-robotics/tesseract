@@ -28,17 +28,11 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/polygon_mesh.h>
-
-namespace boost::serialization
-{
-class access;
-}
 
 namespace tesseract_geometry
 {
@@ -100,21 +94,13 @@ public:
           std::shared_ptr<MeshMaterial> mesh_material = nullptr,
           std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
 
-  SDFMesh() = default;
   ~SDFMesh() override = default;
 
   Geometry::Ptr clone() const override final;
 
   bool operator==(const SDFMesh& rhs) const;
   bool operator!=(const SDFMesh& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY(tesseract_geometry::SDFMesh)
 #endif

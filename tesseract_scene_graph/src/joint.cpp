@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/eigen_serialization.h>
+#include <tesseract_common/cereal_eigen_types.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/joint.h>
 

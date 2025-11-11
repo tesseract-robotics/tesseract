@@ -22,13 +22,6 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/nvp.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/utils.h>
 #include <tesseract_geometry/impl/cylinder.h>
 
@@ -51,15 +44,4 @@ bool Cylinder::operator==(const Cylinder& rhs) const
 }
 bool Cylinder::operator!=(const Cylinder& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void Cylinder::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Geometry);
-  ar& BOOST_SERIALIZATION_NVP(r_);
-  ar& BOOST_SERIALIZATION_NVP(l_);
-}
 }  // namespace tesseract_geometry
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::Cylinder)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::Cylinder)
