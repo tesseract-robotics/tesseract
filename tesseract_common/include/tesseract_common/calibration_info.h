@@ -29,14 +29,13 @@
 #include <tesseract_common/fwd.h>
 #include <tesseract_common/eigen_types.h>
 
-#include <boost/serialization/export.hpp>
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_common
 {
+struct CalibrationInfo;
+
+template <class Archive>
+void serialize(Archive& ar, CalibrationInfo& obj);
+
 /** @brief The CalibrationInfo struct */
 struct CalibrationInfo
 {
@@ -69,13 +68,9 @@ struct CalibrationInfo
   bool operator!=(const CalibrationInfo& rhs) const;
 
 private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, CalibrationInfo& obj);
 };
 }  // namespace tesseract_common
-
-BOOST_CLASS_EXPORT_KEY(tesseract_common::CalibrationInfo)
 
 #endif  // TESSERACT_COMMON_CALIBRATION_INFO_H

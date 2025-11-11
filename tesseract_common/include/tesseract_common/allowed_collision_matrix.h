@@ -3,7 +3,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <string>
 #include <memory>
 #include <Eigen/Core>
@@ -11,18 +10,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_common
 {
-struct Serialization;
-
 using AllowedCollisionEntries = std::unordered_map<tesseract_common::LinkNamesPair, std::string>;
 
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2);
+
+class AllowedCollisionMatrix;
+
+template <class Archive>
+void serialize(Archive& ar, AllowedCollisionMatrix& obj);
 
 class AllowedCollisionMatrix
 {
@@ -104,16 +101,11 @@ public:
 
 private:
   AllowedCollisionEntries lookup_table_;
-
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, AllowedCollisionMatrix& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm);
 }  // namespace tesseract_common
-
-BOOST_CLASS_EXPORT_KEY(tesseract_common::AllowedCollisionMatrix)
 
 #endif  // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H

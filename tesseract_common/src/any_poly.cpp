@@ -24,21 +24,12 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/unique_ptr.hpp>
-#if (BOOST_VERSION >= 107400) && (BOOST_VERSION < 107500)
-#include <boost/serialization/library_version_type.hpp>
-#endif
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/vector.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/any_poly.h>
 
 namespace tesseract_common
 {
+AnyInterface::~AnyInterface() = default;
+
 std::type_index AnyInterface::getType() const { return typeid(*this); }
 
 // Operators
@@ -47,11 +38,6 @@ bool AnyInterface::operator==(const AnyInterface& rhs) const { return equals(rhs
 // LCOV_EXCL_START
 bool AnyInterface::operator!=(const AnyInterface& rhs) const { return !operator==(rhs); }
 // LCOV_EXCL_STOP
-
-template <class Archive>
-void AnyInterface::serialize(Archive& /*ar*/, const unsigned int /*version*/)
-{
-}
 
 AnyPoly::AnyPoly(const AnyPoly& other)
 {
@@ -98,77 +84,4 @@ bool AnyPoly::operator==(const AnyPoly& rhs) const
 bool AnyPoly::operator!=(const AnyPoly& rhs) const { return !operator==(rhs); }
 // LCOV_EXCL_STOP
 
-template <class Archive>
-void AnyPoly::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& boost::serialization::make_nvp("impl", impl_);
-}
 }  // namespace tesseract_common
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyInterface)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::AnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::AnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::BoolAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::BoolAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::IntAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::IntAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::UnsignedAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::UnsignedAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::DoubleAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::DoubleAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::FloatAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::FloatAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::StringAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::StringAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::SizeTAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::SizeTAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorStringAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorStringAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorBoolAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorBoolAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorIntAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorIntAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorUnsignedAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorUnsignedAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorDoubleAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorDoubleAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorFloatAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorFloatAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::VectorSizeTAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::VectorSizeTAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::UMapStringStringAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::UMapStringStringAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::UMapStringBoolAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::UMapStringBoolAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::UMapStringIntAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::UMapStringIntAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::UMapStringUnsignedAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::UMapStringUnsignedAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::UMapStringDoubleAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::UMapStringDoubleAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::UMapStringFloatAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::UMapStringFloatAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::UMapStringSizeTAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::UMapStringSizeTAnyPoly)

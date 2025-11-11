@@ -24,19 +24,6 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/split_member.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/unordered_map.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_common/plugin_info.h>
 #include <tesseract_common/yaml_utils.h>
@@ -60,30 +47,6 @@ bool PluginInfo::operator==(const PluginInfo& rhs) const
 }
 bool PluginInfo::operator!=(const PluginInfo& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void PluginInfo::save(Archive& ar, const unsigned int /*version*/) const
-{
-  ar& BOOST_SERIALIZATION_NVP(class_name);
-  std::string config_string = getConfigString();
-  ar& BOOST_SERIALIZATION_NVP(config_string);
-}
-
-template <class Archive>
-void PluginInfo::load(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(class_name);
-  std::string config_string;
-  ar& BOOST_SERIALIZATION_NVP(config_string);
-  // On 18.04 '~' does not load as null so must check
-  config = (config_string != "~") ? YAML::Load(config_string) : YAML::Node();
-}
-
-template <class Archive>
-void PluginInfo::serialize(Archive& ar, const unsigned int version)
-{
-  boost::serialization::split_member(ar, *this, version);
-}
-
 /*********************************************************/
 /******           PluginInfoContainer                *****/
 /*********************************************************/
@@ -103,13 +66,6 @@ bool PluginInfoContainer::operator==(const PluginInfoContainer& rhs) const
   return equal;
 }
 bool PluginInfoContainer::operator!=(const PluginInfoContainer& rhs) const { return !operator==(rhs); }
-
-template <class Archive>
-void PluginInfoContainer::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(default_plugin);
-  ar& BOOST_SERIALIZATION_NVP(plugins);
-}
 
 /*********************************************************/
 /**********          ProfilePluginInfo           *********/
@@ -147,14 +103,6 @@ bool ProfilesPluginInfo::operator==(const ProfilesPluginInfo& rhs) const
   return equal;
 }
 bool ProfilesPluginInfo::operator!=(const ProfilesPluginInfo& rhs) const { return !operator==(rhs); }
-
-template <class Archive>
-void ProfilesPluginInfo::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(search_paths);
-  ar& BOOST_SERIALIZATION_NVP(search_libraries);
-  ar& BOOST_SERIALIZATION_NVP(plugin_infos);
-}
 
 /*********************************************************/
 /******           KinematicsPluginInfo               *****/
@@ -210,15 +158,6 @@ bool KinematicsPluginInfo::operator==(const KinematicsPluginInfo& rhs) const
 }
 bool KinematicsPluginInfo::operator!=(const KinematicsPluginInfo& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void KinematicsPluginInfo::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(search_paths);
-  ar& BOOST_SERIALIZATION_NVP(search_libraries);
-  ar& BOOST_SERIALIZATION_NVP(fwd_plugin_infos);
-  ar& BOOST_SERIALIZATION_NVP(inv_plugin_infos);
-}
-
 /*********************************************************/
 /******          ContactManagersPluginInfo           *****/
 /*********************************************************/
@@ -271,15 +210,6 @@ bool ContactManagersPluginInfo::operator==(const ContactManagersPluginInfo& rhs)
 }
 bool ContactManagersPluginInfo::operator!=(const ContactManagersPluginInfo& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void ContactManagersPluginInfo::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(search_paths);
-  ar& BOOST_SERIALIZATION_NVP(search_libraries);
-  ar& BOOST_SERIALIZATION_NVP(discrete_plugin_infos);
-  ar& BOOST_SERIALIZATION_NVP(continuous_plugin_infos);
-}
-
 /*********************************************************/
 /******          TaskComposerPluginInfo           *****/
 /*********************************************************/
@@ -326,28 +256,4 @@ bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
 }
 bool TaskComposerPluginInfo::operator!=(const TaskComposerPluginInfo& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void TaskComposerPluginInfo::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(search_paths);
-  ar& BOOST_SERIALIZATION_NVP(search_libraries);
-  ar& BOOST_SERIALIZATION_NVP(executor_plugin_infos);
-  ar& BOOST_SERIALIZATION_NVP(task_plugin_infos);
-}
-
 }  // namespace tesseract_common
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::PluginInfo)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::PluginInfoContainer)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ProfilesPluginInfo)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::KinematicsPluginInfo)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ContactManagersPluginInfo)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::TaskComposerPluginInfo)
-
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::PluginInfo)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::PluginInfoContainer)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ProfilesPluginInfo)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::KinematicsPluginInfo)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ContactManagersPluginInfo)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::TaskComposerPluginInfo)

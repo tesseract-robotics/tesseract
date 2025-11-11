@@ -27,12 +27,14 @@
 #define TESSERACT_COMMON_PROFILE_H
 
 #include <memory>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
 
 namespace tesseract_common
 {
-struct Serialization;
+class Profile;
+
+template <class Archive>
+void serialize(Archive& ar, Profile& obj);
+
 /**
  * @brief The Profile class
  */
@@ -61,13 +63,9 @@ protected:
   std::size_t key_{ 0 };
 
 private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive&, const unsigned int);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, Profile& obj);
 };
 }  // namespace tesseract_common
-
-BOOST_CLASS_EXPORT_KEY(tesseract_common::Profile)
 
 #endif  // TESSERACT_COMMON_PROFILE_H

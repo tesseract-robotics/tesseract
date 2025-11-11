@@ -33,6 +33,17 @@ find_package(TinyXML2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(boost_plugin_loader REQUIRED)
 
+include(FetchContent)
+set(JUST_INSTALL_CEREAL ON)
+FetchContent_Declare(
+  cereal
+  GIT_REPOSITORY https://github.com/USCiLab/cereal.git
+  GIT_TAG        a56bad8bbb770ee266e930c95d37fff2a5be7fea
+  SYSTEM
+)
+FetchContent_MakeAvailable(cereal)
+unset(JUST_INSTALL_CEREAL)
+
 if(TARGET Boost::stacktrace_backtrace)
   find_file(BACKTRACE_INCLUDE_FILE backtrace.h PATHS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
   if(BACKTRACE_INCLUDE_FILE)
@@ -90,7 +101,7 @@ add_library(
   src/joint_state.cpp
   src/manipulator_info.cpp
   src/kinematic_limits.cpp
-  src/eigen_serialization.cpp
+  # src/eigen_serialization.cpp
   src/utils.cpp
   src/plugin_info.cpp
   src/ply_io.cpp
@@ -101,7 +112,8 @@ add_library(
   src/types.cpp
   src/stopwatch.cpp
   src/timer.cpp
-  src/yaml_utils.cpp)
+  src/yaml_utils.cpp
+)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
@@ -114,6 +126,7 @@ target_link_libraries(
          Boost::serialization
          ${TESSERACT_BACKTRACE_LIB}
          console_bridge::console_bridge
+         cereal::cereal
          yaml-cpp)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_BACKTRACE_DEFINITION})
@@ -128,12 +141,17 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
+add_executable(cereal_example src/cereal_example.cpp)
+target_link_libraries(cereal_example PRIVATE ${PROJECT_NAME})
+
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME} cereal cereal_example)
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC Bcrypt)
 endif()
 
 # Mark cpp header files for installation
+install(DIRECTORY ${cereal_SOURCE_DIR}/include/ DESTINATION include)
+
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include

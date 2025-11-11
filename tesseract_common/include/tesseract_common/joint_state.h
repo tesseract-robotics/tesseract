@@ -28,8 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/version.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <Eigen/Core>
 #include <vector>
@@ -37,15 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/any_poly.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_common
 {
-struct Serialization;
-
 class JointState
 {
 public:
@@ -73,12 +64,6 @@ public:
   bool operator==(const JointState& other) const;
 
   bool operator!=(const JointState& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief Represents a joint trajectory */
@@ -234,20 +219,10 @@ public:
   void pop_back();
   /** @brief swaps the contents  */
   void swap(std::vector<value_type>& other) noexcept;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 using JointStateAnyPoly = AnyWrapper<JointState>;
 using JointStatePtrAnyPoly = AnyWrapper<std::shared_ptr<JointState>>;
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY(tesseract_common::JointState)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::JointTrajectory)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::JointStateAnyPoly)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::JointStatePtrAnyPoly)
 #endif  // TESSERACT_COMMON_JOINT_STATE_H

@@ -24,16 +24,6 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/nvp.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_common/eigen_serialization.h>
-
 #include <tesseract_common/calibration_info.h>
 #include <tesseract_common/utils.h>
 
@@ -61,14 +51,4 @@ bool CalibrationInfo::operator==(const CalibrationInfo& rhs) const
   return equal;
 }
 bool CalibrationInfo::operator!=(const CalibrationInfo& rhs) const { return !operator==(rhs); }
-
-template <class Archive>
-void CalibrationInfo::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(joints);
-}
 }  // namespace tesseract_common
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CalibrationInfo)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CalibrationInfo)

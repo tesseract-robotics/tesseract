@@ -38,7 +38,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-struct Serialization;
+class ProfileDictionary;
+
+template <class Archive>
+void serialize(Archive& ar, ProfileDictionary& obj);
+
 /**
  * @brief This class is used to store profiles used by various tasks
  * @details This is a thread safe class
@@ -153,17 +157,12 @@ protected:
       profiles_;
 
 private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, ProfileDictionary& obj);
 };
 
 using ProfileDictionaryPtrAnyPoly = tesseract_common::AnyWrapper<std::shared_ptr<ProfileDictionary>>;
 
 }  // namespace tesseract_common
-
-BOOST_CLASS_EXPORT_KEY(tesseract_common::ProfileDictionary)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::ProfileDictionaryPtrAnyPoly)
 
 #endif  // TESSERACT_COMMON_PROFILE_DICTIONARY_H

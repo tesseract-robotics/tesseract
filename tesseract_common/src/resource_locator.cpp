@@ -29,10 +29,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <console_bridge/console.h>
 #include <iostream>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/vector.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -51,11 +47,6 @@ bool isRelativePath(const std::string& url)
 
 bool ResourceLocator::operator==(const ResourceLocator& /*rhs*/) const { return true; }
 bool ResourceLocator::operator!=(const ResourceLocator& /*rhs*/) const { return false; }
-
-template <class Archive>
-void ResourceLocator::serialize(Archive& /*ar*/, const unsigned int /*version*/)
-{
-}
 
 GeneralResourceLocator::GeneralResourceLocator(const std::vector<std::string>& environment_variables)
 {
@@ -210,20 +201,8 @@ std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::stri
 bool GeneralResourceLocator::operator==(const GeneralResourceLocator& /*rhs*/) const { return true; }
 bool GeneralResourceLocator::operator!=(const GeneralResourceLocator& /*rhs*/) const { return false; }
 
-template <class Archive>
-void GeneralResourceLocator::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ResourceLocator);
-}
-
 bool Resource::operator==(const Resource& /*rhs*/) const { return true; }
 bool Resource::operator!=(const Resource& /*rhs*/) const { return false; }
-
-template <class Archive>
-void Resource::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ResourceLocator);
-}
 
 SimpleLocatedResource::SimpleLocatedResource(std::string url, std::string filename, ResourceLocator::ConstPtr parent)
   : url_(std::move(url)), filename_(std::move(filename)), parent_(std::move(parent))
@@ -310,15 +289,6 @@ bool SimpleLocatedResource::operator==(const SimpleLocatedResource& rhs) const
 
 bool SimpleLocatedResource::operator!=(const SimpleLocatedResource& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void SimpleLocatedResource::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Resource);
-  ar& BOOST_SERIALIZATION_NVP(url_);
-  ar& BOOST_SERIALIZATION_NVP(filename_);
-  ar& BOOST_SERIALIZATION_NVP(parent_);
-}
-
 BytesResource::BytesResource(std::string url, std::vector<uint8_t> bytes, ResourceLocator::ConstPtr parent)
   : url_(std::move(url)), bytes_(std::move(bytes)), parent_(std::move(parent))
 {
@@ -377,24 +347,4 @@ bool BytesResource::operator==(const BytesResource& rhs) const
 
 bool BytesResource::operator!=(const BytesResource& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void BytesResource::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Resource);
-  ar& BOOST_SERIALIZATION_NVP(url_);
-  ar& BOOST_SERIALIZATION_NVP(bytes_);
-  ar& BOOST_SERIALIZATION_NVP(parent_);
-}
-
 }  // namespace tesseract_common
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ResourceLocator)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::Resource)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::GeneralResourceLocator)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::SimpleLocatedResource)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::BytesResource)
-
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::GeneralResourceLocator)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::SimpleLocatedResource)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::BytesResource)

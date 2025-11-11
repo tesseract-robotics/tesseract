@@ -32,162 +32,147 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <variant>
 #include <Eigen/Geometry>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/tracking.hpp>
-#include <boost/serialization/tracking_enum.hpp>
-#include <boost/serialization/version.hpp>
+#include <cereal/cereal.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#if (BOOST_VERSION < 107200)
-#include <tesseract_common/eigen_types.h>
-#endif
+#include <tesseract_common/cereal_make_array.h>
 
-namespace boost::serialization
+namespace cereal
 {
 /*****************************/
 /****** Eigen::VectorXd ******/
 /*****************************/
 template <class Archive>
-void save(Archive& ar, const Eigen::VectorXd& g, const unsigned int version);  // NOLINT
+void save(Archive& ar, const Eigen::VectorXd& g, const unsigned int /*version*/)
+{
+  long rows = g.rows();
+  ar(CEREAL_NVP(rows));
+  ar& cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows));
+}
 
 template <class Archive>
-void load(Archive& ar, Eigen::VectorXd& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void serialize(Archive& ar, Eigen::VectorXd& g, const unsigned int version);  // NOLINT
+void load(Archive& ar, Eigen::VectorXd& g, const unsigned int /*version*/)
+{
+  long rows{ 0 };
+  ar(CEREAL_NVP(rows));
+  g.resize(rows);
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+}
 
 /*****************************/
 /****** Eigen::Vector3d ******/
 /*****************************/
 template <class Archive>
-void save(Archive& ar, const Eigen::Vector3d& g, const unsigned int version);  // NOLINT
+void save(Archive& ar, const Eigen::Vector3d& g, const unsigned int /*version*/)
+{
+  long rows = g.rows();
+  ar(CEREAL_NVP(rows));
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+}
 
 template <class Archive>
-void load(Archive& ar, Eigen::Vector3d& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void serialize(Archive& ar, Eigen::Vector3d& g, const unsigned int version);  // NOLINT
+void load(Archive& ar, Eigen::Vector3d& g, const unsigned int /*version*/)
+{
+  long rows{ 0 };
+  ar(CEREAL_NVP(rows));
+  g.resize(rows);
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+}
 
 /*****************************/
 /****** Eigen::Vector4d ******/
 /*****************************/
 template <class Archive>
-void save(Archive& ar, const Eigen::Vector4d& g, const unsigned int version);  // NOLINT
+void save(Archive& ar, const Eigen::Vector4d& g, const unsigned int /*version*/)
+{
+  long rows = g.rows();
+  ar(CEREAL_NVP(rows));
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+}
 
 template <class Archive>
-void load(Archive& ar, Eigen::Vector4d& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void serialize(Archive& ar, Eigen::Vector4d& g, const unsigned int version);  // NOLINT
+void load(Archive& ar, Eigen::Vector4d& g, const unsigned int /*version*/)
+{
+  long rows{ 0 };
+  ar(CEREAL_NVP(rows));
+  g.resize(rows);
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+}
 
 /*****************************/
 /****** Eigen::VectorXi ******/
 /*****************************/
 template <class Archive>
-void save(Archive& ar, const Eigen::VectorXi& g, const unsigned int version);  // NOLINT
+void save(Archive& ar, const Eigen::VectorXi& g, const unsigned int /*version*/)
+{
+  long rows = g.rows();
+  ar(CEREAL_NVP(rows));
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+}
 
 template <class Archive>
-void load(Archive& ar, Eigen::VectorXi& g, const unsigned int version);  // NOLINT
+void load(Archive& ar, Eigen::VectorXi& g, const unsigned int /*version*/)
+{
+  long rows{ 0 };
+  ar(CEREAL_NVP(rows));
+  g.resize(rows);
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+}
+
+/*******************************/
+/****** Eigen::Isometry3d ******/
+/*******************************/
 
 template <class Archive>
-void serialize(Archive& ar, Eigen::VectorXi& g, const unsigned int version);  // NOLINT
-
-/*****************************/
-/****** Eigen::VectorXd ******/
-/*****************************/
-
-template <class Archive>
-void save(Archive& ar, const Eigen::Isometry3d& g, const unsigned int version);  // NOLINT
+void save(Archive& ar, const Eigen::Isometry3d& g, const unsigned int /*version*/)
+{
+  ar(cereal::make_nvp("xyz", tesseract_common::serialization::make_array(g.translation().data(), 3)));
+  Eigen::Quaterniond q(g.linear());
+  ar(cereal::make_nvp("xyzw", tesseract_common::serialization::make_array(q.vec().data(), 4)));
+}
 
 template <class Archive>
-void load(Archive& ar, Eigen::Isometry3d& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void serialize(Archive& ar, Eigen::Isometry3d& g, const unsigned int version);  // NOLINT
+void load(Archive& ar, Eigen::Isometry3d& g, const unsigned int /*version*/)
+{
+  g.setIdentity();
+  ar(cereal::make_nvp("xyz", tesseract_common::serialization::make_array(g.translation().data(), 3)));
+  Eigen::Quaterniond q;
+  ar(cereal::make_nvp("xyzw", tesseract_common::serialization::make_array(q.vec().data(), 4)));
+  q.normalize();
+  g.linear() = q.toRotationMatrix();
+}
 
 /*****************************/
 /****** Eigen::MatrixX2d *****/
 /*****************************/
 template <class Archive>
-void save(Archive& ar, const Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
+void save(Archive& ar, const Eigen::MatrixX2d& g, const unsigned int /*version*/)
+{
+  long rows = g.rows();
+  ar(CEREAL_NVP(rows));
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows * 2)));
+}
 
 template <class Archive>
-void load(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void serialize(Archive& ar, Eigen::MatrixX2d& g, const unsigned int version);  // NOLINT
-
-/*********************************************************/
-/****** std::variant<std::string, Eigen::Isometry3d> *****/
-/*********************************************************/
-template <class Archive>
-void save(Archive& ar, const std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void load(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void serialize(Archive& ar, std::variant<std::string, Eigen::Isometry3d>& g, const unsigned int version);  // NOLINT
+void load(Archive& ar, Eigen::MatrixX2d& g, const unsigned int /*version*/)
+{
+  long rows{ 0 };
+  ar(CEREAL_NVP(rows));
+  g.resize(rows, 2);
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows * 2)));
+}
 
 /****************************************/
 /****** Eigen::Matrix<double, 6, 1> *****/
 /****************************************/
 
 template <class Archive>
-void serialize(Archive& ar, Eigen::Matrix<double, 6, 1>& g, const unsigned int version);  // NOLINT
+void serialize(Archive& ar, Eigen::Matrix<double, 6, 1>& g, const unsigned int /*version*/)
+{
+  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), 6)));
+}
 
-#if (BOOST_VERSION < 107200)
-/****************************************/
-/************* TransformMap *************/
-/****************************************/
+}  // namespace cereal
 
-template <class Archive>
-void save(Archive& ar, const tesseract_common::TransformMap& g, unsigned int version);  // NOLINT
-
-template <class Archive>
-void load(Archive& ar, tesseract_common::TransformMap& g, unsigned int version);  // NOLINT
-
-template <class Archive>
-void serialize(Archive& ar, tesseract_common::TransformMap& g, const unsigned int version);  // NOLINT
-
-/********************************************************************/
-/* tesseract_common::AlignedUnorderedMap<std::string, TransformMap> */
-/********************************************************************/
-using TesseractUnorderedMapStringTransformMap =
-    tesseract_common::AlignedUnorderedMap<std::string, tesseract_common::TransformMap>;
-template <class Archive>
-void save(Archive& ar,
-          const TesseractUnorderedMapStringTransformMap& g,
-          unsigned int version);  // NOLINT
-
-template <class Archive>
-void load(Archive& ar,
-          TesseractUnorderedMapStringTransformMap& g,
-          unsigned int version);  // NOLINT
-
-template <class Archive>
-void serialize(Archive& ar,
-               TesseractUnorderedMapStringTransformMap& g,
-               const unsigned int version);  // NOLINT
-#endif
-
-}  // namespace boost::serialization
-
-// Set the tracking to track_never for all Eigen types.
-BOOST_CLASS_TRACKING(Eigen::VectorXd, boost::serialization::track_never)
-BOOST_CLASS_TRACKING(Eigen::Vector3d, boost::serialization::track_never)
-BOOST_CLASS_TRACKING(Eigen::Vector4d, boost::serialization::track_never)
-BOOST_CLASS_TRACKING(Eigen::VectorXi, boost::serialization::track_never)
-BOOST_CLASS_TRACKING(Eigen::Isometry3d, boost::serialization::track_never)
-BOOST_CLASS_TRACKING(Eigen::MatrixX2d, boost::serialization::track_never)
-
-#if (BOOST_VERSION < 107200)
-BOOST_CLASS_TRACKING(tesseract_common::TransformMap, boost::serialization::track_never)
-BOOST_CLASS_TRACKING(boost::serialization::TesseractUnorderedMapStringTransformMap, boost::serialization::track_never)
-#endif
-#endif  // TESSERACT_COMMON_SERIALIZATION_H
+#endif  // TESSERACT_COMMON_EIGEN_SERIALIZATION_H

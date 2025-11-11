@@ -30,14 +30,12 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <variant>
 #include <Eigen/Geometry>
-#include <boost/serialization/base_object.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/any_poly.h>
 
 namespace tesseract_common
 {
-struct Serialization;
 /**
  * @brief Contains information about a robot manipulator
  */
@@ -91,19 +89,9 @@ struct ManipulatorInfo
 
   bool operator==(const ManipulatorInfo& rhs) const;
   bool operator!=(const ManipulatorInfo& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 using ManipulatorInfoAnyPoly = AnyWrapper<ManipulatorInfo>;
 }  // namespace tesseract_common
-
-BOOST_CLASS_EXPORT_KEY(tesseract_common::ManipulatorInfo)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::ManipulatorInfoAnyPoly)
 
 #endif  // TESSERACT_COMMON_MANIPULATOR_INFO_H
