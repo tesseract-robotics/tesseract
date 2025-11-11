@@ -7,7 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/core/types.h>
-#include <tesseract_collision/core/serialization.h>
+#include <tesseract_collision/core/cereal_serialization.h>
 #include <tesseract_collision/core/yaml_extensions.h>
 #include <tesseract_common/contact_allowed_validator.h>
 #include <tesseract_common/unit_test_utils.h>

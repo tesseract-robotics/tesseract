@@ -27,8 +27,6 @@
 #define TESSERACT_COLLISION_CORE_CONTACT_RESULT_VALIDATORS_H
 
 #include <memory>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
 #include <tesseract_common/fwd.h>
 
 namespace tesseract_collision
@@ -51,16 +49,8 @@ public:
   virtual ~ContactResultValidator() = default;
 
   virtual bool operator()(const ContactResult&) const = 0;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 }  // namespace tesseract_collision
-
-BOOST_CLASS_EXPORT_KEY(tesseract_collision::ContactResultValidator)
 
 #endif  // TESSERACT_COLLISION_CORE_CONTACT_RESULT_VALIDATORS_H
