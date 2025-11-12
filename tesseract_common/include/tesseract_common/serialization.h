@@ -76,10 +76,9 @@ struct Serialization
       // Boost uses the same function for serialization and deserialization so it requires a non-const reference
       // Because we are only serializing here it is safe to cast away const
       if (name.empty())
-        oa << cereal::make_nvp<SerializableType>("archive_type",
-                                                 const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp("archive_type", const_cast<SerializableType&>(archive_type));  // NOLINT
       else
-        oa << cereal::make_nvp<SerializableType>(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
     }
 
     return true;
@@ -95,10 +94,9 @@ struct Serialization
       // Boost uses the same function for serialization and deserialization so it requires a non-const reference
       // Because we are only serializing here it is safe to cast away const
       if (name.empty())
-        oa << cereal::make_nvp<SerializableType>("archive_type",
-                                                 const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp("archive_type", const_cast<SerializableType&>(archive_type));  // NOLINT
       else
-        oa << cereal::make_nvp<SerializableType>(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
     }
 
     return ss.str();
@@ -119,10 +117,9 @@ struct Serialization
       // Boost uses the same function for serialization and deserialization so it requires a non-const reference
       // Because we are only serializing here it is safe to cast away const
       if (name.empty())
-        oa << cereal::make_nvp<SerializableType>("archive_type",
-                                                 const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp("archive_type", const_cast<SerializableType&>(archive_type));  // NOLINT
       else
-        oa << cereal::make_nvp<SerializableType>(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
     }
 
     return true;
@@ -143,10 +140,9 @@ struct Serialization
       // Boost uses the same function for serialization and deserialization so it requires a non-const reference
       // Because we are only serializing here it is safe to cast away const
       if (name.empty())
-        oa << cereal::make_nvp<SerializableType>("archive_type",
-                                                 const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp("archive_type", const_cast<SerializableType&>(archive_type));  // NOLINT
       else
-        oa << cereal::make_nvp<SerializableType>(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
     }
 
     return true;
@@ -178,10 +174,9 @@ struct Serialization
       // Boost uses the same function for serialization and deserialization so it requires a non-const reference
       // Because we are only serializing here it is safe to cast away const
       if (name.empty())
-        oa << cereal::make_nvp<SerializableType>("archive_type",
-                                                 const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp("archive_type", const_cast<SerializableType&>(archive_type));  // NOLINT
       else
-        oa << cereal::make_nvp<SerializableType>(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
+        oa << cereal::make_nvp(name.c_str(), const_cast<SerializableType&>(archive_type));  // NOLINT
     }
 
     std::string data = ss.str();
@@ -189,21 +184,25 @@ struct Serialization
   }
 
   template <typename SerializableType>
-  static SerializableType fromArchiveStringXML(const std::string& archive_xml)
+  static SerializableType fromArchiveStringXML(const std::string& archive_xml, const std::string& name = "")
   {
     SerializableType archive_type;
 
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
       std::stringstream ss(archive_xml);
       cereal::XMLInputArchive ia(ss);
-      ia >> CEREAL_NVP(archive_type);
+
+      if (name.empty())
+        ia >> cereal::make_nvp("archive_type", archive_type);  // NOLINT
+      else
+        ia >> cereal::make_nvp(name.c_str(), archive_type);  // NOLINT
     }
 
     return archive_type;
   }
 
   template <typename SerializableType>
-  static SerializableType fromArchiveFileXML(const std::string& file_path)
+  static SerializableType fromArchiveFileXML(const std::string& file_path, const std::string& name = "")
   {
     SerializableType archive_type;
 
@@ -211,28 +210,36 @@ struct Serialization
       std::ifstream ifs(file_path);
       assert(ifs.good());
       cereal::XMLInputArchive ia(ifs);
-      ia >> CEREAL_NVP(archive_type);
+
+      if (name.empty())
+        ia >> cereal::make_nvp("archive_type", archive_type);  // NOLINT
+      else
+        ia >> cereal::make_nvp(name.c_str(), archive_type);  // NOLINT
     }
 
     return archive_type;
   }
 
   template <typename SerializableType>
-  static SerializableType fromArchiveStringJSON(const std::string& archive_xml)
+  static SerializableType fromArchiveStringJSON(const std::string& archive_xml, const std::string& name = "")
   {
     SerializableType archive_type;
 
     {  // Must be scoped because all data is not written until the oost::archive::xml_oarchive goes out of scope
       std::stringstream ss(archive_xml);
       cereal::JSONInputArchive ia(ss);
-      ia >> CEREAL_NVP(archive_type);
+
+      if (name.empty())
+        ia >> cereal::make_nvp("archive_type", archive_type);  // NOLINT
+      else
+        ia >> cereal::make_nvp(name.c_str(), archive_type);  // NOLINT
     }
 
     return archive_type;
   }
 
   template <typename SerializableType>
-  static SerializableType fromArchiveFileJSON(const std::string& file_path)
+  static SerializableType fromArchiveFileJSON(const std::string& file_path, const std::string& name = "")
   {
     SerializableType archive_type;
 
@@ -240,14 +247,18 @@ struct Serialization
       std::ifstream ifs(file_path);
       assert(ifs.good());
       cereal::JSONInputArchive ia(ifs);
-      ia >> CEREAL_NVP(archive_type);
+
+      if (name.empty())
+        ia >> cereal::make_nvp("archive_type", archive_type);  // NOLINT
+      else
+        ia >> cereal::make_nvp(name.c_str(), archive_type);  // NOLINT
     }
 
     return archive_type;
   }
 
   template <typename SerializableType>
-  static SerializableType fromArchiveFileBinary(const std::string& file_path)
+  static SerializableType fromArchiveFileBinary(const std::string& file_path, const std::string& name = "")
   {
     SerializableType archive_type;
 
@@ -255,27 +266,32 @@ struct Serialization
       std::ifstream ifs(file_path, std::ios_base::binary);
       assert(ifs.good());
       cereal::BinaryInputArchive ia(ifs);
-      ia >> CEREAL_NVP(archive_type);
+
+      if (name.empty())
+        ia >> cereal::make_nvp("archive_type", archive_type);  // NOLINT
+      else
+        ia >> cereal::make_nvp(name.c_str(), archive_type);  // NOLINT
     }
 
     return archive_type;
   }
 
   template <typename SerializableType>
-  static SerializableType fromArchiveFile(const std::string& file_path)
+  static SerializableType fromArchiveFile(const std::string& file_path, const std::string& name = "")
   {
     std::filesystem::path fp(file_path);
     if (fp.extension() == serialization::binary::extension<SerializableType>::value)
-      return fromArchiveFileBinary<SerializableType>(file_path);
+      return fromArchiveFileBinary<SerializableType>(file_path, name);
 
     if (fp.extension() == serialization::xml::extension<SerializableType>::value)
-      return fromArchiveFileXML<SerializableType>(file_path);
+      return fromArchiveFileXML<SerializableType>(file_path, name);
 
-    return fromArchiveFileJSON<SerializableType>(file_path);
+    return fromArchiveFileJSON<SerializableType>(file_path, name);
   }
 
   template <typename SerializableType>
-  static SerializableType fromArchiveBinaryData(const std::vector<std::uint8_t>& archive_binary)
+  static SerializableType fromArchiveBinaryData(const std::vector<std::uint8_t>& archive_binary,
+                                                const std::string& name = "")
   {
     SerializableType archive_type;
 
@@ -283,7 +299,11 @@ struct Serialization
       std::stringstream ss;
       std::copy(archive_binary.begin(), archive_binary.end(), std::ostreambuf_iterator<char>(ss));
       cereal::BinaryInputArchive ia(ss);
-      ia >> CEREAL_NVP(archive_type);
+
+      if (name.empty())
+        ia >> cereal::make_nvp("archive_type", archive_type);  // NOLINT
+      else
+        ia >> cereal::make_nvp(name.c_str(), archive_type);  // NOLINT
     }
 
     return archive_type;

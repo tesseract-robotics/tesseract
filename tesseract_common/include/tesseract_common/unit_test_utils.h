@@ -78,7 +78,8 @@ void testSerialization(
     EXPECT_TRUE(
         tesseract_common::Serialization::toArchiveFileXML<SerializableType>(object, file_path, typename_string));
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileXML<SerializableType>(file_path) };
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileXML<SerializableType>(file_path,
+                                                                                                    typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
@@ -95,7 +96,8 @@ void testSerialization(
     EXPECT_TRUE(
         tesseract_common::Serialization::toArchiveFileJSON<SerializableType>(object, file_path, typename_string));
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileJSON<SerializableType>(file_path) };
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileJSON<SerializableType>(file_path,
+                                                                                                     typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
@@ -112,7 +114,8 @@ void testSerialization(
     EXPECT_TRUE(
         tesseract_common::Serialization::toArchiveFileBinary<SerializableType>(object, file_path, typename_string));
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileBinary<SerializableType>(file_path) };
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileBinary<SerializableType>(
+        file_path, typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
@@ -129,7 +132,8 @@ void testSerialization(
         tesseract_common::Serialization::toArchiveStringXML<SerializableType>(object, typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringXML<SerializableType>(object_string) };
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringXML<SerializableType>(
+        object_string, typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
@@ -146,7 +150,8 @@ void testSerialization(
         tesseract_common::Serialization::toArchiveStringJSON<SerializableType>(object, typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringJSON<SerializableType>(object_string) };
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringJSON<SerializableType>(
+        object_string, typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
@@ -164,7 +169,8 @@ void testSerialization(
         tesseract_common::Serialization::toArchiveBinaryData<SerializableType>(object, typename_string);
     EXPECT_FALSE(object_data.empty());
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveBinaryData<SerializableType>(object_data) };
+    SerializableType nobject{ tesseract_common::Serialization::fromArchiveBinaryData<SerializableType>(
+        object_data, typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 }
@@ -225,8 +231,8 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
                                                                                                    typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    auto nobject =
-        tesseract_common::Serialization::fromArchiveStringXML<std::shared_ptr<SerializableTypeBase>>(object_string);
+    auto nobject = tesseract_common::Serialization::fromArchiveStringXML<std::shared_ptr<SerializableTypeBase>>(
+        object_string, typename_string);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
     auto object_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(object);
@@ -239,8 +245,8 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
                                                                                                     typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    auto nobject =
-        tesseract_common::Serialization::fromArchiveStringJSON<std::shared_ptr<SerializableTypeBase>>(object_string);
+    auto nobject = tesseract_common::Serialization::fromArchiveStringJSON<std::shared_ptr<SerializableTypeBase>>(
+        object_string, typename_string);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
     auto object_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(object);
@@ -253,8 +259,8 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
                                                                                                     typename_string);
     EXPECT_FALSE(object_data.empty());
 
-    auto nobject =
-        tesseract_common::Serialization::fromArchiveBinaryData<std::shared_ptr<SerializableTypeBase>>(object_data);
+    auto nobject = tesseract_common::Serialization::fromArchiveBinaryData<std::shared_ptr<SerializableTypeBase>>(
+        object_data, typename_string);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
     auto object_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(object);
@@ -316,7 +322,8 @@ void testSerializationAnyPoly(
         tesseract_common::Serialization::toArchiveStringXML<tesseract_common::AnyPoly>(object, typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    auto nobject = tesseract_common::Serialization::fromArchiveStringXML<tesseract_common::AnyPoly>(object_string);
+    auto nobject = tesseract_common::Serialization::fromArchiveStringXML<tesseract_common::AnyPoly>(object_string,
+                                                                                                    typename_string);
     auto nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
@@ -329,7 +336,8 @@ void testSerializationAnyPoly(
         tesseract_common::Serialization::toArchiveStringJSON<tesseract_common::AnyPoly>(object, typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    auto nobject = tesseract_common::Serialization::fromArchiveStringJSON<tesseract_common::AnyPoly>(object_string);
+    auto nobject = tesseract_common::Serialization::fromArchiveStringJSON<tesseract_common::AnyPoly>(object_string,
+                                                                                                     typename_string);
     auto nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
@@ -342,7 +350,8 @@ void testSerializationAnyPoly(
         tesseract_common::Serialization::toArchiveBinaryData<tesseract_common::AnyPoly>(object, typename_string);
     EXPECT_FALSE(object_data.empty());
 
-    auto nobject = tesseract_common::Serialization::fromArchiveBinaryData<tesseract_common::AnyPoly>(object_data);
+    auto nobject =
+        tesseract_common::Serialization::fromArchiveBinaryData<tesseract_common::AnyPoly>(object_data, typename_string);
     auto nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 

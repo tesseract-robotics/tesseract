@@ -31,7 +31,7 @@ namespace tesseract_common
 template <class Archive, class T>
 void serialize(Archive& ar, AnyWrapper<T>& obj)
 {
-  ar(CEREAL_NVP(obj.value));
+  ar(cereal::make_nvp("value", obj.value));
 }
 
 template <class Archive>
@@ -49,7 +49,7 @@ void serialize(Archive& ar, AllowedCollisionMatrix& obj)
 template <class Archive>
 void serialize(Archive& ar, CalibrationInfo& obj)
 {
-  ar(CEREAL_NVP(obj.joints));
+  ar(cereal::make_nvp("joints", obj.joints));
 }
 
 template <class Archive>
@@ -87,39 +87,39 @@ void serialize(Archive& ar, CombinedContactAllowedValidator& obj)
 template <class Archive>
 void serialize(Archive& ar, JointState& obj)
 {
-  ar(CEREAL_NVP(obj.joint_names));
-  ar(CEREAL_NVP(obj.position));
-  ar(CEREAL_NVP(obj.velocity));
-  ar(CEREAL_NVP(obj.acceleration));
-  ar(CEREAL_NVP(obj.effort));
-  ar(CEREAL_NVP(obj.time));
+  ar(cereal::make_nvp("joint_names", obj.joint_names));
+  ar(cereal::make_nvp("position", obj.position));
+  ar(cereal::make_nvp("velocity", obj.velocity));
+  ar(cereal::make_nvp("acceleration", obj.acceleration));
+  ar(cereal::make_nvp("effort", obj.effort));
+  ar(cereal::make_nvp("time", obj.time));
 }
 
 template <class Archive>
 void serialize(Archive& ar, JointTrajectory& obj)
 {
-  ar(CEREAL_NVP(obj.uuid));
-  ar(CEREAL_NVP(obj.states));
-  ar(CEREAL_NVP(obj.description));
+  ar(cereal::make_nvp("uuid", obj.uuid));
+  ar(cereal::make_nvp("states", obj.states));
+  ar(cereal::make_nvp("description", obj.description));
 }
 
 template <class Archive>
 void serialize(Archive& ar, ManipulatorInfo& obj)
 {
-  ar(CEREAL_NVP(obj.manipulator));
-  ar(CEREAL_NVP(obj.manipulator_ik_solver));
-  ar(CEREAL_NVP(obj.working_frame));
-  ar(CEREAL_NVP(obj.tcp_frame));
-  ar(CEREAL_NVP(obj.tcp_offset));
+  ar(cereal::make_nvp("manipulator", obj.manipulator));
+  ar(cereal::make_nvp("manipulator_ik_solver", obj.manipulator_ik_solver));
+  ar(cereal::make_nvp("working_frame", obj.working_frame));
+  ar(cereal::make_nvp("tcp_frame", obj.tcp_frame));
+  ar(cereal::make_nvp("tcp_offset", obj.tcp_offset));
 }
 
 template <class Archive>
 void serialize(Archive& ar, KinematicLimits& obj)
 {
-  ar(CEREAL_NVP(obj.joint_limits));
-  ar(CEREAL_NVP(obj.velocity_limits));
-  ar(CEREAL_NVP(obj.acceleration_limits));
-  ar(CEREAL_NVP(obj.jerk_limits));
+  ar(cereal::make_nvp("joint_limits", obj.joint_limits));
+  ar(cereal::make_nvp("velocity_limits", obj.velocity_limits));
+  ar(cereal::make_nvp("acceleration_limits", obj.acceleration_limits));
+  ar(cereal::make_nvp("jerk_limits", obj.jerk_limits));
 }
 
 template <class Archive>
@@ -151,17 +151,17 @@ void serialize(Archive& ar, BytesResource& obj)
 template <class Archive>
 void save(Archive& ar, const PluginInfo& obj)
 {
-  ar(CEREAL_NVP(obj.class_name));
-  const std::string config_string = obj.getConfigString();
-  ar(CEREAL_NVP(config_string));
+  ar(cereal::make_nvp("class_name", obj.class_name));
+  std::string config_string = obj.getConfigString();
+  ar(cereal::make_nvp("config", config_string));
 }
 
 template <class Archive>
 void load(Archive& ar, PluginInfo& obj)
 {
-  ar(CEREAL_NVP(obj.class_name));
+  ar(cereal::make_nvp("class_name", obj.class_name));
   std::string config_string;
-  ar(CEREAL_NVP(config_string));
+  ar(cereal::make_nvp("config", config_string));
   // On 18.04 '~' does not load as null so must check
   obj.config = (config_string != "~") ? YAML::Load(config_string) : YAML::Node();
 }
@@ -169,43 +169,43 @@ void load(Archive& ar, PluginInfo& obj)
 template <class Archive>
 void serialize(Archive& ar, PluginInfoContainer& obj)
 {
-  ar(CEREAL_NVP(obj.default_plugin));
-  ar(CEREAL_NVP(obj.plugins));
+  ar(cereal::make_nvp("default_plugin", obj.default_plugin));
+  ar(cereal::make_nvp("plugins", obj.plugins));
 }
 
 template <class Archive>
 void serialize(Archive& ar, ProfilesPluginInfo& obj)
 {
-  ar(CEREAL_NVP(obj.search_paths));
-  ar(CEREAL_NVP(obj.search_libraries));
-  ar(CEREAL_NVP(obj.plugin_infos));
+  ar(cereal::make_nvp("search_paths", obj.search_paths));
+  ar(cereal::make_nvp("search_libraries", obj.search_libraries));
+  ar(cereal::make_nvp("plugin_infos", obj.plugin_infos));
 }
 
 template <class Archive>
 void serialize(Archive& ar, KinematicsPluginInfo& obj)
 {
-  ar(CEREAL_NVP(obj.search_paths));
-  ar(CEREAL_NVP(obj.search_libraries));
-  ar(CEREAL_NVP(obj.fwd_plugin_infos));
-  ar(CEREAL_NVP(obj.inv_plugin_infos));
+  ar(cereal::make_nvp("search_paths", obj.search_paths));
+  ar(cereal::make_nvp("search_libraries", obj.search_libraries));
+  ar(cereal::make_nvp("fwd_plugin_infos", obj.fwd_plugin_infos));
+  ar(cereal::make_nvp("inv_plugin_infos", obj.inv_plugin_infos));
 }
 
 template <class Archive>
 void serialize(Archive& ar, ContactManagersPluginInfo& obj)
 {
-  ar(CEREAL_NVP(obj.search_paths));
-  ar(CEREAL_NVP(obj.search_libraries));
-  ar(CEREAL_NVP(obj.discrete_plugin_infos));
-  ar(CEREAL_NVP(obj.continuous_plugin_infos));
+  ar(cereal::make_nvp("search_paths", obj.search_paths));
+  ar(cereal::make_nvp("search_libraries", obj.search_libraries));
+  ar(cereal::make_nvp("discrete_plugin_infos", obj.discrete_plugin_infos));
+  ar(cereal::make_nvp("continuous_plugin_infos", obj.continuous_plugin_infos));
 }
 
 template <class Archive>
 void serialize(Archive& ar, TaskComposerPluginInfo& obj)
 {
-  ar(CEREAL_NVP(obj.search_paths));
-  ar(CEREAL_NVP(obj.search_libraries));
-  ar(CEREAL_NVP(obj.executor_plugin_infos));
-  ar(CEREAL_NVP(obj.task_plugin_infos));
+  ar(cereal::make_nvp("search_paths", obj.search_paths));
+  ar(cereal::make_nvp("search_libraries", obj.search_libraries));
+  ar(cereal::make_nvp("executor_plugin_infos", obj.executor_plugin_infos));
+  ar(cereal::make_nvp("task_plugin_infos", obj.task_plugin_infos));
 }
 
 template <class Archive>
