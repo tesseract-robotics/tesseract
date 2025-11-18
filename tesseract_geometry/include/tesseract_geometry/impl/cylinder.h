@@ -46,6 +46,7 @@ public:
   using ConstPtr = std::shared_ptr<const Cylinder>;
 
   Cylinder(double radius, double length);
+  Cylinder() = default;
   ~Cylinder() override = default;
 
   double getRadius() const;

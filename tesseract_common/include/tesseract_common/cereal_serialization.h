@@ -128,8 +128,9 @@ void serialize(Archive& /*ar*/, Resource& /*obj*/)
 }
 
 template <class Archive>
-void serialize(Archive& /*ar*/, GeneralResourceLocator& /*obj*/)
+void serialize(Archive& ar, GeneralResourceLocator& obj)
 {
+  ar(cereal::make_nvp("package_paths", obj.package_paths_));
 }
 
 template <class Archive>
@@ -223,6 +224,11 @@ void serialize(Archive& ar, ProfileDictionary& obj)
 
 }  // namespace tesseract_common
 
+// These must be include before calling macro CEREAL_REGISTER_TYPE
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/xml.hpp>
+#include <cereal/archives/json.hpp>
+
 CEREAL_REGISTER_TYPE(tesseract_common::BoolAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::IntAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::UnsignedAnyPoly)
@@ -230,7 +236,6 @@ CEREAL_REGISTER_TYPE(tesseract_common::DoubleAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::FloatAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::StringAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::SizeTAnyPoly)
-
 CEREAL_REGISTER_TYPE(tesseract_common::VectorStringAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::VectorBoolAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::VectorIntAnyPoly)
@@ -238,7 +243,6 @@ CEREAL_REGISTER_TYPE(tesseract_common::VectorUnsignedAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::VectorDoubleAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::VectorFloatAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::VectorSizeTAnyPoly)
-
 CEREAL_REGISTER_TYPE(tesseract_common::UMapStringStringAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::UMapStringBoolAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::UMapStringIntAnyPoly)
@@ -246,6 +250,16 @@ CEREAL_REGISTER_TYPE(tesseract_common::UMapStringUnsignedAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::UMapStringDoubleAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::UMapStringFloatAnyPoly)
 CEREAL_REGISTER_TYPE(tesseract_common::UMapStringSizeTAnyPoly)
+CEREAL_REGISTER_TYPE(tesseract_common::ACMContactAllowedValidator)
+CEREAL_REGISTER_TYPE(tesseract_common::CombinedContactAllowedValidator)
+CEREAL_REGISTER_TYPE(tesseract_common::JointStateAnyPoly)
+CEREAL_REGISTER_TYPE(tesseract_common::JointStatePtrAnyPoly)
+CEREAL_REGISTER_TYPE(tesseract_common::ManipulatorInfoAnyPoly)
+CEREAL_REGISTER_TYPE(tesseract_common::Resource)
+CEREAL_REGISTER_TYPE(tesseract_common::GeneralResourceLocator)
+CEREAL_REGISTER_TYPE(tesseract_common::SimpleLocatedResource)
+CEREAL_REGISTER_TYPE(tesseract_common::BytesResource)
+CEREAL_REGISTER_TYPE(tesseract_common::ProfileDictionaryPtrAnyPoly)
 
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::BoolAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::IntAnyPoly)
@@ -254,7 +268,6 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_c
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::FloatAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::StringAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::SizeTAnyPoly)
-
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::VectorStringAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::VectorBoolAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::VectorIntAnyPoly)
@@ -262,7 +275,6 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_c
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::VectorDoubleAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::VectorFloatAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::VectorSizeTAnyPoly)
-
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::UMapStringStringAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::UMapStringBoolAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::UMapStringIntAnyPoly)
@@ -270,32 +282,17 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_c
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::UMapStringDoubleAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::UMapStringFloatAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::UMapStringSizeTAnyPoly)
-
-CEREAL_REGISTER_TYPE(tesseract_common::ACMContactAllowedValidator)
-CEREAL_REGISTER_TYPE(tesseract_common::CombinedContactAllowedValidator)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::ContactAllowedValidator,
                                      tesseract_common::ACMContactAllowedValidator)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::ContactAllowedValidator,
                                      tesseract_common::CombinedContactAllowedValidator)
-
-CEREAL_REGISTER_TYPE(tesseract_common::JointStateAnyPoly)
-CEREAL_REGISTER_TYPE(tesseract_common::JointStatePtrAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::JointStateAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::JointStatePtrAnyPoly)
-
-CEREAL_REGISTER_TYPE(tesseract_common::ManipulatorInfoAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::ManipulatorInfoAnyPoly)
-
-CEREAL_REGISTER_TYPE(tesseract_common::Resource)
-CEREAL_REGISTER_TYPE(tesseract_common::GeneralResourceLocator)
-CEREAL_REGISTER_TYPE(tesseract_common::SimpleLocatedResource)
-CEREAL_REGISTER_TYPE(tesseract_common::BytesResource)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::ResourceLocator, tesseract_common::Resource)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::ResourceLocator, tesseract_common::GeneralResourceLocator)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::Resource, tesseract_common::SimpleLocatedResource)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::Resource, tesseract_common::BytesResource)
-
-CEREAL_REGISTER_TYPE(tesseract_common::ProfileDictionaryPtrAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::ProfileDictionaryPtrAnyPoly)
 
 #endif  // TESSERACT_COMMON_CEREAL_SERIALIZATION_H

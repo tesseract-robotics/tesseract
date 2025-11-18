@@ -32,17 +32,7 @@ find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(boost_plugin_loader REQUIRED)
-
-include(FetchContent)
-set(JUST_INSTALL_CEREAL ON)
-FetchContent_Declare(
-  cereal
-  GIT_REPOSITORY https://github.com/USCiLab/cereal.git
-  GIT_TAG        a56bad8bbb770ee266e930c95d37fff2a5be7fea
-  SYSTEM
-)
-FetchContent_MakeAvailable(cereal)
-unset(JUST_INSTALL_CEREAL)
+find_package(cereal REQUIRED)
 
 if(TARGET Boost::stacktrace_backtrace)
   find_file(BACKTRACE_INCLUDE_FILE backtrace.h PATHS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
@@ -101,7 +91,6 @@ add_library(
   src/joint_state.cpp
   src/manipulator_info.cpp
   src/kinematic_limits.cpp
-  # src/eigen_serialization.cpp
   src/utils.cpp
   src/plugin_info.cpp
   src/ply_io.cpp
@@ -144,13 +133,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CUR
 add_executable(cereal_example src/cereal_example.cpp)
 target_link_libraries(cereal_example PRIVATE ${PROJECT_NAME})
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME} cereal cereal_example)
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME} cereal_example)
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC Bcrypt)
 endif()
-
-# Mark cpp header files for installation
-install(DIRECTORY ${cereal_SOURCE_DIR}/include/ DESTINATION include)
 
 install(
   DIRECTORY include/${PROJECT_NAME}

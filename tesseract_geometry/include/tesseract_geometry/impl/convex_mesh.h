@@ -107,7 +107,7 @@ public:
              std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
              std::shared_ptr<MeshMaterial> mesh_material = nullptr,
              std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
-
+  ConvexMesh() = default;
   ~ConvexMesh() override = default;
 
   /**

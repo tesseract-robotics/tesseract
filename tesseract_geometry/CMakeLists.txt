@@ -64,7 +64,7 @@ set(COVERAGE_EXCLUDE
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 
 add_library(
-  ${PROJECT_NAME} SHARED
+  ${PROJECT_NAME}
   src/conversions.cpp
   src/geometry.cpp
   src/utils.cpp

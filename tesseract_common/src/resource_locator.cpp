@@ -198,8 +198,11 @@ std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::stri
   return std::make_shared<SimpleLocatedResource>(url, mod_url, std::make_shared<GeneralResourceLocator>(*this));
 }
 
-bool GeneralResourceLocator::operator==(const GeneralResourceLocator& /*rhs*/) const { return true; }
-bool GeneralResourceLocator::operator!=(const GeneralResourceLocator& /*rhs*/) const { return false; }
+bool GeneralResourceLocator::operator==(const GeneralResourceLocator& rhs) const
+{
+  return package_paths_ == rhs.package_paths_;
+}
+bool GeneralResourceLocator::operator!=(const GeneralResourceLocator& rhs) const { return !operator==(rhs); }
 
 bool Resource::operator==(const Resource& /*rhs*/) const { return true; }
 bool Resource::operator!=(const Resource& /*rhs*/) const { return false; }

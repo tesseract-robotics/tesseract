@@ -46,6 +46,7 @@ public:
   using ConstPtr = std::shared_ptr<const Plane>;
 
   Plane(double a, double b, double c, double d);
+  Plane() = default;
   ~Plane() override = default;
 
   double getA() const;

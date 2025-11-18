@@ -46,6 +46,7 @@ public:
   using ConstPtr = std::shared_ptr<const Sphere>;
 
   explicit Sphere(double r);
+  Sphere() = default;
   ~Sphere() override = default;
 
   double getRadius() const;

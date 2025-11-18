@@ -14,6 +14,7 @@ find_dependency(yaml-cpp)
 find_dependency(boost_plugin_loader)
 find_dependency(Boost COMPONENTS system filesystem serialization @TESSERACT_BACKTRACE_COMPONENT@)
 find_dependency(console_bridge)
+find_dependency(cereal)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)

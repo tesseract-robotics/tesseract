@@ -50,10 +50,9 @@ enum class OctreeSubType : std::uint8_t
 };
 
 class Octree;
+
 template <class Archive>
-void load(Archive& ar, Octree& obj);
-template <class Archive>
-void save(Archive& ar, Octree& obj);
+void serialize(Archive& ar, Octree& obj);
 
 class Octree : public Geometry
 {
@@ -65,6 +64,7 @@ public:
          OctreeSubType sub_type,
          bool pruned = false,
          bool binary_octree = false);
+  Octree() = default;
   ~Octree() override = default;
 
   const std::shared_ptr<const octomap::OcTree>& getOctree() const;
@@ -112,10 +112,7 @@ private:
                           unsigned int& num_pruned);
 
   template <class Archive>
-  friend void ::tesseract_geometry::load(Archive& ar, Octree& obj);
-
-  template <class Archive>
-  friend void ::tesseract_geometry::save(Archive& ar, Octree& obj);
+  friend void ::tesseract_geometry::serialize(Archive& ar, Octree& obj);
 
 public:
   /**

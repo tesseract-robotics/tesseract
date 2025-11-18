@@ -42,14 +42,4 @@ bool Sphere::operator==(const Sphere& rhs) const
 }
 bool Sphere::operator!=(const Sphere& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void Sphere::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Geometry);
-  ar& BOOST_SERIALIZATION_NVP(r_);
-}
 }  // namespace tesseract_geometry
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::Sphere)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::Sphere)

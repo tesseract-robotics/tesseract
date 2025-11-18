@@ -54,6 +54,7 @@ public:
   CompoundMesh(std::vector<std::shared_ptr<ConvexMesh>> meshes);
   CompoundMesh(std::vector<std::shared_ptr<Mesh>> meshes);
   CompoundMesh(std::vector<std::shared_ptr<SDFMesh>> meshes);
+  CompoundMesh() = default;
 
   /**
    * @brief Get the meshes

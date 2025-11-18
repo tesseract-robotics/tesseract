@@ -3,13 +3,14 @@
 
 #include <tesseract_geometry/geometry.h>
 #include <tesseract_geometry/geometries.h>
-#include <tesseract_common/cereal_boost_types.h>
-#include <tesseract_common/cereal_eigen_types.h>
+#include <tesseract_common/cereal_serialization.h>
 
-#include <octomap/OcTree.h>
+#include <octomap/octomap.h>
 
 #include <cereal/cereal.hpp>
 #include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/polymorphic.hpp>
 #include <cereal/archives/binary.hpp>
 
 namespace tesseract_geometry
@@ -17,7 +18,6 @@ namespace tesseract_geometry
 template <class Archive>
 void serialize(Archive& ar, Geometry& obj)
 {
-  ar(cereal::base_class<Geometry>(&obj));
   ar(cereal::make_nvp("type", obj.type_));
   ar(cereal::make_nvp("uuid", obj.uuid_));
 }
@@ -73,57 +73,52 @@ void serialize(Archive& ar, Sphere& obj)
 }
 
 template <class Archive>
-void save(Archive& ar, Octree& obj)
+void serialize(Archive& ar, Octree& obj)
 {
   ar(cereal::base_class<Geometry>(&obj));
   ar(cereal::make_nvp("sub_type", obj.sub_type_));
   ar(cereal::make_nvp("resolution", obj.resolution_));
   ar(cereal::make_nvp("pruned", obj.pruned_));
   ar(cereal::make_nvp("binary_octree", obj.binary_octree_));
+  if (Archive::is_loading::value)
+  {
+    // Read bytes back
+    std::vector<std::uint8_t> octree_data;
+    ar(cereal::make_nvp("octree_data", octree_data));
 
-  // Read the data to a stream which does not guarantee contiguous memory
-  std::ostringstream s;
-  if (obj.binary_octree_)
-    obj.octree_->writeBinaryConst(s);
+    // Feed them to octomap via a binary stringstream
+    auto local_octree = std::make_shared<octomap::OcTree>(obj.resolution_);
+    std::stringstream ss(std::ios::in | std::ios::out | std::ios::binary);
+    ss.write(reinterpret_cast<const char*>(octree_data.data()), static_cast<std::streamsize>(octree_data.size()));
+
+    if (obj.binary_octree_)
+    {
+      local_octree->readBinary(ss);
+    }
+    else
+    {
+      // read(...) returns a new OcTree* (ownership transfer)
+      local_octree.reset(dynamic_cast<octomap::OcTree*>(octomap::OcTree::read(ss)));
+    }
+
+    obj.octree_ = std::move(local_octree);
+  }
   else
-    obj.octree_->write(s);
+  {
+    // Read the data to a stream which does not guarantee contiguous memory
+    std::ostringstream s;
+    if (obj.binary_octree_)
+      obj.octree_->writeBinaryConst(s);
+    else
+      obj.octree_->write(s);
 
-  // Write it to a string, wich does guarantee contiguous memory
-  std::string data_string = s.str();
-  std::size_t octree_data_size = data_string.size();
-  ar(cereal::make_nvp("octree_data_size", octree_data_size));
-  ar(cereal::make_nvp("octree_data", cereal::binary_data(data_string.data(), octree_data_size)));
-}
+    // Copy stream -> byte vector (handles embedded NULs)
+    const std::string& blob = s.str();
+    std::vector<std::uint8_t> octree_data(blob.begin(), blob.end());
 
-template <class Archive>
-void load(Archive& ar, Octree& obj)
-{
-  ar(cereal::base_class<Geometry>(&obj));
-  ar(cereal::make_nvp("sub_type", obj.sub_type_));
-  ar(cereal::make_nvp("resolution", obj.resolution_));
-  ar(cereal::make_nvp("pruned", obj.pruned_));
-  ar(cereal::make_nvp("binary_octree", obj.binary_octree_));
-
-  // Initialize the octree to the right size
-  auto local_octree = std::make_shared<octomap::OcTree>(obj.resolution_);
-
-  // Read the data into a string
-  std::size_t octree_data_size = 0;
-  ar(cereal::make_nvp("octree_data_size", octree_data_size));
-  std::string data_string;
-  data_string.resize(octree_data_size);
-  ar(cereal::make_nvp("octree_data", cereal::binary_data(data_string.data(), octree_data_size)));
-
-  // Write that data into the stringstream required by octree and load data
-  std::stringstream s;
-  s.write(data_string.data(), static_cast<std::streamsize>(octree_data_size));
-
-  if (obj.binary_octree_)
-    local_octree->readBinary(s);
-  else
-    local_octree = std::shared_ptr<octomap::OcTree>(dynamic_cast<octomap::OcTree*>(octomap::OcTree::read(s)));
-
-  obj.octree_ = local_octree;
+    // Serialize as an array (size is implicit)
+    ar(cereal::make_nvp("octree_data", octree_data));
+  }
 }
 
 template <class Archive>
@@ -170,5 +165,39 @@ void serialize(Archive& ar, CompoundMesh& obj)
 }
 
 }  // namespace tesseract_geometry
+
+// These must be include before calling macro CEREAL_REGISTER_TYPE
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/xml.hpp>
+#include <cereal/archives/json.hpp>
+
+CEREAL_REGISTER_TYPE(tesseract_geometry::Box)
+CEREAL_REGISTER_TYPE(tesseract_geometry::Capsule)
+CEREAL_REGISTER_TYPE(tesseract_geometry::Cone)
+CEREAL_REGISTER_TYPE(tesseract_geometry::Cylinder)
+CEREAL_REGISTER_TYPE(tesseract_geometry::Octree)
+CEREAL_REGISTER_TYPE(tesseract_geometry::Plane)
+CEREAL_REGISTER_TYPE(tesseract_geometry::Sphere)
+CEREAL_REGISTER_TYPE(tesseract_geometry::CompoundMesh)
+CEREAL_REGISTER_TYPE(tesseract_geometry::PolygonMesh)
+CEREAL_REGISTER_TYPE(tesseract_geometry::Mesh)
+CEREAL_REGISTER_TYPE(tesseract_geometry::ConvexMesh)
+CEREAL_REGISTER_TYPE(tesseract_geometry::SDFMesh)
+
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::Box)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::Capsule)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::Cone)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::Cylinder)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::Octree)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::Plane)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::Sphere)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::CompoundMesh)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::PolygonMesh)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::Mesh)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::ConvexMesh)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::Geometry, tesseract_geometry::SDFMesh)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::PolygonMesh, tesseract_geometry::Mesh)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::PolygonMesh, tesseract_geometry::ConvexMesh)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::PolygonMesh, tesseract_geometry::SDFMesh)
 
 #endif  // TESSERACT_GEOMETRY_CEREAL_SERIALIZATION_H

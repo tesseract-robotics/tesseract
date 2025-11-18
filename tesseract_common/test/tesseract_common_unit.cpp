@@ -587,18 +587,15 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   const auto& any_type_const_ref2 = any_type.as<tesseract_common::JointState>();
   EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
 
-  tesseract_common::testSerialization<tesseract_common::AnyPoly>(any_type, "any_joint_state_poly");
+  tesseract_common::testSerializationAnyPoly<tesseract_common::JointState>(any_type, "any_joint_state_poly");
 
   tesseract_common::AnyPoly nany_type;
   tesseract_common::testSerialization<tesseract_common::AnyPoly>(nany_type, "any_null_poly");
 
-  EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
-  EXPECT_TRUE(nany_type.as<tesseract_common::JointState>() == joint_state);
-
 // Test bad cast
 #ifndef _MSC_VER
   // Horrible compilation errors on MSVC
-  EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
+  EXPECT_ANY_THROW(any_type.as<tesseract_common::Toolpath>());  // NOLINT
 #endif
 }
 

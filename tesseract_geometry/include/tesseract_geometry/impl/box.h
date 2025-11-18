@@ -46,6 +46,7 @@ public:
   using ConstPtr = std::shared_ptr<const Box>;
 
   Box(double x, double y, double z);
+  Box() = default;
   ~Box() override = default;
 
   double getX() const;

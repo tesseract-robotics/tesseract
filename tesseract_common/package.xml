@@ -17,6 +17,7 @@
   <depend>tinyxml2</depend>
   <depend>yaml-cpp</depend>
   <depend>boost_plugin_loader</depend>
+  <depend>cereal</depend>
 
   <build_depend>libboost-system-dev</build_depend>
   <build_export_depend>libboost-system-dev</build_export_depend>

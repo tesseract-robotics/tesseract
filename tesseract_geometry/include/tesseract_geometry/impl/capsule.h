@@ -46,6 +46,7 @@ public:
   using ConstPtr = std::shared_ptr<const Capsule>;
 
   Capsule(double radius, double length);
+  Capsule() = default;
   ~Capsule() override = default;
 
   double getRadius() const;
