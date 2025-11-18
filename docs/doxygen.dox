@@ -5,6 +5,8 @@
 Welcome to the Tesseract documentation
 
 <ul>
+  <li> @subpage why_tesseract </li>
+  <li> @subpage tesseract_vs_moveit </li>
   <li> @subpage getting_started </li>
   <li> @subpage urdf </li>
   <li> @subpage srdf </li>
