@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <boost/graph/adjacency_list.hpp>  // for customizable graphs
 #include <boost/graph/properties.hpp>
 #include <string>
@@ -40,25 +39,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifndef SWIG
 
-namespace boost::serialization
-{
-class access;
-}
-
 /* definition of basic boost::graph properties */
 namespace boost
 {
 enum vertex_link_t : std::uint8_t
 {
   vertex_link
-};
-enum vertex_link_visible_t : std::uint8_t
-{
-  vertex_link_visible
-};
-enum vertex_link_collision_enabled_t : std::uint8_t
-{
-  vertex_link_collision_enabled
 };
 enum edge_joint_t : std::uint8_t
 {
@@ -70,8 +56,6 @@ enum graph_root_t : std::uint8_t
 };
 
 BOOST_INSTALL_PROPERTY(vertex, link);
-BOOST_INSTALL_PROPERTY(vertex, link_visible);
-BOOST_INSTALL_PROPERTY(vertex, link_collision_enabled);
 BOOST_INSTALL_PROPERTY(edge, joint);
 BOOST_INSTALL_PROPERTY(graph, root);
 }  // namespace boost
@@ -91,10 +75,7 @@ using GraphProperty =
     boost::property<boost::graph_name_t, std::string, boost::property<boost::graph_root_t, std::string>>;
 
 /** @brief Defines the boost graph vertex property. */
-using VertexProperty = boost::property<
-    boost::vertex_link_t,
-    std::shared_ptr<Link>,
-    boost::property<boost::vertex_link_visible_t, bool, boost::property<boost::vertex_link_collision_enabled_t, bool>>>;
+using VertexProperty = boost::property<boost::vertex_link_t, std::shared_ptr<Link>>;
 
 /**
  * @brief EdgeProperty
@@ -121,6 +102,11 @@ struct ShortestPath
   /** @brief A list of active joints along the shortest path */
   std::vector<std::string> active_joints;
 };
+
+class SceneGraph;
+
+template <class Archive>
+void serialize(Archive& ar, SceneGraph& obj);
 
 class SceneGraph
 #ifndef SWIG
@@ -605,22 +591,12 @@ private:
    */
   std::vector<std::string> getLinkChildrenHelper(Vertex start_vertex) const;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void save(Archive& ar, const unsigned int version) const;  // NOLINT
-
-  template <class Archive>
-  void load(Archive& ar, const unsigned int version);  // NOLINT
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_scene_graph::serialize(Archive& ar, SceneGraph& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const ShortestPath& path);
 
 }  // namespace tesseract_scene_graph
-
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::SceneGraph)
 
 #endif  // TESSERACT_SCENE_GRAPH_GRAPH_H

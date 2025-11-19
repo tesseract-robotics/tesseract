@@ -22,15 +22,6 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <iostream>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_common/cereal_eigen_types.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/joint.h>
 
@@ -56,13 +47,6 @@ bool JointDynamics::operator==(const JointDynamics& rhs) const
   return equal;
 }
 bool JointDynamics::operator!=(const JointDynamics& rhs) const { return !operator==(rhs); }
-
-template <class Archive>
-void JointDynamics::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(damping);
-  ar& BOOST_SERIALIZATION_NVP(friction);
-}
 
 std::ostream& operator<<(std::ostream& os, const JointDynamics& dynamics)
 {
@@ -102,17 +86,6 @@ bool JointLimits::operator==(const JointLimits& rhs) const
   return equal;
 }
 bool JointLimits::operator!=(const JointLimits& rhs) const { return !operator==(rhs); }
-
-template <class Archive>
-void JointLimits::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(lower);
-  ar& BOOST_SERIALIZATION_NVP(upper);
-  ar& BOOST_SERIALIZATION_NVP(effort);
-  ar& BOOST_SERIALIZATION_NVP(velocity);
-  ar& BOOST_SERIALIZATION_NVP(acceleration);
-  ar& BOOST_SERIALIZATION_NVP(jerk);
-}
 
 std::ostream& operator<<(std::ostream& os, const JointLimits& limits)
 {
@@ -154,15 +127,6 @@ bool JointSafety::operator==(const JointSafety& rhs) const
 }
 bool JointSafety::operator!=(const JointSafety& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void JointSafety::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(soft_upper_limit);
-  ar& BOOST_SERIALIZATION_NVP(soft_lower_limit);
-  ar& BOOST_SERIALIZATION_NVP(k_position);
-  ar& BOOST_SERIALIZATION_NVP(k_velocity);
-}
-
 std::ostream& operator<<(std::ostream& os, const JointSafety& safety)
 {
   os << "soft_upper_limit=" << safety.soft_upper_limit << " soft_lower_limit=" << safety.soft_lower_limit
@@ -196,14 +160,6 @@ bool JointCalibration::operator==(const JointCalibration& rhs) const
 }
 bool JointCalibration::operator!=(const JointCalibration& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void JointCalibration::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(reference_position);
-  ar& BOOST_SERIALIZATION_NVP(rising);
-  ar& BOOST_SERIALIZATION_NVP(falling);
-}
-
 std::ostream& operator<<(std::ostream& os, const JointCalibration& calibration)
 {
   os << "reference_position=" << calibration.reference_position << " rising=" << calibration.rising
@@ -236,14 +192,6 @@ bool JointMimic::operator==(const JointMimic& rhs) const
   return equal;
 }
 bool JointMimic::operator!=(const JointMimic& rhs) const { return !operator==(rhs); }
-
-template <class Archive>
-void JointMimic::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(offset);
-  ar& BOOST_SERIALIZATION_NVP(multiplier);
-  ar& BOOST_SERIALIZATION_NVP(joint_name);
-}
 
 std::ostream& operator<<(std::ostream& os, const JointMimic& mimic)
 {
@@ -323,22 +271,6 @@ bool Joint::operator==(const Joint& rhs) const
 }
 bool Joint::operator!=(const Joint& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void Joint::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(type);
-  ar& BOOST_SERIALIZATION_NVP(axis);
-  ar& BOOST_SERIALIZATION_NVP(child_link_name);
-  ar& BOOST_SERIALIZATION_NVP(parent_link_name);
-  ar& BOOST_SERIALIZATION_NVP(parent_to_joint_origin_transform);
-  ar& BOOST_SERIALIZATION_NVP(dynamics);
-  ar& BOOST_SERIALIZATION_NVP(limits);
-  ar& BOOST_SERIALIZATION_NVP(safety);
-  ar& BOOST_SERIALIZATION_NVP(calibration);
-  ar& BOOST_SERIALIZATION_NVP(mimic);
-  ar& BOOST_SERIALIZATION_NVP(name_);
-}
-
 std::ostream& operator<<(std::ostream& os, const JointType& type)
 {
   switch (type)
@@ -383,18 +315,3 @@ std::ostream& operator<<(std::ostream& os, const JointType& type)
 }
 
 }  // namespace tesseract_scene_graph
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointDynamics)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointLimits)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointSafety)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointCalibration)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::JointMimic)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Joint)
-
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointDynamics)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointLimits)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointSafety)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointCalibration)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::JointMimic)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Joint)

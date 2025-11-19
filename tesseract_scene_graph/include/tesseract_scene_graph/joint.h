@@ -39,7 +39,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <string>
 #include <memory>
 #include <iosfwd>
@@ -48,14 +47,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_scene_graph
 {
 class Link;
+class Joint;
+
+template <class Archive>
+void serialize(Archive& ar, Joint& obj);
 
 class JointDynamics
 {
@@ -79,12 +77,6 @@ public:
 
   bool operator==(const JointDynamics& rhs) const;
   bool operator!=(const JointDynamics& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 std::ostream& operator<<(std::ostream& os, const JointDynamics& dynamics);
@@ -115,12 +107,6 @@ public:
 
   bool operator==(const JointLimits& rhs) const;
   bool operator!=(const JointLimits& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 std::ostream& operator<<(std::ostream& os, const JointLimits& limits);
@@ -182,12 +168,6 @@ public:
 
   bool operator==(const JointSafety& rhs) const;
   bool operator!=(const JointSafety& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 std::ostream& operator<<(std::ostream& os, const JointSafety& safety);
@@ -215,12 +195,6 @@ public:
 
   bool operator==(const JointCalibration& rhs) const;
   bool operator!=(const JointCalibration& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 std::ostream& operator<<(std::ostream& os, const JointCalibration& calibration);
@@ -248,12 +222,6 @@ public:
 
   bool operator==(const JointMimic& rhs) const;
   bool operator!=(const JointMimic& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 std::ostream& operator<<(std::ostream& os, const JointMimic& mimic);
@@ -346,21 +314,12 @@ public:
 private:
   std::string name_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_scene_graph::serialize(Archive& ar, Joint& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const JointType& type);
 
 }  // namespace tesseract_scene_graph
-
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointDynamics)
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointLimits)
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointSafety)
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointCalibration)
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::JointMimic)
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Joint)
 
 #endif  // TESSERACT_SCENE_GRAPH_JOINT_H

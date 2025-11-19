@@ -31,7 +31,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/cereal_eigen_types.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_environment/commands/change_joint_origin_command.h>
 

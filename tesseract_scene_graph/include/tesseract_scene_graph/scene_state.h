@@ -32,7 +32,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <Eigen/Core>
 #include <unordered_map>
 #include <vector>
@@ -41,11 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
 #include <tesseract_common/eigen_types.h>
-
-namespace boost::serialization
-{
-class access;
-}
 
 namespace tesseract_scene_graph
 {
@@ -85,14 +79,7 @@ struct SceneState
 
   bool operator==(const SceneState& rhs) const;
   bool operator!=(const SceneState& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_scene_graph
 
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::SceneState)
 #endif  // TESSERACT_SCENE_GRAPH_SCENE_STATE_H
