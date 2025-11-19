@@ -31,11 +31,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cereal/cereal.hpp>
 #include <cereal/types/atomic.hpp>
 #include <cereal/types/array.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/optional.hpp>
+#include <cereal/types/common.hpp>
 #include <cereal/types/polymorphic.hpp>
-#include <tesseract_common/cereal_eigen_types.h>
+#include <tesseract_common/cereal_serialization.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/contact_result_validator.h>
 
 namespace tesseract_collision
 {

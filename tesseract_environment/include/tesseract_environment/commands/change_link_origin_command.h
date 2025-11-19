@@ -30,18 +30,16 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <Eigen/Geometry>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
+class ChangeLinkOriginCommand;
+template <class Archive>
+void serialize(Archive& ar, ChangeLinkOriginCommand& obj);
+
 class ChangeLinkOriginCommand : public Command
 {
 public:
@@ -66,12 +64,9 @@ private:
   std::string link_name_;
   Eigen::Isometry3d origin_{ Eigen::Isometry3d::Identity() };
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, ChangeLinkOriginCommand& obj);
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeLinkOriginCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_LINK_ORIGIN_COMMAND_H

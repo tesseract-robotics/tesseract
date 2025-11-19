@@ -23,17 +23,11 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <memory>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_environment/commands/replace_joint_command.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/joint.h>
+
+#include <memory>
 
 namespace tesseract_environment
 {
@@ -60,14 +54,4 @@ bool ReplaceJointCommand::operator==(const ReplaceJointCommand& rhs) const
 }
 bool ReplaceJointCommand::operator!=(const ReplaceJointCommand& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void ReplaceJointCommand::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Command);
-  ar& BOOST_SERIALIZATION_NVP(joint_);
-}
 }  // namespace tesseract_environment
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::ReplaceJointCommand)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ReplaceJointCommand)

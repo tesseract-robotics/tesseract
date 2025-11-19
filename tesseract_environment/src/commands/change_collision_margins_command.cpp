@@ -23,13 +23,6 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/split_member.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/utils.h>
 #include <tesseract_environment/commands/change_collision_margins_command.h>
 
@@ -93,45 +86,4 @@ bool ChangeCollisionMarginsCommand::operator!=(const ChangeCollisionMarginsComma
   return !operator==(rhs);
 }
 
-template <class Archive>
-void ChangeCollisionMarginsCommand::load(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Command);
-  bool has_default_margin{ false };
-  ar& boost::serialization::make_nvp("has_default_margin", has_default_margin);
-  if (has_default_margin)
-  {
-    double default_margin{ 0 };
-    ar& boost::serialization::make_nvp("default_margin", default_margin);
-    default_margin_ = default_margin;
-  }
-  ar& BOOST_SERIALIZATION_NVP(pair_margins_);
-  ar& BOOST_SERIALIZATION_NVP(pair_override_type_);
-}
-
-template <class Archive>
-void ChangeCollisionMarginsCommand::save(Archive& ar, const unsigned int /*version*/) const
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Command);
-
-  bool has_default_margin{ default_margin_.has_value() };
-  double default_margin{ 0 };
-  if (default_margin_.has_value())
-    default_margin = default_margin_.value();
-
-  ar& boost::serialization::make_nvp("has_default_margin", has_default_margin);
-  ar& boost::serialization::make_nvp("default_margin", default_margin);
-  ar& BOOST_SERIALIZATION_NVP(pair_margins_);
-  ar& BOOST_SERIALIZATION_NVP(pair_override_type_);
-}
-
-template <class Archive>
-void ChangeCollisionMarginsCommand::serialize(Archive& ar, const unsigned int version)
-{
-  boost::serialization::split_member(ar, *this, version);
-}
 }  // namespace tesseract_environment
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::ChangeCollisionMarginsCommand)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ChangeCollisionMarginsCommand)

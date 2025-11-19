@@ -30,21 +30,19 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <optional>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 #include <tesseract_common/collision_margin_data.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
 using CollisionMarginPairData = tesseract_common::CollisionMarginPairData;
 using CollisionMarginPairOverrideType = tesseract_common::CollisionMarginPairOverrideType;
+
+class ChangeCollisionMarginsCommand;
+template <class Archive>
+void serialize(Archive& ar, ChangeCollisionMarginsCommand& obj);
 
 class ChangeCollisionMarginsCommand : public Command
 {
@@ -77,19 +75,9 @@ private:
   CollisionMarginPairData pair_margins_;
   CollisionMarginPairOverrideType pair_override_type_{ CollisionMarginPairOverrideType::NONE };
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-
   template <class Archive>
-  void load(Archive& ar, const unsigned int version);  // NOLINT
-
-  template <class Archive>
-  void save(Archive& ar, const unsigned int version) const;  // NOLINT
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, ChangeCollisionMarginsCommand& obj);
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeCollisionMarginsCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_COLLISION_MARGINS_COMMAND_H

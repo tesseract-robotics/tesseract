@@ -90,7 +90,8 @@ configure_package(
 
 # Mark cpp header files for installation
 install(
-  FILES include/${PROJECT_NAME}/srdf_model.h
+  FILES include/${PROJECT_NAME}/cereal_serialization.h
+        include/${PROJECT_NAME}/srdf_model.h
         include/${PROJECT_NAME}/kinematics_information.h
         include/${PROJECT_NAME}/utils.h
         include/${PROJECT_NAME}/fwd.h

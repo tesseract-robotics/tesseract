@@ -30,18 +30,16 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <string>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
+class RemoveJointCommand;
+template <class Archive>
+void serialize(Archive& ar, RemoveJointCommand& obj);
+
 class RemoveJointCommand : public Command
 {
 public:
@@ -67,12 +65,9 @@ public:
 private:
   std::string joint_name_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, RemoveJointCommand& obj);
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::RemoveJointCommand)
 #endif  // TESSERACT_ENVIRONMENT_REMOVE_JOINT_COMMAND_H

@@ -23,19 +23,10 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#if (BOOST_VERSION >= 107400) && (BOOST_VERSION < 107500)
-#include <boost/serialization/library_version_type.hpp>
-#endif
-#include <boost/serialization/unordered_map.hpp>
-#include <string>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/utils.h>
 #include <tesseract_environment/commands/change_joint_velocity_limits_command.h>
+
+#include <string>
 
 namespace tesseract_environment
 {
@@ -68,14 +59,4 @@ bool ChangeJointVelocityLimitsCommand::operator!=(const ChangeJointVelocityLimit
   return !operator==(rhs);
 }
 
-template <class Archive>
-void ChangeJointVelocityLimitsCommand::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Command);
-  ar& BOOST_SERIALIZATION_NVP(limits_);
-}
 }  // namespace tesseract_environment
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::ChangeJointVelocityLimitsCommand)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ChangeJointVelocityLimitsCommand)

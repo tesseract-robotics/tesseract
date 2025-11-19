@@ -30,18 +30,16 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <string>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
+class ChangeLinkVisibilityCommand;
+template <class Archive>
+void serialize(Archive& ar, ChangeLinkVisibilityCommand& obj);
+
 class ChangeLinkVisibilityCommand : public Command
 {
 public:
@@ -67,12 +65,9 @@ private:
   std::string link_name_;
   bool enabled_{ false };
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, ChangeLinkVisibilityCommand& obj);
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeLinkVisibilityCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_LINK_VISIBILITY_COMMAND_H

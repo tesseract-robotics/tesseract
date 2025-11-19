@@ -52,11 +52,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/contact_allowed_validator.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
 /**
@@ -67,6 +62,29 @@ namespace tesseract_environment
 using FindTCPOffsetCallbackFn = std::function<Eigen::Isometry3d(const tesseract_common::ManipulatorInfo&)>;
 
 using EventCallbackFn = std::function<void(const Event& event)>;
+
+class Environment;
+template <class Archive>
+void serialize(Archive& ar, Environment& obj);
+
+class EnvironmentContactAllowedValidator;
+template <class Archive>
+void serialize(Archive& ar, EnvironmentContactAllowedValidator& obj);
+
+class EnvironmentContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+{
+public:
+  EnvironmentContactAllowedValidator() = default;  // Required for serialization
+  EnvironmentContactAllowedValidator(std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph);
+
+  bool operator()(const std::string& link_name1, const std::string& link_name2) const override;
+
+protected:
+  std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph_;
+
+  template <class Archive>
+  friend void ::tesseract_environment::serialize(Archive& ar, EnvironmentContactAllowedValidator& obj);
+};
 
 class Environment
 {
@@ -605,16 +623,16 @@ private:
   struct Implementation;
   std::unique_ptr<Implementation> impl_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void save(Archive& ar, const unsigned int version) const;  // NOLINT
+  /** @brief This is provided for serialization */
+  void init(const std::vector<std::shared_ptr<const Command>>& commands,
+            int init_revision,
+            const std::chrono::system_clock::time_point& timestamp,
+            const tesseract_scene_graph::SceneState& current_state,
+            const std::chrono::system_clock::time_point& current_state_timestamp,
+            const std::shared_ptr<const tesseract_common::ResourceLocator>& resource_locator);
 
   template <class Archive>
-  void load(Archive& ar, const unsigned int version);  // NOLINT
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, Environment& obj);
 
 public:
   /** @brief This should only be used by the clone method */
@@ -625,7 +643,5 @@ using EnvironmentPtrAnyPoly = tesseract_common::AnyWrapper<std::shared_ptr<tesse
 using EnvironmentConstPtrAnyPoly =
     tesseract_common::AnyWrapper<std::shared_ptr<const tesseract_environment::Environment>>;
 }  // namespace tesseract_environment
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::Environment)
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::EnvironmentPtrAnyPoly)
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::EnvironmentConstPtrAnyPoly)
+
 #endif  // TESSERACT_ENVIRONMENT_ENVIRONMENT_H

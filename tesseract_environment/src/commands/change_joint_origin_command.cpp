@@ -23,16 +23,10 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <string>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/utils.h>
 #include <tesseract_environment/commands/change_joint_origin_command.h>
+
+#include <string>
 
 namespace tesseract_environment
 {
@@ -57,15 +51,4 @@ bool ChangeJointOriginCommand::operator==(const ChangeJointOriginCommand& rhs) c
 }
 bool ChangeJointOriginCommand::operator!=(const ChangeJointOriginCommand& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void ChangeJointOriginCommand::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Command);
-  ar& BOOST_SERIALIZATION_NVP(origin_);
-  ar& BOOST_SERIALIZATION_NVP(joint_name_);
-}
 }  // namespace tesseract_environment
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::ChangeJointOriginCommand)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::ChangeJointOriginCommand)

@@ -32,15 +32,9 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <vector>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
-
-namespace boost::serialization
-{
-class access;
-}
 
 namespace tesseract_environment
 {
@@ -71,14 +65,9 @@ enum class CommandType
   ADD_TRAJECTORY_LINK = 21
 };
 
+class Command;
 template <class Archive>
-void save(Archive& ar, const CommandType& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void load(Archive& ar, CommandType& g, const unsigned int version);  // NOLINT
-
-template <class Archive>
-void serialize(Archive& ar, CommandType& g, const unsigned int version);  // NOLINT
+void serialize(Archive& ar, Command& obj);
 
 class Command
 {
@@ -101,15 +90,11 @@ public:
 private:
   CommandType type_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, Command& obj);
 };
 
 using Commands = std::vector<std::shared_ptr<const Command>>;
 }  // namespace tesseract_environment
-
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::Command)
 
 #endif  // COMMAND_H
