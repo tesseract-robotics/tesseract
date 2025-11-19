@@ -101,8 +101,7 @@ add_library(
   src/types.cpp
   src/stopwatch.cpp
   src/timer.cpp
-  src/yaml_utils.cpp
-)
+  src/yaml_utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
