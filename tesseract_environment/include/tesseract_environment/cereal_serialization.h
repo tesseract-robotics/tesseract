@@ -212,7 +212,7 @@ void serialize(Archive& ar, Environment& obj)
     tesseract_environment::Commands commands;
     ar(cereal::make_nvp("commands", commands));
 
-    int init_revision;
+    int init_revision{ 0 };
     ar(cereal::make_nvp("init_revision", init_revision));
 
     tesseract_scene_graph::SceneState current_state;
