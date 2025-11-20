@@ -289,7 +289,7 @@ void testSerializationAnyPoly(
     const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
-    auto object_stored = object.as<SerializableTypeStored>();
+    const auto& object_stored = object.as<SerializableTypeStored>();
     EXPECT_TRUE(compare(object_stored, nobject_stored));
   }
 
@@ -301,7 +301,7 @@ void testSerializationAnyPoly(
     const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
-    auto object_stored = object.as<SerializableTypeStored>();
+    const auto& object_stored = object.as<SerializableTypeStored>();
     EXPECT_TRUE(compare(object_stored, nobject_stored));
   }
 
@@ -310,10 +310,10 @@ void testSerializationAnyPoly(
     EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileBinary<tesseract_common::AnyPoly>(object, file_path));
 
     auto nobject = tesseract_common::Serialization::fromArchiveFileBinary<tesseract_common::AnyPoly>(file_path);
-    auto nobject_stored = nobject.as<SerializableTypeStored>();
+    const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
-    auto object_stored = object.as<SerializableTypeStored>();
+    const auto& object_stored = object.as<SerializableTypeStored>();
     EXPECT_TRUE(compare(object_stored, nobject_stored));
   }
 
@@ -324,10 +324,10 @@ void testSerializationAnyPoly(
 
     auto nobject = tesseract_common::Serialization::fromArchiveStringXML<tesseract_common::AnyPoly>(object_string,
                                                                                                     typename_string);
-    auto nobject_stored = nobject.as<SerializableTypeStored>();
+    const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
-    auto object_stored = object.as<SerializableTypeStored>();
+    const auto& object_stored = object.as<SerializableTypeStored>();
     EXPECT_TRUE(compare(object_stored, nobject_stored));
   }
 
@@ -338,10 +338,10 @@ void testSerializationAnyPoly(
 
     auto nobject = tesseract_common::Serialization::fromArchiveStringJSON<tesseract_common::AnyPoly>(object_string,
                                                                                                      typename_string);
-    auto nobject_stored = nobject.as<SerializableTypeStored>();
+    const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
-    auto object_stored = object.as<SerializableTypeStored>();
+    const auto& object_stored = object.as<SerializableTypeStored>();
     EXPECT_TRUE(compare(object_stored, nobject_stored));
   }
 
@@ -352,10 +352,10 @@ void testSerializationAnyPoly(
 
     auto nobject =
         tesseract_common::Serialization::fromArchiveBinaryData<tesseract_common::AnyPoly>(object_data, typename_string);
-    auto nobject_stored = nobject.as<SerializableTypeStored>();
+    const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
-    auto object_stored = object.as<SerializableTypeStored>();
+    const auto& object_stored = object.as<SerializableTypeStored>();
     EXPECT_TRUE(compare(object_stored, nobject_stored));
   }
 }

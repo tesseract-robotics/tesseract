@@ -19,6 +19,7 @@ find_package(tesseract_state_solver REQUIRED)
 find_package(tesseract_srdf REQUIRED)
 find_package(tesseract_urdf REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(cereal REQUIRED)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
@@ -60,6 +61,7 @@ add_library(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
+         cereal::cereal
          tesseract::tesseract_common
          tesseract::tesseract_collision_core
          tesseract::tesseract_scene_graph
@@ -112,6 +114,7 @@ add_library(
 target_link_libraries(
   ${PROJECT_NAME}_commands
   PUBLIC Eigen3::Eigen
+         cereal::cereal
          tesseract::tesseract_common
          tesseract::tesseract_collision_core
          tesseract::tesseract_scene_graph
@@ -139,6 +142,7 @@ configure_package(
   TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_commands
   DEPENDENCIES
     Eigen3
+    cereal
     console_bridge
     "tesseract_collision COMPONENTS core"
     tesseract_scene_graph
@@ -178,6 +182,7 @@ if(TESSERACT_PACKAGE)
     LINUX_DEPENDS
       "libconsole-bridge-dev"
       "libeigen3-dev"
+      "cereal"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics-core"
@@ -189,6 +194,7 @@ if(TESSERACT_PACKAGE)
     WINDOWS_DEPENDS
       "console_bridge"
       "Eigen3"
+      "cereal"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics-core"

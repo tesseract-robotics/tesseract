@@ -14,6 +14,7 @@
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_common</depend>
   <depend>yaml-cpp</depend>
+  <depend>cereal</depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>

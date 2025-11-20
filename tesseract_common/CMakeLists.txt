@@ -13,20 +13,10 @@ include(cmake/tesseract_macros.cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 if(NOT APPLE)
-  find_package(
-    Boost REQUIRED
-    COMPONENTS system
-               filesystem
-               serialization
-               stacktrace_noop
-    OPTIONAL_COMPONENTS stacktrace_backtrace stacktrace_basic)
+  find_package(Boost REQUIRED COMPONENTS system filesystem stacktrace_noop OPTIONAL_COMPONENTS stacktrace_backtrace
+                                                                                               stacktrace_basic)
 else()
-  find_package(
-    Boost REQUIRED
-    COMPONENTS system
-               filesystem
-               serialization
-               stacktrace_noop)
+  find_package(Boost REQUIRED COMPONENTS system filesystem stacktrace_noop)
 endif()
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
@@ -111,7 +101,6 @@ target_link_libraries(
          Boost::boost
          Boost::system
          Boost::filesystem
-         Boost::serialization
          ${TESSERACT_BACKTRACE_LIB}
          console_bridge::console_bridge
          cereal::cereal
@@ -169,19 +158,19 @@ if(TESSERACT_PACKAGE)
     LINUX_DEPENDS
       "libboost-system-dev"
       "libboost-filesystem-dev"
-      "libboost-serialization-dev"
       "libconsole-bridge-dev"
       "libtinyxml2-dev"
       "libeigen3-dev"
       "libyaml-cpp-dev"
+      "cereal"
     WINDOWS_DEPENDS
       "boost_system"
       "boost_filesystem"
-      "boost_serialization"
       "console-bridge"
       "tinyxml2"
       "Eigen3"
-      "yaml-cpp")
+      "yaml-cpp"
+      "cereal")
 
   if(UNIX AND TESSERACT_PACKAGE_SOURCE)
     cpack_debian_source_package(

@@ -58,8 +58,8 @@ std::ostream& operator<<(std::ostream& os, const JointDynamics& dynamics)
 /******              JointLimits                     *****/
 /*********************************************************/
 
-JointLimits::JointLimits(double l, double u, double e, double v, double a, double j)
-  : lower(l), upper(u), effort(e), velocity(v), acceleration(a), jerk(j)
+JointLimits::JointLimits(double lower, double upper, double effort, double velocity, double acceleration, double jerk)
+  : lower(lower), upper(upper), effort(effort), velocity(velocity), acceleration(acceleration), jerk(jerk)
 {
 }
 

@@ -15,7 +15,7 @@ target_link_libraries(
          boost_plugin_loader::boost_plugin_loader
          Boost::boost
          Boost::system
-         Boost::serialization
+         cereal::cereal
          yaml-cpp
          octomap)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
@@ -57,7 +57,8 @@ configure_component(
     yaml-cpp
     octomap
     boost_plugin_loader
-    "Boost COMPONENTS system program_options serialization"
+    cereal
+    "Boost COMPONENTS system program_options"
   CFG_EXTRAS cmake/core-extras.cmake)
 
 if(TESSERACT_PACKAGE)
@@ -72,7 +73,7 @@ if(TESSERACT_PACKAGE)
       "liboctomap-dev"
       "libboost-system-dev"
       "libboost-program-options-dev"
-      "libboost-serialization-dev"
+      "cereal"
       "boost-plugin-loader"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
@@ -84,7 +85,7 @@ if(TESSERACT_PACKAGE)
       "liboctomap-dev"
       "libboost-system-dev"
       "libboost-program-options-dev"
-      "libboost-serialization-dev"
+      "cereal"
       "boost-plugin-loader"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"

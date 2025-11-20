@@ -88,6 +88,7 @@ void serialize(Archive& ar, Octree& obj)
     // Feed them to octomap via a binary stringstream
     auto local_octree = std::make_shared<octomap::OcTree>(obj.resolution_);
     std::stringstream ss(std::ios::in | std::ios::out | std::ios::binary);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     ss.write(reinterpret_cast<const char*>(octree_data.data()), static_cast<std::streamsize>(octree_data.size()));
 
     if (obj.binary_octree_)
