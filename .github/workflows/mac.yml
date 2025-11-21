@@ -19,7 +19,7 @@ on:
 env:
   VCPKG_PKGS: >- 
     boost-dll boost-program-options boost-stacktrace
-    boost-filesystem
+    boost-filesystem cereal
     tinyxml2 console-bridge assimp
     urdfdom octomap orocos-kdl pcl
     gtest benchmark flann jsoncpp

@@ -23,6 +23,7 @@ requirements:
       - {{ cdt('mesa-dri-drivers') }}    # [linux]
     host:
       - libboost-devel
+      - cereal
       - eigen 
       - tinyxml2
       - console_bridge
@@ -45,6 +46,7 @@ requirements:
       - xorg-libxext   # [unix]
     run:
       - libboost-devel
+      - cereal
       - eigen 
       - tinyxml2
       - console_bridge
