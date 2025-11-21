@@ -165,18 +165,6 @@ Tesseract's Google benchmarks can be built by building with the flag `DTESSERACT
 
 To run the benchmarks at compile time and save the results to a json file in the build directory, add the flag `-DTESSERACT_ENABLE_RUN_BENCHMARKING=ON`
 
-## Boost Serialization
-
-This package leverages boost serialization. When adding new classes which may be inherited from and then serialized as the base type it is imported to add the following macros for the base type and all derived types.
-
-- Header
-  - Abstract Class
-    - `BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::JointLimits)`
-  - Non-Abstract Class
-    - `BOOST_CLASS_EXPORT_KEY(tesseract_common::JointLimits)`
-- Cpp
-  - `BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointLimits)`
-
 ## Create Debian Package (Linux) or NuGet Package (Windows)
 
 The following process will generate a Debian or NuGet package leveraging cmake and cpack based on the OS.

@@ -27,10 +27,6 @@
   <build_export_depend>libboost-filesystem-dev</build_export_depend>
   <exec_depend>libboost-filesystem</exec_depend>
 
-  <build_depend>libboost-serialization-dev</build_depend>
-  <build_export_depend>libboost-serialization-dev</build_export_depend>
-  <exec_depend>libboost-serialization</exec_depend>
-
   <test_depend>gtest</test_depend>
   <test_depend>lcov</test_depend>
   <test_depend>libclang-dev</test_depend>
