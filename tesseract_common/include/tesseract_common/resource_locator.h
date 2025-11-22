@@ -203,7 +203,7 @@ public:
   using Ptr = std::shared_ptr<SimpleLocatedResource>;
   using ConstPtr = std::shared_ptr<const SimpleLocatedResource>;
 
-  /** @brief This is for boost serialization do not use directly */
+  /** @brief This is for serialization do not use directly */
   SimpleLocatedResource() = default;
 
   /**
@@ -246,7 +246,7 @@ private:
 class BytesResource : public tesseract_common::Resource
 {
 public:
-  /** @brief This is for boost serialization do not use directly */
+  /** @brief This is for serialization do not use directly */
   BytesResource() = default;
 
   BytesResource(std::string url, std::vector<uint8_t> bytes, ResourceLocator::ConstPtr parent = nullptr);

@@ -1,6 +1,6 @@
 /**
  * @file serialization.h
- * @brief Additional Boost serialization wrappers
+ * @brief Additional serialization wrappers
  * @details Supports the following
  *            - Eigen::VectorXd
  *            - Eigen::Isometry3d

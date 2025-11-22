@@ -1,6 +1,6 @@
 /**
  * @file serialization_extensions.h
- * @brief Boost serialization class extension macros and helpers
+ * @brief Serialization class extension macros and helpers
  *
  * @author Levi Armstrong
  * @date July 24, 2022

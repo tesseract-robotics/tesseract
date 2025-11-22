@@ -59,9 +59,10 @@ int main()
   tesseract_common::ProfileDictionary profile_dict;
   tesseract_common::AnyPoly poly;
   {
-    cereal::JSONInputArchive iarchive(ss);  // Create an input archive
+    auto opts = cereal::JSONOutputArchive::Options::NoIndent();
+    cereal::JSONOutputArchive oarchive(ss, opts);  // Create an input archive
 
-    iarchive(acm,
+    oarchive(acm,
              calibration_info,
              collision_margin_data,
              validator,

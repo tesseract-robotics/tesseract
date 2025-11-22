@@ -53,7 +53,7 @@ bool testSerializationComparePtrEqual(const SerializableType& a, const Serializa
 }
 
 /**
- * @brief Tests Boost serialization for a serializable type
+ * @brief Tests serialization for a serializable type
  * @details Serializes the type to XML file, binary file, and XML string. It then deserializes it and calls the equality
  * operator on the results
  * @param object Object to be serialized
@@ -176,7 +176,7 @@ void testSerialization(
 }
 
 /**
- * @brief Tests Boost serialization for a serializable derived type
+ * @brief Tests serialization for a serializable derived type
  * @details Serializes the type to XML file, binary file, and XML string using the base type. It then deserializes it,
  * casts it to the derived type, and calls the equality operator on the results
  * @param object Base class pointer to the object to be serialized
@@ -269,7 +269,7 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
 }
 
 /**
- * @brief Tests Boost serialization for a serializable any poly type
+ * @brief Tests serialization for a serializable any poly type
  * @details Serializes the type to XML file, binary file, and XML string using the base type. It then deserializes it,
  * casts it to the derived type, and calls the equality operator on the results
  * @param object Base class pointer to the object to be serialized

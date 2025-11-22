@@ -1,6 +1,6 @@
 /**
  * @file serialization.h
- * @brief Boost serialization macros and helpers
+ * @brief Serialization helpers
  *
  * @author Levi Armstrong
  * @author Matthew Powelson
