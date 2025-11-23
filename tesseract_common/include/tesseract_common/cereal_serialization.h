@@ -130,7 +130,8 @@ void serialize(Archive& /*ar*/, Resource& /*obj*/)
 template <class Archive>
 void serialize(Archive& ar, GeneralResourceLocator& obj)
 {
-  ar(cereal::make_nvp("package_paths", obj.package_paths_));
+  // This should not be serialized and dynamically loaded to pull host paths
+  // ar(cereal::make_nvp("package_paths", obj.package_paths_));
 }
 
 template <class Archive>
