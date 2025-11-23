@@ -118,10 +118,7 @@ target_code_coverage(
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 
-add_executable(cereal_example src/cereal_example.cpp)
-target_link_libraries(cereal_example PRIVATE ${PROJECT_NAME})
-
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME} cereal_example)
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC Bcrypt)
 endif()
