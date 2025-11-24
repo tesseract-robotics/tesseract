@@ -99,9 +99,10 @@ struct extension
  * @details The extension should include the '.', for example .yaml
  * @param T the class to define extensions for
  * @param X the xml serialziation extension for the provided class
+ * @param J the json serialziation extension for the provided class
  * @param B the binary serialzation extension for the provided class
  */
-#define TESSERACT_CLASS_EXTENSION(T, X, B)                                                                             \
+#define TESSERACT_CLASS_EXTENSION(T, X, J, B)                                                                          \
   namespace tesseract_common                                                                                           \
   {                                                                                                                    \
   namespace serialization::xml                                                                                         \
@@ -118,7 +119,7 @@ struct extension
   template <>                                                                                                          \
   struct extension<T>                                                                                                  \
   {                                                                                                                    \
-    static constexpr const char* value = X;                                                                            \
+    static constexpr const char* value = J;                                                                            \
     static_assert(value[0] == '.', "JSON extension value must start with a '.'");                                      \
   };                                                                                                                   \
   }                                                                                                                    \

@@ -448,7 +448,7 @@ struct ExtensionMacroTestA
   double a{ 0 };
 };
 
-TESSERACT_CLASS_EXTENSION(ExtensionMacroTestA, ".etax", ".etab")
+TESSERACT_CLASS_EXTENSION(ExtensionMacroTestA, ".etax", ".etaj", ".etab")
 
 struct ExtensionMacroTestB
 {
@@ -462,6 +462,15 @@ TEST(TesseractCommonSerializeUnit, ExtensionXmlMacro)  // NOLINT
 
   std::string default_ext = tesseract_common::serialization::xml::extension<ExtensionMacroTestB>::value;
   EXPECT_EQ(default_ext, ".trsx");
+}
+
+TEST(TesseractCommonSerializeUnit, ExtensionJsonMacro)  // NOLINT
+{
+  std::string ext = tesseract_common::serialization::json::extension<ExtensionMacroTestA>::value;
+  EXPECT_EQ(ext, ".etaj");
+
+  std::string default_ext = tesseract_common::serialization::json::extension<ExtensionMacroTestB>::value;
+  EXPECT_EQ(default_ext, ".trsj");
 }
 
 TEST(TesseractCommonSerializeUnit, ExtensionBinaryMacro)  // NOLINT
