@@ -31,18 +31,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
+class ChangeJointAccelerationLimitsCommand;
+template <class Archive>
+void serialize(Archive& ar, ChangeJointAccelerationLimitsCommand& obj);
+
 class ChangeJointAccelerationLimitsCommand : public Command
 {
 public:
@@ -72,12 +70,9 @@ public:
 private:
   std::unordered_map<std::string, double> limits_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, ChangeJointAccelerationLimitsCommand& obj);
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeJointAccelerationLimitsCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_ACCELERATION_LIMITS_COMMAND_H

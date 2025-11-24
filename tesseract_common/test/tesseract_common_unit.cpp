@@ -2,9 +2,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <type_traits>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 #include <tinyxml2.h>
 #include <sstream>
 #include <thread>
@@ -26,6 +23,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/timer.h>
 #include <tesseract_common/profile.h>
 #include <tesseract_common/profile_dictionary.h>
+#include <tesseract_common/serialization.h>
+#include <tesseract_common/cereal_serialization.h>
+#include <tesseract_common/unit_test_utils.h>
 
 /** @brief Resource locator implementation using a provided function to locate file resources */
 class TestResourceLocator : public tesseract_common::ResourceLocator
@@ -587,29 +587,15 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   const auto& any_type_const_ref2 = any_type.as<tesseract_common::JointState>();
   EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
 
-  {
-    std::ofstream os(tesseract_common::getTempPath() + "any_type_boost.xml");
-    boost::archive::xml_oarchive oa(os);
-    oa << BOOST_SERIALIZATION_NVP(any_type);
-  }
+  tesseract_common::testSerializationAnyPoly<tesseract_common::JointState>(any_type, "any_joint_state_poly");
 
   tesseract_common::AnyPoly nany_type;
-  {
-    std::ifstream ifs(tesseract_common::getTempPath() + "any_type_boost.xml");
-    assert(ifs.good());
-    boost::archive::xml_iarchive ia(ifs);
-
-    // restore the schedule from the archive
-    ia >> BOOST_SERIALIZATION_NVP(nany_type);
-  }
-
-  EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
-  EXPECT_TRUE(nany_type.as<tesseract_common::JointState>() == joint_state);
+  tesseract_common::testSerialization<tesseract_common::AnyPoly>(nany_type, "any_null_poly");
 
 // Test bad cast
 #ifndef _MSC_VER
   // Horrible compilation errors on MSVC
-  EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
+  EXPECT_ANY_THROW(any_type.as<tesseract_common::Toolpath>());  // NOLINT
 #endif
 }
 
@@ -625,31 +611,7 @@ void runAnyPolyIntegralTest(const T& value, const std::string& type_str)
   EXPECT_TRUE(any_copy == any_type);
   EXPECT_TRUE(any_copy.as<T>() == value);
 
-  const std::string filepath{ tesseract_common::getTempPath() + "any_" + type_str + "_type_boost.xml" };
-  {
-    std::ofstream os(filepath);
-    boost::archive::xml_oarchive oa(os);
-    oa << BOOST_SERIALIZATION_NVP(any_type);
-  }
-
-  tesseract_common::AnyPoly nany_type;
-  {
-    std::ifstream ifs(filepath);
-    assert(ifs.good());
-    boost::archive::xml_iarchive ia(ifs);
-
-    // restore the schedule from the archive
-    ia >> BOOST_SERIALIZATION_NVP(nany_type);
-  }
-
-  EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(T)));
-  EXPECT_TRUE(nany_type.as<T>() == value);
-
-// Test bad cast
-#ifndef _MSC_VER
-  // Horrible compilation errors on MSVC
-  EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
-#endif
+  tesseract_common::testSerializationAnyPoly<T>(any_type, "any_" + type_str + "_poly");
 }
 
 TEST(TesseractCommonUnit, anyIntegralTypesUnit)  // NOLINT
@@ -679,33 +641,8 @@ void runAnyPolyUnorderedMapIntegralTest(T value, const std::string& type_str)
   check = any_copy.as<std::unordered_map<std::string, T>>() == data;
   EXPECT_TRUE(check);
 
-  const std::string filepath{ tesseract_common::getTempPath() + "any_unordered_map_string_" + type_str +
-                              "_type_boost.xml" };
-  {
-    std::ofstream os(filepath);
-    boost::archive::xml_oarchive oa(os);
-    oa << BOOST_SERIALIZATION_NVP(any_type);
-  }
-
-  tesseract_common::AnyPoly nany_type;
-  {
-    std::ifstream ifs(filepath);
-    assert(ifs.good());
-    boost::archive::xml_iarchive ia(ifs);
-
-    // restore the schedule from the archive
-    ia >> BOOST_SERIALIZATION_NVP(nany_type);
-  }
-
-  EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(std::unordered_map<std::string, T>)));
-  check = nany_type.as<std::unordered_map<std::string COMMA T>>() == data;
-  EXPECT_TRUE(check);
-
-  // Test bad cast
-#ifndef _MSC_VER
-  // Horrible compilation errors on MSVC
-  EXPECT_ANY_THROW(nany_type.as<tesseract_common::Toolpath>());  // NOLINT
-#endif
+  tesseract_common::testSerializationAnyPoly<std::unordered_map<std::string, T>>(
+      any_type, "any_unordered_map_string_" + type_str + "_poly");
 }
 
 TEST(TesseractCommonUnit, anyUnorderedMapIntegralTypesUnit)  // NOLINT
@@ -754,27 +691,9 @@ TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
   const auto& any_type_const_ref2 = any_type.as<std::shared_ptr<tesseract_common::JointState>>();
   EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
 
-  {
-    std::ofstream os(tesseract_common::getTempPath() + "any_shared_ptr_type_boost.xml");
-    boost::archive::xml_oarchive oa(os);
-    oa << BOOST_SERIALIZATION_NVP(any_type);
-  }
-
-  tesseract_common::AnyPoly nany_type;
-  {
-    std::ifstream ifs(tesseract_common::getTempPath() + "any_shared_ptr_type_boost.xml");
-    assert(ifs.good());
-    boost::archive::xml_iarchive ia(ifs);
-
-    // restore the schedule from the archive
-    ia >> BOOST_SERIALIZATION_NVP(nany_type);
-  }
-
-  EXPECT_TRUE(nany_type.getType() == std::type_index(typeid(std::shared_ptr<tesseract_common::JointState>)));
-  EXPECT_TRUE(*nany_type.as<std::shared_ptr<tesseract_common::JointState>>() == joint_state);
-
-  // Test bad cast
-  EXPECT_ANY_THROW(nany_type.as<tesseract_common::JointState>());  // NOLINT
+  auto compare = tesseract_common::testSerializationComparePtrEqual<std::shared_ptr<tesseract_common::JointState>>;
+  tesseract_common::testSerializationAnyPoly<std::shared_ptr<tesseract_common::JointState>>(
+      any_type, "any_shared_ptr_poly", compare);
 }
 
 TEST(TesseractCommonUnit, boundsUnit)  // NOLINT
@@ -3740,15 +3659,15 @@ TEST(TesseractCommonUnit, CollisionMarginDataSerialization)  // NOLINT
   // Serialize the data
   std::stringstream ss;
   {
-    boost::archive::xml_oarchive oa(ss);
-    oa << boost::serialization::make_nvp("collision_margin_data", original_data);
+    cereal::XMLOutputArchive oa(ss);
+    oa << cereal::make_nvp("collision_margin_data", original_data);
   }
 
   // Deserialize into new object
   tesseract_common::CollisionMarginData deserialized_data;
   {
-    boost::archive::xml_iarchive ia(ss);
-    ia >> boost::serialization::make_nvp("collision_margin_data", deserialized_data);
+    cereal::XMLInputArchive ia(ss);
+    ia >> cereal::make_nvp("collision_margin_data", deserialized_data);
   }
 
   // Verify that max_collision_margin_ is correctly reconstructed

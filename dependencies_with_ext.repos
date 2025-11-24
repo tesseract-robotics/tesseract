@@ -14,3 +14,7 @@
     local-name: opw_kinematics
     uri: https://github.com/Jmeyer1292/opw_kinematics.git
     version: 0.5.2
+- git:
+    local-name: cereal
+    uri: https://github.com/Levi-Armstrong/cereal.git
+    version: catkin

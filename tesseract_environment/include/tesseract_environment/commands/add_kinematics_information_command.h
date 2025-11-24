@@ -29,19 +29,17 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 #include <tesseract_srdf/kinematics_information.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
+class AddKinematicsInformationCommand;
+template <class Archive>
+void serialize(Archive& ar, AddKinematicsInformationCommand& obj);
+
 class AddKinematicsInformationCommand : public Command
 {
 public:
@@ -63,12 +61,9 @@ public:
 private:
   tesseract_srdf::KinematicsInformation kinematics_information_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, AddKinematicsInformationCommand& obj);
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::AddKinematicsInformationCommand)
 #endif  // TESSERACT_ENVIRONMENT_ADD_KINEMATICS_INFORMATION_COMMAND_H

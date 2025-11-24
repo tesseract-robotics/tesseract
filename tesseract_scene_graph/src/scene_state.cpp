@@ -28,15 +28,6 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/unordered_map.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/scene_state.h>
 
@@ -78,17 +69,4 @@ bool SceneState::operator==(const SceneState& rhs) const
 }
 bool SceneState::operator!=(const SceneState& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void SceneState::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(joints);
-  ar& BOOST_SERIALIZATION_NVP(floating_joints);
-  ar& BOOST_SERIALIZATION_NVP(link_transforms);
-  ar& BOOST_SERIALIZATION_NVP(joint_transforms);
-}
-
 }  // namespace tesseract_scene_graph
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::SceneState)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::SceneState)

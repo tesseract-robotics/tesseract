@@ -35,14 +35,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-#include <boost/serialization/export.hpp>
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
+class ChangeJointPositionLimitsCommand;
+template <class Archive>
+void serialize(Archive& ar, ChangeJointPositionLimitsCommand& obj);
+
 class ChangeJointPositionLimitsCommand : public Command
 {
 public:
@@ -73,12 +71,9 @@ public:
 private:
   std::unordered_map<std::string, std::pair<double, double>> limits_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, ChangeJointPositionLimitsCommand& obj);
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::ChangeJointPositionLimitsCommand)
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_POSITION_LIMITS_COMMAND_H

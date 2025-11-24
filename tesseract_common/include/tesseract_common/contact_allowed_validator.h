@@ -35,6 +35,15 @@
 
 namespace tesseract_common
 {
+class ACMContactAllowedValidator;
+class CombinedContactAllowedValidator;
+
+template <class Archive>
+void serialize(Archive& ar, ACMContactAllowedValidator& obj);
+
+template <class Archive>
+void serialize(Archive& ar, CombinedContactAllowedValidator& obj);
+
 /** @brief Should return true if links are allowed to be in collision, otherwise false. */
 class ContactAllowedValidator
 {
@@ -47,12 +56,6 @@ public:
   virtual ~ContactAllowedValidator() = default;
 
   virtual bool operator()(const std::string&, const std::string&) const = 0;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class ACMContactAllowedValidator : public ContactAllowedValidator
@@ -72,10 +75,8 @@ protected:
   tesseract_common::AllowedCollisionMatrix acm_;
 
 private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, ACMContactAllowedValidator& obj);
 };
 
 /** @brief Identify how the two should be combined */
@@ -106,16 +107,10 @@ protected:
   CombinedContactAllowedValidatorType type_{ CombinedContactAllowedValidatorType::OR };
 
 private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, CombinedContactAllowedValidator& obj);
 };
 
 }  // namespace tesseract_common
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::ContactAllowedValidator)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::ACMContactAllowedValidator)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::CombinedContactAllowedValidator)
 
 #endif  // TESSERACT_COMMON_CONTACT_ALLOWED_VALIDATOR_H

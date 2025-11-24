@@ -15,6 +15,7 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(cereal REQUIRED)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
@@ -59,7 +60,8 @@ target_link_libraries(
   PUBLIC Eigen3::Eigen
          tesseract::tesseract_common
          tesseract::tesseract_scene_graph
-         yaml-cpp)
+         yaml-cpp
+         cereal::cereal)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -86,11 +88,13 @@ configure_package(
     tesseract_common
     tesseract_scene_graph
     yaml-cpp
+    cereal
   CFG_EXTRAS cmake/tesseract_srdf-extras.cmake)
 
 # Mark cpp header files for installation
 install(
-  FILES include/${PROJECT_NAME}/srdf_model.h
+  FILES include/${PROJECT_NAME}/cereal_serialization.h
+        include/${PROJECT_NAME}/srdf_model.h
         include/${PROJECT_NAME}/kinematics_information.h
         include/${PROJECT_NAME}/utils.h
         include/${PROJECT_NAME}/fwd.h

@@ -1,6 +1,6 @@
 /**
  * @file serialization_extensions.h
- * @brief Boost serialization class extension macros and helpers
+ * @brief Serialization class extension macros and helpers
  *
  * @author Levi Armstrong
  * @date July 24, 2022
@@ -55,6 +55,25 @@ struct extension
 };
 }  // namespace serialization::xml
 
+namespace serialization::json
+{
+template <class T>
+struct extension
+{
+  template <class U>
+  struct traits_class_extension
+  {
+    using extension_type = typename U::extenstion;
+  };
+
+  using extension_type = typename boost::mpl::eval_if<has_member_extension_type<T>,
+                                                      traits_class_extension<T>,
+                                                      boost::mpl::string<'.', 't', 'r', 's', 'j'>>::type;
+
+  static constexpr const char* value = boost::mpl::c_str<extension::extension_type>::value;
+};
+}  // namespace serialization::json
+
 namespace serialization::binary
 {
 template <class T>
@@ -80,9 +99,10 @@ struct extension
  * @details The extension should include the '.', for example .yaml
  * @param T the class to define extensions for
  * @param X the xml serialziation extension for the provided class
+ * @param J the json serialziation extension for the provided class
  * @param B the binary serialzation extension for the provided class
  */
-#define TESSERACT_CLASS_EXTENSION(T, X, B)                                                                             \
+#define TESSERACT_CLASS_EXTENSION(T, X, J, B)                                                                          \
   namespace tesseract_common                                                                                           \
   {                                                                                                                    \
   namespace serialization::xml                                                                                         \
@@ -92,6 +112,15 @@ struct extension
   {                                                                                                                    \
     static constexpr const char* value = X;                                                                            \
     static_assert(value[0] == '.', "XML extension value must start with a '.'");                                       \
+  };                                                                                                                   \
+  }                                                                                                                    \
+  namespace serialization::json                                                                                        \
+  {                                                                                                                    \
+  template <>                                                                                                          \
+  struct extension<T>                                                                                                  \
+  {                                                                                                                    \
+    static constexpr const char* value = J;                                                                            \
+    static_assert(value[0] == '.', "JSON extension value must start with a '.'");                                      \
   };                                                                                                                   \
   }                                                                                                                    \
   namespace serialization::binary                                                                                      \

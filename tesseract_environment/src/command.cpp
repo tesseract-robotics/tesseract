@@ -23,39 +23,11 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/split_free.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_environment/command.h>
 
 namespace tesseract_environment
 {
 Command::Command(CommandType type) : type_(type) {}
-
-template <class Archive>
-void save(Archive& ar, const CommandType& g, const unsigned int /*version*/)
-{
-  int value = static_cast<int>(g);
-  ar& BOOST_SERIALIZATION_NVP(value);
-}
-
-template <class Archive>
-void load(Archive& ar, CommandType& g, const unsigned int /*version*/)
-{
-  int value = 0;
-  ar& BOOST_SERIALIZATION_NVP(value);
-  g = static_cast<CommandType>(value);
-}
-
-template <class Archive>
-void serialize(Archive& ar, CommandType& g, const unsigned int version)
-{
-  split_free(ar, g, version);
-}
 
 bool Command::operator==(const Command& rhs) const
 {
@@ -65,13 +37,4 @@ bool Command::operator==(const Command& rhs) const
 }
 bool Command::operator!=(const Command& rhs) const { return !operator==(rhs); }  // LCOV_EXCL_LINE
 
-template <class Archive>
-void Command::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(type_);
-}
 }  // namespace tesseract_environment
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::Command)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::Command)

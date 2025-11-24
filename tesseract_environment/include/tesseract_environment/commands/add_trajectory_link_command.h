@@ -29,19 +29,17 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 #include <tesseract_common/joint_state.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
+class AddTrajectoryLinkCommand;
+template <class Archive>
+void serialize(Archive& ar, AddTrajectoryLinkCommand& obj);
+
 class AddTrajectoryLinkCommand : public Command
 {
 public:
@@ -121,13 +119,9 @@ private:
   bool replace_allowed_{ false };
   Method method_{ Method::PER_STATE_OBJECTS };
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, AddTrajectoryLinkCommand& obj);
 };
 }  // namespace tesseract_environment
-
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::AddTrajectoryLinkCommand)
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_TRAJECTORY_LINK_COMMAND_H

@@ -79,4 +79,4 @@ inline void applyModifyObjectEnabled(ManagerType& manager,
 }
 }  // namespace tesseract_collision
 
-#endif  // TESSERACT_COLLISION_TYPES_H
+#endif  // TESSERACT_COLLISION_CORE_UTILS_H

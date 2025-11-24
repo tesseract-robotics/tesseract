@@ -33,18 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/undirected_graph.hpp>
 #include <boost/graph/copy.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/split_member.hpp>
 #include <fstream>
 #include <console_bridge/console.h>
-#if (BOOST_VERSION >= 107400) && (BOOST_VERSION < 107500)
-#include <boost/serialization/library_version_type.hpp>
-#endif
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/utility.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
@@ -314,10 +304,7 @@ bool SceneGraph::addLinkHelper(const std::shared_ptr<Link>& link_ptr, bool repla
   }
   else
   {  // Adding a new link
-    // Set default visibility and collision enabled to true
-    boost::property<boost::vertex_link_visible_t, bool, boost::property<boost::vertex_link_collision_enabled_t, bool>>
-        data(true, true);
-    VertexProperty info(link_ptr, data);
+    VertexProperty info(link_ptr);
     Vertex v = boost::add_vertex(info, static_cast<Graph&>(*this));
     link_map_[link_ptr->getName()] = std::make_pair(link_ptr, v);
 
@@ -431,30 +418,19 @@ bool SceneGraph::moveLink(const Joint& joint)
 
 void SceneGraph::setLinkVisibility(const std::string& name, bool visibility)
 {
-  boost::property_map<Graph, boost::vertex_link_visible_t>::type param =
-      get(boost::vertex_link_visible, static_cast<Graph&>(*this));
-  param[getVertex(name)] = visibility;
+  link_map_.at(name).first->visible = visibility;
 }
 
-bool SceneGraph::getLinkVisibility(const std::string& name) const
-{
-  boost::property_map<Graph, boost::vertex_link_visible_t>::const_type param =
-      get(boost::vertex_link_visible, static_cast<const Graph&>(*this));
-  return param[getVertex(name)];
-}
+bool SceneGraph::getLinkVisibility(const std::string& name) const { return link_map_.at(name).first->visible; }
 
 void SceneGraph::setLinkCollisionEnabled(const std::string& name, bool enabled)
 {
-  boost::property_map<Graph, boost::vertex_link_collision_enabled_t>::type param =
-      get(boost::vertex_link_collision_enabled, static_cast<Graph&>(*this));
-  param[getVertex(name)] = enabled;
+  link_map_.at(name).first->collision_enabled = enabled;
 }
 
 bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
 {
-  boost::property_map<Graph, boost::vertex_link_collision_enabled_t>::const_type param =
-      get(boost::vertex_link_collision_enabled, static_cast<const Graph&>(*this));
-  return param[getVertex(name)];
+  return link_map_.at(name).first->collision_enabled;
 }
 
 bool SceneGraph::addJoint(const Joint& joint)
@@ -1318,30 +1294,6 @@ bool SceneGraph::operator==(const SceneGraph& rhs) const
 }
 bool SceneGraph::operator!=(const SceneGraph& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void SceneGraph::save(Archive& ar, const unsigned int /*version*/) const
-{
-  using namespace boost::serialization;
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Graph);
-  ar& BOOST_SERIALIZATION_NVP(acm_);
-}
-
-template <class Archive>
-void SceneGraph::load(Archive& ar, const unsigned int /*version*/)
-{
-  using namespace boost::serialization;
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Graph);
-  ar& BOOST_SERIALIZATION_NVP(acm_);
-
-  rebuildLinkAndJointMaps();
-}
-
-template <class Archive>
-void SceneGraph::serialize(Archive& ar, const unsigned int version)
-{
-  boost::serialization::split_member(ar, *this, version);
-}
-
 std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 {
   os << "Links:"
@@ -1362,7 +1314,3 @@ std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 }
 
 }  // namespace tesseract_scene_graph
-
-#include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::SceneGraph)
-TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(tesseract_scene_graph::SceneGraph)

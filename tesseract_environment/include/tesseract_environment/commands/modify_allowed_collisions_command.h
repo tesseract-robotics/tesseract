@@ -29,16 +29,10 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 #include <tesseract_common/allowed_collision_matrix.h>
-
-namespace boost::serialization
-{
-class access;
-}
 
 namespace tesseract_environment
 {
@@ -48,6 +42,10 @@ enum class ModifyAllowedCollisionsType
   REMOVE,
   REPLACE
 };
+
+class ModifyAllowedCollisionsCommand;
+template <class Archive>
+void serialize(Archive& ar, ModifyAllowedCollisionsCommand& obj);
 
 class ModifyAllowedCollisionsCommand : public Command
 {
@@ -69,13 +67,9 @@ private:
   ModifyAllowedCollisionsType type_{ ModifyAllowedCollisionsType::ADD };
   tesseract_common::AllowedCollisionMatrix acm_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, ModifyAllowedCollisionsCommand& obj);
 };
 }  // namespace tesseract_environment
-
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::ModifyAllowedCollisionsCommand)
 
 #endif  // TESSERACT_ENVIRONMENT_MODIFY_ALLOWED_COLLISIONS_MATRIX_COMMAND_H

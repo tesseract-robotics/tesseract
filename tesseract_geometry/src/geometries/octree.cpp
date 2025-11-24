@@ -24,11 +24,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/binary_object.hpp>
-#include <boost/serialization/split_member.hpp>
 #include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -191,69 +186,4 @@ bool Octree::operator==(const Octree& rhs) const
 }
 bool Octree::operator!=(const Octree& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void Octree::save(Archive& ar, const unsigned int /*version*/) const
-{
-  using namespace boost::serialization;
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Geometry);
-  ar& BOOST_SERIALIZATION_NVP(sub_type_);
-  ar& BOOST_SERIALIZATION_NVP(resolution_);
-  ar& BOOST_SERIALIZATION_NVP(pruned_);
-  ar& BOOST_SERIALIZATION_NVP(binary_octree_);
-
-  // Read the data to a stream which does not guarantee contiguous memory
-  std::ostringstream s;
-  if (binary_octree_)
-    octree_->writeBinaryConst(s);
-  else
-    octree_->write(s);
-
-  // Write it to a string, wich does guarantee contiguous memory
-  std::string data_string = s.str();
-  std::size_t octree_data_size = data_string.size();
-  ar& make_nvp("octree_data_size", octree_data_size);
-  ar& make_nvp("octree_data", make_binary_object(data_string.data(), octree_data_size));
-}
-
-template <class Archive>
-void Octree::load(Archive& ar, const unsigned int /*version*/)
-{
-  using namespace boost::serialization;
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Geometry);
-  ar& BOOST_SERIALIZATION_NVP(sub_type_);
-  ar& BOOST_SERIALIZATION_NVP(resolution_);
-  ar& BOOST_SERIALIZATION_NVP(pruned_);
-  ar& BOOST_SERIALIZATION_NVP(binary_octree_);
-
-  // Initialize the octree to the right size
-  auto local_octree = std::make_shared<octomap::OcTree>(resolution_);
-
-  // Read the data into a string
-  std::size_t octree_data_size = 0;
-  ar& make_nvp("octree_data_size", octree_data_size);
-  std::string data_string;
-  data_string.resize(octree_data_size);
-  ar& make_nvp("octree_data", make_binary_object(data_string.data(), octree_data_size));
-
-  // Write that data into the stringstream required by octree and load data
-  std::stringstream s;
-  s.write(data_string.data(), static_cast<std::streamsize>(octree_data_size));
-
-  if (binary_octree_)
-    local_octree->readBinary(s);
-  else
-    local_octree = std::shared_ptr<octomap::OcTree>(dynamic_cast<octomap::OcTree*>(octomap::OcTree::read(s)));
-
-  octree_ = local_octree;
-}
-
-template <class Archive>
-void Octree::serialize(Archive& ar, const unsigned int version)
-{
-  boost::serialization::split_member(ar, *this, version);
-}
 }  // namespace tesseract_geometry
-
-#include <tesseract_common/serialization.h>
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::Octree)
-TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(tesseract_geometry::Octree)

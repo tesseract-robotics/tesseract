@@ -13,25 +13,16 @@ include(cmake/tesseract_macros.cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 if(NOT APPLE)
-  find_package(
-    Boost REQUIRED
-    COMPONENTS system
-               filesystem
-               serialization
-               stacktrace_noop
-    OPTIONAL_COMPONENTS stacktrace_backtrace stacktrace_basic)
+  find_package(Boost REQUIRED COMPONENTS system filesystem stacktrace_noop OPTIONAL_COMPONENTS stacktrace_backtrace
+                                                                                               stacktrace_basic)
 else()
-  find_package(
-    Boost REQUIRED
-    COMPONENTS system
-               filesystem
-               serialization
-               stacktrace_noop)
+  find_package(Boost REQUIRED COMPONENTS system filesystem stacktrace_noop)
 endif()
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(boost_plugin_loader REQUIRED)
+find_package(cereal REQUIRED)
 
 if(TARGET Boost::stacktrace_backtrace)
   find_file(BACKTRACE_INCLUDE_FILE backtrace.h PATHS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
@@ -85,12 +76,12 @@ add_library(
   src/allowed_collision_matrix.cpp
   src/any_poly.cpp
   src/calibration_info.cpp
+  src/cereal_serialization.cpp
   src/collision_margin_data.cpp
   src/contact_allowed_validator.cpp
   src/joint_state.cpp
   src/manipulator_info.cpp
   src/kinematic_limits.cpp
-  src/eigen_serialization.cpp
   src/utils.cpp
   src/plugin_info.cpp
   src/ply_io.cpp
@@ -111,9 +102,9 @@ target_link_libraries(
          Boost::boost
          Boost::system
          Boost::filesystem
-         Boost::serialization
          ${TESSERACT_BACKTRACE_LIB}
          console_bridge::console_bridge
+         cereal::cereal
          yaml-cpp)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_BACKTRACE_DEFINITION})
@@ -133,7 +124,6 @@ if(WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC Bcrypt)
 endif()
 
-# Mark cpp header files for installation
 install(
   DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
@@ -166,19 +156,19 @@ if(TESSERACT_PACKAGE)
     LINUX_DEPENDS
       "libboost-system-dev"
       "libboost-filesystem-dev"
-      "libboost-serialization-dev"
       "libconsole-bridge-dev"
       "libtinyxml2-dev"
       "libeigen3-dev"
       "libyaml-cpp-dev"
+      "cereal"
     WINDOWS_DEPENDS
       "boost_system"
       "boost_filesystem"
-      "boost_serialization"
       "console-bridge"
       "tinyxml2"
       "Eigen3"
-      "yaml-cpp")
+      "yaml-cpp"
+      "cereal")
 
   if(UNIX AND TESSERACT_PACKAGE_SOURCE)
     cpack_debian_source_package(

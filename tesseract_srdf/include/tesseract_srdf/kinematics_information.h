@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -38,11 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_common/plugin_info.h>
-
-namespace boost::serialization
-{
-class access;
-}
 
 namespace tesseract_srdf
 {
@@ -148,16 +142,8 @@ struct KinematicsInformation
 
   bool operator==(const KinematicsInformation& rhs) const;
   bool operator!=(const KinematicsInformation& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 }  // namespace tesseract_srdf
-
-BOOST_CLASS_EXPORT_KEY(tesseract_srdf::KinematicsInformation)
 
 #endif  // TESSERACT_SRDF_KINEMATICS_INFORMATION_H

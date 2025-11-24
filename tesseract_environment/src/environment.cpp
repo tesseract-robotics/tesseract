@@ -25,15 +25,6 @@
  */
 
 #include <tesseract_environment/environment.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/unique_ptr.hpp>
-#include <boost/serialization/binary_object.hpp>
-#include <boost/serialization/vector.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_environment/utils.h>
 #include <tesseract_environment/events.h>
 #include <tesseract_environment/command.h>
@@ -80,33 +71,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-class EnvironmentContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+EnvironmentContactAllowedValidator::EnvironmentContactAllowedValidator(
+    std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph)
+  : scene_graph_(std::move(scene_graph))
 {
-public:
-  EnvironmentContactAllowedValidator() = default;  // Required for serialization
-  EnvironmentContactAllowedValidator(std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph)
-    : scene_graph_(std::move(scene_graph))
-  {
-  }
+}
 
-  bool operator()(const std::string& link_name1, const std::string& link_name2) const override
-  {
-    return scene_graph_->isCollisionAllowed(link_name1, link_name2);
-  }
-
-protected:
-  std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph_;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
-  {
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ContactAllowedValidator);
-    ar& BOOST_SERIALIZATION_NVP(scene_graph_);
-  }
-};
+bool EnvironmentContactAllowedValidator::operator()(const std::string& link_name1, const std::string& link_name2) const
+{
+  return scene_graph_->isCollisionAllowed(link_name1, link_name2);
+}
 
 void getCollisionObject(std::vector<std::shared_ptr<const tesseract_geometry::Geometry>>& shapes,
                         tesseract_common::VectorIsometry3d& shape_poses,
@@ -415,55 +389,6 @@ struct Environment::Implementation
                                  bool replace_allowed);
 
   std::unique_ptr<Implementation> clone() const;
-
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void save(Archive& ar, const unsigned int /*version*/) const  // NOLINT
-  {
-    ar& BOOST_SERIALIZATION_NVP(resource_locator);
-    ar& BOOST_SERIALIZATION_NVP(commands);
-    ar& BOOST_SERIALIZATION_NVP(init_revision);
-    ar& BOOST_SERIALIZATION_NVP(current_state);
-    // No need to serialize the contact allowed validator because it cannot be modified and is constructed internally
-    // from the scene graph
-    ar& boost::serialization::make_nvp("timestamp",
-                                       boost::serialization::make_binary_object(&timestamp, sizeof(timestamp)));
-    ar& boost::serialization::make_nvp(
-        "current_state_timestamp",
-        boost::serialization::make_binary_object(&current_state_timestamp, sizeof(current_state_timestamp)));
-  }
-
-  template <class Archive>
-  void load(Archive& ar, const unsigned int /*version*/)  // NOLINT
-  {
-    ar& BOOST_SERIALIZATION_NVP(resource_locator);
-
-    tesseract_environment::Commands commands;
-    ar& boost::serialization::make_nvp("commands", commands);
-    initHelper(commands);
-
-    ar& BOOST_SERIALIZATION_NVP(init_revision);
-
-    tesseract_scene_graph::SceneState current_state;
-    ar& boost::serialization::make_nvp("current_state", current_state);
-    setState(current_state.joints, current_state.floating_joints);
-
-    // No need to serialize the contact allowed validator because it cannot be modified and is constructed internally
-    // from the scene graph
-
-    ar& boost::serialization::make_nvp("timestamp",
-                                       boost::serialization::make_binary_object(&timestamp, sizeof(timestamp)));
-    ar& boost::serialization::make_nvp(
-        "current_state_timestamp",
-        boost::serialization::make_binary_object(&current_state_timestamp, sizeof(current_state_timestamp)));
-  }
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version)  // NOLINT
-  {
-    boost::serialization::split_member(ar, *this, version);
-  }
 };
 
 bool Environment::Implementation::operator==(const Environment::Implementation& rhs) const
@@ -2397,6 +2322,22 @@ bool Environment::init(const std::filesystem::path& urdf_path,
   return init(commands);  // NOLINT
 }
 
+void Environment::init(const std::vector<std::shared_ptr<const Command>>& commands,
+                       int init_revision,
+                       const std::chrono::system_clock::time_point& timestamp,
+                       const tesseract_scene_graph::SceneState& current_state,
+                       const std::chrono::system_clock::time_point& current_state_timestamp,
+                       const std::shared_ptr<const tesseract_common::ResourceLocator>& resource_locator)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  impl_->resource_locator = resource_locator;
+  impl_->initHelper(commands);
+  impl_->init_revision = init_revision;
+  impl_->setState(current_state.joints, current_state.floating_joints);
+  impl_->timestamp = timestamp;
+  impl_->current_state_timestamp = current_state_timestamp;
+}
+
 bool Environment::reset()
 {
   bool success{ false };
@@ -2877,37 +2818,4 @@ Environment::UPtr Environment::clone() const
   return std::make_unique<Environment>(std::as_const<Implementation>(*impl_).clone());
 }
 
-template <class Archive>
-void Environment::save(Archive& ar, const unsigned int /*version*/) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  ar& BOOST_SERIALIZATION_NVP(impl_);
-}
-
-template <class Archive>
-void Environment::load(Archive& ar, const unsigned int /*version*/)  // NOLINT
-{
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-  ar& BOOST_SERIALIZATION_NVP(impl_);
-}
-
-template <class Archive>
-void Environment::serialize(Archive& ar, const unsigned int version)
-{
-  boost::serialization::split_member(ar, *this, version);
-}
-
 }  // namespace tesseract_environment
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::EnvironmentContactAllowedValidator)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::EnvironmentContactAllowedValidator)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::Environment)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::Environment)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::EnvironmentPtrAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::EnvironmentPtrAnyPoly)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::EnvironmentConstPtrAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::EnvironmentConstPtrAnyPoly)

@@ -39,7 +39,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <string>
 #include <vector>
 #include <memory>
@@ -49,13 +48,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/fwd.h>
 #include <tesseract_geometry/fwd.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_scene_graph
 {
+class Material;
+template <class Archive>
+void serialize(Archive& ar, Material& obj);
+
+class Link;
+template <class Archive>
+void serialize(Archive& ar, Link& obj);
+
 class Material
 {
 public:
@@ -88,10 +90,8 @@ public:
 private:
   std::string name_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_scene_graph::serialize(Archive& ar, Material& obj);
 };
 
 class Inertial
@@ -123,12 +123,6 @@ public:
 
   bool operator==(const Inertial& rhs) const;
   bool operator!=(const Inertial& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class Visual
@@ -156,12 +150,6 @@ public:
 
   bool operator==(const Visual& rhs) const;
   bool operator!=(const Visual& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class Collision
@@ -187,12 +175,6 @@ public:
 
   bool operator==(const Collision& rhs) const;
   bool operator!=(const Collision& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 class Link
@@ -222,6 +204,12 @@ public:
   /// Collision Elements
   std::vector<Collision::Ptr> collision;
 
+  /// Visibility Enable
+  bool visible{ true };
+
+  /// Collision Enable
+  bool collision_enabled{ true };
+
   void clear();
 
   bool operator==(const Link& rhs) const;
@@ -238,18 +226,11 @@ public:
 
 private:
   std::string name_;
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
+
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_scene_graph::serialize(Archive& ar, Link& obj);
 };
 
 }  // namespace tesseract_scene_graph
-
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Material)
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Inertial)
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Visual)
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Collision)
-BOOST_CLASS_EXPORT_KEY(tesseract_scene_graph::Link)
 
 #endif  // TESSERACT_SCENE_GRAPH_LINK_H

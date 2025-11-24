@@ -23,17 +23,6 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/utility.hpp>
-#if (BOOST_VERSION >= 107400) && (BOOST_VERSION < 107500)
-#include <boost/serialization/library_version_type.hpp>
-#endif
-#include <boost/serialization/unordered_map.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/utils.h>
 #include <tesseract_common/collision_margin_data.h>
 
@@ -214,18 +203,6 @@ bool CollisionMarginPairData::operator==(const CollisionMarginPairData& rhs) con
 
 bool CollisionMarginPairData::operator!=(const CollisionMarginPairData& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void CollisionMarginPairData::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(lookup_table_);
-
-  // Recreate max_collision_margin_ and object_max_margins_ after deserialization
-  if (Archive::is_loading::value)
-  {
-    updateMaxMargins();
-  }
-}
-
 CollisionMarginData::CollisionMarginData(double default_collision_margin)
   : default_collision_margin_(default_collision_margin)
 {
@@ -318,16 +295,4 @@ bool CollisionMarginData::operator==(const CollisionMarginData& rhs) const
 
 bool CollisionMarginData::operator!=(const CollisionMarginData& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void CollisionMarginData::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(default_collision_margin_);
-  ar& BOOST_SERIALIZATION_NVP(pair_margins_);
-}
 }  // namespace tesseract_common
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CollisionMarginPairData)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CollisionMarginPairData)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CollisionMarginData)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CollisionMarginData)

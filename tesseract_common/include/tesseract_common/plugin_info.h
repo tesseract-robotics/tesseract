@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <Eigen/Core>
 #include <map>
 #include <yaml-cpp/yaml.h>
@@ -36,15 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/eigen_types.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_common
 {
-struct Serialization;
-
 /** @brief The Plugin Information struct */
 // NOLINTNEXTLINE
 struct PluginInfo
@@ -60,18 +52,6 @@ struct PluginInfo
 
   bool operator==(const PluginInfo& rhs) const;
   bool operator!=(const PluginInfo& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void save(Archive& ar, const unsigned int version) const;  // NOLINT
-
-  template <class Archive>
-  void load(Archive& ar, const unsigned int version);  // NOLINT
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief A map of PluginInfo to user defined name */
@@ -85,12 +65,6 @@ struct PluginInfoContainer
 
   bool operator==(const PluginInfoContainer& rhs) const;
   bool operator!=(const PluginInfoContainer& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief The profile plugin information structure */
@@ -119,12 +93,6 @@ struct ProfilesPluginInfo
 
   bool operator==(const ProfilesPluginInfo& rhs) const;
   bool operator!=(const ProfilesPluginInfo& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief The kinematics plugin information structure */
@@ -156,12 +124,6 @@ struct KinematicsPluginInfo
 
   bool operator==(const KinematicsPluginInfo& rhs) const;
   bool operator!=(const KinematicsPluginInfo& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief The contact managers plugin information structure */
@@ -193,12 +155,6 @@ struct ContactManagersPluginInfo
 
   bool operator==(const ContactManagersPluginInfo& rhs) const;
   bool operator!=(const ContactManagersPluginInfo& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /** @brief The task composer plugin information structure */
@@ -230,21 +186,8 @@ struct TaskComposerPluginInfo
 
   bool operator==(const TaskComposerPluginInfo& rhs) const;
   bool operator!=(const TaskComposerPluginInfo& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 }  // namespace tesseract_common
-
-BOOST_CLASS_EXPORT_KEY(tesseract_common::PluginInfo)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::PluginInfoContainer)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::ProfilesPluginInfo)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::KinematicsPluginInfo)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::ContactManagersPluginInfo)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::TaskComposerPluginInfo)
 
 #endif  // TESSERACT_COMMON_PLUGIN_INFO_H

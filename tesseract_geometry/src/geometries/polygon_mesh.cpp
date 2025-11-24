@@ -23,18 +23,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/utils.h>
-#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_geometry/impl/polygon_mesh.h>
 #include <tesseract_geometry/impl/mesh_material.h>
@@ -133,24 +122,4 @@ bool PolygonMesh::operator==(const PolygonMesh& rhs) const
 }
 bool PolygonMesh::operator!=(const PolygonMesh& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void PolygonMesh::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Geometry);
-  ar& BOOST_SERIALIZATION_NVP(vertices_);
-  ar& BOOST_SERIALIZATION_NVP(faces_);
-  ar& BOOST_SERIALIZATION_NVP(vertex_count_);
-  ar& BOOST_SERIALIZATION_NVP(face_count_);
-  ar& BOOST_SERIALIZATION_NVP(resource_);
-  ar& BOOST_SERIALIZATION_NVP(scale_);
-  ar& BOOST_SERIALIZATION_NVP(normals_);
-  ar& BOOST_SERIALIZATION_NVP(vertex_colors_);
-  /// @todo Serialize mesh materials and textures
-  //    ar& BOOST_SERIALIZATION_NVP(mesh_material_);
-  //    ar& BOOST_SERIALIZATION_NVP(mesh_textures_);
-}
 }  // namespace tesseract_geometry
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_geometry::PolygonMesh)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_geometry::PolygonMesh)

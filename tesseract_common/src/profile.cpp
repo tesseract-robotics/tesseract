@@ -25,9 +25,6 @@
  */
 
 #include <tesseract_common/profile.h>
-#include <tesseract_common/serialization.h>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/nvp.hpp>
 
 namespace tesseract_common
 {
@@ -35,12 +32,4 @@ Profile::Profile(std::size_t key) : key_(key) {}
 
 std::size_t Profile::getKey() const { return key_; }
 
-template <class Archive>
-void Profile::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& boost::serialization::make_nvp("key", key_);
-}
 }  // namespace tesseract_common
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::Profile)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::Profile)

@@ -23,15 +23,6 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/vector.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometry.h>
@@ -68,14 +59,6 @@ bool Material::operator==(const Material& rhs) const
 }
 bool Material::operator!=(const Material& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void Material::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(texture_filename);
-  ar& BOOST_SERIALIZATION_NVP(color);
-  ar& BOOST_SERIALIZATION_NVP(name_);
-}
-
 /*********************************************************/
 /******                Inertial                      *****/
 /*********************************************************/
@@ -103,19 +86,6 @@ bool Inertial::operator==(const Inertial& rhs) const
 }
 bool Inertial::operator!=(const Inertial& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void Inertial::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(origin);
-  ar& BOOST_SERIALIZATION_NVP(mass);
-  ar& BOOST_SERIALIZATION_NVP(ixx);
-  ar& BOOST_SERIALIZATION_NVP(ixy);
-  ar& BOOST_SERIALIZATION_NVP(ixz);
-  ar& BOOST_SERIALIZATION_NVP(iyy);
-  ar& BOOST_SERIALIZATION_NVP(iyz);
-  ar& BOOST_SERIALIZATION_NVP(izz);
-}
-
 /*********************************************************/
 /******                 Visual                       *****/
 /*********************************************************/
@@ -142,15 +112,6 @@ bool Visual::operator==(const Visual& rhs) const
 }
 bool Visual::operator!=(const Visual& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void Visual::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(origin);
-  ar& BOOST_SERIALIZATION_NVP(geometry);
-  ar& BOOST_SERIALIZATION_NVP(material);
-  ar& BOOST_SERIALIZATION_NVP(name);
-}
-
 /*********************************************************/
 /******                   Collision                  *****/
 /*********************************************************/
@@ -174,14 +135,6 @@ bool Collision::operator==(const Collision& rhs) const
 }
 bool Collision::operator!=(const Collision& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void Collision::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(origin);
-  ar& BOOST_SERIALIZATION_NVP(geometry);
-  ar& BOOST_SERIALIZATION_NVP(name);
-}
-
 /*********************************************************/
 /******                     Link                     *****/
 /*********************************************************/
@@ -201,6 +154,8 @@ Link Link::clone() const { return clone(name_); }
 Link Link::clone(const std::string& name) const
 {
   Link ret(name);
+  ret.visible = visible;
+  ret.collision_enabled = collision_enabled;
   if (this->inertial)
   {
     ret.inertial = std::make_shared<Inertial>(*(this->inertial));
@@ -233,30 +188,10 @@ bool Link::operator==(const Link& rhs) const
       tesseract_common::pointersEqual<Collision>,
       [](const Collision::Ptr& v1, const Collision::Ptr& v2) { return v1->name < v2->name; });
   equal &= name_ == rhs.name_;
+  equal &= visible == rhs.visible;
+  equal &= collision_enabled == rhs.collision_enabled;
   return equal;
 }
 bool Link::operator!=(const Link& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void Link::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(inertial);
-  ar& BOOST_SERIALIZATION_NVP(visual);
-  ar& BOOST_SERIALIZATION_NVP(collision);
-  ar& BOOST_SERIALIZATION_NVP(name_);
-}
-
 }  // namespace tesseract_scene_graph
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Material)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Inertial)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Visual)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Collision)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_scene_graph::Link)
-
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Material)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Inertial)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Visual)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Collision)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::Link)

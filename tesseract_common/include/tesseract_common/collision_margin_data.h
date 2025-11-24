@@ -30,7 +30,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <Eigen/Core>
 #include <string>
 #include <unordered_map>
@@ -40,13 +39,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_common/utils.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_common
 {
+class CollisionMarginPairData;
+class CollisionMarginData;
+
+template <class Archive>
+void serialize(Archive& ar, CollisionMarginPairData& obj);
+
+template <class Archive>
+void serialize(Archive& ar, CollisionMarginData& obj);
+
 /** @brief Identifies how the provided contact margin data should be applied */
 enum class CollisionMarginPairOverrideType : std::uint8_t
 {
@@ -160,10 +163,8 @@ private:
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, CollisionMarginPairData& obj);
 };
 
 /** @brief Stores information about how the margins allowed between collision objects */
@@ -267,13 +268,9 @@ private:
   /** @brief A map of link pair names to contact distance */
   CollisionMarginPairData pair_margins_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, CollisionMarginData& obj);
 };
 }  // namespace tesseract_common
 
-BOOST_CLASS_EXPORT_KEY(tesseract_common::CollisionMarginPairData)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::CollisionMarginData)
 #endif  // TESSERACT_COMMON_COLLISION_MARGIN_DATA_H

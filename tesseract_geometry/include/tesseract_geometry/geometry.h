@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <memory>
 #include <string>
@@ -37,11 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
-
-namespace boost::serialization
-{
-class access;
-}
 
 namespace tesseract_geometry
 {
@@ -65,6 +59,9 @@ static const std::vector<std::string> GeometryTypeStrings = { "UNINITIALIZED", "
                                                               "CONE",          "BOX",      "PLANE",    "MESH",
                                                               "CONVEX_MESH",   "SDF_MESH", "OCTREE",   "POLYGON_MESH",
                                                               "COMPOUND_MESH" };
+class Geometry;
+template <class Archive>
+void serialize(Archive& ar, Geometry& obj);
 
 class Geometry
 {
@@ -101,16 +98,12 @@ private:
   /** @brief The uuid of the shape */
   boost::uuids::uuid uuid_{};
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_geometry::serialize(Archive& ar, Geometry& obj);
 };
 
 using Geometrys = std::vector<Geometry::Ptr>;
 using GeometrysConst = std::vector<Geometry::ConstPtr>;
 }  // namespace tesseract_geometry
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_geometry::Geometry)
 
 #endif  // TESSERACT_GEOMETRY_GEOMETRY_H

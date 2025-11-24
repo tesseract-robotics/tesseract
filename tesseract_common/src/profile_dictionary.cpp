@@ -25,10 +25,6 @@
  */
 
 #include <tesseract_common/profile_dictionary.h>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/unordered_map.hpp>
-
 #include <mutex>
 
 namespace tesseract_common
@@ -264,18 +260,4 @@ void ProfileDictionary::clear()
   profiles_.clear();
 }
 
-template <class Archive>
-void ProfileDictionary::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  const std::shared_lock lock(mutex_);
-  ar& boost::serialization::make_nvp("profiles", profiles_);
-}
-
 }  // namespace tesseract_common
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ProfileDictionary)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ProfileDictionary)
-
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ProfileDictionaryPtrAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ProfileDictionaryPtrAnyPoly)

@@ -28,17 +28,11 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
-#include <Eigen/Geometry>
 #include <memory>
+#include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
-
-namespace boost::serialization
-{
-class access;
-}
 
 namespace octomap
 {
@@ -54,6 +48,11 @@ enum class OctreeSubType : std::uint8_t
   SPHERE_INSIDE,
   SPHERE_OUTSIDE
 };
+
+class Octree;
+
+template <class Archive>
+void serialize(Archive& ar, Octree& obj);
 
 class Octree : public Geometry
 {
@@ -112,16 +111,8 @@ private:
                           unsigned int max_depth,
                           unsigned int& num_pruned);
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void save(Archive& ar, const unsigned int version) const;  // NOLINT
-
-  template <class Archive>
-  void load(Archive& ar, const unsigned int version);  // NOLINT
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_geometry::serialize(Archive& ar, Octree& obj);
 
 public:
   /**
@@ -136,5 +127,4 @@ public:
 };
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY(tesseract_geometry::Octree)
 #endif

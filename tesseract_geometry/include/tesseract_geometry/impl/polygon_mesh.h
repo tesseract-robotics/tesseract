@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -38,15 +37,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_geometry
 {
 class MeshMaterial;
 class MeshTexture;
+class PolygonMesh;
+template <class Archive>
+void serialize(Archive& ar, PolygonMesh& obj);
 
 class PolygonMesh : public Geometry
 {
@@ -110,7 +107,6 @@ public:
               std::shared_ptr<MeshMaterial> mesh_material = nullptr,
               std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr,
               GeometryType type = GeometryType::POLYGON_MESH);
-
   PolygonMesh() = default;
   ~PolygonMesh() override = default;
 
@@ -211,13 +207,10 @@ private:
   std::shared_ptr<MeshMaterial> mesh_material_;
   std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_geometry::serialize(Archive& ar, PolygonMesh& obj);
 };
 
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY(tesseract_geometry::PolygonMesh)
 #endif  // POLYGON_MESH_H

@@ -26,18 +26,8 @@
 
 #include <tesseract_common/contact_allowed_validator.h>
 
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/base_object.hpp>
-
 namespace tesseract_common
 {
-template <class Archive>
-void ContactAllowedValidator::serialize(Archive& /*ar*/, const unsigned int /*version*/)
-{
-}
-
 ACMContactAllowedValidator::ACMContactAllowedValidator(tesseract_common::AllowedCollisionMatrix acm)
   : acm_(std::move(acm))
 {
@@ -46,13 +36,6 @@ ACMContactAllowedValidator::ACMContactAllowedValidator(tesseract_common::Allowed
 bool ACMContactAllowedValidator::operator()(const std::string& link_name1, const std::string& link_name2) const
 {
   return acm_.isCollisionAllowed(link_name1, link_name2);
-}
-
-template <class Archive>
-void ACMContactAllowedValidator::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ContactAllowedValidator);
-  ar& BOOST_SERIALIZATION_NVP(acm_);
 }
 
 CombinedContactAllowedValidator::CombinedContactAllowedValidator(
@@ -81,19 +64,4 @@ bool CombinedContactAllowedValidator::operator()(const std::string& link_name1, 
   return value;
 }
 
-template <class Archive>
-void CombinedContactAllowedValidator::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ContactAllowedValidator);
-  ar& BOOST_SERIALIZATION_NVP(validators_);
-  ar& BOOST_SERIALIZATION_NVP(type_);
-}
-
 }  // namespace tesseract_common
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ContactAllowedValidator)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::ACMContactAllowedValidator)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::ACMContactAllowedValidator)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::CombinedContactAllowedValidator)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::CombinedContactAllowedValidator)

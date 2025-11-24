@@ -24,19 +24,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/unordered_map.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/utils.h>
-#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_srdf/kinematics_information.h>
 
 namespace tesseract_srdf
@@ -247,19 +235,4 @@ bool KinematicsInformation::operator==(const KinematicsInformation& rhs) const
 }
 bool KinematicsInformation::operator!=(const KinematicsInformation& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void KinematicsInformation::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_NVP(group_names);
-  ar& BOOST_SERIALIZATION_NVP(chain_groups);
-  ar& BOOST_SERIALIZATION_NVP(joint_groups);
-  ar& BOOST_SERIALIZATION_NVP(link_groups);
-  ar& BOOST_SERIALIZATION_NVP(group_states);
-  ar& BOOST_SERIALIZATION_NVP(group_tcps);
-  ar& BOOST_SERIALIZATION_NVP(kinematics_plugin_info);
-}
 }  // namespace tesseract_srdf
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_srdf::KinematicsInformation)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_srdf::KinematicsInformation)

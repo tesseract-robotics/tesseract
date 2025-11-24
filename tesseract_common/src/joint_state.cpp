@@ -23,19 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_serialize.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
-#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/joint_state.h>
 
 namespace tesseract_common
@@ -58,17 +47,6 @@ bool JointState::operator==(const JointState& other) const
 }
 
 bool JointState::operator!=(const JointState& rhs) const { return !operator==(rhs); }
-
-template <class Archive>
-void JointState::serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
-{
-  ar& BOOST_SERIALIZATION_NVP(joint_names);
-  ar& BOOST_SERIALIZATION_NVP(position);
-  ar& BOOST_SERIALIZATION_NVP(velocity);
-  ar& BOOST_SERIALIZATION_NVP(acceleration);
-  ar& BOOST_SERIALIZATION_NVP(effort);
-  ar& BOOST_SERIALIZATION_NVP(time);
-}
 
 JointTrajectory::JointTrajectory(std::string description) : description(std::move(description)) {}
 
@@ -176,22 +154,4 @@ void JointTrajectory::swap(std::vector<value_type>& other) noexcept { states.swa
 
 // LCOV_EXCL_STOP
 
-template <class Archive>
-void JointTrajectory::serialize(Archive& ar, const unsigned int version)  // NOLINT
-{
-  ar& BOOST_SERIALIZATION_NVP(uuid);
-  ar& BOOST_SERIALIZATION_NVP(states);
-  ar& BOOST_SERIALIZATION_NVP(description);
-}
-
 }  // namespace tesseract_common
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointState)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointTrajectory)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointStateAnyPoly)
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::JointStatePtrAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointState)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointTrajectory)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointStateAnyPoly)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::JointStatePtrAnyPoly)

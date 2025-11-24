@@ -29,19 +29,17 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <boost/serialization/export.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 #include <tesseract_scene_graph/fwd.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_environment
 {
+class MoveLinkCommand;
+template <class Archive>
+void serialize(Archive& ar, MoveLinkCommand& obj);
+
 class MoveLinkCommand : public Command
 {
 public:
@@ -67,12 +65,9 @@ public:
 private:
   std::shared_ptr<const tesseract_scene_graph::Joint> joint_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_environment::serialize(Archive& ar, MoveLinkCommand& obj);
 };
 }  // namespace tesseract_environment
 
-BOOST_CLASS_EXPORT_KEY(tesseract_environment::MoveLinkCommand)
 #endif  // TESSERACT_ENVIRONMENT_MOVE_LINK_COMMAND_H

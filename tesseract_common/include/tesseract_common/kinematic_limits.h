@@ -25,18 +25,15 @@
  */
 #ifndef TESSERACT_COMMON_KINEMATIC_LIMITS_H
 #define TESSERACT_COMMON_KINEMATIC_LIMITS_H
+
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/base_object.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-struct Serialization;
-
 /** @brief Store kinematic limits */
 struct KinematicLimits
 {
@@ -60,12 +57,6 @@ struct KinematicLimits
 
   bool operator==(const KinematicLimits& rhs) const;
   bool operator!=(const KinematicLimits& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /**
@@ -164,7 +155,5 @@ void enforceLimits(Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> value
   values = ((values.array().min)(limits.col(1).array()).max)(limits.col(0).array());
 }
 }  // namespace tesseract_common
-
-BOOST_CLASS_EXPORT_KEY(tesseract_common::KinematicLimits)
 
 #endif  // TESSERACT_COMMON_KINEMATIC_LIMITS_H

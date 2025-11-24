@@ -28,20 +28,18 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/polygon_mesh.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_geometry
 {
+class ConvexMesh;
+template <class Archive>
+void serialize(Archive& ar, ConvexMesh& obj);
+
 class ConvexMesh : public PolygonMesh
 {
 public:
@@ -109,7 +107,6 @@ public:
              std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
              std::shared_ptr<MeshMaterial> mesh_material = nullptr,
              std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
-
   ConvexMesh() = default;
   ~ConvexMesh() override = default;
 
@@ -134,13 +131,9 @@ public:
 
 private:
   CreationMethod creation_method_{ DEFAULT };
-
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_geometry::serialize(Archive& ar, ConvexMesh& obj);
 };
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY(tesseract_geometry::ConvexMesh)
 #endif

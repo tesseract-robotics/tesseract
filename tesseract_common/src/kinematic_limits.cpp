@@ -24,13 +24,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/nvp.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/kinematic_limits.h>
-#include <tesseract_common/eigen_serialization.h>
 
 namespace tesseract_common
 {
@@ -53,15 +47,6 @@ bool KinematicLimits::operator==(const KinematicLimits& rhs) const
 }
 
 bool KinematicLimits::operator!=(const KinematicLimits& rhs) const { return !operator==(rhs); }
-
-template <class Archive>
-void KinematicLimits::serialize(Archive& ar, const unsigned int /*version*/)  // NOLINT
-{
-  ar& BOOST_SERIALIZATION_NVP(joint_limits);
-  ar& BOOST_SERIALIZATION_NVP(velocity_limits);
-  ar& BOOST_SERIALIZATION_NVP(acceleration_limits);
-  ar& BOOST_SERIALIZATION_NVP(jerk_limits);
-}
 
 template bool isWithinLimits<float>(const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 1>>& values,
                                     const Eigen::Ref<const Eigen::Matrix<float, Eigen::Dynamic, 2>>& limits);
@@ -95,7 +80,3 @@ template void enforceLimits<float>(Eigen::Ref<Eigen::Matrix<float, Eigen::Dynami
 template void enforceLimits<double>(Eigen::Ref<Eigen::Matrix<double, Eigen::Dynamic, 1>> values,
                                     const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& limits);
 }  // namespace tesseract_common
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_common::KinematicLimits)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_common::KinematicLimits)

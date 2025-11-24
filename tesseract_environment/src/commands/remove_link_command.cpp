@@ -23,15 +23,10 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <string>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_common/utils.h>
 #include <tesseract_environment/commands/remove_link_command.h>
+
+#include <string>
 
 namespace tesseract_environment
 {
@@ -53,14 +48,4 @@ bool RemoveLinkCommand::operator==(const RemoveLinkCommand& rhs) const
 }
 bool RemoveLinkCommand::operator!=(const RemoveLinkCommand& rhs) const { return !operator==(rhs); }
 
-template <class Archive>
-void RemoveLinkCommand::serialize(Archive& ar, const unsigned int /*version*/)
-{
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Command);
-  ar& BOOST_SERIALIZATION_NVP(link_name_);
-}
 }  // namespace tesseract_environment
-
-#include <tesseract_common/serialization.h>
-TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_environment::RemoveLinkCommand)
-BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_environment::RemoveLinkCommand)

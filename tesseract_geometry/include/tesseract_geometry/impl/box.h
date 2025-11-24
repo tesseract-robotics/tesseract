@@ -28,19 +28,17 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/export.hpp>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
-namespace boost::serialization
-{
-class access;
-}
-
 namespace tesseract_geometry
 {
+class Box;
+template <class Archive>
+void serialize(Archive& ar, Box& obj);
+
 class Box : public Geometry
 {
 public:
@@ -64,13 +62,10 @@ private:
   double y_{ 0 };
   double z_{ 0 };
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_geometry::serialize(Archive& ar, Box& obj);
 };
 
 }  // namespace tesseract_geometry
 
-BOOST_CLASS_EXPORT_KEY(tesseract_geometry::Box)
 #endif

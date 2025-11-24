@@ -33,21 +33,28 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <boost/serialization/export.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <filesystem>
-
-namespace boost::serialization
-{
-class access;
-}
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
 // Forward declare
 class Resource;
-struct Serialization;
+class GeneralResourceLocator;
+class SimpleLocatedResource;
+class BytesResource;
+
+template <class Archive>
+void serialize(Archive& ar, Resource& obj);
+
+template <class Archive>
+void serialize(Archive& ar, GeneralResourceLocator& obj);
+
+template <class Archive>
+void serialize(Archive& ar, SimpleLocatedResource& obj);
+
+template <class Archive>
+void serialize(Archive& ar, BytesResource& obj);
 
 /** @brief Abstract class for resource loaders */
 class ResourceLocator
@@ -68,12 +75,6 @@ public:
 
   bool operator==(const ResourceLocator& rhs) const;
   bool operator!=(const ResourceLocator& rhs) const;
-
-private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 /**
@@ -135,14 +136,12 @@ public:
   bool loadEnvironmentVariable(const std::string& environment_variable);
 
 private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
-
   std::unordered_map<std::string, std::string> package_paths_;
 
   void processToken(const std::string& token);
+
+  template <class Archive>
+  friend void ::tesseract_common::serialize(Archive& ar, GeneralResourceLocator& obj);
 };
 
 /**  @brief Represents resource data available from a file or url */
@@ -191,10 +190,8 @@ public:
   bool operator!=(const Resource& rhs) const;
 
 private:
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, Resource& obj);
 };
 
 using SimpleResourceLocatorFn = std::function<std::string(const std::string&)>;
@@ -206,7 +203,7 @@ public:
   using Ptr = std::shared_ptr<SimpleLocatedResource>;
   using ConstPtr = std::shared_ptr<const SimpleLocatedResource>;
 
-  /** @brief This is for boost serialization do not use directly */
+  /** @brief This is for serialization do not use directly */
   SimpleLocatedResource() = default;
 
   /**
@@ -242,16 +239,14 @@ private:
   std::string filename_;
   ResourceLocator::ConstPtr parent_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, SimpleLocatedResource& obj);
 };
 
 class BytesResource : public tesseract_common::Resource
 {
 public:
-  /** @brief This is for boost serialization do not use directly */
+  /** @brief This is for serialization do not use directly */
   BytesResource() = default;
 
   BytesResource(std::string url, std::vector<uint8_t> bytes, ResourceLocator::ConstPtr parent = nullptr);
@@ -277,18 +272,10 @@ private:
   std::vector<uint8_t> bytes_;
   ResourceLocator::ConstPtr parent_;
 
-  friend class boost::serialization::access;
-  friend struct tesseract_common::Serialization;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
+  friend void ::tesseract_common::serialize(Archive& ar, BytesResource& obj);
 };
 
 }  // namespace tesseract_common
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::ResourceLocator)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(tesseract_common::Resource)
-
-BOOST_CLASS_EXPORT_KEY(tesseract_common::GeneralResourceLocator)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::SimpleLocatedResource)
-BOOST_CLASS_EXPORT_KEY(tesseract_common::BytesResource)
 
 #endif  // TESSERACT_COMMON_RESOURCE_LOCATOR_H
