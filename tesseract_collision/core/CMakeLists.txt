@@ -1,6 +1,7 @@
 # Create interface for core
 add_library(
   ${PROJECT_NAME}_core
+  src/cereal_serialization.cpp
   src/common.cpp
   src/contact_managers_plugin_factory.cpp
   src/continuous_contact_manager.cpp

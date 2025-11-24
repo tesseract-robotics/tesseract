@@ -200,7 +200,8 @@ std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::stri
 
 bool GeneralResourceLocator::operator==(const GeneralResourceLocator& rhs) const
 {
-  return package_paths_ == rhs.package_paths_;
+  return tesseract_common::isIdenticalMap<std::unordered_map<std::string, std::string>, std::string>(
+      package_paths_, rhs.package_paths_);
 }
 bool GeneralResourceLocator::operator!=(const GeneralResourceLocator& rhs) const { return !operator==(rhs); }
 

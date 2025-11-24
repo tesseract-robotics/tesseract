@@ -16,6 +16,7 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(octomap REQUIRED)
 find_package(assimp REQUIRED)
+find_package(cereal REQUIRED)
 
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
@@ -65,6 +66,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 
 add_library(
   ${PROJECT_NAME}
+  src/cereal_serialization.cpp
   src/conversions.cpp
   src/geometry.cpp
   src/utils.cpp
@@ -88,6 +90,7 @@ target_link_libraries(
          console_bridge::console_bridge
          octomap
          octomath
+         cereal::cereal
          assimp::assimp)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_ASSIMP_USE_PBRMATERIAL})

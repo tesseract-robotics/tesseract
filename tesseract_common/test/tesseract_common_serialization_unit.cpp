@@ -128,8 +128,11 @@ TEST(TesseractCommonSerializeUnit, ProfileDictionary)  // NOLINT
 
 TEST(TesseractCommonSerializeUnit, GeneralResourceLocator)  // NOLINT
 {
-  GeneralResourceLocator locator;
-  tesseract_common::testSerialization<GeneralResourceLocator>(locator, "GeneralResourceLocator");
+  auto locator = std::make_shared<GeneralResourceLocator>();
+  tesseract_common::testSerialization<GeneralResourceLocator::Ptr>(
+      locator,
+      "GeneralResourceLocator",
+      tesseract_common::testSerializationComparePtrEqual<GeneralResourceLocator::Ptr>);
 }
 
 TEST(TesseractCommonSerializeUnit, KinematicLimits)  // NOLINT

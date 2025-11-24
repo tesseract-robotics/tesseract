@@ -13,6 +13,7 @@ find_dependency(console_bridge)
 find_dependency(tesseract_common)
 find_dependency(octomap)
 find_dependency(assimp)
+find_dependency(cereal)
 link_directories(${assimp_LIBRARY_DIRS})
 
 if(NOT TARGET console_bridge::console_bridge)

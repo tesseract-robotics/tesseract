@@ -143,17 +143,4 @@ void serialize(Archive& ar, tesseract_collision::ContactTrajectoryResults& g)
 }
 }  // namespace tesseract_collision
 
-// These must be include before calling macro CEREAL_REGISTER_TYPE
-#include <cereal/archives/binary.hpp>
-#include <cereal/archives/xml.hpp>
-#include <cereal/archives/json.hpp>
-
-CEREAL_REGISTER_TYPE(tesseract_collision::ContactResultAnyPoly)
-CEREAL_REGISTER_TYPE(tesseract_collision::ContactResultMapAnyPoly)
-CEREAL_REGISTER_TYPE(tesseract_collision::ContactResultMapVectorAnyPoly)
-
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_collision::ContactResultAnyPoly)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_collision::ContactResultMapAnyPoly)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_collision::ContactResultMapVectorAnyPoly)
-
 #endif  // TESSERACT_COLLISION_CEREAL_SERIALIZATION_H

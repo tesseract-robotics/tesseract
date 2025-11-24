@@ -76,6 +76,7 @@ add_library(
   src/allowed_collision_matrix.cpp
   src/any_poly.cpp
   src/calibration_info.cpp
+  src/cereal_serialization.cpp
   src/collision_margin_data.cpp
   src/contact_allowed_validator.cpp
   src/joint_state.cpp
