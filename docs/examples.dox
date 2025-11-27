@@ -1,0 +1,7 @@
+/**
+ * @page tesseract_examples Examples
+ *
+ * High-level overview of Tesseract examples.
+ *
+ * - \subpage box_box_example  "Tesseract collision example"
+ */
