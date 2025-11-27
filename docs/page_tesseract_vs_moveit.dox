@@ -1,0 +1,66 @@
+/** @page tesseract_vs_moveit Tesseract vs MoveIt
+
+@brief Tesseract a next generation motion planning framework for industrial applications.
+
+> **Already using MoveIt2?**
+> Tesseract is designed as your next-generation motion planning framework—reusing your ROS
+> infrastructure while upgrading your planning, optimization, and environment model.
+
+MoveIt2 has been the default choice for ROS motion planning for many years.
+
+**Tesseract is designed to be the next-generation motion planning framework for industrial applications.**
+
+If you are starting a new project today and care about process quality, cycle time,
+and long-term maintainability, Tesseract is ready to step in and delivery on those requirements today.
+
+@section tvm_high_level High-Level Positioning
+
+- **MoveIt2**: general-purpose motion planning for ROS, great for bring-up, research,
+  and many manipulation tasks.
+- **Tesseract**: a modern, optimization-centric planning framework engineered for
+  **industrial cells and process-driven workflows**—with the architectural choices,
+  performance characteristics, and integration points to match.
+
+
+@section tvm_comparison Comparison Overview
+
+The following table summarizes the positioning of Tesseract and MoveIt2.
+
+@par Framework Comparison
+
+| Aspect              | Tesseract                                                    | MoveIt2                                            |
+|---------------------|--------------------------------------------------------------|----------------------------------------------------|
+| Primary focus       | Industrial process planning & optimization                   | General-purpose motion planning in ROS             |
+| Planning philosophy | Optimization-first (costs & constraints solved together)     | Sampling-first, then smoothing / time-parameterize |
+| Environment model   | Scene graph + command history; easy cloning & replay         | Central planning scene integrated with ROS         |
+| Collision handling  | Contact-rich, continuous & discrete; designed for optimizers | Primarily collision checks for sampling planners   |
+| Integration model   | ROS-agnostic core, ROS as a thin layer                       | ROS-native, ROS tightly integrated                 |
+| Target usage        | Production cells, process quality, traceability & uptime     | Bring-up, prototyping, broad manipulation tasks    |
+
+
+@section tvm_why_tess Why Choose Tesseract for New Development
+
+Tesseract is intended to be the **default choice** when:
+
+- You are building new industrial robotics products or cells
+- Motion quality directly impacts product quality, scrap, and cycle time
+- You expect to scale across multiple cells, lines, or facilities
+- You need a planning core that can live inside ROS, but also outside of it
+
+If you are starting from scratch:
+
+> **Start with Tesseract.**
+> You get an architecture designed for industrial use from day one—without fighting
+> the limitations of a framework that was not optimized for your workload.
+
+
+@section tvm_migration Migration and Coexistence
+
+Already using MoveIt2?
+
+- You can run Tesseract alongside or as an alternative to MoveIt2,using Tesseract to
+  plan specific processes or cells.
+- Over time, you can standardize on Tesseract as your primary motion and process
+  planning engine, while keeping ROS and other infrastructure investments intact.
+
+*/

@@ -1,0 +1,119 @@
+/** @page why_tesseract Why Tesseract
+
+@brief Industrial motion planning that treats the trajectory as part of the process.
+
+Most tools stop once the robot moves from A to B without crashing.
+In production, that isn’t enough.
+
+In real cells, motion planning directly affects:
+
+- Weld quality, edge finish, and surface coverage
+- Cycle time and throughput
+- Scrap, rework, and downtime
+- Safety and traceability
+
+The **Tesseract Robotics Framework** is built specifically for that world.
+
+Tesseract is a modern, optimization-centric motion planning framework designed for
+welding, cutting, grinding, deburring, painting, inspection, and other process-driven
+applications—where the shape, timing, and quality of the trajectory are part of the recipe,
+not an afterthought.
+
+Tesseract is intended to be used in place of MoveIt for industrial applications.
+
+
+@section why_hero Hero: Industrial Motion Planning, Done Right
+
+@par Title
+Industrial Motion Planning, Done Right
+
+@par Subtitle
+Tesseract is a modern, optimization-first robotics framework that replaces MoveIt for
+industrial applications—delivering higher-quality trajectories, better process control,
+and cleaner integration across your stack.
+
+@par Highlights
+- **Process-first**: Built for welding, cutting, grinding, painting, and inspection—
+  not just point-to-point moves.
+- **Optimization-native**: Plans that bake in collisions, smoothness, and dynamics
+  from the start.
+- **Industry-ready**: ROS-agnostic core with clean C++ and Python APIs for real
+  products and production cells.
+
+
+@section why_process_first Process-First, Not Just Point-to-Point
+
+Tesseract is designed around complete robotic processes:
+
+- Multi-pass welds and weave patterns
+- Surface-following paths for grinding and finishing
+- Complex inspection and coating trajectories
+- Structured approach, engage, and retract motions
+
+Instead of “plan one move,” you design full workflows that are:
+
+- Repeatable
+- Auditable
+- Easy to evolve as your process changes
+
+
+@section why_optimization Optimization at the Core
+
+Tesseract does not just find any collision-free path and smooth it later.
+
+It:
+
+- Treats collisions, smoothness, joint limits, and process constraints as **first-class**
+- Uses trajectory optimization to solve for all of them **at once**
+- Produces trajectories that are easier to validate, certify, and trust in production
+
+You tell Tesseract what “good” looks like; it solves for trajectories that match your definition
+of quality, safety, and performance.
+
+
+@section why_environment Built for Real Workcells
+
+Modern industrial cells are more than a robot and a table.
+
+Tesseract models:
+
+- Robots, fixtures, positioners, and parts in a single **scene graph**
+- Environment updates as a **command history**, so every change is traceable and replayable
+- State in a way that is cheap to clone, making parallel and distributed planning straightforward
+
+This enables:
+
+- Easier debugging when “it planned differently this time”
+- Clean synchronization between online systems (controllers) and offline tools (simulators, planners)
+- Confidence that what you validate offline is what runs online in production cells
+
+
+@section why_collision Contact-Aware Collision Checking
+
+Tesseract’s collision stack does more than report “in collision” or “not in collision”.
+
+It provides:
+
+- Distances to obstacles
+- Closest points and contact normals
+- Data that optimization algorithms use to actively shape safer, smoother trajectories
+
+This is critical when operating near tooling, fixtures, or other robots, and when
+you need every millimeter of clearance.
+
+
+@section why_integration ROS-Agnostic, Industry-Ready
+
+Tesseract’s core is a clean C++ and Python library, with ROS 1 and ROS 2 integrations on top,
+not baked in.
+
+You can:
+
+- Embed Tesseract directly into controllers, simulators, and proprietary systems
+- Use it from Python for scripting and rapid iteration
+- Add ROS interfaces where they add value, without being locked into any single stack
+
+The result is a single planning core that can live everywhere in your architecture:
+design, simulation, offline programming, and runtime.
+
+*/
