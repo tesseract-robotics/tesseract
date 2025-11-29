@@ -104,8 +104,9 @@ public:
                                                 const std::string& profile_name,
                                                 std::shared_ptr<const ProfileType> default_profile = nullptr) const
   {
-    if (hasProfile(ProfileType::getStaticKey(), ns, profile_name))
-      return std::static_pointer_cast<const ProfileType>(getProfile(ProfileType::getStaticKey(), ns, profile_name));
+    const std::size_t key = Profile::createKey<ProfileType>();
+    if (hasProfile(key, ns, profile_name))
+      return std::static_pointer_cast<const ProfileType>(getProfile(key, ns, profile_name));
 
     return default_profile;
   }

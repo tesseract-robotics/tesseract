@@ -27,6 +27,7 @@
 #define TESSERACT_COMMON_PROFILE_H
 
 #include <memory>
+#include <typeindex>
 
 namespace tesseract_common
 {
@@ -53,6 +54,12 @@ public:
    * @return The profile's hash code
    */
   std::size_t getKey() const;
+
+  template <typename KeyType>
+  static std::size_t createKey()
+  {
+    return std::type_index(typeid(KeyType)).hash_code();
+  }
 
 protected:
   Profile(const Profile&) = default;
