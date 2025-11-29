@@ -23,6 +23,7 @@ find_package(TinyXML2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(boost_plugin_loader REQUIRED)
 find_package(cereal REQUIRED)
+find_package(console_bridge REQUIRED)
 
 if(TARGET Boost::stacktrace_backtrace)
   find_file(BACKTRACE_INCLUDE_FILE backtrace.h PATHS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
@@ -42,20 +43,6 @@ elseif(TARGET Boost::stacktrace_noop)
   set(TESSERACT_BACKTRACE_DEFINITION BOOST_STACKTRACE_USE_NOOP)
   set(TESSERACT_BACKTRACE_COMPONENT "stacktrace_noop")
   set(TESSERACT_BACKTRACE_LIB "Boost::stacktrace_noop")
-endif()
-
-find_package(console_bridge REQUIRED)
-if(NOT TARGET console_bridge::console_bridge)
-  add_library(console_bridge::console_bridge INTERFACE IMPORTED)
-  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
-                                                                  ${console_bridge_INCLUDE_DIRS})
-  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_LINK_LIBRARIES ${console_bridge_LIBRARIES})
-else()
-  get_target_property(CHECK_INCLUDE_DIRECTORIES console_bridge::console_bridge INTERFACE_INCLUDE_DIRECTORIES)
-  if(NOT ${CHECK_INCLUDE_DIRECTORIES})
-    set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
-                                                                    ${console_bridge_INCLUDE_DIRS})
-  endif()
 endif()
 
 # Load variable for clang tidy args, compiler options and cxx version

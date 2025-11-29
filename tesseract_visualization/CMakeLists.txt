@@ -24,19 +24,6 @@ find_package(gz-transport11 QUIET)
 find_package(gz-msgs8 QUIET)
 find_package(gz-math7-eigen3 QUIET)
 
-if(NOT TARGET console_bridge::console_bridge)
-  add_library(console_bridge::console_bridge INTERFACE IMPORTED)
-  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
-                                                                  ${console_bridge_INCLUDE_DIRS})
-  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_LINK_LIBRARIES ${console_bridge_LIBRARIES})
-else()
-  get_target_property(CHECK_INCLUDE_DIRECTORIES console_bridge::console_bridge INTERFACE_INCLUDE_DIRECTORIES)
-  if(NOT ${CHECK_INCLUDE_DIRECTORIES})
-    set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
-                                                                    ${console_bridge_INCLUDE_DIRS})
-  endif()
-endif()
-
 set(GAZEBO_FOUND FALSE)
 if(gz-common5_FOUND
    AND gz-transport11_FOUND
@@ -186,8 +173,7 @@ configure_package(
     tesseract_common
     tesseract_environment
     tesseract_scene_graph
-    tesseract_state_solver
-  CFG_EXTRAS cmake/tesseract_visualization-extras.cmake)
+    tesseract_state_solver)
 
 # Mark cpp header files for installation
 install(
