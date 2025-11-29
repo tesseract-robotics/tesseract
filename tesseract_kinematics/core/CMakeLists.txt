@@ -74,8 +74,7 @@ configure_component(
     tesseract_state_solver
     tesseract_common
     boost_plugin_loader
-    yaml-cpp
-  CFG_EXTRAS cmake/core-extras.cmake)
+    yaml-cpp)
 
 if(TESSERACT_PACKAGE)
   cpack_component(

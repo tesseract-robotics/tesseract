@@ -59,8 +59,7 @@ configure_component(
     octomap
     boost_plugin_loader
     cereal
-    "Boost COMPONENTS system program_options"
-  CFG_EXTRAS cmake/core-extras.cmake)
+    "Boost COMPONENTS system program_options")
 
 if(TESSERACT_PACKAGE)
   cpack_component(
