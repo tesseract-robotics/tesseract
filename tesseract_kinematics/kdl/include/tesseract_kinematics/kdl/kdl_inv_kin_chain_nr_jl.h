@@ -4,8 +4,6 @@
  *
  * @author Levi Armstrong, Roelof Oomen
  * @date July 26, 2023
- * @version TODO
- * @bug No known bugs
  *
  * @copyright Copyright (c) 2023, Southwest Research Institute
  *

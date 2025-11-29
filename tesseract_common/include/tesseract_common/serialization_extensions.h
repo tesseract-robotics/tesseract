@@ -4,8 +4,6 @@
  *
  * @author Levi Armstrong
  * @date July 24, 2022
- * @version TODO
- * @bug No known bugs
  *
  *
  * @par License

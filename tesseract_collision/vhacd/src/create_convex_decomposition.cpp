@@ -4,8 +4,6 @@
  *
  * @author Michael Ripperger
  * @date Nov 22, 2023
- * @version TODO
- * @bug No known bugs
  *
  * @copyright Copyright (c) 2023, Southwest Research Institute
  *
