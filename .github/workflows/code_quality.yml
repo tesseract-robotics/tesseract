@@ -74,7 +74,7 @@ jobs:
 
       - name: Upload coverage artifacts
         if: matrix.job_type == 'codecov'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: codecov-raw-info
           path: ${{ github.workspace }}/target_ws/build/**/all-merged.info
