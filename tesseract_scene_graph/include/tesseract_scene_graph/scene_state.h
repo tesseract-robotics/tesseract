@@ -8,8 +8,6 @@
  *
  * @author Levi Armstrong
  * @date April 15, 2018
- * @version TODO
- * @bug No known bugs
  *
  * @copyright Copyright (c) 2013, Southwest Research Institute
  *

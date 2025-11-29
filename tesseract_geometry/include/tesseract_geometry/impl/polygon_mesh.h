@@ -4,8 +4,6 @@
  *
  * @author David Merz, Jr.
  * @date September 9, 2021
- * @version TODO
- * @bug No known bugs
  *
  * @copyright Copyright (c) 2017, Southwest Research Institute
  *

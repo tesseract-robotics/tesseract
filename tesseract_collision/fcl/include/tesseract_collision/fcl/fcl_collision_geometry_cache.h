@@ -5,8 +5,6 @@
  *
  * @author Levi Armstrong
  * @date January 25, 2025
- * @version TODO
- * @bug No known bugs
  *
  * @copyright Copyright (c) 2025, Levi Armstrong
  *

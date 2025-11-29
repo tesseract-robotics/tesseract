@@ -4,8 +4,6 @@
  *
  * @author Levi Armstrong
  * @date March 20, 2023
- * @version TODO
- * @bug No known bugs
  *
  * @copyright Copyright (c) 2023, Levi Armstrong
  *

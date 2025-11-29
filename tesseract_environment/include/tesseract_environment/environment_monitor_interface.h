@@ -3,8 +3,6 @@
  * @brief This is a utility class for applying changes to multiple tesseract environment monitors
  *
  * @author Levi Armstrong
- * @version TODO
- * @bug No known bugs
  *
  * @copyright Copyright (c) 2020, Southwest Research Institute
  *

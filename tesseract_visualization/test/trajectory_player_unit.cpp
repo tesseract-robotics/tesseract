@@ -4,8 +4,6 @@
  * generators are instantiated.
  *
  * @author Levi Armstrong
- * @version TODO
- * @bug No known bugs
  *
  * @copyright Copyright (c) 2020, Southwest Research Institute
  *
