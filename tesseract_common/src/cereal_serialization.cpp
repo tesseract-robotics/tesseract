@@ -71,4 +71,6 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::Resource, tesseract_commo
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::Resource, tesseract_common::BytesResource)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_common::ProfileDictionaryPtrAnyPoly)
 
+// LCOV_EXCL_START
 CEREAL_REGISTER_DYNAMIC_INIT(tesseract_common_cereal)
+// LCOV_EXCL_STOP

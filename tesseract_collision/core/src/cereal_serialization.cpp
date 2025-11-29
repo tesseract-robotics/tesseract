@@ -13,4 +13,6 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_c
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_collision::ContactResultMapAnyPoly)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_collision::ContactResultMapVectorAnyPoly)
 
+// LCOV_EXCL_START
 CEREAL_REGISTER_DYNAMIC_INIT(tesseract_collision_cereal)
+// LCOV_EXCL_STOP
