@@ -26,7 +26,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <Eigen/Eigenvalues>
+#include <Eigen/Dense>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/utils.h>
@@ -156,7 +156,9 @@ bool solvePInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
   // Calculate A+ (pseudoinverse of A) = V S+ U*, where U* is Hermition of U (just transpose if all values of U are
   // real)
   // in order to solve Ax=b -> x*=A+ b
-  Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd;
+  svd.compute(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+
   const Eigen::MatrixXd& U = svd.matrixU();
   const Eigen::VectorXd& Sv = svd.singularValues();
   const Eigen::MatrixXd& V = svd.matrixV();
@@ -187,7 +189,8 @@ bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A, Eigen::Ref<Eigen::Ma
   // Calculate A+ (pseudoinverse of A) = V S+ U*, where U* is Hermition of U (just transpose if all values of U are
   // real)
   // in order to solve Ax=b -> x*=A+ b
-  Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd;
+  svd.compute(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
   const Eigen::MatrixXd& U = svd.matrixU();
   const Eigen::VectorXd& Sv = svd.singularValues();
   const Eigen::MatrixXd& V = svd.matrixV();
@@ -211,7 +214,8 @@ bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A, Eigen::Ref<Eigen::Ma
 
 bool isNearSingularity(const Eigen::Ref<const Eigen::MatrixXd>& jacobian, double threshold)
 {
-  Eigen::JacobiSVD<Eigen::MatrixXd> svd(jacobian, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd;
+  svd.compute(jacobian, Eigen::ComputeThinU | Eigen::ComputeThinV);
   const Eigen::VectorXd& sv = svd.singularValues();
   return (sv.tail(1).value() < threshold);
 }

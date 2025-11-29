@@ -69,4 +69,6 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
                                      tesseract_environment::SetActiveDiscreteContactManagerCommand)
 
+// LCOV_EXCL_START
 CEREAL_REGISTER_DYNAMIC_INIT(tesseract_environment_cereal)
+// LCOV_EXCL_STOP

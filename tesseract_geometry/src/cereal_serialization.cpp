@@ -34,4 +34,6 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::PolygonMesh, tesseract_
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::PolygonMesh, tesseract_geometry::ConvexMesh)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_geometry::PolygonMesh, tesseract_geometry::SDFMesh)
 
+// LCOV_EXCL_START
 CEREAL_REGISTER_DYNAMIC_INIT(tesseract_geometry_cereal)
+// LCOV_EXCL_STOP
