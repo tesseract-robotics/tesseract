@@ -74,12 +74,15 @@ static void BM_JOINT_GROUP_COPY(benchmark::State& state, const JointGroup::Const
   }
 }
 
-static void BM_KINEMATIC_GROUP_COPY(benchmark::State& state, const KinematicGroup::ConstPtr& kg)
+static void BM_KINEMATIC_GROUP_COPY(benchmark::State& state, const Environment::Ptr& env)
 {
+  // Get the group *inside* the benchmark – it will be destroyed before env
+  auto kg = env->getKinematicGroup("manipulator");
+
   KinematicGroup::Ptr clone;
   for (auto _ : state)  // NOLINT
   {
-    benchmark::DoNotOptimize(clone = std::make_unique<KinematicGroup>(*kg));
+    benchmark::DoNotOptimize(clone = std::make_shared<KinematicGroup>(*kg));
   }
 }
 
@@ -92,7 +95,6 @@ int main(int argc, char** argv)
   env->init(*scene_graph, srdf);
   StateSolver::Ptr state_solver = env->getStateSolver();
   JointGroup::ConstPtr joint_group = env->getJointGroup("manipulator");
-  KinematicGroup::ConstPtr kinematic_group = env->getKinematicGroup("manipulator");
   //////////////////////////////////////
   // Clone
   //////////////////////////////////////
@@ -130,9 +132,9 @@ int main(int argc, char** argv)
   }
 
   {
-    std::function<void(benchmark::State&, KinematicGroup::ConstPtr)> BM_CLONE_FUNC = BM_KINEMATIC_GROUP_COPY;
+    std::function<void(benchmark::State&, Environment::Ptr)> BM_CLONE_FUNC = BM_KINEMATIC_GROUP_COPY;
     std::string name = "BM_KINEMATIC_GROUP_COPY";
-    benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, kinematic_group)
+    benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, env)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }
