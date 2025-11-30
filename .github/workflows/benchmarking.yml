@@ -40,7 +40,7 @@ jobs:
           vcs-file: dependencies.repos
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src
-          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=ON -DBENCHMARK_ARGS=CI_ONLY
+          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DBENCHMARK_ARGS=CI_ONLY
 
       - name: Run Benchmarks
         shell: bash
@@ -48,6 +48,7 @@ jobs:
           source $GITHUB_WORKSPACE/upstream_ws/install/setup.bash
           source $GITHUB_WORKSPACE/target_ws/install/setup.bash
           cd $GITHUB_WORKSPACE/target_ws
+          colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=ON -DBENCHMARK_ARGS=CI_ONLY
           ./src/.run_combine_benchmark_results
 
       - name: Store Bullet Discrete, FCL Discrete and Environment benchmark result
