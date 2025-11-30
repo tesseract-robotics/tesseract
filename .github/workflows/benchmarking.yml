@@ -56,7 +56,7 @@ jobs:
         with:
           name: C++ Benchmark
           tool: 'googlecpp'
-          output-file-path: $GITHUB_WORKSPACE/target_ws/benchmarks/tesseract-benchmark_result.json
+          output-file-path: target_ws/benchmarks/tesseract-benchmark_result.json
           benchmark-data-dir-path: tesseract/dev/bench
           gh-repository: github.com/tesseract-robotics/tesseract_docs
           github-token: ${{ secrets.GITHUB_TOKEN }}
