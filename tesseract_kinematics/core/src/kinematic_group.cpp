@@ -188,7 +188,17 @@ KinematicGroup::KinematicGroup(std::string name,
     throw std::runtime_error("KinematicGroup: Static link names are not correct!");
 }
 
-KinematicGroup::KinematicGroup(const KinematicGroup& other) : JointGroup(other) { *this = other; }
+KinematicGroup::KinematicGroup(const KinematicGroup& other)
+  : JointGroup(other)
+  , joint_names_(other.joint_names_)
+  , reorder_required_(other.reorder_required_)
+  , inv_kin_joint_map_(other.inv_kin_joint_map_)
+  , inv_kin_(other.inv_kin_->clone())
+  , inv_to_fwd_base_(other.inv_to_fwd_base_)
+  , working_frames_(other.working_frames_)
+  , inv_tip_links_map_(other.inv_tip_links_map_)
+{
+}
 
 KinematicGroup::~KinematicGroup() = default;
 

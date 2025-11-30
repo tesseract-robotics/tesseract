@@ -12,13 +12,14 @@ jobs:
   benchmark:
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:20.04
+      image: ubuntu:jammy
       env:
         CCACHE_DIR: "$GITHUB_WORKSPACE/benchmark/.ccache"
         DEBIAN_FRONTEND: noninteractive
         TZ: Etc/UTC
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           path: target_ws/src
 
@@ -27,48 +28,24 @@ jobs:
         run: |
           apt update
           apt upgrade -y
-          apt install -y cmake curl lsb-release ca-certificates gnupg python3 python3-distutils python3-pip ccache git liboctomap-dev
-          python3 -m pip install vcstool -q
-          python3 -m pip install colcon-common-extensions -q
-          python3 -m pip install rosdep -q
-          rosdep init
-          rosdep update
-          cd $GITHUB_WORKSPACE/target_ws/src
-          ./.github/workflows/add_ros_apt_sources.sh
+          apt install -y liboctomap-dev
 
-      - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        shell: cmake -P {0}
-        run: |
-          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-          message("::set-output name=timestamp::${current_date}")
-
-      - name: ccache cache files
-        uses: actions/cache@v4.3.0
+      - name: Build
+        uses: tesseract-robotics/colcon-action@v13
         with:
-          path: benchmark/.ccache
-          key: benchmark-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            benchmark-ccache-
+          ccache-prefix: benchmarks
+          vcs-file: dependencies.repos
+          upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
+          target-path: target_ws/src
+          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DBENCHMARK_ARGS=CI_ONLY
 
-      - name: Build Upstream Workspace
-        shell: bash
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/upstream_ws/src
-          vcs import --input "$GITHUB_WORKSPACE/target_ws/src/dependencies.repos" $GITHUB_WORKSPACE/upstream_ws/src/
-          cd $GITHUB_WORKSPACE/upstream_ws
-          rosdep install --from-paths src --ignore-src -r -y
-          colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Release
-          if [ $? -ge 1 ]; then return 1; fi
-
-      - name: Build Target Workspace And Run Benchmarks
+      - name: Run Benchmarks
         shell: bash
         run: |
           source $GITHUB_WORKSPACE/upstream_ws/install/setup.bash
+          source $GITHUB_WORKSPACE/target_ws/install/setup.bash
           cd $GITHUB_WORKSPACE/target_ws
-          rosdep install --from-paths src --ignore-src -r -y
-          colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=ON -DBENCHMARK_ARGS=CI_ONLY
-          if [ $? -ge 1 ]; then return 1; fi
+          colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=ON -DBENCHMARK_ARGS=CI_ONLY
           ./src/.run_combine_benchmark_results
 
       - name: Store Bullet Discrete, FCL Discrete and Environment benchmark result
@@ -76,7 +53,7 @@ jobs:
         with:
           name: C++ Benchmark
           tool: 'googlecpp'
-          output-file-path: $GITHUB_WORKSPACE/target_ws/benchmarks/tesseract-benchmark_result.json
+          output-file-path: target_ws/benchmarks/tesseract-benchmark_result.json
           benchmark-data-dir-path: tesseract/dev/bench
           gh-repository: github.com/tesseract-robotics/tesseract_docs
           github-token: ${{ secrets.GITHUB_TOKEN }}

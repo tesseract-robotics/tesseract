@@ -91,7 +91,7 @@ JointGroup::JointGroup(std::string name,
     {
       case tesseract_scene_graph::JointType::REVOLUTE:
       case tesseract_scene_graph::JointType::CONTINUOUS:
-        redundancy_indices_.push_back(static_cast<Eigen::Index>(i));
+        redundancy_indices_.push_back(i);
         break;
       default:
         break;
@@ -104,7 +104,19 @@ JointGroup::JointGroup(std::string name,
 
 JointGroup::~JointGroup() = default;
 
-JointGroup::JointGroup(const JointGroup& other) { *this = other; }
+JointGroup::JointGroup(const JointGroup& other)
+  : name_(other.name_)
+  , state_(other.state_)
+  , state_solver_(other.state_solver_->clone())
+  , joint_names_(other.joint_names_)
+  , link_names_(other.link_names_)
+  , static_link_names_(other.static_link_names_)
+  , static_link_transforms_(other.static_link_transforms_)
+  , limits_(other.limits_)
+  , redundancy_indices_(other.redundancy_indices_)
+  , jacobian_map_(other.jacobian_map_)
+{
+}
 
 JointGroup& JointGroup::operator=(const JointGroup& other)
 {
