@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    paths:
-      - '.github/workflows/benchmarking.yml'
 
   # allow manually starting this workflow
   workflow_dispatch:
