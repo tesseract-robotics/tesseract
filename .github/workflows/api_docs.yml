@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     image: ubuntu:18.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
       - name: Build Doxygen Documentation
         uses: mattnotmitt/doxygen-action@v1
