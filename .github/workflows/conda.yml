@@ -21,7 +21,7 @@ jobs:
       run:
         shell: powershell
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
        path: workspace/src/tesseract
     - name: install-depends
@@ -57,7 +57,7 @@ jobs:
       run:
         shell: bash -el {0}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         path: workspace/src/tesseract
     - name: install-depends
@@ -91,7 +91,7 @@ jobs:
       run:
         shell: bash -el {0}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         path: workspace/src/tesseract
     - name: install-depends
