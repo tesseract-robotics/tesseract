@@ -75,8 +75,7 @@ target_link_libraries(
   PUBLIC Eigen3::Eigen
          tesseract::tesseract_common
          console_bridge::console_bridge
-         octomap
-         octomath
+         ${OCTOMAP_LIBRARIES}
          cereal::cereal
          assimp::assimp)
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
