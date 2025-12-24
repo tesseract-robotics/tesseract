@@ -15,6 +15,7 @@ add_library(
   src/tesseract_collision_configuration.cpp
   src/tesseract_convex_convex_algorithm.cpp
   src/tesseract_gjk_pair_detector.cpp)
+target_include_directories(${PROJECT_NAME}_bullet PUBLIC ${OCTOMAP_INCLUDE_DIRS})
 target_link_libraries(
   ${PROJECT_NAME}_bullet
   PUBLIC ${PROJECT_NAME}_core
@@ -22,8 +23,8 @@ target_link_libraries(
          Bullet3::Bullet
          tesseract::tesseract_geometry
          console_bridge::console_bridge
-         octomap
-         octomath)
+         ${OCTOMAP_LIBRARIES}
+         )
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_bullet PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_bullet PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -98,8 +99,7 @@ if(NOT MSVC)
            tesseract::tesseract_common
            tesseract::tesseract_geometry
            console_bridge::console_bridge
-           octomap
-           octomath)
+           ${OCTOMAP_LIBRARIES})
   target_compile_options(create_convex_hull PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                     ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(create_convex_hull PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})

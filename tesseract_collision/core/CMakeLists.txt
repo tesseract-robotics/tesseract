@@ -8,6 +8,7 @@ add_library(
   src/discrete_contact_manager.cpp
   src/types.cpp
   src/utils.cpp)
+target_include_directories(${PROJECT_NAME}_core PUBLIC ${OCTOMAP_INCLUDE_DIRS})
 target_link_libraries(
   ${PROJECT_NAME}_core
   PUBLIC Eigen3::Eigen
@@ -18,7 +19,8 @@ target_link_libraries(
          Boost::system
          cereal::cereal
          yaml-cpp
-         octomap)
+         ${OCTOMAP_LIBRARIES}
+         )
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
