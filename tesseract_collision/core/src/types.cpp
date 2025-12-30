@@ -526,11 +526,11 @@ void ContactTrajectoryStepResults::addContact(int step_number,
     step = step_number;
   }
 
-  if (substep_number < 0 || substep_number > total_substeps)
+  if (substep_number < 0 || substep_number >= total_substeps)
   {
     if (substep_number < 0)
       throw std::runtime_error("ContactTrajectoryStepResults::addContact: substep_number is negative");
-    if (substep_number > total_substeps)
+    if (substep_number >= total_substeps)
       throw std::out_of_range("ContactTrajectoryStepResults::addContact: substep_number out of range");
   }
 
