@@ -1969,6 +1969,95 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
                    std::out_of_range);
     }
 
+    // Test addContact with substep_number equal to total_substeps (boundary condition - should throw)
+    // This catches the off-by-one error where substep index N with N total substeps would try to access
+    // index [N] in a vector of size N (which only has valid indices 0 to N-1)
+    {
+      int boundary_substep_number = 5;  // Equal to total_substeps (5), should be out of range
+      int same_substeps = 5;
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      EXPECT_THROW(step_results.addContact(
+                       step_number, boundary_substep_number, same_substeps, state, state, state, state, contacts),
+                   std::out_of_range);
+    }
+
+    // Test addContact with substep_number equal to num_substeps when resizing (boundary condition)
+    // This tests the case where we pass substep index 1 with 1 total substep - should throw
+    {
+      tesseract_collision::ContactTrajectoryStepResults fresh_step_results;
+      int fresh_step_number = 0;
+      int boundary_substep = 1;  // Index 1
+      int total = 1;             // Only 1 substep total (valid indices: 0 only)
+
+      Eigen::VectorXd state(1);
+      state << 1.0;
+
+      tesseract_collision::ContactResultMap contacts;
+
+      // This should throw because after resizing to 1, valid indices are only [0], not [1]
+      EXPECT_THROW(fresh_step_results.addContact(
+                       fresh_step_number, boundary_substep, total, state, state, state, state, contacts),
+                   std::out_of_range);
+    }
+
+    // Test addContact with valid boundary (substep N-1 with N total substeps)
+    {
+      tesseract_collision::ContactTrajectoryStepResults valid_step_results;
+      int valid_step_number = 0;
+      int valid_substep = 0;  // Index 0
+      int total = 1;          // 1 substep total (valid indices: 0 only)
+
+      Eigen::VectorXd state(2);
+      state << 1.0, 2.0;
+
+      tesseract_collision::ContactResultMap contacts;
+      auto key = tesseract_common::makeOrderedLinkPair("validLink1", "validLink2");
+      tesseract_collision::ContactResult cr;
+      cr.distance = -0.05;
+      cr.link_names[0] = "validLink1";
+      cr.link_names[1] = "validLink2";
+      contacts.addContactResult(key, cr);
+
+      // This should NOT throw - index 0 with 1 total is valid
+      EXPECT_NO_THROW(
+          valid_step_results.addContact(valid_step_number, valid_substep, total, state, state, state, state, contacts));
+
+      EXPECT_EQ(valid_step_results.total_substeps, 1);
+      EXPECT_EQ(valid_step_results.substeps.size(), 1);
+      EXPECT_EQ(valid_step_results.substeps[0].numContacts(), 1);
+    }
+
+    // Test addContact with substep index 1 and 2 total substeps (valid case after fix)
+    {
+      tesseract_collision::ContactTrajectoryStepResults two_step_results;
+      int step_num = 0;
+      int substep_idx = 1;  // Index 1
+      int total = 2;        // 2 substeps total (valid indices: 0 and 1)
+
+      Eigen::VectorXd state(2);
+      state << 1.0, 2.0;
+
+      tesseract_collision::ContactResultMap contacts;
+      auto key = tesseract_common::makeOrderedLinkPair("twoStepLink1", "twoStepLink2");
+      tesseract_collision::ContactResult cr;
+      cr.distance = -0.03;
+      cr.link_names[0] = "twoStepLink1";
+      cr.link_names[1] = "twoStepLink2";
+      contacts.addContactResult(key, cr);
+
+      // This should NOT throw - index 1 with 2 total is valid
+      EXPECT_NO_THROW(two_step_results.addContact(step_num, substep_idx, total, state, state, state, state, contacts));
+
+      EXPECT_EQ(two_step_results.total_substeps, 2);
+      EXPECT_EQ(two_step_results.substeps.size(), 2);
+      EXPECT_EQ(two_step_results.substeps[1].numContacts(), 1);
+    }
+
     // Test addContact with negative substep number
     {
       int invalid_substep_number = -1;
