@@ -1290,7 +1290,7 @@ bool Environment::Implementation::applyAddCommand(const AddLinkCommand::ConstPtr
     return false;
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1485,7 +1485,7 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
     return false;
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1655,7 +1655,7 @@ bool Environment::Implementation::applyMoveLinkCommand(const std::shared_ptr<con
     throw std::runtime_error("Environment, failed to move link in state solver.");
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1669,7 +1669,7 @@ bool Environment::Implementation::applyMoveJointCommand(const std::shared_ptr<co
     throw std::runtime_error("Environment, failed to move joint in state solver.");
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1683,7 +1683,7 @@ bool Environment::Implementation::applyRemoveLinkCommand(const std::shared_ptr<c
     throw std::runtime_error("Environment, failed to remove link in state solver.");
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1705,7 +1705,7 @@ bool Environment::Implementation::applyRemoveJointCommand(const std::shared_ptr<
     throw std::runtime_error("Environment, failed to remove joint in state solver.");
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1742,7 +1742,7 @@ bool Environment::Implementation::applyReplaceJointCommand(const std::shared_ptr
     throw std::runtime_error("Environment, failed to replace joint in state solver.");
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1763,7 +1763,7 @@ bool Environment::Implementation::applyChangeJointOriginCommand(const ChangeJoin
     throw std::runtime_error("Environment, failed to change joint origin in state solver.");
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1795,7 +1795,7 @@ bool Environment::Implementation::applyChangeLinkCollisionEnabledCommand(
     return false;
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1808,7 +1808,7 @@ bool Environment::Implementation::applyChangeLinkVisibilityCommand(
     return false;
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1842,7 +1842,7 @@ bool Environment::Implementation::applyModifyAllowedCollisionsCommand(
   }
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1853,7 +1853,7 @@ bool Environment::Implementation::applyRemoveAllowedCollisionLinkCommand(
   scene_graph->removeAllowedCollision(cmd->getLinkName());
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1928,7 +1928,7 @@ bool Environment::Implementation::applyAddSceneGraphCommand(std::shared_ptr<cons
   }
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1958,7 +1958,7 @@ bool Environment::Implementation::applyChangeJointPositionLimitsCommand(
   }
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -1987,7 +1987,7 @@ bool Environment::Implementation::applyChangeJointVelocityLimitsCommand(
   }
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -2016,7 +2016,7 @@ bool Environment::Implementation::applyChangeJointAccelerationLimitsCommand(
   }
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -2055,7 +2055,7 @@ bool Environment::Implementation::applyAddKinematicsInformationCommand(
   }
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -2113,7 +2113,7 @@ bool Environment::Implementation::applyAddContactManagersPluginInfoCommand(
   }
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -2124,7 +2124,7 @@ bool Environment::Implementation::applySetActiveContinuousContactManagerCommand(
   setActiveContinuousContactManager(cmd->getName());
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -2135,7 +2135,7 @@ bool Environment::Implementation::applySetActiveDiscreteContactManagerCommand(
   setActiveDiscreteContactManager(cmd->getName());
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
@@ -2161,7 +2161,7 @@ bool Environment::Implementation::applyChangeCollisionMarginsCommand(
     discrete_manager->setCollisionMarginData(collision_margin_data);
 
   ++revision;
-  commands.push_back(cmd);
+  commands.push_back(std::make_shared<const Command>(*cmd));
 
   return true;
 }
