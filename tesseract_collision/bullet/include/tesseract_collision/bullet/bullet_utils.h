@@ -125,6 +125,15 @@ public:
   void getAABB(btVector3& aabb_min, btVector3& aabb_max) const;
 
   /**
+   * @brief Get the collision object's axis aligned bounding box
+   * This AABB is extended by the provided margin
+   * @param aabb_min The minimum point
+   * @param aabb_max The maximum point
+   * @margin margin The value to extend the aabb
+   */
+  void getAABB(btVector3& aabb_min, btVector3& aabb_max, btScalar margin) const;
+
+  /**
    * @brief This clones the collision objects but not the collision shape wich is const.
    * @return Shared Pointer to the cloned collision object
    */

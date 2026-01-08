@@ -235,6 +235,19 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   if (!needs_collision)
     return false;
 
+  const double margin = cdata->collision_margin_data.getCollisionMargin(cd1->getName(), cd2->getName()) / 2.0;
+
+  fcl::AABB<double> aabb1 = static_cast<const FCLCollisionObjectWrapper*>(o1)->getAABB(margin);
+  fcl::AABB<double> aabb2 = static_cast<const FCLCollisionObjectWrapper*>(o2)->getAABB(margin);
+
+  const bool aabb_check = (aabb1.min_[0] <= aabb2.max_[0] && aabb1.max_[0] >= aabb2.min_[0]) &&
+                          (aabb1.min_[1] <= aabb2.max_[1] && aabb1.max_[1] >= aabb2.min_[1]) &&
+                          (aabb1.min_[2] <= aabb2.max_[2] && aabb1.max_[2] >= aabb2.min_[2]);
+
+  // Check if ABB are overlapping
+  if (!aabb_check)
+    return false;
+
   std::size_t num_contacts = (cdata->req.contact_limit > 0) ? static_cast<std::size_t>(cdata->req.contact_limit) :
                                                               std::numeric_limits<std::size_t>::max();
   if (cdata->req.type == ContactTestType::FIRST)
@@ -303,11 +316,25 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   if (!needs_collision)
     return false;
 
+  const double contact_threshold =
+      cdata->collision_margin_data.getCollisionMargin(cd1->getName(), cd2->getName()) / 2.0;
+
+  fcl::AABB<double> aabb1 = static_cast<const FCLCollisionObjectWrapper*>(o1)->getAABB(contact_threshold / 2.0);
+  fcl::AABB<double> aabb2 = static_cast<const FCLCollisionObjectWrapper*>(o2)->getAABB(contact_threshold / 2.0);
+
+  const bool aabb_check = (aabb1.min_[0] <= aabb2.max_[0] && aabb1.max_[0] >= aabb2.min_[0]) &&
+                          (aabb1.min_[1] <= aabb2.max_[1] && aabb1.max_[1] >= aabb2.min_[1]) &&
+                          (aabb1.min_[2] <= aabb2.max_[2] && aabb1.max_[2] >= aabb2.min_[2]);
+
+  // Check if ABB are overlapping
+  if (!aabb_check)
+    return false;
+
   fcl::DistanceResultd fcl_result;
   fcl::DistanceRequestd fcl_request(true, true);
   double d = fcl::distance(o1, o2, fcl_request, fcl_result);
 
-  if (d < cdata->collision_margin_data.getMaxCollisionMargin())
+  if (d < contact_threshold)
   {
     const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
     const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();

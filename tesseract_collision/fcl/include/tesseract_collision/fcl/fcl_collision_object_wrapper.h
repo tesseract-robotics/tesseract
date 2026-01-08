@@ -56,6 +56,13 @@ public:
   double getContactDistanceThreshold() const;
 
   /**
+   * @brief Get AABB with provided margin
+   * @param margin The margin to apply to AABB
+   * @return The AABB
+   */
+  fcl::AABB<double> getAABB(double margin) const;
+
+  /**
    * @brief Update the internal AABB. This must be called instead of the base class computeAABB().
    *
    * After setting the collision objects transform this must be called.
@@ -79,6 +86,9 @@ protected:
 
   /** @brief The shape index, which is the geometries index in the urdf. */
   int shape_index_{ -1 };
+
+  /** @brief AABB which does not include margin */
+  fcl::AABB<double> aabb_without_margin_;
 };
 
 }  // namespace tesseract_collision::tesseract_collision_fcl
