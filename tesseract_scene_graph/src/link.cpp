@@ -140,7 +140,7 @@ Link::Link(const std::string& name) : name_(name), hash_(std::hash<std::string>{
 
 const std::string& Link::getName() const { return name_; }
 
-const size_t& Link::getHash() const { return hash_; }
+const std::size_t& Link::getHash() const { return hash_; }
 
 void Link::clear()
 {

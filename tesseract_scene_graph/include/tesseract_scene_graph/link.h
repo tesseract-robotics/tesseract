@@ -195,7 +195,7 @@ public:
 
   const std::string& getName() const;
 
-  const size_t& getHash() const;
+  const std::size_t& getHash() const;
 
   /// inertial element
   Inertial::Ptr inertial;
@@ -230,7 +230,7 @@ private:
   std::string name_;
 
   /** @brief The hash of the link name */
-  size_t hash_{};
+  std::size_t hash_{};
 
   template <class Archive>
   friend void ::tesseract_scene_graph::serialize(Archive& ar, Link& obj);
