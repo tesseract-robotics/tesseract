@@ -21,6 +21,12 @@
  * limitations under the License.
  */
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/uuid/random_generator.hpp>
+#include <utility>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometry.h>
@@ -136,9 +142,13 @@ bool Collision::operator!=(const Collision& rhs) const { return !operator==(rhs)
 /*********************************************************/
 /******                     Link                     *****/
 /*********************************************************/
-Link::Link(std::string name) : name_(std::move(name)) { this->clear(); }
+Link::Link(std::string name) : Link(std::move(name), boost::uuids::random_generator()()) { this->clear(); }
+
+Link::Link(std::string name, boost::uuids::uuid uuid) : name_(std::move(name)), uuid_(uuid) { this->clear(); }
 
 const std::string& Link::getName() const { return name_; }
+
+const boost::uuids::uuid& Link::getUuid() const { return uuid_; }
 
 void Link::clear()
 {
@@ -147,11 +157,13 @@ void Link::clear()
   this->visual.clear();
 }
 
-Link Link::clone() const { return clone(name_); }
+Link Link::clone() const { return clone(name_, uuid_); }
 
-Link Link::clone(const std::string& name) const
+Link Link::clone(const std::string& name) const { return clone(name, boost::uuids::random_generator()()); };
+
+Link Link::clone(const std::string& name, boost::uuids::uuid uuid) const
 {
-  Link ret(name);
+  Link ret(name, uuid);
   ret.visible = visible;
   ret.collision_enabled = collision_enabled;
   if (this->inertial)
@@ -186,6 +198,7 @@ bool Link::operator==(const Link& rhs) const
       tesseract_common::pointersEqual<Collision>,
       [](const Collision::Ptr& v1, const Collision::Ptr& v2) { return v1->name < v2->name; });
   equal &= name_ == rhs.name_;
+  equal &= uuid_ == rhs.uuid_;
   equal &= visible == rhs.visible;
   equal &= collision_enabled == rhs.collision_enabled;
   return equal;

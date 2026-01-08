@@ -39,6 +39,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/uuid/uuid.hpp>
 #include <string>
 #include <vector>
 #include <memory>
@@ -183,7 +184,7 @@ public:
   using Ptr = std::shared_ptr<Link>;
   using ConstPtr = std::shared_ptr<const Link>;
 
-  Link(std::string name);
+  explicit Link(std::string name);
   Link() = default;
   ~Link() = default;
   // Links are non-copyable as their name must be unique
@@ -194,6 +195,8 @@ public:
   Link& operator=(Link&& other) = default;
 
   const std::string& getName() const;
+
+  const boost::uuids::uuid& getUuid() const;
 
   /// inertial element
   Inertial::Ptr inertial;
@@ -216,16 +219,26 @@ public:
   bool operator!=(const Link& rhs) const;
 
   /**
-   * @brief Clone the link keeping the name.
+   * @brief Clone the link keeping the name and uuid.
    * @return Cloned link
    */
   Link clone() const;
 
-  /** Perform a copy of link, changing its name **/
+  /** Perform a copy of link, changing its name and uuid **/
   Link clone(const std::string& name) const;
+
+protected:
+  /** Constructor with specified name and uuid */
+  Link(std::string name, boost::uuids::uuid uuid);
+
+  /** Clone with specified name and uuid */
+  Link clone(const std::string& name, boost::uuids::uuid uuid) const;
 
 private:
   std::string name_;
+
+  /** @brief The uuid of the link */
+  boost::uuids::uuid uuid_{};
 
   template <class Archive>
   friend void ::tesseract_scene_graph::serialize(Archive& ar, Link& obj);

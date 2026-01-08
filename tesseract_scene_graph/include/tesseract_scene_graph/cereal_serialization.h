@@ -74,6 +74,7 @@ void serialize(Archive& ar, Link& obj)
   ar(cereal::make_nvp("collision", obj.collision));
   ar(cereal::make_nvp("visible", obj.visible));
   ar(cereal::make_nvp("collision_enabled", obj.collision_enabled));
+  ar(cereal::make_nvp("uuid", obj.uuid_));
   ar(cereal::make_nvp("name", obj.name_));
 }
 
