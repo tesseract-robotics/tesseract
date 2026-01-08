@@ -1,8 +1,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <iostream>
-#include <fstream>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -136,7 +134,10 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkUnit)  // NOLINT
   l.collision.push_back(c);
 
   Link l_clone = l.clone();
+  // Names should be the same
   EXPECT_EQ(l_clone.getName(), "test_link");
+  // Hashes should be the same
+  EXPECT_EQ(l_clone.getHash(), l.getHash());
   EXPECT_TRUE(l_clone.inertial != l.inertial);
   EXPECT_TRUE(l_clone.inertial != nullptr);
   EXPECT_TRUE(l_clone.inertial->origin.isApprox(l.inertial->origin));
@@ -163,8 +164,22 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkUnit)  // NOLINT
   EXPECT_TRUE(l_clone.collision.front()->geometry == l.collision.front()->geometry);
   EXPECT_TRUE(l_clone.collision.front()->name == l.collision.front()->name);
 
+  Link l_renamed_clone = l.clone("test_link");
+  // We used the same name
+  EXPECT_EQ(l_clone.getName(), "test_link");
+  // So the hash should be the same
+  EXPECT_EQ(l_renamed_clone.getHash(), l.getHash());
+
+  Link l_renamed_clone2 = l.clone("renamed_link");
+  // We changed the name
+  EXPECT_EQ(l_renamed_clone2.getName(), "renamed_link");
+  // So the hash should be different
+  EXPECT_NE(l_renamed_clone2.getHash(), l.getHash());
+
+  auto hash_before_clear = l.getHash();
   l.clear();
   EXPECT_EQ(l.getName(), "test_link");
+  EXPECT_EQ(l.getHash(), hash_before_clear);
   EXPECT_TRUE(l.visual.empty());
   EXPECT_TRUE(l.collision.empty());
   EXPECT_TRUE(l.inertial == nullptr);
