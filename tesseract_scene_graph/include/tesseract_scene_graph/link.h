@@ -195,7 +195,7 @@ public:
 
   const std::string& getName() const;
 
-  const std::size_t& getHash() const;
+  std::size_t getHash() const;
 
   /// inertial element
   Inertial::Ptr inertial;
