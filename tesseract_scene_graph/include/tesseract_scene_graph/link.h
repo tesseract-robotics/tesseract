@@ -183,7 +183,7 @@ public:
   using Ptr = std::shared_ptr<Link>;
   using ConstPtr = std::shared_ptr<const Link>;
 
-  Link(std::string name);
+  Link(const std::string& name);
   Link() = default;
   ~Link() = default;
   // Links are non-copyable as their name must be unique
@@ -194,6 +194,8 @@ public:
   Link& operator=(Link&& other) = default;
 
   const std::string& getName() const;
+
+  std::size_t getHash() const;
 
   /// inertial element
   Inertial::Ptr inertial;
@@ -226,6 +228,9 @@ public:
 
 private:
   std::string name_;
+
+  /** @brief The hash of the link name */
+  std::size_t hash_{};
 
   template <class Archive>
   friend void ::tesseract_scene_graph::serialize(Archive& ar, Link& obj);
