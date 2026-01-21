@@ -288,7 +288,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
       continue;
 
     btVector3 min_aabb[2], max_aabb[2];  // NOLINT
-    cow1->getAABB(min_aabb[0], max_aabb[0]);
+    cow1->getAABB(min_aabb[0], max_aabb[0], 0.0);
 
     btCollisionObjectWrapper obA(nullptr, cow1->getCollisionShape(), cow1.get(), cow1->getWorldTransform(), -1, -1);
 
@@ -298,7 +298,9 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
       assert(!contact_test_data_.done);
 
       const COW::Ptr& cow2 = *cow2_iter;
-      cow2->getAABB(min_aabb[1], max_aabb[1]);
+      const double contact_threshold =
+          contact_test_data_.collision_margin_data.getCollisionMargin(cow1->getName(), cow2->getName());
+      cow2->getAABB(min_aabb[1], max_aabb[1], contact_threshold);
 
       bool aabb_check = (min_aabb[0][0] <= max_aabb[1][0] && max_aabb[0][0] >= min_aabb[1][0]) &&
                         (min_aabb[0][1] <= max_aabb[1][1] && max_aabb[0][1] >= min_aabb[1][1]) &&
@@ -319,8 +321,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
           if (algorithm != nullptr)
           {
             // Update the contact threshold to be pair specific
-            cc.m_closestDistanceThreshold =
-                contact_test_data_.collision_margin_data.getCollisionMargin(cow1->getName(), cow2->getName());
+            cc.m_closestDistanceThreshold = contact_threshold;
             TesseractBridgedManifoldResult contactPointResult(&obA, &obB, cc);
 
             // discrete collision detection query
