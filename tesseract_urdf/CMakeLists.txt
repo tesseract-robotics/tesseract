@@ -73,44 +73,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVA
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 
-# PCL does not support c++11 on Xenial so cannot include point cloud parsing from urdf Boost version number is in XYYYZZ
-# format such that: (BOOST_VERSION % 100) is the sub-minor version ((BOOST_VERSION / 100) % 1000) is the minor version
-# (BOOST_VERSION_MACRO / 100000) is the major version.
-if(Boost_VERSION_MACRO)
-  set(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION_MACRO})
-else(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION_MACRO})
-  set(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION})
-endif()
-if(TESSERACT_Boost_VERSION_MACRO VERSION_GREATER "106000")
-  target_link_libraries(${PROJECT_NAME} PUBLIC ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES})
-  target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PCL_INCLUDE_DIRS})
-  target_compile_definitions(${PROJECT_NAME} PUBLIC TESSERACT_PARSE_POINT_CLOUDS="ON")
-  foreach(DEF ${PCL_DEFINITIONS})
-    string(STRIP ${DEF} DEF)
-    if(NOT
-       "${DEF}"
-       STREQUAL
-       "")
-      string(
-        SUBSTRING "${DEF}"
-                  0
-                  2
-                  DEF_PREFIX)
-      if("${DEF_PREFIX}" STREQUAL "-m")
-        string(
-          REPLACE " "
-                  ";"
-                  DEF
-                  ${DEF})
-        foreach(OPTION_DEF ${DEF})
-          target_compile_options(${PROJECT_NAME} PUBLIC ${OPTION_DEF})
-        endforeach()
-      else()
-        target_compile_definitions(${PROJECT_NAME} PUBLIC ${DEF})
-      endif()
-    endif()
-  endforeach()
-endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PCL_IO_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${PCL_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME} PUBLIC TESSERACT_PARSE_POINT_CLOUDS="ON")
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
@@ -131,7 +96,6 @@ configure_package(
     Boost
     Eigen3
     console_bridge
-    "PCL COMPONENTS common io"
     "tesseract_collision COMPONENTS bullet"
     tesseract_geometry
     tesseract_common
