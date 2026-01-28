@@ -2,8 +2,8 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.34.0 (2026-01-28)
+-------------------
 * Cleanup doxygen file headers
 * Remove old console bridge cmake target logic
 * Improve serialization coverage

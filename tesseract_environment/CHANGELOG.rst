@@ -2,8 +2,8 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.34.0 (2026-01-28)
+-------------------
 * fix benchmark ci (`#1222 <https://github.com/tesseract-robotics/tesseract/issues/1222>`_)
 * Cleanup doxygen file headers
 * Remove old console bridge cmake target logic

@@ -2,8 +2,8 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.34.0 (2026-01-28)
+-------------------
 * Use thread_local for link pair key
 * Reduce allocation in ContactResultMap
 * Catch error when substep == num_substeps and add test

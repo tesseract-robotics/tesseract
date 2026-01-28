@@ -2,8 +2,8 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.34.0 (2026-01-28)
+-------------------
 * Use thread_local for link pair key
 * Cleanup doxygen file headers
 * Remove old console bridge cmake target logic
