@@ -717,9 +717,10 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  ObjectPairKey pc = tesseract_common::makeOrderedLinkPair(cd0->getName(), cd1->getName());
+  thread_local tesseract_common::LinkNamesPair key;
+  tesseract_common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
 
-  const auto it = collisions.res->find(pc);
+  const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
 
   //    size_t l = 0;
@@ -763,7 +764,7 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   contact.distance = static_cast<double>(cp.m_distance1);
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  if (processResult(collisions, contact, pc, found) == nullptr)
+  if (processResult(collisions, contact, key, found) == nullptr)
     return 0;
 
   return 1;
@@ -857,11 +858,10 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  const std::pair<std::string, std::string>& pc = cd0->getName() < cd1->getName() ?
-                                                      std::make_pair(cd0->getName(), cd1->getName()) :
-                                                      std::make_pair(cd1->getName(), cd0->getName());
+  thread_local tesseract_common::LinkNamesPair key;
+  tesseract_common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
 
-  const auto it = collisions.res->find(pc);
+  const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
 
   //    size_t l = 0;
@@ -904,7 +904,7 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   contact.distance = static_cast<double>(cp.m_distance1);
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  ContactResult* col = processResult(collisions, contact, pc, found);
+  ContactResult* col = processResult(collisions, contact, key, found);
   if (col == nullptr)
     return 0;
 

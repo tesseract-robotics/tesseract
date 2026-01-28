@@ -271,11 +271,12 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
       contact.distance = -1.0 * fcl_contact.penetration_depth;
       contact.normal = fcl_contact.normal;
 
-      ObjectPairKey pc = tesseract_common::makeOrderedLinkPair(cd1->getName(), cd2->getName());
-      const auto it = cdata->res->find(pc);
+      thread_local tesseract_common::LinkNamesPair link_pair;
+      tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
+      const auto it = cdata->res->find(link_pair);
       bool found = (it != cdata->res->end() && !it->second.empty());
 
-      processResult(*cdata, contact, pc, found);
+      processResult(*cdata, contact, link_pair, found);
     }
   }
 
@@ -335,11 +336,12 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     // TODO: There is an issue with FCL need to track down
     assert(!std::isnan(contact.nearest_points[0](0)));
 
-    ObjectPairKey pc = tesseract_common::makeOrderedLinkPair(cd1->getName(), cd2->getName());
-    const auto it = cdata->res->find(pc);
+    thread_local tesseract_common::LinkNamesPair link_pair;
+    tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
+    const auto it = cdata->res->find(link_pair);
     bool found = (it != cdata->res->end() && !it->second.empty());
 
-    processResult(*cdata, contact, pc, found);
+    processResult(*cdata, contact, link_pair, found);
   }
 
   return cdata->done;
