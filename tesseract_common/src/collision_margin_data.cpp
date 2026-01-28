@@ -41,7 +41,8 @@ void CollisionMarginPairData::setCollisionMargin(const std::string& obj1, const 
 
 void CollisionMarginPairData::setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin)
 {
-  auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
+  thread_local tesseract_common::LinkNamesPair key;
+  tesseract_common::makeOrderedLinkPair(key, obj1, obj2);
   lookup_table_[key] = margin;
 }
 
