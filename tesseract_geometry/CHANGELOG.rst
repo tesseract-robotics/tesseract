@@ -2,6 +2,14 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Cleanup doxygen file headers
+* Remove old console bridge cmake target logic
+* Improve serialization coverage
+* Switch to using Cereal for serialization (`#1216 <https://github.com/tesseract-robotics/tesseract/issues/1216>`_)
+* Contributors: Levi Armstrong
+
 0.33.1 (2025-11-03)
 -------------------
 

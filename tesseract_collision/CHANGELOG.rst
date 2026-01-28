@@ -2,6 +2,18 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use thread_local for link pair key
+* Reduce allocation in ContactResultMap
+* Catch error when substep == num_substeps and add test
+* Cleanup doxygen file headers
+* Remove old console bridge cmake target logic
+* Improve serialization coverage
+* Add doxygen to tesseract collision example
+* Switch to using Cereal for serialization (`#1216 <https://github.com/tesseract-robotics/tesseract/issues/1216>`_)
+* Contributors: Levi Armstrong, Tyler Marr
+
 0.33.1 (2025-11-03)
 -------------------
 

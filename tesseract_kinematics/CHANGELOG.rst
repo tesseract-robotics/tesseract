@@ -2,6 +2,14 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix benchmark ci (`#1222 <https://github.com/tesseract-robotics/tesseract/issues/1222>`_)
+* Cleanup doxygen file headers
+* Remove old console bridge cmake target logic
+* Improve serialization coverage
+* Contributors: Levi Armstrong
+
 0.33.1 (2025-11-03)
 -------------------
 

@@ -2,6 +2,13 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Reduce scope of PCL dependency
+* Cleanup doxygen file headers
+* Remove old console bridge cmake target logic
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.33.1 (2025-11-03)
 -------------------
 

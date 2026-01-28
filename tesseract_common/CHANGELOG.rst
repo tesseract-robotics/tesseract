@@ -2,6 +2,16 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use thread_local for link pair key
+* Cleanup doxygen file headers
+* Remove old console bridge cmake target logic
+* Add createKey static function to Profile class
+* Improve serialization coverage
+* Switch to using Cereal for serialization (`#1216 <https://github.com/tesseract-robotics/tesseract/issues/1216>`_)
+* Contributors: Levi Armstrong
+
 0.33.1 (2025-11-03)
 -------------------
 

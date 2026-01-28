@@ -2,6 +2,14 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add hash to link class (`#1242 <https://github.com/tesseract-robotics/tesseract/issues/1242>`_)
+* Cleanup doxygen file headers
+* Remove old console bridge cmake target logic
+* Switch to using Cereal for serialization (`#1216 <https://github.com/tesseract-robotics/tesseract/issues/1216>`_)
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.33.1 (2025-11-03)
 -------------------
 

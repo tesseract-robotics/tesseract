@@ -2,6 +2,12 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Cleanup doxygen file headers
+* Remove old console bridge cmake target logic
+* Contributors: Levi Armstrong
+
 0.33.1 (2025-11-03)
 -------------------
 
