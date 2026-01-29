@@ -42,7 +42,7 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 {
   Eigen::VectorXd njvals;
   double delta = 1e-8;
-  thread_local tesseract_common::TransformMap poses;
+  TESSERACT_THREAD_LOCAL tesseract_common::TransformMap poses;
   poses.clear();
   kin.calcFwdKin(poses, joint_values);
   Eigen::Isometry3d pose{ change_base * poses[link_name] };
