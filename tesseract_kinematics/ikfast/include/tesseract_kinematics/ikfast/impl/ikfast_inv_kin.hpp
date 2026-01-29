@@ -96,7 +96,7 @@ inline void IKFastInvKin::calcInvKin(IKSolutions& solutions,
     // Unpack the solutions into the output vector
     const auto n_sols = ikfast_solution_set.GetNumSolutions();
 
-    thread_local std::vector<IkReal> ikfast_output;
+    TESSERACT_THREAD_LOCAL std::vector<IkReal> ikfast_output;
     ikfast_output.resize(ikfast_dof);
 
     for (std::size_t i = 0; i < n_sols; ++i)

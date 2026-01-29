@@ -206,7 +206,7 @@ void ROPInvKin::ikAt(IKSolutions& solutions,
                      Eigen::VectorXd& positioner_pose,
                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  thread_local tesseract_common::TransformMap positioner_poses;
+  TESSERACT_THREAD_LOCAL tesseract_common::TransformMap positioner_poses;
   positioner_poses.clear();
   positioner_fwd_kin_->calcFwdKin(positioner_poses, positioner_pose);
   Eigen::Isometry3d positioner_tf = positioner_poses[positioner_tip_link_] * positioner_to_robot_;
@@ -220,7 +220,7 @@ void ROPInvKin::ikAt(IKSolutions& solutions,
   auto robot_dof = static_cast<Eigen::Index>(manip_inv_kin_->numJoints());
   auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
 
-  thread_local IKSolutions robot_solution_set;
+  TESSERACT_THREAD_LOCAL IKSolutions robot_solution_set;
   robot_solution_set.clear();
   manip_inv_kin_->calcInvKin(robot_solution_set, robot_target_poses, seed.tail(robot_dof));
   if (robot_solution_set.empty())
