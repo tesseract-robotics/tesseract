@@ -198,9 +198,10 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
         // Note: Must include all contacts throughout the trajectory so the optimizer has all the information
         //      to understand how to adjust the start and end state to move it out of collision. Originally tried
         //      keeping the worst case only but ran into edge cases where this does not work in the units tests.
-        it->second.insert(it->second.end(), pair.second.begin(), pair.second.end());
-        // it->second.insert(it->second.end(), std::make_move_iterator(pair.begin()),
-        // std::make_move_iterator(pair.end())); pair.clear();
+        // it->second.insert(it->second.end(), pair.second.begin(), pair.second.end());
+        it->second.insert(
+            it->second.end(), std::make_move_iterator(pair.second.begin()), std::make_move_iterator(pair.second.end()));
+        pair.second.clear();
       }
     }
   }
