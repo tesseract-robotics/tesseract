@@ -2,8 +2,8 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.34.1 (2026-01-30)
+-------------------
 * Use thread local for jacobian in kdl state solver
 * Contributors: Levi Armstrong
 
