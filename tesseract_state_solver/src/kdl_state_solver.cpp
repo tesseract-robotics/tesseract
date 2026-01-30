@@ -42,7 +42,8 @@ using Eigen::VectorXd;
 
 // LCOV_EXCL_START
 
-thread_local KDL::JntArray KDLStateSolver::kdl_joints_cache;  // NOLINT
+thread_local KDL::JntArray KDLStateSolver::kdl_joints_cache;    // NOLINT
+thread_local KDL::Jacobian KDLStateSolver::kdl_jacobian_cache;  // NOLINT
 
 StateSolver::UPtr KDLStateSolver::clone() const { return std::make_unique<KDLStateSolver>(*this); }
 
@@ -144,10 +145,7 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
 {
   SceneState state{ current_state_ };
 
-  if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
-    kdl_joints_cache = kdl_jnt_array_;
-  else
-    kdl_joints_cache.data.noalias() = kdl_jnt_array_.data;
+  kdl_joints_cache = kdl_jnt_array_;
 
   for (auto i = 0U; i < data_.active_joint_names.size(); ++i)
   {
@@ -168,10 +166,7 @@ SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double
 {
   SceneState state{ current_state_ };
 
-  if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
-    kdl_joints_cache = kdl_jnt_array_;
-  else
-    kdl_joints_cache.data.noalias() = kdl_jnt_array_.data;
+  kdl_joints_cache = kdl_jnt_array_;
 
   for (const auto& joint : joint_values)
   {
@@ -202,10 +197,7 @@ void KDLStateSolver::getLinkTransforms(tesseract_common::TransformMap& link_tran
 {
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
 
-  if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
-    kdl_joints_cache = kdl_jnt_array_;
-  else
-    kdl_joints_cache.data.noalias() = kdl_jnt_array_.data;
+  kdl_joints_cache = kdl_jnt_array_;
 
   for (auto i = 0U; i < joint_names.size(); ++i)
     setJointValuesHelper(kdl_joints_cache, joint_names[i], joint_values[i]);
@@ -220,10 +212,7 @@ SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
 {
   SceneState state{ current_state_ };
 
-  if (kdl_joints_cache.rows() != kdl_jnt_array_.rows())
-    kdl_joints_cache = kdl_jnt_array_;
-  else
-    kdl_joints_cache.data.noalias() = kdl_jnt_array_.data;
+  kdl_joints_cache = kdl_jnt_array_;
 
   for (auto i = 0U; i < joint_names.size(); ++i)
   {
@@ -258,10 +247,9 @@ Eigen::MatrixXd KDLStateSolver::getJacobian(const Eigen::Ref<const Eigen::Vector
                                             const tesseract_common::TransformMap& /*floating_joint_values*/) const
 {
   assert(joint_values.size() == data_.tree.getNrOfJoints());
-  KDL::JntArray kdl_joint_vals = getKDLJntArray(data_.active_joint_names, joint_values);
-  KDL::Jacobian kdl_jacobian;
-  if (calcJacobianHelper(kdl_jacobian, kdl_joint_vals, link_name))
-    return convert(kdl_jacobian, joint_qnr_);
+  getKDLJntArray(kdl_joints_cache, data_.active_joint_names, joint_values);
+  if (calcJacobianHelper(kdl_jacobian_cache, kdl_joints_cache, link_name))
+    return convert(kdl_jacobian_cache, joint_qnr_);
 
   throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
 }
@@ -270,10 +258,9 @@ Eigen::MatrixXd KDLStateSolver::getJacobian(const std::unordered_map<std::string
                                             const std::string& link_name,
                                             const tesseract_common::TransformMap& /*floating_joint_values*/) const
 {
-  KDL::JntArray kdl_joint_vals = getKDLJntArray(joint_values);
-  KDL::Jacobian kdl_jacobian;
-  if (calcJacobianHelper(kdl_jacobian, kdl_joint_vals, link_name))
-    return convert(kdl_jacobian, joint_qnr_);
+  getKDLJntArray(kdl_joints_cache, joint_values);
+  if (calcJacobianHelper(kdl_jacobian_cache, kdl_joints_cache, link_name))
+    return convert(kdl_jacobian_cache, joint_qnr_);
 
   throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
 }
@@ -283,10 +270,9 @@ Eigen::MatrixXd KDLStateSolver::getJacobian(const std::vector<std::string>& join
                                             const std::string& link_name,
                                             const tesseract_common::TransformMap& /*floating_joint_values*/) const
 {
-  KDL::JntArray kdl_joint_vals = getKDLJntArray(joint_names, joint_values);
-  KDL::Jacobian kdl_jacobian;
-  if (calcJacobianHelper(kdl_jacobian, kdl_joint_vals, link_name))
-    return convert(kdl_jacobian, joint_qnr_);
+  getKDLJntArray(kdl_joints_cache, joint_names, joint_values);
+  if (calcJacobianHelper(kdl_jacobian_cache, kdl_joints_cache, link_name))
+    return convert(kdl_jacobian_cache, joint_qnr_);
 
   throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
 }
@@ -488,27 +474,23 @@ bool KDLStateSolver::calcJacobianHelper(KDL::Jacobian& jacobian,
   return true;
 }
 
-KDL::JntArray KDLStateSolver::getKDLJntArray(const std::vector<std::string>& joint_names,
-                                             const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+void KDLStateSolver::getKDLJntArray(KDL::JntArray& kdl_joints,
+                                    const std::vector<std::string>& joint_names,
+                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
 {
-  assert(data_.active_joint_names.size() == static_cast<unsigned>(joint_values.size()));
-
-  KDL::JntArray kdl_joints(kdl_jnt_array_);
+  kdl_joints = kdl_jnt_array_;
   for (unsigned i = 0; i < joint_names.size(); ++i)
     kdl_joints.data(joint_to_qnr_.at(joint_names[i])) = joint_values[i];
-
-  return kdl_joints;
 }
 
-KDL::JntArray KDLStateSolver::getKDLJntArray(const std::unordered_map<std::string, double>& joint_values) const
+void KDLStateSolver::getKDLJntArray(KDL::JntArray& kdl_joints,
+                                    const std::unordered_map<std::string, double>& joint_values) const
 {
   assert(data_.active_joint_names.size() == static_cast<unsigned>(joint_values.size()));
 
-  KDL::JntArray kdl_joints(kdl_jnt_array_);
+  kdl_joints = kdl_jnt_array_;
   for (const auto& joint : joint_values)
     kdl_joints.data(joint_to_qnr_.at(joint.first)) = joint.second;
-
-  return kdl_joints;
 }
 // LCOV_EXCL_STOP
 }  // namespace tesseract_scene_graph
