@@ -2,6 +2,11 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add macro to allow disabling use of thread_local
+* Contributors: Levi Armstrong
+
 0.34.0 (2026-01-28)
 -------------------
 * fix benchmark ci (`#1222 <https://github.com/tesseract-robotics/tesseract/issues/1222>`_)

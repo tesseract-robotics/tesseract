@@ -2,6 +2,11 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use thread local for jacobian in kdl state solver
+* Contributors: Levi Armstrong
+
 0.34.0 (2026-01-28)
 -------------------
 * Cleanup doxygen file headers

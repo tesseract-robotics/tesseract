@@ -2,6 +2,9 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.34.0 (2026-01-28)
 -------------------
 * Cleanup doxygen file headers

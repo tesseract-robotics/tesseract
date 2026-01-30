@@ -2,6 +2,12 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move data when adding interpolated data instead of copy
+* Add macro to allow disabling use of thread_local
+* Contributors: Levi Armstrong
+
 0.34.0 (2026-01-28)
 -------------------
 * Use thread_local for link pair key

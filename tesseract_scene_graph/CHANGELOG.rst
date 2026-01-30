@@ -2,6 +2,9 @@
 Changelog for package tesseract_scene_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.34.0 (2026-01-28)
 -------------------
 * Add hash to link class (`#1242 <https://github.com/tesseract-robotics/tesseract/issues/1242>`_)
