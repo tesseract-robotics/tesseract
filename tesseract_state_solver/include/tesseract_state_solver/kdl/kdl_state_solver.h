@@ -137,7 +137,8 @@ private:
   tesseract_common::KinematicLimits limits_; /**< The kinematic limits */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
-  static thread_local KDL::JntArray kdl_joints_cache;  // NOLINT
+  static thread_local KDL::JntArray kdl_joints_cache;    // NOLINT
+  static thread_local KDL::Jacobian kdl_jacobian_cache;  // NOLINT
 
   void calculateTransforms(tesseract_common::TransformMap& link_transforms,
                            const KDL::JntArray& q_in,
@@ -166,9 +167,11 @@ private:
   bool calcJacobianHelper(KDL::Jacobian& jacobian, const KDL::JntArray& kdl_joints, const std::string& link_name) const;
 
   /** @brief Get an updated kdl joint array */
-  KDL::JntArray getKDLJntArray(const std::vector<std::string>& joint_names,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
-  KDL::JntArray getKDLJntArray(const std::unordered_map<std::string, double>& joint_values) const;
+  void getKDLJntArray(KDL::JntArray& kdl_joints,
+                      const std::vector<std::string>& joint_names,
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
+
+  void getKDLJntArray(KDL::JntArray& kdl_joints, const std::unordered_map<std::string, double>& joint_values) const;
 
   bool processKDLData(const tesseract_scene_graph::SceneGraph& scene_graph);
 };
