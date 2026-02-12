@@ -43,10 +43,7 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereUnit)  // NOLINT
 TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereConvexHullUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
-  test_suite::detail::addCollisionObjects(checker, true);
-  test_suite::detail::runTestConvex1(checker);
-  //  test_suite::detail::runTestConvex2(checker); FCL return incorrect results, need to create an issue on FCL
-  test_suite::detail::runTestConvex3(checker);
+  test_suite::runTest(checker, false);
 }
 
 int main(int argc, char** argv)
