@@ -22,14 +22,11 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxCylinderUnit)  // NOLI
   test_suite::runTest(checker);
 }
 
-// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCylinderUnit)
-//{
-// TODO: Currently this fails when using FCL. An issue has been created
-//       and they are currently addressing the issue.
-
-//  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
-//  runTest(checker);
-//}
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCylinderUnit)
+{
+  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
+  test_suite::runTest(checker);
+}
 
 int main(int argc, char** argv)
 {
