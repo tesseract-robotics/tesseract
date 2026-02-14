@@ -214,6 +214,16 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
   return shape;
 }
 
+bool needsCollisionCheck(const CollisionObjectWrapper* cd1,
+                         const CollisionObjectWrapper* cd2,
+                         const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                         bool verbose)
+{
+  return cd1->m_enabled && cd2->m_enabled && (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
+         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&                                      // NOLINT
+         !isContactAllowed(cd1->getName(), cd2->getName(), validator, verbose);
+}
+
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
 {
   auto* cdata = reinterpret_cast<ContactTestData*>(data);  // NOLINT
@@ -224,15 +234,10 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
-                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
-                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
-                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->validator, false);
-
   assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
          std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());
 
-  if (!needs_collision)
+  if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
     return false;
 
   std::size_t num_contacts = (cdata->req.contact_limit > 0) ? static_cast<std::size_t>(cdata->req.contact_limit) :
@@ -294,15 +299,10 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
-                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
-                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
-                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->validator, false);
-
   assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
          std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());
 
-  if (!needs_collision)
+  if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
     return false;
 
   fcl::DistanceResultd fcl_result;
