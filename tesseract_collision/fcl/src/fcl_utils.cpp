@@ -326,7 +326,9 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     contact.type_id[0] = cd1->getTypeID();
     contact.type_id[1] = cd2->getTypeID();
     contact.distance = fcl_result.min_distance;
-    contact.normal = (fcl_result.min_distance * (contact.nearest_points[1] - contact.nearest_points[0])).normalized();
+    contact.normal =
+        (std::copysign(1.0, fcl_result.min_distance) * (contact.nearest_points[1] - contact.nearest_points[0]))
+            .normalized();
 
     // TODO: There is an issue with FCL need to track down
     assert(!std::isnan(contact.nearest_points[0](0)));
