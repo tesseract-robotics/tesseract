@@ -332,7 +332,7 @@ FCLDiscreteBVHManager::getContactAllowedValidator() const
 
 void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
-  ContactTestData cdata(active_, collision_margin_data_, validator_, request, collisions);
+  ContactTestData cdata(collision_margin_data_, validator_, request, collisions);
   if (collision_margin_data_.getMaxCollisionMargin() > 0)
   {
     // TODO: Should the order be flipped?

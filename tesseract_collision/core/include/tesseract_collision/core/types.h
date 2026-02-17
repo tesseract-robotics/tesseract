@@ -328,14 +328,10 @@ struct ContactTestData
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   ContactTestData() = default;
-  ContactTestData(const std::vector<std::string>& active,
-                  CollisionMarginData collision_margin_data,
+  ContactTestData(CollisionMarginData collision_margin_data,
                   std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator,
                   ContactRequest req,
                   ContactResultMap& res);
-
-  /** @brief A vector of active links */
-  const std::vector<std::string>* active = nullptr;
 
   /** @brief The current contact_distance threshold */
   CollisionMarginData collision_margin_data{ 0 };
