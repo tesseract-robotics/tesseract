@@ -248,6 +248,7 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   if (col_result.isCollision())
   {
     TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
+    tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
 
     const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
     const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
@@ -275,7 +276,6 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
       contact.distance = -1.0 * fcl_contact.penetration_depth;
       contact.normal = fcl_contact.normal;
 
-      tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
       const auto it = cdata->res->find(link_pair);
       bool found = (it != cdata->res->end() && !it->second.empty());
 
