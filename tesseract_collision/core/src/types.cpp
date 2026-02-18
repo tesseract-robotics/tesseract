@@ -357,13 +357,11 @@ std::string ContactResultMap::getSummary() const
   return ss.str();
 }
 
-ContactTestData::ContactTestData(const std::vector<std::string>& active,
-                                 CollisionMarginData collision_margin_data,
+ContactTestData::ContactTestData(CollisionMarginData collision_margin_data,
                                  std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator,
                                  ContactRequest req,
                                  ContactResultMap& res)
-  : active(&active)
-  , collision_margin_data(std::move(collision_margin_data))
+  : collision_margin_data(std::move(collision_margin_data))
   , validator(std::move(validator))
   , req(std::move(req))
   , res(&res)

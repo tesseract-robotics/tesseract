@@ -304,7 +304,6 @@ const std::vector<std::string>& BulletCastSimpleManager::getCollisionObjects() c
 void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   active_ = names;
-  contact_test_data_.active = &active_;
 
   cows_.clear();
   cows_.reserve(link2cow_.size());

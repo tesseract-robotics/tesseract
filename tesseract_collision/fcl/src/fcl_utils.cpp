@@ -234,9 +234,6 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
-         std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());
-
   if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
     return false;
 
@@ -298,9 +295,6 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
-
-  assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
-         std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());
 
   if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
     return false;

@@ -233,7 +233,6 @@ const std::vector<std::string>& BulletDiscreteBVHManager::getCollisionObjects() 
 void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   active_ = names;
-  contact_test_data_.active = &active_;
 
   // Now need to update the broadphase with correct aabb
   for (auto& co : link2cow_)
