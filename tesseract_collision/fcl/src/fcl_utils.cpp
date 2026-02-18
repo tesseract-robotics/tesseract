@@ -245,42 +245,42 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   fcl::CollisionResultd col_result;
   fcl::collide(o1, o2, fcl::CollisionRequestd(num_contacts, cdata->req.calculate_penetration, 1, false), col_result);
 
-  if (col_result.isCollision())
+  if (!col_result.isCollision())
+    return false;
+
+  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
+  tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
+
+  const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
+  const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
+  Eigen::Isometry3d tf1_inv = tf1.inverse();
+  Eigen::Isometry3d tf2_inv = tf2.inverse();
+
+  for (size_t i = 0; i < col_result.numContacts(); ++i)
   {
-    TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
+    const fcl::Contactd& fcl_contact = col_result.getContact(i);
+    ContactResult contact;
+    contact.link_names[0] = cd1->getName();
+    contact.link_names[1] = cd2->getName();
+    contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
+    contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
+    contact.subshape_id[0] = static_cast<int>(fcl_contact.b1);
+    contact.subshape_id[1] = static_cast<int>(fcl_contact.b2);
+    contact.nearest_points[0] = fcl_contact.pos;
+    contact.nearest_points[1] = fcl_contact.pos;
+    contact.nearest_points_local[0] = tf1_inv * contact.nearest_points[0];
+    contact.nearest_points_local[1] = tf2_inv * contact.nearest_points[1];
+    contact.transform[0] = tf1;
+    contact.transform[1] = tf2;
+    contact.type_id[0] = cd1->getTypeID();
+    contact.type_id[1] = cd2->getTypeID();
+    contact.distance = -1.0 * fcl_contact.penetration_depth;
+    contact.normal = fcl_contact.normal;
 
-    const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
-    const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
-    Eigen::Isometry3d tf1_inv = tf1.inverse();
-    Eigen::Isometry3d tf2_inv = tf2.inverse();
+    const auto it = cdata->res->find(link_pair);
+    bool found = (it != cdata->res->end() && !it->second.empty());
 
-    for (size_t i = 0; i < col_result.numContacts(); ++i)
-    {
-      const fcl::Contactd& fcl_contact = col_result.getContact(i);
-      ContactResult contact;
-      contact.link_names[0] = cd1->getName();
-      contact.link_names[1] = cd2->getName();
-      contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
-      contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
-      contact.subshape_id[0] = static_cast<int>(fcl_contact.b1);
-      contact.subshape_id[1] = static_cast<int>(fcl_contact.b2);
-      contact.nearest_points[0] = fcl_contact.pos;
-      contact.nearest_points[1] = fcl_contact.pos;
-      contact.nearest_points_local[0] = tf1_inv * contact.nearest_points[0];
-      contact.nearest_points_local[1] = tf2_inv * contact.nearest_points[1];
-      contact.transform[0] = tf1;
-      contact.transform[1] = tf2;
-      contact.type_id[0] = cd1->getTypeID();
-      contact.type_id[1] = cd2->getTypeID();
-      contact.distance = -1.0 * fcl_contact.penetration_depth;
-      contact.normal = fcl_contact.normal;
-
-      tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
-      const auto it = cdata->res->find(link_pair);
-      bool found = (it != cdata->res->end() && !it->second.empty());
-
-      processResult(*cdata, contact, link_pair, found);
-    }
+    processResult(*cdata, contact, link_pair, found);
   }
 
   return cdata->done;
@@ -303,41 +303,43 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   fcl::DistanceRequestd fcl_request(true, true);
   double d = fcl::distance(o1, o2, fcl_request, fcl_result);
 
-  if (d < cdata->collision_margin_data.getMaxCollisionMargin())
-  {
-    const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
-    const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
-    Eigen::Isometry3d tf1_inv = tf1.inverse();
-    Eigen::Isometry3d tf2_inv = tf2.inverse();
+  if (d > cdata->collision_margin_data.getCollisionMargin(cd1->getName(), cd2->getName()))
+    return false;
 
-    ContactResult contact;
-    contact.link_names[0] = cd1->getName();
-    contact.link_names[1] = cd2->getName();
-    contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
-    contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
-    contact.subshape_id[0] = static_cast<int>(fcl_result.b1);
-    contact.subshape_id[1] = static_cast<int>(fcl_result.b2);
-    contact.nearest_points[0] = fcl_result.nearest_points[0];
-    contact.nearest_points[1] = fcl_result.nearest_points[1];
-    contact.nearest_points_local[0] = tf1_inv * contact.nearest_points[0];
-    contact.nearest_points_local[1] = tf2_inv * contact.nearest_points[1];
-    contact.transform[0] = tf1;
-    contact.transform[1] = tf2;
-    contact.type_id[0] = cd1->getTypeID();
-    contact.type_id[1] = cd2->getTypeID();
-    contact.distance = fcl_result.min_distance;
-    contact.normal = (fcl_result.min_distance * (contact.nearest_points[1] - contact.nearest_points[0])).normalized();
+  const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
+  const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
+  Eigen::Isometry3d tf1_inv = tf1.inverse();
+  Eigen::Isometry3d tf2_inv = tf2.inverse();
 
-    // TODO: There is an issue with FCL need to track down
-    assert(!std::isnan(contact.nearest_points[0](0)));
+  ContactResult contact;
+  contact.link_names[0] = cd1->getName();
+  contact.link_names[1] = cd2->getName();
+  contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
+  contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
+  contact.subshape_id[0] = static_cast<int>(fcl_result.b1);
+  contact.subshape_id[1] = static_cast<int>(fcl_result.b2);
+  contact.nearest_points[0] = fcl_result.nearest_points[0];
+  contact.nearest_points[1] = fcl_result.nearest_points[1];
+  contact.nearest_points_local[0] = tf1_inv * contact.nearest_points[0];
+  contact.nearest_points_local[1] = tf2_inv * contact.nearest_points[1];
+  contact.transform[0] = tf1;
+  contact.transform[1] = tf2;
+  contact.type_id[0] = cd1->getTypeID();
+  contact.type_id[1] = cd2->getTypeID();
+  contact.distance = fcl_result.min_distance;
+  contact.normal =
+      (std::copysign(1.0, fcl_result.min_distance) * (contact.nearest_points[1] - contact.nearest_points[0]))
+          .normalized();
 
-    TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
-    tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
-    const auto it = cdata->res->find(link_pair);
-    bool found = (it != cdata->res->end() && !it->second.empty());
+  // TODO: There is an issue with FCL need to track down
+  assert(!std::isnan(contact.nearest_points[0](0)));
 
-    processResult(*cdata, contact, link_pair, found);
-  }
+  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
+  tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
+  const auto it = cdata->res->find(link_pair);
+  bool found = (it != cdata->res->end() && !it->second.empty());
+
+  processResult(*cdata, contact, link_pair, found);
 
   return cdata->done;
 }
