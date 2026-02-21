@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_kinematics/core/types.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 /** @brief Inverse kinematics functions. */
 class InverseKinematics
@@ -70,7 +70,7 @@ public:
    * @param seed Vector of seed joint angles (size must match number of joints in kinematic object)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
-  IKSolutions calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
+  IKSolutions calcInvKin(const tesseract::common::TransformMap& tip_link_poses,
                          const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   /**
@@ -88,7 +88,7 @@ public:
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
   virtual void calcInvKin(IKSolutions& solutions,
-                          const tesseract_common::TransformMap& tip_link_poses,
+                          const tesseract::common::TransformMap& tip_link_poses,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
 
   /**
@@ -126,5 +126,5 @@ public:
   virtual InverseKinematics::UPtr clone() const = 0;
 };
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_INVERSE_KINEMATICS_H

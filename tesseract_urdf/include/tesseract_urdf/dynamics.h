@@ -38,7 +38,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view DYNAMICS_ELEMENT_NAME = "dynamics";
 
@@ -47,11 +47,11 @@ static constexpr std::string_view DYNAMICS_ELEMENT_NAME = "dynamics";
  * @param xml_element The xml element
  * @return Tesseract JointDynamics
  */
-std::shared_ptr<tesseract_scene_graph::JointDynamics> parseDynamics(const tinyxml2::XMLElement* xml_element);
+std::shared_ptr<tesseract::scene_graph::JointDynamics> parseDynamics(const tinyxml2::XMLElement* xml_element);
 
-tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract_scene_graph::JointDynamics>& dynamics,
+tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract::scene_graph::JointDynamics>& dynamics,
                                     tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_DYNAMICS_H

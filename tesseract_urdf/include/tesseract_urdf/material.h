@@ -39,7 +39,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view MATERIAL_ELEMENT_NAME = "material";
 
@@ -51,13 +51,13 @@ static constexpr std::string_view MATERIAL_ELEMENT_NAME = "material";
  * @param version The version number
  * @return A Tesseract Material
  */
-std::shared_ptr<tesseract_scene_graph::Material>
+std::shared_ptr<tesseract::scene_graph::Material>
 parseMaterial(const tinyxml2::XMLElement* xml_element,
-              std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials,
+              std::unordered_map<std::string, std::shared_ptr<tesseract::scene_graph::Material>>& available_materials,
               bool allow_anonymous);
 
-tinyxml2::XMLElement* writeMaterial(const std::shared_ptr<const tesseract_scene_graph::Material>& material,
+tinyxml2::XMLElement* writeMaterial(const std::shared_ptr<const tesseract::scene_graph::Material>& material,
                                     tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 #endif  // TESSERACT_URDF_MATERIAL_H

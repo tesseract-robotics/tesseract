@@ -7,17 +7,16 @@
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
 #include <tesseract_geometry/geometry.h>
 
-using namespace tesseract_collision;
+using namespace tesseract::collision;
 using namespace test_suite;
-using namespace tesseract_geometry;
+using namespace tesseract::geometry;
 
 // Removes some of the long running tests (greater than 30s). Set to false to run everything.
 static const bool RUN_QUICK = true;
 
 int main(int argc, char** argv)
 {
-  const tesseract_collision_fcl::FCLDiscreteBVHManager::ConstPtr checker =
-      std::make_shared<tesseract_collision_fcl::FCLDiscreteBVHManager>();
+  const FCLDiscreteBVHManager::ConstPtr checker = std::make_shared<FCLDiscreteBVHManager>();
 
   //////////////////////////////////////
   // Clone
@@ -49,7 +48,7 @@ int main(int argc, char** argv)
 
   // Make vector of all shapes to try
   // Cone, Sphere, and Capsule are absurdly slow. It doesn't even make sense to run them (4/7/2020).
-  std::vector<tesseract_geometry::GeometryType> geometry_types = {
+  std::vector<tesseract::geometry::GeometryType> geometry_types = {
     GeometryType::BOX, GeometryType::CYLINDER, GeometryType::CONE, GeometryType::SPHERE, GeometryType::CAPSULE
   };
   if (RUN_QUICK)
@@ -232,7 +231,7 @@ int main(int argc, char** argv)
   //////////////////////////////////////
   if (std::string(BENCHMARK_ARGS) != "CI_ONLY")
   {
-    std::function<void(benchmark::State&, DiscreteContactManager::Ptr, int, tesseract_geometry::GeometryType)>
+    std::function<void(benchmark::State&, DiscreteContactManager::Ptr, int, tesseract::geometry::GeometryType)>
         BM_LARGE_DATASET_MULTILINK_FUNC = BM_LARGE_DATASET_MULTILINK;
     std::vector<int> edge_sizes = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
 
@@ -245,7 +244,7 @@ int main(int argc, char** argv)
                                    BM_LARGE_DATASET_MULTILINK_FUNC,
                                    clone,
                                    edge_size,
-                                   tesseract_geometry::GeometryType::CONVEX_MESH)
+                                   tesseract::geometry::GeometryType::CONVEX_MESH)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kNanosecond);
     }
@@ -255,7 +254,7 @@ int main(int argc, char** argv)
       std::string name =
           "BM_LARGE_DATASET_MULTILINK_" + checker->getName() + "_PRIMATIVE_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(
-          name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::SPHERE)
+          name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract::geometry::GeometryType::SPHERE)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kNanosecond);
     }
@@ -271,11 +270,11 @@ int main(int argc, char** argv)
       std::string name =
           "BM_LARGE_DATASET_MULTILINK_" + checker->getName() + "_DETAILED_MESH_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(
-          name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::MESH)
+          name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract::geometry::GeometryType::MESH)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kMillisecond);
     }
-    std::function<void(benchmark::State&, DiscreteContactManager::Ptr, int, tesseract_geometry::GeometryType)>
+    std::function<void(benchmark::State&, DiscreteContactManager::Ptr, int, tesseract::geometry::GeometryType)>
         BM_LARGE_DATASET_SINGLELINK_FUNC = BM_LARGE_DATASET_SINGLELINK;
 
     for (const auto& edge_size : edge_sizes)
@@ -287,7 +286,7 @@ int main(int argc, char** argv)
                                    BM_LARGE_DATASET_SINGLELINK_FUNC,
                                    clone,
                                    edge_size,
-                                   tesseract_geometry::GeometryType::CONVEX_MESH)
+                                   tesseract::geometry::GeometryType::CONVEX_MESH)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kNanosecond);
     }
@@ -297,7 +296,7 @@ int main(int argc, char** argv)
       std::string name =
           "BM_LARGE_DATASET_SINGLELINK_" + checker->getName() + "_PRIMATIVE_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(
-          name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::SPHERE)
+          name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract::geometry::GeometryType::SPHERE)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kNanosecond);
     }
@@ -307,7 +306,7 @@ int main(int argc, char** argv)
       std::string name =
           "BM_LARGE_DATASET_SINGLELINK_" + checker->getName() + "_DETAILED_MESH_EDGE_SIZE_" + std::to_string(edge_size);
       benchmark::RegisterBenchmark(
-          name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract_geometry::GeometryType::MESH)
+          name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract::geometry::GeometryType::MESH)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kMillisecond);
     }

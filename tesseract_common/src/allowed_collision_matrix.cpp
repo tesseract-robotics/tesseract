@@ -24,7 +24,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_common/allowed_collision_matrix.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2)
 {
@@ -46,10 +46,10 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
 
 AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& entries)
 {
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
   for (const auto& entry : entries)
   {
-    tesseract_common::makeOrderedLinkPair(link_pair, entry.first.first, entry.first.second);
+    tesseract::common::makeOrderedLinkPair(link_pair, entry.first.first, entry.first.second);
     lookup_table_[link_pair] = entry.second;
   }
 }
@@ -58,8 +58,8 @@ void AllowedCollisionMatrix::addAllowedCollision(const std::string& link_name1,
                                                  const std::string& link_name2,
                                                  const std::string& reason)
 {
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
-  tesseract_common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
+  tesseract::common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
   lookup_table_[link_pair] = reason;
 }
 
@@ -67,8 +67,8 @@ const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions()
 
 void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
 {
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
-  tesseract_common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
+  tesseract::common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
   lookup_table_.erase(link_pair);
 }
 
@@ -89,8 +89,8 @@ void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name
 
 bool AllowedCollisionMatrix::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
 {
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
-  tesseract_common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
+  tesseract::common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
   return (lookup_table_.find(link_pair) != lookup_table_.end());
 }
 
@@ -118,4 +118,4 @@ std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
     os << "link=" << pair.first.first << " link=" << pair.first.second << " reason=" << pair.second << "\n";
   return os;
 }
-}  // namespace tesseract_common
+}  // namespace tesseract::common

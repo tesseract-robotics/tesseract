@@ -31,18 +31,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const Eigen::Isometry3d& change_base,
-                       const tesseract_kinematics::ForwardKinematics& kin,
+                       const ForwardKinematics& kin,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                        const std::string& link_name,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point)
 {
   Eigen::VectorXd njvals;
   double delta = 1e-8;
-  TESSERACT_THREAD_LOCAL tesseract_common::TransformMap poses;
+  TESSERACT_THREAD_LOCAL tesseract::common::TransformMap poses;
   poses.clear();
   kin.calcFwdKin(poses, joint_values);
   Eigen::Isometry3d pose{ change_base * poses[link_name] };
@@ -60,8 +60,8 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
     jacobian(1, i) = (temp2.y() - temp.y()) / delta;
     jacobian(2, i) = (temp2.z() - temp.z()) / delta;
 
-    Eigen::Vector3d omega = (pose.rotation() * tesseract_common::calcRotationalError(pose.rotation().transpose() *
-                                                                                     updated_pose.rotation())) /
+    Eigen::Vector3d omega = (pose.rotation() * tesseract::common::calcRotationalError(pose.rotation().transpose() *
+                                                                                      updated_pose.rotation())) /
                             delta;
     jacobian(3, i) = omega(0);
     jacobian(4, i) = omega(1);
@@ -78,14 +78,14 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 {
   Eigen::VectorXd njvals;
   constexpr double delta = 1e-8;
-  tesseract_common::TransformMap poses = joint_group.calcFwdKin(joint_values);
+  tesseract::common::TransformMap poses = joint_group.calcFwdKin(joint_values);
   Eigen::Isometry3d pose = change_base * poses[link_name];
 
   for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
   {
     njvals = joint_values;
     njvals(i) += delta;  // NOLINT
-    tesseract_common::TransformMap updated_poses = joint_group.calcFwdKin(njvals);
+    tesseract::common::TransformMap updated_poses = joint_group.calcFwdKin(njvals);
     Eigen::Isometry3d updated_pose = change_base * updated_poses[link_name];
 
     Eigen::Vector3d temp = pose * link_point;
@@ -94,8 +94,8 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
     jacobian(1, i) = (temp2.y() - temp.y()) / delta;
     jacobian(2, i) = (temp2.z() - temp.z()) / delta;
 
-    Eigen::VectorXd omega = (pose.rotation() * tesseract_common::calcRotationalError(pose.rotation().transpose() *
-                                                                                     updated_pose.rotation())) /
+    Eigen::VectorXd omega = (pose.rotation() * tesseract::common::calcRotationalError(pose.rotation().transpose() *
+                                                                                      updated_pose.rotation())) /
                             delta;
     jacobian(3, i) = omega(0);
     jacobian(4, i) = omega(1);
@@ -111,7 +111,7 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const std::string& link_name,
                        const Eigen::Isometry3d& link_offset)
 {
-  tesseract_common::TransformMap poses;
+  tesseract::common::TransformMap poses;
 
   joint_group.calcFwdKin(poses, joint_values);
   const Eigen::Isometry3d change_base = (poses[base_link_name] * base_link_offset).inverse();
@@ -122,12 +122,12 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                     joint_values,
                     base_link_name,
                     base_link_offset.translation());
-  tesseract_common::jacobianChangeBase(base_jacobian, change_base);
+  tesseract::common::jacobianChangeBase(base_jacobian, change_base);
 
   Eigen::MatrixXd link_jacobian(6, joint_group.numJoints());
   numericalJacobian(
       link_jacobian, Eigen::Isometry3d::Identity(), joint_group, joint_values, link_name, link_offset.translation());
-  tesseract_common::jacobianChangeBase(link_jacobian, change_base);
+  tesseract::common::jacobianChangeBase(link_jacobian, change_base);
 
   jacobian.noalias() = link_jacobian - base_jacobian;
 }
@@ -232,12 +232,12 @@ Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacob
     // Set eigenvalues near zero to zero. This also implies zero volume
     for (Eigen::Index i = 0; i < data.eigen_values.size(); ++i)  // NOLINT(modernize-loop-convert)
     {
-      if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
+      if (tesseract::common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
         data.eigen_values[i] = +0;
     }
 
     // If the minimum eigen value is approximately zero set measure and condition to max double
-    if (tesseract_common::almostEqualRelativeAndAbs(data.eigen_values.minCoeff(), 0))
+    if (tesseract::common::almostEqualRelativeAndAbs(data.eigen_values.minCoeff(), 0))
     {
       data.measure = std::numeric_limits<double>::max();
       data.condition = std::numeric_limits<double>::max();
@@ -270,4 +270,4 @@ Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacob
 
   return manip;
 }
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

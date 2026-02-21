@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 OPWInvKin::OPWInvKin(opw_kinematics::Parameters<double> params,
                      std::string base_link_name,
@@ -64,7 +64,7 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
 }
 
 void OPWInvKin::calcInvKin(IKSolutions& solutions,
-                           const tesseract_common::TransformMap& tip_link_poses,
+                           const tesseract::common::TransformMap& tip_link_poses,
                            const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);                                                       // NOLINT
@@ -93,4 +93,4 @@ std::string OPWInvKin::getWorkingFrame() const { return base_link_name_; }
 std::vector<std::string> OPWInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 std::string OPWInvKin::getSolverName() const { return solver_name_; }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

@@ -17,18 +17,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_srdf/srdf_model.h>
 
-using namespace tesseract_scene_graph;
-using namespace tesseract_srdf;
-using namespace tesseract_collision;
-using namespace tesseract_environment;
+using namespace tesseract::scene_graph;
+using namespace tesseract::srdf;
+using namespace tesseract::collision;
+using namespace tesseract::environment;
 
-SceneGraph::Ptr getSceneGraph(const tesseract_common::ResourceLocator& locator)
+SceneGraph::Ptr getSceneGraph(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/boxbot.urdf";
-  return tesseract_urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
+  return tesseract::urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
 }
 
-SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_common::ResourceLocator& locator)
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/boxbot.srdf";
 
@@ -85,7 +85,7 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
 
 TEST(TesseractEnvironmentUtils, applyContactManagerConfigIsAllowed)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraph(locator);
   EXPECT_TRUE(scene_graph != nullptr);
 
@@ -102,7 +102,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigIsAllowed)  // NOLINT
 
 TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   auto scene_graph = getSceneGraph(locator);
   EXPECT_TRUE(scene_graph != nullptr);
@@ -117,13 +117,13 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
   // Setup CollisionCheckConfig
   CollisionCheckConfig default_collision_check_config;
   default_collision_check_config.longest_valid_segment_length = 0.1;
-  default_collision_check_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
-  default_collision_check_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+  default_collision_check_config.contact_request.type = tesseract::collision::ContactTestType::FIRST;
+  default_collision_check_config.type = tesseract::collision::CollisionEvaluatorType::DISCRETE;
 
   ContactManagerConfig default_contact_manager_config;
   default_contact_manager_config.default_margin = 0.0;
 
-  tesseract_collision::ContactResultMap contacts;
+  tesseract::collision::ContactResultMap contacts;
   // Check Discrete
   {
     auto contact_manager_config = default_contact_manager_config;
@@ -132,7 +132,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
     manager->setActiveCollisionObjects(active_links);
 
     // Put the boxes 0.1m in collision
-    tesseract_common::TransformMap tmap;
+    tesseract::common::TransformMap tmap;
     tmap["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap["test_box_link"].translate(Eigen::Vector3d(0.9, 0, 0));
@@ -181,12 +181,12 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
     manager->setActiveCollisionObjects(active_links);
 
     // Put the swept volume of the boxes 0.1m in collision
-    tesseract_common::TransformMap tmap1;
+    tesseract::common::TransformMap tmap1;
     tmap1["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap1["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap1["test_box_link"].translate(Eigen::Vector3d(0.9, 2, 0));
 
-    tesseract_common::TransformMap tmap2;
+    tesseract::common::TransformMap tmap2;
     tmap2["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap2["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap2["test_box_link"].translate(Eigen::Vector3d(0.9, -2, 0));
@@ -229,7 +229,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
 TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   auto scene_graph = getSceneGraph(locator);
   EXPECT_TRUE(scene_graph != nullptr);
@@ -244,13 +244,13 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
   // Setup CollisionCheckConfig
   CollisionCheckConfig default_collision_check_config;
   default_collision_check_config.longest_valid_segment_length = 0.1;
-  default_collision_check_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
-  default_collision_check_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+  default_collision_check_config.contact_request.type = tesseract::collision::ContactTestType::FIRST;
+  default_collision_check_config.type = tesseract::collision::CollisionEvaluatorType::DISCRETE;
 
   ContactManagerConfig default_contact_manager_config;
   default_contact_manager_config.default_margin = 0.0;
 
-  tesseract_collision::ContactResultMap contacts;
+  tesseract::collision::ContactResultMap contacts;
   // Check Discrete
   {
     auto contact_manager_config = default_contact_manager_config;
@@ -259,7 +259,7 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     manager->setActiveCollisionObjects(active_links);
 
     // Put the boxes 0.05m away from each other
-    tesseract_common::TransformMap tmap;
+    tesseract::common::TransformMap tmap;
     tmap["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap["test_box_link"].translate(Eigen::Vector3d(1.05, 0, 0));
@@ -305,12 +305,12 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     manager->setActiveCollisionObjects(active_links);
 
     // Put the swept volume of the boxes 0.05m away from each other
-    tesseract_common::TransformMap tmap1;
+    tesseract::common::TransformMap tmap1;
     tmap1["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap1["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap1["test_box_link"].translate(Eigen::Vector3d(1.05, 2, 0));
 
-    tesseract_common::TransformMap tmap2;
+    tesseract::common::TransformMap tmap2;
     tmap2["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap2["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap2["test_box_link"].translate(Eigen::Vector3d(1.05, -2, 0));

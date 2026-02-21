@@ -46,7 +46,7 @@ TEST(TesseractClassLoaderUnit, parseEnvironmentVariableListUnit)  // NOLINT
 
 TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
 {
-  using tesseract_common::TestPluginBase;
+  using tesseract::common::TestPluginBase;
   const std::string lib_name = "tesseract_common_test_plugins";
   const std::string lib_dir = std::string(TEST_PLUGIN_DIR);
   const std::string symbol_name = "plugin";
@@ -82,7 +82,7 @@ TEST(TesseractClassLoaderUnit, LoadTestPlugin)  // NOLINT
 TEST(TesseractPluginLoaderUnit, LoadTestPlugin)  // NOLINT
 {
   using boost_plugin_loader::PluginLoader;
-  using tesseract_common::TestPluginBase;
+  using tesseract::common::TestPluginBase;
 
   {
     PluginLoader plugin_loader;

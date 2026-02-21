@@ -46,7 +46,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 KDL::Frame convert(const Eigen::Isometry3d& transform)
 {
@@ -207,7 +207,7 @@ bool KDLTreeData::operator==(const KDLTreeData& rhs) const
   auto isometry_equal = [](const Eigen::Isometry3d& iso_1, const Eigen::Isometry3d& iso_2) {
     return iso_1.isApprox(iso_2, 1e-5);
   };
-  equal &= tesseract_common::isIdenticalMap<tesseract_common::TransformMap, Eigen::Isometry3d>(
+  equal &= tesseract::common::isIdenticalMap<tesseract::common::TransformMap, Eigen::Isometry3d>(
       floating_joint_values, rhs.floating_joint_values, isometry_equal);
 
   return equal;
@@ -302,7 +302,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
   kdl_sub_tree_builder(KDLTreeData& data,
                        const std::vector<std::string>& joint_names,
                        const std::unordered_map<std::string, double>& joint_values,
-                       const tesseract_common::TransformMap& floating_joint_values)
+                       const tesseract::common::TransformMap& floating_joint_values)
     : data_(data), joint_names_(joint_names), joint_values_(joint_values), floating_joint_values_(floating_joint_values)
   {
     for (const auto& floating_joint_value : floating_joint_values)
@@ -453,7 +453,7 @@ protected:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   const std::unordered_map<std::string, double>& joint_values_;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  const tesseract_common::TransformMap& floating_joint_values_;
+  const tesseract::common::TransformMap& floating_joint_values_;
 };
 
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
@@ -499,7 +499,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
                             const std::vector<std::string>& joint_names,
                             const std::unordered_map<std::string, double>& joint_values,
-                            const tesseract_common::TransformMap& floating_joint_values)
+                            const tesseract::common::TransformMap& floating_joint_values)
 {
   if (!scene_graph.isTree())
     throw std::runtime_error("parseSubSceneGraph: currently only works if the scene graph is a tree.");
@@ -528,4 +528,4 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
   return data;
 }
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph

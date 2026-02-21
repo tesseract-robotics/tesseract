@@ -50,14 +50,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/contact_allowed_validator.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 /**
  * @brief Function signature for adding additional callbacks for looking up TCP information
  *
  * The function should throw and exception if not located
  */
-using FindTCPOffsetCallbackFn = std::function<Eigen::Isometry3d(const tesseract_common::ManipulatorInfo&)>;
+using FindTCPOffsetCallbackFn = std::function<Eigen::Isometry3d(const tesseract::common::ManipulatorInfo&)>;
 
 using EventCallbackFn = std::function<void(const Event& event)>;
 
@@ -69,19 +69,19 @@ class EnvironmentContactAllowedValidator;
 template <class Archive>
 void serialize(Archive& ar, EnvironmentContactAllowedValidator& obj);
 
-class EnvironmentContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+class EnvironmentContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
   EnvironmentContactAllowedValidator() = default;  // Required for serialization
-  EnvironmentContactAllowedValidator(std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph);
+  EnvironmentContactAllowedValidator(std::shared_ptr<const tesseract::scene_graph::SceneGraph> scene_graph);
 
   bool operator()(const std::string& link_name1, const std::string& link_name2) const override;
 
 protected:
-  std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph_;
+  std::shared_ptr<const tesseract::scene_graph::SceneGraph> scene_graph_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, EnvironmentContactAllowedValidator& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, EnvironmentContactAllowedValidator& obj);
 };
 
 class Environment
@@ -122,21 +122,21 @@ public:
    * @param scene_graph The scene graph to initialize the environment.
    * @return True if successful, otherwise false
    */
-  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const std::shared_ptr<const tesseract_srdf::SRDFModel>& srdf_model = nullptr);
+  bool init(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const std::shared_ptr<const tesseract::srdf::SRDFModel>& srdf_model = nullptr);
 
-  bool init(const std::string& urdf_string, const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
+  bool init(const std::string& urdf_string, const std::shared_ptr<const tesseract::common::ResourceLocator>& locator);
 
   bool init(const std::string& urdf_string,
             const std::string& srdf_string,
-            const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
+            const std::shared_ptr<const tesseract::common::ResourceLocator>& locator);
 
   bool init(const std::filesystem::path& urdf_path,
-            const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
+            const std::shared_ptr<const tesseract::common::ResourceLocator>& locator);
 
   bool init(const std::filesystem::path& urdf_path,
             const std::filesystem::path& srdf_path,
-            const std::shared_ptr<const tesseract_common::ResourceLocator>& locator);
+            const std::shared_ptr<const tesseract::common::ResourceLocator>& locator);
 
   /**
    * @brief Clone the environment
@@ -195,7 +195,7 @@ public:
    * @brief Get the Scene Graph
    * @return SceneGraphConstPtr
    */
-  std::shared_ptr<const tesseract_scene_graph::SceneGraph> getSceneGraph() const;
+  std::shared_ptr<const tesseract::scene_graph::SceneGraph> getSceneGraph() const;
 
   /**
    * @brief Get a groups joint names
@@ -209,7 +209,7 @@ public:
    * @param group_name The group name
    * @return A joint group
    */
-  std::shared_ptr<const tesseract_kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
+  std::shared_ptr<const tesseract::kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
 
   /**
    * @brief Get a joint group given a vector of joint names
@@ -217,7 +217,7 @@ public:
    * @param joint_names The joint names that make up the group
    * @return A joint group
    */
-  std::shared_ptr<const tesseract_kinematics::JointGroup>
+  std::shared_ptr<const tesseract::kinematics::JointGroup>
   getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const;
 
   /**
@@ -227,7 +227,7 @@ public:
    * @param ik_solver_name The IK solver name
    * @return A kinematics group
    */
-  std::shared_ptr<const tesseract_kinematics::KinematicGroup>
+  std::shared_ptr<const tesseract::kinematics::KinematicGroup>
   getKinematicGroup(const std::string& group_name, const std::string& ik_solver_name = "") const;
 
   /**
@@ -243,7 +243,7 @@ public:
    * @param manip_info The manipulator info
    * @return The tool center point
    */
-  Eigen::Isometry3d findTCPOffset(const tesseract_common::ManipulatorInfo& manip_info) const;
+  Eigen::Isometry3d findTCPOffset(const tesseract::common::ManipulatorInfo& manip_info) const;
 
   /**
    * @brief This allows for user defined callbacks for looking up TCP information
@@ -287,14 +287,14 @@ public:
    * @brief Set resource locator for environment
    * @param locator The resource locator
    */
-  void setResourceLocator(std::shared_ptr<const tesseract_common::ResourceLocator> locator);
+  void setResourceLocator(std::shared_ptr<const tesseract::common::ResourceLocator> locator);
 
   /**
    * @brief Get the resource locator assigned
    * @details This can be a nullptr
    * @return The resource locator assigned to the environment
    */
-  std::shared_ptr<const tesseract_common::ResourceLocator> getResourceLocator() const;
+  std::shared_ptr<const tesseract::common::ResourceLocator> getResourceLocator() const;
 
   /** @brief Give the environment a name */
   void setName(const std::string& name);
@@ -313,16 +313,16 @@ public:
    *
    */
   void setState(const std::unordered_map<std::string, double>& joints,
-                const tesseract_common::TransformMap& floating_joints = {});
+                const tesseract::common::TransformMap& floating_joints = {});
   void setState(const std::vector<std::string>& joint_names,
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                const tesseract_common::TransformMap& floating_joints = {});
+                const tesseract::common::TransformMap& floating_joints = {});
 
   /**
    * @brief Set the current state of the floating joint values
    * @param floating_joint_values The floating joint values to set
    */
-  void setState(const tesseract_common::TransformMap& floating_joints);
+  void setState(const tesseract::common::TransformMap& floating_joints);
 
   /**
    * @brief Get the state of the environment for a given set or subset of joint values.
@@ -332,21 +332,21 @@ public:
    * @param joints A map of joint names to joint values to change.
    * @return A the state of the environment
    */
-  tesseract_scene_graph::SceneState getState(const std::unordered_map<std::string, double>& joints,
-                                             const tesseract_common::TransformMap& floating_joints = {}) const;
-  tesseract_scene_graph::SceneState getState(const std::vector<std::string>& joint_names,
-                                             const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                             const tesseract_common::TransformMap& floating_joints = {}) const;
+  tesseract::scene_graph::SceneState getState(const std::unordered_map<std::string, double>& joints,
+                                              const tesseract::common::TransformMap& floating_joints = {}) const;
+  tesseract::scene_graph::SceneState getState(const std::vector<std::string>& joint_names,
+                                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                              const tesseract::common::TransformMap& floating_joints = {}) const;
 
   /**
    * @brief Get the state given floating joint values
    * @param floating_joint_values The floating joint values to leverage
    * @return A the state of the environment
    */
-  tesseract_scene_graph::SceneState getState(const tesseract_common::TransformMap& floating_joints) const;
+  tesseract::scene_graph::SceneState getState(const tesseract::common::TransformMap& floating_joints) const;
 
   /** @brief Get the current state of the environment */
-  tesseract_scene_graph::SceneState getState() const;
+  tesseract::scene_graph::SceneState getState() const;
 
   /**
    * @brief Get the link transforms of the scene for a given set or subset of joint values.
@@ -360,10 +360,10 @@ public:
    * @param joint_values The joint values
    * @param floating_joints The floating joint origin transform
    */
-  void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+  void getLinkTransforms(tesseract::common::TransformMap& link_transforms,
                          const std::vector<std::string>& joint_names,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                         const tesseract_common::TransformMap& floating_joints) const;
+                         const tesseract::common::TransformMap& floating_joints) const;
 
   /**
    * @brief Get the link transforms of the scene for a given set or subset of joint values.
@@ -376,7 +376,7 @@ public:
    * @param joints A map of joint names to joint values to change.
    * @param joint_values The joint values
    */
-  void getLinkTransforms(tesseract_common::TransformMap& link_transforms,
+  void getLinkTransforms(tesseract::common::TransformMap& link_transforms,
                          const std::vector<std::string>& joint_names,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
 
@@ -391,21 +391,21 @@ public:
    * @param name The name of the link
    * @return Return nullptr if link name does not exists, otherwise a pointer to the link
    */
-  std::shared_ptr<const tesseract_scene_graph::Link> getLink(const std::string& name) const;
+  std::shared_ptr<const tesseract::scene_graph::Link> getLink(const std::string& name) const;
 
   /**
    * @brief Get joint by name
    * @param name The name of the joint
    * @return Joint Const Pointer
    */
-  std::shared_ptr<const tesseract_scene_graph::Joint> getJoint(const std::string& name) const;
+  std::shared_ptr<const tesseract::scene_graph::Joint> getJoint(const std::string& name) const;
 
   /**
    * @brief Gets the limits associated with a joint
    * @param joint_name Name of the joint to be updated
    * @return The joint limits set for the given joint
    */
-  std::shared_ptr<const tesseract_scene_graph::JointLimits> getJointLimits(const std::string& joint_name) const;
+  std::shared_ptr<const tesseract::scene_graph::JointLimits> getJointLimits(const std::string& joint_name) const;
 
   /**
    * @brief Get whether a link should be considered during collision checking
@@ -423,7 +423,7 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  std::shared_ptr<const tesseract_common::AllowedCollisionMatrix> getAllowedCollisionMatrix() const;
+  std::shared_ptr<const tesseract::common::AllowedCollisionMatrix> getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get a vector of joint names in the environment
@@ -459,13 +459,13 @@ public:
    * @brief Get the current floating joint values
    * @return The joint origin transform for the floating joint
    */
-  tesseract_common::TransformMap getCurrentFloatingJointValues() const;
+  tesseract::common::TransformMap getCurrentFloatingJointValues() const;
 
   /**
    * @brief Get the current floating joint values
    * @return The joint origin transform for the floating joint
    */
-  tesseract_common::TransformMap getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
+  tesseract::common::TransformMap getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
 
   /**
    * @brief Get the root link name
@@ -512,7 +512,7 @@ public:
    *
    * @return Get a vector of transforms for all links in the environment.
    */
-  tesseract_common::VectorIsometry3d getLinkTransforms() const;
+  tesseract::common::VectorIsometry3d getLinkTransforms() const;
 
   /**
    * @brief Get the transform corresponding to the link.
@@ -536,13 +536,13 @@ public:
    *
    * @return A clone of the environments state solver
    */
-  std::unique_ptr<tesseract_scene_graph::StateSolver> getStateSolver() const;
+  std::unique_ptr<tesseract::scene_graph::StateSolver> getStateSolver() const;
 
   /**
    * @brief Get the kinematics information
    * @return The kinematics information
    */
-  tesseract_srdf::KinematicsInformation getKinematicsInformation() const;
+  tesseract::srdf::KinematicsInformation getKinematicsInformation() const;
 
   /**
    * @brief Get the available group names
@@ -554,7 +554,7 @@ public:
    * @brief Get the contact managers plugin information
    * @return The contact managers plugin information
    */
-  tesseract_common::ContactManagersPluginInfo getContactManagersPluginInfo() const;
+  tesseract::common::ContactManagersPluginInfo getContactManagersPluginInfo() const;
 
   /**
    * @brief Set the active discrete contact manager
@@ -564,7 +564,7 @@ public:
   bool setActiveDiscreteContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active discrete contact manager */
-  std::unique_ptr<tesseract_collision::DiscreteContactManager> getDiscreteContactManager() const;
+  std::unique_ptr<tesseract::collision::DiscreteContactManager> getDiscreteContactManager() const;
 
   /**
    * @brief Set the cached internal copy of the environments active discrete contact manager not nullptr
@@ -573,7 +573,8 @@ public:
   void clearCachedDiscreteContactManager() const;
 
   /** @brief Get a copy of the environments available discrete contact manager by name */
-  std::unique_ptr<tesseract_collision::DiscreteContactManager> getDiscreteContactManager(const std::string& name) const;
+  std::unique_ptr<tesseract::collision::DiscreteContactManager>
+  getDiscreteContactManager(const std::string& name) const;
 
   /**
    * @brief Set the active continuous contact manager
@@ -583,7 +584,7 @@ public:
   bool setActiveContinuousContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active continuous contact manager */
-  std::unique_ptr<tesseract_collision::ContinuousContactManager> getContinuousContactManager() const;
+  std::unique_ptr<tesseract::collision::ContinuousContactManager> getContinuousContactManager() const;
 
   /**
    * @brief Set the cached internal copy of the environments active continuous contact manager not nullptr
@@ -592,11 +593,11 @@ public:
   void clearCachedContinuousContactManager() const;
 
   /** @brief Get a copy of the environments available continuous contact manager by name */
-  std::unique_ptr<tesseract_collision::ContinuousContactManager>
+  std::unique_ptr<tesseract::collision::ContinuousContactManager>
   getContinuousContactManager(const std::string& name) const;
 
   /** @brief Get the environment collision margin data */
-  tesseract_common::CollisionMarginData getCollisionMarginData() const;
+  tesseract::common::CollisionMarginData getCollisionMarginData() const;
 
   /**
    * @brief Lock the environment when wanting to make multiple reads
@@ -625,21 +626,21 @@ private:
   void init(const std::vector<std::shared_ptr<const Command>>& commands,
             int init_revision,
             const std::chrono::system_clock::time_point& timestamp,
-            const tesseract_scene_graph::SceneState& current_state,
+            const tesseract::scene_graph::SceneState& current_state,
             const std::chrono::system_clock::time_point& current_state_timestamp,
-            const std::shared_ptr<const tesseract_common::ResourceLocator>& resource_locator);
+            const std::shared_ptr<const tesseract::common::ResourceLocator>& resource_locator);
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, Environment& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, Environment& obj);
 
 public:
   /** @brief This should only be used by the clone method */
   explicit Environment(std::unique_ptr<Implementation> impl);
 };
 
-using EnvironmentPtrAnyPoly = tesseract_common::AnyWrapper<std::shared_ptr<tesseract_environment::Environment>>;
+using EnvironmentPtrAnyPoly = tesseract::common::AnyWrapper<std::shared_ptr<tesseract::environment::Environment>>;
 using EnvironmentConstPtrAnyPoly =
-    tesseract_common::AnyWrapper<std::shared_ptr<const tesseract_environment::Environment>>;
-}  // namespace tesseract_environment
+    tesseract::common::AnyWrapper<std::shared_ptr<const tesseract::environment::Environment>>;
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_ENVIRONMENT_H

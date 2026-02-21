@@ -43,7 +43,7 @@
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/bullet/tesseract_collision_configuration.h>
 
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision
 {
 /** @brief A simple implementation of a bullet manager which does not use BHV */
 class BulletDiscreteSimpleManager : public DiscreteContactManager
@@ -69,12 +69,12 @@ public:
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
                           const CollisionShapesConst& shapes,
-                          const tesseract_common::VectorIsometry3d& shape_poses,
+                          const tesseract::common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override final;
 
   const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const override final;
 
-  const tesseract_common::VectorIsometry3d&
+  const tesseract::common::VectorIsometry3d&
   getCollisionObjectGeometriesTransforms(const std::string& name) const override final;
 
   bool hasCollisionObject(const std::string& name) const override final;
@@ -90,9 +90,9 @@ public:
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override final;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const tesseract_common::VectorIsometry3d& poses) override final;
+                                    const tesseract::common::VectorIsometry3d& poses) override final;
 
-  void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) override final;
+  void setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms) override final;
 
   const std::vector<std::string>& getCollisionObjects() const override final;
 
@@ -116,10 +116,10 @@ public:
 
   void incrementCollisionMargin(double increment) override final;
 
-  void
-  setContactAllowedValidator(std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator) override final;
+  void setContactAllowedValidator(
+      std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator) override final;
 
-  std::shared_ptr<const tesseract_common::ContactAllowedValidator> getContactAllowedValidator() const override final;
+  std::shared_ptr<const tesseract::common::ContactAllowedValidator> getContactAllowedValidator() const override final;
 
   void contactTest(ContactResultMap& collisions, const ContactRequest& request) override final;
 
@@ -127,7 +127,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(const COW::Ptr& cow);
+  void addCollisionObject(const bullet_internal::COW::Ptr& cow);
 
 private:
   std::string name_;
@@ -144,9 +144,9 @@ private:
   /** @brief The bullet collision configuration */
   TesseractCollisionConfiguration coll_config_;
   /** @brief A map of all (static and active) collision objects being managed */
-  Link2Cow link2cow_;
+  bullet_internal::Link2Cow link2cow_;
   /** @brief A vector of collision objects (active followed by static) */
-  std::vector<COW::Ptr> cows_;
+  std::vector<bullet_internal::COW::Ptr> cows_;
 
   /**
    * @brief This is used when contactTest is called. It is also added as a user point to the collsion objects
@@ -158,5 +158,5 @@ private:
   void onCollisionMarginDataChanged();
 };
 
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision
 #endif  // TESSERACT_COLLISION_BULLET_DISCRETE_SIMPLE_MANAGERS_H

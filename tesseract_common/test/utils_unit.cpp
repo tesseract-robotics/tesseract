@@ -9,7 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 /// Testing getAllowedCollisions
 TEST(TesseractCommonUtilsUnit, TestGetAllowedCollisions)  // NOLINT
 {
-  tesseract_common::AllowedCollisionMatrix acm;
+  tesseract::common::AllowedCollisionMatrix acm;
 
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link4", "link3", "test");
@@ -22,7 +22,7 @@ TEST(TesseractCommonUtilsUnit, TestGetAllowedCollisions)  // NOLINT
 
   // Removing duplicates: Expect link1, link2, link3, link4, cause_duplicate
   {
-    auto results = tesseract_common::getAllowedCollisions(link_names, acm.getAllAllowedCollisions());
+    auto results = tesseract::common::getAllowedCollisions(link_names, acm.getAllAllowedCollisions());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link1") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link2") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link3") != results.end());
@@ -35,7 +35,7 @@ TEST(TesseractCommonUtilsUnit, TestGetAllowedCollisions)  // NOLINT
   }
   // Not removing duplicates: Expect link1, link2, link3, link4, cause_duplicate, link1
   {
-    auto results = tesseract_common::getAllowedCollisions(link_names, acm.getAllAllowedCollisions(), false);
+    auto results = tesseract::common::getAllowedCollisions(link_names, acm.getAllAllowedCollisions(), false);
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link1") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link2") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link3") != results.end());

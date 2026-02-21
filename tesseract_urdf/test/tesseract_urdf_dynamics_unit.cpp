@@ -12,68 +12,70 @@ TEST(TesseractURDFUnit, parse_dynamics)  // NOLINT
 {
   {
     std::string str = R"(<dynamics damping="1" friction="2" extra="0 0 0"/>)";
-    tesseract_scene_graph::JointDynamics::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointDynamics::Ptr>(
-        elem, &tesseract_urdf::parseDynamics, str, tesseract_urdf::DYNAMICS_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointDynamics::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointDynamics::Ptr>(
+        elem, &tesseract::urdf::parseDynamics, str, tesseract::urdf::DYNAMICS_ELEMENT_NAME.data()));
     EXPECT_NEAR(elem->damping, 1, 1e-8);
     EXPECT_NEAR(elem->friction, 2, 1e-8);
   }
 
   {
     std::string str = R"(<dynamics damping="1"/>)";
-    tesseract_scene_graph::JointDynamics::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointDynamics::Ptr>(
-        elem, &tesseract_urdf::parseDynamics, str, tesseract_urdf::DYNAMICS_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointDynamics::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointDynamics::Ptr>(
+        elem, &tesseract::urdf::parseDynamics, str, tesseract::urdf::DYNAMICS_ELEMENT_NAME.data()));
     EXPECT_NEAR(elem->damping, 1, 1e-8);
     EXPECT_NEAR(elem->friction, 0, 1e-8);
   }
 
   {
     std::string str = R"(<dynamics friction="2"/>)";
-    tesseract_scene_graph::JointDynamics::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointDynamics::Ptr>(
-        elem, &tesseract_urdf::parseDynamics, str, tesseract_urdf::DYNAMICS_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointDynamics::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointDynamics::Ptr>(
+        elem, &tesseract::urdf::parseDynamics, str, tesseract::urdf::DYNAMICS_ELEMENT_NAME.data()));
     EXPECT_NEAR(elem->damping, 0, 1e-8);
     EXPECT_NEAR(elem->friction, 2, 1e-8);
   }
 
   {
     std::string str = R"(<dynamics damping="a" friction="2"/>)";
-    tesseract_scene_graph::JointDynamics::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::JointDynamics::Ptr>(
-        elem, &tesseract_urdf::parseDynamics, str, tesseract_urdf::DYNAMICS_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointDynamics::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointDynamics::Ptr>(
+        elem, &tesseract::urdf::parseDynamics, str, tesseract::urdf::DYNAMICS_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<dynamics damping="1" friction="b"/>)";
-    tesseract_scene_graph::JointDynamics::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::JointDynamics::Ptr>(
-        elem, &tesseract_urdf::parseDynamics, str, tesseract_urdf::DYNAMICS_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointDynamics::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointDynamics::Ptr>(
+        elem, &tesseract::urdf::parseDynamics, str, tesseract::urdf::DYNAMICS_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = "<dynamics/>";
-    tesseract_scene_graph::JointDynamics::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::JointDynamics::Ptr>(
-        elem, &tesseract_urdf::parseDynamics, str, tesseract_urdf::DYNAMICS_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointDynamics::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointDynamics::Ptr>(
+        elem, &tesseract::urdf::parseDynamics, str, tesseract::urdf::DYNAMICS_ELEMENT_NAME.data()));
   }
 }
 
 TEST(TesseractURDFUnit, write_dynamics)  // NOLINT
 {
   {
-    tesseract_scene_graph::JointDynamics::Ptr dynamics = std::make_shared<tesseract_scene_graph::JointDynamics>();
+    tesseract::scene_graph::JointDynamics::Ptr dynamics = std::make_shared<tesseract::scene_graph::JointDynamics>();
     dynamics->damping = 1.5;
     dynamics->friction = 2.5;
     std::string text;
-    EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointDynamics::Ptr>(dynamics, &tesseract_urdf::writeDynamics, text));
+    EXPECT_EQ(0,
+              writeTest<tesseract::scene_graph::JointDynamics::Ptr>(dynamics, &tesseract::urdf::writeDynamics, text));
     EXPECT_NE(text, "");
   }
 
   {
-    tesseract_scene_graph::JointDynamics::Ptr dynamics = nullptr;
+    tesseract::scene_graph::JointDynamics::Ptr dynamics = nullptr;
     std::string text;
-    EXPECT_EQ(1, writeTest<tesseract_scene_graph::JointDynamics::Ptr>(dynamics, &tesseract_urdf::writeDynamics, text));
+    EXPECT_EQ(1,
+              writeTest<tesseract::scene_graph::JointDynamics::Ptr>(dynamics, &tesseract::urdf::writeDynamics, text));
     EXPECT_EQ(text, "");
   }
 }

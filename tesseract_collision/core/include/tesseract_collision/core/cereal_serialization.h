@@ -39,14 +39,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/contact_result_validator.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 /************************************************/
-/****** tesseract_collision::ContactResult ******/
+/****** tesseract::collision::ContactResult ******/
 /************************************************/
 
 template <class Archive>
-void serialize(Archive& ar, tesseract_collision::ContactResult& g)
+void serialize(Archive& ar, tesseract::collision::ContactResult& g)
 {
   ar(cereal::make_nvp("distance", g.distance));
   ar(cereal::make_nvp("type_id", g.type_id));
@@ -64,18 +64,18 @@ void serialize(Archive& ar, tesseract_collision::ContactResult& g)
 }
 
 /***(**********************************************/
-/****** tesseract_collision::ContactResultMap ******/
+/****** tesseract::collision::ContactResultMap ******/
 /***************************************************/
 template <class Archive>
-void save(Archive& ar, const tesseract_collision::ContactResultMap& g)
+void save(Archive& ar, const tesseract::collision::ContactResultMap& g)
 {
   ar(cereal::make_nvp("container", g.getContainer()));
 }
 
 template <class Archive>
-void load(Archive& ar, tesseract_collision::ContactResultMap& g)
+void load(Archive& ar, tesseract::collision::ContactResultMap& g)
 {
-  tesseract_collision::ContactResultMap::ContainerType container;
+  tesseract::collision::ContactResultMap::ContainerType container;
   ar(cereal::make_nvp("container", container));
 
   for (const auto& c : container)
@@ -83,7 +83,7 @@ void load(Archive& ar, tesseract_collision::ContactResultMap& g)
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract_collision::ContactRequest& g)
+void serialize(Archive& ar, tesseract::collision::ContactRequest& g)
 {
   ar(cereal::make_nvp("type", g.type));
   ar(cereal::make_nvp("calculate_penetration", g.calculate_penetration));
@@ -93,7 +93,7 @@ void serialize(Archive& ar, tesseract_collision::ContactRequest& g)
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract_collision::ContactManagerConfig& g)
+void serialize(Archive& ar, tesseract::collision::ContactManagerConfig& g)
 {
   ar(cereal::make_nvp("default_margin", g.default_margin));
   ar(cereal::make_nvp("pair_margin_override_type", g.pair_margin_override_type));
@@ -104,7 +104,7 @@ void serialize(Archive& ar, tesseract_collision::ContactManagerConfig& g)
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract_collision::CollisionCheckConfig& g)
+void serialize(Archive& ar, tesseract::collision::CollisionCheckConfig& g)
 {
   ar(cereal::make_nvp("contact_request", g.contact_request));
   ar(cereal::make_nvp("type", g.type));
@@ -114,7 +114,7 @@ void serialize(Archive& ar, tesseract_collision::CollisionCheckConfig& g)
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract_collision::ContactTrajectorySubstepResults& g)
+void serialize(Archive& ar, tesseract::collision::ContactTrajectorySubstepResults& g)
 {
   ar(cereal::make_nvp("contacts", g.contacts));
   ar(cereal::make_nvp("substep", g.substep));
@@ -123,7 +123,7 @@ void serialize(Archive& ar, tesseract_collision::ContactTrajectorySubstepResults
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract_collision::ContactTrajectoryStepResults& g)
+void serialize(Archive& ar, tesseract::collision::ContactTrajectoryStepResults& g)
 {
   ar(cereal::make_nvp("substeps", g.substeps));
   ar(cereal::make_nvp("step", g.step));
@@ -133,12 +133,12 @@ void serialize(Archive& ar, tesseract_collision::ContactTrajectoryStepResults& g
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract_collision::ContactTrajectoryResults& g)
+void serialize(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
 {
   ar(cereal::make_nvp("steps", g.steps));
   ar(cereal::make_nvp("joint_names", g.joint_names));
   ar(cereal::make_nvp("total_steps", g.total_steps));
 }
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_CEREAL_SERIALIZATION_H

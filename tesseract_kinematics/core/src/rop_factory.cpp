@@ -30,11 +30,11 @@
 
 #include <console_bridge/console.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& solver_name,
-                                                            const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                            const tesseract_scene_graph::SceneState& scene_state,
+                                                            const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                            const tesseract::scene_graph::SceneState& scene_state,
                                                             const KinematicsPluginFactory& plugin_factory,
                                                             const YAML::Node& config) const
 {
@@ -106,7 +106,7 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
     // Get Positioner
     if (YAML::Node positioner = config["positioner"])
     {
-      tesseract_common::PluginInfo p_info;
+      tesseract::common::PluginInfo p_info;
       if (YAML::Node n = positioner["class"])
         p_info.class_name = n.as<std::string>();
       else
@@ -146,7 +146,7 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
     // Get Manipulator
     if (YAML::Node manipulator = config["manipulator"])
     {
-      tesseract_common::PluginInfo m_info;
+      tesseract::common::PluginInfo m_info;
       if (YAML::Node n = manipulator["class"])
         m_info.class_name = n.as<std::string>();
       else
@@ -176,7 +176,7 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
 
 PLUGIN_ANCHOR_IMPL(ROPInvKinFactoriesAnchor)
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::ROPInvKinFactory, ROPInvKinFactory);
+TESSERACT_ADD_INV_KIN_PLUGIN(tesseract::kinematics::ROPInvKinFactory, ROPInvKinFactory);

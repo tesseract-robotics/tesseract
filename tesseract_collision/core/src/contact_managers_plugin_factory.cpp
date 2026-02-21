@@ -40,9 +40,9 @@ static const std::string TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES_ENV = "TE
                                                                              "DIRECTORIES";
 static const std::string TESSERACT_CONTACT_MANAGERS_PLUGINS_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGINS";
 
-using tesseract_common::ContactManagersPluginInfo;
+using tesseract::common::ContactManagersPluginInfo;
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 std::string DiscreteContactManagerFactory::getSection() { return "DiscColl"; }
 
@@ -58,15 +58,15 @@ ContactManagersPluginFactory::ContactManagersPluginFactory()
                boost::is_any_of(":"),
                boost::token_compress_on);
 
-  tesseract_common::removeDuplicates(plugin_loader_.search_paths);
-  tesseract_common::removeDuplicates(plugin_loader_.search_libraries);
+  tesseract::common::removeDuplicates(plugin_loader_.search_paths);
+  tesseract::common::removeDuplicates(plugin_loader_.search_libraries);
 }
 
 void ContactManagersPluginFactory::loadConfig(const YAML::Node& config)
 {
   if (const YAML::Node& plugin_info = config[ContactManagersPluginInfo::CONFIG_KEY])
   {
-    auto cm_plugin_info = plugin_info.as<tesseract_common::ContactManagersPluginInfo>();
+    auto cm_plugin_info = plugin_info.as<tesseract::common::ContactManagersPluginInfo>();
     plugin_loader_.search_paths.insert(
         plugin_loader_.search_paths.end(), cm_plugin_info.search_paths.begin(), cm_plugin_info.search_paths.end());
     plugin_loader_.search_libraries.insert(plugin_loader_.search_libraries.end(),
@@ -75,31 +75,31 @@ void ContactManagersPluginFactory::loadConfig(const YAML::Node& config)
     discrete_plugin_info_ = cm_plugin_info.discrete_plugin_infos;
     continuous_plugin_info_ = cm_plugin_info.continuous_plugin_infos;
 
-    tesseract_common::removeDuplicates(plugin_loader_.search_paths);
-    tesseract_common::removeDuplicates(plugin_loader_.search_libraries);
+    tesseract::common::removeDuplicates(plugin_loader_.search_paths);
+    tesseract::common::removeDuplicates(plugin_loader_.search_libraries);
   }
 }
 
 ContactManagersPluginFactory::ContactManagersPluginFactory(YAML::Node config,
-                                                           const tesseract_common::ResourceLocator& locator)
+                                                           const tesseract::common::ResourceLocator& locator)
   : ContactManagersPluginFactory()
 {
-  tesseract_common::processYamlIncludeDirective(config, locator);
+  tesseract::common::processYamlIncludeDirective(config, locator);
   loadConfig(config);
 }
 
 ContactManagersPluginFactory::ContactManagersPluginFactory(const std::filesystem::path& config,
-                                                           const tesseract_common::ResourceLocator& locator)
+                                                           const tesseract::common::ResourceLocator& locator)
   : ContactManagersPluginFactory()
 {
-  loadConfig(tesseract_common::loadYamlFile(config.string(), locator));
+  loadConfig(tesseract::common::loadYamlFile(config.string(), locator));
 }
 
 ContactManagersPluginFactory::ContactManagersPluginFactory(const std::string& config,
-                                                           const tesseract_common::ResourceLocator& locator)
+                                                           const tesseract::common::ResourceLocator& locator)
   : ContactManagersPluginFactory()
 {
-  loadConfig(tesseract_common::loadYamlString(config, locator));
+  loadConfig(tesseract::common::loadYamlString(config, locator));
 }
 
 // This prevents it from being defined inline.
@@ -132,7 +132,7 @@ std::vector<std::string> ContactManagersPluginFactory::getSearchLibraries() cons
 void ContactManagersPluginFactory::clearSearchLibraries() { plugin_loader_.search_libraries.clear(); }
 
 void ContactManagersPluginFactory::addDiscreteContactManagerPlugin(const std::string& name,
-                                                                   tesseract_common::PluginInfo plugin_info)
+                                                                   tesseract::common::PluginInfo plugin_info)
 {
   discrete_plugin_info_.plugins[name] = std::move(plugin_info);
 }
@@ -142,7 +142,7 @@ bool ContactManagersPluginFactory::hasDiscreteContactManagerPlugins() const
   return !discrete_plugin_info_.plugins.empty();
 }
 
-tesseract_common::PluginInfoMap ContactManagersPluginFactory::getDiscreteContactManagerPlugins() const
+tesseract::common::PluginInfoMap ContactManagersPluginFactory::getDiscreteContactManagerPlugins() const
 {
   return discrete_plugin_info_.plugins;
 }
@@ -183,7 +183,7 @@ std::string ContactManagersPluginFactory::getDefaultDiscreteContactManagerPlugin
 }
 
 void ContactManagersPluginFactory::addContinuousContactManagerPlugin(const std::string& name,
-                                                                     tesseract_common::PluginInfo plugin_info)
+                                                                     tesseract::common::PluginInfo plugin_info)
 {
   continuous_plugin_info_.plugins[name] = std::move(plugin_info);
 }
@@ -193,7 +193,7 @@ bool ContactManagersPluginFactory::hasContinuousContactManagerPlugins() const
   return !continuous_plugin_info_.plugins.empty();
 }
 
-tesseract_common::PluginInfoMap ContactManagersPluginFactory::getContinuousContactManagerPlugins() const
+tesseract::common::PluginInfoMap ContactManagersPluginFactory::getContinuousContactManagerPlugins() const
 {
   return continuous_plugin_info_.plugins;
 }
@@ -250,7 +250,7 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
 
 std::unique_ptr<DiscreteContactManager>
 ContactManagersPluginFactory::createDiscreteContactManager(const std::string& name,
-                                                           const tesseract_common::PluginInfo& plugin_info) const
+                                                           const tesseract::common::PluginInfo& plugin_info) const
 {
   try
   {
@@ -293,7 +293,7 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
 
 std::unique_ptr<ContinuousContactManager>
 ContactManagersPluginFactory::createContinuousContactManager(const std::string& name,
-                                                             const tesseract_common::PluginInfo& plugin_info) const
+                                                             const tesseract::common::PluginInfo& plugin_info) const
 {
   try
   {
@@ -328,7 +328,7 @@ void ContactManagersPluginFactory::saveConfig(const std::filesystem::path& file_
 
 YAML::Node ContactManagersPluginFactory::getConfig() const
 {
-  tesseract_common::ContactManagersPluginInfo cm_plugins;
+  tesseract::common::ContactManagersPluginInfo cm_plugins;
   cm_plugins.search_paths = plugin_loader_.search_paths;
   cm_plugins.search_libraries = plugin_loader_.search_libraries;
   cm_plugins.discrete_plugin_infos = discrete_plugin_info_;
@@ -340,4 +340,4 @@ YAML::Node ContactManagersPluginFactory::getConfig() const
   return config;
 }
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision

@@ -24,7 +24,7 @@
 #ifndef TESSERACT_ENVIRONMENT_FWD_H
 #define TESSERACT_ENVIRONMENT_FWD_H
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class Environment;
 class EnvironmentCache;
@@ -56,6 +56,6 @@ class AddContactManagersPluginInfoCommand;
 class SetActiveContinuousContactManagerCommand;
 class SetActiveDiscreteContactManagerCommand;
 class AddTrajectoryLinkCommand;
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_FWD_H

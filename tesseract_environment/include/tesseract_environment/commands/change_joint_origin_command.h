@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class ChangeJointOriginCommand;
 template <class Archive>
@@ -72,8 +72,8 @@ private:
   Eigen::Isometry3d origin_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, ChangeJointOriginCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, ChangeJointOriginCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_ORIGIN_COMMAND_H

@@ -39,7 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 /**
  * @brief The OFKT node is contains multiple trasformation which are described below.
@@ -221,6 +221,6 @@ public:
    */
   virtual const std::vector<const OFKTNode*>& getChildren() const = 0;
 };
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_STATE_SOLVER_OFKT_NODE_H

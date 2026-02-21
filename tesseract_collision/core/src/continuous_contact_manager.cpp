@@ -25,7 +25,7 @@
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_collision/core/utils.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 void ContinuousContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
 {
@@ -38,4 +38,4 @@ void ContinuousContactManager::applyContactManagerConfig(const ContactManagerCon
   applyContactAllowedValidatorOverride(*this, config.acm, config.acm_override_type);
   applyModifyObjectEnabled(*this, config.modify_object_enabled);
 }
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision

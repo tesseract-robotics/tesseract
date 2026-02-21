@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 // explicit Instantiation
 template bool toNumeric<double>(const std::string&, double&);
@@ -519,4 +519,4 @@ std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& li
   return results;
 }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

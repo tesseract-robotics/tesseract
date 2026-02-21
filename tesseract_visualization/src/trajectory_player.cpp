@@ -30,12 +30,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/trajectory_player.h>
 #include <tesseract_visualization/trajectory_interpolator.h>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 TrajectoryPlayer::TrajectoryPlayer() = default;
 TrajectoryPlayer::~TrajectoryPlayer() = default;
 
-void TrajectoryPlayer::setTrajectory(const tesseract_common::JointTrajectory& trajectory)
+void TrajectoryPlayer::setTrajectory(const tesseract::common::JointTrajectory& trajectory)
 {
   // Prepare the new trajectory message
   trajectory_ = std::make_unique<TrajectoryInterpolator>(trajectory);
@@ -50,7 +50,7 @@ void TrajectoryPlayer::setTrajectory(const tesseract_common::JointTrajectory& tr
 
 void TrajectoryPlayer::setScale(double scale) { scale_ = scale; }
 
-tesseract_common::JointState TrajectoryPlayer::setCurrentDurationByIndex(long index)
+tesseract::common::JointState TrajectoryPlayer::setCurrentDurationByIndex(long index)
 {
   if (!trajectory_ || trajectory_->empty())
     throw std::runtime_error("Trajectory is empty!");
@@ -71,7 +71,7 @@ tesseract_common::JointState TrajectoryPlayer::setCurrentDurationByIndex(long in
   return trajectory_->getState(current_duration_);
 }
 
-tesseract_common::JointState TrajectoryPlayer::setCurrentDuration(double duration)
+tesseract::common::JointState TrajectoryPlayer::setCurrentDuration(double duration)
 {
   if (!trajectory_ || trajectory_->empty())
     throw std::runtime_error("Trajectory is empty!");
@@ -95,7 +95,7 @@ tesseract_common::JointState TrajectoryPlayer::setCurrentDuration(double duratio
   return trajectory_->getState(current_duration_);
 }
 
-tesseract_common::JointState TrajectoryPlayer::getNext()
+tesseract::common::JointState TrajectoryPlayer::getNext()
 {
   if (!trajectory_ || trajectory_->empty())
     throw std::runtime_error("Trajectory is empty!");
@@ -122,7 +122,7 @@ tesseract_common::JointState TrajectoryPlayer::getNext()
   return trajectory_->getState(current_duration_);
 }
 
-tesseract_common::JointState TrajectoryPlayer::getByIndex(long index) const
+tesseract::common::JointState TrajectoryPlayer::getByIndex(long index) const
 {
   return trajectory_->getState(trajectory_->getStateDuration(index));
 }
@@ -153,4 +153,4 @@ void TrajectoryPlayer::reset()
 
 long TrajectoryPlayer::size() const { return (trajectory_) ? trajectory_->getStateCount() : 0; }
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization

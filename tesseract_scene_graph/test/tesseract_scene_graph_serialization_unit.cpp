@@ -1,6 +1,6 @@
 /**
  * @file tesseract_scene_graph_serialization_unit.cpp
- * @brief Tests serialization of tesseract_scene_graph
+ * @brief Tests serialization of tesseract::scene_graph
  *
  * @author Levi Armstrong
  * @author Matthew Powelson
@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/unit_test_utils.h>
 #include <tesseract_common/utils.h>
 
-using namespace tesseract_scene_graph;
+using namespace tesseract::scene_graph;
 
 /*********************************************************/
 /******                     Joint                    *****/
@@ -45,31 +45,31 @@ using namespace tesseract_scene_graph;
 TEST(TesseractSceneGraphSerializationUnit, JointDynamics)  // NOLINT
 {
   auto object = std::make_shared<JointDynamics>(1.1, 2.2);
-  tesseract_common::testSerialization<JointDynamics>(*object, "JointDynamics");
+  tesseract::common::testSerialization<JointDynamics>(*object, "JointDynamics");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, JointLimits)  // NOLINT
 {
   auto object = std::make_shared<JointLimits>(1.1, 2.2, 3.3, 4.4, 5.5, 6.5);
-  tesseract_common::testSerialization<JointLimits>(*object, "JointLimits");
+  tesseract::common::testSerialization<JointLimits>(*object, "JointLimits");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, JointSafety)  // NOLINT
 {
   auto object = std::make_shared<JointSafety>(1.1, 2.2, 3.3, 4.4);
-  tesseract_common::testSerialization<JointSafety>(*object, "JointSafety");
+  tesseract::common::testSerialization<JointSafety>(*object, "JointSafety");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, JointCalibration)  // NOLINT
 {
   auto object = std::make_shared<JointCalibration>(1.1, 2.2, 3.3);
-  tesseract_common::testSerialization<JointCalibration>(*object, "JointCalibration");
+  tesseract::common::testSerialization<JointCalibration>(*object, "JointCalibration");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, JointMimic)  // NOLINT
 {
   auto object = std::make_shared<JointMimic>(1.1, 2.2, "mimic_name");
-  tesseract_common::testSerialization<JointMimic>(*object, "JointMimic");
+  tesseract::common::testSerialization<JointMimic>(*object, "JointMimic");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, Joint)  // NOLINT
@@ -85,7 +85,7 @@ TEST(TesseractSceneGraphSerializationUnit, Joint)  // NOLINT
   object->safety = std::make_shared<JointSafety>(1.1, 2.2, 3.3, 4.4);
   object->calibration = std::make_shared<JointCalibration>(1.1, 2.2, 3.3);
   object->mimic = std::make_shared<JointMimic>(1.1, 2.2, "mimic_name");
-  tesseract_common::testSerialization<Joint>(*object, "Joint");
+  tesseract::common::testSerialization<Joint>(*object, "Joint");
 }
 
 /*********************************************************/
@@ -97,7 +97,7 @@ TEST(TesseractSceneGraphSerializationUnit, Material)  // NOLINT
   auto object = std::make_shared<Material>("test_name");
   object->color = Eigen::Vector4d(0.1, 0.2, 0.3, 1.0);
   object->texture_filename = "test_filename";
-  tesseract_common::testSerialization<Material>(*object, "Material");
+  tesseract::common::testSerialization<Material>(*object, "Material");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, Inertial)  // NOLINT
@@ -111,26 +111,26 @@ TEST(TesseractSceneGraphSerializationUnit, Inertial)  // NOLINT
   object->iyy = 5.6;
   object->iyz = 6.7;
   object->izz = 7.8;
-  tesseract_common::testSerialization<Inertial>(*object, "Inertial");
+  tesseract::common::testSerialization<Inertial>(*object, "Inertial");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, Visual)  // NOLINT
 {
   auto object = std::make_shared<Visual>();
   object->origin.translate(Eigen::Vector3d(5.5, 6.6, 7.7));
-  object->geometry = std::make_shared<tesseract_geometry::Cone>(1.1, 2.2);
+  object->geometry = std::make_shared<tesseract::geometry::Cone>(1.1, 2.2);
   object->material = std::make_shared<Material>("test_name");
   object->name = "visual_name";
-  tesseract_common::testSerialization<Visual>(*object, "Visual");
+  tesseract::common::testSerialization<Visual>(*object, "Visual");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, Collision)  // NOLINT
 {
   auto object = std::make_shared<Collision>();
   object->origin.translate(Eigen::Vector3d(5.6, 7.8, -1.7));
-  object->geometry = std::make_shared<tesseract_geometry::Sphere>(1.1);
+  object->geometry = std::make_shared<tesseract::geometry::Sphere>(1.1);
   object->name = "collision_name";
-  tesseract_common::testSerialization<Collision>(*object, "Collision");
+  tesseract::common::testSerialization<Collision>(*object, "Collision");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, Link)  // NOLINT
@@ -140,7 +140,7 @@ TEST(TesseractSceneGraphSerializationUnit, Link)  // NOLINT
 
   auto vis = std::make_shared<Visual>();
   vis->origin.translate(Eigen::Vector3d(5.5, 6.6, 7.7));
-  vis->geometry = std::make_shared<tesseract_geometry::Cone>(1.1, 2.2);
+  vis->geometry = std::make_shared<tesseract::geometry::Cone>(1.1, 2.2);
   vis->material = std::make_shared<Material>("test_name");
   vis->name = "visual_name";
   object->visual.push_back(std::make_shared<Visual>());
@@ -148,16 +148,16 @@ TEST(TesseractSceneGraphSerializationUnit, Link)  // NOLINT
 
   auto col = std::make_shared<Collision>();
   col->origin.translate(Eigen::Vector3d(5.6, 7.8, -1.7));
-  col->geometry = std::make_shared<tesseract_geometry::Sphere>(1.1);
+  col->geometry = std::make_shared<tesseract::geometry::Sphere>(1.1);
   col->name = "collision_name";
   object->collision.push_back(std::make_shared<Collision>());
   object->collision.push_back(col);
-  tesseract_common::testSerialization<Link>(*object, "Link");
+  tesseract::common::testSerialization<Link>(*object, "Link");
 }
 
-tesseract_scene_graph::SceneGraph createTestSceneGraph()
+tesseract::scene_graph::SceneGraph createTestSceneGraph()
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g;
 
   Link link_1("link_1");
@@ -213,7 +213,7 @@ tesseract_scene_graph::SceneGraph createTestSceneGraph()
 TEST(TesseractSceneGraphSerializationUnit, SceneGraph)  // NOLINT
 {
   auto object = createTestSceneGraph();
-  tesseract_common::testSerialization<SceneGraph>(object, "SceneGraph");
+  tesseract::common::testSerialization<SceneGraph>(object, "SceneGraph");
 }
 
 TEST(TesseractSceneGraphSerializationUnit, SceneState)  // NOLINT
@@ -226,7 +226,7 @@ TEST(TesseractSceneGraphSerializationUnit, SceneState)  // NOLINT
   object->link_transforms["link_transforms_key"].translate(Eigen::Vector3d(1, 2, 3));
   object->joint_transforms["joint_transforms_key"].setIdentity();
   object->joint_transforms["joint_transforms_key"].translate(Eigen::Vector3d(5, 6, 7));
-  tesseract_common::testSerialization<SceneState>(*object, "SceneState");
+  tesseract::common::testSerialization<SceneState>(*object, "SceneState");
 }
 
 int main(int argc, char** argv)

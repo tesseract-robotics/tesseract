@@ -24,10 +24,10 @@
 
 #include <tesseract_common/profile.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 Profile::Profile(std::size_t key) : key_(key) {}
 
 std::size_t Profile::getKey() const { return key_; }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

@@ -26,16 +26,16 @@
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_srdf/srdf_model.h>
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
-void processSRDFAllowedCollisions(tesseract_scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)
+void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)
 {
   for (const auto& pair : srdf_model.acm.getAllAllowedCollisions())
     scene_graph.addAllowedCollision(pair.first.first, pair.first.second, pair.second);
 }
 
-bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract_common::LinkNamesPair> pair1,
-                                   std::reference_wrapper<const tesseract_common::LinkNamesPair> pair2)
+bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract::common::LinkNamesPair> pair1,
+                                   std::reference_wrapper<const tesseract::common::LinkNamesPair> pair2)
 {
   // Sort first by the first string
   if (pair1.get().first != pair2.get().first)
@@ -47,10 +47,10 @@ bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract_common
   return pair1.get().second < pair2.get().second;
 }
 
-std::vector<std::reference_wrapper<const tesseract_common::LinkNamesPair>>
-getAlphabeticalACMKeys(const tesseract_common::AllowedCollisionEntries& allowed_collision_entries)
+std::vector<std::reference_wrapper<const tesseract::common::LinkNamesPair>>
+getAlphabeticalACMKeys(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries)
 {
-  std::vector<std::reference_wrapper<const tesseract_common::LinkNamesPair>> acm_keys;
+  std::vector<std::reference_wrapper<const tesseract::common::LinkNamesPair>> acm_keys;
   acm_keys.reserve(allowed_collision_entries.size());
   for (const auto& acm_pair : allowed_collision_entries)
   {
@@ -63,4 +63,4 @@ getAlphabeticalACMKeys(const tesseract_common::AllowedCollisionEntries& allowed_
   return acm_keys;
 }
 
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf

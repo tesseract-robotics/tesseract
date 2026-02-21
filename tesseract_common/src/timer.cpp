@@ -24,7 +24,7 @@
 
 #include <tesseract_common/timer.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 Timer::~Timer() { stop(); }
 
@@ -49,4 +49,4 @@ void Timer::stop()
     timer_thread_.join();
 }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

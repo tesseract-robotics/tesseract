@@ -45,7 +45,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision
 {
 struct TesseractCollisionConfigurationInfo : public btDefaultCollisionConstructionInfo
 {
@@ -82,5 +82,5 @@ public:
   TesseractCollisionConfiguration(
       const TesseractCollisionConfigurationInfo& config_info = TesseractCollisionConfigurationInfo());
 };
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision
 #endif  // TESSERACT_COLLISION_TESSERACT_COLLISION_CONFIGURATION_H

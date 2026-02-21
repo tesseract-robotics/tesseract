@@ -24,9 +24,9 @@
 
 #include <tesseract_common/contact_allowed_validator.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
-ACMContactAllowedValidator::ACMContactAllowedValidator(tesseract_common::AllowedCollisionMatrix acm)
+ACMContactAllowedValidator::ACMContactAllowedValidator(tesseract::common::AllowedCollisionMatrix acm)
   : acm_(std::move(acm))
 {
 }
@@ -62,4 +62,4 @@ bool CombinedContactAllowedValidator::operator()(const std::string& link_name1, 
   return value;
 }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

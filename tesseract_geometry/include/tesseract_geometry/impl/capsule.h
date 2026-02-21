@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 class Capsule;
 template <class Archive>
@@ -59,8 +59,8 @@ private:
   double l_{ 0 };
 
   template <class Archive>
-  friend void ::tesseract_geometry::serialize(Archive& ar, Capsule& obj);
+  friend void ::tesseract::geometry::serialize(Archive& ar, Capsule& obj);
 };
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif  // TESSERACT_GEOMETRY_CAPSULE_H

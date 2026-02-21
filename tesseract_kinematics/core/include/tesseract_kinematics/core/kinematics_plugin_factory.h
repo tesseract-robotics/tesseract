@@ -48,7 +48,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
   EXPORT_CLASS_SECTIONED(DERIVED_CLASS, ALIAS, InvKin)
 // clang-format on
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 /** @brief Forward declare Plugin Factory */
 class KinematicsPluginFactory;
@@ -73,8 +73,8 @@ public:
    * @return If failed to create, nullptr is returned.
    */
   virtual std::unique_ptr<InverseKinematics> create(const std::string& solver_name,
-                                                    const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                    const tesseract_scene_graph::SceneState& scene_state,
+                                                    const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                    const tesseract::scene_graph::SceneState& scene_state,
                                                     const KinematicsPluginFactory& plugin_factory,
                                                     const YAML::Node& config) const = 0;
 
@@ -101,8 +101,8 @@ public:
    * @return If failed to create, nullptr is returned.
    */
   virtual std::unique_ptr<ForwardKinematics> create(const std::string& solver_name,
-                                                    const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                    const tesseract_scene_graph::SceneState& scene_state,
+                                                    const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                    const tesseract::scene_graph::SceneState& scene_state,
                                                     const KinematicsPluginFactory& plugin_factory,
                                                     const YAML::Node& config) const = 0;
 
@@ -125,19 +125,19 @@ public:
    * @brief Load plugins from yaml node
    * @param config The config node
    */
-  KinematicsPluginFactory(YAML::Node config, const tesseract_common::ResourceLocator& locator);
+  KinematicsPluginFactory(YAML::Node config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  KinematicsPluginFactory(const std::filesystem::path& config, const tesseract_common::ResourceLocator& locator);
+  KinematicsPluginFactory(const std::filesystem::path& config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from string
    * @param config The config string
    */
-  KinematicsPluginFactory(const std::string& config, const tesseract_common::ResourceLocator& locator);
+  KinematicsPluginFactory(const std::string& config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Add location for the plugin loader to search
@@ -171,13 +171,13 @@ public:
    */
   void addFwdKinPlugin(const std::string& group_name,
                        const std::string& solver_name,
-                       tesseract_common::PluginInfo plugin_info);
+                       tesseract::common::PluginInfo plugin_info);
 
   /**
    * @brief Get the map of forward kinematic plugins
    * @return A map of plugins
    */
-  std::map<std::string, tesseract_common::PluginInfoContainer> getFwdKinPlugins() const;
+  std::map<std::string, tesseract::common::PluginInfoContainer> getFwdKinPlugins() const;
 
   /**
    * @brief remove forward kinematics plugin from the manager
@@ -209,13 +209,13 @@ public:
    */
   void addInvKinPlugin(const std::string& group_name,
                        const std::string& solver_name,
-                       tesseract_common::PluginInfo plugin_info);
+                       tesseract::common::PluginInfo plugin_info);
 
   /**
    * @brief Get the map of inverse kinematic plugins
    * @return A map of plugins
    */
-  std::map<std::string, tesseract_common::PluginInfoContainer> getInvKinPlugins() const;
+  std::map<std::string, tesseract::common::PluginInfoContainer> getInvKinPlugins() const;
 
   /**
    * @brief remove inverse kinematics plugin from the manager
@@ -249,8 +249,8 @@ public:
    */
   std::unique_ptr<ForwardKinematics> createFwdKin(const std::string& group_name,
                                                   const std::string& solver_name,
-                                                  const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                  const tesseract_scene_graph::SceneState& scene_state) const;
+                                                  const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                  const tesseract::scene_graph::SceneState& scene_state) const;
 
   /**
    * @brief Get inverse kinematics object given group name and solver name
@@ -262,8 +262,8 @@ public:
    */
   std::unique_ptr<InverseKinematics> createInvKin(const std::string& group_name,
                                                   const std::string& solver_name,
-                                                  const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                  const tesseract_scene_graph::SceneState& scene_state) const;
+                                                  const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                  const tesseract::scene_graph::SceneState& scene_state) const;
 
   /**
    * @brief Get forward kinematics object given plugin info
@@ -272,9 +272,9 @@ public:
    * @param scene_state The scene state
    */
   std::unique_ptr<ForwardKinematics> createFwdKin(const std::string& solver_name,
-                                                  const tesseract_common::PluginInfo& plugin_info,
-                                                  const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                  const tesseract_scene_graph::SceneState& scene_state) const;
+                                                  const tesseract::common::PluginInfo& plugin_info,
+                                                  const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                  const tesseract::scene_graph::SceneState& scene_state) const;
 
   /**
    * @brief Get inverse kinematics object given plugin info
@@ -283,9 +283,9 @@ public:
    * @param scene_state The scene state
    */
   std::unique_ptr<InverseKinematics> createInvKin(const std::string& solver_name,
-                                                  const tesseract_common::PluginInfo& plugin_info,
-                                                  const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                  const tesseract_scene_graph::SceneState& scene_state) const;
+                                                  const tesseract::common::PluginInfo& plugin_info,
+                                                  const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                  const tesseract::scene_graph::SceneState& scene_state) const;
 
   /**
    * @brief Save the plugin information to a yaml config file
@@ -302,12 +302,12 @@ public:
 private:
   mutable std::map<std::string, FwdKinFactory::Ptr> fwd_kin_factories_;
   mutable std::map<std::string, InvKinFactory::Ptr> inv_kin_factories_;
-  std::map<std::string, tesseract_common::PluginInfoContainer> fwd_plugin_info_;
-  std::map<std::string, tesseract_common::PluginInfoContainer> inv_plugin_info_;
+  std::map<std::string, tesseract::common::PluginInfoContainer> fwd_plugin_info_;
+  std::map<std::string, tesseract::common::PluginInfoContainer> inv_plugin_info_;
   boost_plugin_loader::PluginLoader plugin_loader_;
 
   void loadConfig(const YAML::Node& config);
 };
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_KINEMATICS_PLUGIN_FACTORY_H

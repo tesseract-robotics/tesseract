@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class Command;
 
@@ -74,11 +74,11 @@ struct CommandAppliedEvent : public Event
  */
 struct SceneStateChangedEvent : public Event
 {
-  SceneStateChangedEvent(const tesseract_scene_graph::SceneState& state);
+  SceneStateChangedEvent(const tesseract::scene_graph::SceneState& state);
 
-  const tesseract_scene_graph::SceneState& state;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const tesseract::scene_graph::SceneState& state;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_EVENTS_H

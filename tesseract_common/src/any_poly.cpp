@@ -24,7 +24,7 @@
 
 #include <tesseract_common/any_poly.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 AnyInterface::~AnyInterface() = default;
 
@@ -82,4 +82,4 @@ bool AnyPoly::operator==(const AnyPoly& rhs) const
 bool AnyPoly::operator!=(const AnyPoly& rhs) const { return !operator==(rhs); }
 // LCOV_EXCL_STOP
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

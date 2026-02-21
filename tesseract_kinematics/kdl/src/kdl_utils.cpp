@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/kdl_parser.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
 {
@@ -81,12 +81,12 @@ void EigenToKDL(const Eigen::Ref<const Eigen::VectorXd>& vec, KDL::JntArray& joi
 void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> vec) { vec = joints.data; }
 
 bool parseSceneGraph(KDLChainData& results,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const tesseract::scene_graph::SceneGraph& scene_graph,
                      const std::vector<std::pair<std::string, std::string>>& chains)
 {
   try
   {
-    tesseract_scene_graph::KDLTreeData data = tesseract_scene_graph::parseSceneGraph(scene_graph);
+    tesseract::scene_graph::KDLTreeData data = tesseract::scene_graph::parseSceneGraph(scene_graph);
     results.kdl_tree = data.tree;
   }
   catch (...)
@@ -138,7 +138,7 @@ bool parseSceneGraph(KDLChainData& results,
     double lower = std::numeric_limits<float>::lowest();
     double upper = std::numeric_limits<float>::max();
     // Does the joint have limits?
-    if (joint->type != tesseract_scene_graph::JointType::CONTINUOUS)
+    if (joint->type != tesseract::scene_graph::JointType::CONTINUOUS)
     {
       if (joint->safety)
       {
@@ -162,7 +162,7 @@ bool parseSceneGraph(KDLChainData& results,
 }
 
 bool parseSceneGraph(KDLChainData& results,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const tesseract::scene_graph::SceneGraph& scene_graph,
                      const std::string& base_name,
                      const std::string& tip_name)
 {
@@ -171,4 +171,4 @@ bool parseSceneGraph(KDLChainData& results,
   return parseSceneGraph(results, scene_graph, chains);
 }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

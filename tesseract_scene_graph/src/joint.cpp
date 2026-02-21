@@ -23,7 +23,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/joint.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 /*********************************************************/
 /******              JointDynamics                   *****/
@@ -39,8 +39,8 @@ void JointDynamics::clear()
 bool JointDynamics::operator==(const JointDynamics& rhs) const
 {
   bool equal = true;
-  equal &= tesseract_common::almostEqualRelativeAndAbs(damping, rhs.damping);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(friction, rhs.friction);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(damping, rhs.damping);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(friction, rhs.friction);
 
   return equal;
 }
@@ -74,12 +74,12 @@ void JointLimits::clear()
 bool JointLimits::operator==(const JointLimits& rhs) const
 {
   bool equal = true;
-  equal &= tesseract_common::almostEqualRelativeAndAbs(lower, rhs.lower);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(upper, rhs.upper);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(effort, rhs.effort);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(velocity, rhs.velocity);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(acceleration, rhs.acceleration);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(jerk, rhs.jerk);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(lower, rhs.lower);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(upper, rhs.upper);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(effort, rhs.effort);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(velocity, rhs.velocity);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(acceleration, rhs.acceleration);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(jerk, rhs.jerk);
 
   return equal;
 }
@@ -116,10 +116,10 @@ void JointSafety::clear()
 bool JointSafety::operator==(const JointSafety& rhs) const
 {
   bool equal = true;
-  equal &= tesseract_common::almostEqualRelativeAndAbs(soft_upper_limit, rhs.soft_upper_limit);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(soft_lower_limit, rhs.soft_lower_limit);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(k_position, rhs.k_position);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(k_velocity, rhs.k_velocity);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(soft_upper_limit, rhs.soft_upper_limit);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(soft_lower_limit, rhs.soft_lower_limit);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(k_position, rhs.k_position);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(k_velocity, rhs.k_velocity);
 
   return equal;
 }
@@ -150,9 +150,9 @@ void JointCalibration::clear()
 bool JointCalibration::operator==(const JointCalibration& rhs) const
 {
   bool equal = true;
-  equal &= tesseract_common::almostEqualRelativeAndAbs(reference_position, rhs.reference_position);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(rising, rhs.rising);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(falling, rhs.falling);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(reference_position, rhs.reference_position);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(rising, rhs.rising);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(falling, rhs.falling);
 
   return equal;
 }
@@ -183,8 +183,8 @@ void JointMimic::clear()
 bool JointMimic::operator==(const JointMimic& rhs) const
 {
   bool equal = true;
-  equal &= tesseract_common::almostEqualRelativeAndAbs(offset, rhs.offset);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(multiplier, rhs.multiplier);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(offset, rhs.offset);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(multiplier, rhs.multiplier);
   equal &= joint_name == rhs.joint_name;
 
   return equal;
@@ -255,15 +255,15 @@ bool Joint::operator==(const Joint& rhs) const
 {
   bool equal = true;
   equal &= type == rhs.type;
-  equal &= tesseract_common::almostEqualRelativeAndAbs(axis, rhs.axis);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(axis, rhs.axis);
   equal &= child_link_name == rhs.child_link_name;
   equal &= parent_link_name == rhs.parent_link_name;
   equal &= parent_to_joint_origin_transform.isApprox(rhs.parent_to_joint_origin_transform, 1e-5);
-  equal &= tesseract_common::pointersEqual(dynamics, rhs.dynamics);
-  equal &= tesseract_common::pointersEqual(limits, rhs.limits);
-  equal &= tesseract_common::pointersEqual(safety, rhs.safety);
-  equal &= tesseract_common::pointersEqual(calibration, rhs.calibration);
-  equal &= tesseract_common::pointersEqual(mimic, rhs.mimic);
+  equal &= tesseract::common::pointersEqual(dynamics, rhs.dynamics);
+  equal &= tesseract::common::pointersEqual(limits, rhs.limits);
+  equal &= tesseract::common::pointersEqual(safety, rhs.safety);
+  equal &= tesseract::common::pointersEqual(calibration, rhs.calibration);
+  equal &= tesseract::common::pointersEqual(mimic, rhs.mimic);
   equal &= name_ == rhs.name_;
   return equal;
 }
@@ -312,4 +312,4 @@ std::ostream& operator<<(std::ostream& os, const JointType& type)
   return os;
 }
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph

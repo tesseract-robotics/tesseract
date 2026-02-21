@@ -1,7 +1,7 @@
 #ifndef TESSERACT_VISUALIZATION_FWD_H
 #define TESSERACT_VISUALIZATION_FWD_H
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 class TrajectoryInterpolator;
 class TrajectoryPlayer;
@@ -17,5 +17,5 @@ class ContactResultsMarker;
 class GeometryMarker;
 class ToolpathMarker;
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 #endif  // TESSERACT_VISUALIZATION_FWD_H

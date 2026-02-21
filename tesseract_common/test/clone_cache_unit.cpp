@@ -5,7 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/clone_cache.h>
 
-using namespace tesseract_common;
+using namespace tesseract::common;
 /**
  * @brief Object used to test the CloneCache
  */

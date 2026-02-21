@@ -18,21 +18,21 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardZeroUnit)  // NOLINT
   q[0] = (4 * M_PI) + M_PI_4;
   q[1] = -(4 * M_PI) - M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardZero<double>(q, { 0, 1 });
+  tesseract::kinematics::harmonizeTowardZero<double>(q, { 0, 1 });
   EXPECT_NEAR(q[0], M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], -M_PI_4, 1e-6);
 
   q[0] = M_PI_4;
   q[1] = -M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardZero<double>(q, { 0, 1 });
+  tesseract::kinematics::harmonizeTowardZero<double>(q, { 0, 1 });
   EXPECT_NEAR(q[0], M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], -M_PI_4, 1e-6);
 
   q[0] = 5 * M_PI_4;
   q[1] = -5 * M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardZero<double>(q, { 0, 1 });
+  tesseract::kinematics::harmonizeTowardZero<double>(q, { 0, 1 });
   EXPECT_NEAR(q[0], -3 * M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], 3 * M_PI_4, 1e-6);
 }
@@ -52,7 +52,7 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
   q[0] = (4 * M_PI) + M_PI_4;
   q[1] = -(4 * M_PI) - M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  tesseract::kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
   EXPECT_NEAR(q[0], M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], -M_PI_4, 1e-6);
   EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
@@ -61,7 +61,7 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
   q[0] = M_PI_4;
   q[1] = -M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  tesseract::kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
   EXPECT_NEAR(q[0], M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], -M_PI_4, 1e-6);
   EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
@@ -70,7 +70,7 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
   q[0] = 5 * M_PI_4;
   q[1] = -5 * M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  tesseract::kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
   EXPECT_NEAR(q[0], -3 * M_PI_4, 1e-6);
   EXPECT_NEAR(q[1], 3 * M_PI_4, 1e-6);
   EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
@@ -87,7 +87,7 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
   q[0] = (4 * M_PI) + M_PI_4;
   q[1] = -(4 * M_PI) - M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  tesseract::kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
   EXPECT_NEAR(q[0], m[0], 1e-6);
   EXPECT_NEAR(q[1], m[1] - M_PI_2, 1e-6);
   EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
@@ -96,7 +96,7 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
   q[0] = M_PI_4;
   q[1] = -M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  tesseract::kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
   EXPECT_NEAR(q[0], m[0], 1e-6);
   EXPECT_NEAR(q[1], m[1] - M_PI_2, 1e-6);
   EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
@@ -105,7 +105,7 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
   q[0] = 5 * M_PI_4;
   q[1] = -5 * M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  tesseract::kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
   EXPECT_NEAR(q[0], m[0] - M_PI, 1e-6);
   EXPECT_NEAR(q[1], m[1] + M_PI_2, 1e-6);
   EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
@@ -122,7 +122,7 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
   q[0] = (4 * M_PI) + M_PI_4;
   q[1] = -(4 * M_PI) - M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  tesseract::kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
   EXPECT_NEAR(q[0], m[0] + M_PI_2, 1e-6);
   EXPECT_NEAR(q[1], m[1], 1e-6);
   EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
@@ -131,7 +131,7 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
   q[0] = M_PI_4;
   q[1] = -M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  tesseract::kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
   EXPECT_NEAR(q[0], m[0] + M_PI_2, 1e-6);
   EXPECT_NEAR(q[1], m[1], 1e-6);
   EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
@@ -140,7 +140,7 @@ TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardMedianUnit)  // NOLINT
   q[0] = 5 * M_PI_4;
   q[1] = -5 * M_PI_4;
 
-  tesseract_kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
+  tesseract::kinematics::harmonizeTowardMedian<double>(q, { 0, 1 }, c);
   EXPECT_NEAR(q[0], m[0] - M_PI_2, 1e-6);
   EXPECT_NEAR(q[1], m[1] + M_PI, 1e-6);
   EXPECT_TRUE(std::abs(q[0] - m[0]) < (M_PI + 1e-6));
@@ -151,12 +151,12 @@ template <typename FloatType>
 void runRedundantSolutionsTest()
 {
   // Helper function for checking if all redundant solutions are unique
-  auto expect_unique_solutions = [](const std::vector<tesseract_kinematics::VectorX<FloatType>>& solutions) {
+  auto expect_unique_solutions = [](const std::vector<tesseract::kinematics::VectorX<FloatType>>& solutions) {
     for (auto sol_1 = solutions.begin(); sol_1 != solutions.end() - 1; ++sol_1)
     {
       for (auto sol_2 = sol_1 + 1; sol_2 != solutions.end(); ++sol_2)
       {
-        EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(
+        EXPECT_FALSE(tesseract::common::almostEqualRelativeAndAbs(
             sol_1->template cast<double>(), sol_2->template cast<double>(), 1e-6));
       }
     }
@@ -168,13 +168,13 @@ void runRedundantSolutionsTest()
     limits << 0, 2.0 * M_PI, 0, 2.0 * M_PI, 0, 2.0 * M_PI;
     std::vector<Eigen::Index> redundancy_capable_joints = { 0, 1, 2 };
 
-    tesseract_kinematics::VectorX<FloatType> q(3);
+    tesseract::kinematics::VectorX<FloatType> q(3);
     q << 0, 0, 0;
 
     {  // Test when initial solution is at the lower limit
-      std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-          tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
-      if (tesseract_common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
+      std::vector<tesseract::kinematics::VectorX<FloatType>> solutions =
+          tesseract::kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+      if (tesseract::common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
         solutions.push_back(q);
 
       EXPECT_EQ(solutions.size(), 8);
@@ -183,9 +183,9 @@ void runRedundantSolutionsTest()
 
     {  // Test when initial solution is within the limits
       limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
-      std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-          tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
-      if (tesseract_common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
+      std::vector<tesseract::kinematics::VectorX<FloatType>> solutions =
+          tesseract::kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+      if (tesseract::common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
         solutions.push_back(q);
 
       EXPECT_EQ(solutions.size(), 27);
@@ -196,9 +196,9 @@ void runRedundantSolutionsTest()
       limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
       q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(4.0 * M_PI);
 
-      std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-          tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
-      if (tesseract_common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
+      std::vector<tesseract::kinematics::VectorX<FloatType>> solutions =
+          tesseract::kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+      if (tesseract::common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
         solutions.push_back(q);
 
       EXPECT_EQ(solutions.size(), 27);
@@ -211,16 +211,16 @@ void runRedundantSolutionsTest()
     Eigen::MatrixX2d limits(4, 2);
     limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
 
-    tesseract_kinematics::VectorX<FloatType> q(4);
+    tesseract::kinematics::VectorX<FloatType> q(4);
     q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(0.0),
         static_cast<FloatType>(4.0 * M_PI);
 
     // Arbitrarily decide that joint 2 is not redundancy capable
     std::vector<Eigen::Index> redundancy_capable_joints = { 0, 1, 3 };
 
-    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
-    if (tesseract_common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
+    std::vector<tesseract::kinematics::VectorX<FloatType>> solutions =
+        tesseract::kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+    if (tesseract::common::satisfiesLimits<double>(q.template cast<double>(), limits, max_diff))
       solutions.push_back(q);
 
     EXPECT_EQ(solutions.size(), 27);
@@ -231,20 +231,20 @@ void runRedundantSolutionsTest()
     Eigen::MatrixX2d limits(4, 2);
     limits << -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI;
 
-    tesseract_kinematics::VectorX<FloatType> q(4);
+    tesseract::kinematics::VectorX<FloatType> q(4);
     q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(0.0),
         static_cast<FloatType>(4.0 * M_PI);
 
     std::vector<Eigen::Index> redundancy_capable_joints = {};
-    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+    std::vector<tesseract::kinematics::VectorX<FloatType>> solutions =
+        tesseract::kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
 
     EXPECT_EQ(solutions.size(), 0);
 
     redundancy_capable_joints = { 10 };
 
     // NOLINTNEXTLINE
-    EXPECT_THROW(tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints),
+    EXPECT_THROW(tesseract::kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints),
                  std::runtime_error);
   }
 
@@ -253,13 +253,13 @@ void runRedundantSolutionsTest()
     limits << -std::numeric_limits<double>::infinity(), 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI,
         -2.0 * M_PI, 2.0 * M_PI;
 
-    tesseract_kinematics::VectorX<FloatType> q(4);
+    tesseract::kinematics::VectorX<FloatType> q(4);
     q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(0.0),
         static_cast<FloatType>(4.0 * M_PI);
 
     std::vector<Eigen::Index> redundancy_capable_joints = { 0 };
-    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+    std::vector<tesseract::kinematics::VectorX<FloatType>> solutions =
+        tesseract::kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
 
     EXPECT_EQ(solutions.size(), 0);
   }
@@ -269,13 +269,13 @@ void runRedundantSolutionsTest()
     limits << -2.0 * M_PI, std::numeric_limits<double>::infinity(), -2.0 * M_PI, 2.0 * M_PI, -2.0 * M_PI, 2.0 * M_PI,
         -2.0 * M_PI, 2.0 * M_PI;
 
-    tesseract_kinematics::VectorX<FloatType> q(4);
+    tesseract::kinematics::VectorX<FloatType> q(4);
     q << static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(-4.0 * M_PI), static_cast<FloatType>(0.0),
         static_cast<FloatType>(4.0 * M_PI);
 
     std::vector<Eigen::Index> redundancy_capable_joints = { 0, 1, 3 };
-    std::vector<tesseract_kinematics::VectorX<FloatType>> solutions =
-        tesseract_kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
+    std::vector<tesseract::kinematics::VectorX<FloatType>> solutions =
+        tesseract::kinematics::getRedundantSolutions<FloatType>(q, limits, redundancy_capable_joints);
 
     EXPECT_EQ(solutions.size(), 0);
   }
@@ -289,43 +289,43 @@ TEST(TesseractKinematicsUnit, RedundantSolutionsUnit)  // NOLINT
 
 TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB(locator);
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
-  tesseract_kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
+  tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
   Eigen::MatrixXd jacobian(6, fwd_kin.numJoints());
   fwd_kin.calcJacobian(jacobian, jv, "tool0");
-  EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian, 0.001));
+  EXPECT_TRUE(tesseract::kinematics::isNearSingularity(jacobian, 0.001));
 
   // Set joint 5 angle to 1 deg and it with the default threshold it should still be in singularity
   jv[4] = 1 * M_PI / 180.0;
   fwd_kin.calcJacobian(jacobian, jv, "tool0");
-  EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian));
+  EXPECT_TRUE(tesseract::kinematics::isNearSingularity(jacobian));
 
   // Set joint 5 angle to 2 deg and it should no longer be in a singularity
   jv[4] = 2 * M_PI / 180.0;
   fwd_kin.calcJacobian(jacobian, jv, "tool0");
-  EXPECT_FALSE(tesseract_kinematics::isNearSingularity(jacobian));
+  EXPECT_FALSE(tesseract::kinematics::isNearSingularity(jacobian));
 
   // Increase threshold and now with joint 5 at 2 deg it will now be considered in a singularity
-  EXPECT_TRUE(tesseract_kinematics::isNearSingularity(jacobian, 0.02));
+  EXPECT_TRUE(tesseract::kinematics::isNearSingularity(jacobian, 0.02));
 }
 
 TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_kinematics::test_suite::getSceneGraphABB(locator);
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
-  tesseract_kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
+  tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
   Eigen::MatrixXd jacobian(6, fwd_kin.numJoints());
   fwd_kin.calcJacobian(jacobian, jv, "tool0");
-  tesseract_kinematics::Manipulability m = tesseract_kinematics::calcManipulability(jacobian);
+  tesseract::kinematics::Manipulability m = tesseract::kinematics::calcManipulability(jacobian);
   EXPECT_EQ(m.m.eigen_values.size(), 6);
   EXPECT_NEAR(m.m.volume, 0, 1e-6);
   EXPECT_GT(m.m.condition, 1e+20);
@@ -376,7 +376,7 @@ TEST(TesseractKinematicsUnit, solvePInv_OverdeterminedSystem)
   b << 1, 2, 3, 4;
 
   Eigen::VectorXd x(A.cols());
-  bool success = tesseract_kinematics::solvePInv(A, b, x);
+  bool success = tesseract::kinematics::solvePInv(A, b, x);
 
   EXPECT_TRUE(success);
   EXPECT_EQ(x.size(), 2);
@@ -395,7 +395,7 @@ TEST(TesseractKinematicsUnit, solvePInv_UnderdeterminedSystem)
   b << 1, 2;
 
   Eigen::VectorXd x(A.cols());
-  bool success = tesseract_kinematics::solvePInv(A, b, x);
+  bool success = tesseract::kinematics::solvePInv(A, b, x);
 
   EXPECT_TRUE(success);
   EXPECT_EQ(x.size(), 4);
@@ -413,7 +413,7 @@ TEST(TesseractKinematicsUnit, solvePInv_SizeMismatch)
   Eigen::VectorXd b(2);  // Wrong size
 
   Eigen::VectorXd x(3);
-  bool success = tesseract_kinematics::solvePInv(A, b, x);
+  bool success = tesseract::kinematics::solvePInv(A, b, x);
   EXPECT_FALSE(success);
 }
 
@@ -423,7 +423,7 @@ TEST(TesseractKinematicsUnit, solvePInv_EmptyMatrix)
   Eigen::VectorXd b(0);
   Eigen::VectorXd x;
 
-  bool success = tesseract_kinematics::solvePInv(A, b, x);
+  bool success = tesseract::kinematics::solvePInv(A, b, x);
   EXPECT_FALSE(success);
 }
 
@@ -440,7 +440,7 @@ TEST(TesseractKinematicsUnit, dampedPInv_FullRankSquareMatrix)
   A << 1, 2, 3, 4, 5, 6, 7, 8, 10;
 
   Eigen::MatrixXd P(3, 3);
-  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  bool success = tesseract::kinematics::dampedPInv(A, P, 1e-5, 0.01);
   EXPECT_TRUE(success);
   EXPECT_EQ(P.rows(), 3);
   EXPECT_EQ(P.cols(), 3);
@@ -453,7 +453,7 @@ TEST(TesseractKinematicsUnit, dampedPInv_RankDeficientMatrix)
   A << 1, 2, 3, 2, 4, 6, 3, 6, 9;  // Rank deficient (linearly dependent rows)
 
   Eigen::MatrixXd P(3, 3);
-  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  bool success = tesseract::kinematics::dampedPInv(A, P, 1e-5, 0.01);
   EXPECT_TRUE(success);
   EXPECT_EQ(P.rows(), 3);
   EXPECT_EQ(P.cols(), 3);
@@ -466,7 +466,7 @@ TEST(TesseractKinematicsUnit, dampedPInv_OverdeterminedMatrix)
   A << 1, 2, 3, 4, 5, 6, 7, 8;
 
   Eigen::MatrixXd P(2, 4);
-  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  bool success = tesseract::kinematics::dampedPInv(A, P, 1e-5, 0.01);
   EXPECT_TRUE(success);
   EXPECT_EQ(P.rows(), 2);
   EXPECT_EQ(P.cols(), 4);
@@ -479,7 +479,7 @@ TEST(TesseractKinematicsUnit, dampedPInv_UnderdeterminedMatrix)
   A << 1, 2, 3, 4, 5, 6, 7, 8;
 
   Eigen::MatrixXd P(4, 2);
-  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  bool success = tesseract::kinematics::dampedPInv(A, P, 1e-5, 0.01);
   EXPECT_TRUE(success);
   EXPECT_EQ(P.rows(), 4);
   EXPECT_EQ(P.cols(), 2);
@@ -490,7 +490,7 @@ TEST(TesseractKinematicsUnit, dampedPInv_EmptyMatrix)
 {
   Eigen::MatrixXd A;
   Eigen::MatrixXd P;
-  bool success = tesseract_kinematics::dampedPInv(A, P, 1e-5, 0.01);
+  bool success = tesseract::kinematics::dampedPInv(A, P, 1e-5, 0.01);
   EXPECT_FALSE(success);
 }
 

@@ -13,17 +13,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/utils.h>
 #include <tesseract_geometry/impl/sphere.h>
 
-using namespace tesseract_scene_graph;
-using namespace tesseract_srdf;
-using namespace tesseract_environment;
+using namespace tesseract::scene_graph;
+using namespace tesseract::srdf;
+using namespace tesseract::environment;
 
-SceneGraph::Ptr getSceneGraph(const tesseract_common::ResourceLocator& locator)
+SceneGraph::Ptr getSceneGraph(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf";
-  return tesseract_urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
+  return tesseract::urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
 }
 
-SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_common::ResourceLocator& locator)
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf";
 
@@ -33,13 +33,13 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_commo
   return srdf;
 }
 
-using CalcStateFn = std::function<tesseract_common::TransformMap(const Eigen::Ref<const Eigen::VectorXd>& state)>;
+using CalcStateFn = std::function<tesseract::common::TransformMap(const Eigen::Ref<const Eigen::VectorXd>& state)>;
 
 static void BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
                                                      const CalcStateFn& fn,
-                                                     const tesseract_common::TrajArray& traj)
+                                                     const tesseract::common::TrajArray& traj)
 {
-  tesseract_common::TransformMap transform_map;
+  tesseract::common::TransformMap transform_map;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
@@ -51,9 +51,9 @@ static void BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
 
 static void BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
                                                              const CalcStateFn& fn,
-                                                             const tesseract_common::TrajArray& traj)
+                                                             const tesseract::common::TrajArray& traj)
 {
-  tesseract_common::TransformMap transform_map;
+  tesseract::common::TransformMap transform_map;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
@@ -64,9 +64,9 @@ static void BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& s
 }
 
 static void BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
-                                                        const tesseract_scene_graph::StateSolver::Ptr& state_solver,
+                                                        const StateSolver::Ptr& state_solver,
                                                         const std::vector<std::string>& joint_names,
-                                                        const tesseract_common::TrajArray& traj,
+                                                        const tesseract::common::TrajArray& traj,
                                                         const std::string& link_name)
 {
   Eigen::MatrixXd jacobian;
@@ -81,9 +81,9 @@ static void BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
 
 static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state,
                                   const CalcStateFn& fn,
-                                  const tesseract_common::TrajArray& traj)
+                                  const tesseract::common::TrajArray& traj)
 {
-  tesseract_common::TransformMap transforms;
+  tesseract::common::TransformMap transforms;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
@@ -94,8 +94,8 @@ static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state,
 }
 
 static void BM_GET_JACOBIAN_MANIP(benchmark::State& state,
-                                  const tesseract_kinematics::JointGroup::ConstPtr& manip,
-                                  const tesseract_common::TrajArray& traj,
+                                  const tesseract::kinematics::JointGroup::ConstPtr& manip,
+                                  const tesseract::common::TrajArray& traj,
                                   const std::string& link_name)
 {
   Eigen::MatrixXd jacobian;
@@ -110,12 +110,12 @@ static void BM_GET_JACOBIAN_MANIP(benchmark::State& state,
 
 int main(int argc, char** argv)
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto env = std::make_shared<Environment>();
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph(locator);
+  SceneGraph::Ptr scene_graph = getSceneGraph(locator);
   auto srdf = getSRDFModel(*scene_graph, locator);
   env->init(*scene_graph, srdf);
-  env->setResourceLocator(std::make_shared<tesseract_common::GeneralResourceLocator>());
+  env->setResourceLocator(std::make_shared<tesseract::common::GeneralResourceLocator>());
 
   // Set the robot initial state
   std::vector<std::string> joint_names;
@@ -154,12 +154,12 @@ int main(int argc, char** argv)
   joint_pos_collision(5) = 1.4959;
   joint_pos_collision(6) = 0.0;
 
-  tesseract_common::TrajArray traj(5, joint_start_pos.size());
+  tesseract::common::TrajArray traj(5, joint_start_pos.size());
   for (int i = 0; i < joint_start_pos.size(); ++i)
     traj.col(i) = Eigen::VectorXd::LinSpaced(5, joint_start_pos(i), joint_end_pos(i));
 
-  tesseract_scene_graph::StateSolver::Ptr state_solver = env->getStateSolver();
-  tesseract_kinematics::JointGroup::ConstPtr joint_group = env->getJointGroup("manipulator");
+  StateSolver::Ptr state_solver = env->getStateSolver();
+  tesseract::kinematics::JointGroup::ConstPtr joint_group = env->getJointGroup("manipulator");
   std::string tip_link{ "tool0" };
 
   //////////////////////////////////////
@@ -167,13 +167,13 @@ int main(int argc, char** argv)
   //////////////////////////////////////
 
   {
-    tesseract_scene_graph::StateSolver::Ptr local_ss = state_solver->clone();
+    StateSolver::Ptr local_ss = state_solver->clone();
     CalcStateFn fn = [local_ss,
-                      joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract_common::TransformMap {
+                      joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::TransformMap {
       return local_ss->getState(joint_names, state).link_transforms;
     };
 
-    std::function<void(benchmark::State&, CalcStateFn, const tesseract_common::TrajArray&)> BM_GET_STATE_JN_JV_SS =
+    std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)> BM_GET_STATE_JN_JV_SS =
         BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS;
     std::string name = "BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS";
     benchmark::RegisterBenchmark(name.c_str(), BM_GET_STATE_JN_JV_SS, fn, traj)
@@ -181,14 +181,14 @@ int main(int argc, char** argv)
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }
   {
-    tesseract_scene_graph::StateSolver::Ptr local_ss = state_solver->clone();
+    StateSolver::Ptr local_ss = state_solver->clone();
     CalcStateFn fn = [local_ss,
-                      joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract_common::TransformMap {
+                      joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::TransformMap {
       local_ss->setState(joint_names, state);
       return local_ss->getState().link_transforms;
     };
 
-    std::function<void(benchmark::State&, CalcStateFn, const tesseract_common::TrajArray&)>
+    std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)>
         BM_SET_AND_GET_STATE_JN_JV_SS = BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS;
     std::string name = "BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS";
     benchmark::RegisterBenchmark(name.c_str(), BM_SET_AND_GET_STATE_JN_JV_SS, fn, traj)
@@ -197,9 +197,9 @@ int main(int argc, char** argv)
   }
   {
     std::function<void(benchmark::State&,
-                       tesseract_scene_graph::StateSolver::Ptr,
+                       StateSolver::Ptr,
                        std::vector<std::string>,
-                       const tesseract_common::TrajArray&,
+                       const tesseract::common::TrajArray&,
                        std::string)>
         BM_GET_JACOBIAN_JN_JV_SS = BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS;
     std::string name = "BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS";
@@ -208,11 +208,11 @@ int main(int argc, char** argv)
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }
   {
-    CalcStateFn fn = [joint_group](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract_common::TransformMap {
+    CalcStateFn fn = [joint_group](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::TransformMap {
       return joint_group->calcFwdKin(state);
     };
 
-    std::function<void(benchmark::State&, CalcStateFn, const tesseract_common::TrajArray&)> BM_CFK_MANIP =
+    std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)> BM_CFK_MANIP =
         BM_CALC_FWD_KIN_MANIP;
     std::string name = "BM_CALC_FWD_KIN_MANIP";
     benchmark::RegisterBenchmark(name.c_str(), BM_CFK_MANIP, fn, traj)
@@ -220,8 +220,10 @@ int main(int argc, char** argv)
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }
   {
-    std::function<void(
-        benchmark::State&, tesseract_kinematics::JointGroup::ConstPtr, const tesseract_common::TrajArray&, std::string)>
+    std::function<void(benchmark::State&,
+                       tesseract::kinematics::JointGroup::ConstPtr,
+                       const tesseract::common::TrajArray&,
+                       std::string)>
         BM_CJ_MANIP = BM_GET_JACOBIAN_MANIP;
     std::string name = "BM_GET_JACOBIAN_MANIP";
     benchmark::RegisterBenchmark(name.c_str(), BM_CJ_MANIP, joint_group, traj, tip_link)

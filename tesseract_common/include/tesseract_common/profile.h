@@ -27,7 +27,7 @@
 #include <memory>
 #include <typeindex>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class Profile;
 
@@ -69,8 +69,8 @@ protected:
 
 private:
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, Profile& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, Profile& obj);
 };
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_PROFILE_H

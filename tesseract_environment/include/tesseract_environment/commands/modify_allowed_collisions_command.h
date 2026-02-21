@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/command.h>
 #include <tesseract_common/allowed_collision_matrix.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 enum class ModifyAllowedCollisionsType
 {
@@ -53,21 +53,21 @@ public:
 
   ModifyAllowedCollisionsCommand();
 
-  ModifyAllowedCollisionsCommand(tesseract_common::AllowedCollisionMatrix acm, ModifyAllowedCollisionsType type);
+  ModifyAllowedCollisionsCommand(tesseract::common::AllowedCollisionMatrix acm, ModifyAllowedCollisionsType type);
 
   ModifyAllowedCollisionsType getModifyType() const;
-  const tesseract_common::AllowedCollisionMatrix& getAllowedCollisionMatrix() const;
+  const tesseract::common::AllowedCollisionMatrix& getAllowedCollisionMatrix() const;
 
   bool operator==(const ModifyAllowedCollisionsCommand& rhs) const;
   bool operator!=(const ModifyAllowedCollisionsCommand& rhs) const;
 
 private:
   ModifyAllowedCollisionsType type_{ ModifyAllowedCollisionsType::ADD };
-  tesseract_common::AllowedCollisionMatrix acm_;
+  tesseract::common::AllowedCollisionMatrix acm_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, ModifyAllowedCollisionsCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, ModifyAllowedCollisionsCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_MODIFY_ALLOWED_COLLISIONS_MATRIX_COMMAND_H

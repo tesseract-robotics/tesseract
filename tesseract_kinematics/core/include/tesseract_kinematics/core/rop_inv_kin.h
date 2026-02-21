@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/fwd.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 static const std::string DEFAULT_ROP_INV_KIN_SOLVER_NAME = "ROPInvKin";
 class ForwardKinematics;
@@ -71,8 +71,8 @@ public:
    * sampling resolutions
    * @return True if init() completes successfully
    */
-  ROPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const tesseract_scene_graph::SceneState& scene_state,
+  ROPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const tesseract::scene_graph::SceneState& scene_state,
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
             std::unique_ptr<ForwardKinematics> positioner,
@@ -92,8 +92,8 @@ public:
    * sampling resolutions
    * @return True if init() completes successfully
    */
-  ROPInvKin(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const tesseract_scene_graph::SceneState& scene_state,
+  ROPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const tesseract::scene_graph::SceneState& scene_state,
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
             std::unique_ptr<ForwardKinematics> positioner,
@@ -102,7 +102,7 @@ public:
             std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
 
   void calcInvKin(IKSolutions& solutions,
-                  const tesseract_common::TransformMap& tip_link_poses,
+                  const tesseract::common::TransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   std::vector<std::string> getJointNames() const override final;
@@ -125,8 +125,8 @@ private:
   std::vector<Eigen::VectorXd> dof_range_;
   std::string solver_name_{ DEFAULT_ROP_INV_KIN_SOLVER_NAME }; /**< @brief Name of this solver */
 
-  void init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const tesseract_scene_graph::SceneState& scene_state,
+  void init(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const tesseract::scene_graph::SceneState& scene_state,
             InverseKinematics::UPtr manipulator,
             double manipulator_reach,
             std::unique_ptr<ForwardKinematics> positioner,
@@ -136,20 +136,20 @@ private:
 
   /** @brief calcFwdKin helper function */
   void calcInvKinHelper(IKSolutions& solutions,
-                        const tesseract_common::TransformMap& tip_link_poses,
+                        const tesseract::common::TransformMap& tip_link_poses,
                         const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void nested_ik(IKSolutions& solutions,
                  int loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
-                 const tesseract_common::TransformMap& tip_link_poses,
+                 const tesseract::common::TransformMap& tip_link_poses,
                  Eigen::VectorXd& positioner_pose,
                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void ikAt(IKSolutions& solutions,
-            const tesseract_common::TransformMap& tip_link_poses,
+            const tesseract::common::TransformMap& tip_link_poses,
             Eigen::VectorXd& positioner_pose,
             const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 };
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_ROP_INVERSE_KINEMATICS_H

@@ -36,7 +36,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view ORIGIN_ELEMENT_NAME = "origin";
 
@@ -50,6 +50,6 @@ Eigen::Isometry3d parseOrigin(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement* writeOrigin(const Eigen::Isometry3d& origin, tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_ORIGIN_H

@@ -11,7 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/resource_locator.h>
 
-namespace tesseract_collision::test_suite
+namespace tesseract::collision::test_suite
 {
 namespace detail
 {
@@ -21,17 +21,17 @@ inline void addCollisionObjects(T& checker)
   /////////////////////////////////////////////////////////////////
   // Add Octomap
   /////////////////////////////////////////////////////////////////
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = locator.locateResource("package://tesseract_support/meshes/box_2m.bt")->getFilePath();
   auto ot = std::make_shared<octomap::OcTree>(path);
   CollisionShapePtr dense_octomap =
-      std::make_shared<tesseract_geometry::Octree>(ot, tesseract_geometry::OctreeSubType::BOX);
+      std::make_shared<tesseract::geometry::Octree>(ot, tesseract::geometry::OctreeSubType::BOX);
   Eigen::Isometry3d octomap_pose;
   octomap_pose.setIdentity();
   octomap_pose.translation() = Eigen::Vector3d(1.1, 0, 0);
 
   CollisionShapesConst obj1_shapes;
-  tesseract_common::VectorIsometry3d obj1_poses;
+  tesseract::common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(dense_octomap);
   obj1_poses.push_back(octomap_pose);
 
@@ -42,13 +42,13 @@ inline void addCollisionObjects(T& checker)
   /////////////////////////////////////////////////////////////////
   auto ot_b = std::make_shared<octomap::OcTree>(path);
   CollisionShapePtr dense_octomap_b =
-      std::make_shared<tesseract_geometry::Octree>(ot_b, tesseract_geometry::OctreeSubType::BOX);
+      std::make_shared<tesseract::geometry::Octree>(ot_b, tesseract::geometry::OctreeSubType::BOX);
   Eigen::Isometry3d octomap_pose_b;
   octomap_pose_b.setIdentity();
   octomap_pose_b.translation() = Eigen::Vector3d(-1.1, 0, 0);
 
   CollisionShapesConst obj2_shapes;
-  tesseract_common::VectorIsometry3d obj2_poses;
+  tesseract::common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(dense_octomap_b);
   obj2_poses.push_back(octomap_pose_b);
 
@@ -80,7 +80,7 @@ inline void runTestCompound(DiscreteContactManager& checker)
   std::vector<std::string> active_links{ "octomap1_link", "octomap2_link" };
   checker.setActiveCollisionObjects(active_links);
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -88,7 +88,7 @@ inline void runTestCompound(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.25, 1e-5);
 
   // Set the collision object transforms
-  tesseract_common::TransformMap location;
+  tesseract::common::TransformMap location;
   location["octomap1_link"] = Eigen::Isometry3d::Identity();
   location["octomap2_link"] = Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);
@@ -115,7 +115,7 @@ inline void runTestCompound(ContinuousContactManager& checker)
   std::vector<std::string> active_links{ "octomap1_link" };
   checker.setActiveCollisionObjects(active_links);
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -126,7 +126,7 @@ inline void runTestCompound(ContinuousContactManager& checker)
   checker.setCollisionMarginPair("octomap1_link", "octomap2_link", 0.25);
 
   // Set the collision object transforms
-  tesseract_common::TransformMap location;
+  tesseract::common::TransformMap location;
   location["octomap2_link"] = Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);
 
@@ -178,5 +178,5 @@ inline void runTest(DiscreteContactManager& checker)
   DiscreteContactManager::Ptr cloned_checker = checker.clone();
   detail::runTestCompound(*cloned_checker);
 }
-}  // namespace tesseract_collision::test_suite
+}  // namespace tesseract::collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_COMPOUND_COMPOUND_UNIT_HPP

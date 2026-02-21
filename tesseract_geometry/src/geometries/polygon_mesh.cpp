@@ -26,14 +26,14 @@
 #include <tesseract_geometry/impl/polygon_mesh.h>
 #include <tesseract_geometry/impl/mesh_material.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
-PolygonMesh::PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+PolygonMesh::PolygonMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
                          std::shared_ptr<const Eigen::VectorXi> faces,
-                         std::shared_ptr<const tesseract_common::Resource> resource,
+                         std::shared_ptr<const tesseract::common::Resource> resource,
                          const Eigen::Vector3d& scale,  // NOLINT
-                         std::shared_ptr<const tesseract_common::VectorVector3d> normals,
-                         std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                         std::shared_ptr<const tesseract::common::VectorVector3d> normals,
+                         std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors,
                          std::shared_ptr<MeshMaterial> mesh_material,
                          std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures,
                          GeometryType type)
@@ -56,13 +56,13 @@ PolygonMesh::PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d>
   }
 }
 
-PolygonMesh::PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+PolygonMesh::PolygonMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
                          std::shared_ptr<const Eigen::VectorXi> faces,
                          int face_count,
-                         tesseract_common::Resource::ConstPtr resource,
+                         tesseract::common::Resource::ConstPtr resource,
                          const Eigen::Vector3d& scale,  // NOLINT
-                         std::shared_ptr<const tesseract_common::VectorVector3d> normals,
-                         std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                         std::shared_ptr<const tesseract::common::VectorVector3d> normals,
+                         std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors,
                          MeshMaterial::Ptr mesh_material,
                          std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures,
                          GeometryType type)
@@ -80,7 +80,7 @@ PolygonMesh::PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d>
 {
 }
 
-const std::shared_ptr<const tesseract_common::VectorVector3d>& PolygonMesh::getVertices() const { return vertices_; }
+const std::shared_ptr<const tesseract::common::VectorVector3d>& PolygonMesh::getVertices() const { return vertices_; }
 
 const std::shared_ptr<const Eigen::VectorXi>& PolygonMesh::getFaces() const { return faces_; }
 
@@ -88,13 +88,13 @@ int PolygonMesh::getVertexCount() const { return vertex_count_; }
 
 int PolygonMesh::getFaceCount() const { return face_count_; }
 
-tesseract_common::Resource::ConstPtr PolygonMesh::getResource() const { return resource_; }
+tesseract::common::Resource::ConstPtr PolygonMesh::getResource() const { return resource_; }
 
 const Eigen::Vector3d& PolygonMesh::getScale() const { return scale_; }
 
-const std::shared_ptr<const tesseract_common::VectorVector3d>& PolygonMesh::getNormals() const { return normals_; }
+const std::shared_ptr<const tesseract::common::VectorVector3d>& PolygonMesh::getNormals() const { return normals_; }
 
-const std::shared_ptr<const tesseract_common::VectorVector4d>& PolygonMesh::getVertexColors() const
+const std::shared_ptr<const tesseract::common::VectorVector4d>& PolygonMesh::getVertexColors() const
 {
   return vertex_colors_;
 }
@@ -114,10 +114,10 @@ bool PolygonMesh::operator==(const PolygonMesh& rhs) const
   equal &= Geometry::operator==(rhs);
   equal &= vertex_count_ == rhs.vertex_count_;
   equal &= face_count_ == rhs.face_count_;
-  equal &= tesseract_common::almostEqualRelativeAndAbs(scale_, rhs.scale_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(scale_, rhs.scale_);
   /// @todo Finish PolygonMesh == operator
   return equal;
 }
 bool PolygonMesh::operator!=(const PolygonMesh& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkMaterialUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   Material m("test_material");
 
   EXPECT_EQ(m.getName(), "test_material");
@@ -28,7 +28,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkMaterialUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkInertiaUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   Inertial m;
 
   EXPECT_TRUE(m.origin.isApprox(Eigen::Isometry3d::Identity()));
@@ -62,7 +62,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkInertiaUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkVisualUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   Visual m;
 
   EXPECT_TRUE(m.origin.isApprox(Eigen::Isometry3d::Identity()));
@@ -73,7 +73,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkVisualUnit)  // NOLINT
   m.origin.translation() = Eigen::Vector3d(1, 2, 3);
   m.material = std::make_shared<Material>("test_material");
   m.material->color = Eigen::Vector4d(1, 1, 1, 1);
-  m.geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  m.geometry = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
   m.name = "test_visual";
   m.clear();
 
@@ -85,7 +85,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkVisualUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkCollisionUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   Collision m;
 
   EXPECT_TRUE(m.origin.isApprox(Eigen::Isometry3d::Identity()));
@@ -93,7 +93,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkCollisionUnit)  // NOLINT
   EXPECT_TRUE(m.name.empty());
 
   m.origin.translation() = Eigen::Vector3d(1, 2, 3);
-  m.geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  m.geometry = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
   m.name = "test_collision";
   m.clear();
 
@@ -104,7 +104,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkCollisionUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   Link l("test_link");
 
   EXPECT_EQ(l.getName(), "test_link");
@@ -123,13 +123,13 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkUnit)  // NOLINT
   v->origin.translation() = Eigen::Vector3d(1, 2, 3);
   v->material = std::make_shared<Material>("test_material");
   v->material->color = Eigen::Vector4d(1, 1, 1, 1);
-  v->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  v->geometry = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
   v->name = "test_visual";
   l.visual.push_back(v);
 
   Collision::Ptr c = std::make_shared<Collision>();
   c->origin.translation() = Eigen::Vector3d(1, 2, 3);
-  c->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  c->geometry = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
   c->name = "test_collision";
   l.collision.push_back(c);
 

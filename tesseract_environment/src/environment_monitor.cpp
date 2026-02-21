@@ -28,7 +28,7 @@
 #include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_kinematics/core/kinematic_group.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 EnvironmentMonitor::EnvironmentMonitor(std::string monitor_namespace) : monitor_namespace_(std::move(monitor_namespace))
 {
@@ -48,4 +48,4 @@ const Environment& EnvironmentMonitor::environment() const { return *env_; }
 std::shared_ptr<Environment> EnvironmentMonitor::getEnvironment() { return env_; }
 
 std::shared_ptr<const Environment> EnvironmentMonitor::getEnvironment() const { return env_; }
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision
 {
 TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
 {
@@ -60,7 +60,7 @@ TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
   return config_info;
 }
 
-std::unique_ptr<tesseract_collision::DiscreteContactManager>
+std::unique_ptr<tesseract::collision::DiscreteContactManager>
 BulletDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Node& config) const
 {
   return std::make_unique<BulletDiscreteBVHManager>(name, getConfigInfo(config));
@@ -86,18 +86,16 @@ std::unique_ptr<ContinuousContactManager> BulletCastSimpleManagerFactory::create
 
 PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
 
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletDiscreteBVHManagerFactory,
+TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(tesseract::collision::BulletDiscreteBVHManagerFactory,
                                       BulletDiscreteBVHManagerFactory);
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(
-    tesseract_collision::tesseract_collision_bullet::BulletDiscreteSimpleManagerFactory,
-    BulletDiscreteSimpleManagerFactory);
+TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(tesseract::collision::BulletDiscreteSimpleManagerFactory,
+                                      BulletDiscreteSimpleManagerFactory);
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletCastBVHManagerFactory,
-                                        BulletCastBVHManagerFactory);
+TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(tesseract::collision::BulletCastBVHManagerFactory, BulletCastBVHManagerFactory);
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletCastSimpleManagerFactory,
+TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(tesseract::collision::BulletCastSimpleManagerFactory,
                                         BulletCastSimpleManagerFactory);

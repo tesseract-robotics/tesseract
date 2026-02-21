@@ -42,10 +42,12 @@
 
 extern btScalar gDbvtMargin;  // NOLINT
 
-namespace tesseract_collision::tesseract_collision_bullet
+using namespace tesseract::collision::bullet_internal;
+
+namespace tesseract::collision
 {
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
-static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
+static const tesseract::common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
 
 BulletDiscreteBVHManager::BulletDiscreteBVHManager(std::string name, TesseractCollisionConfigurationInfo config_info)
   : name_(std::move(name)), config_info_(std::move(config_info)), coll_config_(config_info_)
@@ -107,7 +109,7 @@ DiscreteContactManager::UPtr BulletDiscreteBVHManager::clone() const
 bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                   const int& mask_id,
                                                   const CollisionShapesConst& shapes,
-                                                  const tesseract_common::VectorIsometry3d& shape_poses,
+                                                  const tesseract::common::VectorIsometry3d& shape_poses,
                                                   bool enabled)
 {
   if (link2cow_.find(name) != link2cow_.end())
@@ -132,7 +134,7 @@ const CollisionShapesConst& BulletDiscreteBVHManager::getCollisionObjectGeometri
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
-const tesseract_common::VectorIsometry3d&
+const tesseract::common::VectorIsometry3d&
 BulletDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
   auto cow = link2cow_.find(name);
@@ -215,14 +217,14 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::string& n
 }
 
 void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                            const tesseract_common::VectorIsometry3d& poses)
+                                                            const tesseract::common::VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0U; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], poses[i]);
 }
 
-void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms)
+void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms)
 {
   for (const auto& transform : transforms)
     setCollisionObjectsTransform(transform.first, transform.second);
@@ -284,11 +286,11 @@ void BulletDiscreteBVHManager::incrementCollisionMargin(double increment)
 }
 
 void BulletDiscreteBVHManager::setContactAllowedValidator(
-    std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
+    std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator)
 {
   contact_test_data_.validator = std::move(validator);
 }
-std::shared_ptr<const tesseract_common::ContactAllowedValidator>
+std::shared_ptr<const tesseract::common::ContactAllowedValidator>
 BulletDiscreteBVHManager::getContactAllowedValidator() const
 {
   return contact_test_data_.validator;
@@ -331,4 +333,4 @@ void BulletDiscreteBVHManager::onCollisionMarginDataChanged()
     updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 }
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision

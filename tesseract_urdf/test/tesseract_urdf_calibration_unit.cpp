@@ -12,68 +12,70 @@ TEST(TesseractURDFUnit, parse_calibration)  // NOLINT
 {
   {
     std::string str = R"(<calibration rising="1" falling="2" extra="0 0 0"/>)";
-    tesseract_scene_graph::JointCalibration::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointCalibration::Ptr>(
-        elem, &tesseract_urdf::parseCalibration, str, tesseract_urdf::CALIBRATION_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointCalibration::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointCalibration::Ptr>(
+        elem, &tesseract::urdf::parseCalibration, str, tesseract::urdf::CALIBRATION_ELEMENT_NAME.data()));
     EXPECT_NEAR(elem->rising, 1, 1e-8);
     EXPECT_NEAR(elem->falling, 2, 1e-8);
   }
 
   {
     std::string str = R"(<calibration rising="1"/>)";
-    tesseract_scene_graph::JointCalibration::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointCalibration::Ptr>(
-        elem, &tesseract_urdf::parseCalibration, str, tesseract_urdf::CALIBRATION_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointCalibration::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointCalibration::Ptr>(
+        elem, &tesseract::urdf::parseCalibration, str, tesseract::urdf::CALIBRATION_ELEMENT_NAME.data()));
     EXPECT_NEAR(elem->rising, 1, 1e-8);
     EXPECT_NEAR(elem->falling, 0, 1e-8);
   }
 
   {
     std::string str = R"(<calibration falling="2"/>)";
-    tesseract_scene_graph::JointCalibration::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointCalibration::Ptr>(
-        elem, &tesseract_urdf::parseCalibration, str, tesseract_urdf::CALIBRATION_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointCalibration::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointCalibration::Ptr>(
+        elem, &tesseract::urdf::parseCalibration, str, tesseract::urdf::CALIBRATION_ELEMENT_NAME.data()));
     EXPECT_NEAR(elem->rising, 0, 1e-8);
     EXPECT_NEAR(elem->falling, 2, 1e-8);
   }
 
   {
     std::string str = R"(<calibration rising="a" falling="2"/>)";
-    tesseract_scene_graph::JointCalibration::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::JointCalibration::Ptr>(
-        elem, &tesseract_urdf::parseCalibration, str, tesseract_urdf::CALIBRATION_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointCalibration::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointCalibration::Ptr>(
+        elem, &tesseract::urdf::parseCalibration, str, tesseract::urdf::CALIBRATION_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<calibration rising="1" falling="b"/>)";
-    tesseract_scene_graph::JointCalibration::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::JointCalibration::Ptr>(
-        elem, &tesseract_urdf::parseCalibration, str, tesseract_urdf::CALIBRATION_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointCalibration::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointCalibration::Ptr>(
+        elem, &tesseract::urdf::parseCalibration, str, tesseract::urdf::CALIBRATION_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = "<calibration/>";
-    tesseract_scene_graph::JointCalibration::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::JointCalibration::Ptr>(
-        elem, &tesseract_urdf::parseCalibration, str, tesseract_urdf::CALIBRATION_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointCalibration::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointCalibration::Ptr>(
+        elem, &tesseract::urdf::parseCalibration, str, tesseract::urdf::CALIBRATION_ELEMENT_NAME.data()));
   }
 }
 
 TEST(TesseractURDFUnit, write_calibration)  // NOLINT
 {
   {
-    tesseract_scene_graph::JointCalibration::Ptr cal = std::make_shared<tesseract_scene_graph::JointCalibration>();
+    tesseract::scene_graph::JointCalibration::Ptr cal = std::make_shared<tesseract::scene_graph::JointCalibration>();
     cal->rising = 5.0;
     cal->falling = 3.0;
     std::string text;
-    EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointCalibration::Ptr>(cal, &tesseract_urdf::writeCalibration, text));
+    EXPECT_EQ(0,
+              writeTest<tesseract::scene_graph::JointCalibration::Ptr>(cal, &tesseract::urdf::writeCalibration, text));
     EXPECT_NE(text, "");
   }
 
   {
-    tesseract_scene_graph::JointCalibration::Ptr cal = nullptr;
+    tesseract::scene_graph::JointCalibration::Ptr cal = nullptr;
     std::string text;
-    EXPECT_EQ(1, writeTest<tesseract_scene_graph::JointCalibration::Ptr>(cal, &tesseract_urdf::writeCalibration, text));
+    EXPECT_EQ(1,
+              writeTest<tesseract::scene_graph::JointCalibration::Ptr>(cal, &tesseract::urdf::writeCalibration, text));
     EXPECT_EQ(text, "");
   }
 }

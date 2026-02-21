@@ -33,10 +33,10 @@
 #include <iostream>
 #include <iomanip>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 bool writeSimplePlyFile(const std::string& path,
-                        const tesseract_common::VectorVector3d& vertices,
+                        const tesseract::common::VectorVector3d& vertices,
                         const std::vector<Eigen::Vector3i>& vectices_color,
                         const Eigen::VectorXi& faces,
                         int num_faces)
@@ -142,7 +142,7 @@ bool writeSimplePlyFile(const std::string& path,
 }
 
 bool writeSimplePlyFile(const std::string& path,
-                        const tesseract_common::VectorVector3d& vertices,
+                        const tesseract::common::VectorVector3d& vertices,
                         const Eigen::VectorXi& faces,
                         int num_faces)
 {
@@ -151,7 +151,7 @@ bool writeSimplePlyFile(const std::string& path,
 }
 
 int loadSimplePlyFile(const std::string& path,
-                      tesseract_common::VectorVector3d& vertices,
+                      tesseract::common::VectorVector3d& vertices,
                       Eigen::VectorXi& faces,
                       bool triangles_only)
 {
@@ -288,4 +288,4 @@ int loadSimplePlyFile(const std::string& path,
   return static_cast<int>(num_faces);
 }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

@@ -27,13 +27,13 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 AddTrajectoryLinkCommand::AddTrajectoryLinkCommand() : Command(CommandType::ADD_TRAJECTORY_LINK) {}
 
 AddTrajectoryLinkCommand::AddTrajectoryLinkCommand(std::string link_name,
                                                    std::string parent_link_name,
-                                                   tesseract_common::JointTrajectory trajectory,
+                                                   tesseract::common::JointTrajectory trajectory,
                                                    bool replace_allowed,
                                                    Method method)
   : Command(CommandType::ADD_TRAJECTORY_LINK)
@@ -47,7 +47,7 @@ AddTrajectoryLinkCommand::AddTrajectoryLinkCommand(std::string link_name,
 
 const std::string& AddTrajectoryLinkCommand::getLinkName() const { return link_name_; }
 const std::string& AddTrajectoryLinkCommand::getParentLinkName() const { return parent_link_name_; }
-const tesseract_common::JointTrajectory& AddTrajectoryLinkCommand::getTrajectory() const { return trajectory_; }
+const tesseract::common::JointTrajectory& AddTrajectoryLinkCommand::getTrajectory() const { return trajectory_; }
 bool AddTrajectoryLinkCommand::replaceAllowed() const { return replace_allowed_; }
 AddTrajectoryLinkCommand::Method AddTrajectoryLinkCommand::getMethod() const { return method_; }
 
@@ -64,4 +64,4 @@ bool AddTrajectoryLinkCommand::operator==(const AddTrajectoryLinkCommand& rhs) c
 }
 bool AddTrajectoryLinkCommand::operator!=(const AddTrajectoryLinkCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

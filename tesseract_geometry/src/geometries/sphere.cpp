@@ -23,7 +23,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_geometry/impl/sphere.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 Sphere::Sphere(double r) : Geometry(GeometryType::SPHERE), r_(r) {}
 
@@ -35,9 +35,9 @@ bool Sphere::operator==(const Sphere& rhs) const
 {
   bool equal = true;
   equal &= Geometry::operator==(rhs);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(r_, rhs.r_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(r_, rhs.r_);
   return equal;
 }
 bool Sphere::operator!=(const Sphere& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

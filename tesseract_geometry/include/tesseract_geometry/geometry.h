@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 enum class GeometryType : std::uint8_t
 {
@@ -97,11 +97,11 @@ private:
   boost::uuids::uuid uuid_{};
 
   template <class Archive>
-  friend void ::tesseract_geometry::serialize(Archive& ar, Geometry& obj);
+  friend void ::tesseract::geometry::serialize(Archive& ar, Geometry& obj);
 };
 
 using Geometrys = std::vector<Geometry::Ptr>;
 using GeometrysConst = std::vector<Geometry::ConstPtr>;
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif  // TESSERACT_GEOMETRY_GEOMETRY_H

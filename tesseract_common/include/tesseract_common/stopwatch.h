@@ -29,7 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <chrono>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_common
+namespace tesseract::common
 {
 /** @brief A simple stopwatch class leveraging chrono high resolution clock */
 class Stopwatch
@@ -62,5 +62,5 @@ private:
   std::chrono::time_point<Clock> end_time_;
   bool running_{ false };
 };
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 #endif  // TESSERACT_COMMON_TIMER_H

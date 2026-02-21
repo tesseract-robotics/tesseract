@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/vhacd/convex_decomposition_vhacd.h>
 #include <tesseract_geometry/impl/convex_mesh.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 class ProgressCallback : public VHACD::IVHACD::IUserCallback
 {
@@ -39,8 +39,8 @@ private:
 
 ConvexDecompositionVHACD::ConvexDecompositionVHACD(const VHACDParameters& params) : params_(params) {}
 
-std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh> >
-ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertices,
+std::vector<std::shared_ptr<tesseract::geometry::ConvexMesh> >
+ConvexDecompositionVHACD::compute(const tesseract::common::VectorVector3d& vertices,
                                   const Eigen::VectorXi& faces,
                                   bool verbose) const
 {
@@ -92,7 +92,7 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
                                      static_cast<unsigned int>(triangles_local.size() / 3),
                                      par);
 
-  std::vector<tesseract_geometry::ConvexMesh::Ptr> output;
+  std::vector<tesseract::geometry::ConvexMesh::Ptr> output;
   if (res)
   {
     unsigned int num_convex_hulls = interfaceVHACD->GetNConvexHulls();
@@ -101,7 +101,7 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
     {
       interfaceVHACD->GetConvexHull(p, ch);
 
-      auto vhacd_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+      auto vhacd_vertices = std::make_shared<tesseract::common::VectorVector3d>();
       vhacd_vertices->reserve(ch.m_points.size());
       for (const auto& m_point : ch.m_points)
       {
@@ -109,10 +109,10 @@ ConvexDecompositionVHACD::compute(const tesseract_common::VectorVector3d& vertic
         vhacd_vertices->push_back(v);
       }
 
-      auto ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+      auto ch_vertices = std::make_shared<tesseract::common::VectorVector3d>();
       auto ch_faces = std::make_shared<Eigen::VectorXi>();
-      int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, *vhacd_vertices);
-      output.push_back(std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces));
+      int ch_num_faces = tesseract::collision::createConvexHull(*ch_vertices, *ch_faces, *vhacd_vertices);
+      output.push_back(std::make_shared<tesseract::geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces));
     }
   }
   else
@@ -157,4 +157,4 @@ void VHACDParameters::print() const
   std::cout << msg.str();
 }
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision

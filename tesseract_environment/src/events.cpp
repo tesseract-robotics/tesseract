@@ -26,7 +26,7 @@
 #include <tesseract_environment/command.h>
 #include <tesseract_scene_graph/scene_state.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 Event::Event(Events type) : type(type) {}
 
@@ -35,8 +35,8 @@ CommandAppliedEvent::CommandAppliedEvent(const std::vector<std::shared_ptr<const
 {
 }
 
-SceneStateChangedEvent::SceneStateChangedEvent(const tesseract_scene_graph::SceneState& state)
+SceneStateChangedEvent::SceneStateChangedEvent(const tesseract::scene_graph::SceneState& state)
   : Event(Events::SCENE_STATE_CHANGED), state(state)
 {
 }
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

@@ -7,7 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
 #include "state_solver_test_suite.h"
 
-using namespace tesseract_scene_graph;
+using namespace tesseract::scene_graph;
 
 // Most of OFKT is tested in the tesseract_environment_unit.cpp
 TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT

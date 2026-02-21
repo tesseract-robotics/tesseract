@@ -28,24 +28,24 @@
 
 #include <memory>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 AddLinkCommand::AddLinkCommand() : Command(CommandType::ADD_LINK) {}
 
-AddLinkCommand::AddLinkCommand(const tesseract_scene_graph::Link& link, bool replace_allowed)
+AddLinkCommand::AddLinkCommand(const tesseract::scene_graph::Link& link, bool replace_allowed)
   : Command(CommandType::ADD_LINK)
-  , link_(std::make_shared<tesseract_scene_graph::Link>(link.clone()))
+  , link_(std::make_shared<tesseract::scene_graph::Link>(link.clone()))
   , joint_(nullptr)
   , replace_allowed_(replace_allowed)
 {
 }
 
-AddLinkCommand::AddLinkCommand(const tesseract_scene_graph::Link& link,
-                               const tesseract_scene_graph::Joint& joint,
+AddLinkCommand::AddLinkCommand(const tesseract::scene_graph::Link& link,
+                               const tesseract::scene_graph::Joint& joint,
                                bool replace_allowed)
   : Command(CommandType::ADD_LINK)
-  , link_(std::make_shared<tesseract_scene_graph::Link>(link.clone()))
-  , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
+  , link_(std::make_shared<tesseract::scene_graph::Link>(link.clone()))
+  , joint_(std::make_shared<tesseract::scene_graph::Joint>(joint.clone()))
   , replace_allowed_(replace_allowed)
 {
   if (joint_->child_link_name != link.getName())
@@ -55,19 +55,19 @@ AddLinkCommand::AddLinkCommand(const tesseract_scene_graph::Link& link,
   /** @todo if joint is not fixed we should verify that limits are provided */
 }
 
-const std::shared_ptr<const tesseract_scene_graph::Link>& AddLinkCommand::getLink() const { return link_; }
-const std::shared_ptr<const tesseract_scene_graph::Joint>& AddLinkCommand::getJoint() const { return joint_; }
+const std::shared_ptr<const tesseract::scene_graph::Link>& AddLinkCommand::getLink() const { return link_; }
+const std::shared_ptr<const tesseract::scene_graph::Joint>& AddLinkCommand::getJoint() const { return joint_; }
 bool AddLinkCommand::replaceAllowed() const { return replace_allowed_; }
 
 bool AddLinkCommand::operator==(const AddLinkCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= tesseract_common::pointersEqual(link_, rhs.link_);
-  equal &= tesseract_common::pointersEqual(joint_, rhs.joint_);
+  equal &= tesseract::common::pointersEqual(link_, rhs.link_);
+  equal &= tesseract::common::pointersEqual(joint_, rhs.joint_);
   equal &= replace_allowed_ == rhs.replace_allowed_;
   return equal;
 }
 bool AddLinkCommand::operator!=(const AddLinkCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

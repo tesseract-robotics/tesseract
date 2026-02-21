@@ -40,10 +40,12 @@
 #include <tesseract_collision/bullet/bullet_cast_simple_manager.h>
 #include <tesseract_common/contact_allowed_validator.h>
 
-namespace tesseract_collision::tesseract_collision_bullet
+using namespace tesseract::collision::bullet_internal;
+
+namespace tesseract::collision
 {
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
-static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
+static const tesseract::common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
 
 BulletCastSimpleManager::BulletCastSimpleManager(std::string name, TesseractCollisionConfigurationInfo config_info)
   : name_(std::move(name)), config_info_(std::move(config_info)), coll_config_(config_info_)
@@ -91,7 +93,7 @@ ContinuousContactManager::UPtr BulletCastSimpleManager::clone() const
 bool BulletCastSimpleManager::addCollisionObject(const std::string& name,
                                                  const int& mask_id,
                                                  const CollisionShapesConst& shapes,
-                                                 const tesseract_common::VectorIsometry3d& shape_poses,
+                                                 const tesseract::common::VectorIsometry3d& shape_poses,
                                                  bool enabled)
 {
   if (link2cow_.find(name) != link2cow_.end())
@@ -116,7 +118,7 @@ const CollisionShapesConst& BulletCastSimpleManager::getCollisionObjectGeometrie
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
-const tesseract_common::VectorIsometry3d&
+const tesseract::common::VectorIsometry3d&
 BulletCastSimpleManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
   auto cow = link2cow_.find(name);
@@ -192,14 +194,14 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                           const tesseract_common::VectorIsometry3d& poses)
+                                                           const tesseract::common::VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0U; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], poses[i]);
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms)
+void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms)
 {
   for (const auto& transform : transforms)
     setCollisionObjectsTransform(transform.first, transform.second);
@@ -275,8 +277,8 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                           const tesseract_common::VectorIsometry3d& pose1,
-                                                           const tesseract_common::VectorIsometry3d& pose2)
+                                                           const tesseract::common::VectorIsometry3d& pose1,
+                                                           const tesseract::common::VectorIsometry3d& pose2)
 {
   assert(names.size() == pose1.size());
   assert(names.size() == pose2.size());
@@ -284,8 +286,8 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1,
-                                                           const tesseract_common::TransformMap& pose2)
+void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::TransformMap& pose1,
+                                                           const tesseract::common::TransformMap& pose2)
 {
   assert(pose1.size() == pose2.size());
   auto it1 = pose1.begin();
@@ -375,11 +377,11 @@ void BulletCastSimpleManager::incrementCollisionMargin(double increment)
 }
 
 void BulletCastSimpleManager::setContactAllowedValidator(
-    std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
+    std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator)
 {
   contact_test_data_.validator = std::move(validator);
 }
-std::shared_ptr<const tesseract_common::ContactAllowedValidator>
+std::shared_ptr<const tesseract::common::ContactAllowedValidator>
 BulletCastSimpleManager::getContactAllowedValidator() const
 {
   return contact_test_data_.validator;
@@ -490,4 +492,4 @@ void BulletCastSimpleManager::onCollisionMarginDataChanged()
   }
 }
 
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision

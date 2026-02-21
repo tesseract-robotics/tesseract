@@ -18,17 +18,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_srdf/srdf_model.h>
 
-using namespace tesseract_scene_graph;
-using namespace tesseract_srdf;
-using namespace tesseract_environment;
+using namespace tesseract::scene_graph;
+using namespace tesseract::srdf;
+using namespace tesseract::environment;
 
-SceneGraph::Ptr getSceneGraph(const tesseract_common::ResourceLocator& locator)
+SceneGraph::Ptr getSceneGraph(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/boxbot.urdf";
-  return tesseract_urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
+  return tesseract::urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
 }
 
-SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_common::ResourceLocator& locator)
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/boxbot.srdf";
 
@@ -41,9 +41,9 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_commo
 void addLink(Environment& env)
 {
   auto visual = std::make_shared<Visual>();
-  visual->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  visual->geometry = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
   auto collision = std::make_shared<Collision>();
-  collision->geometry = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  collision->geometry = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
 
   Link link_1("link_n1");
   link_1.visual.push_back(visual);
@@ -59,7 +59,7 @@ void addLink(Environment& env)
 
 TEST(TesseractEnvironmentCache, defaultEnvironmentCacheTest)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraph(locator);
   EXPECT_TRUE(scene_graph != nullptr);
 

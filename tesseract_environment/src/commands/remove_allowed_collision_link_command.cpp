@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 RemoveAllowedCollisionLinkCommand::RemoveAllowedCollisionLinkCommand()
   : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK)
@@ -52,4 +52,4 @@ bool RemoveAllowedCollisionLinkCommand::operator!=(const RemoveAllowedCollisionL
   return !operator==(rhs);
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

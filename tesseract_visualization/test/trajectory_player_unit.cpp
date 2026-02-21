@@ -30,10 +30,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/trajectory_player.h>
 #include <tesseract_visualization/trajectory_interpolator.h>
 
-void CheckTrajectory(const tesseract_common::JointTrajectory& trajectory, int first, int last)
+void CheckTrajectory(const tesseract::common::JointTrajectory& trajectory, int first, int last)
 {
-  using namespace tesseract_visualization;
-  using namespace tesseract_common;
+  using namespace tesseract::visualization;
+  using namespace tesseract::common;
 
   TrajectoryPlayer player;
   player.setTrajectory(trajectory);
@@ -96,8 +96,8 @@ void CheckTrajectory(const tesseract_common::JointTrajectory& trajectory, int fi
 
 TEST(TesseracTrajectoryPlayerUnit, TrajectoryUntimedTest)  // NOLINT
 {
-  using namespace tesseract_visualization;
-  using namespace tesseract_common;
+  using namespace tesseract::visualization;
+  using namespace tesseract::common;
 
   std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   JointTrajectory trajectory;
@@ -133,8 +133,8 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryUntimedTest)  // NOLINT
 
 TEST(TesseracTrajectoryPlayerUnit, TrajectoryTimedTest)  // NOLINT
 {
-  using namespace tesseract_visualization;
-  using namespace tesseract_common;
+  using namespace tesseract::visualization;
+  using namespace tesseract::common;
 
   std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   JointTrajectory trajectory;
@@ -156,8 +156,8 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTimedTest)  // NOLINT
 
 TEST(TesseracTrajectoryPlayerUnit, TrajectoryNonzeroStartTest)  // NOLINT
 {
-  using namespace tesseract_visualization;
-  using namespace tesseract_common;
+  using namespace tesseract::visualization;
+  using namespace tesseract::common;
 
   std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   JointTrajectory trajectory;
@@ -178,8 +178,8 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryNonzeroStartTest)  // NOLINT
 
 TEST(TesseracTrajectoryInterpolatorUnit, TrajectoryInterpolatorTest)  // NOLINT
 {
-  using namespace tesseract_visualization;
-  using namespace tesseract_common;
+  using namespace tesseract::visualization;
+  using namespace tesseract::common;
 
   std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   JointTrajectory trajectory;

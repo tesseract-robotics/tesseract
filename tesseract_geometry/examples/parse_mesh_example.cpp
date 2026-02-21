@@ -4,12 +4,12 @@
 #include <tesseract_common/resource_locator.h>
 #include <iostream>
 
-using namespace tesseract_geometry;
+using namespace tesseract::geometry;
 
 int main(int /*argc*/, char** /*argv*/)
 {
   // documentation:start:1: Create meshes
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string mesh_file = "package://tesseract_support/meshes/sphere_p25m.dae";
   std::vector<Mesh::Ptr> meshes = createMeshFromPath<Mesh>(locator.locateResource(mesh_file)->getFilePath());
   // documentation:end:1: Create meshes

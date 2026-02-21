@@ -38,7 +38,7 @@ class OcTree;
 class OcTreeNode;
 }  // namespace octomap
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 enum class OctreeSubType : std::uint8_t
 {
@@ -110,7 +110,7 @@ private:
                           unsigned int& num_pruned);
 
   template <class Archive>
-  friend void ::tesseract_geometry::serialize(Archive& ar, Octree& obj);
+  friend void ::tesseract::geometry::serialize(Archive& ar, Octree& obj);
 
 public:
   /**
@@ -123,6 +123,6 @@ public:
    */
   static void prune(octomap::OcTree& octree);
 };
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif

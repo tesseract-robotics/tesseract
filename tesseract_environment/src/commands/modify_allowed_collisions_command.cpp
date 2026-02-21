@@ -23,18 +23,18 @@
 
 #include <tesseract_environment/commands/modify_allowed_collisions_command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 ModifyAllowedCollisionsCommand::ModifyAllowedCollisionsCommand() : Command(CommandType::MODIFY_ALLOWED_COLLISIONS) {}
 
-ModifyAllowedCollisionsCommand::ModifyAllowedCollisionsCommand(tesseract_common::AllowedCollisionMatrix acm,
+ModifyAllowedCollisionsCommand::ModifyAllowedCollisionsCommand(tesseract::common::AllowedCollisionMatrix acm,
                                                                ModifyAllowedCollisionsType type)
   : Command(CommandType::MODIFY_ALLOWED_COLLISIONS), type_(type), acm_(std::move(acm))
 {
 }
 
 ModifyAllowedCollisionsType ModifyAllowedCollisionsCommand::getModifyType() const { return type_; }
-const tesseract_common::AllowedCollisionMatrix& ModifyAllowedCollisionsCommand::getAllowedCollisionMatrix() const
+const tesseract::common::AllowedCollisionMatrix& ModifyAllowedCollisionsCommand::getAllowedCollisionMatrix() const
 {
   return acm_;
 }
@@ -52,4 +52,4 @@ bool ModifyAllowedCollisionsCommand::operator!=(const ModifyAllowedCollisionsCom
   return !operator==(rhs);
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

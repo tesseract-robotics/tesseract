@@ -23,7 +23,7 @@
 
 #include <tesseract_environment/command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 Command::Command(CommandType type) : type_(type) {}
 
@@ -35,4 +35,4 @@ bool Command::operator==(const Command& rhs) const
 }
 bool Command::operator!=(const Command& rhs) const { return !operator==(rhs); }  // LCOV_EXCL_LINE
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

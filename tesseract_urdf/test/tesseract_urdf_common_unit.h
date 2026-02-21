@@ -35,7 +35,7 @@ bool runTest(ElementType& type,
   }
   catch (const std::exception& e)
   {
-    tesseract_common::printNestedException(e);
+    tesseract::common::printNestedException(e);
     return false;
   }
 
@@ -45,10 +45,10 @@ bool runTest(ElementType& type,
 template <typename ElementType>
 bool runTest(
     ElementType& type,
-    std::function<ElementType(const tinyxml2::XMLElement*, const tesseract_common::ResourceLocator&, bool)> func,
+    std::function<ElementType(const tinyxml2::XMLElement*, const tesseract::common::ResourceLocator&, bool)> func,
     const std::string& xml_string,
     const std::string& element_name,
-    const tesseract_common::ResourceLocator& locator,
+    const tesseract::common::ResourceLocator& locator,
     bool visual)
 {
   tinyxml2::XMLDocument xml_doc;
@@ -63,7 +63,7 @@ bool runTest(
   }
   catch (const std::exception& e)
   {
-    tesseract_common::printNestedException(e);
+    tesseract::common::printNestedException(e);
     return false;
   }
 
@@ -72,10 +72,10 @@ bool runTest(
 
 template <typename ElementType>
 bool runTest(ElementType& type,
-             std::function<ElementType(const tinyxml2::XMLElement*, const tesseract_common::ResourceLocator&)> func,
+             std::function<ElementType(const tinyxml2::XMLElement*, const tesseract::common::ResourceLocator&)> func,
              const std::string& xml_string,
              const std::string& element_name,
-             const tesseract_common::ResourceLocator& locator)
+             const tesseract::common::ResourceLocator& locator)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -89,7 +89,7 @@ bool runTest(ElementType& type,
   }
   catch (const std::exception& e)
   {
-    tesseract_common::printNestedException(e);
+    tesseract::common::printNestedException(e);
     return false;
   }
 
@@ -99,12 +99,12 @@ bool runTest(ElementType& type,
 template <typename ElementType>
 bool runTest(ElementType& type,
              std::function<ElementType(const tinyxml2::XMLElement*,
-                                       const tesseract_common::ResourceLocator&,
-                                       std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>&)> func,
+                                       const tesseract::common::ResourceLocator&,
+                                       std::unordered_map<std::string, tesseract::scene_graph::Material::Ptr>&)> func,
              const std::string& xml_string,
              const std::string& element_name,
-             const tesseract_common::ResourceLocator& locator,
-             std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+             const tesseract::common::ResourceLocator& locator,
+             std::unordered_map<std::string, tesseract::scene_graph::Material::Ptr>& available_materials)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -118,7 +118,7 @@ bool runTest(ElementType& type,
   }
   catch (const std::exception& e)
   {
-    tesseract_common::printNestedException(e);
+    tesseract::common::printNestedException(e);
     return false;
   }
 
@@ -128,11 +128,11 @@ bool runTest(ElementType& type,
 template <typename ElementType>
 bool runTest(ElementType& type,
              std::function<ElementType(const tinyxml2::XMLElement*,
-                                       std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>&,
+                                       std::unordered_map<std::string, tesseract::scene_graph::Material::Ptr>&,
                                        bool)> func,
              const std::string& xml_string,
              const std::string& element_name,
-             std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
+             std::unordered_map<std::string, tesseract::scene_graph::Material::Ptr>& available_materials,
              const bool visual)
 {
   tinyxml2::XMLDocument xml_doc;
@@ -147,7 +147,7 @@ bool runTest(ElementType& type,
   }
   catch (const std::exception& e)
   {
-    tesseract_common::printNestedException(e);
+    tesseract::common::printNestedException(e);
     return false;
   }
 

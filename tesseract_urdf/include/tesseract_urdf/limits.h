@@ -38,7 +38,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view LIMITS_ELEMENT_NAME = "limit";
 
@@ -48,11 +48,11 @@ static constexpr std::string_view LIMITS_ELEMENT_NAME = "limit";
  * @param version The version number
  * @return A Tesseract JointLimits
  */
-std::shared_ptr<tesseract_scene_graph::JointLimits> parseLimits(const tinyxml2::XMLElement* xml_element);
+std::shared_ptr<tesseract::scene_graph::JointLimits> parseLimits(const tinyxml2::XMLElement* xml_element);
 
-tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract_scene_graph::JointLimits>& limits,
+tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract::scene_graph::JointLimits>& limits,
                                   tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_LIMITS_H

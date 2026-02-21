@@ -42,14 +42,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/collision_margin_data.h>
 #include <tesseract_geometry/fwd.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
-using CollisionShapeConstPtr = std::shared_ptr<const tesseract_geometry::Geometry>;
-using CollisionShapePtr = std::shared_ptr<tesseract_geometry::Geometry>;
+using CollisionShapeConstPtr = std::shared_ptr<const tesseract::geometry::Geometry>;
+using CollisionShapePtr = std::shared_ptr<tesseract::geometry::Geometry>;
 using CollisionShapesConst = std::vector<CollisionShapeConstPtr>;
-using CollisionMarginData = tesseract_common::CollisionMarginData;
-using CollisionMarginPairData = tesseract_common::CollisionMarginPairData;
-using CollisionMarginPairOverrideType = tesseract_common::CollisionMarginPairOverrideType;
+using CollisionMarginData = tesseract::common::CollisionMarginData;
+using CollisionMarginPairData = tesseract::common::CollisionMarginPairData;
+using CollisionMarginPairOverrideType = tesseract::common::CollisionMarginPairOverrideType;
 
 class ContactResultValidator;
 
@@ -131,7 +131,7 @@ struct ContactResult
   bool operator!=(const ContactResult& rhs) const;
 };
 
-using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
+using ContactResultVector = tesseract::common::AlignedVector<ContactResult>;
 
 /**
  * @brief This structure hold contact results for link pairs
@@ -156,9 +156,9 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using KeyType = std::pair<std::string, std::string>;
   using MappedType = ContactResultVector;
-  using ContainerType = tesseract_common::AlignedMap<KeyType, MappedType>;
-  using ConstReferenceType = typename tesseract_common::AlignedMap<KeyType, MappedType>::const_reference;
-  using ConstIteratorType = typename tesseract_common::AlignedMap<KeyType, MappedType>::const_iterator;
+  using ContainerType = tesseract::common::AlignedMap<KeyType, MappedType>;
+  using ConstReferenceType = typename tesseract::common::AlignedMap<KeyType, MappedType>::const_reference;
+  using ConstIteratorType = typename tesseract::common::AlignedMap<KeyType, MappedType>::const_iterator;
   using PairType = typename std::pair<const KeyType, MappedType>;
   using FilterFn = std::function<void(PairType&)>;
 
@@ -329,7 +329,7 @@ struct ContactTestData
 
   ContactTestData() = default;
   ContactTestData(CollisionMarginData collision_margin_data,
-                  std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator,
+                  std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator,
                   ContactRequest req,
                   ContactResultMap& res);
 
@@ -337,7 +337,7 @@ struct ContactTestData
   CollisionMarginData collision_margin_data{ 0 };
 
   /** @brief The allowed collision function used to check if two links should be excluded from collision checking */
-  std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator;
+  std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator;
 
   /** @brief The type of contact request data */
   ContactRequest req;
@@ -436,7 +436,7 @@ struct ContactManagerConfig
   CollisionMarginPairData pair_margin_data;
 
   /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
-  tesseract_common::AllowedCollisionMatrix acm;
+  tesseract::common::AllowedCollisionMatrix acm;
   /** @brief Specifies how to combine the ContactAllowedValidator from acm with the one preset in the contact manager */
   ACMOverrideType acm_override_type{ ACMOverrideType::NONE };
 
@@ -520,13 +520,13 @@ struct ContactTrajectorySubstepResults
   void addContact(int substep_number,
                   const Eigen::VectorXd& start_substate,
                   const Eigen::VectorXd& end_substate,
-                  const tesseract_collision::ContactResultMap& new_contacts);
+                  const tesseract::collision::ContactResultMap& new_contacts);
 
   int numContacts() const;
 
-  tesseract_collision::ContactResultVector worstCollision() const;
+  tesseract::collision::ContactResultVector worstCollision() const;
 
-  tesseract_collision::ContactResultMap contacts;
+  tesseract::collision::ContactResultMap contacts;
   int substep = -1;
   Eigen::VectorXd state0;
   Eigen::VectorXd state1;
@@ -561,7 +561,7 @@ struct ContactTrajectoryStepResults
                   const Eigen::VectorXd& end_state,
                   const Eigen::VectorXd& start_substate,
                   const Eigen::VectorXd& end_substate,
-                  const tesseract_collision::ContactResultMap& contacts);
+                  const tesseract::collision::ContactResultMap& contacts);
 
   void resize(int num_substeps);
 
@@ -571,7 +571,7 @@ struct ContactTrajectoryStepResults
 
   ContactTrajectorySubstepResults worstSubstep() const;
 
-  tesseract_collision::ContactResultVector worstCollision() const;
+  tesseract::collision::ContactResultVector worstCollision() const;
 
   ContactTrajectorySubstepResults mostCollisionsSubstep() const;
 
@@ -608,7 +608,7 @@ struct ContactTrajectoryResults
                   const Eigen::VectorXd& end_state,
                   const Eigen::VectorXd& start_substate,
                   const Eigen::VectorXd& end_substate,
-                  const tesseract_collision::ContactResultMap& contacts);
+                  const tesseract::collision::ContactResultMap& contacts);
 
   void resize(int num_steps);
 
@@ -618,7 +618,7 @@ struct ContactTrajectoryResults
 
   ContactTrajectoryStepResults worstStep() const;
 
-  tesseract_collision::ContactResultVector worstCollision() const;
+  tesseract::collision::ContactResultVector worstCollision() const;
 
   ContactTrajectoryStepResults mostCollisionsStep() const;
 
@@ -633,10 +633,11 @@ struct ContactTrajectoryResults
   int total_steps = 0;
 };
 
-using ContactResultAnyPoly = tesseract_common::AnyWrapper<ContactResult>;
-using ContactResultMapAnyPoly = tesseract_common::AnyWrapper<ContactResultMap>;
-using ContactResultMapVectorAnyPoly = tesseract_common::AnyWrapper<std::vector<tesseract_collision::ContactResultMap>>;
+using ContactResultAnyPoly = tesseract::common::AnyWrapper<ContactResult>;
+using ContactResultMapAnyPoly = tesseract::common::AnyWrapper<ContactResultMap>;
+using ContactResultMapVectorAnyPoly =
+    tesseract::common::AnyWrapper<std::vector<tesseract::collision::ContactResultMap>>;
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_TYPES_H

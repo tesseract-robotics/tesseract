@@ -34,12 +34,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <boost_plugin_loader/utils.h>
 
-using namespace tesseract_collision;
+using namespace tesseract::collision;
 
 TEST(TesseractContactManagersFactoryUnit, StaticLoadPlugin)  // NOLINT
 {
-  boost_plugin_loader::addSymbolLibraryToSearchLibrariesEnv(
-      tesseract_collision::tesseract_collision_bullet::BulletFactoriesAnchor(), "TESSERACT_CONTACT_MANAGERS_PLUGINS");
+  boost_plugin_loader::addSymbolLibraryToSearchLibrariesEnv(BulletFactoriesAnchor(),
+                                                            "TESSERACT_CONTACT_MANAGERS_PLUGINS");
 
   std::string config = R"(contact_manager_plugins:
                             search_paths:
@@ -64,11 +64,11 @@ TEST(TesseractContactManagersFactoryUnit, StaticLoadPlugin)  // NOLINT
                                 BulletCastSimpleManager:
                                   class: BulletCastSimpleManagerFactory)";
 
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   ContactManagersPluginFactory factory(config, locator);
   factory.clearSearchLibraries();
   factory.clearSearchPaths();
-  YAML::Node plugin_config = tesseract_common::loadYamlString(config, locator);
+  YAML::Node plugin_config = tesseract::common::loadYamlString(config, locator);
 
   DiscreteContactManager::UPtr cm = factory.createDiscreteContactManager("BulletDiscreteBVHManager");
   EXPECT_TRUE(cm != nullptr);

@@ -60,7 +60,7 @@ BOOST_INSTALL_PROPERTY(graph, root);
 
 #endif  // SWIG
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 class Link;
 class Joint;
@@ -349,7 +349,7 @@ public:
    * @brief Set the allowed collision matrix
    * @param acm The allowed collision matrix to assign
    */
-  void setAllowedCollisionMatrix(std::shared_ptr<tesseract_common::AllowedCollisionMatrix> acm);
+  void setAllowedCollisionMatrix(std::shared_ptr<tesseract::common::AllowedCollisionMatrix> acm);
 
   /**
    * @brief Disable collision between two collision objects
@@ -387,13 +387,13 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  std::shared_ptr<const tesseract_common::AllowedCollisionMatrix> getAllowedCollisionMatrix() const;
+  std::shared_ptr<const tesseract::common::AllowedCollisionMatrix> getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixPtr
    */
-  std::shared_ptr<tesseract_common::AllowedCollisionMatrix> getAllowedCollisionMatrix();
+  std::shared_ptr<tesseract::common::AllowedCollisionMatrix> getAllowedCollisionMatrix();
 
   /**
    * @brief Get the source link (parent link) for a joint
@@ -532,7 +532,7 @@ public:
    * into the environment graph. The prefix argument is meant to allow adding multiple copies of the same sub-graph with
    * different names
    */
-  bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
+  bool insertSceneGraph(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
 
   /**
    * @brief Merge a graph into the current environment
@@ -544,8 +544,8 @@ public:
    * environment graph. The prefix argument is meant to allow adding multiple copies of the same sub-graph with
    * different names
    */
-  bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                        const tesseract_scene_graph::Joint& joint,
+  bool insertSceneGraph(const tesseract::scene_graph::SceneGraph& scene_graph,
+                        const tesseract::scene_graph::Joint& joint,
                         const std::string& prefix = "");
 
   bool operator==(const SceneGraph& rhs) const;
@@ -574,7 +574,7 @@ protected:
 private:
   std::unordered_map<std::string, std::pair<std::shared_ptr<Link>, Vertex>> link_map_;
   std::unordered_map<std::string, std::pair<std::shared_ptr<Joint>, Edge>> joint_map_;
-  std::shared_ptr<tesseract_common::AllowedCollisionMatrix> acm_;
+  std::shared_ptr<tesseract::common::AllowedCollisionMatrix> acm_;
 
   /** @brief The rebuild the link and joint map by extraction information from the graph */
   void rebuildLinkAndJointMaps();
@@ -590,11 +590,11 @@ private:
   std::vector<std::string> getLinkChildrenHelper(Vertex start_vertex) const;
 
   template <class Archive>
-  friend void ::tesseract_scene_graph::serialize(Archive& ar, SceneGraph& obj);
+  friend void ::tesseract::scene_graph::serialize(Archive& ar, SceneGraph& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const ShortestPath& path);
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_SCENE_GRAPH_GRAPH_H

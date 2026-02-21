@@ -34,35 +34,35 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_common/collision_margin_data.h>
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
-tesseract_common::CollisionMarginData::Ptr parseCollisionMargins(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                                 const tinyxml2::XMLElement* srdf_xml,
-                                                                 const std::array<int, 3>& /*version*/)
+tesseract::common::CollisionMarginData::Ptr parseCollisionMargins(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                                  const tinyxml2::XMLElement* srdf_xml,
+                                                                  const std::array<int, 3>& /*version*/)
 {
   double default_margin{ 0 };
   const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("collision_margins");
   if (xml_element == nullptr)
     return nullptr;
 
-  int status = tesseract_common::QueryDoubleAttributeRequired(xml_element, "default_margin", default_margin);
+  int status = tesseract::common::QueryDoubleAttributeRequired(xml_element, "default_margin", default_margin);
   if (status != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("CollisionMargins: collision_margins missing attribute "
                                               "'default_margin'."));
 
-  auto margin_data = std::make_shared<tesseract_common::CollisionMarginData>(default_margin);
+  auto margin_data = std::make_shared<tesseract::common::CollisionMarginData>(default_margin);
   for (const tinyxml2::XMLElement* xml_pair_element = xml_element->FirstChildElement("pair_margin");
        xml_pair_element != nullptr;
        xml_pair_element = xml_pair_element->NextSiblingElement("pair_margin"))
   {
     std::string link1_name, link2_name;
     double link_pair_margin{ 0 };
-    int status = tesseract_common::QueryStringAttributeRequired(xml_pair_element, "link1", link1_name);
+    int status = tesseract::common::QueryStringAttributeRequired(xml_pair_element, "link1", link1_name);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("parseCollisionMargins: Missing or failed to parse 'link1' "
                                                 "attribute."));
 
-    status = tesseract_common::QueryStringAttributeRequired(xml_pair_element, "link2", link2_name);
+    status = tesseract::common::QueryStringAttributeRequired(xml_pair_element, "link2", link2_name);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("CollisionMargins: Missing or failed to parse 'link2' attribute."));
 
@@ -76,7 +76,7 @@ tesseract_common::CollisionMarginData::Ptr parseCollisionMargins(const tesseract
       CONSOLE_BRIDGE_logWarn("parseCollisionMargins: Link '%s' is not known to URDF.", link2_name.c_str());
     }
 
-    status = tesseract_common::QueryDoubleAttributeRequired(xml_pair_element, "margin", link_pair_margin);
+    status = tesseract::common::QueryDoubleAttributeRequired(xml_pair_element, "margin", link_pair_margin);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("parseCollisionMargins: failed to parse link pair 'margin' "
                                                 "attribute."));
@@ -86,4 +86,4 @@ tesseract_common::CollisionMarginData::Ptr parseCollisionMargins(const tesseract
 
   return margin_data;
 }
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf

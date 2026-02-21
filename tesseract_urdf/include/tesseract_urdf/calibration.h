@@ -38,7 +38,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view CALIBRATION_ELEMENT_NAME = "calibration";
 
@@ -47,12 +47,12 @@ static constexpr std::string_view CALIBRATION_ELEMENT_NAME = "calibration";
  * @param xml_element The xml element
  * @return Tesseract JointCalibration
  */
-std::shared_ptr<tesseract_scene_graph::JointCalibration> parseCalibration(const tinyxml2::XMLElement* xml_element);
+std::shared_ptr<tesseract::scene_graph::JointCalibration> parseCalibration(const tinyxml2::XMLElement* xml_element);
 
 tinyxml2::XMLElement*
-writeCalibration(const std::shared_ptr<const tesseract_scene_graph::JointCalibration>& calibration,
+writeCalibration(const std::shared_ptr<const tesseract::scene_graph::JointCalibration>& calibration,
                  tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_CALIBRATION_H

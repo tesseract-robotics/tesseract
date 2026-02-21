@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_kinematics/core/kinematic_group.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 bool checkKinematics(const KinematicGroup& manip, double tol)
 {
@@ -174,4 +174,4 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
 
   return true;
 }
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

@@ -33,18 +33,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/sphere.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_geometry::Sphere::Ptr parseSphere(const tinyxml2::XMLElement* xml_element)
+tesseract::geometry::Sphere::Ptr parseSphere(const tinyxml2::XMLElement* xml_element)
 {
   double radius{ 0 };
   if (xml_element->QueryDoubleAttribute("radius", &(radius)) != tinyxml2::XML_SUCCESS || !(radius > 0))
     std::throw_with_nested(std::runtime_error("Sphere: Missing or failed parsing attribute radius!"));
 
-  return std::make_shared<tesseract_geometry::Sphere>(radius);
+  return std::make_shared<tesseract::geometry::Sphere>(radius);
 }
 
-tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract_geometry::Sphere>& sphere,
+tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract::geometry::Sphere>& sphere,
                                   tinyxml2::XMLDocument& doc)
 {
   if (sphere == nullptr)
@@ -56,4 +56,4 @@ tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract_geometry
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

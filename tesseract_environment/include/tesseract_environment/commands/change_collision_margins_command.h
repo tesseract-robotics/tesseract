@@ -33,10 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/command.h>
 #include <tesseract_common/collision_margin_data.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
-using CollisionMarginPairData = tesseract_common::CollisionMarginPairData;
-using CollisionMarginPairOverrideType = tesseract_common::CollisionMarginPairOverrideType;
+using CollisionMarginPairData = tesseract::common::CollisionMarginPairData;
+using CollisionMarginPairOverrideType = tesseract::common::CollisionMarginPairOverrideType;
 
 class ChangeCollisionMarginsCommand;
 template <class Archive>
@@ -74,8 +74,8 @@ private:
   CollisionMarginPairOverrideType pair_override_type_{ CollisionMarginPairOverrideType::NONE };
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, ChangeCollisionMarginsCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, ChangeCollisionMarginsCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_COLLISION_MARGINS_COMMAND_H

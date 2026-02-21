@@ -36,7 +36,7 @@ const std::string TESSERACT_IGNITION_SYMBOL_NAME = "TesseractIgnitionVisualizati
 const std::string TESSERACT_VISUALIZATION_PLUGIN_DIRECTORIES_ENV = "TESSERACT_VISUALIZATION_PLUGIN_DIRECTORIES";
 const std::string TESSERACT_VISUALIZATION_PLUGINS_ENV = "TESSERACT_VISUALIZATION_PLUGINS";
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 VisualizationLoader::VisualizationLoader()
 {
@@ -62,4 +62,4 @@ std::shared_ptr<Visualization> VisualizationLoader::get(std::string plugin_name)
   }
 }
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization

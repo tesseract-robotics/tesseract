@@ -29,11 +29,11 @@
 #include <memory>
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 AddSceneGraphCommand::AddSceneGraphCommand() : Command(CommandType::ADD_SCENE_GRAPH) {}
 
-AddSceneGraphCommand::AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph, std::string prefix)
+AddSceneGraphCommand::AddSceneGraphCommand(const tesseract::scene_graph::SceneGraph& scene_graph, std::string prefix)
   : Command(CommandType::ADD_SCENE_GRAPH)
   , scene_graph_(scene_graph.clone())
   , joint_(nullptr)
@@ -41,32 +41,32 @@ AddSceneGraphCommand::AddSceneGraphCommand(const tesseract_scene_graph::SceneGra
 {
 }
 
-AddSceneGraphCommand::AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                           const tesseract_scene_graph::Joint& joint,
+AddSceneGraphCommand::AddSceneGraphCommand(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                           const tesseract::scene_graph::Joint& joint,
                                            std::string prefix)
   : Command(CommandType::ADD_SCENE_GRAPH)
   , scene_graph_(scene_graph.clone())
-  , joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
+  , joint_(std::make_shared<tesseract::scene_graph::Joint>(joint.clone()))
   , prefix_(std::move(prefix))
 {
 }
 
-const std::shared_ptr<const tesseract_scene_graph::SceneGraph>& AddSceneGraphCommand::getSceneGraph() const
+const std::shared_ptr<const tesseract::scene_graph::SceneGraph>& AddSceneGraphCommand::getSceneGraph() const
 {
   return scene_graph_;
 }
-const std::shared_ptr<const tesseract_scene_graph::Joint>& AddSceneGraphCommand::getJoint() const { return joint_; }
+const std::shared_ptr<const tesseract::scene_graph::Joint>& AddSceneGraphCommand::getJoint() const { return joint_; }
 const std::string& AddSceneGraphCommand::getPrefix() const { return prefix_; }
 
 bool AddSceneGraphCommand::operator==(const AddSceneGraphCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= tesseract_common::pointersEqual(scene_graph_, rhs.scene_graph_);
-  equal &= tesseract_common::pointersEqual(joint_, rhs.joint_);
+  equal &= tesseract::common::pointersEqual(scene_graph_, rhs.scene_graph_);
+  equal &= tesseract::common::pointersEqual(joint_, rhs.joint_);
   equal &= prefix_ == rhs.prefix_;
   return equal;
 }
 bool AddSceneGraphCommand::operator!=(const AddSceneGraphCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

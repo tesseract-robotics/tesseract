@@ -12,7 +12,7 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/types/polymorphic.hpp>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 template <class Archive>
 void serialize(Archive& ar, Geometry& obj)
@@ -164,6 +164,6 @@ void serialize(Archive& ar, CompoundMesh& obj)
   ar(cereal::make_nvp("meshes", obj.meshes_));
 }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif  // TESSERACT_GEOMETRY_CEREAL_SERIALIZATION_H

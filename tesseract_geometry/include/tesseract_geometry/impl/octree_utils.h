@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/octree.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 /** @brief A basic point cloud structure to leverage instead of PCL */
 struct PointCloud
@@ -68,9 +68,9 @@ createOctree(const PointT& point_cloud, const double resolution, const bool prun
     ot->toMaxLikelihood();
 
   if (prune)
-    tesseract_geometry::Octree::prune(*ot);
+    tesseract::geometry::Octree::prune(*ot);
 
   return ot;
 }
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 #endif  // TESSERACT_GEOMETRY_OCTREE_UTILS_H

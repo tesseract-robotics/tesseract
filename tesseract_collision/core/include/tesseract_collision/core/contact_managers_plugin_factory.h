@@ -46,7 +46,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
   EXPORT_CLASS_SECTIONED(DERIVED_CLASS, ALIAS, ContColl)
 // clang-format on
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 /** @brief Forward declare Plugin Factory */
 class ContactManagersPluginFactory;
@@ -110,19 +110,19 @@ public:
    * @brief Load plugins from yaml node
    * @param config The config node
    */
-  ContactManagersPluginFactory(YAML::Node config, const tesseract_common::ResourceLocator& locator);
+  ContactManagersPluginFactory(YAML::Node config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  ContactManagersPluginFactory(const std::filesystem::path& config, const tesseract_common::ResourceLocator& locator);
+  ContactManagersPluginFactory(const std::filesystem::path& config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from string
    * @param config The config string
    */
-  ContactManagersPluginFactory(const std::string& config, const tesseract_common::ResourceLocator& locator);
+  ContactManagersPluginFactory(const std::string& config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Add location for the plugin loader to search
@@ -165,7 +165,7 @@ public:
    * @param name The name
    * @param plugin_info The plugin information
    */
-  void addDiscreteContactManagerPlugin(const std::string& name, tesseract_common::PluginInfo plugin_info);
+  void addDiscreteContactManagerPlugin(const std::string& name, tesseract::common::PluginInfo plugin_info);
 
   /**
    * @brief Check if it has discrete contact manager plugins
@@ -177,7 +177,7 @@ public:
    * @brief Get the map of discrete contact manager plugin
    * @return A map of plugins
    */
-  tesseract_common::PluginInfoMap getDiscreteContactManagerPlugins() const;
+  tesseract::common::PluginInfoMap getDiscreteContactManagerPlugins() const;
 
   /**
    * @brief Remove discrete contact manager plugin
@@ -202,7 +202,7 @@ public:
    * @param name The name
    * @param plugin_info The plugin information
    */
-  void addContinuousContactManagerPlugin(const std::string& name, tesseract_common::PluginInfo plugin_info);
+  void addContinuousContactManagerPlugin(const std::string& name, tesseract::common::PluginInfo plugin_info);
 
   /**
    * @brief Check if it has continuous contact manager plugins
@@ -214,7 +214,7 @@ public:
    * @brief Get the map of continuous contact manager plugin
    * @return A map of plugins
    */
-  tesseract_common::PluginInfoMap getContinuousContactManagerPlugins() const;
+  tesseract::common::PluginInfoMap getContinuousContactManagerPlugins() const;
 
   /**
    * @brief Remove continuous contact manager plugin
@@ -247,7 +247,7 @@ public:
    * @param plugin_info The plugin information to create kinematics object
    */
   std::unique_ptr<DiscreteContactManager>
-  createDiscreteContactManager(const std::string& name, const tesseract_common::PluginInfo& plugin_info) const;
+  createDiscreteContactManager(const std::string& name, const tesseract::common::PluginInfo& plugin_info) const;
 
   /**
    * @brief Get continuous contact manager object given name
@@ -262,7 +262,7 @@ public:
    * @param plugin_info The plugin information to create kinematics object
    */
   std::unique_ptr<ContinuousContactManager>
-  createContinuousContactManager(const std::string& name, const tesseract_common::PluginInfo& plugin_info) const;
+  createContinuousContactManager(const std::string& name, const tesseract::common::PluginInfo& plugin_info) const;
 
   /**
    * @brief Save the plugin information to a yaml config file
@@ -279,11 +279,11 @@ public:
 private:
   mutable std::map<std::string, DiscreteContactManagerFactory::Ptr> discrete_factories_;
   mutable std::map<std::string, ContinuousContactManagerFactory::Ptr> continuous_factories_;
-  tesseract_common::PluginInfoContainer discrete_plugin_info_;
-  tesseract_common::PluginInfoContainer continuous_plugin_info_;
+  tesseract::common::PluginInfoContainer discrete_plugin_info_;
+  tesseract::common::PluginInfoContainer continuous_plugin_info_;
   boost_plugin_loader::PluginLoader plugin_loader_;
 
   void loadConfig(const YAML::Node& config);
 };
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 #endif  // TESSERACT_COLLISION_CONTACT_MANAGERS_PLUGIN_FACTORY_H

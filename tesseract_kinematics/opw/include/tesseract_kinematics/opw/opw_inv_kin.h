@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 static const std::string OPW_INV_KIN_CHAIN_SOLVER_NAME = "OPWInvKin";
 
@@ -69,7 +69,7 @@ public:
             std::string solver_name = OPW_INV_KIN_CHAIN_SOLVER_NAME);
 
   void calcInvKin(IKSolutions& solutions,
-                  const tesseract_common::TransformMap& tip_link_poses,
+                  const tesseract::common::TransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   Eigen::Index numJoints() const override final;
@@ -88,5 +88,5 @@ protected:
   std::string solver_name_{ OPW_INV_KIN_CHAIN_SOLVER_NAME }; /**< @brief Name of this solver */
 };
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_OPW_INV_KIN_H

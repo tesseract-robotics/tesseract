@@ -8,8 +8,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_common/resource_locator.h>
 
-using namespace tesseract_scene_graph;
-using namespace tesseract_urdf;
+using namespace tesseract::scene_graph;
+using namespace tesseract::urdf;
 
 std::string toString(const ShortestPath& path)
 {
@@ -23,7 +23,7 @@ std::string toString(bool b) { return b ? "true" : "false"; }
 int main(int /*argc*/, char** /*argv*/)
 {
   // documentation:start:2: Get the urdf file path
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string urdf_file =
       locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath();
   // documentation:end:2: Get the urdf file path
@@ -40,6 +40,6 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:4: Print information
 
   // documentation:start:5: Save graph
-  g->saveDOT(tesseract_common::getTempPath() + "tesseract_urdf_import.dot");
+  g->saveDOT(tesseract::common::getTempPath() + "tesseract_urdf_import.dot");
   // documentation:end:5: Save graph
 }

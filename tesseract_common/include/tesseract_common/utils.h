@@ -48,7 +48,7 @@ class XMLElement;  // NOLINT
 class XMLAttribute;
 }  // namespace tinyxml2
 
-namespace tesseract_common
+namespace tesseract::common
 {
 #if __cplusplus < 201703L
 /** @brief Random number generator */
@@ -547,5 +547,5 @@ std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& li
                                               const AllowedCollisionEntries& acm_entries,
                                               bool remove_duplicates = true);
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 #endif  // TESSERACT_COMMON_UTILS_H

@@ -44,18 +44,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_srdf/srdf_model.h>
 
-using namespace tesseract_common;
-using namespace tesseract_environment;
-using namespace tesseract_scene_graph;
-using namespace tesseract_srdf;
+using namespace tesseract::common;
+using namespace tesseract::environment;
+using namespace tesseract::scene_graph;
+using namespace tesseract::srdf;
 
-SceneGraph::Ptr getSceneGraph(const tesseract_common::ResourceLocator& locator)
+SceneGraph::Ptr getSceneGraph(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf";
-  return tesseract_urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
+  return tesseract::urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
 }
 
-SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_common::ResourceLocator& locator)
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf";
 
@@ -67,12 +67,12 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_commo
 
 Environment::Ptr getEnvironment()
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto env = std::make_shared<Environment>();
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph(locator);
+  tesseract::scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph(locator);
   auto srdf = getSRDFModel(*scene_graph, locator);
   env->init(*scene_graph, srdf);
-  env->setResourceLocator(std::make_shared<tesseract_common::GeneralResourceLocator>());
+  env->setResourceLocator(std::make_shared<tesseract::common::GeneralResourceLocator>());
   return env;
 }
 
@@ -85,7 +85,7 @@ TEST(EnvironmentSerializeUnit, Environment)  // NOLINT
 TEST(EnvironmentSerializeUnit, EnvironmentAnyPoly)  // NOLINT
 {
   Environment::Ptr env = getEnvironment();
-  tesseract_common::AnyPoly env_any(env);
+  tesseract::common::AnyPoly env_any(env);
   testSerializationAnyPoly<Environment::Ptr>(
       env_any, "EnvironmentAnyPoly", testSerializationComparePtrEqual<Environment::Ptr>);
 }
@@ -93,7 +93,7 @@ TEST(EnvironmentSerializeUnit, EnvironmentAnyPoly)  // NOLINT
 TEST(EnvironmentCommandsSerializeUnit, ModifyAllowedCollisionsCommand)  // NOLINT
 {
   {  // ADD
-    tesseract_common::AllowedCollisionMatrix add_ac;
+    tesseract::common::AllowedCollisionMatrix add_ac;
     add_ac.addAllowedCollision("link1", "link2", "description");
     auto object = std::make_shared<ModifyAllowedCollisionsCommand>(add_ac, ModifyAllowedCollisionsType::ADD);
     testSerialization<ModifyAllowedCollisionsCommand>(*object, "ModifyAllowedCollisionsCommand");
@@ -101,7 +101,7 @@ TEST(EnvironmentCommandsSerializeUnit, ModifyAllowedCollisionsCommand)  // NOLIN
   }
 
   {  // REMOVE
-    tesseract_common::AllowedCollisionMatrix remove_ac;
+    tesseract::common::AllowedCollisionMatrix remove_ac;
     remove_ac.addAllowedCollision("link1", "link2", "description");
     auto object = std::make_shared<ModifyAllowedCollisionsCommand>(remove_ac, ModifyAllowedCollisionsType::REMOVE);
     testSerialization<ModifyAllowedCollisionsCommand>(*object, "ModifyAllowedCollisionsCommand");
@@ -109,7 +109,7 @@ TEST(EnvironmentCommandsSerializeUnit, ModifyAllowedCollisionsCommand)  // NOLIN
   }
 
   {  // REMOVE
-    tesseract_common::AllowedCollisionMatrix replace_ac;
+    tesseract::common::AllowedCollisionMatrix replace_ac;
     replace_ac.addAllowedCollision("link1", "link2", "description");
     auto object = std::make_shared<ModifyAllowedCollisionsCommand>(replace_ac, ModifyAllowedCollisionsType::REPLACE);
     testSerialization<ModifyAllowedCollisionsCommand>(*object, "ModifyAllowedCollisionsCommand");
@@ -119,7 +119,7 @@ TEST(EnvironmentCommandsSerializeUnit, ModifyAllowedCollisionsCommand)  // NOLIN
 
 TEST(EnvironmentCommandsSerializeUnit, AddContactManagersPluginInfoCommand)  // NOLINT
 {
-  tesseract_common::ContactManagersPluginInfo info = getEnvironment()->getContactManagersPluginInfo();
+  tesseract::common::ContactManagersPluginInfo info = getEnvironment()->getContactManagersPluginInfo();
   auto object = std::make_shared<AddContactManagersPluginInfoCommand>(info);
   testSerialization<AddContactManagersPluginInfoCommand>(*object, "AddContactManagersPluginInfoCommand");
   testSerializationDerivedClass<Command, AddContactManagersPluginInfoCommand>(object,
@@ -128,7 +128,7 @@ TEST(EnvironmentCommandsSerializeUnit, AddContactManagersPluginInfoCommand)  // 
 
 TEST(EnvironmentCommandsSerializeUnit, AddKinematicsInformationCommand)  // NOLINT
 {
-  tesseract_srdf::KinematicsInformation info = getEnvironment()->getKinematicsInformation();
+  tesseract::srdf::KinematicsInformation info = getEnvironment()->getKinematicsInformation();
   auto object = std::make_shared<AddKinematicsInformationCommand>(info);
   testSerialization<AddKinematicsInformationCommand>(*object, "AddKinematicsInformationCommand");
   testSerializationDerivedClass<Command, AddKinematicsInformationCommand>(object, "AddKinematicsInformationCommand");
@@ -151,9 +151,9 @@ TEST(EnvironmentCommandsSerializeUnit, AddLinkCommand)  // NOLINT
 
 TEST(EnvironmentCommandsSerializeUnit, AddTrajectoryLinkCommand)  // NOLINT
 {
-  tesseract_common::JointTrajectory trajectory;
-  trajectory.push_back(tesseract_common::JointState({ "j1", "j2" }, Eigen::VectorXd::Zero(2)));
-  trajectory.push_back(tesseract_common::JointState({ "j1", "j2" }, Eigen::VectorXd::Ones(2)));
+  tesseract::common::JointTrajectory trajectory;
+  trajectory.push_back(tesseract::common::JointState({ "j1", "j2" }, Eigen::VectorXd::Zero(2)));
+  trajectory.push_back(tesseract::common::JointState({ "j1", "j2" }, Eigen::VectorXd::Ones(2)));
 
   AddTrajectoryLinkCommand::Method method = AddTrajectoryLinkCommand::Method::GLOBAL_CONVEX_HULL;
   auto object = std::make_shared<AddTrajectoryLinkCommand>("link_name", "parent_link_name", trajectory, false, method);
@@ -163,8 +163,8 @@ TEST(EnvironmentCommandsSerializeUnit, AddTrajectoryLinkCommand)  // NOLINT
 
 TEST(EnvironmentCommandsSerializeUnit, AddSceneGraphCommand)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::Joint joint;
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::Joint joint;
   Joint joint_1("joint_1");
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_1.parent_link_name = "world";

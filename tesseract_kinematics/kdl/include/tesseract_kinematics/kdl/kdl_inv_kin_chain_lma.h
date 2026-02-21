@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 static const std::string KDL_INV_KIN_CHAIN_LMA_SOLVER_NAME = "KDLInvKinChainLMA";
 
@@ -82,7 +82,7 @@ public:
    * @param tip_link The name of the tip link for the kinematic chain
    * @param solver_name The name of the kinematic chain
    */
-  KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
+  KDLInvKinChainLMA(const tesseract::scene_graph::SceneGraph& scene_graph,
                     const std::string& base_link,
                     const std::string& tip_link,
                     Config kdl_config,
@@ -95,13 +95,13 @@ public:
    * @param chains A vector of kinematics chains <base_link, tip_link> that get concatenated
    * @param solver_name The solver name of the kinematic chain
    */
-  KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
+  KDLInvKinChainLMA(const tesseract::scene_graph::SceneGraph& scene_graph,
                     const std::vector<std::pair<std::string, std::string> >& chains,
                     Config kdl_config,
                     std::string solver_name = KDL_INV_KIN_CHAIN_LMA_SOLVER_NAME);
 
   void calcInvKin(IKSolutions& solutions,
-                  const tesseract_common::TransformMap& tip_link_poses,
+                  const tesseract::common::TransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   std::vector<std::string> getJointNames() const override final;
@@ -126,5 +126,5 @@ private:
                         int segment_num = -1) const;
 };
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_H

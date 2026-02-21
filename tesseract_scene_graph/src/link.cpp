@@ -25,7 +25,7 @@
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometry.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 /*********************************************************/
 /******                 Material                     *****/
@@ -50,7 +50,7 @@ bool Material::operator==(const Material& rhs) const
 {
   bool equal = true;
   equal &= texture_filename == rhs.texture_filename;
-  equal &= tesseract_common::almostEqualRelativeAndAbs(color, rhs.color);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(color, rhs.color);
   equal &= name_ == rhs.name_;
 
   return equal;
@@ -72,13 +72,13 @@ bool Inertial::operator==(const Inertial& rhs) const
 {
   bool equal = true;
   equal &= origin.isApprox(rhs.origin, 1e-5);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(mass, rhs.mass);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(ixx, rhs.ixx);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(ixy, rhs.ixy);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(ixz, rhs.ixz);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(iyy, rhs.iyy);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(iyz, rhs.iyz);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(izz, rhs.izz);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(mass, rhs.mass);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(ixx, rhs.ixx);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(ixy, rhs.ixy);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(ixz, rhs.ixz);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(iyy, rhs.iyy);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(iyz, rhs.iyz);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(izz, rhs.izz);
 
   return equal;
 }
@@ -102,8 +102,8 @@ bool Visual::operator==(const Visual& rhs) const
 {
   bool equal = true;
   equal &= origin.isApprox(rhs.origin, 1e-5);
-  equal &= tesseract_common::pointersEqual(geometry, rhs.geometry);  /// @todo Make utility to check derived type
-  equal &= tesseract_common::pointersEqual(material, rhs.material);
+  equal &= tesseract::common::pointersEqual(geometry, rhs.geometry);  /// @todo Make utility to check derived type
+  equal &= tesseract::common::pointersEqual(material, rhs.material);
   equal &= name == rhs.name;
 
   return equal;
@@ -126,7 +126,7 @@ bool Collision::operator==(const Collision& rhs) const
 {
   bool equal = true;
   equal &= origin.isApprox(rhs.origin, 1e-5);
-  equal &= tesseract_common::pointersEqual(geometry, rhs.geometry);  /// @todo Make utility to check derived type
+  equal &= tesseract::common::pointersEqual(geometry, rhs.geometry);  /// @todo Make utility to check derived type
   equal &= name == rhs.name;
 
   return equal;
@@ -173,19 +173,19 @@ Link Link::clone(const std::string& name) const
 
 bool Link::operator==(const Link& rhs) const
 {
-  using namespace tesseract_common;
+  using namespace tesseract::common;
   bool equal = true;
-  equal &= tesseract_common::pointersEqual(inertial, rhs.inertial);
+  equal &= tesseract::common::pointersEqual(inertial, rhs.inertial);
   equal &= isIdentical<Visual::Ptr>(visual,
                                     rhs.visual,
                                     false,
-                                    tesseract_common::pointersEqual<Visual>,
+                                    tesseract::common::pointersEqual<Visual>,
                                     [](const Visual::Ptr& v1, const Visual::Ptr& v2) { return v1->name < v2->name; });
   equal &= isIdentical<Collision::Ptr>(
       collision,
       rhs.collision,
       false,
-      tesseract_common::pointersEqual<Collision>,
+      tesseract::common::pointersEqual<Collision>,
       [](const Collision::Ptr& v1, const Collision::Ptr& v2) { return v1->name < v2->name; });
   equal &= name_ == rhs.name_;
   equal &= hash_ == rhs.hash_;
@@ -195,4 +195,4 @@ bool Link::operator==(const Link& rhs) const
 }
 bool Link::operator!=(const Link& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph

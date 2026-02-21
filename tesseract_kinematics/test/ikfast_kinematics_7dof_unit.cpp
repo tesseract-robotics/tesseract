@@ -31,8 +31,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include "tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp"
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 
-using namespace tesseract_kinematics::test_suite;
-using namespace tesseract_kinematics;
+using namespace tesseract::kinematics::test_suite;
+using namespace tesseract::kinematics;
 
 TEST(TesseractKinematicsUnit, IKFastInvKin7DOF)  // NOLINT
 {
@@ -46,7 +46,7 @@ TEST(TesseractKinematicsUnit, IKFastInvKin7DOF)  // NOLINT
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(7);
 
   // Setup test
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraphIIWA7(locator);
   std::string base_link_name = "link_0";
   std::string tip_link_name = "ikfast_tcp_link";

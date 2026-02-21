@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 class btConvexPenetrationDepthSolver;
 
 // LCOV_EXCL_START
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision::bullet_internal
 {
 /// Enabling USE_SEPDISTANCE_UTIL2 requires 100% reliable distance computation. However, when using large size ratios
 /// GJK can be imprecise so the distance is not conservative. In that case, enabling this USE_SEPDISTANCE_UTIL2 would
@@ -144,6 +144,6 @@ public:
   };
 };
 
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision::bullet_internal
 // LCOV_EXCL_STOP
 #endif  // TESSERACT_COLLISION_TESSERACT_CONVEX_CONVEX_ALGORITHM_H

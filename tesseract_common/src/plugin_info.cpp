@@ -27,7 +27,7 @@
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_common/yaml_extensions.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 /*********************************************************/
 /******               PluginInfo                     *****/
@@ -254,4 +254,4 @@ bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
 }
 bool TaskComposerPluginInfo::operator!=(const TaskComposerPluginInfo& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

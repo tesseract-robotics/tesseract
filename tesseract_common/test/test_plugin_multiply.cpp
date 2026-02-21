@@ -25,7 +25,7 @@
 #include "test_plugin_multiply.h"
 #include <boost_plugin_loader/macros.h>
 
-double tesseract_common::TestPluginMultiply::multiply(double x, double y) { return x * y; }
+double tesseract::common::TestPluginMultiply::multiply(double x, double y) { return x * y; }
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-EXPORT_CLASS_SECTIONED(tesseract_common::TestPluginMultiply, plugin, TestBase)
+EXPORT_CLASS_SECTIONED(tesseract::common::TestPluginMultiply, plugin, TestBase)

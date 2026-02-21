@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 struct cycle_detector : public boost::dfs_visitor<>
 {
@@ -174,7 +174,7 @@ struct ugraph_vertex_copier
   mutable typename boost::property_map<UGraph, boost::vertex_all_t>::type vertex_all_map2;
 };
 
-SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<tesseract_common::AllowedCollisionMatrix>())
+SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<tesseract::common::AllowedCollisionMatrix>())
 {
   boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);
 }
@@ -260,7 +260,7 @@ const std::string& SceneGraph::getRoot() const
 
 bool SceneGraph::addLink(const Link& link, bool replace_allowed)
 {
-  auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(link.clone());
+  auto link_ptr = std::make_shared<tesseract::scene_graph::Link>(link.clone());
   return addLinkHelper(link_ptr, replace_allowed);
 }
 
@@ -407,7 +407,7 @@ bool SceneGraph::moveLink(const Joint& joint)
     return false;
   }
 
-  std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = getInboundJoints(joint.child_link_name);
+  std::vector<tesseract::scene_graph::Joint::ConstPtr> joints = getInboundJoints(joint.child_link_name);
   for (const auto& joint : joints)
     removeJoint(joint->getName());
 
@@ -433,7 +433,7 @@ bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
 
 bool SceneGraph::addJoint(const Joint& joint)
 {
-  auto joint_ptr = std::make_shared<tesseract_scene_graph::Joint>(joint.clone());
+  auto joint_ptr = std::make_shared<tesseract::scene_graph::Joint>(joint.clone());
   return addJointHelper(joint_ptr);
 }
 
@@ -472,13 +472,13 @@ bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
 
   // Need to set limits for continuous joints. TODO: This may not be required
   // by the optimization library but may be nice to have
-  if (joint_ptr->type == tesseract_scene_graph::JointType::CONTINUOUS)
+  if (joint_ptr->type == tesseract::scene_graph::JointType::CONTINUOUS)
   {
     if (joint_ptr->limits == nullptr)
     {
       joint_ptr->limits = std::make_shared<JointLimits>(-4 * M_PI, 4 * M_PI, 0, 2, 1, 1000);
     }
-    else if (tesseract_common::almostEqualRelativeAndAbs(joint_ptr->limits->lower, joint_ptr->limits->upper, 1e-5))
+    else if (tesseract::common::almostEqualRelativeAndAbs(joint_ptr->limits->lower, joint_ptr->limits->upper, 1e-5))
     {
       joint_ptr->limits->lower = -4 * M_PI;
       joint_ptr->limits->upper = +4 * M_PI;
@@ -743,7 +743,7 @@ std::shared_ptr<const JointLimits> SceneGraph::getJointLimits(const std::string&
   return found->second.first->limits;
 }
 
-void SceneGraph::setAllowedCollisionMatrix(std::shared_ptr<tesseract_common::AllowedCollisionMatrix> acm)
+void SceneGraph::setAllowedCollisionMatrix(std::shared_ptr<tesseract::common::AllowedCollisionMatrix> acm)
 {
   acm_ = std::move(acm);
 }
@@ -769,12 +769,12 @@ bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::st
   return acm_->isCollisionAllowed(link_name1, link_name2);
 }
 
-std::shared_ptr<const tesseract_common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() const
+std::shared_ptr<const tesseract::common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() const
 {
   return acm_;
 }
 
-std::shared_ptr<tesseract_common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() { return acm_; }
+std::shared_ptr<tesseract::common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() { return acm_; }
 
 std::shared_ptr<const Link> SceneGraph::getSourceLink(const std::string& joint_name) const
 {
@@ -1101,13 +1101,13 @@ SceneGraph::Edge SceneGraph::getEdge(const std::string& name) const
 /** addSceneGraph needs a couple helpers to handle prefixing, we hide them in an anonymous namespace here **/
 namespace
 {
-tesseract_scene_graph::Link clone_prefix(const tesseract_scene_graph::Link::ConstPtr& link, const std::string& prefix)
+tesseract::scene_graph::Link clone_prefix(const tesseract::scene_graph::Link::ConstPtr& link, const std::string& prefix)
 {
   return link->clone(prefix + link->getName());
 }
 
-tesseract_scene_graph::Joint clone_prefix(const tesseract_scene_graph::Joint::ConstPtr& joint,
-                                          const std::string& prefix)
+tesseract::scene_graph::Joint clone_prefix(const tesseract::scene_graph::Joint::ConstPtr& joint,
+                                           const std::string& prefix)
 {
   auto ret = joint->clone(prefix + joint->getName());
   ret.child_link_name = prefix + joint->child_link_name;
@@ -1115,13 +1115,13 @@ tesseract_scene_graph::Joint clone_prefix(const tesseract_scene_graph::Joint::Co
   return ret;
 }
 
-tesseract_common::AllowedCollisionMatrix::Ptr
-clone_prefix(const tesseract_common::AllowedCollisionMatrix::ConstPtr& acm, const std::string& prefix)
+tesseract::common::AllowedCollisionMatrix::Ptr
+clone_prefix(const tesseract::common::AllowedCollisionMatrix::ConstPtr& acm, const std::string& prefix)
 {
   if (prefix.empty())
-    return std::make_shared<tesseract_common::AllowedCollisionMatrix>(*acm);
+    return std::make_shared<tesseract::common::AllowedCollisionMatrix>(*acm);
 
-  auto new_acm = std::make_shared<tesseract_common::AllowedCollisionMatrix>();
+  auto new_acm = std::make_shared<tesseract::common::AllowedCollisionMatrix>();
   for (const auto& entry : acm->getAllAllowedCollisions())
     new_acm->addAllowedCollision(prefix + entry.first.first, prefix + entry.first.second, entry.second);
 
@@ -1129,7 +1129,7 @@ clone_prefix(const tesseract_common::AllowedCollisionMatrix::ConstPtr& acm, cons
 }
 }  // namespace
 
-bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix)
+bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& prefix)
 {
   bool is_empty = isEmpty();
 
@@ -1190,7 +1190,7 @@ bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene
   return true;
 }
 
-bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
+bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scene_graph,
                                   const Joint& joint,
                                   const std::string& prefix)
 {
@@ -1272,7 +1272,7 @@ std::vector<std::string> SceneGraph::getLinkChildrenHelper(Vertex start_vertex) 
 
 bool SceneGraph::operator==(const SceneGraph& rhs) const
 {
-  using namespace tesseract_common;
+  using namespace tesseract::common;
   // Currently these only compare the Link/Joint.
   auto link_pair_equal = [](const std::pair<const Link::Ptr, Vertex>& v1, const std::pair<Link::Ptr, Vertex>& v2) {
     return pointersEqual(v1.first, v2.first);
@@ -1311,4 +1311,4 @@ std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
   return os;
 }
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph

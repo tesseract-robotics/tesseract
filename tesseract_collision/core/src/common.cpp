@@ -33,12 +33,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/core/contact_result_validator.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 std::vector<ObjectPairKey>
 getCollisionObjectPairs(const std::vector<std::string>& active_links,
                         const std::vector<std::string>& static_links,
-                        const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator)
+                        const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator)
 {
   std::size_t num_pairs = active_links.size() * (active_links.size() - 1) / 2;
   num_pairs += (active_links.size() * static_links.size());
@@ -54,7 +54,7 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
     {
       const std::string& l2 = active_links[j];
       if (validator == nullptr || (validator != nullptr && !(*validator)(l1, l2)))
-        clp.push_back(tesseract_common::makeOrderedLinkPair(l1, l2));
+        clp.push_back(tesseract::common::makeOrderedLinkPair(l1, l2));
     }
   }
 
@@ -64,7 +64,7 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
     for (const auto& l2 : static_links)
     {
       if (validator == nullptr || (validator != nullptr && !(*validator)(l1, l2)))
-        clp.push_back(tesseract_common::makeOrderedLinkPair(l1, l2));
+        clp.push_back(tesseract::common::makeOrderedLinkPair(l1, l2));
     }
   }
 
@@ -78,7 +78,7 @@ bool isLinkActive(const std::vector<std::string>& active, const std::string& nam
 
 bool isContactAllowed(const std::string& name1,
                       const std::string& name2,
-                      const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose)
 {
   // do not distance check geoms part of the same object / link / attached body
@@ -146,7 +146,7 @@ ContactResult* processResult(ContactTestData& cdata,
   return nullptr;
 }
 
-void scaleVertices(tesseract_common::VectorVector3d& vertices,
+void scaleVertices(tesseract::common::VectorVector3d& vertices,
                    const Eigen::Vector3d& center,
                    const Eigen::Vector3d& scale)
 {
@@ -154,7 +154,7 @@ void scaleVertices(tesseract_common::VectorVector3d& vertices,
     v = scale.cwiseProduct(v - center) + center;
 }
 
-void scaleVertices(tesseract_common::VectorVector3d& vertices, const Eigen::Vector3d& scale)
+void scaleVertices(tesseract::common::VectorVector3d& vertices, const Eigen::Vector3d& scale)
 {
   Eigen::Vector3d center(0, 0, 0);
   for (const auto& v : vertices)
@@ -165,4 +165,4 @@ void scaleVertices(tesseract_common::VectorVector3d& vertices, const Eigen::Vect
   scaleVertices(vertices, center, scale);
 }
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision

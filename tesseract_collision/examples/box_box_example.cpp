@@ -106,8 +106,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/ply_io.h>
 
-using namespace tesseract_collision;
-using namespace tesseract_geometry;
+using namespace tesseract::collision;
+using namespace tesseract::geometry;
 
 std::string toString(const Eigen::MatrixXd& a)
 {
@@ -121,7 +121,7 @@ std::string toString(bool b) { return b ? "true" : "false"; }
 int main(int /*argc*/, char** /*argv*/)
 {
   //! [collision_example_create_manager]
-  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
+  BulletDiscreteBVHManager checker;
   //! [collision_example_create_manager]
 
   //! [collision_example_add_box]
@@ -130,7 +130,7 @@ int main(int /*argc*/, char** /*argv*/)
   box_pose.setIdentity();
 
   CollisionShapesConst obj1_shapes;
-  tesseract_common::VectorIsometry3d obj1_poses;
+  tesseract::common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(box);
   obj1_poses.push_back(box_pose);
 
@@ -143,7 +143,7 @@ int main(int /*argc*/, char** /*argv*/)
   thin_box_pose.setIdentity();
 
   CollisionShapesConst obj2_shapes;
-  tesseract_common::VectorIsometry3d obj2_poses;
+  tesseract::common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
@@ -151,18 +151,18 @@ int main(int /*argc*/, char** /*argv*/)
   //! [collision_example_add_thin_box]
 
   //! [collision_example_add_convex_hull]
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   CollisionShapePtr second_box;
 
-  auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+  auto mesh_vertices = std::make_shared<tesseract::common::VectorVector3d>();
   auto mesh_faces = std::make_shared<Eigen::VectorXi>();
-  tesseract_common::loadSimplePlyFile(
+  tesseract::common::loadSimplePlyFile(
       locator.locateResource("package://tesseract_support/meshes/box_2m.ply")->getFilePath(),
       *mesh_vertices,
       *mesh_faces,
       true);
 
-  auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+  auto mesh = std::make_shared<tesseract::geometry::Mesh>(mesh_vertices, mesh_faces);
   second_box = makeConvexMesh(*mesh);
   //! [collision_example_add_convex_hull]
 
@@ -171,7 +171,7 @@ int main(int /*argc*/, char** /*argv*/)
   second_box_pose.setIdentity();
 
   CollisionShapesConst obj3_shapes;
-  tesseract_common::VectorIsometry3d obj3_poses;
+  tesseract::common::VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(second_box);
   obj3_poses.push_back(second_box_pose);
 
@@ -189,7 +189,7 @@ int main(int /*argc*/, char** /*argv*/)
   //! [collision_example_set_margin_data]
 
   //! [collision_example_set_transforms_initial]
-  tesseract_common::TransformMap location;
+  tesseract::common::TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["box_link"].translation()(0) = 0.2;
   location["box_link"].translation()(1) = 0.1;

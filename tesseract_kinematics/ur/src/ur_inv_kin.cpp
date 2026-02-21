@@ -40,7 +40,7 @@
 
 static const std::vector<Eigen::Index> REDUNDANT_CAPABLE_JOINTS{ 0, 1, 2, 3, 4, 5 };
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 // LCOV_EXCL_START
 namespace
@@ -253,7 +253,7 @@ URInvKin& URInvKin::operator=(const URInvKin& other)
 }
 
 void URInvKin::calcInvKin(IKSolutions& solutions,
-                          const tesseract_common::TransformMap& tip_link_poses,
+                          const tesseract::common::TransformMap& tip_link_poses,
                           const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);
@@ -291,4 +291,4 @@ std::string URInvKin::getWorkingFrame() const { return base_link_name_; }
 std::vector<std::string> URInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
 std::string URInvKin::getSolverName() const { return solver_name_; }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

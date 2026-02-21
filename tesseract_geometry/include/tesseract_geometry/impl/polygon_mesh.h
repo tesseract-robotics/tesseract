@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 class MeshMaterial;
 class MeshTexture;
@@ -68,12 +68,12 @@ public:
    * @param mesh_material A MeshMaterial describing the color and material properties of the mesh (optional)
    * @param mesh_textures A vector of MeshTexture to apply to the mesh (optional)
    */
-  PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+  PolygonMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
               std::shared_ptr<const Eigen::VectorXi> faces,
-              std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
+              std::shared_ptr<const tesseract::common::Resource> resource = nullptr,
               const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),  // NOLINT
-              std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
-              std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+              std::shared_ptr<const tesseract::common::VectorVector3d> normals = nullptr,
+              std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors = nullptr,
               std::shared_ptr<MeshMaterial> mesh_material = nullptr,
               std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr,
               GeometryType type = GeometryType::POLYGON_MESH);
@@ -95,13 +95,13 @@ public:
    * @param mesh_material Describes the color and material properties of the mesh (optional)
    * @param mesh_textures A vector of MeshTexture to apply to the mesh (optional)
    */
-  PolygonMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+  PolygonMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
               std::shared_ptr<const Eigen::VectorXi> faces,
               int face_count,
-              std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
+              std::shared_ptr<const tesseract::common::Resource> resource = nullptr,
               const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),  // NOLINT
-              std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
-              std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+              std::shared_ptr<const tesseract::common::VectorVector3d> normals = nullptr,
+              std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors = nullptr,
               std::shared_ptr<MeshMaterial> mesh_material = nullptr,
               std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr,
               GeometryType type = GeometryType::POLYGON_MESH);
@@ -112,7 +112,7 @@ public:
    * @brief Get Polygon mesh vertices
    * @return A vector of vertices
    */
-  const std::shared_ptr<const tesseract_common::VectorVector3d>& getVertices() const;
+  const std::shared_ptr<const tesseract::common::VectorVector3d>& getVertices() const;
 
   /**
    * @brief Get Polygon mesh faces
@@ -139,7 +139,7 @@ public:
    *
    * @return Absolute path to the mesh file
    */
-  std::shared_ptr<const tesseract_common::Resource> getResource() const;
+  std::shared_ptr<const tesseract::common::Resource> getResource() const;
 
   /**
    * @brief Get the scale applied to file used to generate the mesh
@@ -154,7 +154,7 @@ public:
    *
    * @return The vertex normal vector
    */
-  const std::shared_ptr<const tesseract_common::VectorVector3d>& getNormals() const;
+  const std::shared_ptr<const tesseract::common::VectorVector3d>& getNormals() const;
 
   /**
    * @brief Get the vertex colors
@@ -163,7 +163,7 @@ public:
    *
    * @return Vertex colors
    */
-  const std::shared_ptr<const tesseract_common::VectorVector4d>& getVertexColors() const;
+  const std::shared_ptr<const tesseract::common::VectorVector4d>& getVertexColors() const;
 
   /**
    * @brief Get material data extracted from the mesh file
@@ -193,22 +193,22 @@ public:
   bool operator!=(const PolygonMesh& rhs) const;
 
 private:
-  std::shared_ptr<const tesseract_common::VectorVector3d> vertices_;
+  std::shared_ptr<const tesseract::common::VectorVector3d> vertices_;
   std::shared_ptr<const Eigen::VectorXi> faces_;
 
   int vertex_count_{ 0 };
   int face_count_{ 0 };
-  std::shared_ptr<const tesseract_common::Resource> resource_;
+  std::shared_ptr<const tesseract::common::Resource> resource_;
   Eigen::Vector3d scale_;
-  std::shared_ptr<const tesseract_common::VectorVector3d> normals_;
-  std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors_;
+  std::shared_ptr<const tesseract::common::VectorVector3d> normals_;
+  std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors_;
   std::shared_ptr<MeshMaterial> mesh_material_;
   std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures_;
 
   template <class Archive>
-  friend void ::tesseract_geometry::serialize(Archive& ar, PolygonMesh& obj);
+  friend void ::tesseract::geometry::serialize(Archive& ar, PolygonMesh& obj);
 };
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif  // POLYGON_MESH_H

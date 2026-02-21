@@ -40,23 +40,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/point_cloud.h>
 #endif
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_geometry::Octree::Ptr parseOctomap(const tinyxml2::XMLElement* xml_element,
-                                             const tesseract_common::ResourceLocator& locator,
-                                             const bool /*visual*/)
+tesseract::geometry::Octree::Ptr parseOctomap(const tinyxml2::XMLElement* xml_element,
+                                              const tesseract::common::ResourceLocator& locator,
+                                              const bool /*visual*/)
 {
   std::string shape_type;
-  if (tesseract_common::QueryStringAttribute(xml_element, "shape_type", shape_type) != tinyxml2::XML_SUCCESS)
+  if (tesseract::common::QueryStringAttribute(xml_element, "shape_type", shape_type) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Octomap: Missing or failed parsing attribute 'shape_type'!"));
 
-  tesseract_geometry::OctreeSubType sub_type{ tesseract_geometry::OctreeSubType::BOX };
+  tesseract::geometry::OctreeSubType sub_type{ tesseract::geometry::OctreeSubType::BOX };
   if (shape_type == "box")
-    sub_type = tesseract_geometry::OctreeSubType::BOX;
+    sub_type = tesseract::geometry::OctreeSubType::BOX;
   else if (shape_type == "sphere_inside")
-    sub_type = tesseract_geometry::OctreeSubType::SPHERE_INSIDE;
+    sub_type = tesseract::geometry::OctreeSubType::SPHERE_INSIDE;
   else if (shape_type == "sphere_outside")
-    sub_type = tesseract_geometry::OctreeSubType::SPHERE_OUTSIDE;
+    sub_type = tesseract::geometry::OctreeSubType::SPHERE_OUTSIDE;
   else
     std::throw_with_nested(std::runtime_error("Octomap: Invalid sub shape type, must be 'box', 'sphere_inside', or "
                                               "'sphere_outside'!"));
@@ -96,7 +96,7 @@ tesseract_geometry::Octree::Ptr parseOctomap(const tinyxml2::XMLElement* xml_ele
                                             std::string(POINT_CLOUD_ELEMENT_NAME) + "'; must define one!"));
 }
 
-tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
+tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract::geometry::Octree>& octree,
                                    tinyxml2::XMLDocument& doc,
                                    const std::string& package_path,
                                    const std::string& filename)
@@ -106,11 +106,11 @@ tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract_geometr
   tinyxml2::XMLElement* xml_element = doc.NewElement(OCTOMAP_ELEMENT_NAME.data());
 
   std::string type_string;
-  if (octree->getSubType() == tesseract_geometry::OctreeSubType::BOX)
+  if (octree->getSubType() == tesseract::geometry::OctreeSubType::BOX)
     type_string = "box";
-  else if (octree->getSubType() == tesseract_geometry::OctreeSubType::SPHERE_INSIDE)
+  else if (octree->getSubType() == tesseract::geometry::OctreeSubType::SPHERE_INSIDE)
     type_string = "sphere_inside";
-  else if (octree->getSubType() == tesseract_geometry::OctreeSubType::SPHERE_OUTSIDE)
+  else if (octree->getSubType() == tesseract::geometry::OctreeSubType::SPHERE_OUTSIDE)
     type_string = "sphere_outside";
   else
     std::throw_with_nested(std::runtime_error("Octree subtype is invalid and cannot be converted to XML"));
@@ -131,4 +131,4 @@ tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract_geometr
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

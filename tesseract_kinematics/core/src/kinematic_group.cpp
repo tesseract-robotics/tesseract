@@ -47,7 +47,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
  * @return
  */
 std::vector<std::string> getLinksInFixedJointKinematicTree(const std::string& input_link,
-                                                           const tesseract_scene_graph::SceneGraph& scene_graph)
+                                                           const tesseract::scene_graph::SceneGraph& scene_graph)
 {
   // Create a set to contain the names of the links of the fixed-joint kinematic tree
   std::set<std::string> fixed_joint_tree_links;
@@ -62,11 +62,11 @@ std::vector<std::string> getLinksInFixedJointKinematicTree(const std::string& in
     links.pop_back();
 
     // Traverse through the inbound joints until we find a non-fixed joint
-    for (const std::shared_ptr<const tesseract_scene_graph::Joint>& joint : scene_graph.getInboundJoints(link))
+    for (const std::shared_ptr<const tesseract::scene_graph::Joint>& joint : scene_graph.getInboundJoints(link))
     {
       switch (joint->type)
       {
-        case tesseract_scene_graph::JointType::FIXED:
+        case tesseract::scene_graph::JointType::FIXED:
           // Add this joint's parent link to the list of links to traverse
           links.push_back(joint->parent_link_name);
           break;
@@ -93,7 +93,7 @@ std::vector<std::string> getLinksInFixedJointKinematicTree(const std::string& in
   return output;
 }
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 // NOLINTNEXTLINE(modernize-pass-by-value)
 KinGroupIKInput::KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std::string tl)
@@ -104,8 +104,8 @@ KinGroupIKInput::KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std
 KinematicGroup::KinematicGroup(std::string name,
                                std::vector<std::string> joint_names,
                                std::unique_ptr<InverseKinematics> inv_kin,
-                               const tesseract_scene_graph::SceneGraph& scene_graph,
-                               const tesseract_scene_graph::SceneState& scene_state)
+                               const tesseract::scene_graph::SceneGraph& scene_graph,
+                               const tesseract::scene_graph::SceneState& scene_state)
   : JointGroup(std::move(name), joint_names, scene_graph, scene_state)
   , joint_names_(std::move(joint_names))
   , inv_kin_(std::move(inv_kin))
@@ -115,10 +115,10 @@ KinematicGroup::KinematicGroup(std::string name,
   if (static_cast<Eigen::Index>(joint_names_.size()) != inv_kin_->numJoints())
     throw std::runtime_error("KinematicGroup: joint_names is not the correct size");
 
-  if (!tesseract_common::isIdentical(joint_names_, inv_kin_joint_names, false))
+  if (!tesseract::common::isIdentical(joint_names_, inv_kin_joint_names, false))
     throw std::runtime_error("KinematicGroup: joint_names does not match same names in inverse kinematics object!");
 
-  reorder_required_ = !tesseract_common::isIdentical(joint_names_, inv_kin_joint_names, true);
+  reorder_required_ = !tesseract::common::isIdentical(joint_names_, inv_kin_joint_names, true);
 
   if (reorder_required_)
   {
@@ -234,7 +234,7 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
                                 const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   // Convert to IK Inputs
-  tesseract_common::TransformMap ik_inputs;
+  tesseract::common::TransformMap ik_inputs;
   for (const auto& tip_link_pose : tip_link_poses)
   {
     // Check that the specified pose working frame exists in the list of identified working frames
@@ -299,8 +299,8 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
       for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
         ordered(i) = solution(inv_kin_joint_map_[static_cast<std::size_t>(i)]);
 
-      tesseract_kinematics::harmonizeTowardMedian<double>(solution, redundancy_indices_, limits_.joint_limits);
-      return (!tesseract_common::satisfiesLimits<double>(solution, limits_.joint_limits));
+      tesseract::kinematics::harmonizeTowardMedian<double>(solution, redundancy_indices_, limits_.joint_limits);
+      return (!tesseract::common::satisfiesLimits<double>(solution, limits_.joint_limits));
     });
     solutions.erase(ne, solutions.end());
     return;
@@ -308,8 +308,8 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
 
   inv_kin_->calcInvKin(solutions, ik_inputs, seed);
   auto ne = std::remove_if(solutions.begin() + num_sol, solutions.end(), [&](Eigen::VectorXd& solution) {
-    tesseract_kinematics::harmonizeTowardMedian<double>(solution, redundancy_indices_, limits_.joint_limits);
-    return (!tesseract_common::satisfiesLimits<double>(solution, limits_.joint_limits));
+    tesseract::kinematics::harmonizeTowardMedian<double>(solution, redundancy_indices_, limits_.joint_limits);
+    return (!tesseract::common::satisfiesLimits<double>(solution, limits_.joint_limits));
   });
   solutions.erase(ne, solutions.end());
 }
@@ -335,4 +335,4 @@ std::vector<std::string> KinematicGroup::getAllPossibleTipLinkNames() const
 
 const InverseKinematics& KinematicGroup::getInverseKinematics() const { return *inv_kin_; }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

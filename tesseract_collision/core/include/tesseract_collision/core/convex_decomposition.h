@@ -28,7 +28,7 @@
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_geometry/fwd.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 class ConvexDecomposition
 {
@@ -50,12 +50,12 @@ public:
    * index
    * @return
    */
-  virtual std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>>
-  compute(const tesseract_common::VectorVector3d& vertices,
+  virtual std::vector<std::shared_ptr<tesseract::geometry::ConvexMesh>>
+  compute(const tesseract::common::VectorVector3d& vertices,
           const Eigen::VectorXi& faces,
           bool verbose = true) const = 0;
 };
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_CONVEX_DECOMPOSITION_H

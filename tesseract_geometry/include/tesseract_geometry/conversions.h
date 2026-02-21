@@ -27,7 +27,7 @@
 #include <memory>
 #include <Eigen/Geometry>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 class Geometry;
 class Mesh;
@@ -43,6 +43,6 @@ std::unique_ptr<Mesh> toTriangleMesh(const Geometry& geom,
                                      double tolerance,
                                      const Eigen::Isometry3d& origin = Eigen::Isometry3d::Identity());
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif  // TESSERACT_GEOMETRY_CONVERSIONS_H

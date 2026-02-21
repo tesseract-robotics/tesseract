@@ -26,7 +26,7 @@ Changelog for package tesseract_geometry
 
 0.31.0 (2025-07-05)
 -------------------
-* Make sure serialized objects have friend struct tesseract_common::Serialization
+* Make sure serialized objects have friend struct tesseract::common::Serialization
 * Contributors: Levi Armstrong
 
 0.30.0 (2025-04-23)
@@ -49,7 +49,7 @@ Changelog for package tesseract_geometry
 
 0.28.8 (2025-02-01)
 -------------------
-* Add UUID to tesseract_geometry::Geometry and update collision shape cache
+* Add UUID to tesseract::geometry::Geometry and update collision shape cache
 * Contributors: Levi Armstrong
 
 0.28.7 (2025-01-29)

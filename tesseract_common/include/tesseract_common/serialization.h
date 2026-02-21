@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <filesystem>
 #include <tesseract_common/serialization_extensions.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 struct Serialization
 {
@@ -307,5 +307,5 @@ struct Serialization
     return archive_type;
   }
 };
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 #endif  // TESSERACT_COMMON_SERIALIZATION_H

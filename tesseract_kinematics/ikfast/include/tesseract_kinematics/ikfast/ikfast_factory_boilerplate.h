@@ -28,14 +28,14 @@
 #include <tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp>
 #include <tesseract_scene_graph/graph.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 class IKFastInvKinFactory : public InvKinFactory
 {
 public:
   InverseKinematics::UPtr create(const std::string& solver_name,
-                                 const tesseract_scene_graph::SceneGraph& scene_graph,
-                                 const tesseract_scene_graph::SceneState& /*scene_state*/,
+                                 const tesseract::scene_graph::SceneGraph& scene_graph,
+                                 const tesseract::scene_graph::SceneState& /*scene_state*/,
                                  const KinematicsPluginFactory& /*plugin_factory*/,
                                  const YAML::Node& config) const override
   {
@@ -114,6 +114,6 @@ public:
   }
 };
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 #endif  // TESSERACT_KINEMATICS_IKFAST_FACTORY_BOILERPLATE_H

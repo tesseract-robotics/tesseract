@@ -28,9 +28,9 @@
 #include <tesseract_geometry/impl/sdf_mesh.h>
 
 template <typename T>
-std::vector<std::shared_ptr<tesseract_geometry::PolygonMesh>> convert(std::vector<std::shared_ptr<T>>& meshes)
+std::vector<std::shared_ptr<tesseract::geometry::PolygonMesh>> convert(std::vector<std::shared_ptr<T>>& meshes)
 {
-  std::vector<std::shared_ptr<tesseract_geometry::PolygonMesh>> polygon_meshes;
+  std::vector<std::shared_ptr<tesseract::geometry::PolygonMesh>> polygon_meshes;
   polygon_meshes.reserve(meshes.size());
   for (const auto& mesh : meshes)
     polygon_meshes.push_back(mesh);
@@ -38,7 +38,7 @@ std::vector<std::shared_ptr<tesseract_geometry::PolygonMesh>> convert(std::vecto
   return polygon_meshes;
 }
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 CompoundMesh::CompoundMesh(std::vector<std::shared_ptr<PolygonMesh>> meshes)
   : Geometry(GeometryType::COMPOUND_MESH), meshes_(std::move(meshes))
@@ -49,9 +49,9 @@ CompoundMesh::CompoundMesh(std::vector<std::shared_ptr<PolygonMesh>> meshes)
 #ifndef NDEBUG
   for (const auto& mesh : meshes_)
   {
-    assert(tesseract_common::pointersEqual<const tesseract_common::Resource>(meshes_[0]->getResource(),
-                                                                             mesh->getResource()));
-    assert(tesseract_common::almostEqualRelativeAndAbs(meshes_[0]->getScale(), mesh->getScale()));
+    assert(tesseract::common::pointersEqual<const tesseract::common::Resource>(meshes_[0]->getResource(),
+                                                                               mesh->getResource()));
+    assert(tesseract::common::almostEqualRelativeAndAbs(meshes_[0]->getScale(), mesh->getScale()));
   }
 #endif
 }
@@ -64,7 +64,7 @@ CompoundMesh::CompoundMesh(std::vector<std::shared_ptr<SDFMesh>> meshes) : Compo
 
 const std::vector<std::shared_ptr<PolygonMesh>>& CompoundMesh::getMeshes() const { return meshes_; }
 
-std::shared_ptr<const tesseract_common::Resource> CompoundMesh::getResource() const
+std::shared_ptr<const tesseract::common::Resource> CompoundMesh::getResource() const
 {
   return meshes_.front()->getResource();
 }
@@ -95,4 +95,4 @@ bool CompoundMesh::operator==(const CompoundMesh& rhs) const
 }
 bool CompoundMesh::operator!=(const CompoundMesh& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

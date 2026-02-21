@@ -23,7 +23,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_geometry/impl/box.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 Box::Box(double x, double y, double z) : Geometry(GeometryType::BOX), x_(x), y_(y), z_(z) {}
 
@@ -37,11 +37,11 @@ bool Box::operator==(const Box& rhs) const
 {
   bool equal = true;
   equal &= Geometry::operator==(rhs);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(x_, rhs.x_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(y_, rhs.y_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(z_, rhs.z_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(x_, rhs.x_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(y_, rhs.y_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(z_, rhs.z_);
   return equal;
 }
 bool Box::operator!=(const Box& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

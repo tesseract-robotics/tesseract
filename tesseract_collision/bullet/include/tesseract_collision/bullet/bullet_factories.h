@@ -27,7 +27,7 @@
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 #include <boost_plugin_loader/macros.h>
 
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision
 {
 /**
  * @brief The yaml config for each of the factories below is the same.
@@ -78,5 +78,5 @@ public:
 
 PLUGIN_ANCHOR_DECL(BulletFactoriesAnchor)
 
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision
 #endif  // TESSERACT_COLLISION_BULLET_BULLET_FACTORIES_H

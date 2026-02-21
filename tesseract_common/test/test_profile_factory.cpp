@@ -2,7 +2,7 @@
 #include <tesseract_common/profile_plugin_factory.h>
 #include <yaml-cpp/yaml.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class TestProfileFactory : public ProfileFactory
 {
@@ -20,7 +20,7 @@ public:
     return profile;
   };
 };
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_PROFILE_PLUGIN(tesseract_common::TestProfileFactory, TestProfileFactory)
+TESSERACT_ADD_PROFILE_PLUGIN(tesseract::common::TestProfileFactory, TestProfileFactory)

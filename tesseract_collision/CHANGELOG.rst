@@ -47,7 +47,7 @@ Changelog for package tesseract_collision
 * Improve processYamlIncludeDirective peformance
 * Make printouts during convex decomposition optional at compute time
 * Remove PluginLoader and ClassLoader from tesseract_common fwd.h
-* Make sure serialized objects have friend struct tesseract_common::Serialization
+* Make sure serialized objects have friend struct tesseract::common::Serialization
 * Contributors: Levi Armstrong, Tyler Marr
 
 0.30.0 (2025-04-23)
@@ -79,7 +79,7 @@ Changelog for package tesseract_collision
 
 0.28.8 (2025-02-01)
 -------------------
-* Add UUID to tesseract_geometry::Geometry and update collision shape cache
+* Add UUID to tesseract::geometry::Geometry and update collision shape cache
 * Fix collision shape caching
 * Contributors: Levi Armstrong
 
@@ -90,7 +90,7 @@ Changelog for package tesseract_collision
 
 0.28.6 (2025-01-26)
 -------------------
-* Add collision shape caching based on tesseract_geometry::Geometry object
+* Add collision shape caching based on tesseract::geometry::Geometry object
 * Contributors: Levi Armstrong
 
 0.28.5 (2025-01-21)

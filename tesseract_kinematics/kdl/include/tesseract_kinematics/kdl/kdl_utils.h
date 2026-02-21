@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/fwd.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 /**
  * @brief Convert KDL::Frame to Eigen::Isometry3d
@@ -108,7 +108,7 @@ struct KDLChainData
  * @return True if successful otherwise false
  */
 bool parseSceneGraph(KDLChainData& results,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const tesseract::scene_graph::SceneGraph& scene_graph,
                      const std::vector<std::pair<std::string, std::string>>& chains);
 
 /**
@@ -120,8 +120,8 @@ bool parseSceneGraph(KDLChainData& results,
  * @return True if successful otherwise false
  */
 bool parseSceneGraph(KDLChainData& results,
-                     const tesseract_scene_graph::SceneGraph& scene_graph,
+                     const tesseract::scene_graph::SceneGraph& scene_graph,
                      const std::string& base_name,
                      const std::string& tip_name);
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_KDL_UTILS_H

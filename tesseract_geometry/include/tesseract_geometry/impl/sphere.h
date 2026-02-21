@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 class Sphere;
 template <class Archive>
@@ -57,8 +57,8 @@ private:
   double r_{ 0 };
 
   template <class Archive>
-  friend void ::tesseract_geometry::serialize(Archive& ar, Sphere& obj);
+  friend void ::tesseract::geometry::serialize(Archive& ar, Sphere& obj);
 };
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif

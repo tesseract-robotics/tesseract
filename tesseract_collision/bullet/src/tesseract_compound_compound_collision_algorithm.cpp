@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 // LCOV_EXCL_START
 // See tesseract issue: https://github.com/tesseract-robotics/tesseract/issues/934
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision::bullet_internal
 {
 TesseractCompoundCompoundCollisionAlgorithm::TesseractCompoundCompoundCollisionAlgorithm(
     const btCollisionAlgorithmConstructionInfo& ci,
@@ -461,6 +461,6 @@ btScalar TesseractCompoundCompoundCollisionAlgorithm::calculateTimeOfImpact(btCo
   btAssert(0);
   return btScalar(0);
 }
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision::bullet_internal
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 // LCOV_EXCL_STOP

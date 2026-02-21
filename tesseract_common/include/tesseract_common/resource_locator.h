@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <filesystem>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_common
+namespace tesseract::common
 {
 // Forward declare
 class Resource;
@@ -139,7 +139,7 @@ private:
   void processToken(const std::string& token);
 
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, GeneralResourceLocator& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, GeneralResourceLocator& obj);
 };
 
 /**  @brief Represents resource data available from a file or url */
@@ -189,7 +189,7 @@ public:
 
 private:
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, Resource& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, Resource& obj);
 };
 
 using SimpleResourceLocatorFn = std::function<std::string(const std::string&)>;
@@ -238,10 +238,10 @@ private:
   ResourceLocator::ConstPtr parent_;
 
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, SimpleLocatedResource& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, SimpleLocatedResource& obj);
 };
 
-class BytesResource : public tesseract_common::Resource
+class BytesResource : public tesseract::common::Resource
 {
 public:
   /** @brief This is for serialization do not use directly */
@@ -271,9 +271,9 @@ private:
   ResourceLocator::ConstPtr parent_;
 
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, BytesResource& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, BytesResource& obj);
 };
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_RESOURCE_LOCATOR_H

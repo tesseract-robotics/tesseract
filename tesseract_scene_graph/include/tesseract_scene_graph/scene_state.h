@@ -39,7 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/fwd.h>
 #include <tesseract_common/eigen_types.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 /**
  * @brief This holds a state of the scene
@@ -63,21 +63,21 @@ struct SceneState
   std::unordered_map<std::string, double> joints;
 
   /** @brief The floating joint values used for calculating the joint and link transforms */
-  tesseract_common::TransformMap floating_joints;
+  tesseract::common::TransformMap floating_joints;
 
   /** @brief The link transforms in world coordinate system */
-  tesseract_common::TransformMap link_transforms;
+  tesseract::common::TransformMap link_transforms;
 
   /** @brief The joint transforms in world coordinate system */
-  tesseract_common::TransformMap joint_transforms;
+  tesseract::common::TransformMap joint_transforms;
 
   Eigen::VectorXd getJointValues(const std::vector<std::string>& joint_names) const;
 
-  tesseract_common::TransformMap getFloatingJointValues(const std::vector<std::string>& joint_names) const;
+  tesseract::common::TransformMap getFloatingJointValues(const std::vector<std::string>& joint_names) const;
 
   bool operator==(const SceneState& rhs) const;
   bool operator!=(const SceneState& rhs) const;
 };
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_SCENE_GRAPH_SCENE_STATE_H

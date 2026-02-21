@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 /** @brief The inverse kinematics solutions container */
 using IKSolutions = std::vector<Eigen::VectorXd>;
@@ -70,5 +70,5 @@ const static URParameters UR5eParameters(0.1625, -0.425, -0.3922, 0.1333, 0.0997
 /** @brief The UR3e kinematic parameters */
 const static URParameters UR3eParameters(0.15185, -0.24355, -0.2132, 0.13105, 0.08535, 0.0921);
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_TYPES_H

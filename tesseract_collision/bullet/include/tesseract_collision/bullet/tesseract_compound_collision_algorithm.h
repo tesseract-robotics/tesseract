@@ -35,7 +35,7 @@ class btCollisionObject;
 class btCollisionShape;
 
 // LCOV_EXCL_START
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision::bullet_internal
 {
 /**
  * @brief Supports collision between CompoundCollisionShapes and other collision shapes
@@ -122,6 +122,6 @@ public:
     }
   };
 };
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision::bullet_internal
 // LCOV_EXCL_STOP
 #endif  // TESSERACT_COLLISION_TESSERACT_COMPOUND_COLLISION_ALGORITHM_H

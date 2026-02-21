@@ -46,10 +46,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 static constexpr std::string_view ROBOT_ELEMENT_NAME = "robot";
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::string& urdf_xml_string,
-                                                                   const tesseract_common::ResourceLocator& locator)
+std::unique_ptr<tesseract::scene_graph::SceneGraph> parseURDFString(const std::string& urdf_xml_string,
+                                                                    const tesseract::common::ResourceLocator& locator)
 {
   tinyxml2::XMLDocument xml_doc;
   if (xml_doc.Parse(urdf_xml_string.c_str()) != tinyxml2::XML_SUCCESS)
@@ -60,7 +60,7 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
     std::throw_with_nested(std::runtime_error("URDF: Missing element 'robot'!"));
 
   std::string robot_name;
-  if (tesseract_common::QueryStringAttribute(robot, "name", robot_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract::common::QueryStringAttribute(robot, "name", robot_name) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("URDF: Missing or failed parsing attribute 'name'!"));
 
   int urdf_version = 1;
@@ -99,15 +99,15 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
                                                 robot_name + "'"));
   }
 
-  auto sg = std::make_unique<tesseract_scene_graph::SceneGraph>();
+  auto sg = std::make_unique<tesseract::scene_graph::SceneGraph>();
   sg->setName(robot_name);
 
-  std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+  std::unordered_map<std::string, tesseract::scene_graph::Material::Ptr> available_materials;
   for (tinyxml2::XMLElement* material = robot->FirstChildElement(MATERIAL_ELEMENT_NAME.data()); material != nullptr;
        material = material->NextSiblingElement(MATERIAL_ELEMENT_NAME.data()))
   {
-    tesseract_scene_graph::Material::Ptr m = nullptr;
-    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_material;
+    tesseract::scene_graph::Material::Ptr m = nullptr;
+    std::unordered_map<std::string, tesseract::scene_graph::Material::Ptr> empty_material;
     try
     {
       m = parseMaterial(material, empty_material, true);
@@ -124,7 +124,7 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   for (tinyxml2::XMLElement* link = robot->FirstChildElement(LINK_ELEMENT_NAME.data()); link != nullptr;
        link = link->NextSiblingElement(LINK_ELEMENT_NAME.data()))
   {
-    tesseract_scene_graph::Link::Ptr l = nullptr;
+    tesseract::scene_graph::Link::Ptr l = nullptr;
     try
     {
       l = parseLink(link, locator, make_convex, available_materials);
@@ -151,7 +151,7 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   for (tinyxml2::XMLElement* joint = robot->FirstChildElement(JOINT_ELEMENT_NAME.data()); joint != nullptr;
        joint = joint->NextSiblingElement(JOINT_ELEMENT_NAME.data()))
   {
-    tesseract_scene_graph::Joint::Ptr j = nullptr;
+    tesseract::scene_graph::Joint::Ptr j = nullptr;
     try
     {
       j = parseJoint(joint);
@@ -192,15 +192,15 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFString(const std::st
   return sg;
 }
 
-std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFFile(const std::string& path,
-                                                                 const tesseract_common::ResourceLocator& locator)
+std::unique_ptr<tesseract::scene_graph::SceneGraph> parseURDFFile(const std::string& path,
+                                                                  const tesseract::common::ResourceLocator& locator)
 {
   std::ifstream ifs(path);
   if (!ifs)
     std::throw_with_nested(std::runtime_error("URDF: Error opening file '" + path + "'!"));
 
   std::string urdf_xml_string((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-  tesseract_scene_graph::SceneGraph::UPtr sg;
+  tesseract::scene_graph::SceneGraph::UPtr sg;
   try
   {
     sg = parseURDFString(urdf_xml_string, locator);
@@ -213,7 +213,7 @@ std::unique_ptr<tesseract_scene_graph::SceneGraph> parseURDFFile(const std::stri
   return sg;
 }
 
-void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph>& sg,
+void writeURDFFile(const std::shared_ptr<const tesseract::scene_graph::SceneGraph>& sg,
                    const std::string& package_path,
                    const std::string& urdf_name)
 {
@@ -248,7 +248,7 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
 
   // Get Links
   std::vector<std::string> link_names;
-  for (const tesseract_scene_graph::Link::ConstPtr& l : sg->getLinks())
+  for (const tesseract::scene_graph::Link::ConstPtr& l : sg->getLinks())
   {
     if (l == nullptr)
       std::throw_with_nested(std::runtime_error("Link is nullptr, cannot get name"));
@@ -263,7 +263,7 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
   // Iterate through the sorted names and write the corresponding links to XML
   for (const std::string& s : link_names)
   {
-    const tesseract_scene_graph::Link::ConstPtr& l = sg->getLink(s);
+    const tesseract::scene_graph::Link::ConstPtr& l = sg->getLink(s);
     try
     {
       tinyxml2::XMLElement* xml_link = writeLink(l, doc, package_path);
@@ -277,7 +277,7 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
 
   // Get joints
   std::vector<std::string> joint_names;
-  for (const tesseract_scene_graph::Joint::ConstPtr& j : sg->getJoints())
+  for (const tesseract::scene_graph::Joint::ConstPtr& j : sg->getJoints())
   {
     if (j == nullptr)
       std::throw_with_nested(std::runtime_error("Joint is nullptr, cannot get name!"));
@@ -292,7 +292,7 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
   // Iterate through the sorted joint names and write the corresponding joints to xml
   for (const std::string& s : joint_names)
   {
-    const tesseract_scene_graph::Joint::ConstPtr& j = sg->getJoint(s);
+    const tesseract::scene_graph::Joint::ConstPtr& j = sg->getJoint(s);
     try
     {
       tinyxml2::XMLElement* xml_joint = writeJoint(j, doc);
@@ -318,4 +318,4 @@ void writeURDFFile(const std::shared_ptr<const tesseract_scene_graph::SceneGraph
   doc.SaveFile(full_filepath.c_str());
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

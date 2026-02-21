@@ -30,7 +30,7 @@
 #include <tesseract_common/kinematic_limits.h>
 #include <tesseract_scene_graph/scene_state.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 /**
  * @brief A Joint Group is defined by a list of joint_names.
@@ -66,8 +66,8 @@ public:
    */
   JointGroup(std::string name,
              std::vector<std::string> joint_names,
-             const tesseract_scene_graph::SceneGraph& scene_graph,
-             const tesseract_scene_graph::SceneState& scene_state);
+             const tesseract::scene_graph::SceneGraph& scene_graph,
+             const tesseract::scene_graph::SceneState& scene_state);
 
   /**
    * @brief Calculates tool pose of robot chain
@@ -75,7 +75,7 @@ public:
    * @param pose Transform of end-of-tip relative to root
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    */
-  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
+  tesseract::common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
    * @brief Calculates tool pose of robot chain
@@ -84,7 +84,7 @@ public:
    * @param pose Transform of end-of-tip relative to root
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    */
-  void calcFwdKin(tesseract_common::TransformMap& transforms,
+  void calcFwdKin(tesseract::common::TransformMap& transforms,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
@@ -177,13 +177,13 @@ public:
    * @brief Get the kinematic limits (joint, velocity, acceleration, etc.)
    * @return Kinematic Limits
    */
-  tesseract_common::KinematicLimits getLimits() const;
+  tesseract::common::KinematicLimits getLimits() const;
 
   /**
    * @brief Setter for kinematic limits (joint, velocity, acceleration, etc.)
    * @param Kinematic Limits
    */
-  void setLimits(const tesseract_common::KinematicLimits& limits);
+  void setLimits(const tesseract::common::KinematicLimits& limits);
 
   /**
    * @brief Get vector indicating which joints are capable of producing redundant solutions
@@ -212,17 +212,17 @@ public:
 
 protected:
   std::string name_;
-  tesseract_scene_graph::SceneState state_;
-  std::unique_ptr<tesseract_scene_graph::StateSolver> state_solver_;
+  tesseract::scene_graph::SceneState state_;
+  std::unique_ptr<tesseract::scene_graph::StateSolver> state_solver_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> link_names_;
   std::vector<std::string> static_link_names_;
-  tesseract_common::TransformMap static_link_transforms_;
-  tesseract_common::KinematicLimits limits_;
+  tesseract::common::TransformMap static_link_transforms_;
+  tesseract::common::KinematicLimits limits_;
   std::vector<Eigen::Index> redundancy_indices_;
   std::vector<Eigen::Index> jacobian_map_;
 };
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 #endif  // TESSERACT_KINEMATICS_JOINT_GROUP_H

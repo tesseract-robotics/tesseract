@@ -38,7 +38,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view SAFETY_CONTROLLER_ELEMENT_NAME = "safety_controller";
 
@@ -48,10 +48,10 @@ static constexpr std::string_view SAFETY_CONTROLLER_ELEMENT_NAME = "safety_contr
  * @param version The version number
  * @return A Tesseract JointSafety
  */
-std::shared_ptr<tesseract_scene_graph::JointSafety> parseSafetyController(const tinyxml2::XMLElement* xml_element);
-tinyxml2::XMLElement* writeSafetyController(const std::shared_ptr<const tesseract_scene_graph::JointSafety>& safety,
+std::shared_ptr<tesseract::scene_graph::JointSafety> parseSafetyController(const tinyxml2::XMLElement* xml_element);
+tinyxml2::XMLElement* writeSafetyController(const std::shared_ptr<const tesseract::scene_graph::JointSafety>& safety,
                                             tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_SAFETY_CONTROLLER_H

@@ -24,14 +24,14 @@
 #include <tesseract_geometry/impl/mesh_material.h>
 #include <tesseract_common/resource_locator.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
-ConvexMesh::ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+ConvexMesh::ConvexMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
                        std::shared_ptr<const Eigen::VectorXi> faces,
-                       tesseract_common::Resource::ConstPtr resource,
+                       tesseract::common::Resource::ConstPtr resource,
                        const Eigen::Vector3d& scale,
-                       std::shared_ptr<const tesseract_common::VectorVector3d> normals,
-                       std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                       std::shared_ptr<const tesseract::common::VectorVector3d> normals,
+                       std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors,
                        MeshMaterial::Ptr mesh_material,
                        std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures)
   : PolygonMesh(std::move(vertices),
@@ -46,13 +46,13 @@ ConvexMesh::ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> v
 {
 }
 
-ConvexMesh::ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+ConvexMesh::ConvexMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
                        std::shared_ptr<const Eigen::VectorXi> faces,
                        int face_count,
-                       tesseract_common::Resource::ConstPtr resource,
+                       tesseract::common::Resource::ConstPtr resource,
                        const Eigen::Vector3d& scale,
-                       std::shared_ptr<const tesseract_common::VectorVector3d> normals,
-                       std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                       std::shared_ptr<const tesseract::common::VectorVector3d> normals,
+                       std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors,
                        MeshMaterial::Ptr mesh_material,
                        std::shared_ptr<const std::vector<MeshTexture::Ptr>> mesh_textures)
   : PolygonMesh(std::move(vertices),
@@ -86,4 +86,4 @@ bool ConvexMesh::operator==(const ConvexMesh& rhs) const
 }
 bool ConvexMesh::operator!=(const ConvexMesh& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

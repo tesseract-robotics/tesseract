@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/ikfast/ikfast_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 inline IKFastInvKin::IKFastInvKin(std::string base_link_name,
                                   std::string tip_link_name,
@@ -65,7 +65,7 @@ inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
 }
 
 inline void IKFastInvKin::calcInvKin(IKSolutions& solutions,
-                                     const tesseract_common::TransformMap& tip_link_poses,
+                                     const tesseract::common::TransformMap& tip_link_poses,
                                      const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);
@@ -155,6 +155,6 @@ IKFastInvKin::generateAllFreeJointStateCombinations(const std::vector<std::vecto
   return free_joint_states;
 }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 #endif  // TESSERACT_KINEMATICS_IMPL_IKFAST_INV_KIN_HPP

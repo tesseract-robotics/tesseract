@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <utility>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_common
+namespace tesseract::common
 {
 using LinkNamesPair = std::pair<std::string, std::string>;
 
@@ -58,15 +58,15 @@ LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::stri
  */
 void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, const std::string& link_name2);
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 // std::hash support (for unordered_map and unordered_set)
 namespace std
 {
 template <>
-struct hash<tesseract_common::LinkNamesPair>
+struct hash<tesseract::common::LinkNamesPair>
 {
-  std::size_t operator()(const tesseract_common::LinkNamesPair& pair) const noexcept;
+  std::size_t operator()(const tesseract::common::LinkNamesPair& pair) const noexcept;
 };
 
 }  // namespace std

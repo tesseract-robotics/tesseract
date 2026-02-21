@@ -27,7 +27,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 Geometry::Geometry(GeometryType type) : type_(type), uuid_(boost::uuids::random_generator()()) {}
 
@@ -40,4 +40,4 @@ const boost::uuids::uuid& Geometry::getUUID() const { return uuid_; }
 bool Geometry::operator==(const Geometry& rhs) const { return (type_ == rhs.type_ && uuid_ == rhs.uuid_); }
 bool Geometry::operator!=(const Geometry& rhs) const { return !operator==(rhs); }  // LCOV_EXCL_LINE
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

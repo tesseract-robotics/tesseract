@@ -35,88 +35,88 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/octree_utils.h>
 #include <tesseract_common/serialization.h>
 
-using namespace tesseract_geometry;
+using namespace tesseract::geometry;
 
 TEST(TesseractGeometrySerializeUnit, Box)  // NOLINT
 {
   auto object = std::make_shared<Box>(1, 2, 3);
-  tesseract_common::testSerialization<Box>(*object, "Box");
-  tesseract_common::testSerializationDerivedClass<Geometry, Box>(object, "Box");
+  tesseract::common::testSerialization<Box>(*object, "Box");
+  tesseract::common::testSerializationDerivedClass<Geometry, Box>(object, "Box");
 }
 
 TEST(TesseractGeometrySerializeUnit, Capsule)  // NOLINT
 {
   auto object = std::make_shared<Capsule>(1, 2);
-  tesseract_common::testSerialization<Capsule>(*object, "Capsule");
-  tesseract_common::testSerializationDerivedClass<Geometry, Capsule>(object, "Capsule");
+  tesseract::common::testSerialization<Capsule>(*object, "Capsule");
+  tesseract::common::testSerializationDerivedClass<Geometry, Capsule>(object, "Capsule");
 }
 
 TEST(TesseractGeometrySerializeUnit, Cone)  // NOLINT
 {
   auto object = std::make_shared<Cone>(1.1, 2.2);
-  tesseract_common::testSerialization<Cone>(*object, "Cone");
-  tesseract_common::testSerializationDerivedClass<Geometry, Cone>(object, "Cone");
+  tesseract::common::testSerialization<Cone>(*object, "Cone");
+  tesseract::common::testSerializationDerivedClass<Geometry, Cone>(object, "Cone");
 }
 
 TEST(TesseractGeometrySerializeUnit, ConvexMesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = "package://tesseract_support/meshes/sphere_p25m.stl";
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::ConvexMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
-  tesseract_common::testSerialization<ConvexMesh>(*object.front(), "ConvexMesh");
-  tesseract_common::testSerializationDerivedClass<Geometry, ConvexMesh>(object.front(), "ConvexMesh");
-  tesseract_common::testSerializationDerivedClass<PolygonMesh, ConvexMesh>(object.front(), "ConvexMesh");
+  tesseract::common::testSerialization<ConvexMesh>(*object.front(), "ConvexMesh");
+  tesseract::common::testSerializationDerivedClass<Geometry, ConvexMesh>(object.front(), "ConvexMesh");
+  tesseract::common::testSerializationDerivedClass<PolygonMesh, ConvexMesh>(object.front(), "ConvexMesh");
 }
 
 TEST(TesseractGeometrySerializeUnit, CompoundConvexMesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = "package://tesseract_support/meshes/sphere_p25m.stl";
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::ConvexMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
-  std::vector<tesseract_geometry::PolygonMesh::Ptr> meshes;
+  std::vector<tesseract::geometry::PolygonMesh::Ptr> meshes;
   meshes.push_back(object.front());
   meshes.push_back(object.front());
   meshes.push_back(object.front());
 
   auto compound_object = std::make_shared<CompoundMesh>(meshes);
-  tesseract_common::testSerialization<CompoundMesh>(*compound_object, "CompundConvexMesh");
-  tesseract_common::testSerializationDerivedClass<Geometry, CompoundMesh>(compound_object, "CompundConvexMesh");
+  tesseract::common::testSerialization<CompoundMesh>(*compound_object, "CompundConvexMesh");
+  tesseract::common::testSerializationDerivedClass<Geometry, CompoundMesh>(compound_object, "CompundConvexMesh");
 }
 
 TEST(TesseractGeometrySerializeUnit, Cylinder)  // NOLINT
 {
   auto object = std::make_shared<Cylinder>(3.3, 4.4);
-  tesseract_common::testSerialization<Cylinder>(*object, "Cylinder");
-  tesseract_common::testSerializationDerivedClass<Geometry, Cylinder>(object, "Cylinder");
+  tesseract::common::testSerialization<Cylinder>(*object, "Cylinder");
+  tesseract::common::testSerializationDerivedClass<Geometry, Cylinder>(object, "Cylinder");
 }
 
 TEST(TesseractGeometrySerializeUnit, Mesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = "package://tesseract_support/meshes/sphere_p25m.stl";
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::Mesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
-  tesseract_common::testSerialization<Mesh>(*object.front(), "Mesh");
-  tesseract_common::testSerializationDerivedClass<Geometry, Mesh>(object.front(), "Mesh");
-  tesseract_common::testSerializationDerivedClass<PolygonMesh, Mesh>(object.front(), "Mesh");
+  tesseract::common::testSerialization<Mesh>(*object.front(), "Mesh");
+  tesseract::common::testSerializationDerivedClass<Geometry, Mesh>(object.front(), "Mesh");
+  tesseract::common::testSerializationDerivedClass<PolygonMesh, Mesh>(object.front(), "Mesh");
 }
 
 TEST(TesseractGeometrySerializeUnit, CompoundMesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = "package://tesseract_support/meshes/sphere_p25m.stl";
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::Mesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
-  std::vector<tesseract_geometry::PolygonMesh::Ptr> meshes;
+  std::vector<tesseract::geometry::PolygonMesh::Ptr> meshes;
   meshes.push_back(object.front());
   meshes.push_back(object.front());
   meshes.push_back(object.front());
 
   auto compound_object = std::make_shared<CompoundMesh>(meshes);
-  tesseract_common::testSerialization<CompoundMesh>(*compound_object, "CompoundMesh");
-  tesseract_common::testSerializationDerivedClass<Geometry, CompoundMesh>(compound_object, "CompoundMesh");
+  tesseract::common::testSerialization<CompoundMesh>(*compound_object, "CompoundMesh");
+  tesseract::common::testSerializationDerivedClass<Geometry, CompoundMesh>(compound_object, "CompoundMesh");
 }
 
 TEST(TesseractGeometrySerializeUnit, Octree)  // NOLINT
@@ -139,55 +139,55 @@ TEST(TesseractGeometrySerializeUnit, Octree)  // NOLINT
   pc.points.emplace_back(-.5, -0.5, -0.5);
   pc.points.emplace_back(-.5, 0.5, 0.5);
   {
-    auto octree = tesseract_geometry::createOctree(pc, 1, false, true);
-    auto object = std::make_shared<tesseract_geometry::Octree>(
-        std::move(octree), tesseract_geometry::OctreeSubType::BOX, false, true);
+    auto octree = tesseract::geometry::createOctree(pc, 1, false, true);
+    auto object = std::make_shared<tesseract::geometry::Octree>(
+        std::move(octree), tesseract::geometry::OctreeSubType::BOX, false, true);
 
-    // tesseract_common::testSerialization<tesseract_geometry::Octree>(*object, "Binary_Octree");
-    tesseract_common::testSerializationDerivedClass<Geometry, Octree>(object, "Binary_Octree");
+    // tesseract::common::testSerialization<tesseract::geometry::Octree>(*object, "Binary_Octree");
+    tesseract::common::testSerializationDerivedClass<Geometry, Octree>(object, "Binary_Octree");
   }
   {
-    auto octree = tesseract_geometry::createOctree(pc, 1, false, false);
-    auto object = std::make_shared<tesseract_geometry::Octree>(
-        std::move(octree), tesseract_geometry::OctreeSubType::BOX, false, false);
-    // tesseract_common::testSerialization<Octree>(*object, "Full_Octree");
-    tesseract_common::testSerializationDerivedClass<Geometry, Octree>(object, "Full_Octree");
+    auto octree = tesseract::geometry::createOctree(pc, 1, false, false);
+    auto object = std::make_shared<tesseract::geometry::Octree>(
+        std::move(octree), tesseract::geometry::OctreeSubType::BOX, false, false);
+    // tesseract::common::testSerialization<Octree>(*object, "Full_Octree");
+    tesseract::common::testSerializationDerivedClass<Geometry, Octree>(object, "Full_Octree");
   }
 }
 
 TEST(TesseractGeometrySerializeUnit, Plane)  // NOLINT
 {
   auto object = std::make_shared<Plane>(1.1, 2, 3.3, 4);
-  tesseract_common::testSerialization<Plane>(*object, "Plane");
-  tesseract_common::testSerializationDerivedClass<Geometry, Plane>(object, "Plane");
+  tesseract::common::testSerialization<Plane>(*object, "Plane");
+  tesseract::common::testSerializationDerivedClass<Geometry, Plane>(object, "Plane");
 }
 
 TEST(TesseractGeometrySerializeUnit, PolygonMesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = "package://tesseract_support/meshes/sphere_p25m.stl";
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::PolygonMesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::PolygonMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
-  tesseract_common::testSerialization<PolygonMesh>(*object.front(), "PolygonMesh");
-  tesseract_common::testSerializationDerivedClass<Geometry, PolygonMesh>(object.front(), "PolygonMesh");
+  tesseract::common::testSerialization<PolygonMesh>(*object.front(), "PolygonMesh");
+  tesseract::common::testSerializationDerivedClass<Geometry, PolygonMesh>(object.front(), "PolygonMesh");
 }
 
 TEST(TesseractGeometrySerializeUnit, SDFMesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = "package://tesseract_support/meshes/sphere_p25m.stl";
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::SDFMesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::SDFMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
-  tesseract_common::testSerialization<SDFMesh>(*object.front(), "SDFMesh");
-  tesseract_common::testSerializationDerivedClass<Geometry, SDFMesh>(object.front(), "SDFMesh");
-  tesseract_common::testSerializationDerivedClass<PolygonMesh, SDFMesh>(object.front(), "SDFMesh");
+  tesseract::common::testSerialization<SDFMesh>(*object.front(), "SDFMesh");
+  tesseract::common::testSerializationDerivedClass<Geometry, SDFMesh>(object.front(), "SDFMesh");
+  tesseract::common::testSerializationDerivedClass<PolygonMesh, SDFMesh>(object.front(), "SDFMesh");
 }
 
 TEST(TesseractGeometrySerializeUnit, Sphere)  // NOLINT
 {
   auto object = std::make_shared<Sphere>(3.3);
-  tesseract_common::testSerialization<Sphere>(*object, "Sphere");
-  tesseract_common::testSerializationDerivedClass<Geometry, Sphere>(object, "Sphere");
+  tesseract::common::testSerialization<Sphere>(*object, "Sphere");
+  tesseract::common::testSerializationDerivedClass<Geometry, Sphere>(object, "Sphere");
 }
 
 int main(int argc, char** argv)

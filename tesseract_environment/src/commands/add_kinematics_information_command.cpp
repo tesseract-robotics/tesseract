@@ -24,17 +24,17 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_environment/commands/add_kinematics_information_command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 AddKinematicsInformationCommand::AddKinematicsInformationCommand() : Command(CommandType::ADD_KINEMATICS_INFORMATION) {}
 
 AddKinematicsInformationCommand::AddKinematicsInformationCommand(
-    tesseract_srdf::KinematicsInformation kinematics_information)
+    tesseract::srdf::KinematicsInformation kinematics_information)
   : Command(CommandType::ADD_KINEMATICS_INFORMATION), kinematics_information_(std::move(kinematics_information))
 {
 }
 
-const tesseract_srdf::KinematicsInformation& AddKinematicsInformationCommand::getKinematicsInformation() const
+const tesseract::srdf::KinematicsInformation& AddKinematicsInformationCommand::getKinematicsInformation() const
 {
   return kinematics_information_;
 }
@@ -51,4 +51,4 @@ bool AddKinematicsInformationCommand::operator!=(const AddKinematicsInformationC
   return !operator==(rhs);
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

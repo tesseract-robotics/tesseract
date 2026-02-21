@@ -27,15 +27,15 @@
 
 #include <tesseract_common/eigen_types.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 InverseKinematics::~InverseKinematics() = default;
 
-IKSolutions InverseKinematics::calcInvKin(const tesseract_common::TransformMap& tip_link_poses,
+IKSolutions InverseKinematics::calcInvKin(const tesseract::common::TransformMap& tip_link_poses,
                                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   IKSolutions solutions;
   calcInvKin(solutions, tip_link_poses, seed);
   return solutions;
 }  // LCOV_EXCL_LINE
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

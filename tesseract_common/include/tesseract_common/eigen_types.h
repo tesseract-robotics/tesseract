@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_common
+namespace tesseract::common
 {
 template <typename T>
 using AlignedVector = std::vector<T, Eigen::aligned_allocator<T>>;
@@ -32,6 +32,6 @@ using VectorVector2d = AlignedVector<Eigen::Vector2d>;
 using TransformMap = AlignedUnorderedMap<std::string, Eigen::Isometry3d>;
 using Toolpath = AlignedVector<VectorIsometry3d>;
 using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COLLISION_EIGEN_UTILS_H

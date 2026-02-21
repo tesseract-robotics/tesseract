@@ -33,9 +33,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/cylinder.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_geometry::Cylinder::Ptr parseCylinder(const tinyxml2::XMLElement* xml_element)
+tesseract::geometry::Cylinder::Ptr parseCylinder(const tinyxml2::XMLElement* xml_element)
 {
   double r{ 0 }, l{ 0 };
   if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS || !(l > 0))
@@ -44,10 +44,10 @@ tesseract_geometry::Cylinder::Ptr parseCylinder(const tinyxml2::XMLElement* xml_
   if (xml_element->QueryDoubleAttribute("radius", &(r)) != tinyxml2::XML_SUCCESS || !(r > 0))
     std::throw_with_nested(std::runtime_error("Cylinder: Missing or failed parsing attribute 'radius'!"));
 
-  return std::make_shared<tesseract_geometry::Cylinder>(r, l);
+  return std::make_shared<tesseract::geometry::Cylinder>(r, l);
 }
 
-tinyxml2::XMLElement* writeCylinder(const std::shared_ptr<const tesseract_geometry::Cylinder>& cylinder,
+tinyxml2::XMLElement* writeCylinder(const std::shared_ptr<const tesseract::geometry::Cylinder>& cylinder,
                                     tinyxml2::XMLDocument& doc)
 {
   if (cylinder == nullptr)
@@ -58,4 +58,4 @@ tinyxml2::XMLElement* writeCylinder(const std::shared_ptr<const tesseract_geomet
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

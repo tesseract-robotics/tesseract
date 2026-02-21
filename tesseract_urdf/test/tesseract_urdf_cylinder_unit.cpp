@@ -12,93 +12,93 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
 {
   {
     std::string str = R"(<cylinder radius="1" length="2" extra="0 0 0"/>)";
-    tesseract_geometry::Cylinder::Ptr geom;
-    EXPECT_TRUE(runTest<tesseract_geometry::Cylinder::Ptr>(
-        geom, &tesseract_urdf::parseCylinder, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data()));
+    tesseract::geometry::Cylinder::Ptr geom;
+    EXPECT_TRUE(runTest<tesseract::geometry::Cylinder::Ptr>(
+        geom, &tesseract::urdf::parseCylinder, str, tesseract::urdf::CYLINDER_ELEMENT_NAME.data()));
     EXPECT_NEAR(geom->getRadius(), 1, 1e-8);
     EXPECT_NEAR(geom->getLength(), 2, 1e-8);
   }
 
   {  // https://github.com/ros-industrial-consortium/tesseract_ros/issues/67
     std::string str = R"(<cylinder radius="0.25" length="0.5" extra="0 0 0"/>)";
-    tesseract_geometry::Cylinder::Ptr geom;
-    EXPECT_TRUE(runTest<tesseract_geometry::Cylinder::Ptr>(
-        geom, &tesseract_urdf::parseCylinder, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data()));
+    tesseract::geometry::Cylinder::Ptr geom;
+    EXPECT_TRUE(runTest<tesseract::geometry::Cylinder::Ptr>(
+        geom, &tesseract::urdf::parseCylinder, str, tesseract::urdf::CYLINDER_ELEMENT_NAME.data()));
     EXPECT_NEAR(geom->getRadius(), 0.25, 1e-8);
     EXPECT_NEAR(geom->getLength(), 0.5, 1e-8);
   }
 
   {
     std::string str = R"(<cylinder radius="-1" length="2" extra="0 0 0"/>)";
-    tesseract_geometry::Cylinder::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Cylinder::Ptr>(
-        geom, &tesseract_urdf::parseCylinder, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data()));
+    tesseract::geometry::Cylinder::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract::geometry::Cylinder::Ptr>(
+        geom, &tesseract::urdf::parseCylinder, str, tesseract::urdf::CYLINDER_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<cylinder radius="1" length="-2" extra="0 0 0"/>)";
-    tesseract_geometry::Cylinder::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Cylinder::Ptr>(
-        geom, &tesseract_urdf::parseCylinder, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data()));
+    tesseract::geometry::Cylinder::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract::geometry::Cylinder::Ptr>(
+        geom, &tesseract::urdf::parseCylinder, str, tesseract::urdf::CYLINDER_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<cylinder radius="a" length="2"/>)";
-    tesseract_geometry::Cylinder::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Cylinder::Ptr>(
-        geom, &tesseract_urdf::parseCylinder, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data()));
+    tesseract::geometry::Cylinder::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract::geometry::Cylinder::Ptr>(
+        geom, &tesseract::urdf::parseCylinder, str, tesseract::urdf::CYLINDER_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<cylinder radius="1" length="a"/>)";
-    tesseract_geometry::Cylinder::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Cylinder::Ptr>(
-        geom, &tesseract_urdf::parseCylinder, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data()));
+    tesseract::geometry::Cylinder::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract::geometry::Cylinder::Ptr>(
+        geom, &tesseract::urdf::parseCylinder, str, tesseract::urdf::CYLINDER_ELEMENT_NAME.data()));
   }
 
   // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
   //  {
   //    std::string str = R"(<cylinder radius="1 2" length="2 3"/>)";
-  //    tesseract_geometry::Cylinder::Ptr geom;
-  //    auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str,
+  //    tesseract::geometry::Cylinder::Ptr geom;
+  //    auto status = runTest<tesseract::geometry::Cylinder::Ptr>(geom, str,
   //    tesseract_urdf::CYLINDER_ELEMENT_NAME.data()); EXPECT_FALSE(*status); EXPECT_FALSE(status->message().empty());
   //  }
 
   {
     std::string str = R"(<cylinder radius="1"/>)";
-    tesseract_geometry::Cylinder::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Cylinder::Ptr>(
-        geom, &tesseract_urdf::parseCylinder, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data()));
+    tesseract::geometry::Cylinder::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract::geometry::Cylinder::Ptr>(
+        geom, &tesseract::urdf::parseCylinder, str, tesseract::urdf::CYLINDER_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<cylinder length="2"/>)";
-    tesseract_geometry::Cylinder::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Cylinder::Ptr>(
-        geom, &tesseract_urdf::parseCylinder, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data()));
+    tesseract::geometry::Cylinder::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract::geometry::Cylinder::Ptr>(
+        geom, &tesseract::urdf::parseCylinder, str, tesseract::urdf::CYLINDER_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = "<cylinder />";
-    tesseract_geometry::Cylinder::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract_geometry::Cylinder::Ptr>(
-        geom, &tesseract_urdf::parseCylinder, str, tesseract_urdf::CYLINDER_ELEMENT_NAME.data()));
+    tesseract::geometry::Cylinder::Ptr geom;
+    EXPECT_FALSE(runTest<tesseract::geometry::Cylinder::Ptr>(
+        geom, &tesseract::urdf::parseCylinder, str, tesseract::urdf::CYLINDER_ELEMENT_NAME.data()));
   }
 }
 
 TEST(TesseractURDFUnit, write_cylinder)  // NOLINT
 {
   {
-    tesseract_geometry::Cylinder::Ptr cylinder = std::make_shared<tesseract_geometry::Cylinder>(0.5, 1.0);
+    tesseract::geometry::Cylinder::Ptr cylinder = std::make_shared<tesseract::geometry::Cylinder>(0.5, 1.0);
     std::string text;
-    EXPECT_EQ(0, writeTest<tesseract_geometry::Cylinder::Ptr>(cylinder, &tesseract_urdf::writeCylinder, text));
+    EXPECT_EQ(0, writeTest<tesseract::geometry::Cylinder::Ptr>(cylinder, &tesseract::urdf::writeCylinder, text));
     EXPECT_NE(text, "");
   }
 
   {
-    tesseract_geometry::Cylinder::Ptr cylinder = nullptr;
+    tesseract::geometry::Cylinder::Ptr cylinder = nullptr;
     std::string text;
-    EXPECT_EQ(1, writeTest<tesseract_geometry::Cylinder::Ptr>(cylinder, &tesseract_urdf::writeCylinder, text));
+    EXPECT_EQ(1, writeTest<tesseract::geometry::Cylinder::Ptr>(cylinder, &tesseract::urdf::writeCylinder, text));
     EXPECT_EQ(text, "");
   }
 }

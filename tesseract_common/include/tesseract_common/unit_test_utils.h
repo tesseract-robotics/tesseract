@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 template <typename SerializableType>
 using TestSerializationCompareFn = std::function<bool(const SerializableType&, const SerializableType&)>;
@@ -64,110 +64,111 @@ void testSerialization(
     TestSerializationCompareFn<SerializableType> compare = testSerializationCompareEqual<SerializableType>)
 {
   {  // Archive program to XML file
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".xml";
-    EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileXML<SerializableType>(object, file_path));
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".xml";
+    EXPECT_TRUE(tesseract::common::Serialization::toArchiveFileXML<SerializableType>(object, file_path));
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileXML<SerializableType>(file_path) };
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveFileXML<SerializableType>(file_path) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
   {  // Archive program to XML file with name
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".xml";
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".xml";
     EXPECT_TRUE(
-        tesseract_common::Serialization::toArchiveFileXML<SerializableType>(object, file_path, typename_string));
+        tesseract::common::Serialization::toArchiveFileXML<SerializableType>(object, file_path, typename_string));
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileXML<SerializableType>(file_path,
-                                                                                                    typename_string) };
-    EXPECT_TRUE(compare(object, nobject));
-  }
-
-  {  // Archive program to JSON file
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".json";
-    EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileJSON<SerializableType>(object, file_path));
-
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileJSON<SerializableType>(file_path) };
-    EXPECT_TRUE(compare(object, nobject));
-  }
-
-  {  // Archive program to JSON file with name
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".json";
-    EXPECT_TRUE(
-        tesseract_common::Serialization::toArchiveFileJSON<SerializableType>(object, file_path, typename_string));
-
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileJSON<SerializableType>(file_path,
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveFileXML<SerializableType>(file_path,
                                                                                                      typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
-  {  // Archive program to binary file
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".binary";
-    EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileBinary<SerializableType>(object, file_path));
+  {  // Archive program to JSON file
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".json";
+    EXPECT_TRUE(tesseract::common::Serialization::toArchiveFileJSON<SerializableType>(object, file_path));
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileBinary<SerializableType>(file_path) };
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveFileJSON<SerializableType>(file_path) };
+    EXPECT_TRUE(compare(object, nobject));
+  }
+
+  {  // Archive program to JSON file with name
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".json";
+    EXPECT_TRUE(
+        tesseract::common::Serialization::toArchiveFileJSON<SerializableType>(object, file_path, typename_string));
+
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveFileJSON<SerializableType>(
+        file_path, typename_string) };
+    EXPECT_TRUE(compare(object, nobject));
+  }
+
+  {  // Archive program to binary file
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".binary";
+    EXPECT_TRUE(tesseract::common::Serialization::toArchiveFileBinary<SerializableType>(object, file_path));
+
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveFileBinary<SerializableType>(file_path) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
   {  // Archive program to binary file with name
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".binary";
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".binary";
     EXPECT_TRUE(
-        tesseract_common::Serialization::toArchiveFileBinary<SerializableType>(object, file_path, typename_string));
+        tesseract::common::Serialization::toArchiveFileBinary<SerializableType>(object, file_path, typename_string));
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveFileBinary<SerializableType>(
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveFileBinary<SerializableType>(
         file_path, typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
   {  // Archive program to string
-    std::string object_string = tesseract_common::Serialization::toArchiveStringXML<SerializableType>(object);
+    std::string object_string = tesseract::common::Serialization::toArchiveStringXML<SerializableType>(object);
     EXPECT_FALSE(object_string.empty());
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringXML<SerializableType>(object_string) };
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveStringXML<SerializableType>(object_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
   {  // Archive program to string with name
     std::string object_string =
-        tesseract_common::Serialization::toArchiveStringXML<SerializableType>(object, typename_string);
+        tesseract::common::Serialization::toArchiveStringXML<SerializableType>(object, typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringXML<SerializableType>(
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveStringXML<SerializableType>(
         object_string, typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
   {  // Archive program to string
-    std::string object_string = tesseract_common::Serialization::toArchiveStringJSON<SerializableType>(object);
+    std::string object_string = tesseract::common::Serialization::toArchiveStringJSON<SerializableType>(object);
     EXPECT_FALSE(object_string.empty());
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringJSON<SerializableType>(object_string) };
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveStringJSON<SerializableType>(
+        object_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
   {  // Archive program to string with name
     std::string object_string =
-        tesseract_common::Serialization::toArchiveStringJSON<SerializableType>(object, typename_string);
+        tesseract::common::Serialization::toArchiveStringJSON<SerializableType>(object, typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveStringJSON<SerializableType>(
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveStringJSON<SerializableType>(
         object_string, typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
   {  // Archive program to binary data
     std::vector<std::uint8_t> object_data =
-        tesseract_common::Serialization::toArchiveBinaryData<SerializableType>(object);
+        tesseract::common::Serialization::toArchiveBinaryData<SerializableType>(object);
     EXPECT_FALSE(object_data.empty());
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveBinaryData<SerializableType>(object_data) };
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveBinaryData<SerializableType>(object_data) };
     EXPECT_TRUE(compare(object, nobject));
   }
 
   {  // Archive program to binary data with name
     std::vector<std::uint8_t> object_data =
-        tesseract_common::Serialization::toArchiveBinaryData<SerializableType>(object, typename_string);
+        tesseract::common::Serialization::toArchiveBinaryData<SerializableType>(object, typename_string);
     EXPECT_FALSE(object_data.empty());
 
-    SerializableType nobject{ tesseract_common::Serialization::fromArchiveBinaryData<SerializableType>(
+    SerializableType nobject{ tesseract::common::Serialization::fromArchiveBinaryData<SerializableType>(
         object_data, typename_string) };
     EXPECT_TRUE(compare(object, nobject));
   }
@@ -185,12 +186,12 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
                                    const std::string& typename_string)
 {
   {  // Archive program to XML file
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".xml";
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".xml";
     EXPECT_TRUE(
-        tesseract_common::Serialization::toArchiveFileXML<std::shared_ptr<SerializableTypeBase>>(object, file_path));
+        tesseract::common::Serialization::toArchiveFileXML<std::shared_ptr<SerializableTypeBase>>(object, file_path));
 
     auto nobject =
-        tesseract_common::Serialization::fromArchiveFileXML<std::shared_ptr<SerializableTypeBase>>(file_path);
+        tesseract::common::Serialization::fromArchiveFileXML<std::shared_ptr<SerializableTypeBase>>(file_path);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
     auto object_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(object);
@@ -198,12 +199,12 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
   }
 
   {  // Archive program to JSON file
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".json";
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".json";
     EXPECT_TRUE(
-        tesseract_common::Serialization::toArchiveFileJSON<std::shared_ptr<SerializableTypeBase>>(object, file_path));
+        tesseract::common::Serialization::toArchiveFileJSON<std::shared_ptr<SerializableTypeBase>>(object, file_path));
 
     auto nobject =
-        tesseract_common::Serialization::fromArchiveFileJSON<std::shared_ptr<SerializableTypeBase>>(file_path);
+        tesseract::common::Serialization::fromArchiveFileJSON<std::shared_ptr<SerializableTypeBase>>(file_path);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
     auto object_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(object);
@@ -211,12 +212,12 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
   }
 
   {  // Archive program to binary file
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".binary";
-    EXPECT_TRUE(
-        tesseract_common::Serialization::toArchiveFileBinary<std::shared_ptr<SerializableTypeBase>>(object, file_path));
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".binary";
+    EXPECT_TRUE(tesseract::common::Serialization::toArchiveFileBinary<std::shared_ptr<SerializableTypeBase>>(
+        object, file_path));
 
     auto nobject =
-        tesseract_common::Serialization::fromArchiveFileBinary<std::shared_ptr<SerializableTypeBase>>(file_path);
+        tesseract::common::Serialization::fromArchiveFileBinary<std::shared_ptr<SerializableTypeBase>>(file_path);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
     auto object_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(object);
@@ -225,11 +226,11 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
 
   {  // Archive program to string
     std::string object_string =
-        tesseract_common::Serialization::toArchiveStringXML<std::shared_ptr<SerializableTypeBase>>(object,
-                                                                                                   typename_string);
+        tesseract::common::Serialization::toArchiveStringXML<std::shared_ptr<SerializableTypeBase>>(object,
+                                                                                                    typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    auto nobject = tesseract_common::Serialization::fromArchiveStringXML<std::shared_ptr<SerializableTypeBase>>(
+    auto nobject = tesseract::common::Serialization::fromArchiveStringXML<std::shared_ptr<SerializableTypeBase>>(
         object_string, typename_string);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
@@ -239,11 +240,11 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
 
   {  // Archive program to string
     std::string object_string =
-        tesseract_common::Serialization::toArchiveStringJSON<std::shared_ptr<SerializableTypeBase>>(object,
-                                                                                                    typename_string);
+        tesseract::common::Serialization::toArchiveStringJSON<std::shared_ptr<SerializableTypeBase>>(object,
+                                                                                                     typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    auto nobject = tesseract_common::Serialization::fromArchiveStringJSON<std::shared_ptr<SerializableTypeBase>>(
+    auto nobject = tesseract::common::Serialization::fromArchiveStringJSON<std::shared_ptr<SerializableTypeBase>>(
         object_string, typename_string);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
@@ -253,11 +254,11 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
 
   {  // Archive program to binary data
     std::vector<std::uint8_t> object_data =
-        tesseract_common::Serialization::toArchiveBinaryData<std::shared_ptr<SerializableTypeBase>>(object,
-                                                                                                    typename_string);
+        tesseract::common::Serialization::toArchiveBinaryData<std::shared_ptr<SerializableTypeBase>>(object,
+                                                                                                     typename_string);
     EXPECT_FALSE(object_data.empty());
 
-    auto nobject = tesseract_common::Serialization::fromArchiveBinaryData<std::shared_ptr<SerializableTypeBase>>(
+    auto nobject = tesseract::common::Serialization::fromArchiveBinaryData<std::shared_ptr<SerializableTypeBase>>(
         object_data, typename_string);
     auto nobject_derived = std::dynamic_pointer_cast<SerializableTypeDerived>(nobject);
 
@@ -275,15 +276,15 @@ void testSerializationDerivedClass(const std::shared_ptr<SerializableTypeBase>& 
  */
 template <typename SerializableTypeStored>
 void testSerializationAnyPoly(
-    const tesseract_common::AnyPoly& object,
+    const tesseract::common::AnyPoly& object,
     const std::string& typename_string,
     TestSerializationCompareFn<SerializableTypeStored> compare = testSerializationCompareEqual<SerializableTypeStored>)
 {
   {  // Archive program to XML file
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".xml";
-    EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileXML<tesseract_common::AnyPoly>(object, file_path));
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".xml";
+    EXPECT_TRUE(tesseract::common::Serialization::toArchiveFileXML<tesseract::common::AnyPoly>(object, file_path));
 
-    auto nobject = tesseract_common::Serialization::fromArchiveFileXML<tesseract_common::AnyPoly>(file_path);
+    auto nobject = tesseract::common::Serialization::fromArchiveFileXML<tesseract::common::AnyPoly>(file_path);
     const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
@@ -292,10 +293,10 @@ void testSerializationAnyPoly(
   }
 
   {  // Archive program to XML file
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".json";
-    EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileJSON<tesseract_common::AnyPoly>(object, file_path));
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".json";
+    EXPECT_TRUE(tesseract::common::Serialization::toArchiveFileJSON<tesseract::common::AnyPoly>(object, file_path));
 
-    auto nobject = tesseract_common::Serialization::fromArchiveFileJSON<tesseract_common::AnyPoly>(file_path);
+    auto nobject = tesseract::common::Serialization::fromArchiveFileJSON<tesseract::common::AnyPoly>(file_path);
     const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
@@ -304,10 +305,10 @@ void testSerializationAnyPoly(
   }
 
   {  // Archive program to binary file
-    std::string file_path = tesseract_common::getTempPath() + typename_string + ".binary";
-    EXPECT_TRUE(tesseract_common::Serialization::toArchiveFileBinary<tesseract_common::AnyPoly>(object, file_path));
+    std::string file_path = tesseract::common::getTempPath() + typename_string + ".binary";
+    EXPECT_TRUE(tesseract::common::Serialization::toArchiveFileBinary<tesseract::common::AnyPoly>(object, file_path));
 
-    auto nobject = tesseract_common::Serialization::fromArchiveFileBinary<tesseract_common::AnyPoly>(file_path);
+    auto nobject = tesseract::common::Serialization::fromArchiveFileBinary<tesseract::common::AnyPoly>(file_path);
     const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
@@ -317,11 +318,11 @@ void testSerializationAnyPoly(
 
   {  // Archive program to string
     std::string object_string =
-        tesseract_common::Serialization::toArchiveStringXML<tesseract_common::AnyPoly>(object, typename_string);
+        tesseract::common::Serialization::toArchiveStringXML<tesseract::common::AnyPoly>(object, typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    auto nobject = tesseract_common::Serialization::fromArchiveStringXML<tesseract_common::AnyPoly>(object_string,
-                                                                                                    typename_string);
+    auto nobject = tesseract::common::Serialization::fromArchiveStringXML<tesseract::common::AnyPoly>(object_string,
+                                                                                                      typename_string);
     const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
@@ -331,11 +332,11 @@ void testSerializationAnyPoly(
 
   {  // Archive program to string
     std::string object_string =
-        tesseract_common::Serialization::toArchiveStringJSON<tesseract_common::AnyPoly>(object, typename_string);
+        tesseract::common::Serialization::toArchiveStringJSON<tesseract::common::AnyPoly>(object, typename_string);
     EXPECT_FALSE(object_string.empty());
 
-    auto nobject = tesseract_common::Serialization::fromArchiveStringJSON<tesseract_common::AnyPoly>(object_string,
-                                                                                                     typename_string);
+    auto nobject = tesseract::common::Serialization::fromArchiveStringJSON<tesseract::common::AnyPoly>(object_string,
+                                                                                                       typename_string);
     const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
@@ -345,11 +346,11 @@ void testSerializationAnyPoly(
 
   {  // Archive program to binary data
     std::vector<std::uint8_t> object_data =
-        tesseract_common::Serialization::toArchiveBinaryData<tesseract_common::AnyPoly>(object, typename_string);
+        tesseract::common::Serialization::toArchiveBinaryData<tesseract::common::AnyPoly>(object, typename_string);
     EXPECT_FALSE(object_data.empty());
 
-    auto nobject =
-        tesseract_common::Serialization::fromArchiveBinaryData<tesseract_common::AnyPoly>(object_data, typename_string);
+    auto nobject = tesseract::common::Serialization::fromArchiveBinaryData<tesseract::common::AnyPoly>(object_data,
+                                                                                                       typename_string);
     const auto& nobject_stored = nobject.as<SerializableTypeStored>();
     EXPECT_TRUE(nobject.getType() == std::type_index(typeid(SerializableTypeStored)));
 
@@ -357,5 +358,5 @@ void testSerializationAnyPoly(
     EXPECT_TRUE(compare(object_stored, nobject_stored));
   }
 }
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 #endif  // TESSERACT_COMMON_UTILS_H

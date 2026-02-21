@@ -37,11 +37,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include "test_profile.h"
 
-using namespace tesseract_common;
+using namespace tesseract::common;
 
 TEST(TesseractCommonProfileFactoryUnit, PluginFactoryAPIUnit)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   ProfilePluginFactory factory;
   EXPECT_TRUE(factory.getSearchPaths().empty());
@@ -79,14 +79,14 @@ TEST(TesseractCommonProfileFactoryUnit, PluginFactoryAPIUnit)  // NOLINT
   EXPECT_EQ(factory_data, factory.getFactoryData());
 
   {
-    std::map<std::string, tesseract_common::PluginInfoMap> map = factory.getPlugins();
+    std::map<std::string, tesseract::common::PluginInfoMap> map = factory.getPlugins();
     const std::string ns{ "TesseractCollisionCost" };
     const std::string name{ "freespace" };
     const std::string default_name{ "default" };
     const std::string class_name{ "TestProfileFactory" };
     EXPECT_TRUE(map.find(ns) == map.end());
 
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = class_name;
     factory.addPlugin(ns, name, pi);
     EXPECT_EQ(factory.getPlugins().size(), 1);
@@ -97,7 +97,7 @@ TEST(TesseractCommonProfileFactoryUnit, PluginFactoryAPIUnit)  // NOLINT
     EXPECT_TRUE(map.at(ns).find(name) != map.at(ns).end());
     EXPECT_EQ(map.find(ns)->second.size(), 1);
 
-    tesseract_common::PluginInfo pi2;
+    tesseract::common::PluginInfo pi2;
     pi2.class_name = class_name;
     factory.addPlugin(ns, default_name, pi2);
     EXPECT_EQ(factory.getPlugins().size(), 1);
@@ -129,10 +129,10 @@ TEST(TesseractCommonProfileFactoryUnit, PluginFactoryAPIUnit)  // NOLINT
 TEST(TesseractCommonProfileFactoryUnit, LoadProfilePluginInfoUnit)  // NOLINT
 {
   const std::string lib_dir = std::string(TEST_PLUGIN_DIR);
-  const std::filesystem::path config_filepath = std::filesystem::path(tesseract_common::getTempPath()) / "profile_"
-                                                                                                         "plugins_"
-                                                                                                         "export.yaml";
-  tesseract_common::GeneralResourceLocator locator;
+  const std::filesystem::path config_filepath = std::filesystem::path(tesseract::common::getTempPath()) / "profile_"
+                                                                                                          "plugins_"
+                                                                                                          "export.yaml";
+  tesseract::common::GeneralResourceLocator locator;
 
   std::string yaml_string = R"(
 profile_plugins:
@@ -218,7 +218,7 @@ profile_plugins:
   }
 
   {  // Load via YAML::Node
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     ProfilePluginFactory factory(config, locator);
     auto map = factory.getPlugins();
     EXPECT_EQ(map.size(), 2);
@@ -238,9 +238,9 @@ profile_plugins:
   }
 
   {  // Load via YAML::Node
-    YAML::Node config_yaml = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config_yaml = tesseract::common::loadYamlString(yaml_string, locator);
     auto config =
-        config_yaml[tesseract_common::ProfilesPluginInfo::CONFIG_KEY].as<tesseract_common::ProfilesPluginInfo>();
+        config_yaml[tesseract::common::ProfilesPluginInfo::CONFIG_KEY].as<tesseract::common::ProfilesPluginInfo>();
     ProfilePluginFactory factory(config);
     auto map = factory.getPlugins();
     EXPECT_EQ(map.size(), 2);
@@ -260,7 +260,7 @@ profile_plugins:
   }
 
   {  // missing entry
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin_yaml = config["profile_plugins"]["profiles"]["TrajOptCollisionCost"];
     plugin_yaml.remove("DiscreteCollisionProfile2");
 
@@ -269,7 +269,7 @@ profile_plugins:
     EXPECT_TRUE(plugin == nullptr);
   }
   {  // missing class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin_yaml = config["profile_plugins"]["profiles"]["TrajOptCollisionCost"]["DiscreteCollisionProfile2"];
     plugin_yaml.remove("class");
 

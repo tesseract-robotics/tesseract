@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/profile.h>
 #include <tesseract_common/profile_dictionary.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 bool operator==(const ProfileDictionary& lhs, const ProfileDictionary& rhs)
 {
@@ -61,17 +61,17 @@ bool operator==(const ProfileDictionary& lhs, const ProfileDictionary& rhs)
 }
 
 bool operator!=(const ProfileDictionary& lhs, const ProfileDictionary& rhs) { return !(lhs == rhs); }
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 class TestProfile;
 
-namespace tesseract_common
+namespace tesseract::common
 {
 template <class Archive>
 void serialize(Archive& ar, TestProfile& obj);
 }
 
-using namespace tesseract_common;
+using namespace tesseract::common;
 
 class TestProfile : public Profile
 {
@@ -89,23 +89,23 @@ public:
 
 protected:
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, TestProfile& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, TestProfile& obj);
 };
 
 template <class Archive>
-void tesseract_common::serialize(Archive& ar, TestProfile& obj)
+void tesseract::common::serialize(Archive& ar, TestProfile& obj)
 {
   ar(cereal::base_class<Profile>(&obj));
 }
 
 CEREAL_REGISTER_TYPE(TestProfile)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::Profile, TestProfile)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::Profile, TestProfile)
 
 TEST(TesseractCommonSerializeUnit, Profile)  // NOLINT
 {
   TestProfile profile(100);
   EXPECT_EQ(profile.getKey(), 100);
-  tesseract_common::testSerialization<TestProfile>(profile, "TestProfile");
+  tesseract::common::testSerialization<TestProfile>(profile, "TestProfile");
 }
 
 TEST(TesseractCommonSerializeUnit, ProfileDictionary)  // NOLINT
@@ -121,16 +121,16 @@ TEST(TesseractCommonSerializeUnit, ProfileDictionary)  // NOLINT
   profile_dictionary.addProfile("test_namespace_2", "profile_c", profile_c);
   profile_dictionary.addProfile("test_namespace_2", "profile_c", profile_d);
 
-  tesseract_common::testSerialization<ProfileDictionary>(profile_dictionary, "ProfileDictionary");
+  tesseract::common::testSerialization<ProfileDictionary>(profile_dictionary, "ProfileDictionary");
 }
 
 TEST(TesseractCommonSerializeUnit, GeneralResourceLocator)  // NOLINT
 {
   auto locator = std::make_shared<GeneralResourceLocator>();
-  tesseract_common::testSerialization<GeneralResourceLocator::Ptr>(
+  tesseract::common::testSerialization<GeneralResourceLocator::Ptr>(
       locator,
       "GeneralResourceLocator",
-      tesseract_common::testSerializationComparePtrEqual<GeneralResourceLocator::Ptr>);
+      tesseract::common::testSerializationComparePtrEqual<GeneralResourceLocator::Ptr>);
 }
 
 TEST(TesseractCommonSerializeUnit, KinematicLimits)  // NOLINT
@@ -145,17 +145,17 @@ TEST(TesseractCommonSerializeUnit, KinematicLimits)  // NOLINT
   limits.velocity_limits << -6, 6, -6, 6, -6, 6;
   limits.acceleration_limits << -7, 7, -7, 7, -7, 7;
 
-  tesseract_common::testSerialization<KinematicLimits>(limits, "KinematicLimits");
+  tesseract::common::testSerialization<KinematicLimits>(limits, "KinematicLimits");
 }
 
 TEST(TesseractCommonSerializeUnit, ManipulatorInfo)  // NOLINT
 {
   ManipulatorInfo manip_info("manipulator", "world", "tool0");
-  tesseract_common::testSerialization<ManipulatorInfo>(manip_info, "ManipulatorInfo");
+  tesseract::common::testSerialization<ManipulatorInfo>(manip_info, "ManipulatorInfo");
 
   ManipulatorInfo manip_info2("manipulator", "world", "tool0");
   manip_info2.tcp_offset = "tool0";
-  tesseract_common::testSerialization<ManipulatorInfo>(manip_info2, "ManipulatorInfo2");
+  tesseract::common::testSerialization<ManipulatorInfo>(manip_info2, "ManipulatorInfo2");
 }
 
 TEST(TesseractCommonSerializeUnit, JointState)  // NOLINT
@@ -168,7 +168,7 @@ TEST(TesseractCommonSerializeUnit, JointState)  // NOLINT
   joint_state.effort = Eigen::VectorXd::Constant(3, 8);
   joint_state.time = 100;
 
-  tesseract_common::testSerialization<JointState>(joint_state, "JointState");
+  tesseract::common::testSerialization<JointState>(joint_state, "JointState");
 }
 
 TEST(TesseractCommonSerializeUnit, JointTrajectory)  // NOLINT
@@ -185,38 +185,38 @@ TEST(TesseractCommonSerializeUnit, JointTrajectory)  // NOLINT
   trajectory.states.push_back(joint_state);
   trajectory.description = "this is a test";
 
-  tesseract_common::testSerialization<JointTrajectory>(trajectory, "JointTrajectory");
+  tesseract::common::testSerialization<JointTrajectory>(trajectory, "JointTrajectory");
 }
 
 TEST(TesseractCommonSerializeUnit, AllowedCollisionMatrix)  // NOLINT
 {
   auto object = std::make_shared<AllowedCollisionMatrix>();
-  tesseract_common::testSerialization<AllowedCollisionMatrix>(*object, "EmptyAllowedCollisionMatrix");
+  tesseract::common::testSerialization<AllowedCollisionMatrix>(*object, "EmptyAllowedCollisionMatrix");
   object->addAllowedCollision("link_1", "link2", "reason1");
   object->addAllowedCollision("link_2", "link1", "reason2");
   object->addAllowedCollision("link_4", "link3", "reason3");
   object->addAllowedCollision("link_5", "link2", "reason4");
-  tesseract_common::testSerialization<AllowedCollisionMatrix>(*object, "AllowedCollisionMatrix");
+  tesseract::common::testSerialization<AllowedCollisionMatrix>(*object, "AllowedCollisionMatrix");
 }
 
 TEST(TesseractCommonSerializeUnit, CalibrationInfo)  // NOLINT
 {
   auto object = std::make_shared<CalibrationInfo>();
-  tesseract_common::testSerialization<CalibrationInfo>(*object, "EmptyCalibrationInfo");
+  tesseract::common::testSerialization<CalibrationInfo>(*object, "EmptyCalibrationInfo");
   object->joints["test"].setIdentity();
   object->joints["test"].translate(Eigen::Vector3d(2, 4, 8));
-  tesseract_common::testSerialization<CalibrationInfo>(*object, "CalibrationInfo");
+  tesseract::common::testSerialization<CalibrationInfo>(*object, "CalibrationInfo");
 }
 
 TEST(TesseractCommonSerializeUnit, CollisionMarginData)  // NOLINT
 {
   auto object = std::make_shared<CollisionMarginData>();
-  tesseract_common::testSerialization<CollisionMarginData>(*object, "EmptyCollisionMarginData");
+  tesseract::common::testSerialization<CollisionMarginData>(*object, "EmptyCollisionMarginData");
   object->setCollisionMargin("link_1", "link2", 1.1);
   object->setCollisionMargin("link_2", "link1", 2.2);
   object->setCollisionMargin("link_4", "link3", 3.3);
   object->setCollisionMargin("link_5", "link2", -4.4);
-  tesseract_common::testSerialization<CollisionMarginData>(*object, "CollisionMarginData");
+  tesseract::common::testSerialization<CollisionMarginData>(*object, "CollisionMarginData");
 }
 
 TEST(TesseractCommonSerializeUnit, ContactManagersPluginInfo)  // NOLINT
@@ -245,7 +245,7 @@ TEST(TesseractCommonSerializeUnit, ContactManagersPluginInfo)  // NOLINT
     object->continuous_plugin_infos.plugins["plugin_key2"] = plugin;
   }
 
-  tesseract_common::testSerialization<ContactManagersPluginInfo>(*object, "ContactManagersPluginInfo");
+  tesseract::common::testSerialization<ContactManagersPluginInfo>(*object, "ContactManagersPluginInfo");
 }
 
 TEST(TesseractCommonSerializeUnit, ProfilePluginInfo)  // NOLINT
@@ -265,7 +265,7 @@ TEST(TesseractCommonSerializeUnit, ProfilePluginInfo)  // NOLINT
     object->plugin_infos["plugin 2"]["plugin_key2"] = plugin;
   }
 
-  tesseract_common::testSerialization<ProfilesPluginInfo>(*object, "ProfilePluginInfo");
+  tesseract::common::testSerialization<ProfilesPluginInfo>(*object, "ProfilePluginInfo");
 }
 
 TEST(TesseractCommonSerializeUnit, TaskComposerPluginInfo)  // NOLINT
@@ -292,7 +292,7 @@ TEST(TesseractCommonSerializeUnit, TaskComposerPluginInfo)  // NOLINT
     object->task_plugin_infos.plugins["plugin_key2"] = plugin;
   }
 
-  tesseract_common::testSerialization<TaskComposerPluginInfo>(*object, "TaskComposerPluginInfo");
+  tesseract::common::testSerialization<TaskComposerPluginInfo>(*object, "TaskComposerPluginInfo");
 }
 
 TEST(TesseractCommonSerializeUnit, KinematicsPluginInfo)  // NOLINT
@@ -323,7 +323,7 @@ TEST(TesseractCommonSerializeUnit, KinematicsPluginInfo)  // NOLINT
     object->inv_plugin_infos["inv plugin 2"].plugins["plugin_key4"] = plugin;
   }
 
-  tesseract_common::testSerialization<KinematicsPluginInfo>(*object, "KinematicsPluginInfo");
+  tesseract::common::testSerialization<KinematicsPluginInfo>(*object, "KinematicsPluginInfo");
 }
 
 TEST(TesseractCommonSerializeUnit, PluginInfo)  // NOLINT
@@ -331,7 +331,7 @@ TEST(TesseractCommonSerializeUnit, PluginInfo)  // NOLINT
   auto object = std::make_shared<PluginInfo>();
   object->class_name = "test_class_name";
   object->config["test"] = M_PI;
-  tesseract_common::testSerialization<PluginInfo>(*object, "PluginInfo");
+  tesseract::common::testSerialization<PluginInfo>(*object, "PluginInfo");
 }
 
 TEST(TesseractCommonSerializeUnit, PluginInfoContainer)  // NOLINT
@@ -342,7 +342,7 @@ TEST(TesseractCommonSerializeUnit, PluginInfoContainer)  // NOLINT
   plugin->config["test"] = "value";
   object->default_plugin = "test_string";
   object->plugins["plugin_key"] = *plugin;
-  tesseract_common::testSerialization<PluginInfoContainer>(*object, "PluginInfoContainer");
+  tesseract::common::testSerialization<PluginInfoContainer>(*object, "PluginInfoContainer");
 }
 
 TEST(TesseractCommonSerializeUnit, VectorXd)  // NOLINT
@@ -351,14 +351,14 @@ TEST(TesseractCommonSerializeUnit, VectorXd)  // NOLINT
 
   {  // Serialize empty object
     Eigen::VectorXd ev;
-    tesseract_common::testSerialization<Eigen::VectorXd>(ev, "eigen_vector_xd", compare_fn);
+    tesseract::common::testSerialization<Eigen::VectorXd>(ev, "eigen_vector_xd", compare_fn);
   }
 
   // Serialize to object which already has data
   for (int i = 0; i < 5; ++i)
   {
     Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
-    tesseract_common::testSerialization<Eigen::VectorXd>(ev, "eigen_vector_xd", compare_fn);
+    tesseract::common::testSerialization<Eigen::VectorXd>(ev, "eigen_vector_xd", compare_fn);
   }
 }
 
@@ -366,14 +366,14 @@ TEST(TesseractCommonSerializeUnit, VectorXi)  // NOLINT
 {
   {  // Serialize empty object
     Eigen::VectorXi ev;
-    tesseract_common::testSerialization<Eigen::VectorXi>(ev, "eigen_vector_xi");
+    tesseract::common::testSerialization<Eigen::VectorXi>(ev, "eigen_vector_xi");
   }
 
   // Serialize to object which already has data
   for (int i = 0; i < 5; ++i)
   {
     Eigen::VectorXi ev = Eigen::VectorXi::Random(6);
-    tesseract_common::testSerialization<Eigen::VectorXi>(ev, "eigen_vector_xi");
+    tesseract::common::testSerialization<Eigen::VectorXi>(ev, "eigen_vector_xi");
   }
 }
 
@@ -383,14 +383,14 @@ TEST(TesseractCommonSerializeUnit, Vector3d)  // NOLINT
 
   {  // Serialize empty object
     Eigen::Vector3d ev = Eigen::Vector3d::Zero();
-    tesseract_common::testSerialization<Eigen::Vector3d>(ev, "eigen_vector_3d", compare_fn);
+    tesseract::common::testSerialization<Eigen::Vector3d>(ev, "eigen_vector_3d", compare_fn);
   }
 
   // Serialize to object which already has data
   for (int i = 0; i < 3; ++i)
   {
     Eigen::Vector3d ev = Eigen::Vector3d::Random();
-    tesseract_common::testSerialization<Eigen::Vector3d>(ev, "eigen_vector_3d", compare_fn);
+    tesseract::common::testSerialization<Eigen::Vector3d>(ev, "eigen_vector_3d", compare_fn);
   }
 }
 
@@ -400,14 +400,14 @@ TEST(TesseractCommonSerializeUnit, Vector4d)  // NOLINT
 
   {  // Serialize empty object
     Eigen::Vector4d ev = Eigen::Vector4d::Zero();
-    tesseract_common::testSerialization<Eigen::Vector4d>(ev, "eigen_vector_4d", compare_fn);
+    tesseract::common::testSerialization<Eigen::Vector4d>(ev, "eigen_vector_4d", compare_fn);
   }
 
   // Serialize to object which already has data
   for (int i = 0; i < 4; ++i)
   {
     Eigen::Vector4d ev = Eigen::Vector4d::Random();
-    tesseract_common::testSerialization<Eigen::Vector4d>(ev, "eigen_vector_4d", compare_fn);
+    tesseract::common::testSerialization<Eigen::Vector4d>(ev, "eigen_vector_4d", compare_fn);
   }
 }
 
@@ -417,14 +417,14 @@ TEST(TesseractCommonSerializeUnit, MatrixX2d)  // NOLINT
 
   {  // Serialize empty
     Eigen::MatrixX2d em;
-    tesseract_common::testSerialization<Eigen::MatrixX2d>(em, "eigen_matrix_x2d", compare_fn);
+    tesseract::common::testSerialization<Eigen::MatrixX2d>(em, "eigen_matrix_x2d", compare_fn);
   }
 
   // Serialize to object which already has data
   for (int i = 0; i < 5; ++i)
   {
     Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
-    tesseract_common::testSerialization<Eigen::MatrixX2d>(em, "eigen_matrix_x2d", compare_fn);
+    tesseract::common::testSerialization<Eigen::MatrixX2d>(em, "eigen_matrix_x2d", compare_fn);
   }
 }
 
@@ -437,7 +437,7 @@ TEST(TesseractCommonSerializeUnit, Isometry3d)  // NOLINT
     Eigen::Isometry3d pose =
         Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::Random().normalized());
     pose.translation() = Eigen::Vector3d::Random();
-    tesseract_common::testSerialization<Eigen::Isometry3d>(pose, "eigen_isometry3d", compare_fn);
+    tesseract::common::testSerialization<Eigen::Isometry3d>(pose, "eigen_isometry3d", compare_fn);
   }
 }
 
@@ -455,28 +455,28 @@ struct ExtensionMacroTestB
 
 TEST(TesseractCommonSerializeUnit, ExtensionXmlMacro)  // NOLINT
 {
-  std::string ext = tesseract_common::serialization::xml::extension<ExtensionMacroTestA>::value;
+  std::string ext = tesseract::common::serialization::xml::extension<ExtensionMacroTestA>::value;
   EXPECT_EQ(ext, ".etax");
 
-  std::string default_ext = tesseract_common::serialization::xml::extension<ExtensionMacroTestB>::value;
+  std::string default_ext = tesseract::common::serialization::xml::extension<ExtensionMacroTestB>::value;
   EXPECT_EQ(default_ext, ".trsx");
 }
 
 TEST(TesseractCommonSerializeUnit, ExtensionJsonMacro)  // NOLINT
 {
-  std::string ext = tesseract_common::serialization::json::extension<ExtensionMacroTestA>::value;
+  std::string ext = tesseract::common::serialization::json::extension<ExtensionMacroTestA>::value;
   EXPECT_EQ(ext, ".etaj");
 
-  std::string default_ext = tesseract_common::serialization::json::extension<ExtensionMacroTestB>::value;
+  std::string default_ext = tesseract::common::serialization::json::extension<ExtensionMacroTestB>::value;
   EXPECT_EQ(default_ext, ".trsj");
 }
 
 TEST(TesseractCommonSerializeUnit, ExtensionBinaryMacro)  // NOLINT
 {
-  std::string ext = tesseract_common::serialization::binary::extension<ExtensionMacroTestA>::value;
+  std::string ext = tesseract::common::serialization::binary::extension<ExtensionMacroTestA>::value;
   EXPECT_EQ(ext, ".etab");
 
-  std::string default_ext = tesseract_common::serialization::binary::extension<ExtensionMacroTestB>::value;
+  std::string default_ext = tesseract::common::serialization::binary::extension<ExtensionMacroTestB>::value;
   EXPECT_EQ(default_ext, ".trsb");
 }
 

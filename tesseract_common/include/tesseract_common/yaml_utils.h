@@ -34,7 +34,7 @@ namespace YAML
 class Node;
 }
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class ResourceLocator;
 
@@ -119,6 +119,6 @@ YAML::Node fromYAMLString(const std::string& string);
  * @param node2 Input YAML::Node
  */
 bool compareYAML(const YAML::Node& node1, const YAML::Node& node2);
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_YAML_UTILS_H

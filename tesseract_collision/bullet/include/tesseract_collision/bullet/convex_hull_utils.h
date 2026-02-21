@@ -28,7 +28,7 @@
 #include <tesseract_geometry/impl/mesh.h>
 #include <tesseract_geometry/impl/convex_mesh.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 /**
  * @brief Create a convex hull from vertices using Bullet Convex Hull Computer
@@ -42,14 +42,14 @@ namespace tesseract_collision
  *                "innerRadius" is the minimum distance of a face to the center of the convex hull.
  * @return The number of faces. If less than zero an error occurred when trying to create the convex hull
  */
-int createConvexHull(tesseract_common::VectorVector3d& vertices,
+int createConvexHull(tesseract::common::VectorVector3d& vertices,
                      Eigen::VectorXi& faces,
-                     const tesseract_common::VectorVector3d& input,
+                     const tesseract::common::VectorVector3d& input,
                      double shrink = -1,
                      double shrinkClamp = -1);
 
-tesseract_geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract_geometry::Mesh& mesh);
+tesseract::geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract::geometry::Mesh& mesh);
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_BULLET_CONVEX_HULL_UTILS_H

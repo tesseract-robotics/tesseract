@@ -24,7 +24,7 @@
 
 #include <tesseract_common/kinematic_limits.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 void KinematicLimits::resize(Eigen::Index size)
 {
@@ -77,4 +77,4 @@ template void enforceLimits<float>(Eigen::Ref<Eigen::Matrix<float, Eigen::Dynami
 
 template void enforceLimits<double>(Eigen::Ref<Eigen::Matrix<double, Eigen::Dynamic, 1>> values,
                                     const Eigen::Ref<const Eigen::Matrix<double, Eigen::Dynamic, 2>>& limits);
-}  // namespace tesseract_common
+}  // namespace tesseract::common

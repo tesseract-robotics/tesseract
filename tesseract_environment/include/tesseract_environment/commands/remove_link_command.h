@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class RemoveLinkCommand;
 template <class Archive>
@@ -64,9 +64,9 @@ private:
   std::string link_name_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, RemoveLinkCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, RemoveLinkCommand& obj);
 };
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_REMOVE_LINK_COMMAND_H

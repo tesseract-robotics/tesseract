@@ -33,34 +33,34 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/yaml_utils.h>
 
-using namespace tesseract_kinematics::test_suite;
-using namespace tesseract_kinematics;
+using namespace tesseract::kinematics::test_suite;
+using namespace tesseract::kinematics;
 
 void runKinematicsFactoryTest(const std::filesystem::path& config_path)
 {
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::UPtr iiwa_scene_graph = getSceneGraphIIWA(locator);
-  tesseract_scene_graph::KDLStateSolver iiwa_state_solver(*iiwa_scene_graph);
-  tesseract_scene_graph::SceneState iiwa_scene_state = iiwa_state_solver.getState();
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr iiwa_scene_graph = getSceneGraphIIWA(locator);
+  tesseract::scene_graph::KDLStateSolver iiwa_state_solver(*iiwa_scene_graph);
+  tesseract::scene_graph::SceneState iiwa_scene_state = iiwa_state_solver.getState();
 
-  tesseract_scene_graph::SceneGraph::UPtr abb_scene_graph = getSceneGraphABB(locator);
-  tesseract_scene_graph::KDLStateSolver abb_state_solver(*abb_scene_graph);
-  tesseract_scene_graph::SceneState abb_scene_state = abb_state_solver.getState();
+  tesseract::scene_graph::SceneGraph::UPtr abb_scene_graph = getSceneGraphABB(locator);
+  tesseract::scene_graph::KDLStateSolver abb_state_solver(*abb_scene_graph);
+  tesseract::scene_graph::SceneState abb_scene_state = abb_state_solver.getState();
 
-  tesseract_scene_graph::SceneGraph::UPtr ur_scene_graph = getSceneGraphUR(UR10Parameters, 0.220941, -0.1719);
-  tesseract_scene_graph::KDLStateSolver ur_state_solver(*ur_scene_graph);
-  tesseract_scene_graph::SceneState ur_scene_state = ur_state_solver.getState();
+  tesseract::scene_graph::SceneGraph::UPtr ur_scene_graph = getSceneGraphUR(UR10Parameters, 0.220941, -0.1719);
+  tesseract::scene_graph::KDLStateSolver ur_state_solver(*ur_scene_graph);
+  tesseract::scene_graph::SceneState ur_scene_state = ur_state_solver.getState();
 
-  tesseract_scene_graph::SceneGraph::UPtr rop_scene_graph = getSceneGraphABBOnPositioner(locator);
-  tesseract_scene_graph::KDLStateSolver rop_state_solver(*rop_scene_graph);
-  tesseract_scene_graph::SceneState rop_scene_state = rop_state_solver.getState();
+  tesseract::scene_graph::SceneGraph::UPtr rop_scene_graph = getSceneGraphABBOnPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver rop_state_solver(*rop_scene_graph);
+  tesseract::scene_graph::SceneState rop_scene_state = rop_state_solver.getState();
 
-  tesseract_scene_graph::SceneGraph::UPtr rep_scene_graph = getSceneGraphABBExternalPositioner(locator);
-  tesseract_scene_graph::KDLStateSolver rep_state_solver(*rep_scene_graph);
-  tesseract_scene_graph::SceneState rep_scene_state = rep_state_solver.getState();
+  tesseract::scene_graph::SceneGraph::UPtr rep_scene_graph = getSceneGraphABBExternalPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver rep_state_solver(*rep_scene_graph);
+  tesseract::scene_graph::SceneState rep_scene_state = rep_state_solver.getState();
 
   KinematicsPluginFactory factory(config_path, locator);
-  YAML::Node plugin_config = tesseract_common::loadYamlFile(config_path.string(), locator);
+  YAML::Node plugin_config = tesseract::common::loadYamlFile(config_path.string(), locator);
 
   const YAML::Node& plugin_info = plugin_config["kinematic_plugins"];
   const YAML::Node& search_paths = plugin_info["search_paths"];
@@ -98,7 +98,7 @@ void runKinematicsFactoryTest(const std::filesystem::path& config_path)
       const YAML::Node& plugin = solver_it->second;
       auto solver_name = solver_it->first.as<std::string>();
 
-      tesseract_common::PluginInfo info;
+      tesseract::common::PluginInfo info;
       info.class_name = plugin["class"].as<std::string>();
       info.config = plugin["config"];
 
@@ -124,7 +124,7 @@ void runKinematicsFactoryTest(const std::filesystem::path& config_path)
       const YAML::Node& plugin = solver_it->second;
       auto solver_name = solver_it->first.as<std::string>();
 
-      tesseract_common::PluginInfo info;
+      tesseract::common::PluginInfo info;
       info.class_name = plugin["class"].as<std::string>();
       info.config = plugin["config"];
 
@@ -144,7 +144,7 @@ void runKinematicsFactoryTest(const std::filesystem::path& config_path)
     }
   }
 
-  factory.saveConfig(std::filesystem::path(tesseract_common::getTempPath()) / "kinematic_plugins_export.yaml");
+  factory.saveConfig(std::filesystem::path(tesseract::common::getTempPath()) / "kinematic_plugins_export.yaml");
 }
 
 TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_ROP_REP_PluginTest)  // NOLINT
@@ -153,21 +153,21 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_ROP_REP_PluginTest)  // NOLINT
   std::filesystem::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
   runKinematicsFactoryTest(config_path);
 
-  std::filesystem::path export_config_path = std::filesystem::path(tesseract_common::getTempPath()) / "kinema"
-                                                                                                      "tic_"
-                                                                                                      "plugin"
-                                                                                                      "s_"
-                                                                                                      "export"
-                                                                                                      ".yaml";
+  std::filesystem::path export_config_path = std::filesystem::path(tesseract::common::getTempPath()) / "kinema"
+                                                                                                       "tic_"
+                                                                                                       "plugin"
+                                                                                                       "s_"
+                                                                                                       "export"
+                                                                                                       ".yaml";
   runKinematicsFactoryTest(export_config_path);
 }
 
 TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   KinematicsPluginFactory factory;
   EXPECT_FALSE(factory.getSearchPaths().empty());
@@ -186,10 +186,10 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   EXPECT_EQ(factory.getSearchLibraries().size(), 5);
 
   {
-    std::map<std::string, tesseract_common::PluginInfoContainer> map = factory.getFwdKinPlugins();
+    std::map<std::string, tesseract::common::PluginInfoContainer> map = factory.getFwdKinPlugins();
     EXPECT_TRUE(map.find("manipulator") == map.end());
 
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "KDLFwdKin";
     factory.addFwdKinPlugin("manipulator", "KDLFwdKin", pi);
     EXPECT_EQ(factory.getFwdKinPlugins().size(), 1);
@@ -200,7 +200,7 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_EQ(map.find("manipulator")->second.plugins.size(), 1);
     EXPECT_EQ(factory.getDefaultFwdKinPlugin("manipulator"), "KDLFwdKin");
 
-    tesseract_common::PluginInfo pi2;
+    tesseract::common::PluginInfo pi2;
     pi2.class_name = "KDLFwdKin";
     factory.addFwdKinPlugin("manipulator", "default", pi2);
     EXPECT_EQ(factory.getFwdKinPlugins().size(), 1);
@@ -234,10 +234,10 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   }
 
   {
-    std::map<std::string, tesseract_common::PluginInfoContainer> map = factory.getInvKinPlugins();
+    std::map<std::string, tesseract::common::PluginInfoContainer> map = factory.getInvKinPlugins();
     EXPECT_TRUE(map.find("manipulator") == map.end());
 
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "KDLInvKin";
     factory.addInvKinPlugin("manipulator", "KDLInvKin", pi);
     EXPECT_EQ(factory.getInvKinPlugins().size(), 1);
@@ -248,7 +248,7 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_EQ(map.find("manipulator")->second.plugins.size(), 1);
     EXPECT_EQ(factory.getDefaultInvKinPlugin("manipulator"), "KDLInvKin");
 
-    tesseract_common::PluginInfo pi2;
+    tesseract::common::PluginInfo pi2;
     pi2.class_name = "KDLInvKin";
     factory.addInvKinPlugin("manipulator", "default", pi2);
     EXPECT_EQ(factory.getInvKinPlugins().size(), 1);
@@ -281,12 +281,12 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   std::string yaml_string =
       R"(kinematic_plugins:
@@ -311,7 +311,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
                        sign_corrections: [1, 1, 1, -1, 1, 1])";
 
   {  // missing entry
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"];
     plugin.remove("OPWInvKin");
 
@@ -320,14 +320,14 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin.remove("class");
 
     EXPECT_ANY_THROW(KinematicsPluginFactory factory(config, locator));  // NOLINT
   }
   {  // missing default (which is allowed)
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin.remove("default");
 
@@ -339,12 +339,12 @@ TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, LoadIKFastKinematicsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   std::string yaml_string =
       R"(kinematic_plugins:
@@ -369,7 +369,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadIKFastKinematicsUnit)  // NOLINT
     EXPECT_EQ(inv_kin->getSolverName(), "AbbIRB2400IKFast");
   }
   {  // AbbIRB2400IKFast missing config
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["AbbIRB2400IKFast"];
     plugin.remove("config");
 
@@ -378,7 +378,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadIKFastKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // AbbIRB2400IKFast missing base_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["AbbIRB2400IKFast"];
     plugin["config"].remove("base_link");
 
@@ -387,7 +387,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadIKFastKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // AbbIRB2400IKFast missing tip_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["AbbIRB2400IKFast"];
     plugin["config"].remove("tip_link");
 
@@ -424,12 +424,12 @@ TEST(TesseractKinematicsFactoryUnit, LoadIKFastKinematicsUnit)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   std::string yaml_string =
       R"(kinematic_plugins:
@@ -459,7 +459,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   EXPECT_EQ(inv_kin->getSolverName(), "OPWInvKin");
 
   {  // missing config
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin.remove("config");
 
@@ -468,7 +468,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing base_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"].remove("base_link");
 
@@ -477,7 +477,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing tip_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"].remove("tip_link");
 
@@ -486,7 +486,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing params
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"].remove("params");
 
@@ -495,7 +495,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing a1
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"].remove("a1");
 
@@ -504,7 +504,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing a2
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"].remove("a2");
 
@@ -513,7 +513,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing b
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"].remove("b");
 
@@ -522,7 +522,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing c1
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"].remove("c1");
 
@@ -531,7 +531,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing c2
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"].remove("c2");
 
@@ -540,7 +540,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing c3
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"].remove("c3");
 
@@ -549,7 +549,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing c4
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"].remove("c4");
 
@@ -558,7 +558,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing offset is allowed
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"].remove("offset");
 
@@ -567,7 +567,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin != nullptr);
   }
   {  // missing sign_corrections is allowed
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"].remove("sign_corrections");
 
@@ -577,7 +577,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
   }
 
   {  // invalid a1
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["a1"] = "abcd";
 
@@ -586,7 +586,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid a2
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["a2"] = "abcd";
 
@@ -595,7 +595,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid b
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["b"] = "abcd";
 
@@ -604,7 +604,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid c1
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["c1"] = "abcd";
 
@@ -613,7 +613,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid c2
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["c2"] = "abcd";
 
@@ -622,7 +622,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid c3
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["c3"] = "abcd";
 
@@ -631,7 +631,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid c4
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["c4"] = "abcd";
 
@@ -640,7 +640,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid offset
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["offsets"][0] = "abcd";
 
@@ -649,7 +649,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid offset size
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["offsets"].push_back(0);
 
@@ -658,7 +658,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid sign_corrections
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["sign_corrections"][0] = "a";
 
@@ -667,7 +667,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid sign_corrections
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["sign_corrections"][0] = 5;
 
@@ -676,7 +676,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid sign_corrections size
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["sign_corrections"].push_back(0);
 
@@ -688,12 +688,12 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphUR(UR10Parameters, 0.220941, -0.1719);
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphUR(UR10Parameters, 0.220941, -0.1719);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   std::string yaml_model_string =
       R"(kinematic_plugins:
@@ -734,7 +734,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
   }
   {  // Test loading UR10e
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"]["config"]["model"] = "UR10e";
 
     KinematicsPluginFactory factory(yaml_model_string, locator);
@@ -743,7 +743,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
   }
   {  // Test loading UR5
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"]["config"]["model"] = "UR5";
 
     KinematicsPluginFactory factory(yaml_model_string, locator);
@@ -752,7 +752,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
   }
   {  // Test loading UR5e
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"]["config"]["model"] = "UR5e";
 
     KinematicsPluginFactory factory(yaml_model_string, locator);
@@ -761,7 +761,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
   }
   {  // Test loading UR3
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"]["config"]["model"] = "UR3";
 
     KinematicsPluginFactory factory(yaml_model_string, locator);
@@ -770,7 +770,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
   }
   {  // Test loading UR3e
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"]["config"]["model"] = "UR3e";
 
     KinematicsPluginFactory factory(yaml_model_string, locator);
@@ -785,7 +785,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_EQ(inv_kin->getSolverName(), "URInvKin");
   }
   {  // invalid ur model
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"]["config"]["model"] = "DoesNotE"
                                                                                                               "xist";
 
@@ -794,7 +794,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing config
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin.remove("config");
 
@@ -803,7 +803,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing base_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"].remove("base_link");
 
@@ -812,7 +812,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing tip_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"].remove("tip_link");
 
@@ -821,7 +821,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing model and params
-    YAML::Node config = tesseract_common::loadYamlString(yaml_model_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_model_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"].remove("model");
 
@@ -830,7 +830,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing model and params
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"].remove("params");
 
@@ -839,7 +839,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing d1
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"].remove("d1");
 
@@ -848,7 +848,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing a2
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"].remove("a2");
 
@@ -857,7 +857,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing a3
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"].remove("a3");
 
@@ -866,7 +866,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing d4
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"].remove("d4");
 
@@ -875,7 +875,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing d5
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"].remove("d5");
 
@@ -884,7 +884,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing d6
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"].remove("d6");
 
@@ -893,7 +893,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid d1
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"]["d1"] = "abcd";
 
@@ -902,7 +902,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid a2
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"]["a2"] = "abcd";
 
@@ -911,7 +911,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid a3
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"]["a3"] = "abcd";
 
@@ -920,7 +920,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid d4
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"]["d4"] = "abcd";
 
@@ -929,7 +929,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid d5
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"]["d5"] = "abcd";
 
@@ -938,7 +938,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // invalid d6
-    YAML::Node config = tesseract_common::loadYamlString(yaml_params_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_params_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["URInvKin"];
     plugin["config"]["params"]["d6"] = "abcd";
 
@@ -950,12 +950,12 @@ TEST(TesseractKinematicsFactoryUnit, LoadURKinematicsUnit)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABBExternalPositioner(locator);
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABBExternalPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   std::string yaml_string =
       R"(kinematic_plugins:
@@ -1001,7 +1001,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
   EXPECT_EQ(inv_kin->getSolverName(), "REPInvKin");
 
   {  // Invalid positioner sample resolution joint name
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
           ["positioner_sample_resolution"][0]["name"] = "joint_does_not_exist";
 
@@ -1010,7 +1010,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid positioner sample resolution joint min
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
           ["positioner_sample_resolution"][0]["min"] = -10000;
 
@@ -1019,7 +1019,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid positioner sample resolution joint max
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
           ["positioner_sample_resolution"][0]["max"] = 10000;
 
@@ -1028,7 +1028,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid positioner sample resolution joint max is less than min
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
           ["positioner_sample_resolution"][0]["min"] = 0.6;
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]
@@ -1039,7 +1039,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid positioner class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]["positioner"]["clas"
                                                                                                                   "s"] =
         "DoesNotExistFactory";
@@ -1049,7 +1049,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid manipulator class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"]["config"]["manipulator"]
           ["class"] = "DoesNotExistFactory";
 
@@ -1058,7 +1058,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing config
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin.remove("config");
 
@@ -1067,7 +1067,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing manipulator_reach
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin["config"].remove("manipulator_reach");
 
@@ -1076,7 +1076,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner_sample_resolution
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin["config"].remove("positioner_sample_resolution");
 
@@ -1085,7 +1085,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner_sample_resolution entry name
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin["config"]["positioner_sample_resolution"][0].remove("name");
 
@@ -1094,7 +1094,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner_sample_resolution entry value
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin["config"]["positioner_sample_resolution"][0].remove("value");
 
@@ -1103,7 +1103,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin["config"].remove("positioner");
 
@@ -1112,7 +1112,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner entry class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin["config"]["positioner"].remove("class");
 
@@ -1121,7 +1121,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing manipulator
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin["config"].remove("manipulator");
 
@@ -1130,7 +1130,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing manipulator entry class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin["config"]["manipulator"].remove("class");
 
@@ -1142,12 +1142,12 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABBOnPositioner(locator);
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABBOnPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   std::string yaml_string =
       R"(kinematic_plugins:
@@ -1191,7 +1191,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
   EXPECT_EQ(inv_kin->getSolverName(), "ROPInvKin");
 
   {  // Invalid positioner sample resolution joint name
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
           ["positioner_sample_resolution"][0]["name"] = "joint_does_not_exist";
 
@@ -1200,7 +1200,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid positioner sample resolution joint min
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
           ["positioner_sample_resolution"][0]["min"] = -10000;
 
@@ -1209,7 +1209,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid positioner sample resolution joint max
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
           ["positioner_sample_resolution"][0]["max"] = 10000;
 
@@ -1218,7 +1218,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid positioner sample resolution joint max is less than min
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
           ["positioner_sample_resolution"][0]["min"] = 0.6;
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]
@@ -1229,7 +1229,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid positioner class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]["positioner"]["clas"
                                                                                                                   "s"] =
         "DoesNotExistFactory";
@@ -1239,7 +1239,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // Invalid manipulator class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"]["config"]["manipulator"]
           ["class"] = "DoesNotExistFactory";
 
@@ -1248,7 +1248,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing config
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin.remove("config");
 
@@ -1257,7 +1257,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing manipulator_reach
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin["config"].remove("manipulator_reach");
 
@@ -1266,7 +1266,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner_sample_resolution
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin["config"].remove("positioner_sample_resolution");
 
@@ -1275,7 +1275,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner_sample_resolution entry name
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin["config"]["positioner_sample_resolution"][0].remove("name");
 
@@ -1284,7 +1284,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner_sample_resolution entry value
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin["config"]["positioner_sample_resolution"][0].remove("value");
 
@@ -1293,7 +1293,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin["config"].remove("positioner");
 
@@ -1302,7 +1302,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing positioner entry class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin["config"]["positioner"].remove("class");
 
@@ -1311,7 +1311,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing manipulator
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin["config"].remove("manipulator");
 
@@ -1320,7 +1320,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     EXPECT_TRUE(inv_kin == nullptr);
   }
   {  // missing manipulator entry class
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin["config"]["manipulator"].remove("class");
 
@@ -1332,12 +1332,12 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphABB(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   std::string yaml_string =
       R"(kinematic_plugins:
@@ -1426,7 +1426,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
   }
 
   {  // KDLFwdKinChain missing config
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["fwd_kin_plugins"]["manipulator"]["plugins"]["KDLFwdKinChain"];
     plugin.remove("config");
 
@@ -1435,7 +1435,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainLMA missing config
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["KDLInvKinChainLMA"];
     plugin.remove("config");
 
@@ -1444,7 +1444,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainNR missing config
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["KDLInvKinChainNR"];
     plugin.remove("config");
 
@@ -1453,7 +1453,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainNR_JL missing config
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["KDLInvKinChainNR_JL"];
     plugin.remove("config");
 
@@ -1462,7 +1462,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLFwdKinChain missing base_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["fwd_kin_plugins"]["manipulator"]["plugins"]["KDLFwdKinChain"];
     plugin["config"].remove("base_link");
 
@@ -1471,7 +1471,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainLMA missing base_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["KDLInvKinChainLMA"];
     plugin["config"].remove("base_link");
 
@@ -1480,7 +1480,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainNR missing base_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["KDLInvKinChainNR"];
     plugin["config"].remove("base_link");
 
@@ -1489,7 +1489,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainNR_JL missing base_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["KDLInvKinChainNR_JL"];
     plugin["config"].remove("base_link");
 
@@ -1498,7 +1498,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLFwdKinChain missing tip_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["fwd_kin_plugins"]["manipulator"]["plugins"]["KDLFwdKinChain"];
     plugin["config"].remove("tip_link");
 
@@ -1507,7 +1507,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainLMA missing tip_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["KDLInvKinChainLMA"];
     plugin["config"].remove("tip_link");
 
@@ -1516,7 +1516,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainNR missing tip_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["KDLInvKinChainNR"];
     plugin["config"].remove("tip_link");
 
@@ -1525,7 +1525,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadKDLKinematicsUnit)  // NOLINT
     EXPECT_TRUE(kin == nullptr);
   }
   {  // KDLInvKinChainNR_JL missing tip_link
-    YAML::Node config = tesseract_common::loadYamlString(yaml_string, locator);
+    YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["KDLInvKinChainNR_JL"];
     plugin["config"].remove("tip_link");
 

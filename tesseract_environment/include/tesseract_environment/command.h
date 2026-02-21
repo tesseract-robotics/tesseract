@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 enum class CommandType
 {
@@ -89,10 +89,10 @@ private:
   CommandType type_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, Command& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, Command& obj);
 };
 
 using Commands = std::vector<std::shared_ptr<const Command>>;
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // COMMAND_H

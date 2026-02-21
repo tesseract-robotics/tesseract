@@ -39,32 +39,32 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-std::vector<tesseract_geometry::SDFMesh::Ptr> parseSDFMesh(const tinyxml2::XMLElement* xml_element,
-                                                           const tesseract_common::ResourceLocator& locator,
-                                                           bool visual)
+std::vector<tesseract::geometry::SDFMesh::Ptr> parseSDFMesh(const tinyxml2::XMLElement* xml_element,
+                                                            const tesseract::common::ResourceLocator& locator,
+                                                            bool visual)
 {
-  std::vector<tesseract_geometry::SDFMesh::Ptr> meshes;
+  std::vector<tesseract::geometry::SDFMesh::Ptr> meshes;
 
   std::string filename;
-  if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
+  if (tesseract::common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("SDFMesh: Missing or failed parsing attribute 'filename'!"));
 
   std::string scale_string;
   Eigen::Vector3d scale(1, 1, 1);
-  if (tesseract_common::QueryStringAttribute(xml_element, "scale", scale_string) == tinyxml2::XML_SUCCESS)
+  if (tesseract::common::QueryStringAttribute(xml_element, "scale", scale_string) == tinyxml2::XML_SUCCESS)
   {
     std::vector<std::string> tokens;
     boost::split(tokens, scale_string, boost::is_any_of(" "), boost::token_compress_on);
-    if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
+    if (tokens.size() != 3 || !tesseract::common::isNumeric(tokens))
       std::throw_with_nested(std::runtime_error("SDFMesh: Failed parsing attribute 'scale'!"));
 
     double sx{ 0 }, sy{ 0 }, sz{ 0 };
     // No need to check return values because the tokens are verified above
-    tesseract_common::toNumeric<double>(tokens[0], sx);
-    tesseract_common::toNumeric<double>(tokens[1], sy);
-    tesseract_common::toNumeric<double>(tokens[2], sz);
+    tesseract::common::toNumeric<double>(tokens[0], sx);
+    tesseract::common::toNumeric<double>(tokens[1], sy);
+    tesseract::common::toNumeric<double>(tokens[2], sz);
 
     if (!(sx > 0))
       std::throw_with_nested(std::runtime_error("SDFMesh: Scale x is not greater than zero!"));
@@ -79,10 +79,10 @@ std::vector<tesseract_geometry::SDFMesh::Ptr> parseSDFMesh(const tinyxml2::XMLEl
   }
 
   if (visual)
-    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::SDFMesh>(
+    meshes = tesseract::geometry::createMeshFromResource<tesseract::geometry::SDFMesh>(
         locator.locateResource(filename), scale, true, true, true, true, true);
   else
-    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::SDFMesh>(
+    meshes = tesseract::geometry::createMeshFromResource<tesseract::geometry::SDFMesh>(
         locator.locateResource(filename), scale, true, false);
 
   if (meshes.empty())
@@ -91,7 +91,7 @@ std::vector<tesseract_geometry::SDFMesh::Ptr> parseSDFMesh(const tinyxml2::XMLEl
   return meshes;
 }
 
-tinyxml2::XMLElement* writeSDFMesh(const std::shared_ptr<const tesseract_geometry::SDFMesh>& sdf_mesh,
+tinyxml2::XMLElement* writeSDFMesh(const std::shared_ptr<const tesseract::geometry::SDFMesh>& sdf_mesh,
                                    tinyxml2::XMLDocument& doc,
                                    const std::string& package_path,
                                    const std::string& filename)
@@ -120,4 +120,4 @@ tinyxml2::XMLElement* writeSDFMesh(const std::shared_ptr<const tesseract_geometr
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

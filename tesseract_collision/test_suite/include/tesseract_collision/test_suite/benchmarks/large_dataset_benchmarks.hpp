@@ -13,23 +13,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/ply_io.h>
 #include <tesseract_common/resource_locator.h>
 
-namespace tesseract_collision::test_suite
+namespace tesseract::collision::test_suite
 {
 /** @brief Benchmark that checks collisions between a lot of objects. In this case it is a grid of spheres - each as its
  * own link*/
 static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
                                        DiscreteContactManager::Ptr checker,  // NOLINT
                                        int edge_size,
-                                       tesseract_geometry::GeometryType type)
+                                       tesseract::geometry::GeometryType type)
 {
   // Add Meshed Sphere to checker
   CollisionShapePtr sphere;
 
-  auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+  auto mesh_vertices = std::make_shared<tesseract::common::VectorVector3d>();
   auto mesh_faces = std::make_shared<Eigen::VectorXi>();
 
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_common::loadSimplePlyFile(
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::common::loadSimplePlyFile(
       locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
       *mesh_vertices,
       *mesh_faces,
@@ -37,20 +37,20 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
 
   switch (type)
   {
-    case tesseract_geometry::GeometryType::CONVEX_MESH:
+    case tesseract::geometry::GeometryType::CONVEX_MESH:
     {
-      auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+      auto mesh = std::make_shared<tesseract::geometry::Mesh>(mesh_vertices, mesh_faces);
       sphere = makeConvexMesh(*mesh);
       break;
     }
-    case tesseract_geometry::GeometryType::MESH:
+    case tesseract::geometry::GeometryType::MESH:
     {
-      sphere = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+      sphere = std::make_shared<tesseract::geometry::Mesh>(mesh_vertices, mesh_faces);
       break;
     }
-    case tesseract_geometry::GeometryType::SPHERE:
+    case tesseract::geometry::GeometryType::SPHERE:
     {
-      sphere = std::make_shared<tesseract_geometry::Sphere>(0.25);
+      sphere = std::make_shared<tesseract::geometry::Sphere>(0.25);
       break;
     }
     default:
@@ -63,7 +63,7 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
   double delta = 0.55;
 
   std::vector<std::string> link_names;
-  tesseract_common::TransformMap location;
+  tesseract::common::TransformMap location;
   for (int x = 0; x < edge_size; ++x)
   {
     for (int y = 0; y < edge_size; ++y)
@@ -71,7 +71,7 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
       for (int z = 0; z < edge_size; ++z)
       {
         CollisionShapesConst obj3_shapes;
-        tesseract_common::VectorIsometry3d obj3_poses;
+        tesseract::common::VectorIsometry3d obj3_poses;
         Eigen::Isometry3d sphere_pose;
         sphere_pose.setIdentity();
 
@@ -110,16 +110,16 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
 static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
                                         DiscreteContactManager::Ptr checker,  // NOLINT
                                         int edge_size,
-                                        tesseract_geometry::GeometryType type)
+                                        tesseract::geometry::GeometryType type)
 {
   // Add Meshed Sphere to checker
   CollisionShapePtr sphere;
 
-  auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+  auto mesh_vertices = std::make_shared<tesseract::common::VectorVector3d>();
   auto mesh_faces = std::make_shared<Eigen::VectorXi>();
 
-  tesseract_common::GeneralResourceLocator locator;
-  tesseract_common::loadSimplePlyFile(
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::common::loadSimplePlyFile(
       locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
       *mesh_vertices,
       *mesh_faces,
@@ -127,20 +127,20 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
 
   switch (type)
   {
-    case tesseract_geometry::GeometryType::CONVEX_MESH:
+    case tesseract::geometry::GeometryType::CONVEX_MESH:
     {
-      auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+      auto mesh = std::make_shared<tesseract::geometry::Mesh>(mesh_vertices, mesh_faces);
       sphere = makeConvexMesh(*mesh);
       break;
     }
-    case tesseract_geometry::GeometryType::MESH:
+    case tesseract::geometry::GeometryType::MESH:
     {
-      sphere = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+      sphere = std::make_shared<tesseract::geometry::Mesh>(mesh_vertices, mesh_faces);
       break;
     }
-    case tesseract_geometry::GeometryType::SPHERE:
+    case tesseract::geometry::GeometryType::SPHERE:
     {
-      sphere = std::make_shared<tesseract_geometry::Sphere>(0.25);
+      sphere = std::make_shared<tesseract::geometry::Sphere>(0.25);
       break;
     }
     default:
@@ -154,9 +154,9 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   double delta = 0.55;
 
   std::vector<std::string> link_names;
-  //  tesseract_common::TransformMap location;
+  //  tesseract::common::TransformMap location;
   CollisionShapesConst obj3_shapes;
-  tesseract_common::VectorIsometry3d obj3_poses;
+  tesseract::common::VectorIsometry3d obj3_poses;
   for (int x = 0; x < edge_size; ++x)
   {
     for (int y = 0; y < edge_size; ++y)
@@ -183,7 +183,7 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
                                               static_cast<double>(edge_size) / 2.0 * delta,
                                               static_cast<double>(edge_size) / 2.0 * delta);
   CollisionShapesConst single_shapes;
-  tesseract_common::VectorIsometry3d single_poses;
+  tesseract::common::VectorIsometry3d single_poses;
   single_shapes.push_back(CollisionShapePtr(sphere->clone()));
   single_poses.push_back(sphere_pose);
   link_names.emplace_back("single_link");
@@ -206,6 +206,6 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   }
 }
 
-}  // namespace tesseract_collision::test_suite
+}  // namespace tesseract::collision::test_suite
 
 #endif

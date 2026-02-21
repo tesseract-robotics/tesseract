@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/ignition/entity_manager.h>
 #include <tesseract_environment/environment.h>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 /** @brief The Tesseract Ignition Vizualization class */
 class TesseractIgnitionVisualization : public tesseract_visualization::Visualization
@@ -82,6 +82,6 @@ private:
 
 TESSERACT_PLUGIN_ANCHOR_DECL(IgnitionVisualizationAnchor)
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 
 #endif  // TESSERACT_VISUALIZATION_IGNITION_TESSERACT_IGNITION_VISUALIZATION_H

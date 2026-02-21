@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/polygon_mesh.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 class ConvexMesh;
 class Mesh;
@@ -67,7 +67,7 @@ public:
    *
    * @return Absolute path to the mesh file
    */
-  std::shared_ptr<const tesseract_common::Resource> getResource() const;
+  std::shared_ptr<const tesseract::common::Resource> getResource() const;
 
   /**
    * @brief Get the scale applied to file used to generate the meshs
@@ -84,9 +84,9 @@ private:
   std::vector<std::shared_ptr<PolygonMesh>> meshes_;
 
   template <class Archive>
-  friend void ::tesseract_geometry::serialize(Archive& ar, CompoundMesh& obj);
+  friend void ::tesseract::geometry::serialize(Archive& ar, CompoundMesh& obj);
 };
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif  // TESSERACT_GEOMETRY_COMPOUND_MESH_H

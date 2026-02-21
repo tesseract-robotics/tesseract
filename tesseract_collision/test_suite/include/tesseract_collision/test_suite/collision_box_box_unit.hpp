@@ -9,7 +9,7 @@
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/ply_io.h>
 
-namespace tesseract_collision::test_suite
+namespace tesseract::collision::test_suite
 {
 namespace detail
 {
@@ -18,12 +18,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   //////////////////////
   // Add box to checker
   //////////////////////
-  CollisionShapePtr box = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  CollisionShapePtr box = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
   CollisionShapesConst obj1_shapes;
-  tesseract_common::VectorIsometry3d obj1_poses;
+  tesseract::common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(box);
   obj1_poses.push_back(box_pose);
 
@@ -33,12 +33,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
-  CollisionShapePtr thin_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
+  CollisionShapePtr thin_box = std::make_shared<tesseract::geometry::Box>(0.1, 1, 1);
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
   CollisionShapesConst obj2_shapes;
-  tesseract_common::VectorIsometry3d obj2_poses;
+  tesseract::common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
@@ -53,30 +53,30 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
 
   if (use_convex_mesh)
   {
-    auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto mesh_vertices = std::make_shared<tesseract::common::VectorVector3d>();
     auto mesh_faces = std::make_shared<Eigen::VectorXi>();
     // TODO: Need to figure out why this test not pass of bullet when using the box_2m.ply mesh
-    tesseract_common::GeneralResourceLocator locator;
-    EXPECT_GT(tesseract_common::loadSimplePlyFile(
+    tesseract::common::GeneralResourceLocator locator;
+    EXPECT_GT(tesseract::common::loadSimplePlyFile(
                   locator.locateResource("package://tesseract_support/meshes/box2_2m.ply")->getFilePath(),
                   *mesh_vertices,
                   *mesh_faces,
                   true),
               0);
 
-    auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+    auto mesh = std::make_shared<tesseract::geometry::Mesh>(mesh_vertices, mesh_faces);
     second_box = makeConvexMesh(*mesh);
   }
   else
   {
-    second_box = std::make_shared<tesseract_geometry::Box>(2, 2, 2);
+    second_box = std::make_shared<tesseract::geometry::Box>(2, 2, 2);
   }
 
   Eigen::Isometry3d second_box_pose;
   second_box_pose.setIdentity();
 
   CollisionShapesConst obj3_shapes;
-  tesseract_common::VectorIsometry3d obj3_poses;
+  tesseract::common::VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(second_box);
   obj3_poses.push_back(second_box_pose);
 
@@ -89,7 +89,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   remove_box_pose.setIdentity();
 
   CollisionShapesConst obj4_shapes;
-  tesseract_common::VectorIsometry3d obj4_poses;
+  tesseract::common::VectorIsometry3d obj4_poses;
   obj4_shapes.push_back(thin_box);
   obj4_poses.push_back(remove_box_pose);
 
@@ -110,7 +110,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   // Try to add empty Collision Object
   /////////////////////////////////////////////
   EXPECT_FALSE(
-      checker.addCollisionObject("empty_link", 0, CollisionShapesConst(), tesseract_common::VectorIsometry3d()));
+      checker.addCollisionObject("empty_link", 0, CollisionShapesConst(), tesseract::common::VectorIsometry3d()));
 
   /////////////////////////////////////////////
   // Check sizes
@@ -135,7 +135,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   std::vector<std::string> active_links{ "box_link", "second_box_link" };
   checker.setActiveCollisionObjects(active_links);
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -143,7 +143,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   EXPECT_NEAR(checker.getCollisionMarginData().getCollisionMargin("box_link", "second_box_link"), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract_common::TransformMap location;
+  tesseract::common::TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["box_link"].translation()(0) = 0.2;
   location["box_link"].translation()(1) = 0.1;
@@ -193,7 +193,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
 
     // Use different method for setting transforms
     std::vector<std::string> names = { "box_link" };
-    tesseract_common::VectorIsometry3d transforms = { location["box_link"] };
+    tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
     result.flattenCopyResults(result_vector);
@@ -216,7 +216,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
 
     // Use different method for setting transforms
     std::vector<std::string> names = { "box_link" };
-    tesseract_common::VectorIsometry3d transforms = { location["box_link"] };
+    tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
     result.flattenMoveResults(result_vector);
@@ -317,5 +317,5 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   detail::runTestTyped(checker, ContactTestType::ALL);
 }
 
-}  // namespace tesseract_collision::test_suite
+}  // namespace tesseract::collision::test_suite
 #endif  // COLLISION_BOX_BOX_UNIT_HPP

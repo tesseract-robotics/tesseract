@@ -27,7 +27,7 @@
 #include <tesseract_common/fwd.h>
 #include <tesseract_common/eigen_types.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 struct CalibrationInfo;
 
@@ -48,7 +48,7 @@ struct CalibrationInfo
    *  @details For each entry in \p joints the environment will apply a ChangeJointOriginCommand replacing the current
    * joint origin with what is stored in the TransformMap
    */
-  tesseract_common::TransformMap joints;
+  tesseract::common::TransformMap joints;
 
   /** @brief Insert the content of an other CalibrationInfo */
   void insert(const CalibrationInfo& other);
@@ -67,8 +67,8 @@ struct CalibrationInfo
 
 private:
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, CalibrationInfo& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, CalibrationInfo& obj);
 };
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_CALIBRATION_INFO_H

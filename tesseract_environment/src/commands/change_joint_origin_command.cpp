@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 ChangeJointOriginCommand::ChangeJointOriginCommand() : Command(CommandType::CHANGE_JOINT_ORIGIN){};
 
@@ -49,4 +49,4 @@ bool ChangeJointOriginCommand::operator==(const ChangeJointOriginCommand& rhs) c
 }
 bool ChangeJointOriginCommand::operator!=(const ChangeJointOriginCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

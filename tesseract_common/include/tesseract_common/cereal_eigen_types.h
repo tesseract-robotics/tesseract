@@ -46,7 +46,7 @@ void save(Archive& ar, const Eigen::VectorXd& g, const unsigned int /*version*/)
 {
   long rows = g.rows();
   ar(CEREAL_NVP(rows));
-  ar& cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows));
+  ar& cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows));
 }
 
 template <class Archive>
@@ -55,7 +55,7 @@ void load(Archive& ar, Eigen::VectorXd& g, const unsigned int /*version*/)
   long rows{ 0 };
   ar(CEREAL_NVP(rows));
   g.resize(rows);
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows)));
 }
 
 /*****************************/
@@ -66,7 +66,7 @@ void save(Archive& ar, const Eigen::Vector3d& g, const unsigned int /*version*/)
 {
   long rows = g.rows();
   ar(CEREAL_NVP(rows));
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows)));
 }
 
 template <class Archive>
@@ -75,7 +75,7 @@ void load(Archive& ar, Eigen::Vector3d& g, const unsigned int /*version*/)
   long rows{ 0 };
   ar(CEREAL_NVP(rows));
   g.resize(rows);
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows)));
 }
 
 /*****************************/
@@ -86,7 +86,7 @@ void save(Archive& ar, const Eigen::Vector4d& g, const unsigned int /*version*/)
 {
   long rows = g.rows();
   ar(CEREAL_NVP(rows));
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows)));
 }
 
 template <class Archive>
@@ -95,7 +95,7 @@ void load(Archive& ar, Eigen::Vector4d& g, const unsigned int /*version*/)
   long rows{ 0 };
   ar(CEREAL_NVP(rows));
   g.resize(rows);
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows)));
 }
 
 /*****************************/
@@ -106,7 +106,7 @@ void save(Archive& ar, const Eigen::VectorXi& g, const unsigned int /*version*/)
 {
   long rows = g.rows();
   ar(CEREAL_NVP(rows));
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows)));
 }
 
 template <class Archive>
@@ -115,7 +115,7 @@ void load(Archive& ar, Eigen::VectorXi& g, const unsigned int /*version*/)
   long rows{ 0 };
   ar(CEREAL_NVP(rows));
   g.resize(rows);
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows)));
 }
 
 /*******************************/
@@ -125,18 +125,18 @@ void load(Archive& ar, Eigen::VectorXi& g, const unsigned int /*version*/)
 template <class Archive>
 void save(Archive& ar, const Eigen::Isometry3d& g, const unsigned int /*version*/)
 {
-  ar(cereal::make_nvp("xyz", tesseract_common::serialization::make_array(g.translation().data(), 3)));
+  ar(cereal::make_nvp("xyz", tesseract::common::serialization::make_array(g.translation().data(), 3)));
   Eigen::Quaterniond q(g.linear());
-  ar(cereal::make_nvp("xyzw", tesseract_common::serialization::make_array(q.vec().data(), 4)));
+  ar(cereal::make_nvp("xyzw", tesseract::common::serialization::make_array(q.vec().data(), 4)));
 }
 
 template <class Archive>
 void load(Archive& ar, Eigen::Isometry3d& g, const unsigned int /*version*/)
 {
   g.setIdentity();
-  ar(cereal::make_nvp("xyz", tesseract_common::serialization::make_array(g.translation().data(), 3)));
+  ar(cereal::make_nvp("xyz", tesseract::common::serialization::make_array(g.translation().data(), 3)));
   Eigen::Quaterniond q;
-  ar(cereal::make_nvp("xyzw", tesseract_common::serialization::make_array(q.vec().data(), 4)));
+  ar(cereal::make_nvp("xyzw", tesseract::common::serialization::make_array(q.vec().data(), 4)));
   q.normalize();
   g.linear() = q.toRotationMatrix();
 }
@@ -149,7 +149,7 @@ void save(Archive& ar, const Eigen::MatrixX2d& g, const unsigned int /*version*/
 {
   long rows = g.rows();
   ar(CEREAL_NVP(rows));
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows * 2)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows * 2)));
 }
 
 template <class Archive>
@@ -158,7 +158,7 @@ void load(Archive& ar, Eigen::MatrixX2d& g, const unsigned int /*version*/)
   long rows{ 0 };
   ar(CEREAL_NVP(rows));
   g.resize(rows, 2);
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), rows * 2)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows * 2)));
 }
 
 /****************************************/
@@ -168,7 +168,7 @@ void load(Archive& ar, Eigen::MatrixX2d& g, const unsigned int /*version*/)
 template <class Archive>
 void serialize(Archive& ar, Eigen::Matrix<double, 6, 1>& g, const unsigned int /*version*/)
 {
-  ar(cereal::make_nvp("data", tesseract_common::serialization::make_array(g.data(), 6)));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), 6)));
 }
 
 }  // namespace cereal

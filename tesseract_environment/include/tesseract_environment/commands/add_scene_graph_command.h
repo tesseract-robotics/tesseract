@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/command.h>
 #include <tesseract_scene_graph/fwd.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class AddSceneGraphCommand;
 template <class Archive>
@@ -56,7 +56,7 @@ public:
    * into the environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with
    * different names
    */
-  AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph, std::string prefix = "");
+  AddSceneGraphCommand(const tesseract::scene_graph::SceneGraph& scene_graph, std::string prefix = "");
 
   /**
    * @brief Merge a graph into the current environment
@@ -68,25 +68,25 @@ public:
    * environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with different
    * names
    */
-  AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph,
-                       const tesseract_scene_graph::Joint& joint,
+  AddSceneGraphCommand(const tesseract::scene_graph::SceneGraph& scene_graph,
+                       const tesseract::scene_graph::Joint& joint,
                        std::string prefix = "");
 
-  const std::shared_ptr<const tesseract_scene_graph::SceneGraph>& getSceneGraph() const;
-  const std::shared_ptr<const tesseract_scene_graph::Joint>& getJoint() const;
+  const std::shared_ptr<const tesseract::scene_graph::SceneGraph>& getSceneGraph() const;
+  const std::shared_ptr<const tesseract::scene_graph::Joint>& getJoint() const;
   const std::string& getPrefix() const;
 
   bool operator==(const AddSceneGraphCommand& rhs) const;
   bool operator!=(const AddSceneGraphCommand& rhs) const;
 
 private:
-  std::shared_ptr<const tesseract_scene_graph::SceneGraph> scene_graph_;
-  std::shared_ptr<const tesseract_scene_graph::Joint> joint_;
+  std::shared_ptr<const tesseract::scene_graph::SceneGraph> scene_graph_;
+  std::shared_ptr<const tesseract::scene_graph::Joint> joint_;
   std::string prefix_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, AddSceneGraphCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, AddSceneGraphCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_SCENE_GRAPH_COMMAND_H

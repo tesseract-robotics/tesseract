@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <shared_mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class Environment;
 class EnvironmentCache
@@ -119,6 +119,6 @@ protected:
   /** @brief This does not take a lock */
   void refreshCacheHelper() const;
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_ENVIRONMENT_CACHE_H

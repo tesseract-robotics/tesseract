@@ -48,7 +48,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/fwd.h>
 #include <tesseract_geometry/fwd.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 class Material;
 template <class Archive>
@@ -91,7 +91,7 @@ private:
   std::string name_;
 
   template <class Archive>
-  friend void ::tesseract_scene_graph::serialize(Archive& ar, Material& obj);
+  friend void ::tesseract::scene_graph::serialize(Archive& ar, Material& obj);
 };
 
 class Inertial
@@ -141,7 +141,7 @@ public:
   Visual& operator=(Visual&&) = default;
 
   Eigen::Isometry3d origin;
-  std::shared_ptr<const tesseract_geometry::Geometry> geometry;
+  std::shared_ptr<const tesseract::geometry::Geometry> geometry;
 
   Material::Ptr material;
   std::string name;
@@ -168,7 +168,7 @@ public:
   Collision& operator=(Collision&&) = default;
 
   Eigen::Isometry3d origin;
-  std::shared_ptr<const tesseract_geometry::Geometry> geometry;
+  std::shared_ptr<const tesseract::geometry::Geometry> geometry;
   std::string name;
 
   void clear();
@@ -233,9 +233,9 @@ private:
   std::size_t hash_{};
 
   template <class Archive>
-  friend void ::tesseract_scene_graph::serialize(Archive& ar, Link& obj);
+  friend void ::tesseract::scene_graph::serialize(Archive& ar, Link& obj);
 };
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_SCENE_GRAPH_LINK_H

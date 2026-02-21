@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/fwd.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 std::string toString(const double& float_value, int precision = 3);
 
@@ -24,11 +24,11 @@ std::string makeURDFFilePath(const std::string& package_path, const std::string&
 
 /* Commented out due to nebulous errors during initial testing.
  * If errors are resolved, this is probably superior to the writeSimplePLY method used.
-aiScene createAssetFromMesh(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh);
+aiScene createAssetFromMesh(const std::shared_ptr<const tesseract::geometry::PolygonMesh>& mesh);
 */
 
-void writeMeshToFile(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh, const std::string& filepath);
+void writeMeshToFile(const std::shared_ptr<const tesseract::geometry::PolygonMesh>& mesh, const std::string& filepath);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_UTILS_H

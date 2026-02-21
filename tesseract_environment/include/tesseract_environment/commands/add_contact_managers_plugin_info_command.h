@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/command.h>
 #include <tesseract_common/plugin_info.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class AddContactManagersPluginInfoCommand;
 template <class Archive>
@@ -49,19 +49,19 @@ public:
    * @brief Add contact manager plugins
    * @param contact_managers_plugin_info Contact managers plugin information
    */
-  AddContactManagersPluginInfoCommand(tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info);
+  AddContactManagersPluginInfoCommand(tesseract::common::ContactManagersPluginInfo contact_managers_plugin_info);
 
-  const tesseract_common::ContactManagersPluginInfo& getContactManagersPluginInfo() const;
+  const tesseract::common::ContactManagersPluginInfo& getContactManagersPluginInfo() const;
 
   bool operator==(const AddContactManagersPluginInfoCommand& rhs) const;
   bool operator!=(const AddContactManagersPluginInfoCommand& rhs) const;
 
 private:
-  tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info_;
+  tesseract::common::ContactManagersPluginInfo contact_managers_plugin_info_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, AddContactManagersPluginInfoCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, AddContactManagersPluginInfoCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_CONTACT_MANAGERS_PLUGIN_INFO_COMMAND_H

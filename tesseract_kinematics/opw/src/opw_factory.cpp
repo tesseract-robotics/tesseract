@@ -30,18 +30,18 @@
 
 #include <console_bridge/console.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 std::unique_ptr<InverseKinematics> OPWInvKinFactory::create(const std::string& solver_name,
-                                                            const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                            const tesseract_scene_graph::SceneState& /*scene_state*/,
+                                                            const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                            const tesseract::scene_graph::SceneState& /*scene_state*/,
                                                             const KinematicsPluginFactory& /*plugin_factory*/,
                                                             const YAML::Node& config) const
 {
   std::string base_link;
   std::string tip_link;
   opw_kinematics::Parameters<double> params;
-  tesseract_scene_graph::ShortestPath path;
+  tesseract::scene_graph::ShortestPath path;
 
   try
   {
@@ -136,7 +136,7 @@ std::unique_ptr<InverseKinematics> OPWInvKinFactory::create(const std::string& s
 
 PLUGIN_ANCHOR_IMPL(OPWFactoriesAnchor)
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::OPWInvKinFactory, OPWInvKinFactory);
+TESSERACT_ADD_INV_KIN_PLUGIN(tesseract::kinematics::OPWInvKinFactory, OPWInvKinFactory);

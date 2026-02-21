@@ -38,7 +38,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view SPHERE_ELEMENT_NAME = "sphere";
 
@@ -47,11 +47,11 @@ static constexpr std::string_view SPHERE_ELEMENT_NAME = "sphere";
  * @param xml_element The xml element
  * @return Tesseract Geometry Sphere
  */
-std::shared_ptr<tesseract_geometry::Sphere> parseSphere(const tinyxml2::XMLElement* xml_element);
+std::shared_ptr<tesseract::geometry::Sphere> parseSphere(const tinyxml2::XMLElement* xml_element);
 
-tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract_geometry::Sphere>& sphere,
+tinyxml2::XMLElement* writeSphere(const std::shared_ptr<const tesseract::geometry::Sphere>& sphere,
                                   tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_SPHERE_H

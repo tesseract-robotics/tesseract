@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/command.h>
 #include <tesseract_scene_graph/fwd.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class MoveLinkCommand;
 template <class Archive>
@@ -53,19 +53,19 @@ public:
    *
    * @param joint The new joint.
    */
-  MoveLinkCommand(const tesseract_scene_graph::Joint& joint);
+  MoveLinkCommand(const tesseract::scene_graph::Joint& joint);
 
-  const std::shared_ptr<const tesseract_scene_graph::Joint>& getJoint() const;
+  const std::shared_ptr<const tesseract::scene_graph::Joint>& getJoint() const;
 
   bool operator==(const MoveLinkCommand& rhs) const;
   bool operator!=(const MoveLinkCommand& rhs) const;
 
 private:
-  std::shared_ptr<const tesseract_scene_graph::Joint> joint_;
+  std::shared_ptr<const tesseract::scene_graph::Joint> joint_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, MoveLinkCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, MoveLinkCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_MOVE_LINK_COMMAND_H

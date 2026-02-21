@@ -25,7 +25,7 @@
 #include <tesseract_common/calibration_info.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 void CalibrationInfo::insert(const CalibrationInfo& other)
 {
@@ -44,9 +44,9 @@ bool CalibrationInfo::operator==(const CalibrationInfo& rhs) const
   };
 
   bool equal = true;
-  equal &= tesseract_common::isIdenticalMap<TransformMap, Eigen::Isometry3d>(joints, rhs.joints, isometry_equal);
+  equal &= tesseract::common::isIdenticalMap<TransformMap, Eigen::Isometry3d>(joints, rhs.joints, isometry_equal);
 
   return equal;
 }
 bool CalibrationInfo::operator!=(const CalibrationInfo& rhs) const { return !operator==(rhs); }
-}  // namespace tesseract_common
+}  // namespace tesseract::common

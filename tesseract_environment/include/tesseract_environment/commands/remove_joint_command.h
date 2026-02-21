@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class RemoveJointCommand;
 template <class Archive>
@@ -64,8 +64,8 @@ private:
   std::string joint_name_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, RemoveJointCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, RemoveJointCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_REMOVE_JOINT_COMMAND_H

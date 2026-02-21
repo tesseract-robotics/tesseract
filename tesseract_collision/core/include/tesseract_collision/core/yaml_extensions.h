@@ -36,29 +36,29 @@ namespace YAML
 {
 //=========================== ACMOverrideType Enum ===========================
 template <>
-struct convert<tesseract_collision::ACMOverrideType>
+struct convert<tesseract::collision::ACMOverrideType>
 {
-  static Node encode(const tesseract_collision::ACMOverrideType& rhs)
+  static Node encode(const tesseract::collision::ACMOverrideType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<tesseract_collision::ACMOverrideType, std::string> m = {
-      { tesseract_collision::ACMOverrideType::NONE, "NONE" },
-      { tesseract_collision::ACMOverrideType::AND, "AND" },
-      { tesseract_collision::ACMOverrideType::ASSIGN, "ASSIGN" },
-      { tesseract_collision::ACMOverrideType::OR, "OR" }
+    static const std::map<tesseract::collision::ACMOverrideType, std::string> m = {
+      { tesseract::collision::ACMOverrideType::NONE, "NONE" },
+      { tesseract::collision::ACMOverrideType::AND, "AND" },
+      { tesseract::collision::ACMOverrideType::ASSIGN, "ASSIGN" },
+      { tesseract::collision::ACMOverrideType::OR, "OR" }
     };
     // LCOV_EXCL_STOP
     return Node(m.at(rhs));
   }
 
-  static bool decode(const Node& node, tesseract_collision::ACMOverrideType& rhs)
+  static bool decode(const Node& node, tesseract::collision::ACMOverrideType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<std::string, tesseract_collision::ACMOverrideType> inv = {
-      { "NONE", tesseract_collision::ACMOverrideType::NONE },
-      { "AND", tesseract_collision::ACMOverrideType::AND },
-      { "ASSIGN", tesseract_collision::ACMOverrideType::ASSIGN },
-      { "OR", tesseract_collision::ACMOverrideType::OR }
+    static const std::map<std::string, tesseract::collision::ACMOverrideType> inv = {
+      { "NONE", tesseract::collision::ACMOverrideType::NONE },
+      { "AND", tesseract::collision::ACMOverrideType::AND },
+      { "ASSIGN", tesseract::collision::ACMOverrideType::ASSIGN },
+      { "OR", tesseract::collision::ACMOverrideType::OR }
     };
     // LCOV_EXCL_STOP
 
@@ -76,29 +76,29 @@ struct convert<tesseract_collision::ACMOverrideType>
 
 //=========================== ContactTestType Enum ===========================
 template <>
-struct convert<tesseract_collision::ContactTestType>
+struct convert<tesseract::collision::ContactTestType>
 {
-  static Node encode(const tesseract_collision::ContactTestType& rhs)
+  static Node encode(const tesseract::collision::ContactTestType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<tesseract_collision::ContactTestType, std::string> m = {
-      { tesseract_collision::ContactTestType::FIRST, "FIRST" },
-      { tesseract_collision::ContactTestType::CLOSEST, "CLOSEST" },
-      { tesseract_collision::ContactTestType::ALL, "ALL" },
-      { tesseract_collision::ContactTestType::LIMITED, "LIMITED" }
+    static const std::map<tesseract::collision::ContactTestType, std::string> m = {
+      { tesseract::collision::ContactTestType::FIRST, "FIRST" },
+      { tesseract::collision::ContactTestType::CLOSEST, "CLOSEST" },
+      { tesseract::collision::ContactTestType::ALL, "ALL" },
+      { tesseract::collision::ContactTestType::LIMITED, "LIMITED" }
     };
     // LCOV_EXCL_STOP
     return Node(m.at(rhs));
   }
 
-  static bool decode(const Node& node, tesseract_collision::ContactTestType& rhs)
+  static bool decode(const Node& node, tesseract::collision::ContactTestType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<std::string, tesseract_collision::ContactTestType> inv = {
-      { "FIRST", tesseract_collision::ContactTestType::FIRST },
-      { "CLOSEST", tesseract_collision::ContactTestType::CLOSEST },
-      { "ALL", tesseract_collision::ContactTestType::ALL },
-      { "LIMITED", tesseract_collision::ContactTestType::LIMITED }
+    static const std::map<std::string, tesseract::collision::ContactTestType> inv = {
+      { "FIRST", tesseract::collision::ContactTestType::FIRST },
+      { "CLOSEST", tesseract::collision::ContactTestType::CLOSEST },
+      { "ALL", tesseract::collision::ContactTestType::ALL },
+      { "LIMITED", tesseract::collision::ContactTestType::LIMITED }
     };
     // LCOV_EXCL_STOP
 
@@ -116,31 +116,31 @@ struct convert<tesseract_collision::ContactTestType>
 
 //=========================== CollisionEvaluatorType Enum ===========================
 template <>
-struct convert<tesseract_collision::CollisionEvaluatorType>
+struct convert<tesseract::collision::CollisionEvaluatorType>
 {
-  static Node encode(const tesseract_collision::CollisionEvaluatorType& rhs)
+  static Node encode(const tesseract::collision::CollisionEvaluatorType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<tesseract_collision::CollisionEvaluatorType, std::string> m = {
-      { tesseract_collision::CollisionEvaluatorType::NONE, "NONE" },
-      { tesseract_collision::CollisionEvaluatorType::DISCRETE, "DISCRETE" },
-      { tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE, "LVS_DISCRETE" },
-      { tesseract_collision::CollisionEvaluatorType::CONTINUOUS, "CONTINUOUS" },
-      { tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS, "LVS_CONTINUOUS" }
+    static const std::map<tesseract::collision::CollisionEvaluatorType, std::string> m = {
+      { tesseract::collision::CollisionEvaluatorType::NONE, "NONE" },
+      { tesseract::collision::CollisionEvaluatorType::DISCRETE, "DISCRETE" },
+      { tesseract::collision::CollisionEvaluatorType::LVS_DISCRETE, "LVS_DISCRETE" },
+      { tesseract::collision::CollisionEvaluatorType::CONTINUOUS, "CONTINUOUS" },
+      { tesseract::collision::CollisionEvaluatorType::LVS_CONTINUOUS, "LVS_CONTINUOUS" }
     };
     // LCOV_EXCL_STOP
     return Node(m.at(rhs));
   }
 
-  static bool decode(const Node& node, tesseract_collision::CollisionEvaluatorType& rhs)
+  static bool decode(const Node& node, tesseract::collision::CollisionEvaluatorType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<std::string, tesseract_collision::CollisionEvaluatorType> inv = {
-      { "NONE", tesseract_collision::CollisionEvaluatorType::NONE },
-      { "DISCRETE", tesseract_collision::CollisionEvaluatorType::DISCRETE },
-      { "LVS_DISCRETE", tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE },
-      { "CONTINUOUS", tesseract_collision::CollisionEvaluatorType::CONTINUOUS },
-      { "LVS_CONTINUOUS", tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS }
+    static const std::map<std::string, tesseract::collision::CollisionEvaluatorType> inv = {
+      { "NONE", tesseract::collision::CollisionEvaluatorType::NONE },
+      { "DISCRETE", tesseract::collision::CollisionEvaluatorType::DISCRETE },
+      { "LVS_DISCRETE", tesseract::collision::CollisionEvaluatorType::LVS_DISCRETE },
+      { "CONTINUOUS", tesseract::collision::CollisionEvaluatorType::CONTINUOUS },
+      { "LVS_CONTINUOUS", tesseract::collision::CollisionEvaluatorType::LVS_CONTINUOUS }
     };
     // LCOV_EXCL_STOP
 
@@ -158,33 +158,33 @@ struct convert<tesseract_collision::CollisionEvaluatorType>
 
 //=========================== CollisionCheckProgramType Enum ===========================
 template <>
-struct convert<tesseract_collision::CollisionCheckProgramType>
+struct convert<tesseract::collision::CollisionCheckProgramType>
 {
-  static Node encode(const tesseract_collision::CollisionCheckProgramType& rhs)
+  static Node encode(const tesseract::collision::CollisionCheckProgramType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<tesseract_collision::CollisionCheckProgramType, std::string> m = {
-      { tesseract_collision::CollisionCheckProgramType::ALL, "ALL" },
-      { tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START, "ALL_EXCEPT_START" },
-      { tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_END, "ALL_EXCEPT_END" },
-      { tesseract_collision::CollisionCheckProgramType::START_ONLY, "START_ONLY" },
-      { tesseract_collision::CollisionCheckProgramType::END_ONLY, "END_ONLY" },
-      { tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY, "INTERMEDIATE_ONLY" }
+    static const std::map<tesseract::collision::CollisionCheckProgramType, std::string> m = {
+      { tesseract::collision::CollisionCheckProgramType::ALL, "ALL" },
+      { tesseract::collision::CollisionCheckProgramType::ALL_EXCEPT_START, "ALL_EXCEPT_START" },
+      { tesseract::collision::CollisionCheckProgramType::ALL_EXCEPT_END, "ALL_EXCEPT_END" },
+      { tesseract::collision::CollisionCheckProgramType::START_ONLY, "START_ONLY" },
+      { tesseract::collision::CollisionCheckProgramType::END_ONLY, "END_ONLY" },
+      { tesseract::collision::CollisionCheckProgramType::INTERMEDIATE_ONLY, "INTERMEDIATE_ONLY" }
     };
     // LCOV_EXCL_STOP
     return Node(m.at(rhs));
   }
 
-  static bool decode(const Node& node, tesseract_collision::CollisionCheckProgramType& rhs)
+  static bool decode(const Node& node, tesseract::collision::CollisionCheckProgramType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<std::string, tesseract_collision::CollisionCheckProgramType> inv = {
-      { "ALL", tesseract_collision::CollisionCheckProgramType::ALL },
-      { "ALL_EXCEPT_START", tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_START },
-      { "ALL_EXCEPT_END", tesseract_collision::CollisionCheckProgramType::ALL_EXCEPT_END },
-      { "START_ONLY", tesseract_collision::CollisionCheckProgramType::START_ONLY },
-      { "END_ONLY", tesseract_collision::CollisionCheckProgramType::END_ONLY },
-      { "INTERMEDIATE_ONLY", tesseract_collision::CollisionCheckProgramType::INTERMEDIATE_ONLY }
+    static const std::map<std::string, tesseract::collision::CollisionCheckProgramType> inv = {
+      { "ALL", tesseract::collision::CollisionCheckProgramType::ALL },
+      { "ALL_EXCEPT_START", tesseract::collision::CollisionCheckProgramType::ALL_EXCEPT_START },
+      { "ALL_EXCEPT_END", tesseract::collision::CollisionCheckProgramType::ALL_EXCEPT_END },
+      { "START_ONLY", tesseract::collision::CollisionCheckProgramType::START_ONLY },
+      { "END_ONLY", tesseract::collision::CollisionCheckProgramType::END_ONLY },
+      { "INTERMEDIATE_ONLY", tesseract::collision::CollisionCheckProgramType::INTERMEDIATE_ONLY }
     };
     // LCOV_EXCL_STOP
 
@@ -202,24 +202,24 @@ struct convert<tesseract_collision::CollisionCheckProgramType>
 
 //=========================== CollisionCheckExitType Enum ===========================
 template <>
-struct convert<tesseract_collision::CollisionCheckExitType>
+struct convert<tesseract::collision::CollisionCheckExitType>
 {
-  static Node encode(const tesseract_collision::CollisionCheckExitType& rhs)
+  static Node encode(const tesseract::collision::CollisionCheckExitType& rhs)
   {
-    static const std::map<tesseract_collision::CollisionCheckExitType, std::string> m = {
-      { tesseract_collision::CollisionCheckExitType::FIRST, "FIRST" },
-      { tesseract_collision::CollisionCheckExitType::ONE_PER_STEP, "ONE_PER_STEP" },
-      { tesseract_collision::CollisionCheckExitType::ALL, "ALL" }
+    static const std::map<tesseract::collision::CollisionCheckExitType, std::string> m = {
+      { tesseract::collision::CollisionCheckExitType::FIRST, "FIRST" },
+      { tesseract::collision::CollisionCheckExitType::ONE_PER_STEP, "ONE_PER_STEP" },
+      { tesseract::collision::CollisionCheckExitType::ALL, "ALL" }
     };
     return Node(m.at(rhs));
   }
 
-  static bool decode(const Node& node, tesseract_collision::CollisionCheckExitType& rhs)
+  static bool decode(const Node& node, tesseract::collision::CollisionCheckExitType& rhs)
   {
-    static const std::map<std::string, tesseract_collision::CollisionCheckExitType> inv = {
-      { "FIRST", tesseract_collision::CollisionCheckExitType::FIRST },
-      { "ONE_PER_STEP", tesseract_collision::CollisionCheckExitType::ONE_PER_STEP },
-      { "ALL", tesseract_collision::CollisionCheckExitType::ALL }
+    static const std::map<std::string, tesseract::collision::CollisionCheckExitType> inv = {
+      { "FIRST", tesseract::collision::CollisionCheckExitType::FIRST },
+      { "ONE_PER_STEP", tesseract::collision::CollisionCheckExitType::ONE_PER_STEP },
+      { "ALL", tesseract::collision::CollisionCheckExitType::ALL }
     };
 
     if (!node.IsScalar())
@@ -236,9 +236,9 @@ struct convert<tesseract_collision::CollisionCheckExitType>
 
 //=========================== ContactManagerConfig ===========================
 template <>
-struct convert<tesseract_collision::ContactManagerConfig>
+struct convert<tesseract::collision::ContactManagerConfig>
 {
-  static Node encode(const tesseract_collision::ContactManagerConfig& rhs)
+  static Node encode(const tesseract::collision::ContactManagerConfig& rhs)
   {
     Node node;
     if (rhs.default_margin.has_value())
@@ -252,7 +252,7 @@ struct convert<tesseract_collision::ContactManagerConfig>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_collision::ContactManagerConfig& rhs)
+  static bool decode(const Node& node, tesseract::collision::ContactManagerConfig& rhs)
   {
     if (!node.IsMap())
       return false;
@@ -261,16 +261,16 @@ struct convert<tesseract_collision::ContactManagerConfig>
       rhs.default_margin = n.as<double>();
 
     if (const YAML::Node& n = node["pair_margin_override_type"])
-      rhs.pair_margin_override_type = n.as<tesseract_collision::CollisionMarginPairOverrideType>();
+      rhs.pair_margin_override_type = n.as<tesseract::collision::CollisionMarginPairOverrideType>();
 
     if (const YAML::Node& n = node["pair_margin_data"])
-      rhs.pair_margin_data = n.as<tesseract_common::PairsCollisionMarginData>();
+      rhs.pair_margin_data = n.as<tesseract::common::PairsCollisionMarginData>();
 
     if (const YAML::Node& n = node["acm_override_type"])
-      rhs.acm_override_type = n.as<tesseract_collision::ACMOverrideType>();
+      rhs.acm_override_type = n.as<tesseract::collision::ACMOverrideType>();
 
     if (const YAML::Node& n = node["acm"])
-      rhs.acm = n.as<tesseract_common::AllowedCollisionMatrix>();
+      rhs.acm = n.as<tesseract::common::AllowedCollisionMatrix>();
 
     if (const YAML::Node& n = node["modify_object_enabled"])
       rhs.modify_object_enabled = n.as<std::unordered_map<std::string, bool>>();
@@ -281,9 +281,9 @@ struct convert<tesseract_collision::ContactManagerConfig>
 
 //=========================== ContactRequest ===========================
 template <>
-struct convert<tesseract_collision::ContactRequest>
+struct convert<tesseract::collision::ContactRequest>
 {
-  static Node encode(const tesseract_collision::ContactRequest& rhs)
+  static Node encode(const tesseract::collision::ContactRequest& rhs)
   {
     Node node;
 
@@ -294,10 +294,10 @@ struct convert<tesseract_collision::ContactRequest>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_collision::ContactRequest& rhs)
+  static bool decode(const Node& node, tesseract::collision::ContactRequest& rhs)
   {
     if (const YAML::Node& n = node["type"])
-      rhs.type = n.as<tesseract_collision::ContactTestType>();
+      rhs.type = n.as<tesseract::collision::ContactTestType>();
 
     if (const YAML::Node& n = node["calculate_penetration"])
       rhs.calculate_penetration = n.as<bool>();
@@ -314,9 +314,9 @@ struct convert<tesseract_collision::ContactRequest>
 
 //=========================== CollisionCheckConfig ===========================
 template <>
-struct convert<tesseract_collision::CollisionCheckConfig>
+struct convert<tesseract::collision::CollisionCheckConfig>
 {
-  static Node encode(const tesseract_collision::CollisionCheckConfig& rhs)
+  static Node encode(const tesseract::collision::CollisionCheckConfig& rhs)
   {
     Node node;
 
@@ -329,18 +329,18 @@ struct convert<tesseract_collision::CollisionCheckConfig>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_collision::CollisionCheckConfig& rhs)
+  static bool decode(const Node& node, tesseract::collision::CollisionCheckConfig& rhs)
   {
     if (const YAML::Node& n = node["contact_request"])
-      rhs.contact_request = n.as<tesseract_collision::ContactRequest>();
+      rhs.contact_request = n.as<tesseract::collision::ContactRequest>();
     if (const YAML::Node& n = node["type"])
-      rhs.type = n.as<tesseract_collision::CollisionEvaluatorType>();
+      rhs.type = n.as<tesseract::collision::CollisionEvaluatorType>();
     if (const YAML::Node& n = node["longest_valid_segment_length"])
       rhs.longest_valid_segment_length = n.as<double>();
     if (const YAML::Node& n = node["check_program_mode"])
-      rhs.check_program_mode = n.as<tesseract_collision::CollisionCheckProgramType>();
+      rhs.check_program_mode = n.as<tesseract::collision::CollisionCheckProgramType>();
     if (const YAML::Node& n = node["exit_condition"])
-      rhs.exit_condition = n.as<tesseract_collision::CollisionCheckExitType>();
+      rhs.exit_condition = n.as<tesseract::collision::CollisionCheckExitType>();
     return true;
   }
 };

@@ -7,7 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/polygon_mesh.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 std::string toString(const double& float_value, const int precision)
 {
@@ -75,7 +75,7 @@ std::string makeURDFFilePath(const std::string& package_path, const std::string&
 }
 
 /*
-aiScene createAssetFromMesh(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh)
+aiScene createAssetFromMesh(const std::shared_ptr<const tesseract::geometry::PolygonMesh>& mesh)
 {
   // Create an assimp scene
   aiScene scene;
@@ -137,9 +137,9 @@ aiScene createAssetFromMesh(const std::shared_ptr<const tesseract_geometry::Poly
 }
 */
 
-void writeMeshToFile(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh, const std::string& filepath)
+void writeMeshToFile(const std::shared_ptr<const tesseract::geometry::PolygonMesh>& mesh, const std::string& filepath)
 {
-  if (!tesseract_common::writeSimplePlyFile(
+  if (!tesseract::common::writeSimplePlyFile(
           filepath, *(mesh->getVertices()), *(mesh->getFaces()), mesh->getFaceCount()))
     std::throw_with_nested(std::runtime_error("Could not export file"));
 
@@ -154,4 +154,4 @@ void writeMeshToFile(const std::shared_ptr<const tesseract_geometry::PolygonMesh
   */
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

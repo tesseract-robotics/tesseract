@@ -41,9 +41,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 static const std::string TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES";
 static const std::string TESSERACT_KINEMATICS_PLUGINS_ENV = "TESSERACT_KINEMATICS_PLUGINS";
 
-using tesseract_common::KinematicsPluginInfo;
+using tesseract::common::KinematicsPluginInfo;
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 std::string InvKinFactory::getSection() { return "InvKin"; }
 
@@ -57,15 +57,15 @@ KinematicsPluginFactory::KinematicsPluginFactory()
   boost::split(
       plugin_loader_.search_libraries, TESSERACT_KINEMATICS_PLUGINS, boost::is_any_of(":"), boost::token_compress_on);
 
-  tesseract_common::removeDuplicates(plugin_loader_.search_paths);
-  tesseract_common::removeDuplicates(plugin_loader_.search_libraries);
+  tesseract::common::removeDuplicates(plugin_loader_.search_paths);
+  tesseract::common::removeDuplicates(plugin_loader_.search_libraries);
 }
 
 void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
 {
   if (const YAML::Node& plugin_info = config[KinematicsPluginInfo::CONFIG_KEY])
   {
-    auto kin_plugin_info = plugin_info.as<tesseract_common::KinematicsPluginInfo>();
+    auto kin_plugin_info = plugin_info.as<tesseract::common::KinematicsPluginInfo>();
     plugin_loader_.search_paths.insert(
         plugin_loader_.search_paths.end(), kin_plugin_info.search_paths.begin(), kin_plugin_info.search_paths.end());
     plugin_loader_.search_libraries.insert(plugin_loader_.search_libraries.end(),
@@ -74,30 +74,30 @@ void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
     fwd_plugin_info_ = kin_plugin_info.fwd_plugin_infos;
     inv_plugin_info_ = kin_plugin_info.inv_plugin_infos;
 
-    tesseract_common::removeDuplicates(plugin_loader_.search_paths);
-    tesseract_common::removeDuplicates(plugin_loader_.search_libraries);
+    tesseract::common::removeDuplicates(plugin_loader_.search_paths);
+    tesseract::common::removeDuplicates(plugin_loader_.search_libraries);
   }
 }
 
-KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config, const tesseract_common::ResourceLocator& locator)
+KinematicsPluginFactory::KinematicsPluginFactory(YAML::Node config, const tesseract::common::ResourceLocator& locator)
   : KinematicsPluginFactory()
 {
-  tesseract_common::processYamlIncludeDirective(config, locator);
+  tesseract::common::processYamlIncludeDirective(config, locator);
   loadConfig(config);
 }
 
 KinematicsPluginFactory::KinematicsPluginFactory(const std::filesystem::path& config,
-                                                 const tesseract_common::ResourceLocator& locator)
+                                                 const tesseract::common::ResourceLocator& locator)
   : KinematicsPluginFactory()
 {
-  loadConfig(tesseract_common::loadYamlFile(config.string(), locator));
+  loadConfig(tesseract::common::loadYamlFile(config.string(), locator));
 }
 
 KinematicsPluginFactory::KinematicsPluginFactory(const std::string& config,
-                                                 const tesseract_common::ResourceLocator& locator)
+                                                 const tesseract::common::ResourceLocator& locator)
   : KinematicsPluginFactory()
 {
-  loadConfig(tesseract_common::loadYamlString(config, locator));
+  loadConfig(tesseract::common::loadYamlString(config, locator));
 }
 
 // This prevents it from being defined inline.
@@ -124,12 +124,12 @@ std::vector<std::string> KinematicsPluginFactory::getSearchLibraries() const { r
 
 void KinematicsPluginFactory::addFwdKinPlugin(const std::string& group_name,
                                               const std::string& solver_name,
-                                              tesseract_common::PluginInfo plugin_info)
+                                              tesseract::common::PluginInfo plugin_info)
 {
   fwd_plugin_info_[group_name].plugins[solver_name] = std::move(plugin_info);
 }
 
-std::map<std::string, tesseract_common::PluginInfoContainer> KinematicsPluginFactory::getFwdKinPlugins() const
+std::map<std::string, tesseract::common::PluginInfoContainer> KinematicsPluginFactory::getFwdKinPlugins() const
 {
   return fwd_plugin_info_;
 }
@@ -184,12 +184,12 @@ std::string KinematicsPluginFactory::getDefaultFwdKinPlugin(const std::string& g
 
 void KinematicsPluginFactory::addInvKinPlugin(const std::string& group_name,
                                               const std::string& solver_name,
-                                              tesseract_common::PluginInfo plugin_info)
+                                              tesseract::common::PluginInfo plugin_info)
 {
   inv_plugin_info_[group_name].plugins[solver_name] = std::move(plugin_info);
 }
 
-std::map<std::string, tesseract_common::PluginInfoContainer> KinematicsPluginFactory::getInvKinPlugins() const
+std::map<std::string, tesseract::common::PluginInfoContainer> KinematicsPluginFactory::getInvKinPlugins() const
 {
   return inv_plugin_info_;
 }
@@ -245,8 +245,8 @@ std::string KinematicsPluginFactory::getDefaultInvKinPlugin(const std::string& g
 std::unique_ptr<ForwardKinematics>
 KinematicsPluginFactory::createFwdKin(const std::string& group_name,
                                       const std::string& solver_name,
-                                      const tesseract_scene_graph::SceneGraph& scene_graph,
-                                      const tesseract_scene_graph::SceneState& scene_state) const
+                                      const tesseract::scene_graph::SceneGraph& scene_graph,
+                                      const tesseract::scene_graph::SceneState& scene_state) const
 {
   auto group_it = fwd_plugin_info_.find(group_name);
   if (group_it == fwd_plugin_info_.end())
@@ -273,9 +273,9 @@ KinematicsPluginFactory::createFwdKin(const std::string& group_name,
 
 std::unique_ptr<ForwardKinematics>
 KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
-                                      const tesseract_common::PluginInfo& plugin_info,
-                                      const tesseract_scene_graph::SceneGraph& scene_graph,
-                                      const tesseract_scene_graph::SceneState& scene_state) const
+                                      const tesseract::common::PluginInfo& plugin_info,
+                                      const tesseract::scene_graph::SceneGraph& scene_graph,
+                                      const tesseract::scene_graph::SceneState& scene_state) const
 {
   try
   {
@@ -302,8 +302,8 @@ KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
 std::unique_ptr<InverseKinematics>
 KinematicsPluginFactory::createInvKin(const std::string& group_name,
                                       const std::string& solver_name,
-                                      const tesseract_scene_graph::SceneGraph& scene_graph,
-                                      const tesseract_scene_graph::SceneState& scene_state) const
+                                      const tesseract::scene_graph::SceneGraph& scene_graph,
+                                      const tesseract::scene_graph::SceneState& scene_state) const
 {
   auto group_it = inv_plugin_info_.find(group_name);
   if (group_it == inv_plugin_info_.end())
@@ -330,9 +330,9 @@ KinematicsPluginFactory::createInvKin(const std::string& group_name,
 
 std::unique_ptr<InverseKinematics>
 KinematicsPluginFactory::createInvKin(const std::string& solver_name,
-                                      const tesseract_common::PluginInfo& plugin_info,
-                                      const tesseract_scene_graph::SceneGraph& scene_graph,
-                                      const tesseract_scene_graph::SceneState& scene_state) const
+                                      const tesseract::common::PluginInfo& plugin_info,
+                                      const tesseract::scene_graph::SceneGraph& scene_graph,
+                                      const tesseract::scene_graph::SceneState& scene_state) const
 {
   try
   {
@@ -365,7 +365,7 @@ void KinematicsPluginFactory::saveConfig(const std::filesystem::path& file_path)
 
 YAML::Node KinematicsPluginFactory::getConfig() const
 {
-  tesseract_common::KinematicsPluginInfo kinematic_plugins;
+  tesseract::common::KinematicsPluginInfo kinematic_plugins;
   kinematic_plugins.search_paths = plugin_loader_.search_paths;
   kinematic_plugins.search_libraries = plugin_loader_.search_libraries;
   kinematic_plugins.fwd_plugin_infos = fwd_plugin_info_;
@@ -377,4 +377,4 @@ YAML::Node KinematicsPluginFactory::getConfig() const
   return config;
 }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

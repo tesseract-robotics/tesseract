@@ -24,7 +24,7 @@
 #ifndef TESSERACT_KINEMATICS_FWD_H
 #define TESSERACT_KINEMATICS_FWD_H
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 class ForwardKinematics;
 class InverseKinematics;
@@ -41,6 +41,6 @@ class ROPInvKin;
 struct URParameters;
 struct ManipulabilityEllipsoid;
 struct Manipulability;
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 #endif  // TESSERACT_KINEMATICS_FWD_H

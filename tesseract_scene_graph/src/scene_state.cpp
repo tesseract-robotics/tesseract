@@ -29,7 +29,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/scene_state.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 Eigen::VectorXd SceneState::getJointValues(const std::vector<std::string>& joint_names) const
 {
@@ -41,9 +41,9 @@ Eigen::VectorXd SceneState::getJointValues(const std::vector<std::string>& joint
   return jv;
 }
 
-tesseract_common::TransformMap SceneState::getFloatingJointValues(const std::vector<std::string>& joint_names) const
+tesseract::common::TransformMap SceneState::getFloatingJointValues(const std::vector<std::string>& joint_names) const
 {
-  tesseract_common::TransformMap fjv;
+  tesseract::common::TransformMap fjv;
   for (const auto& joint_name : joint_names)
     fjv[joint_name] = floating_joints.at(joint_name);
 
@@ -56,7 +56,7 @@ bool SceneState::operator==(const SceneState& rhs) const
     return iso_1.isApprox(iso_2, 1e-5);
   };
 
-  using namespace tesseract_common;
+  using namespace tesseract::common;
   bool equal = true;
   equal &= isIdenticalMap<std::unordered_map<std::string, double>, double>(joints, rhs.joints);
   equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(floating_joints, rhs.floating_joints, isometry_equal);
@@ -67,4 +67,4 @@ bool SceneState::operator==(const SceneState& rhs) const
 }
 bool SceneState::operator!=(const SceneState& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph

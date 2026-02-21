@@ -36,12 +36,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 JointGroup::JointGroup(std::string name,
                        std::vector<std::string> joint_names,
-                       const tesseract_scene_graph::SceneGraph& scene_graph,
-                       const tesseract_scene_graph::SceneState& scene_state)
+                       const tesseract::scene_graph::SceneGraph& scene_graph,
+                       const tesseract::scene_graph::SceneState& scene_state)
   : name_(std::move(name)), state_(scene_state), joint_names_(std::move(joint_names))
 {
   for (const auto& joint_name : joint_names_)
@@ -50,9 +50,9 @@ JointGroup::JointGroup(std::string name,
       throw std::runtime_error("Joint name '" + joint_name + "' does not exist in the provided scene graph!");
   }
 
-  tesseract_scene_graph::KDLTreeData data = tesseract_scene_graph::parseSceneGraph(
+  tesseract::scene_graph::KDLTreeData data = tesseract::scene_graph::parseSceneGraph(
       scene_graph, joint_names_, scene_state.joints, scene_state.floating_joints);
-  state_solver_ = std::make_unique<tesseract_scene_graph::KDLStateSolver>(scene_graph, data);
+  state_solver_ = std::make_unique<tesseract::scene_graph::KDLStateSolver>(scene_graph, data);
   jacobian_map_.reserve(joint_names_.size());
   std::vector<std::string> solver_jn = state_solver_->getActiveJointNames();
   for (const auto& joint_name : joint_names_)
@@ -89,8 +89,8 @@ JointGroup::JointGroup(std::string name,
     // Set redundancy indices
     switch (joint->type)
     {
-      case tesseract_scene_graph::JointType::REVOLUTE:
-      case tesseract_scene_graph::JointType::CONTINUOUS:
+      case tesseract::scene_graph::JointType::REVOLUTE:
+      case tesseract::scene_graph::JointType::CONTINUOUS:
         redundancy_indices_.push_back(i);
         break;
       default:
@@ -133,14 +133,14 @@ JointGroup& JointGroup::operator=(const JointGroup& other)
   return *this;
 }
 
-tesseract_common::TransformMap JointGroup::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+tesseract::common::TransformMap JointGroup::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
-  tesseract_common::TransformMap transforms;
+  tesseract::common::TransformMap transforms;
   calcFwdKin(transforms, joint_angles);
   return transforms;
 }
 
-void JointGroup::calcFwdKin(tesseract_common::TransformMap& transforms,
+void JointGroup::calcFwdKin(tesseract::common::TransformMap& transforms,
                             const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   state_solver_->getLinkTransforms(transforms, joint_names_, joint_angles);
@@ -165,12 +165,12 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
 {
   Eigen::MatrixXd kin_jac = calcJacobian(joint_angles, link_name);
 
-  tesseract_scene_graph::SceneState state = state_solver_->getState(joint_names_, joint_angles);
+  tesseract::scene_graph::SceneState state = state_solver_->getState(joint_names_, joint_angles);
   assert(state.link_transforms.find(link_name) != state.link_transforms.end());
 
   const Eigen::Isometry3d& link_tf = state.link_transforms[link_name];
 
-  tesseract_common::jacobianChangeRefPoint(kin_jac, link_tf.linear() * link_point);
+  tesseract::common::jacobianChangeRefPoint(kin_jac, link_tf.linear() * link_point);
   return kin_jac;
 }
 
@@ -190,7 +190,7 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
   std::vector<std::string> active_links = getActiveLinkNames();
   if (std::find(active_links.begin(), active_links.end(), base_link_name) != active_links.end())
   {
-    tesseract_scene_graph::SceneState state = state_solver_->getState(joint_names_, joint_angles);
+    tesseract::scene_graph::SceneState state = state_solver_->getState(joint_names_, joint_angles);
     assert(state.link_transforms.find(base_link_name) != state.link_transforms.end());
     const Eigen::Isometry3d& base_link_tf = state.link_transforms[base_link_name];
 
@@ -199,13 +199,13 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
     for (Eigen::Index i = 0; i < numJoints(); ++i)
       base_kin_jac.col(i) = base_link_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
 
-    tesseract_common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
-    tesseract_common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
+    tesseract::common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
+    tesseract::common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
     kin_jac = kin_jac - base_kin_jac;
   }
   else
   {
-    tesseract_common::jacobianChangeBase(kin_jac, state_.link_transforms.at(base_link_name).inverse());
+    tesseract::common::jacobianChangeBase(kin_jac, state_.link_transforms.at(base_link_name).inverse());
   }
 
   return kin_jac;
@@ -225,7 +225,7 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
   for (Eigen::Index i = 0; i < numJoints(); ++i)
     kin_jac.col(i) = solver_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
 
-  tesseract_scene_graph::SceneState state = state_solver_->getState(joint_names_, joint_angles);
+  tesseract::scene_graph::SceneState state = state_solver_->getState(joint_names_, joint_angles);
   assert(state.link_transforms.find(link_name) != state.link_transforms.end());
   assert(state.link_transforms.find(base_link_name) != state.link_transforms.end());
   const Eigen::Isometry3d& link_tf = state.link_transforms[link_name];
@@ -239,17 +239,17 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
     for (Eigen::Index i = 0; i < numJoints(); ++i)
       base_kin_jac.col(i) = base_link_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
 
-    tesseract_common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
-    tesseract_common::jacobianChangeRefPoint(kin_jac, (base_link_tf.inverse() * link_tf).linear() * link_point);
+    tesseract::common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
+    tesseract::common::jacobianChangeRefPoint(kin_jac, (base_link_tf.inverse() * link_tf).linear() * link_point);
 
-    tesseract_common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
+    tesseract::common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
 
     kin_jac = kin_jac - base_kin_jac;
   }
   else
   {
-    tesseract_common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
-    tesseract_common::jacobianChangeRefPoint(kin_jac, (base_link_tf.inverse() * link_tf).linear() * link_point);
+    tesseract::common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
+    tesseract::common::jacobianChangeRefPoint(kin_jac, (base_link_tf.inverse() * link_tf).linear() * link_point);
   }
 
   return kin_jac;
@@ -298,9 +298,9 @@ bool JointGroup::hasLinkName(const std::string& link_name) const
   return (std::find(link_names_.begin(), link_names_.end(), link_name) != link_names_.end());
 }
 
-tesseract_common::KinematicLimits JointGroup::getLimits() const { return limits_; }
+tesseract::common::KinematicLimits JointGroup::getLimits() const { return limits_; }
 
-void JointGroup::setLimits(const tesseract_common::KinematicLimits& limits)
+void JointGroup::setLimits(const tesseract::common::KinematicLimits& limits)
 {
   Eigen::Index nj = numJoints();
   if (limits.joint_limits.rows() != nj || limits.velocity_limits.rows() != nj ||
@@ -318,4 +318,4 @@ std::string JointGroup::getBaseLinkName() const { return state_solver_->getBaseL
 
 std::string JointGroup::getName() const { return name_; }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

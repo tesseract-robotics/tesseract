@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 {
   std::string input;
   std::string output;
-  tesseract_collision::VHACDParameters params;
+  tesseract::collision::VHACDParameters params;
 
   // clang-format off
   namespace po = boost::program_options;
@@ -148,17 +148,17 @@ int main(int argc, char** argv)
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  tesseract_common::VectorVector3d mesh_vertices;
+  tesseract::common::VectorVector3d mesh_vertices;
   Eigen::VectorXi mesh_faces;
-  int num_faces = tesseract_common::loadSimplePlyFile(input, mesh_vertices, mesh_faces, true);
+  int num_faces = tesseract::common::loadSimplePlyFile(input, mesh_vertices, mesh_faces, true);
   if (num_faces < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to read mesh from file!");
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  tesseract_collision::ConvexDecompositionVHACD convex_decomp(params);
-  std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>> convex_hulls =
+  tesseract::collision::ConvexDecompositionVHACD convex_decomp(params);
+  std::vector<std::shared_ptr<tesseract::geometry::ConvexMesh>> convex_hulls =
       convex_decomp.compute(mesh_vertices, mesh_faces);
 
   if (convex_hulls.empty())
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
   for (std::size_t i = 0; i < convex_hulls.size(); ++i)
   {
     auto ch = convex_hulls[i];
-    if (!tesseract_common::writeSimplePlyFile(
+    if (!tesseract::common::writeSimplePlyFile(
             std::to_string(i) + "_" + output, *(ch->getVertices()), *(ch->getFaces()), ch->getFaceCount()))
     {
       CONSOLE_BRIDGE_logError("Failed to write convex hull to file!");

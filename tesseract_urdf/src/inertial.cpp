@@ -34,11 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::Inertial::Ptr parseInertial(const tinyxml2::XMLElement* xml_element)
+tesseract::scene_graph::Inertial::Ptr parseInertial(const tinyxml2::XMLElement* xml_element)
 {
-  auto inertial = std::make_shared<tesseract_scene_graph::Inertial>();
+  auto inertial = std::make_shared<tesseract::scene_graph::Inertial>();
   const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
@@ -84,7 +84,7 @@ tesseract_scene_graph::Inertial::Ptr parseInertial(const tinyxml2::XMLElement* x
   return inertial;
 }
 
-tinyxml2::XMLElement* writeInertial(const std::shared_ptr<const tesseract_scene_graph::Inertial>& inertial,
+tinyxml2::XMLElement* writeInertial(const std::shared_ptr<const tesseract::scene_graph::Inertial>& inertial,
                                     tinyxml2::XMLDocument& doc)
 {
   if (inertial == nullptr)
@@ -113,4 +113,4 @@ tinyxml2::XMLElement* writeInertial(const std::shared_ptr<const tesseract_scene_
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

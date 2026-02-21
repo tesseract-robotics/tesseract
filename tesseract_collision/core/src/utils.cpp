@@ -23,11 +23,11 @@
 
 #include <tesseract_collision/core/utils.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
-tesseract_common::ContactAllowedValidator::ConstPtr
-combineContactAllowedValidators(tesseract_common::ContactAllowedValidator::ConstPtr original,
-                                tesseract_common::ContactAllowedValidator::ConstPtr override,
+tesseract::common::ContactAllowedValidator::ConstPtr
+combineContactAllowedValidators(tesseract::common::ContactAllowedValidator::ConstPtr original,
+                                tesseract::common::ContactAllowedValidator::ConstPtr override,
                                 ACMOverrideType type)
 {
   switch (type)
@@ -41,21 +41,23 @@ combineContactAllowedValidators(tesseract_common::ContactAllowedValidator::Const
       if (original == nullptr)
         return nullptr;
 
-      std::vector<std::shared_ptr<const tesseract_common::ContactAllowedValidator>> validators = { original, override };
-      return std::make_shared<tesseract_common::CombinedContactAllowedValidator>(
-          validators, tesseract_common::CombinedContactAllowedValidatorType::AND);
+      std::vector<std::shared_ptr<const tesseract::common::ContactAllowedValidator>> validators = { original,
+                                                                                                    override };
+      return std::make_shared<tesseract::common::CombinedContactAllowedValidator>(
+          validators, tesseract::common::CombinedContactAllowedValidatorType::AND);
     }
     case ACMOverrideType::OR:
     {
       if (original == nullptr)
         return override;
 
-      std::vector<std::shared_ptr<const tesseract_common::ContactAllowedValidator>> validators = { original, override };
-      return std::make_shared<tesseract_common::CombinedContactAllowedValidator>(
-          validators, tesseract_common::CombinedContactAllowedValidatorType::OR);
+      std::vector<std::shared_ptr<const tesseract::common::ContactAllowedValidator>> validators = { original,
+                                                                                                    override };
+      return std::make_shared<tesseract::common::CombinedContactAllowedValidator>(
+          validators, tesseract::common::CombinedContactAllowedValidatorType::OR);
     }
     default:            // LCOV_EXCL_LINE
       return original;  // LCOV_EXCL_LINE
   }
 }
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision

@@ -38,7 +38,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view CAPSULE_ELEMENT_NAME = "tesseract:capsule";
 
@@ -47,10 +47,10 @@ static constexpr std::string_view CAPSULE_ELEMENT_NAME = "tesseract:capsule";
  * @param xml_element The xml element
  * @return Tesseract Geometry Capsule
  */
-std::shared_ptr<tesseract_geometry::Capsule> parseCapsule(const tinyxml2::XMLElement* xml_element);
+std::shared_ptr<tesseract::geometry::Capsule> parseCapsule(const tinyxml2::XMLElement* xml_element);
 
-tinyxml2::XMLElement* writeCapsule(const std::shared_ptr<const tesseract_geometry::Capsule>& capsule,
+tinyxml2::XMLElement* writeCapsule(const std::shared_ptr<const tesseract::geometry::Capsule>& capsule,
                                    tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 #endif  // TESSERACT_URDF_CAPSULE_H

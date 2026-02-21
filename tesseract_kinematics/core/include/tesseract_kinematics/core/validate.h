@@ -24,7 +24,7 @@
 #ifndef TESSERACT_KINEMATICS_VALIDATE_H
 #define TESSERACT_KINEMATICS_VALIDATE_H
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 class KinematicGroup;
 /**
@@ -37,5 +37,5 @@ class KinematicGroup;
  */
 bool checkKinematics(const KinematicGroup& manip, double tol = 1e-3);
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_VALIDATE_H

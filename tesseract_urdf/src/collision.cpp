@@ -38,14 +38,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/geometry.h>
 #include <tesseract_urdf/origin.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::Collision::Ptr parseCollision(const tinyxml2::XMLElement* xml_element,
-                                                     const tesseract_common::ResourceLocator& locator,
-                                                     bool make_convex_meshes)
+tesseract::scene_graph::Collision::Ptr parseCollision(const tinyxml2::XMLElement* xml_element,
+                                                      const tesseract::common::ResourceLocator& locator,
+                                                      bool make_convex_meshes)
 {
   // get name
-  std::string collision_name = tesseract_common::StringAttribute(xml_element, "name", "");
+  std::string collision_name = tesseract::common::StringAttribute(xml_element, "name", "");
 
   // get origin
   Eigen::Isometry3d collision_origin = Eigen::Isometry3d::Identity();
@@ -67,7 +67,7 @@ tesseract_scene_graph::Collision::Ptr parseCollision(const tinyxml2::XMLElement*
   if (geometry == nullptr)
     std::throw_with_nested(std::runtime_error("Collision: Error missing 'geometry' element!"));
 
-  tesseract_geometry::Geometry::Ptr geom;
+  tesseract::geometry::Geometry::Ptr geom;
   try
   {
     geom = parseGeometry(geometry, locator, false, make_convex_meshes);
@@ -77,7 +77,7 @@ tesseract_scene_graph::Collision::Ptr parseCollision(const tinyxml2::XMLElement*
     std::throw_with_nested(std::runtime_error("Collision: Error parsing 'geometry' element!"));
   }
 
-  auto collision = std::make_shared<tesseract_scene_graph::Collision>();
+  auto collision = std::make_shared<tesseract::scene_graph::Collision>();
   collision->name = collision_name;
   collision->origin = collision_origin;
   collision->geometry = geom;
@@ -85,7 +85,7 @@ tesseract_scene_graph::Collision::Ptr parseCollision(const tinyxml2::XMLElement*
   return collision;
 }
 
-tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract_scene_graph::Collision>& collision,
+tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract::scene_graph::Collision>& collision,
                                      tinyxml2::XMLDocument& doc,
                                      const std::string& package_path,
                                      const std::string& link_name,
@@ -133,4 +133,4 @@ tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract_scene
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

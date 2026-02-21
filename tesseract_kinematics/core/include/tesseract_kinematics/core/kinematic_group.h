@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_kinematics/core/types.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 class InverseKinematics;
 /**
@@ -68,7 +68,7 @@ struct KinGroupIKInput
    */
   std::string tip_link_name;  // This defines the internal kinematic group the information belongs to
 };
-using KinGroupIKInputs = tesseract_common::AlignedVector<KinGroupIKInput>;
+using KinGroupIKInputs = tesseract::common::AlignedVector<KinGroupIKInput>;
 
 class KinematicGroup : public JointGroup
 {
@@ -98,8 +98,8 @@ public:
   KinematicGroup(std::string name,
                  std::vector<std::string> joint_names,
                  std::unique_ptr<InverseKinematics> inv_kin,
-                 const tesseract_scene_graph::SceneGraph& scene_graph,
-                 const tesseract_scene_graph::SceneState& scene_state);
+                 const tesseract::scene_graph::SceneGraph& scene_graph,
+                 const tesseract::scene_graph::SceneState& scene_state);
 
   /**
    * @brief Calculates joint solutions given a pose.
@@ -183,6 +183,6 @@ private:
   std::unordered_map<std::string, std::string> inv_tip_links_map_;
 };
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 #endif  // TESSERACT_KINEMATICS_KINEMATIC_GROUP_H
